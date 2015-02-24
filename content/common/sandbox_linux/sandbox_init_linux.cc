@@ -12,9 +12,9 @@
 namespace content {
 
 bool InitializeSandbox(scoped_ptr<sandbox::bpf_dsl::Policy> policy,
-                       base::ScopedFD proc_task_fd) {
+                       base::ScopedFD proc_fd) {
   return SandboxSeccompBPF::StartSandboxWithExternalPolicy(policy.Pass(),
-                                                           proc_task_fd.Pass());
+                                                           proc_fd.Pass());
 }
 
 scoped_ptr<sandbox::bpf_dsl::Policy> GetBPFSandboxBaselinePolicy() {

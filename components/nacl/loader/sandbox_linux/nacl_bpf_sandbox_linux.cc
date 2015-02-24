@@ -162,11 +162,11 @@ void RunSandboxSanityChecks() {
 
 #endif  // defined(USE_SECCOMP_BPF)
 
-bool InitializeBPFSandbox(base::ScopedFD proc_task_fd) {
+bool InitializeBPFSandbox(base::ScopedFD proc_fd) {
 #if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
       scoped_ptr<sandbox::bpf_dsl::Policy>(new NaClBPFSandboxPolicy),
-      proc_task_fd.Pass());
+      proc_fd.Pass());
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;

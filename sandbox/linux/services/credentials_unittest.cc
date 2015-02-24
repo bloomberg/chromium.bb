@@ -16,6 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,7 +136,7 @@ SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(DropFileSystemAccessIsSafe)) {
   CHECK(Credentials::DropAllCapabilities());
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
-  CHECK(Credentials::DropFileSystemAccess());
+  CHECK(Credentials::DropFileSystemAccess(ProcUtil::OpenProc().get()));
   CHECK(!base::DirectoryExists(base::FilePath("/proc")));
   CHECK(WorkingDirectoryIsRoot());
   CHECK(base::IsDirectoryEmpty(base::FilePath("/")));
@@ -147,11 +148,12 @@ SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(DropFileSystemAccessIsSafe)) {
 // Check that after dropping filesystem access and dropping privileges
 // it is not possible to regain capabilities.
 SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(CannotRegainPrivileges)) {
-  CHECK(Credentials::DropAllCapabilities());
+  base::ScopedFD proc_fd(ProcUtil::OpenProc());
+  CHECK(Credentials::DropAllCapabilities(proc_fd.get()));
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
-  CHECK(Credentials::DropFileSystemAccess());
-  CHECK(Credentials::DropAllCapabilities());
+  CHECK(Credentials::DropFileSystemAccess(proc_fd.get()));
+  CHECK(Credentials::DropAllCapabilities(proc_fd.get()));
 
   // The kernel should now prevent us from regaining capabilities because we
   // are in a chroot.

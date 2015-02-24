@@ -46,8 +46,8 @@ namespace {
 
 bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
-bool IsSingleThreaded(int proc_task_fd) {
-  return ThreadHelpers::IsSingleThreaded(proc_task_fd);
+bool IsSingleThreaded(int proc_fd) {
+  return ThreadHelpers::IsSingleThreaded(proc_fd);
 }
 
 // Check if the kernel supports seccomp-filter (a.k.a. seccomp mode 2) via
@@ -82,7 +82,7 @@ bool KernelSupportsSeccompTsync() {
 }  // namespace
 
 SandboxBPF::SandboxBPF(bpf_dsl::Policy* policy)
-    : proc_task_fd_(), sandbox_has_started_(false), policy_(policy) {
+    : proc_fd_(), sandbox_has_started_(false), policy_(policy) {
 }
 
 SandboxBPF::~SandboxBPF() {
@@ -118,8 +118,8 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
     return false;
   }
 
-  if (!proc_task_fd_.is_valid()) {
-    SetProcTaskFd(ProcUtil::OpenProcSelfTask());
+  if (!proc_fd_.is_valid()) {
+    SetProcFd(ProcUtil::OpenProc());
   }
 
   const bool supports_tsync = KernelSupportsSeccompTsync();
@@ -127,9 +127,9 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   if (seccomp_level == SeccompLevel::SINGLE_THREADED) {
     // Wait for /proc/self/task/ to update if needed and assert the
     // process is single threaded.
-    ThreadHelpers::AssertSingleThreaded(proc_task_fd_.get());
+    ThreadHelpers::AssertSingleThreaded(proc_fd_.get());
   } else if (seccomp_level == SeccompLevel::MULTI_THREADED) {
-    if (IsSingleThreaded(proc_task_fd_.get())) {
+    if (IsSingleThreaded(proc_fd_.get())) {
       SANDBOX_DIE("Cannot start sandbox; "
                   "process may be single-threaded when reported as not");
       return false;
@@ -144,8 +144,8 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   // We no longer need access to any files in /proc. We want to do this
   // before installing the filters, just in case that our policy denies
   // close().
-  if (proc_task_fd_.is_valid()) {
-    proc_task_fd_.reset();
+  if (proc_fd_.is_valid()) {
+    proc_fd_.reset();
   }
 
   // Install the filters.
@@ -155,8 +155,8 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   return true;
 }
 
-void SandboxBPF::SetProcTaskFd(base::ScopedFD proc_task_fd) {
-  proc_task_fd_.swap(proc_task_fd);
+void SandboxBPF::SetProcFd(base::ScopedFD proc_fd) {
+  proc_fd_.swap(proc_fd);
 }
 
 // static

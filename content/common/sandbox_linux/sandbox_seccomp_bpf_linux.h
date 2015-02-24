@@ -34,13 +34,13 @@ class SandboxSeccompBPF {
   // Start the sandbox and apply the policy for process_type, depending on
   // command line switches.
   static bool StartSandbox(const std::string& process_type,
-                           base::ScopedFD proc_task_fd);
+                           base::ScopedFD proc_fd);
 
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.
   static bool StartSandboxWithExternalPolicy(
       scoped_ptr<sandbox::bpf_dsl::Policy> policy,
-      base::ScopedFD proc_task_fd);
+      base::ScopedFD proc_fd);
   // The "baseline" policy can be a useful base to build a sandbox policy.
   static scoped_ptr<sandbox::bpf_dsl::Policy> GetBaselinePolicy();
 

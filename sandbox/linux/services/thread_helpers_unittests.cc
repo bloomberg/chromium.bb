@@ -38,71 +38,71 @@ int GetRaceTestIterations() {
   }
 }
 
-class ScopedProcSelfTask {
+class ScopedProc {
  public:
-  ScopedProcSelfTask() : fd_(-1) {
-    fd_ = open("/proc/self/task/", O_RDONLY | O_DIRECTORY);
+  ScopedProc() : fd_(-1) {
+    fd_ = open("/proc/", O_RDONLY | O_DIRECTORY);
     CHECK_LE(0, fd_);
   }
 
-  ~ScopedProcSelfTask() { PCHECK(0 == IGNORE_EINTR(close(fd_))); }
+  ~ScopedProc() { PCHECK(0 == IGNORE_EINTR(close(fd_))); }
 
   int fd() { return fd_; }
 
  private:
   int fd_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedProcSelfTask);
+  DISALLOW_COPY_AND_ASSIGN(ScopedProc);
 };
 
 TEST(ThreadHelpers, IsSingleThreadedBasic) {
-  ScopedProcSelfTask task;
-  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ScopedProc proc_fd;
+  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded());
 
   base::Thread thread("sandbox_tests");
   ASSERT_TRUE(thread.Start());
-  ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded());
   // Explicitly stop the thread here to not pollute the next test.
-  ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
+  ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.fd(), &thread));
 }
 
 SANDBOX_TEST(ThreadHelpers, AssertSingleThreaded) {
-  ScopedProcSelfTask task;
-  SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ScopedProc proc_fd;
+  SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
   SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded());
 
-  ThreadHelpers::AssertSingleThreaded(task.fd());
+  ThreadHelpers::AssertSingleThreaded(proc_fd.fd());
   ThreadHelpers::AssertSingleThreaded();
 }
 
 TEST(ThreadHelpers, IsSingleThreadedIterated) {
-  ScopedProcSelfTask task;
-  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ScopedProc proc_fd;
+  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
 
   // Iterate to check for race conditions.
   for (int i = 0; i < GetRaceTestIterations(); ++i) {
     base::Thread thread("sandbox_tests");
     ASSERT_TRUE(thread.Start());
-    ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
+    ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
     // Explicitly stop the thread here to not pollute the next test.
-    ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
+    ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.fd(), &thread));
   }
 }
 
 TEST(ThreadHelpers, IsSingleThreadedStartAndStop) {
-  ScopedProcSelfTask task;
-  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ScopedProc proc_fd;
+  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
 
   base::Thread thread("sandbox_tests");
   // This is testing for a race condition, so iterate.
   // Manually, this has been tested with more that 1M iterations.
   for (int i = 0; i < GetRaceTestIterations(); ++i) {
     ASSERT_TRUE(thread.Start());
-    ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
+    ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
 
-    ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
-    ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
+    ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.fd(), &thread));
+    ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
     ASSERT_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
   }
 }

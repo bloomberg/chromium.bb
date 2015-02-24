@@ -76,22 +76,23 @@ bool IsRunningTSAN() {
 #endif
 }
 
-// Try to open /proc/self/task/ with the help of |proc_fd|. |proc_fd| can be
-// -1. Will return -1 on error and set errno like open(2).
+// Get a file descriptor to /proc. Either duplicate |proc_fd| or try to open
+// it by using the filesystem directly.
 // TODO(jln): get rid of this ugly interface.
-int OpenProcTaskFd(int proc_fd) {
-  int proc_self_task = -1;
+base::ScopedFD OpenProc(int proc_fd) {
+  int ret_proc_fd = -1;
   if (proc_fd >= 0) {
     // If a handle to /proc is available, use it. This allows to bypass file
     // system restrictions.
-    proc_self_task = HANDLE_EINTR(
-        openat(proc_fd, "self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC));
+    ret_proc_fd =
+        HANDLE_EINTR(openat(proc_fd, ".", O_RDONLY | O_DIRECTORY | O_CLOEXEC));
   } else {
     // Otherwise, make an attempt to access the file system directly.
-    proc_self_task = HANDLE_EINTR(openat(AT_FDCWD, "/proc/self/task/",
-                                         O_RDONLY | O_DIRECTORY | O_CLOEXEC));
+    ret_proc_fd = HANDLE_EINTR(
+        openat(AT_FDCWD, "/proc/", O_RDONLY | O_DIRECTORY | O_CLOEXEC));
   }
-  return proc_self_task;
+  DCHECK_LE(0, ret_proc_fd);
+  return base::ScopedFD(ret_proc_fd);
 }
 
 }  // namespace
@@ -183,11 +184,9 @@ void LinuxSandbox::EngageNamespaceSandbox() {
 
   CHECK(sandbox::Credentials::MoveToNewUserNS());
   // Note: this requires SealSandbox() to be called later in this process to be
-  // safe, as this class is keeping a file descriptor to /proc.
-  CHECK(!HasOpenDirectories());
-  CHECK(sandbox::Credentials::DropFileSystemAccess());
-  CHECK(IsSingleThreaded());
-  CHECK(sandbox::Credentials::DropAllCapabilities());
+  // safe, as this class is keeping a file descriptor to /proc/.
+  CHECK(sandbox::Credentials::DropFileSystemAccess(proc_fd_));
+  CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd_));
 
   // This needs to happen after moving to a new user NS, since doing so involves
   // writing the UID/GID map.
@@ -257,14 +256,13 @@ int LinuxSandbox::GetStatus() {
 // PID namespaces and existing sandboxes, so "self" must really be used instead
 // of using the pid.
 bool LinuxSandbox::IsSingleThreaded() const {
-  base::ScopedFD proc_self_task(OpenProcTaskFd(proc_fd_));
+  base::ScopedFD proc_fd(OpenProc(proc_fd_));
 
-  CHECK(proc_self_task.is_valid())
-      << "Could not count threads, the sandbox was not "
-      << "pre-initialized properly.";
+  CHECK(proc_fd.is_valid()) << "Could not count threads, the sandbox was not "
+                            << "pre-initialized properly.";
 
   const bool is_single_threaded =
-      sandbox::ThreadHelpers::IsSingleThreaded(proc_self_task.get());
+      sandbox::ThreadHelpers::IsSingleThreaded(proc_fd.get());
 
   return is_single_threaded;
 }
@@ -283,9 +281,8 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
   CHECK(!seccomp_bpf_started_);
   CHECK(pre_initialized_);
   if (seccomp_bpf_supported()) {
-    base::ScopedFD proc_self_task(OpenProcTaskFd(proc_fd_));
     seccomp_bpf_started_ =
-        SandboxSeccompBPF::StartSandbox(process_type, proc_self_task.Pass());
+        SandboxSeccompBPF::StartSandbox(process_type, OpenProc(proc_fd_));
   }
 
   if (seccomp_bpf_started_) {
@@ -452,10 +449,10 @@ void LinuxSandbox::CheckForBrokenPromises(const std::string& process_type) {
 
 void LinuxSandbox::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
   DCHECK(thread);
-  base::ScopedFD proc_self_task(OpenProcTaskFd(proc_fd_));
-  PCHECK(proc_self_task.is_valid());
-  CHECK(sandbox::ThreadHelpers::StopThreadAndWatchProcFS(proc_self_task.get(),
-                                                         thread));
+  base::ScopedFD proc_fd(OpenProc(proc_fd_));
+  PCHECK(proc_fd.is_valid());
+  CHECK(
+      sandbox::ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.get(), thread));
 }
 
 }  // namespace content

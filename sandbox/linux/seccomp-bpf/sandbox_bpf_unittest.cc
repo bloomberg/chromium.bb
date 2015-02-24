@@ -71,7 +71,7 @@ TEST(SandboxBPF, ProcTaskFdDescriptorGetsClosed) {
 
   {
     SandboxBPF sandbox(nullptr);
-    sandbox.SetProcTaskFd(write_end.Pass());
+    sandbox.SetProcFd(write_end.Pass());
   }
 
   ASSERT_EQ(0, fcntl(read_end.get(), F_SETFL, O_NONBLOCK));

@@ -31,10 +31,10 @@ namespace {
 const char kAssertSingleThreadedError[] =
     "Current process is not mono-threaded!";
 
-bool IsSingleThreadedImpl(int proc_self_task) {
-  CHECK_LE(0, proc_self_task);
+bool IsSingleThreadedImpl(int proc_fd) {
+  CHECK_LE(0, proc_fd);
   struct stat task_stat;
-  int fstat_ret = fstat(proc_self_task, &task_stat);
+  int fstat_ret = fstatat(proc_fd, "self/task/", &task_stat, 0);
   PCHECK(0 == fstat_ret);
 
   // At least "..", "." and the current thread should be present.
@@ -45,11 +45,11 @@ bool IsSingleThreadedImpl(int proc_self_task) {
   return task_stat.st_nlink == 3;
 }
 
-bool IsThreadPresentInProcFS(int proc_self_task,
+bool IsThreadPresentInProcFS(int proc_fd,
                              const std::string& thread_id_dir_str) {
   struct stat task_stat;
   const int fstat_ret =
-      fstatat(proc_self_task, thread_id_dir_str.c_str(), &task_stat, 0);
+      fstatat(proc_fd, thread_id_dir_str.c_str(), &task_stat, 0);
   if (fstat_ret < 0) {
     PCHECK(ENOENT == errno);
     return false;
@@ -98,44 +98,44 @@ void RunWhileTrue(const base::Callback<bool(void)>& cb) {
   NOTREACHED();
 }
 
-bool IsMultiThreaded(int proc_self_task) {
-  return !ThreadHelpers::IsSingleThreaded(proc_self_task);
+bool IsMultiThreaded(int proc_fd) {
+  return !ThreadHelpers::IsSingleThreaded(proc_fd);
 }
 
 }  // namespace
 
 // static
-bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
-  DCHECK_LE(0, proc_self_task);
-  return IsSingleThreadedImpl(proc_self_task);
+bool ThreadHelpers::IsSingleThreaded(int proc_fd) {
+  DCHECK_LE(0, proc_fd);
+  return IsSingleThreadedImpl(proc_fd);
 }
 
 // static
 bool ThreadHelpers::IsSingleThreaded() {
-  base::ScopedFD task_fd(ProcUtil::OpenProcSelfTask());
+  base::ScopedFD task_fd(ProcUtil::OpenProc());
   return IsSingleThreaded(task_fd.get());
 }
 
 // static
-void ThreadHelpers::AssertSingleThreaded(int proc_self_task) {
-  DCHECK_LE(0, proc_self_task);
-  const base::Callback<bool(void)> cb =
-      base::Bind(&IsMultiThreaded, proc_self_task);
+void ThreadHelpers::AssertSingleThreaded(int proc_fd) {
+  DCHECK_LE(0, proc_fd);
+  const base::Callback<bool(void)> cb = base::Bind(&IsMultiThreaded, proc_fd);
   RunWhileTrue(cb);
 }
 
 void ThreadHelpers::AssertSingleThreaded() {
-  base::ScopedFD task_fd(ProcUtil::OpenProcSelfTask());
+  base::ScopedFD task_fd(ProcUtil::OpenProc());
   AssertSingleThreaded(task_fd.get());
 }
 
 // static
-bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_self_task,
+bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_fd,
                                              base::Thread* thread) {
-  DCHECK_LE(0, proc_self_task);
+  DCHECK_LE(0, proc_fd);
   DCHECK(thread);
   const base::PlatformThreadId thread_id = thread->thread_id();
-  const std::string thread_id_dir_str = base::IntToString(thread_id) + "/";
+  const std::string thread_id_dir_str =
+      "self/task/" + base::IntToString(thread_id) + "/";
 
   // The kernel is at liberty to wake the thread id futex before updating
   // /proc. Following Stop(), the thread is joined, but entries in /proc may
@@ -143,7 +143,7 @@ bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_self_task,
   thread->Stop();
 
   const base::Callback<bool(void)> cb =
-      base::Bind(&IsThreadPresentInProcFS, proc_self_task, thread_id_dir_str);
+      base::Bind(&IsThreadPresentInProcFS, proc_fd, thread_id_dir_str);
 
   RunWhileTrue(cb);
 

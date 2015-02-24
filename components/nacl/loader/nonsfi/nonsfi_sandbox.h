@@ -30,7 +30,7 @@ class NaClNonSfiBPFSandboxPolicy : public sandbox::bpf_dsl::Policy {
 
 // Initializes seccomp-bpf sandbox for non-SFI NaCl. Returns false on
 // failure.
-bool InitializeBPFSandbox(base::ScopedFD proc_task_fd);
+bool InitializeBPFSandbox(base::ScopedFD proc_fd);
 
 }  // namespace nonsfi
 }  // namespace nacl

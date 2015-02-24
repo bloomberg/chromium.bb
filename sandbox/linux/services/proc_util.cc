@@ -28,12 +28,20 @@ struct DIRCloser {
 
 typedef scoped_ptr<DIR, DIRCloser> ScopedDIR;
 
+base::ScopedFD OpenDirectory(const char* path) {
+  DCHECK(path);
+  base::ScopedFD directory_fd(
+      HANDLE_EINTR(open(path, O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
+  PCHECK(directory_fd.is_valid());
+  return directory_fd.Pass();
+}
+
 }  // namespace
 
 int ProcUtil::CountOpenFds(int proc_fd) {
   DCHECK_LE(0, proc_fd);
   int proc_self_fd = HANDLE_EINTR(
-      openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY | O_CLOEXEC));
+      openat(proc_fd, "self/fd/", O_DIRECTORY | O_RDONLY | O_CLOEXEC));
   PCHECK(0 <= proc_self_fd);
 
   // Ownership of proc_self_fd is transferred here, it must not be closed
@@ -61,24 +69,10 @@ int ProcUtil::CountOpenFds(int proc_fd) {
 }
 
 bool ProcUtil::HasOpenDirectory(int proc_fd) {
-  int proc_self_fd = -1;
-  if (proc_fd >= 0) {
-    proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
-  } else {
-    proc_self_fd = openat(AT_FDCWD, "/proc/self/fd", O_DIRECTORY | O_RDONLY);
-    if (proc_self_fd < 0) {
-      // If this process has been chrooted (eg into /proc/self/fdinfo) then
-      // the new root dir will not have directory listing permissions for us
-      // (hence EACCES).  And if we do have this permission, then /proc won't
-      // exist anyway (hence ENOENT).
-      DPCHECK(errno == EACCES || errno == ENOENT)
-        << "Unexpected failure when trying to open /proc/self/fd: ("
-        << errno << ") " << strerror(errno);
+  DCHECK_LE(0, proc_fd);
+  int proc_self_fd =
+      openat(proc_fd, "self/fd/", O_DIRECTORY | O_RDONLY | O_CLOEXEC);
 
-      // If not available, guess false.
-      return false;
-    }
-  }
   PCHECK(0 <= proc_self_fd);
 
   // Ownership of proc_self_fd is transferred here, it must not be closed
@@ -111,13 +105,15 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
   return false;
 }
 
+bool ProcUtil::HasOpenDirectory() {
+  base::ScopedFD proc_fd(
+      HANDLE_EINTR(open("/proc/", O_DIRECTORY | O_RDONLY | O_CLOEXEC)));
+  return HasOpenDirectory(proc_fd.get());
+}
+
 //static
-base::ScopedFD ProcUtil::OpenProcSelfTask() {
-  base::ScopedFD proc_self_task(
-   HANDLE_EINTR(
-      open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
-  PCHECK(proc_self_task.is_valid());
-  return proc_self_task.Pass();
+base::ScopedFD ProcUtil::OpenProc() {
+  return OpenDirectory("/proc/");
 }
 
 }  // namespace sandbox

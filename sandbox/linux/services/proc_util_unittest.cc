@@ -14,7 +14,7 @@
 namespace sandbox {
 
 TEST(ProcUtil, CountOpenFds) {
-  base::ScopedFD proc_fd(open("/proc", O_RDONLY | O_DIRECTORY));
+  base::ScopedFD proc_fd(open("/proc/", O_RDONLY | O_DIRECTORY));
   ASSERT_TRUE(proc_fd.is_valid());
   int fd_count = ProcUtil::CountOpenFds(proc_fd.get());
   int fd = open("/dev/null", O_RDONLY);
@@ -26,35 +26,35 @@ TEST(ProcUtil, CountOpenFds) {
 
 TEST(ProcUtil, HasOpenDirectory) {
   // No open directory should exist at startup.
-  EXPECT_FALSE(ProcUtil::HasOpenDirectory(-1));
+  EXPECT_FALSE(ProcUtil::HasOpenDirectory());
   {
     // Have a "/proc" file descriptor around.
-    int proc_fd = open("/proc", O_RDONLY | O_DIRECTORY);
+    int proc_fd = open("/proc/", O_RDONLY | O_DIRECTORY);
     base::ScopedFD proc_fd_closer(proc_fd);
-    EXPECT_TRUE(ProcUtil::HasOpenDirectory(-1));
+    EXPECT_TRUE(ProcUtil::HasOpenDirectory());
   }
-  EXPECT_FALSE(ProcUtil::HasOpenDirectory(-1));
+  EXPECT_FALSE(ProcUtil::HasOpenDirectory());
 }
 
 TEST(ProcUtil, HasOpenDirectoryWithFD) {
-  int proc_fd = open("/proc", O_RDONLY | O_DIRECTORY);
+  int proc_fd = open("/proc/", O_RDONLY | O_DIRECTORY);
   base::ScopedFD proc_fd_closer(proc_fd);
   ASSERT_LE(0, proc_fd);
 
   // Don't pass |proc_fd|, an open directory (proc_fd) should
   // be detected.
-  EXPECT_TRUE(ProcUtil::HasOpenDirectory(-1));
+  EXPECT_TRUE(ProcUtil::HasOpenDirectory());
   // Pass |proc_fd| and no open directory should be detected.
   EXPECT_FALSE(ProcUtil::HasOpenDirectory(proc_fd));
 
   {
     // Have a directory file descriptor around.
-    int open_directory_fd = open("/proc/self", O_RDONLY | O_DIRECTORY);
+    int open_directory_fd = open("/proc/self/", O_RDONLY | O_DIRECTORY);
     base::ScopedFD open_directory_fd_closer(open_directory_fd);
     EXPECT_TRUE(ProcUtil::HasOpenDirectory(proc_fd));
   }
 
-  // The "/proc/self" file descriptor should now be closed, |proc_fd| is the
+  // The "/proc/" file descriptor should now be closed, |proc_fd| is the
   // only directory file descriptor open.
   EXPECT_FALSE(ProcUtil::HasOpenDirectory(proc_fd));
 }

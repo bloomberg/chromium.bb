@@ -21,6 +21,7 @@
 #include "base/test/multiprocess_test.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_utils.h"
+#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -85,7 +86,7 @@ TEST_F(NamespaceSandboxTest, BasicUsage) {
 MULTIPROCESS_TEST_MAIN(ChrootMe) {
   CHECK(!RootDirectoryIsEmpty());
   CHECK(sandbox::Credentials::MoveToNewUserNS());
-  CHECK(sandbox::Credentials::DropFileSystemAccess());
+  CHECK(sandbox::Credentials::DropFileSystemAccess(ProcUtil::OpenProc().get()));
   CHECK(RootDirectoryIsEmpty());
   return 0;
 }

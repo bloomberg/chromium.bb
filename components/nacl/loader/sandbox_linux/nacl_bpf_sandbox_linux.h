@@ -9,7 +9,7 @@
 
 namespace nacl {
 
-bool InitializeBPFSandbox(base::ScopedFD proc_task_fd);
+bool InitializeBPFSandbox(base::ScopedFD proc_fd);
 
 }  // namespace nacl
 
