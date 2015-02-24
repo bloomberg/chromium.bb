@@ -129,27 +129,6 @@ typedef struct {
   int dummy; /**< Reserved; condition variables don't have attributes */
 } pthread_condattr_t;
 
-/**
- * A structure representing a rwlock. It should be considered an
- * opaque record; the names of the fields can change anytime.
- */
-typedef struct {
-  pthread_mutex_t mutex; /* mutex for all values in the structure */
-  int reader_count;
-  int writers_waiting;
-  struct __nc_basic_thread_data *writer_thread_id;
-  pthread_cond_t read_possible;
-  pthread_cond_t write_possible;
-} pthread_rwlock_t;
-
-/**
- * A structure representing rwlock attributes. It should be considered an
- * opaque record.
- */
-typedef struct {
-  int type;
-} pthread_rwlockattr_t;
-
 /** A value that represents an uninitialized handle. */
 #define NC_INVALID_HANDLE -1
 
@@ -174,8 +153,6 @@ typedef struct {
 /** Statically initializes a condition variable (pthread_cond_t). */
 #define PTHREAD_COND_INITIALIZER {0, NC_INVALID_HANDLE}
 
-#define PTHREAD_PROCESS_PRIVATE  0
-#define PTHREAD_PROCESS_SHARED   1
 
 
 /* Functions for mutex handling.  */
@@ -376,7 +353,7 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                const struct timespec *abstime);
 
-/** @nqPosix
+ /** @nqPosix
 * Waits for condition variable cond to be signaled or broadcast; wait time is
 * limited by reltime.
 *
@@ -398,31 +375,6 @@ int pthread_cond_timedwait_rel(pthread_cond_t *cond,
  * a macro calling pthread_cond_timedwait_abs().
  */
 #define pthread_cond_timedwait pthread_cond_timedwait_abs
-
-/* Functions for rwlock handling.  */
-
-int pthread_rwlockattr_init(pthread_rwlockattr_t *attr);
-int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *attr,
-                                  int *pshared);
-int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *attr, int pshared);
-int pthread_rwlockattr_destroy(pthread_rwlockattr_t *attr);
-
-int pthread_rwlock_init(pthread_rwlock_t *rwlock,
-                        const pthread_rwlockattr_t *attr);
-
-int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
-int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
-int pthread_rwlock_timedrdlock(pthread_rwlock_t *rwlock,
-                               const struct timespec *abstime);
-
-
-int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
-int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
-int pthread_rwlock_timedwrlock(pthread_rwlock_t *rwlock,
-                               const struct timespec *abstime);
-
-int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
-int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
 
 
 /* Threads */
@@ -547,7 +499,6 @@ extern int pthread_kill(pthread_t thread_id,
                         int sig);
 
 /* Functions for handling thread attributes.  */
-
 /** @nqPosix
 * Initializes thread attributes structure attr with default attributes
 * (detachstate is PTHREAD_CREATE_JOINABLE).

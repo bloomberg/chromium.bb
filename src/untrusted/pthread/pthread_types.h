@@ -47,12 +47,11 @@ struct __nc_basic_thread_data;
  *       ("tcbhead_t") as long as we keep the field "dtv" untouched and
  *       use tls_base in a compatible way (which we already do).
  */
-typedef struct nc_thread_descriptor {
+typedef struct {
   void *tls_base;  /* tls accesses are made relative to this base */
   void *unused_dtv;  /* increase compatibility with glibc's tcbhead_t */
   int joinable;
   int join_waiting;
-  unsigned int rdlock_count;  /* number of rdlocks this thread holds */
   nc_thread_memory_block_t *stack_node;
   nc_thread_memory_block_t *tls_node;
   nc_thread_function start_func;
