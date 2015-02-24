@@ -597,14 +597,19 @@ v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isol
 {
     // The plugin may be destroyed due to re-entrancy when calling
     // v8ScriptableObject below. crbug.com/458776. Hold a reference to the
-    // plugin container to prevent this from happening.
+    // plugin container to prevent this from happening. For Oilpan, 'this'
+    // is already stack reachable, so redundant.
     RefPtrWillBeRawPtr<WebPluginContainerImpl> protector(this);
 
     v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
 
     // If the plugin has been destroyed and the reference on the stack is the
     // only one left, then don't return the scriptable object.
+#if ENABLE(OILPAN)
+    if (!m_webPlugin)
+#else
     if (hasOneRef())
+#endif
         return v8::Local<v8::Object>();
 
     if (!object.IsEmpty()) {
