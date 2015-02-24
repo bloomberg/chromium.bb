@@ -467,10 +467,56 @@
     }, # target_name: chromium_builder_tests
   ],
   'conditions': [
-    # TODO(GYP) - make gyp_all and gn_all work on iOS and Android also.
+    ['OS!="ios"', {
+      'targets': [
+        {
+          'target_name': 'blink_tests',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/WebKit/public/all.gyp:all_blink',
+          ],
+          'conditions': [
+            ['OS=="android"', {
+              'dependencies': [
+                '../content/content_shell_and_tests.gyp:content_shell_apk',
+                '../breakpad/breakpad.gyp:dump_syms#host',
+                '../breakpad/breakpad.gyp:minidump_stackwalk#host',
+              ],
+            }, {  # OS!="android"
+              'dependencies': [
+                '../content/content_shell_and_tests.gyp:content_shell',
+              ],
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                '../content/content_shell_and_tests.gyp:content_shell_crash_service',
+                '../content/content_shell_and_tests.gyp:layout_test_helper',
+              ],
+            }],
+            ['OS!="win" and OS!="android"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms#host',
+                '../content/content_shell_and_tests.gyp:layout_test_helper',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms',
+              ],
+            }],
+          ],
+        }, # target_name: blink_tests
+      ],
+    }], # OS!=ios
     ['OS!="ios" and OS!="android"', {
       'targets': [
         {
+          # TODO(GYP) - make gyp_all and gn_all work on iOS and Android also.
           'target_name': 'gyp_all',
           'type': 'none',
           'dependencies': [
@@ -620,57 +666,7 @@
             }],
           ],
         },
-      ]},
-    ], # OS!="ios" and OS!="android"
-    ['OS!="iOS"', {
-      'targets': [
-        {
-          'target_name': 'blink_tests',
-          'type': 'none',
-          'dependencies': [
-            '../third_party/WebKit/public/all.gyp:all_blink',
-          ],
-          'conditions': [
-            ['OS=="android"', {
-              'dependencies': [
-                '../content/content_shell_and_tests.gyp:content_shell_apk',
-                '../breakpad/breakpad.gyp:dump_syms#host',
-                '../breakpad/breakpad.gyp:minidump_stackwalk#host',
-              ],
-            }, {  # OS!="android"
-              'dependencies': [
-                '../content/content_shell_and_tests.gyp:content_shell',
-              ],
-            }],
-            ['OS=="win"', {
-              'dependencies': [
-                '../content/content_shell_and_tests.gyp:content_shell_crash_service',
-                '../content/content_shell_and_tests.gyp:layout_test_helper',
-              ],
-            }],
-            ['OS!="win" and OS!="android"', {
-              'dependencies': [
-                '../breakpad/breakpad.gyp:minidump_stackwalk',
-              ],
-            }],
-            ['OS=="mac"', {
-              'dependencies': [
-                '../breakpad/breakpad.gyp:dump_syms#host',
-                '../content/content_shell_and_tests.gyp:layout_test_helper',
-              ],
-            }],
-            ['OS=="linux"', {
-              'dependencies': [
-                '../breakpad/breakpad.gyp:dump_syms',
-              ],
-            }],
-          ],
-        }, # target_name: blink_tests
-      ],
-    }], # OS!=ios
-    ['OS!="ios" and OS!="android"', {
-      'targets': [
-        {
+      ]},{
           'target_name': 'chromium_builder_nacl_win_integration',
           'type': 'none',
           'dependencies': [
