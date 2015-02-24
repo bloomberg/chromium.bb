@@ -24,12 +24,6 @@ libaddressinput_util_files = [
   "src/cpp/src/util/string_util.cc",
 ]
 
-config("no-newline-eof-warning") {
-  if (is_clang) {
-    cflags = [ "-Wno-newline-eof" ]
-  }
-}
-
 # GYP version: third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings
 grit("strings") {
   source = "//chrome/app/address_input_strings.grd"
@@ -91,8 +85,6 @@ grit("strings") {
     "address_input_strings_zh-CN.pak",
     "address_input_strings_zh-TW.pak",
   ]
-
-  configs = [ ":no-newline-eof-warning" ]
 }
 
 config("libaddressinput_config") {
@@ -117,10 +109,7 @@ static_library("util") {
   sources -= [ "src/cpp/src/util/json.cc" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":no-newline-eof-warning",
-    "//build/config/compiler:no_chromium_code",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   public_configs = [ ":libaddressinput_config" ]
 
