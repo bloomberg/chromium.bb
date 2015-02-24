@@ -165,6 +165,12 @@ void OpenSLESOutputStream::Close() {
 void OpenSLESOutputStream::SetVolume(double volume) {
   DVLOG(2) << "OpenSLESOutputStream::SetVolume(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  double volume_override = 0;
+  if (audio_manager_->HasOutputVolumeOverride(&volume_override)) {
+    volume = volume_override;
+  }
+
   float volume_float = static_cast<float>(volume);
   if (volume_float < 0.0f || volume_float > 1.0f) {
     return;

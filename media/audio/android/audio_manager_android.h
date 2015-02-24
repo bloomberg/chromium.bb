@@ -55,6 +55,11 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
 
   void SetMute(JNIEnv* env, jobject obj, jboolean muted);
 
+  // Sets a volume that applies to all this manager's output audio streams.
+  // This overrides other SetVolume calls (e.g. through AudioHostMsg_SetVolume).
+  void SetOutputVolumeOverride(double volume);
+  bool HasOutputVolumeOverride(double* out_volume) const;
+
  protected:
   ~AudioManagerAndroid() override;
 
@@ -75,6 +80,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   int GetOptimalOutputFrameSize(int sample_rate, int channels);
 
   void DoSetMuteOnAudioThread(bool muted);
+  void DoSetVolumeOnAudioThread(double volume);
 
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;
@@ -85,6 +91,10 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   // Enabled when first input stream is created and set to false when last
   // input stream is destroyed. Also affects the stream type of output streams.
   bool communication_mode_is_on_;
+
+  // If set, overrides volume level on output streams
+  bool output_volume_override_set_;
+  double output_volume_override_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerAndroid);
 };

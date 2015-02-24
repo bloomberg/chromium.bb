@@ -48,7 +48,9 @@ AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
 
 AudioManagerAndroid::AudioManagerAndroid(AudioLogFactory* audio_log_factory)
     : AudioManagerBase(audio_log_factory),
-      communication_mode_is_on_(false) {
+      communication_mode_is_on_(false),
+      output_volume_override_set_(false),
+      output_volume_override_(0) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
   // WARNING: This is executed on the UI loop, do not add any code here which
@@ -265,6 +267,22 @@ void AudioManagerAndroid::SetMute(JNIEnv* env, jobject obj, jboolean muted) {
           muted));
 }
 
+void AudioManagerAndroid::SetOutputVolumeOverride(double volume) {
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &AudioManagerAndroid::DoSetVolumeOnAudioThread,
+          base::Unretained(this),
+          volume));
+}
+
+bool AudioManagerAndroid::HasOutputVolumeOverride(double* out_volume) const {
+  if (output_volume_override_set_) {
+    *out_volume = output_volume_override_;
+  }
+  return output_volume_override_set_;
+}
+
 AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
@@ -379,6 +397,17 @@ void AudioManagerAndroid::DoSetMuteOnAudioThread(bool muted) {
   for (OutputStreams::iterator it = streams_.begin();
        it != streams_.end(); ++it) {
     (*it)->SetMute(muted);
+  }
+}
+
+void AudioManagerAndroid::DoSetVolumeOnAudioThread(double volume) {
+  output_volume_override_set_ = true;
+  output_volume_override_ = volume;
+
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  for (OutputStreams::iterator it = streams_.begin();
+       it != streams_.end(); ++it) {
+    (*it)->SetVolume(volume);
   }
 }
 
