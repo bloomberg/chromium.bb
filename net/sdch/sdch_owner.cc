@@ -5,7 +5,9 @@
 #include "net/sdch/sdch_owner.h"
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_net_log_params.h"
@@ -250,6 +252,12 @@ void SdchOwner::OnGetDictionary(net::SdchManager* manager,
                                 const GURL& dictionary_url) {
 #if defined(OS_CHROMEOS)
   // For debugging http://crbug.com/454198; remove when resolved.
+  char url_buf[128];
+  if (0u != destroyed_ || !clock_.get()) {
+    base::strlcpy(url_buf, request_url.spec().c_str(), arraysize(url_buf));
+  }
+  base::debug::Alias(url_buf);
+
   CHECK_EQ(0u, destroyed_);
   CHECK(clock_.get());
 #endif
