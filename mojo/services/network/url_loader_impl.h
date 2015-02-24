@@ -25,7 +25,7 @@ class URLLoaderImpl : public URLLoader,
                       public net::URLRequest::Delegate {
  public:
   URLLoaderImpl(NetworkContext* context, InterfaceRequest<URLLoader> request);
-  ~URLLoaderImpl();
+  ~URLLoaderImpl() override;
 
  private:
   // URLLoader methods:

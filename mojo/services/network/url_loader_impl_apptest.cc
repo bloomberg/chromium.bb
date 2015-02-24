@@ -113,7 +113,7 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     return false;
   }
 
-  void SetUp() {
+  void SetUp() override {
     ApplicationTestBase::SetUp();
 
     scoped_ptr<net::TestURLRequestContext> url_request_context(
