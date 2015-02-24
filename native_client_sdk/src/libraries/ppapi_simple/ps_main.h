@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -11,14 +11,6 @@
 EXTERN_C_BEGIN
 
 typedef int (*PSMainFunc_t)(int argc, char *argv[]);
-
-/**
- * PSMainCreate
- *
- * Constructs an instance SimpleInstance and configures it to call into
- * the provided "main" function.
- */
-void* PSMainCreate(PP_Instance inst, PSMainFunc_t entry_point);
 
 /**
  * PSUserMainGet
@@ -34,14 +26,16 @@ PSMainFunc_t PSUserMainGet();
  *
  * Constructs a PSInstance object and configures it to use call the provided
  * 'main' function on its own thread once initialization is complete.
+ *
+ * The ps_entrypoint_*.o and ps_main.o objects will not be linked by default,
+ * so we force them to be linked here.
  */
-#define PPAPI_SIMPLE_REGISTER_MAIN(main_func)     \
-  PSMainFunc_t PSUserMainGet() {                  \
-    return main_func;                             \
-  }                                               \
-  void* PSUserCreateInstance(PP_Instance inst) {  \
-    return PSMainCreate(inst, main_func);         \
-  }
+#define PPAPI_SIMPLE_REGISTER_MAIN(main_func) \
+  EXTERN_C_BEGIN                              \
+  FORCE_LINK_THAT(ps_entry)                   \
+  FORCE_LINK_THAT(ps_main)                    \
+  EXTERN_C_END                                \
+  PSMainFunc_t PSUserMainGet() { return main_func; }
 
 EXTERN_C_END
 

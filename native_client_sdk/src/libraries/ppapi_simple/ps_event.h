@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -61,15 +61,21 @@ typedef enum {
 typedef uint32_t PSEventTypeMask;
 
 // Generic Event
-typedef struct {
+typedef struct PSEvent {
   PSEventType type;
   union {
     PP_Bool as_bool;
     PP_Resource as_resource;
     struct PP_Var as_var;
   };
+
+  /* Internal */
+  struct PSEvent* next;
 } PSEvent;
 
+typedef void (*PSMessageHandler_t)(struct PP_Var key,
+                                   struct PP_Var value,
+                                   void* user_data);
 
 /**
  * Function for queuing, acquiring, and releasing events.
@@ -87,6 +93,32 @@ void PSEventPost(PSEventType type);
 void PSEventPostBool(PSEventType type, PP_Bool state);
 void PSEventPostVar(PSEventType type, struct PP_Var var);
 void PSEventPostResource(PSEventType type, PP_Resource resource);
+
+
+/* Register a message handler for messages that arrive from JavaScript with a
+ * give names.
+ * Messages are of the form:  { message_name : <value> }.
+ *
+ * PSInstance will then not generate events but instead cause the handler to be
+ * called upon message arrival.  If handler is NULL then the current handler
+ * will be removed. Example usage:
+ *
+ * JavaScript:
+ *   nacl_module.postMessage({'foo': 123});
+ *
+ * C:
+ *   void MyMessageHandler(struct PP_Var key,
+ *                         struct PP_Var value,
+ *                         void* user_data) {
+ *     assert(key.type == PP_VARTYPE_STRING);
+ *     assert(value.type == PP_VARTYPE_INT32));
+ *     assert(value.value.as_int == 123);
+ *   }
+ *   ...
+ *   PSInstanceRegisterMessageHandler("foo", &MyMessageHandler, NULL); */
+void PSEventRegisterMessageHandler(const char* message_name,
+                                   PSMessageHandler_t handler,
+                                   void* user_data);
 
 EXTERN_C_END
 

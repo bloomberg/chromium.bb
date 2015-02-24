@@ -13,7 +13,7 @@
       'DEPS': ['ppapi_simple', 'nacl_io'],
       # Order matters here: gtest has a "main" function that will be used if
       # referenced before ppapi.
-      'LIBS': ['ppapi_simple', 'gmock', 'ppapi', 'gtest', 'nacl_io', 'ppapi_cpp', 'pthread'],
+      'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'gmock', 'ppapi', 'gtest', 'nacl_io', 'pthread'],
       'CXXFLAGS': ['-Wno-sign-compare']
     }
   ],

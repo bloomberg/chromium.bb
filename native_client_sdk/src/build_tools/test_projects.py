@@ -336,8 +336,7 @@ def main(args):
   parser.add_argument('-b', '--build',
       help='Build each project before testing.', action='store_true')
   parser.add_argument('--retry-times',
-      help='Number of types to retry on failure (Default: %default)',
-      type=int, default=1)
+      help='Number of types to retry on failure', type=int, default=1)
   parser.add_argument('projects', nargs='*')
 
   options = parser.parse_args(args)

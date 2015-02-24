@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #include "ppapi_simple/ps.h"
 #include "ppapi_simple/ps_interface.h"
 
-#define DEFINE_INTERFACE_FUNC(Name)                         \
-  static const PPB_##Name* s_##Name;                        \
+#define DEFINE_INTERFACE_FUNC(Name)  \
+  static const PPB_##Name* s_##Name; \
   const PPB_##Name* PSInterface##Name() { return s_##Name; }
 
 DEFINE_INTERFACE_FUNC(Audio)
@@ -22,6 +22,7 @@ DEFINE_INTERFACE_FUNC(Graphics2D)
 DEFINE_INTERFACE_FUNC(Graphics3D)
 DEFINE_INTERFACE_FUNC(ImageData)
 DEFINE_INTERFACE_FUNC(Instance)
+DEFINE_INTERFACE_FUNC(InputEvent)
 DEFINE_INTERFACE_FUNC(Messaging)
 DEFINE_INTERFACE_FUNC(MessageLoop)
 DEFINE_INTERFACE_FUNC(MouseCursor)
@@ -29,13 +30,14 @@ DEFINE_INTERFACE_FUNC(URLLoader)
 DEFINE_INTERFACE_FUNC(URLRequestInfo)
 DEFINE_INTERFACE_FUNC(URLResponseInfo)
 DEFINE_INTERFACE_FUNC(Var)
+DEFINE_INTERFACE_FUNC(VarArray)
 DEFINE_INTERFACE_FUNC(VarArrayBuffer)
+DEFINE_INTERFACE_FUNC(VarDictionary)
 DEFINE_INTERFACE_FUNC(View)
 DEFINE_INTERFACE_FUNC(WebSocket)
 
-
-#define REQUEST_INTERFACE(x, y)                        \
-  s_##x = static_cast<const PPB_##x*>(PSGetInterface(PPB_ ## y ##_INTERFACE));
+#define REQUEST_INTERFACE(x, y) \
+  s_##x = (const PPB_##x*)(PSGetInterface(PPB_##y##_INTERFACE));
 
 void PSInterfaceInit() {
   REQUEST_INTERFACE(Audio, AUDIO)
@@ -51,6 +53,7 @@ void PSInterfaceInit() {
   REQUEST_INTERFACE(Graphics3D, GRAPHICS_3D)
   REQUEST_INTERFACE(ImageData, IMAGEDATA)
   REQUEST_INTERFACE(Instance, INSTANCE)
+  REQUEST_INTERFACE(InputEvent, INPUT_EVENT)
   REQUEST_INTERFACE(Messaging, MESSAGING)
   REQUEST_INTERFACE(MessageLoop, MESSAGELOOP)
   REQUEST_INTERFACE(MouseCursor, MOUSECURSOR)
@@ -58,7 +61,9 @@ void PSInterfaceInit() {
   REQUEST_INTERFACE(URLRequestInfo, URLREQUESTINFO)
   REQUEST_INTERFACE(URLResponseInfo, URLRESPONSEINFO)
   REQUEST_INTERFACE(Var, VAR)
+  REQUEST_INTERFACE(VarArray, VAR_ARRAY)
   REQUEST_INTERFACE(VarArrayBuffer, VAR_ARRAY_BUFFER)
+  REQUEST_INTERFACE(VarDictionary, VAR_DICTIONARY)
   REQUEST_INTERFACE(View, VIEW)
   REQUEST_INTERFACE(WebSocket, WEBSOCKET)
 }

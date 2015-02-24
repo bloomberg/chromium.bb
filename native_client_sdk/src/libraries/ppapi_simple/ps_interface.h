@@ -22,6 +22,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/c/ppb_messaging.h"
@@ -31,7 +32,9 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
+#include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
 
@@ -51,6 +54,7 @@ const PPB_Gamepad* PSInterfaceGamepad();
 const PPB_Graphics2D* PSInterfaceGraphics2D();
 const PPB_Graphics3D* PSInterfaceGraphics3D();
 const PPB_ImageData* PSInterfaceImageData();
+const PPB_InputEvent* PSInterfaceInputEvent();
 const PPB_Instance* PSInterfaceInstance();
 const PPB_Messaging* PSInterfaceMessaging();
 const PPB_MessageLoop* PSInterfaceMessageLoop();
@@ -59,7 +63,9 @@ const PPB_URLLoader* PSInterfaceURLLoader();
 const PPB_URLRequestInfo* PSInterfaceURLRequestInfo();
 const PPB_URLResponseInfo* PSInterfaceURLResponseInfo();
 const PPB_Var* PSInterfaceVar();
+const PPB_VarArray* PSInterfaceVarArray();
 const PPB_VarArrayBuffer* PSInterfaceVarArrayBuffer();
+const PPB_VarDictionary* PSInterfaceVarDictionary();
 const PPB_View* PSInterfaceView();
 const PPB_WebSocket* PSInterfaceWebSocket();
 

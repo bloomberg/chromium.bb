@@ -14,6 +14,7 @@
 #include <ppapi/c/ppb_input_event.h>
 #include <ppapi/cpp/fullscreen.h>
 #include <ppapi/cpp/input_event.h>
+#include <ppapi/cpp/instance_handle.h>
 #include <ppapi/cpp/var.h>
 #include <ppapi/cpp/var_array.h>
 #include <ppapi/cpp/var_array_buffer.h>
@@ -274,7 +275,7 @@ void Life::HandleEvent(PSEvent* ps_event) {
         }
 
         case PP_INPUTEVENT_TYPE_KEYDOWN: {
-          pp::Fullscreen fullscreen(PSInstance::GetInstance());
+          pp::Fullscreen fullscreen((pp::InstanceHandle(PSGetInstanceId())));
           bool isFullscreen = fullscreen.IsFullscreen();
           fullscreen.SetFullscreen(!isFullscreen);
           break;

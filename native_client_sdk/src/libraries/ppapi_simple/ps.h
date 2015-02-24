@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -52,18 +52,6 @@ PP_Instance PSGetInstanceId(void);
  * to the interface, or NULL if not found or not available.
  */
 const void* PSGetInterface(const char *name);
-
-/**
- * PSUserCreateInstance
- *
- * Prototype for the user provided function which creates and configures
- * the instance object.  This function is defined by one of the macros below,
- * or by the equivalent macro in one of the other headers.  For 'C'
- * development, one of the basic instances which support C callback are used.
- * For C++, this function should instantiate the user defined instance.  See
- * the two macros below.
- */
-extern void* PSUserCreateInstance(PP_Instance inst);
 
 EXTERN_C_END
 

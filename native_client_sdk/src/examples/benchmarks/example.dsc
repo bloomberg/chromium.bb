@@ -24,8 +24,8 @@
         'thread_pool.h',
         'thread_pool.cc'
       ],
-      'DEPS': ['ppapi_simple', 'nacl_io'],
-      'LIBS': ['ppapi_simple', 'nacl_io', 'sdk_util', 'ppapi_cpp', 'ppapi', 'pthread']
+      'DEPS': [],
+      'LIBS': ['sdk_util', 'ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

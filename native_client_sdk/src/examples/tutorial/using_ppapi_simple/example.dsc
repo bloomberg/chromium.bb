@@ -6,8 +6,8 @@
       'NAME' : 'using_ppapi_simple',
       'TYPE' : 'main',
       'SOURCES' : ['hello_world.c'],
-      'DEPS': ['ppapi_simple', 'nacl_io', 'ppapi_cpp'],
-      'LIBS': ['ppapi_simple', 'nacl_io', 'ppapi_cpp', 'ppapi', 'pthread']
+      'DEPS': ['ppapi_simple', 'nacl_io'],
+      'LIBS': ['ppapi_simple', 'nacl_io', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

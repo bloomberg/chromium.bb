@@ -5,8 +5,8 @@
       'NAME' : 'pi_generator',
       'TYPE' : 'main',
       'SOURCES' : ['pi_generator.cc'],
-      'DEPS': ['ppapi_simple', 'nacl_io', 'ppapi_cpp'],
-      'LIBS': ['ppapi_simple', 'nacl_io', 'ppapi_cpp', 'ppapi', 'pthread']
+      'DEPS': ['ppapi_simple', 'nacl_io'],
+      'LIBS': ['ppapi_simple', 'nacl_io', 'ppapi', 'pthread']
     }
   ],
   'DATA': [
