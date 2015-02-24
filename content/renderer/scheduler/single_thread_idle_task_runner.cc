@@ -10,24 +10,37 @@
 namespace content {
 
 SingleThreadIdleTaskRunner::SingleThreadIdleTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner,
     base::Callback<void(base::TimeTicks*)> deadline_supplier)
-    : task_runner_(task_runner), deadline_supplier_(deadline_supplier) {
+    : idle_priority_task_runner_(idle_priority_task_runner),
+      after_wakeup_task_runner_(after_wakeup_task_runner),
+      deadline_supplier_(deadline_supplier) {
+  DCHECK(idle_priority_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(after_wakeup_task_runner_->RunsTasksOnCurrentThread());
 }
 
 SingleThreadIdleTaskRunner::~SingleThreadIdleTaskRunner() {
 }
 
 bool SingleThreadIdleTaskRunner::RunsTasksOnCurrentThread() const {
-  return task_runner_->RunsTasksOnCurrentThread();
+  return idle_priority_task_runner_->RunsTasksOnCurrentThread();
 }
 
 void SingleThreadIdleTaskRunner::PostIdleTask(
     const tracked_objects::Location& from_here,
     const IdleTask& idle_task) {
-  task_runner_->PostTask(
+  idle_priority_task_runner_->PostTask(
       from_here,
       base::Bind(&SingleThreadIdleTaskRunner::RunTask, this, idle_task));
+}
+
+void SingleThreadIdleTaskRunner::PostIdleTaskAfterWakeup(
+    const tracked_objects::Location& from_here,
+    const IdleTask& idle_task) {
+  after_wakeup_task_runner_->PostTask(
+      from_here, base::Bind(&SingleThreadIdleTaskRunner::PostIdleTask, this,
+                            from_here, idle_task));
 }
 
 void SingleThreadIdleTaskRunner::RunTask(IdleTask idle_task) {

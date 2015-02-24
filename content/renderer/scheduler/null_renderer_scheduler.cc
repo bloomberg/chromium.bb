@@ -13,7 +13,7 @@ namespace {
 
 class NullIdleTaskRunner : public SingleThreadIdleTaskRunner {
  public:
-  NullIdleTaskRunner(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  NullIdleTaskRunner();
   void PostIdleTask(const tracked_objects::Location& from_here,
                     const IdleTask& idle_task) override;
 
@@ -23,9 +23,9 @@ class NullIdleTaskRunner : public SingleThreadIdleTaskRunner {
 
 }  // namespace
 
-NullIdleTaskRunner::NullIdleTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : SingleThreadIdleTaskRunner(task_runner,
+NullIdleTaskRunner::NullIdleTaskRunner()
+    : SingleThreadIdleTaskRunner(nullptr,
+                                 nullptr,
                                  base::Callback<void(base::TimeTicks*)>()) {
 }
 
@@ -39,7 +39,7 @@ void NullIdleTaskRunner::PostIdleTask(
 
 NullRendererScheduler::NullRendererScheduler()
     : task_runner_(base::MessageLoopProxy::current()),
-      idle_task_runner_(new NullIdleTaskRunner(task_runner_)) {
+      idle_task_runner_(new NullIdleTaskRunner()) {
 }
 
 NullRendererScheduler::~NullRendererScheduler() {

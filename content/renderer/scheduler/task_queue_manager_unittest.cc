@@ -284,7 +284,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotStayDelayed) {
 
 TEST_F(TaskQueueManagerTest, ManualPumping) {
   Initialize(1u);
-  manager_->SetAutoPump(0, false);
+  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -308,7 +308,7 @@ TEST_F(TaskQueueManagerTest, ManualPumping) {
 
 TEST_F(TaskQueueManagerTest, ManualPumpingToggle) {
   Initialize(1u);
-  manager_->SetAutoPump(0, false);
+  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -320,7 +320,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingToggle) {
   EXPECT_FALSE(test_task_runner_->HasPendingTask());
 
   // When pumping is enabled the task runs normally.
-  manager_->SetAutoPump(0, true);
+  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_POLICY);
   EXPECT_TRUE(test_task_runner_->HasPendingTask());
   selector_->AppendQueueToService(0);
   test_task_runner_->RunUntilIdle();
@@ -349,7 +349,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning) {
 
 TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
   Initialize(1u);
-  manager_->SetAutoPump(0, false);
+  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -373,7 +373,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
 
 TEST_F(TaskQueueManagerTest, ManualPumpingWithNonEmptyWorkQueue) {
   Initialize(1u);
-  manager_->SetAutoPump(0, false);
+  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -582,5 +582,79 @@ TEST_F(TaskQueueManagerTest, InterruptWorkBatchForDelayedTask) {
   EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
 }
 
+TEST_F(TaskQueueManagerTest, AutoPumpOnWakeup) {
+  Initialize(2u);
+  EXPECT_EQ(2u, selector_->work_queues().size());
+  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());  // Shouldn't run - no other task to wake TQM.
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());  // Still shouldn't wake TQM.
+
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  test_task_runner_->RunUntilIdle();
+  // Executing a task on an auto pumped queue should wake the TQM.
+  EXPECT_THAT(run_order, ElementsAre(3, 1, 2));
+}
+
+TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupWhenAlreadyAwake) {
+  Initialize(2u);
+  EXPECT_EQ(2u, selector_->work_queues().size());
+  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(0);
+
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2));  // TQM was already awake.
+}
+
+TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupTriggeredByManuallyPumpedQueue) {
+  Initialize(2u);
+  EXPECT_EQ(2u, selector_->work_queues().size());
+  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
+  manager_->SetPumpPolicy(1, TaskQueueManager::MANUAL_PUMP_POLICY);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(0);
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());  // Shouldn't run - no other task to wake TQM.
+
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  // This still shouldn't wake TQM as manual queue was not pumped.
+  EXPECT_TRUE(run_order.empty());
+
+  manager_->PumpQueue(1);
+  test_task_runner_->RunUntilIdle();
+  // Executing a task on an auto pumped queue should wake the TQM.
+  EXPECT_THAT(run_order, ElementsAre(2, 1));
+}
+
 }  // namespace
 }  // namespace content
+

@@ -23,11 +23,16 @@ class SingleThreadIdleTaskRunner
   typedef base::Callback<void(base::TimeTicks)> IdleTask;
 
   SingleThreadIdleTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner,
       base::Callback<void(base::TimeTicks*)> deadline_supplier);
 
   virtual void PostIdleTask(const tracked_objects::Location& from_here,
                             const IdleTask& idle_task);
+
+  virtual void PostIdleTaskAfterWakeup(
+      const tracked_objects::Location& from_here,
+      const IdleTask& idle_task);
 
   bool RunsTasksOnCurrentThread() const;
 
@@ -39,7 +44,8 @@ class SingleThreadIdleTaskRunner
 
   void RunTask(IdleTask idle_task);
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner_;
   base::Callback<void(base::TimeTicks*)> deadline_supplier_;
   DISALLOW_COPY_AND_ASSIGN(SingleThreadIdleTaskRunner);
 };

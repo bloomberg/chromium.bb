@@ -104,12 +104,11 @@ void AppendToVectorReentrantTask(
   }
 }
 
-void IdleTestTask(bool* task_run,
+void IdleTestTask(int* run_count,
                   base::TimeTicks* deadline_out,
                   base::TimeTicks deadline) {
-  EXPECT_FALSE(*task_run);
+  (*run_count)++;
   *deadline_out = deadline;
-  *task_run = true;
 }
 
 void RepostingIdleTestTask(
@@ -201,28 +200,28 @@ TEST_F(RendererSchedulerImplTest, TestRentrantTask) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
-  bool task_run = false;
+  int run_count = 0;
   base::TimeTicks expected_deadline =
       clock_->Now() + base::TimeDelta::FromMilliseconds(2300);
   base::TimeTicks deadline_in_task;
 
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(100));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &task_run, &deadline_in_task));
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
 
   RunUntilIdle();
-  EXPECT_FALSE(task_run);  // Shouldn't run yet as no WillBeginFrame.
+  EXPECT_EQ(0, run_count);  // Shouldn't run yet as no WillBeginFrame.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   RunUntilIdle();
-  EXPECT_FALSE(task_run);  // Shouldn't run as no DidCommitFrameToCompositor.
+  EXPECT_EQ(0, run_count);  // Shouldn't run as no DidCommitFrameToCompositor.
 
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1200));
   scheduler_->DidCommitFrameToCompositor();
   RunUntilIdle();
-  EXPECT_FALSE(task_run);  // We missed the deadline.
+  EXPECT_EQ(0, run_count);  // We missed the deadline.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
@@ -230,7 +229,7 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(800));
   scheduler_->DidCommitFrameToCompositor();
   RunUntilIdle();
-  EXPECT_TRUE(task_run);
+  EXPECT_EQ(1, run_count);
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
@@ -276,12 +275,74 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   EXPECT_EQ(2, run_count);
 }
 
+TEST_F(RendererSchedulerImplTest, TestPostIdleTaskAfterWakeup) {
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTaskAfterWakeup(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Shouldn't run yet as no other task woke up the scheduler.
+  EXPECT_EQ(0, run_count);
+
+  idle_task_runner_->PostIdleTaskAfterWakeup(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Another after wakeup idle task shouldn't wake the scheduler.
+  EXPECT_EQ(0, run_count);
+
+  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+
+  RunUntilIdle();
+  EnableIdleTasks();  // Must start a new idle period before idle task runs.
+  RunUntilIdle();
+  // Execution of default task queue task should trigger execution of idle task.
+  EXPECT_EQ(2, run_count);
+}
+
+TEST_F(RendererSchedulerImplTest, TestPostIdleTaskAfterWakeupWhileAwake) {
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+  idle_task_runner_->PostIdleTaskAfterWakeup(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  RunUntilIdle();
+  EnableIdleTasks();  // Must start a new idle period before idle task runs.
+  RunUntilIdle();
+  // Should run as the scheduler was already awakened by the normal task.
+  EXPECT_EQ(1, run_count);
+}
+
+TEST_F(RendererSchedulerImplTest, TestPostIdleTaskWakesAfterWakeupIdleTask) {
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTaskAfterWakeup(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Must start a new idle period before after-wakeup idle task runs.
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Normal idle task should wake up after-wakeup idle task.
+  EXPECT_EQ(2, run_count);
+}
+
 TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
-  bool task_run = false;
+  int run_count = 0;
 
   base::TimeTicks deadline_in_task;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &task_run, &deadline_in_task));
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
 
   // Trigger the beginning of an idle period for 1000ms.
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
@@ -297,7 +358,7 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
 
   RunUntilIdle();
-  EXPECT_FALSE(task_run);  // Not currently in an idle period.
+  EXPECT_EQ(0, run_count);  // Not currently in an idle period.
 
   // Trigger the start of the idle period before the task to end the previous
   // idle period has been triggered.
@@ -310,7 +371,7 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(300));
 
   RunUntilIdle();
-  EXPECT_TRUE(task_run);  // We should still be in the new idle period.
+  EXPECT_EQ(1, run_count);  // We should still be in the new idle period.
 }
 
 TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {

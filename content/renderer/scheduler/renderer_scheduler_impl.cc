@@ -23,6 +23,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                                renderer_task_queue_selector_.get())),
       control_task_runner_(
           task_queue_manager_->TaskRunnerForQueue(CONTROL_TASK_QUEUE)),
+      control_task_after_wakeup_runner_(task_queue_manager_->TaskRunnerForQueue(
+          CONTROL_TASK_AFTER_WAKEUP_QUEUE)),
       default_task_runner_(
           task_queue_manager_->TaskRunnerForQueue(DEFAULT_TASK_QUEUE)),
       compositor_task_runner_(
@@ -41,12 +43,24 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       &RendererSchedulerImpl::EndIdlePeriod, weak_renderer_scheduler_ptr_));
   idle_task_runner_ = make_scoped_refptr(new SingleThreadIdleTaskRunner(
       task_queue_manager_->TaskRunnerForQueue(IDLE_TASK_QUEUE),
+      control_task_after_wakeup_runner_,
       base::Bind(&RendererSchedulerImpl::CurrentIdleTaskDeadlineCallback,
                  weak_renderer_scheduler_ptr_)));
+
   renderer_task_queue_selector_->SetQueuePriority(
       CONTROL_TASK_QUEUE, RendererTaskQueueSelector::CONTROL_PRIORITY);
+
+  renderer_task_queue_selector_->SetQueuePriority(
+      CONTROL_TASK_AFTER_WAKEUP_QUEUE,
+      RendererTaskQueueSelector::CONTROL_PRIORITY);
+  task_queue_manager_->SetPumpPolicy(
+      CONTROL_TASK_AFTER_WAKEUP_QUEUE,
+      TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
+
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
-  task_queue_manager_->SetAutoPump(IDLE_TASK_QUEUE, false);
+  task_queue_manager_->SetPumpPolicy(IDLE_TASK_QUEUE,
+                                     TaskQueueManager::MANUAL_PUMP_POLICY);
+
   // TODO(skyostil): Increase this to 4 (crbug.com/444764).
   task_queue_manager_->SetWorkBatchSize(1);
 
@@ -165,7 +179,7 @@ void RendererSchedulerImpl::UpdateForInputEvent(
   if (input_stream_state_ != new_input_stream_state) {
     // Update scheduler policy if we should start a new policy mode.
     input_stream_state_ = new_input_stream_state;
-    policy_may_need_update_.SetLocked(true);
+    policy_may_need_update_.SetWhileLocked(true);
     PostUpdatePolicyOnControlRunner(base::TimeDelta());
   }
   last_input_time_ = Now();
@@ -242,7 +256,7 @@ void RendererSchedulerImpl::UpdatePolicy() {
 
   base::AutoLock lock(incoming_signals_lock_);
   base::TimeTicks now;
-  policy_may_need_update_.SetLocked(false);
+  policy_may_need_update_.SetWhileLocked(false);
 
   Policy new_policy = NORMAL_PRIORITY_POLICY;
   if (input_stream_state_ != INPUT_INACTIVE) {
@@ -348,7 +362,8 @@ RendererSchedulerImpl::PollableNeedsUpdateFlag::PollableNeedsUpdateFlag(
 RendererSchedulerImpl::PollableNeedsUpdateFlag::~PollableNeedsUpdateFlag() {
 }
 
-void RendererSchedulerImpl::PollableNeedsUpdateFlag::SetLocked(bool value) {
+void RendererSchedulerImpl::PollableNeedsUpdateFlag::SetWhileLocked(
+    bool value) {
   write_lock_->AssertAcquired();
   base::subtle::Release_Store(&flag_, value);
 }
@@ -364,12 +379,14 @@ const char* RendererSchedulerImpl::TaskQueueIdToString(QueueId queue_id) {
       return "default_tq";
     case COMPOSITOR_TASK_QUEUE:
       return "compositor_tq";
+    case LOADING_TASK_QUEUE:
+      return "loading_tq";
     case IDLE_TASK_QUEUE:
       return "idle_tq";
     case CONTROL_TASK_QUEUE:
       return "control_tq";
-    case LOADING_TASK_QUEUE:
-      return "loading_tq";
+    case CONTROL_TASK_AFTER_WAKEUP_QUEUE:
+      return "control_after_wakeup_tq";
     default:
       NOTREACHED();
       return nullptr;

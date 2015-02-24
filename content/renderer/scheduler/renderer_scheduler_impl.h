@@ -54,9 +54,10 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   enum QueueId {
     DEFAULT_TASK_QUEUE,
     COMPOSITOR_TASK_QUEUE,
+    LOADING_TASK_QUEUE,
     IDLE_TASK_QUEUE,
     CONTROL_TASK_QUEUE,
-    LOADING_TASK_QUEUE,
+    CONTROL_TASK_AFTER_WAKEUP_QUEUE,
     // Must be the last entry.
     TASK_QUEUE_COUNT,
   };
@@ -79,9 +80,9 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
     ~PollableNeedsUpdateFlag();
 
     // Set the flag. May only be called if |write_lock| is held.
-    void SetLocked(bool value);
+    void SetWhileLocked(bool value);
 
-    // Returns true iff the flag was set to true.
+    // Returns true iff the flag is set to true.
     bool IsSet() const;
 
    private:
@@ -135,6 +136,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   scoped_ptr<RendererTaskQueueSelector> renderer_task_queue_selector_;
   scoped_ptr<TaskQueueManager> task_queue_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> control_task_after_wakeup_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;

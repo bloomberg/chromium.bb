@@ -46,6 +46,23 @@ class TaskQueueSelector;
 //
 class CONTENT_EXPORT TaskQueueManager {
  public:
+  // Keep TaskQueue::PumpPolicyToString in sync with this enum.
+  enum PumpPolicy {
+    // Tasks posted to an incoming queue with an AUTO_PUMP_POLICY will be
+    // automatically scheduled for execution or transferred to the work queue
+    // automatically.
+    AUTO_PUMP_POLICY,
+    // Tasks posted to an incoming queue with an AUTO_PUMP_AFTER_WAKEUP_POLICY
+    // will be scheduled for execution or transferred to the work queue
+    // automatically but only after another queue has executed a task.
+    AUTO_PUMP_AFTER_WAKEUP_POLICY,
+    // Tasks posted to an incoming queue with a MANUAL_PUMP_POLICY will not be
+    // automatically scheduled for execution or transferred to the work queue.
+    // Instead, the selector should call PumpQueue() when necessary to bring
+    // in new tasks for execution.
+    MANUAL_PUMP_POLICY
+  };
+
   // Create a task queue manager with |task_queue_count| task queues.
   // |main_task_runner| identifies the thread on which where the tasks are
   // eventually run. |selector| is used to choose which task queue to service.
@@ -59,11 +76,9 @@ class CONTENT_EXPORT TaskQueueManager {
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForQueue(
       size_t queue_index) const;
 
-  // If |auto_pump| is false, tasks posted to the given incoming queue will not
-  // be automatically scheduled for execution or transferred to the work queue.
-  // Instead, the selector should call PumpQueue() when necessary to bring in
-  // new tasks for execution.
-  void SetAutoPump(size_t queue_index, bool auto_pump);
+  // Sets the pump policy for the |queue_index| to |pump_policy|. By
+  // default queues are created with AUTO_PUMP_POLICY.
+  void SetPumpPolicy(size_t queue_index, PumpPolicy pump_policy);
 
   // Reloads new tasks from the incoming queue for |queue_index| into the work
   // queue, regardless of whether the work queue is empty or not. After this,
@@ -71,8 +86,8 @@ class CONTENT_EXPORT TaskQueueManager {
   // scheduled for execution.
   //
   // This function only needs to be called if automatic pumping is disabled
-  // for |queue_index|. See |SetQueueAutoPump|. By default automatic pumping is
-  // enabled for all queues.
+  // for |queue_index|. See |SetQueueAutoPumpPolicy|. By default automatic
+  // pumping is enabled for all queues.
   void PumpQueue(size_t queue_index);
 
   // Returns true if there no tasks in either the work or incoming task queue
@@ -95,6 +110,11 @@ class CONTENT_EXPORT TaskQueueManager {
  private:
   friend class internal::TaskQueue;
 
+  enum WorkQueueUpdateEventType {
+    BEFORE_WAKEUP_EVENT_TYPE,
+    AFTER_WAKEUP_EVENT_TYPE
+  };
+
   // Called by the task queue to register a new pending task and allocate a
   // sequence number for it.
   void DidQueueTask(base::PendingTask* pending_task);
@@ -107,11 +127,13 @@ class CONTENT_EXPORT TaskQueueManager {
   // Use the selector to choose a pending task and run it.
   void DoWork(bool posted_from_main_thread);
 
-  // Reloads any empty work queues which have automatic pumping enabled.
+  // Reloads any empty work queues which have automatic pumping enabled and
+  // which are eligible to be auto pumped at the given |event_type|.
   // Returns true if any work queue has tasks after doing this.
   // |next_pending_delayed_task| should be the time of the next known delayed
   // task. It is updated if any task is found which should run earlier.
-  bool UpdateWorkQueues(base::TimeTicks* next_pending_delayed_task);
+  bool UpdateWorkQueues(base::TimeTicks* next_pending_delayed_task,
+                        WorkQueueUpdateEventType event_type);
 
   // Chooses the next work queue to service. Returns true if |out_queue_index|
   // indicates the queue from which the next task should be run, false to
