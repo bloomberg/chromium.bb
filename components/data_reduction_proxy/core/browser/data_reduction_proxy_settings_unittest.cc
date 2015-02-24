@@ -7,17 +7,17 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "net/http/http_auth.h"
-#include "net/http/http_auth_cache.h"
+#include "net/socket/socket_test_util.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,8 +151,105 @@ TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
   EXPECT_EQ(expected_total_received_content_length, received_content_length);
 }
 
-// TODO(marq): Add a test to verify that MaybeActivateDataReductionProxy
-// is called when the pref in |settings_| is enabled.
+TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndProbe) {
+  struct TestCase {
+    const char* response_headers;
+    const char* response_body;
+    net::Error net_error_code;
+    bool expected_restricted;
+  };
+  const TestCase kTestCases[] {
+    { "HTTP/1.1 200 OK\r\n\r\n",
+      "OK", net::OK, false,
+    },
+    { "HTTP/1.1 200 OK\r\n\r\n",
+      "Bad", net::OK, true,
+    },
+    { "HTTP/1.1 200 OK\r\n\r\n",
+      "", net::ERR_FAILED, true,
+    },
+    { "HTTP/1.1 200 OK\r\n\r\n",
+      "", net::ERR_ABORTED, true,
+    },
+    // The probe request shouldn't attempt to follow the redirect.
+    { "HTTP/1.1 302 Found\r\nLocation: http://www.google.com/\r\n\r\n",
+      "", net::OK, true,
+    },
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    net::TestURLRequestContext context(true);
+
+    DataReductionProxyTestContext drp_test_context(
+        DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+        DataReductionProxyTestContext::USE_TEST_CONFIGURATOR |
+            DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION,
+        &context);
+
+    context.set_net_log(drp_test_context.net_log());
+    net::MockClientSocketFactory mock_socket_factory;
+    context.set_client_socket_factory(&mock_socket_factory);
+    context.Init();
+
+    // Start with the Data Reduction Proxy disabled.
+    drp_test_context.pref_service()->SetBoolean(
+        prefs::kDataReductionProxyEnabled, false);
+    drp_test_context.InitSettings();
+
+    net::MockRead mock_reads[] = {
+        net::MockRead(test_case.response_headers),
+        net::MockRead(test_case.response_body),
+        net::MockRead(net::SYNCHRONOUS, test_case.net_error_code),
+    };
+    net::StaticSocketDataProvider socket_data_provider(
+        mock_reads, arraysize(mock_reads), nullptr, 0);
+    mock_socket_factory.AddSocketDataProvider(&socket_data_provider);
+
+    // Toggle the pref to trigger the probe.
+    drp_test_context.pref_service()->SetBoolean(
+            prefs::kDataReductionProxyEnabled, true);
+    drp_test_context.RunUntilIdle();
+
+    EXPECT_EQ(test_case.expected_restricted,
+              drp_test_context.test_configurator()->restricted());
+  }
+}
+
+TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
+  DataReductionProxyTestContext drp_test_context(
+      DataReductionProxyParams::kAllowed |
+          DataReductionProxyParams::kFallbackAllowed |
+          DataReductionProxyParams::kPromoAllowed,
+      TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+      DataReductionProxyTestContext::USE_MOCK_CONFIG |
+          DataReductionProxyTestContext::USE_TEST_CONFIGURATOR |
+          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION |
+          DataReductionProxyTestContext::USE_MOCK_SERVICE);
+
+  // The proxy is enabled initially.
+  drp_test_context.config()->SetStateForTest(true, false, false, true);
+  drp_test_context.InitSettings();
+
+  // The pref is disabled, so correspondingly should be the proxy.
+  EXPECT_CALL(*drp_test_context.mock_config(),
+              SetProxyPrefs(false, false, false));
+  drp_test_context.pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                              false);
+
+  // The pref is enabled, so correspondingly should be the proxy.
+  EXPECT_CALL(*drp_test_context.mock_config(),
+              SetProxyPrefs(true, false, false));
+  drp_test_context.pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                              true);
+}
+
 TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // Initialize the pref member in |settings_| without the usual callback
   // so it won't trigger MaybeActivateDataReductionProxy when the pref value
@@ -175,16 +272,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // The proxy is disabled initially. Probes should not be emitted to change
   // state.
   CheckMaybeActivateDataReductionProxy(false, true, false, false, false);
-}
-
-TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {
-  settings_->InitPrefMembers();
-  // The proxy is enabled initially.
-  test_context_->config()->SetStateForTest(true, false, false, true);
-  // The pref is disabled, so correspondingly should be the proxy.
-  CheckOnPrefChange(false, false, false);
-  // The pref is enabled, so correspondingly should be the proxy.
-  CheckOnPrefChange(true, true, false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOn) {

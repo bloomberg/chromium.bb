@@ -46,7 +46,8 @@ class DataReductionProxyConfigTest : public testing::Test {
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
             ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
         DataReductionProxyTestContext::USE_MOCK_CONFIG |
-            DataReductionProxyTestContext::USE_TEST_CONFIGURATOR));
+            DataReductionProxyTestContext::USE_TEST_CONFIGURATOR |
+            DataReductionProxyTestContext::USE_MOCK_SERVICE));
 
     ResetSettings(true, true, false, true, false);
 
@@ -120,7 +121,7 @@ class DataReductionProxyConfigTest : public testing::Test {
                                request_succeeded && (response == "OK")),
                    request_succeeded, 1);
     MockDataReductionProxyService* service =
-        test_context_->data_reduction_proxy_service();
+        test_context_->mock_data_reduction_proxy_service();
     TestResponder responder;
     responder.response = response;
     responder.status =

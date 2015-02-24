@@ -593,15 +593,10 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     test_context_.reset(new DataReductionProxyTestContext(
         DataReductionProxyParams::kAllowed,
         TestDataReductionProxyParams::HAS_ORIGIN,
-        DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION));
-    TestingPrefServiceSimple* simple_prefs = test_context_->pref_service();
-    RegisterSimpleProfilePrefs(simple_prefs->registry());
-
-    BooleanPrefMember enabled;
-    enabled.Init(prefs::kDataReductionProxyEnabled, simple_prefs);
-    enabled.SetValue(true);
-    enabled.Destroy();
-
+        DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION,
+        &context_));
+    test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                              true);
     test_context_->InitSettings();
 
     network_delegate_ = test_context_->io_data()->CreateNetworkDelegate(
@@ -616,7 +611,6 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
         test_context_->io_data()->CreateInterceptor().Pass()));
     context_.set_job_factory(job_factory_.get());
 
-    test_context_->io_data()->InitOnUIThread(simple_prefs);
     test_context_->configurator()->Enable(false, true,
                                           params()->origin().ToURI(),
                                           std::string(), std::string());

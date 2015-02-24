@@ -68,6 +68,10 @@ net::URLFetcher* DataReductionProxyService::GetURLFetcherForProbe(
   static const int kMaxRetries = 5;
   fetcher->SetMaxRetriesOn5xx(kMaxRetries);
   fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
+  // The probe should not be redirected. Since the probe will inevitably fail if
+  // it gets redirected somewhere else (e.g. by a captive portal), short circuit
+  // that by giving up on the probe if it gets redirected.
+  fetcher->SetStopOnRedirect(true);
   return fetcher;
 }
 

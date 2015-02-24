@@ -187,7 +187,8 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         TestDataReductionProxyParams::HAS_EVERYTHING &
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
             ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-        DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
+        DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS,
+        &context_));
     std::string spec;
     base::TrimString(proxy_.GetURL("/").spec(), "/", &spec);
     test_context_->config()->test_params()->set_origin(

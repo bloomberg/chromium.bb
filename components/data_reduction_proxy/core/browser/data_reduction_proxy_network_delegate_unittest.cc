@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -86,7 +85,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
             TestDataReductionProxyParams::HAS_EVERYTHING &
                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
+            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS,
+            &context_));
 
     request_options_.reset(
         new DataReductionProxyRequestOptions(
@@ -415,9 +415,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
 TEST_F(DataReductionProxyNetworkDelegateTest, TotalLengths) {
   const int64 kOriginalLength = 200;
   const int64 kReceivedLength = 100;
-
-  PrefRegistrySimple* registry = pref_service()->registry();
-  data_reduction_proxy::RegisterSimpleProfilePrefs(registry);
 
   data_reduction_proxy_network_delegate_->data_reduction_proxy_io_data_ =
       io_data();

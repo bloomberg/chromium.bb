@@ -22,6 +22,7 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class NetLog;
+class URLRequestContext;
 class URLRequestContextGetter;
 }
 
@@ -85,6 +86,8 @@ class DataReductionProxyTestContext {
     // Primarily used for testing of the |DataReductionProxySettings| object
     // itself.
     SKIP_SETTINGS_INITIALIZATION = 0x4,
+    // Permits mocking of the underlying |DataReductionProxyService|.
+    USE_MOCK_SERVICE = 0x8,
   };
 
   // Creates a new DataReductionProxyTestContext. |params_flags| controls what
@@ -92,6 +95,16 @@ class DataReductionProxyTestContext {
   // |params_definitions| is used to control the HasNames enum for the
   // underlying |TestDataReductionProxyParams|. |test_context_flags| is the
   // |TestContextOptions| enum to control what underlying objects are created.
+  // |request_context| is the |URLRequestContext| that should be used for all
+  // requests made by underlying objects, such as the probe request.
+  // |request_context| must outlive |this|.
+  explicit DataReductionProxyTestContext(
+      int params_flags,
+      unsigned int params_definitions,
+      unsigned int test_context_flags,
+      net::URLRequestContext* request_context);
+
+  // Convenience constructor that uses a dummy |URLRequestContextGetter|.
   explicit DataReductionProxyTestContext(int params_flags,
                                          unsigned int params_definitions,
                                          unsigned int test_context_flags);
@@ -105,9 +118,10 @@ class DataReductionProxyTestContext {
   // |SKIP_SETTINGS_INITIALIZATION| was specified.
   void InitSettings();
 
-  // Creates a |MockDataReductionProxyService| object. Can only be called if
-  // |SKIP_SETTINGS_INITIALIZATION| was specified.
-  scoped_ptr<MockDataReductionProxyService> CreateDataReductionProxyService();
+  // Creates a |DataReductionProxyService| object, or a
+  // |MockDataReductionProxyService| if |USE_MOCK_SERVICE| was specified. Can
+  // only be called if |SKIP_SETTINGS_INITIALIZATION| was specified.
+  scoped_ptr<DataReductionProxyService> CreateDataReductionProxyService();
 
   // Returns the underlying |TestDataReductionProxyConfigurator|. This can only
   // be called if |USE_TEST_CONFIGURATOR| was specified.
@@ -117,9 +131,11 @@ class DataReductionProxyTestContext {
   // called if |USE_MOCK_CONFIG| was specified.
   MockDataReductionProxyConfig* mock_config() const;
 
+  DataReductionProxyService* data_reduction_proxy_service() const;
+
   // Returns the underlying |MockDataReductionProxyService|. This can only
-  // be called if |SKIP_SETTINGS_INITIALIZATION| was not specified.
-  MockDataReductionProxyService* data_reduction_proxy_service() const;
+  // be called if |USE_MOCK_SERVICE| was specified.
+  MockDataReductionProxyService* mock_data_reduction_proxy_service() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
     return task_runner_;
@@ -133,8 +149,8 @@ class DataReductionProxyTestContext {
     return &net_log_;
   }
 
-  net::URLRequestContextGetter* request_context() const {
-    return request_context_.get();
+  net::URLRequestContextGetter* request_context_getter() const {
+    return request_context_getter_.get();
   }
 
   DataReductionProxyEventStore* event_store() const {
@@ -158,6 +174,13 @@ class DataReductionProxyTestContext {
   }
 
  private:
+  // Creates and initializes the members of this class. Called in the
+  // constructor.
+  void Init(int params_flags, unsigned int params_definitions);
+
+  scoped_ptr<DataReductionProxyService>
+      CreateDataReductionProxyServiceInternal();
+
   unsigned int test_context_flags_;
 
   base::MessageLoopForIO loop_;
@@ -165,12 +188,10 @@ class DataReductionProxyTestContext {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TestingPrefServiceSimple simple_pref_service_;
   net::CapturingNetLog net_log_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   scoped_ptr<TestDataReductionProxyIOData> io_data_;
   scoped_ptr<DataReductionProxySettings> settings_;
-
-  MockDataReductionProxyService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyTestContext);
 };

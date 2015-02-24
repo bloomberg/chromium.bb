@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -48,18 +49,15 @@ void DataReductionProxySettingsTestBase::SetUp() {
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
           ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       DataReductionProxyTestContext::USE_MOCK_CONFIG |
-          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION));
+          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION |
+          DataReductionProxyTestContext::USE_MOCK_SERVICE));
 
-  PrefRegistrySimple* registry = test_context_->pref_service()->registry();
-  registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
-  registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
-  registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate,
-                              0L);
-  registry->RegisterDictionaryPref(kProxy);
-  registry->RegisterBooleanPref(prefs::kDataReductionProxyEnabled, false);
-  registry->RegisterBooleanPref(prefs::kDataReductionProxyAltEnabled, false);
-  registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
-                                false);
+  TestingPrefServiceSimple* pref_service = test_context_->pref_service();
+  pref_service->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
+  pref_service->registry()->RegisterDictionaryPref(kProxy);
+  pref_service->SetBoolean(prefs::kDataReductionProxyEnabled, false);
+  pref_service->SetBoolean(prefs::kDataReductionProxyAltEnabled, false);
+  pref_service->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, false);
 
   //AddProxyToCommandLine();
   ResetSettings(true, true, false, true, false);
@@ -99,6 +97,7 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
   settings->config_ = test_context_->config();
+  settings->prefs_ = test_context_->pref_service();
   settings->data_reduction_proxy_service_ =
       test_context_->CreateDataReductionProxyService();
   test_context_->config()->ResetParamFlagsForTest(flags);
