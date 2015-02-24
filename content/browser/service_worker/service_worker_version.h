@@ -109,6 +109,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                         const GURL& source_url) {}
     // Fires when a version transitions from having a controllee to not.
     virtual void OnNoControllees(ServiceWorkerVersion* version) {}
+    virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version) {}
 
    protected:
     virtual ~Listener() {}
@@ -379,7 +380,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             const ServiceWorkerClientInfo& client_info);
 
   void OnSetCachedMetadata(const GURL& url, const std::vector<char>& data);
+  void OnSetCachedMetadataFinished(int64 callback_id, int result);
   void OnClearCachedMetadata(const GURL& url);
+  void OnClearCachedMetadataFinished(int64 callback_id, int result);
 
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,

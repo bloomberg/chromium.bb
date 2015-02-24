@@ -275,7 +275,7 @@ void CountScriptResources(
 
 class ServiceWorkerBrowserTest : public ContentBrowserTest {
  protected:
-  typedef ServiceWorkerBrowserTest self;
+  using self = ServiceWorkerBrowserTest;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
@@ -321,7 +321,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
                                   public EmbeddedWorkerInstance::Listener {
  public:
-  typedef EmbeddedWorkerBrowserTest self;
+  using self = EmbeddedWorkerBrowserTest;
 
   EmbeddedWorkerBrowserTest()
       : last_worker_status_(EmbeddedWorkerInstance::STOPPED),
@@ -340,7 +340,6 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     worker_ = wrapper()->context()->embedded_worker_registry()->CreateWorker();
     EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker_->status());
     worker_->AddListener(this);
-
 
     const int64 service_worker_version_id = 33L;
     const GURL pattern = embedded_test_server()->GetURL("/");
@@ -429,7 +428,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
 
 class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
  public:
-  typedef ServiceWorkerVersionBrowserTest self;
+  using self = ServiceWorkerVersionBrowserTest;
 
   ~ServiceWorkerVersionBrowserTest() override {}
 
@@ -532,6 +531,30 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->PingWorker();
     version_->OnPingTimeout();
+  }
+
+  void StartWorker(ServiceWorkerStatusCode expected_status) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    base::RunLoop start_run_loop;
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&self::StartOnIOThread, this,
+                                       start_run_loop.QuitClosure(),
+                                       &status));
+    start_run_loop.Run();
+    ASSERT_EQ(expected_status, status);
+  }
+
+  void StopWorker(ServiceWorkerStatusCode expected_status) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    base::RunLoop stop_run_loop;
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&self::StopOnIOThread, this,
+                                       stop_run_loop.QuitClosure(),
+                                       &status));
+    stop_run_loop.Run();
+    ASSERT_EQ(expected_status, status);
   }
 
   void StartOnIOThread(const base::Closure& done,
@@ -665,14 +688,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
                            "/service_worker/nonexistent.js"));
 
   // Start a worker for nonexistent URL.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  base::RunLoop start_run_loop;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&self::StartOnIOThread, this,
-                                     start_run_loop.QuitClosure(),
-                                     &status));
-  start_run_loop.Run();
-  ASSERT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
+  StartWorker(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Install) {
@@ -984,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
 
 class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
  public:
-  typedef ServiceWorkerBlackBoxBrowserTest self;
+  using self = ServiceWorkerBlackBoxBrowserTest;
 
   void FindRegistrationOnIO(const GURL& document_url,
                             ServiceWorkerStatusCode* status,
@@ -1128,6 +1144,64 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossSiteTransfer) {
 
   NavigateToURL(shell(), embedded_test_server()->GetURL(kConfirmPageUrl));
   EXPECT_EQ(kOKTitle2, title_watcher2.WaitAndGetTitle());
+}
+
+class ServiceWorkerVersionBrowserV8CacheTest
+    : public ServiceWorkerVersionBrowserTest,
+      public ServiceWorkerVersion::Listener {
+ public:
+  using self = ServiceWorkerVersionBrowserV8CacheTest;
+  ~ServiceWorkerVersionBrowserV8CacheTest() override {
+    if (version_)
+      version_->RemoveListener(this);
+  }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ServiceWorkerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kV8CacheOptions, "code");
+  }
+  void SetUpRegistrationAndListenerOnIOThread(const std::string& worker_url) {
+    SetUpRegistrationOnIOThread(worker_url);
+    version_->AddListener(this);
+  }
+
+ protected:
+  // ServiceWorkerVersion::Listener overrides
+  void OnCachedMetadataUpdated(ServiceWorkerVersion* version) override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            cache_updated_closure_);
+  }
+
+  base::Closure cache_updated_closure_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationAndListenerOnIOThread, this,
+                           "/service_worker/worker.js"));
+
+  base::RunLoop cached_metadata_run_loop;
+  cache_updated_closure_ = cached_metadata_run_loop.QuitClosure();
+
+  // Start a worker.
+  StartWorker(SERVICE_WORKER_OK);
+
+  // Wait for the matadata is stored. This run loop should finish when
+  // OnCachedMetadataUpdated() is called.
+  cached_metadata_run_loop.Run();
+
+  // Activate the worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  base::RunLoop acrivate_run_loop;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&self::ActivateOnIOThread, this,
+                                     acrivate_run_loop.QuitClosure(), &status));
+  acrivate_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
+  // Stop the worker.
+  StopWorker(SERVICE_WORKER_OK);
+  // Restart the worker.
+  StartWorker(SERVICE_WORKER_OK);
+  // Stop the worker.
+  StopWorker(SERVICE_WORKER_OK);
 }
 
 }  // namespace content

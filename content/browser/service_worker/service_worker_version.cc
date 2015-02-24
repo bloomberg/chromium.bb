@@ -278,18 +278,6 @@ void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
     render_process_host->ReceivedBadMessage();
 }
 
-void DidSetCachedMetadata(int64 callback_id, int result) {
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerVersion::OnSetCachedMetadata",
-                         callback_id, "result", result);
-}
-
-void DidClearCachedMetadata(int64 callback_id, int result) {
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerVersion::OnClearCachedMetadata",
-                         callback_id, "result", result);
-}
-
 }  // namespace
 
 ServiceWorkerVersion::ServiceWorkerVersion(
@@ -1264,7 +1252,16 @@ void ServiceWorkerVersion::OnSetCachedMetadata(const GURL& url,
                            "ServiceWorkerVersion::OnSetCachedMetadata",
                            callback_id, "URL", url.spec());
   script_cache_map_.WriteMetadata(
-      url, data, base::Bind(&DidSetCachedMetadata, callback_id));
+      url, data, base::Bind(&ServiceWorkerVersion::OnSetCachedMetadataFinished,
+                            weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64 callback_id,
+                                                       int result) {
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerVersion::OnSetCachedMetadata",
+                         callback_id, "result", result);
+  FOR_EACH_OBSERVER(Listener, listeners_, OnCachedMetadataUpdated(this));
 }
 
 void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
@@ -1273,7 +1270,16 @@ void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
                            "ServiceWorkerVersion::OnClearCachedMetadata",
                            callback_id, "URL", url.spec());
   script_cache_map_.ClearMetadata(
-      url, base::Bind(&DidClearCachedMetadata, callback_id));
+      url, base::Bind(&ServiceWorkerVersion::OnClearCachedMetadataFinished,
+                      weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64 callback_id,
+                                                         int result) {
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerVersion::OnClearCachedMetadata",
+                         callback_id, "result", result);
+  FOR_EACH_OBSERVER(Listener, listeners_, OnCachedMetadataUpdated(this));
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(
