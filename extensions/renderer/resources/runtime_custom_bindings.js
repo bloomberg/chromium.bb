@@ -41,11 +41,12 @@ if (window == backgroundPage) {
   var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
   var bindDirectoryEntryCallback = function(functionName, apiFunctions) {
     apiFunctions.setCustomCallback(functionName,
-        function(name, request, response) {
-      if (request.callback && response) {
-        var callback = request.callback;
-        request.callback = null;
-
+        function(name, request, callback, response) {
+      if (callback) {
+        if (!response) {
+          callback();
+          return;
+        }
         var fileSystemId = response.fileSystemId;
         var baseName = response.baseName;
         var fs = GetIsolatedFileSystem(fileSystemId);
@@ -191,12 +192,11 @@ binding.registerCustomHook(function(binding, id, contextType) {
   });
 
   apiFunctions.setCustomCallback('getBackgroundPage',
-                                 function(name, request, response) {
-    if (request.callback) {
+                                 function(name, request, callback, response) {
+    if (callback) {
       var bg = runtimeNatives.GetExtensionViews(-1, 'BACKGROUND')[0] || null;
-      request.callback(bg);
+      callback(bg);
     }
-    request.callback = null;
   });
 
   bindDirectoryEntryCallback('getPackageDirectoryEntry', apiFunctions);

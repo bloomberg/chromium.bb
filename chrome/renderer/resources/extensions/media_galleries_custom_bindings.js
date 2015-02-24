@@ -34,23 +34,21 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   // custom callback so that they can instantiate and return an array of file
   // system objects.
   apiFunctions.setCustomCallback('getMediaFileSystems',
-                                 function(name, request, response) {
+                                 function(name, request, callback, response) {
     var result = createFileSystemObjectsAndUpdateMetadata(response);
-    if (request.callback)
-      request.callback(result);
-    request.callback = null;
+    if (callback)
+      callback(result);
   });
 
   apiFunctions.setCustomCallback('addScanResults',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     var result = createFileSystemObjectsAndUpdateMetadata(response);
-    if (request.callback)
-      request.callback(result);
-    request.callback = null;
+    if (callback)
+      callback(result);
   });
 
   apiFunctions.setCustomCallback('addUserSelectedFolder',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     var fileSystems = [];
     var selectedFileSystemName = "";
     if (response && 'mediaFileSystems' in response &&
@@ -62,13 +60,12 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
         selectedFileSystemName = fileSystems[selectedFileSystemIndex].name;
       }
     }
-    if (request.callback)
-      request.callback(fileSystems, selectedFileSystemName);
-    request.callback = null;
+    if (callback)
+      callback(fileSystems, selectedFileSystemName);
   });
 
   apiFunctions.setCustomCallback('dropPermissionForMediaFileSystem',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     var galleryId = response;
 
     if (galleryId) {
@@ -79,9 +76,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
         }
       }
     }
-    if (request.callback)
-      request.callback();
-    request.callback = null;
+    if (callback)
+      callback();
   });
 
   apiFunctions.setHandleRequest('getMediaFileSystemMetadata',
@@ -110,7 +106,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   });
 
   apiFunctions.setCustomCallback('getMetadata',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     if (response.attachedImagesBlobInfo) {
       for (var i = 0; i < response.attachedImagesBlobInfo.length; i++) {
         var blobInfo = response.attachedImagesBlobInfo[i];
@@ -120,9 +116,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       }
     }
 
-    if (request.callback)
-      request.callback(response.metadata);
-    request.callback = null;
+    if (callback)
+      callback(response.metadata);
 
     // The UUID was in position 0 in the setUpdateArgumentsPostValidate
     // function.

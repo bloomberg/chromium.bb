@@ -9,6 +9,7 @@ var binding = require('binding').Binding.create('contextMenus');
 var contextMenuNatives = requireNative('context_menus');
 var sendRequest = require('sendRequest').sendRequest;
 var Event = require('event_bindings').Event;
+var lastError = require('lastError');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -55,8 +56,11 @@ binding.registerCustomHook(function(bindingsAPI) {
     return contextMenus.getIdFromCreateProperties(args[0]);
   });
 
-  apiFunctions.setCustomCallback('create', function(name, request, response) {
-    if (chrome.runtime.lastError) {
+  apiFunctions.setCustomCallback('create',
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
 
@@ -68,33 +72,49 @@ binding.registerCustomHook(function(bindingsAPI) {
       contextMenus.ensureListenerSetup();
       contextMenus.handlersForId(id)[id] = onclick;
     }
+    if (callback)
+      callback();
   });
 
-  apiFunctions.setCustomCallback('remove', function(name, request, response) {
-    if (chrome.runtime.lastError) {
+  apiFunctions.setCustomCallback('remove',
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
     var id = request.args[0];
     delete contextMenus.handlersForId(id)[id];
+    if (callback)
+      callback();
   });
 
-  apiFunctions.setCustomCallback('update', function(name, request, response) {
-    if (chrome.runtime.lastError) {
+  apiFunctions.setCustomCallback('update',
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
     var id = request.args[0];
     if (request.args[1].onclick) {
       contextMenus.handlersForId(id)[id] = request.args[1].onclick;
     }
+    if (callback)
+      callback();
   });
 
   apiFunctions.setCustomCallback('removeAll',
-                                 function(name, request, response) {
-    if (chrome.runtime.lastError) {
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
     contextMenus.generatedIdHandlers = {};
     contextMenus.stringIdHandlers = {};
+    if (callback)
+      callback();
   });
 });
 

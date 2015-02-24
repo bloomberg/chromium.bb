@@ -57,10 +57,9 @@ function handleResponse(requestId, name, success, responseList, error) {
       safeCallbackApply(name,
                         request,
                         request.customCallback,
-                        $Array.concat([name, request], responseList));
-    }
-
-    if (request.callback) {
+                        $Array.concat([name, request, request.callback],
+                                      responseList));
+    } else if (request.callback) {
       // Validate callback in debug only -- and only when the
       // caller has provided a callback. Implementations of api
       // calls may not return data if they observe the caller

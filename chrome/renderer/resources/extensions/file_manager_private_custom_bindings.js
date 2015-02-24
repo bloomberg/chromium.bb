@@ -24,34 +24,32 @@ binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('requestFileSystem',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     var fs = null;
     if (response && !response.error)
       fs = GetFileSystem(response.name, response.root_url);
-    if (request.callback)
-      request.callback(fs);
-    request.callback = null;
+    if (callback)
+      callback(fs);
   });
 
   apiFunctions.setCustomCallback('searchDrive',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     if (response && !response.error && response.entries) {
       response.entries = response.entries.map(function(entry) {
         return GetExternalFileEntry(entry);
       });
     }
 
-    // So |request.callback| doesn't break if response is not defined.
+    // So |callback| doesn't break if response is not defined.
     if (!response)
       response = {};
 
-    if (request.callback)
-      request.callback(response.entries, response.nextFeed);
-    request.callback = null;
+    if (callback)
+      callback(response.entries, response.nextFeed);
   });
 
   apiFunctions.setCustomCallback('searchDriveMetadata',
-                                 function(name, request, response) {
+      function(name, request, callback, response) {
     if (response && !response.error) {
       for (var i = 0; i < response.length; i++) {
         response[i].entry =
@@ -59,13 +57,12 @@ binding.registerCustomHook(function(bindingsAPI) {
       }
     }
 
-    // So |request.callback| doesn't break if response is not defined.
+    // So |callback| doesn't break if response is not defined.
     if (!response)
       response = {};
 
-    if (request.callback)
-      request.callback(response);
-    request.callback = null;
+    if (callback)
+      callback(response);
   });
 
   apiFunctions.setHandleRequest('resolveIsolatedEntries',

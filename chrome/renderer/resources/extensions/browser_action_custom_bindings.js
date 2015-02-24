@@ -9,6 +9,7 @@ var binding = require('binding').Binding.create('browserAction');
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
 var sendRequest = require('sendRequest').sendRequest;
+var lastError = require('lastError');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -20,17 +21,16 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('openPopup',
-                                 function(name, request, response) {
-    if (!request.callback)
+      function(name, request, callback, response) {
+    if (!callback)
       return;
 
-    if (chrome.runtime.lastError) {
-      request.callback();
+    if (lastError.hasError(chrome)) {
+      callback();
     } else {
       var views = getExtensionViews(-1, 'POPUP');
-      request.callback(views.length > 0 ? views[0] : null);
+      callback(views.length > 0 ? views[0] : null);
     }
-    request.callback = null;
   });
 });
 

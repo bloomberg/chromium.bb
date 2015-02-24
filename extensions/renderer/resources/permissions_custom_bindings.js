@@ -62,7 +62,7 @@ binding.registerCustomHook(function(api) {
 
   // Convert complex permissions back to objects
   apiFunctions.setCustomCallback('getAll',
-      function(name, request, response) {
+      function(name, request, callback, response) {
         for (var i = 0; i < response.permissions.length; i += 1) {
           response.permissions[i] =
               maybeConvertToObject(response.permissions[i]);
@@ -70,14 +70,9 @@ binding.registerCustomHook(function(api) {
 
         // Since the schema says Permissions.permissions contains strings and
         // not objects, validation will fail after the for-loop above.  This
-        // skips validation and calls the callback directly, then clears it so
-        // that handleResponse doesn't call it again.
-        try {
-          if (request.callback)
-            $Function.apply(request.callback, request, [response]);
-        } finally {
-          delete request.callback;
-        }
+        // skips validation and calls the callback directly.
+        if (callback)
+          callback(response);
       });
 
   // Also convert complex permissions back to objects for events.  The

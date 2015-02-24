@@ -15,9 +15,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('saveAsMHTML',
-                                 function(name, request, response) {
-    var callback = request.callback;
-    request.callback = null;
+      function(name, request, callback, response) {
     if (response)
       response = CreateBlob(response.mhtmlFilePath, response.mhtmlFileLength);
 

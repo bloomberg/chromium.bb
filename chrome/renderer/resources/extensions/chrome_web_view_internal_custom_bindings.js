@@ -14,6 +14,7 @@ var EventBindings = require('event_bindings');
 var binding = require('binding').Binding.create('chromeWebViewInternal');
 var contextMenuNatives = requireNative('context_menus');
 var sendRequest = require('sendRequest').sendRequest;
+var lastError = require('lastError');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -78,8 +79,10 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('contextMenusCreate',
-                                 function(name, request, response) {
-    if (chrome.runtime.lastError) {
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
 
@@ -90,11 +93,15 @@ binding.registerCustomHook(function(bindingsAPI) {
       webviewContextMenus.ensureListenerSetup();
       webviewContextMenus.handlersForId(instanceId, id)[id] = onclick;
     }
+    if (callback)
+      callback();
   });
 
   apiFunctions.setCustomCallback('contextMenusUpdate',
-                                 function(name, request, response) {
-    if (chrome.runtime.lastError) {
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
     var instanceId = request.args[0];
@@ -103,26 +110,36 @@ binding.registerCustomHook(function(bindingsAPI) {
       webviewContextMenus.handlersForId(instanceId, id)[id] =
           request.args[2].onclick;
     }
+    if (callback)
+      callback();
   });
 
   apiFunctions.setCustomCallback('contextMenusRemove',
-                                  function(name, request, response) {
-    if (chrome.runtime.lastError) {
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
     var instanceId = request.args[0];
     var id = request.args[1];
     delete webviewContextMenus.handlersForId(instanceId, id)[id];
+    if (callback)
+      callback();
   });
 
   apiFunctions.setCustomCallback('contextMenusRemoveAll',
-                                 function(name, request, response) {
-    if (chrome.runtime.lastError) {
+      function(name, request, callback, response) {
+    if (lastError.hasError(chrome)) {
+      if (callback)
+        callback();
       return;
     }
     var instanceId = request.args[0];
     webviewContextMenus.stringIdHandlers[instanceId] = {};
     webviewContextMenus.generatedIdHandlers[instanceId] = {};
+    if (callback)
+      callback();
   });
 
 });

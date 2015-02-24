@@ -28,10 +28,12 @@ function getFileBindingsForApi(apiName) {
   if (window == backgroundPage) {
     var bindFileEntryCallback = function(functionName, apiFunctions) {
       apiFunctions.setCustomCallback(functionName,
-          function(name, request, response) {
-        if (request.callback && response) {
-          var callback = request.callback;
-          request.callback = null;
+          function(name, request, callback, response) {
+        if (callback) {
+          if (!response) {
+            callback();
+            return;
+          }
 
           var entries = [];
           var hasError = false;
