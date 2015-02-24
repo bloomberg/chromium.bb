@@ -712,6 +712,8 @@ class PolicyLoaderWinTest : public PolicyTestBase,
                                    .AppendASCII("data")
                                    .AppendASCII("policy")
                                    .AppendASCII("gpo");
+
+    gpo_list_provider_ = this;
   }
 
   // AppliedGPOListProvider:
@@ -740,7 +742,8 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   }
 
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(loop_.message_loop_proxy(), kTestPolicyKey, this);
+    PolicyLoaderWin loader(loop_.message_loop_proxy(), kTestPolicyKey,
+                           gpo_list_provider_);
     scoped_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
@@ -783,6 +786,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   PGROUP_POLICY_OBJECT gpo_list_;
   DWORD gpo_list_status_;
   base::FilePath test_data_dir_;
+  AppliedGPOListProvider* gpo_list_provider_;
 };
 
 const base::char16 PolicyLoaderWinTest::kTestPolicyKey[] =
@@ -1047,7 +1051,19 @@ TEST_F(PolicyLoaderWinTest, AppliedPolicyInDomain) {
   gpo_list_ = &gpo;
   gpo_list_status_ = ERROR_SUCCESS;
 
-  PolicyBundle empty;
+  EXPECT_TRUE(MatchesRegistrySentinel());
+}
+
+TEST_F(PolicyLoaderWinTest, GpoProviderNotSpecified) {
+  base::win::SetDomainStateForTesting(false);
+  InstallRegistrySentinel();
+  base::FilePath gpo_dir(test_data_dir_.AppendASCII("empty"));
+  GROUP_POLICY_OBJECT gpo;
+  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
+  gpo_list_ = &gpo;
+  gpo_list_status_ = ERROR_SUCCESS;
+  gpo_list_provider_ = nullptr;
+
   EXPECT_TRUE(MatchesRegistrySentinel());
 }
 

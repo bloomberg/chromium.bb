@@ -462,9 +462,10 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     // timeout on it more aggressively. For now, there's no justification for
     // the additional effort this would introduce.
 
-    if (is_enterprise || !ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
-      VLOG_IF(1, !is_enterprise) << "Failed to read GPO files for " << scope
-                                 << " falling back to registry.";
+    bool is_registry_forced = is_enterprise || gpo_provider_ == nullptr;
+    if (is_registry_forced || !ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
+      VLOG_IF(1, !is_registry_forced) << "Failed to read GPO files for "
+                                      << scope << " falling back to registry.";
       gpo_dict.ReadRegistry(kScopes[i].hive, chrome_policy_key_);
     }
 

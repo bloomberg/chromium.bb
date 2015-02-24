@@ -51,6 +51,9 @@ class POLICY_EXPORT PolicyLoaderWin
   // The PReg file name used by GPO.
   static const base::FilePath::CharType kPRegFileName[];
 
+  // Passing |gpo_provider| equal nullptr forces all reads to go through the
+  // registry.  This is undesirable for Chrome (see crbug.com/259236), but
+  // needed for some other use cases (i.e. Chromoting - see crbug.com/460734).
   PolicyLoaderWin(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   const base::string16& chrome_policy_key,
                   AppliedGPOListProvider* gpo_provider);

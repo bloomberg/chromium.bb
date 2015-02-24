@@ -284,8 +284,9 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
   // Chromium.
   scoped_ptr<policy::AsyncPolicyLoader> policy_loader;
 #if defined(OS_WIN)
-  policy_loader = policy::PolicyLoaderWin::Create(
-      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome");
+  policy_loader.reset(new policy::PolicyLoaderWin(
+      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome",
+      nullptr));  // nullptr = don't use GPO / always read from the registry.
 #elif defined(OS_MACOSX)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
   policy_loader.reset(new policy::PolicyLoaderMac(
