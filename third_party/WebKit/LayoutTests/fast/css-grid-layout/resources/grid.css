@@ -69,6 +69,12 @@
     grid-row-end: 3;
 }
 
+.thirdRowSecondColumn {
+    background-color: red;
+    grid-column: 2;
+    grid-row: 3;
+}
+
 .firstAutoRowSecondAutoColumn {
     grid-row: 1 / auto;
     grid-column: 2 / auto;
@@ -174,6 +180,32 @@
     background-color: indigo;
     grid-column: span 2;
     grid-row: span 3;
+}
+
+.autoRowFirstColumnSpanning2 {
+    background-color: maroon;
+    grid-column: 1 / span 2;
+    grid-row: auto;
+}
+
+.autoRowSecondColumnSpanning2 {
+    background-color: olive;
+    grid-column: 2 / span 2;
+    grid-row: auto;
+}
+
+.firstRowSpanning2AutoColumn {
+    background-color: maroon;
+    grid-column: auto;
+    grid-row: 1 / span 2;
+    height: 100%;
+}
+
+.secondRowSpanning2AutoColumn {
+    background-color: olive;
+    grid-column: auto;
+    grid-row: 2 / span 2;
+    height: 100%;
 }
 
 /* Grid element flow. */
