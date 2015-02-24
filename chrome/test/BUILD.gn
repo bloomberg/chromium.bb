@@ -380,9 +380,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     }
 
     if (is_mac) {
-      datadeps = [
-        "//chrome",
-      ]
+      datadeps += [ "//chrome" ]
 
       # TODO(mark): We really want this for all non-static library targets, but
       # when we tried to pull it up to the common.gypi level, it broke other
@@ -879,7 +877,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       ]
       sources += [
         "../browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc",
-        "../browser/renderer_host/chrome_render_widget_host_view_mac_delegate_browsertest.cc",
         "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
         "../browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc",
       ]
@@ -890,11 +887,13 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
 
         # TODO(rouslan): This test depends on the custom dictionary UI,
         # which is disabled on Mac.
-        "../browser/ui/webui/options/edit_dictionary_browsertest.js",
+        # TODO(GYP): This should be added somewhere first ...
+        # "../browser/ui/webui/options/edit_dictionary_browsertest.js",
 
         # TODO(rouslan): This test depends on hunspell and we cannot run it
         # on Mac, which does use hunspell by default.
-        "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+        # TODO(GYP): This should be added somewhere first ...
+        # "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
 
         # ProcessSingletonMac doesn"t do anything.
         "../browser/process_singleton_browsertest.cc",
@@ -1551,7 +1550,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       # on disk so it can pull from it.
       deps += [
         "//third_party/google_toolbox_for_mac",
-        "//third_party/ocmock",
+        # "//third_party/ocmock", # TODO(GYP)
       ]
 
       # TODO(mark): We really want this for all non-static library targets,
