@@ -85,6 +85,7 @@ class DisplayConfiguratorObserver : public ui::DisplayConfigurator::Observer {
     loop_ = nullptr;
   }
   void OnDisplayModeChangeFailed(
+      const ui::DisplayConfigurator::DisplayStateList& outputs,
       ui::MultipleDisplayState failed_new_state) override {
     LOG(FATAL) << "Could not configure display";
   }
