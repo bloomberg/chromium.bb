@@ -32,7 +32,7 @@ class ExampleTestController(test_controller.TestController):
 
     self.task = self.CreateNewTask(
         isolated_hash=args.task_hash,
-        dimensions={'os': 'legion-linux'},
+        dimensions={'os': 'Ubuntu-14.04', 'pool': 'Legion'},
         idle_timeout_secs=90, connection_timeout_secs=90,
         verbosity=logging.DEBUG)
     self.task.Create()
