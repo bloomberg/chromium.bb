@@ -666,7 +666,7 @@
             }],
           ],
         },
-      ]},{
+        {
           'target_name': 'chromium_builder_nacl_win_integration',
           'type': 'none',
           'dependencies': [
