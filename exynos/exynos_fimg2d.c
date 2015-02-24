@@ -41,6 +41,11 @@
 
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 
+enum g2d_base_addr_reg {
+	g2d_dst = 0,
+	g2d_src
+};
+
 static unsigned int g2d_get_scaling(unsigned int src, unsigned int dst)
 {
 	/*
@@ -131,6 +136,26 @@ static int g2d_add_cmd(struct g2d_context *ctx, unsigned long cmd,
 	}
 
 	return TRUE;
+}
+
+/*
+ * g2d_add_base_addr - helper function to set dst/src base address register.
+ *
+ * @ctx: a pointer to g2d_context structure.
+ * @img: a pointer to the dst/src g2d_image structure.
+ * @reg: the register that should be set.
+ */
+static void g2d_add_base_addr(struct g2d_context *ctx, struct g2d_image *img,
+			enum g2d_base_addr_reg reg)
+{
+	const unsigned long cmd = (reg == g2d_dst) ?
+		DST_BASE_ADDR_REG : SRC_BASE_ADDR_REG;
+
+	if (img->buf_type == G2D_IMGBUF_USERPTR)
+		g2d_add_cmd(ctx, cmd | G2D_BUF_USERPTR,
+				(unsigned long)&img->user_ptr[0]);
+	else
+		g2d_add_cmd(ctx, cmd, img->bo[0]);
 }
 
 /*
@@ -278,13 +303,7 @@ g2d_solid_fill(struct g2d_context *ctx, struct g2d_image *img,
 
 	g2d_add_cmd(ctx, DST_SELECT_REG, G2D_SELECT_MODE_NORMAL);
 	g2d_add_cmd(ctx, DST_COLOR_MODE_REG, img->color_mode);
-
-	if (img->buf_type == G2D_IMGBUF_USERPTR)
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG | G2D_BUF_USERPTR,
-				(unsigned long)&img->user_ptr[0]);
-	else
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG, img->bo[0]);
-
+	g2d_add_base_addr(ctx, img, g2d_dst);
 	g2d_add_cmd(ctx, DST_STRIDE_REG, img->stride);
 
 	if (x + w > img->width)
@@ -341,22 +360,12 @@ g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
 
 	g2d_add_cmd(ctx, DST_SELECT_REG, G2D_SELECT_MODE_BGCOLOR);
 	g2d_add_cmd(ctx, DST_COLOR_MODE_REG, dst->color_mode);
-	if (dst->buf_type == G2D_IMGBUF_USERPTR)
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG | G2D_BUF_USERPTR,
-				(unsigned long)&dst->user_ptr[0]);
-	else
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG, dst->bo[0]);
-
+	g2d_add_base_addr(ctx, dst, g2d_dst);
 	g2d_add_cmd(ctx, DST_STRIDE_REG, dst->stride);
 
 	g2d_add_cmd(ctx, SRC_SELECT_REG, G2D_SELECT_MODE_NORMAL);
 	g2d_add_cmd(ctx, SRC_COLOR_MODE_REG, src->color_mode);
-	if (src->buf_type == G2D_IMGBUF_USERPTR)
-		g2d_add_cmd(ctx, SRC_BASE_ADDR_REG | G2D_BUF_USERPTR,
-				(unsigned long)&src->user_ptr[0]);
-	else
-		g2d_add_cmd(ctx, SRC_BASE_ADDR_REG, src->bo[0]);
-
+	g2d_add_base_addr(ctx, src, g2d_src);
 	g2d_add_cmd(ctx, SRC_STRIDE_REG, src->stride);
 
 	src_w = w;
@@ -444,22 +453,12 @@ g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 
 	g2d_add_cmd(ctx, DST_SELECT_REG, G2D_SELECT_MODE_BGCOLOR);
 	g2d_add_cmd(ctx, DST_COLOR_MODE_REG, dst->color_mode);
-	if (dst->buf_type == G2D_IMGBUF_USERPTR)
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG | G2D_BUF_USERPTR,
-				(unsigned long)&dst->user_ptr[0]);
-	else
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG, dst->bo[0]);
-
+	g2d_add_base_addr(ctx, dst, g2d_dst);
 	g2d_add_cmd(ctx, DST_STRIDE_REG, dst->stride);
 
 	g2d_add_cmd(ctx, SRC_SELECT_REG, G2D_SELECT_MODE_NORMAL);
 	g2d_add_cmd(ctx, SRC_COLOR_MODE_REG, src->color_mode);
-	if (src->buf_type == G2D_IMGBUF_USERPTR)
-		g2d_add_cmd(ctx, SRC_BASE_ADDR_REG | G2D_BUF_USERPTR,
-				(unsigned long)&src->user_ptr[0]);
-	else
-		g2d_add_cmd(ctx, SRC_BASE_ADDR_REG, src->bo[0]);
-
+	g2d_add_base_addr(ctx, src, g2d_src);
 	g2d_add_cmd(ctx, SRC_STRIDE_REG, src->stride);
 
 	if (src_w == dst_w && src_h == dst_h)
@@ -562,12 +561,7 @@ g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 		g2d_add_cmd(ctx, DST_SELECT_REG, G2D_SELECT_MODE_NORMAL);
 
 	g2d_add_cmd(ctx, DST_COLOR_MODE_REG, dst->color_mode);
-	if (dst->buf_type == G2D_IMGBUF_USERPTR)
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG | G2D_BUF_USERPTR,
-				(unsigned long)&dst->user_ptr[0]);
-	else
-		g2d_add_cmd(ctx, DST_BASE_ADDR_REG, dst->bo[0]);
-
+	g2d_add_base_addr(ctx, dst, g2d_dst);
 	g2d_add_cmd(ctx, DST_STRIDE_REG, dst->stride);
 
 	g2d_add_cmd(ctx, SRC_SELECT_REG, src->select_mode);
@@ -575,12 +569,7 @@ g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 
 	switch (src->select_mode) {
 	case G2D_SELECT_MODE_NORMAL:
-		if (src->buf_type == G2D_IMGBUF_USERPTR)
-			g2d_add_cmd(ctx, SRC_BASE_ADDR_REG | G2D_BUF_USERPTR,
-					(unsigned long)&src->user_ptr[0]);
-		else
-			g2d_add_cmd(ctx, SRC_BASE_ADDR_REG, src->bo[0]);
-
+		g2d_add_base_addr(ctx, src, g2d_src);
 		g2d_add_cmd(ctx, SRC_STRIDE_REG, src->stride);
 		break;
 	case G2D_SELECT_MODE_FGCOLOR:
