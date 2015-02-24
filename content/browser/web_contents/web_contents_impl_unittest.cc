@@ -2879,8 +2879,6 @@ TEST_F(WebContentsImplTest, StartStopEventsBalance) {
   EXPECT_FALSE(observer.is_loading());
 }
 
-// ChromeOS doesn't use WebContents based power save blocking.
-#if !defined(OS_CHROMEOS)
 TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   // PlayerIDs are actually pointers cast to int64, so verify that both negative
   // and positive player ids don't blow up.
@@ -2997,7 +2995,6 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
   EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
 }
-#endif
 
 // Test that sudden termination status is properly tracked for a frame.
 TEST_F(WebContentsImplTest, SuddenTerminationForFrame) {
