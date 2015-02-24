@@ -67,31 +67,31 @@ TEST_F(DefaultHeaderPainterTest, LightIcons) {
 
   // Check by default light icons are not used.
   painter.mode_ = HeaderPainter::MODE_ACTIVE;
-  EXPECT_EQ(false, painter.ShouldUseLightImages());
+  EXPECT_FALSE(painter.ShouldUseLightImages());
   painter.mode_ = HeaderPainter::MODE_INACTIVE;
-  EXPECT_EQ(false, painter.ShouldUseLightImages());
+  EXPECT_FALSE(painter.ShouldUseLightImages());
 
   // Check that setting dark colors should use light icons.
   painter.SetFrameColors(SkColorSetRGB(0, 0, 0), SkColorSetRGB(0, 0, 0));
   painter.mode_ = HeaderPainter::MODE_ACTIVE;
-  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  EXPECT_TRUE(painter.ShouldUseLightImages());
   painter.mode_ = HeaderPainter::MODE_INACTIVE;
-  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  EXPECT_TRUE(painter.ShouldUseLightImages());
 
   // Check that inactive and active colors are used properly.
   painter.SetFrameColors(SkColorSetRGB(0, 0, 0), SkColorSetRGB(255, 255, 255));
   painter.mode_ = HeaderPainter::MODE_ACTIVE;
-  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  EXPECT_TRUE(painter.ShouldUseLightImages());
   painter.mode_ = HeaderPainter::MODE_INACTIVE;
-  EXPECT_EQ(false, painter.ShouldUseLightImages());
+  EXPECT_FALSE(painter.ShouldUseLightImages());
 
   // Check not so light or dark colors.
   painter.SetFrameColors(SkColorSetRGB(70, 70, 70),
                          SkColorSetRGB(200, 200, 200));
   painter.mode_ = HeaderPainter::MODE_ACTIVE;
-  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  EXPECT_TRUE(painter.ShouldUseLightImages());
   painter.mode_ = HeaderPainter::MODE_INACTIVE;
-  EXPECT_EQ(false, painter.ShouldUseLightImages());
+  EXPECT_FALSE(painter.ShouldUseLightImages());
 }
 
 }  // namespace ash
