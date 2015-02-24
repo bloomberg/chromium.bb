@@ -28,19 +28,17 @@ class _ExtensionPageTest(page_test.PageTest):
   """This page test verified that extensions were automatically installed."""
   def __init__(self):
     super(_ExtensionPageTest, self).__init__()
-    self._page_set = page_sets.Typical25PageSet()
+    self._user_story_set = page_sets.Typical25PageSet()
+
+    # No matter how many pages in the PageSet, just perform two test iterations.
+    for user_story in self._user_story_set[2:]:
+      self._user_story_set.RemoveUserStory(user_story)
 
     # Have the extensions been installed yet?
     self._extensions_installed = False
 
     # Expected
     self._expected_extension_count = 0
-
-  def CanRunForPage(self, page):
-    # Superclass override.
-    # No matter how many pages in the pageset, just perform two test
-    # iterations.
-    return page.page_set.pages.index(page) < 2
 
   def ValidateAndMeasurePage(self, _, tab, results):
     # Superclass override.
@@ -184,7 +182,8 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
     extension_page_test = _ExtensionPageTest()
     extension_page_test._expected_extension_count = len(
         self._extensions_to_install)
-    user_story_runner.Run(extension_page_test, extension_page_test._page_set,
+    user_story_runner.Run(
+        extension_page_test, extension_page_test._user_story_set,
         expectations, options, results)
 
     self._CleanupExtensionInstallFiles()
