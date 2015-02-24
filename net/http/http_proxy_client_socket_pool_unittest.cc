@@ -526,9 +526,7 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
-  HttpProxyClientSocket* tunnel_socket =
-          static_cast<HttpProxyClientSocket*>(handle_.socket());
-  EXPECT_TRUE(tunnel_socket->IsConnected());
+  EXPECT_TRUE(handle_.socket()->IsConnected());
   proxy_delegate->VerifyOnTunnelRequestCompleted(
       "www.google.com:443",
       proxy_host_port.c_str());
