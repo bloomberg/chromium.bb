@@ -253,6 +253,43 @@ TEST_F(PrivetV3SessionTest, Pairing) {
   EXPECT_EQ("testType 567", session_.privet_auth_token_);
 }
 
+TEST_F(PrivetV3SessionTest, Cancel) {
+  EXPECT_CALL(*this, OnInitialized(Result::STATUS_SUCCESS, _));
+  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
+                                   kInfoResponse, net::HTTP_OK,
+                                   net::URLRequestStatus::SUCCESS);
+
+  session_.Init(
+      base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*this, OnPairingStarted(Result::STATUS_SUCCESS)).Times(1);
+  EXPECT_CALL(*this, OnPostData(_))
+      .WillOnce(testing::Invoke([this](const base::DictionaryValue& data) {
+        std::string device_commitment;
+        base::Base64Encode("1234", &device_commitment);
+        fetcher_factory_.SetFakeResponse(
+            GURL("http://host/privet/v3/pairing/start"),
+            base::StringPrintf(
+                "{\"deviceCommitment\":\"%s\",\"sessionId\":\"testId\"}",
+                device_commitment.c_str()),
+            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+      }));
+  session_.StartPairing(PairingType::PAIRING_TYPE_EMBEDDEDCODE,
+                        base::Bind(&PrivetV3SessionTest::OnPairingStarted,
+                                   base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/v3/pairing/cancel"),
+                                   kInfoResponse, net::HTTP_OK,
+                                   net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(*this, OnPostData(_))
+      .WillOnce(testing::Invoke([this](const base::DictionaryValue& data) {
+        std::string session_id;
+        EXPECT_TRUE(data.GetString("sessionId", &session_id));
+      }));
+}
+
 // TODO(vitalybuka): replace PrivetHTTPClient with regular URL fetcher and
 // implement SendMessage test.
 

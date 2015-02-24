@@ -91,6 +91,7 @@ class PrivetV3Session {
                                   net::URLFetcher::RequestType request_type,
                                   const MessageCallback& callback);
   void DeleteFetcher(const FetcherDelegate* fetcher);
+  void Cancel();
 
   // Creates instances of PrivetURLFetcher.
   scoped_ptr<PrivetHTTPClient> client_;

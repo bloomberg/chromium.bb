@@ -44,6 +44,7 @@ const char kPrivetV3KeyTokenType[] = "tokenType";
 
 const char kPrivetV3PairingStartPath[] = "/privet/v3/pairing/start";
 const char kPrivetV3PairingConfirmPath[] = "/privet/v3/pairing/confirm";
+const char kPrivetV3PairingCancelPath[] = "/privet/v3/pairing/cancel";
 const char kPrivetV3AuthPath[] = "/privet/v3/auth";
 
 const char kUrlPlaceHolder[] = "http://host/";
@@ -153,7 +154,8 @@ class PrivetV3Session::FetcherDelegate : public PrivetURLFetcher::Delegate {
                     bool has_error) override;
 
   PrivetURLFetcher* CreateURLFetcher(const GURL& url,
-                                     net::URLFetcher::RequestType request_type);
+                                     net::URLFetcher::RequestType request_type,
+                                     bool orphaned);
 
  private:
   void ReplyAndDestroyItself(Result result, const base::DictionaryValue& value);
@@ -213,14 +215,19 @@ void PrivetV3Session::FetcherDelegate::OnParsedJson(
 
 PrivetURLFetcher* PrivetV3Session::FetcherDelegate::CreateURLFetcher(
     const GURL& url,
-    net::URLFetcher::RequestType request_type) {
+    net::URLFetcher::RequestType request_type,
+    bool orphaned) {
   DCHECK(!url_fetcher_);
   url_fetcher_ =
       session_->client_->CreateURLFetcher(url, request_type, this).Pass();
   url_fetcher_->V3Mode();
+
+  auto timeout_task =
+      orphaned ? base::Bind(&FetcherDelegate::OnTimeout, base::Owned(this))
+               : base::Bind(&FetcherDelegate::OnTimeout,
+                            weak_ptr_factory_.GetWeakPtr());
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FetcherDelegate::OnTimeout, weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE, timeout_task,
       base::TimeDelta::FromSeconds(kUrlFetcherTimeoutSec));
   return url_fetcher_.get();
 }
@@ -251,6 +258,7 @@ PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetHTTPClient> client)
 }
 
 PrivetV3Session::~PrivetV3Session() {
+  Cancel();
 }
 
 void PrivetV3Session::Init(const InitCallback& callback) {
@@ -406,7 +414,7 @@ void PrivetV3Session::OnPairingConfirmDone(
   input.SetString(kPrivetV3KeyMode, kPrivetV3KeyPairing);
   input.SetString(kPrivetV3KeyRequestedScope, kPrivetV3Auto);
 
-  // Now we can use SendMessage with certificate validateion.
+  // Now we can use SendMessage with certificate validation.
   SendMessage(kPrivetV3AuthPath, input,
               base::Bind(&PrivetV3Session::OnAuthenticateDone,
                          weak_ptr_factory_.GetWeakPtr(), callback));
@@ -474,13 +482,27 @@ PrivetURLFetcher* PrivetV3Session::CreateFetcher(
     const std::string& api,
     net::URLFetcher::RequestType request_type,
     const MessageCallback& callback) {
-  fetchers_.push_back(new FetcherDelegate(weak_ptr_factory_.GetWeakPtr(),
-                                          privet_auth_token_, callback));
-  return fetchers_.back()->CreateURLFetcher(CreatePrivetURL(api), request_type);
+  // Don't abort cancel requests after session object is destroyed.
+  const bool orphaned = (api == kPrivetV3PairingCancelPath);
+  FetcherDelegate* fetcher = new FetcherDelegate(weak_ptr_factory_.GetWeakPtr(),
+                                                 privet_auth_token_, callback);
+  if (!orphaned)
+    fetchers_.push_back(fetcher);
+  return fetcher->CreateURLFetcher(CreatePrivetURL(api), request_type,
+                                   orphaned);
 }
 
 void PrivetV3Session::DeleteFetcher(const FetcherDelegate* fetcher) {
   fetchers_.erase(std::find(fetchers_.begin(), fetchers_.end(), fetcher));
+}
+
+void PrivetV3Session::Cancel() {
+  // Cancel started unconfirmed sessions.
+  if (session_id_.empty() || !fingerprint_.empty())
+    return;
+  base::DictionaryValue input;
+  input.SetString(kPrivetV3KeySessionId, session_id_);
+  StartPostRequest(kPrivetV3PairingCancelPath, input, MessageCallback());
 }
 
 }  // namespace local_discovery
