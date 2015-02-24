@@ -218,10 +218,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         data.editFlags |= WebContextMenuData::CanPaste;
     if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canDelete())
         data.editFlags |= WebContextMenuData::CanDelete;
-    if (isHTMLTextFormControlElement(r.innerNonSharedNode())) {
-        if (!toHTMLTextFormControlElement(r.innerNonSharedNode())->value().isEmpty())
-            data.editFlags |= WebContextMenuData::CanSelectAll;
-    }
+    // We can always select all...
+    data.editFlags |= WebContextMenuData::CanSelectAll;
     data.editFlags |= WebContextMenuData::CanTranslate;
 
     // Links, Images, Media tags, and Image/Media-Links take preference over
