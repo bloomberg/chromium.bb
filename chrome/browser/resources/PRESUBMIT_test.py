@@ -56,13 +56,21 @@ class HTMLActionAdditionTest(unittest.TestCase):
     lines = ['<input id="testinput" pref="testpref"',
              'metric="invalidaction" type="checkbox" dialog-pref>']
     warnings = self._testChange(lines)
-    self.assertEqual(1, len(warnings))
+    self.assertEqual(1, len(warnings), warnings)
 
   def testInValidChange_Radio(self):
     lines = ['<input id="testinput" pref="testpref"',
              '  metric="validaction" type="radio" dialog-pref value="string">']
     warnings = self._testChange(lines)
-    self.assertEqual(1, len(warnings))
+    self.assertEqual(1, len(warnings), warnings)
+
+  def testValidChange_MultilineType(self):
+    lines = ['<input id="testinput" pref="testpref"\n'
+             ' metric="validaction" type=\n'
+             ' "radio" dialog-pref value=\n'
+             ' "false">']
+    warnings = self._testChange(lines)
+    self.assertEqual([], self._testChange(lines))
 
   def _testChange(self, lines):
     mock_input_api = MockInputApi()

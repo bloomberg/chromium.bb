@@ -58,6 +58,9 @@ class MockOutputApi(object):
       self.items = items
       self.long_text = long_text
 
+    def __repr__(self):
+      return self.message
+
   class PresubmitError(PresubmitResult):
     def __init__(self, message, items, long_text=''):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)

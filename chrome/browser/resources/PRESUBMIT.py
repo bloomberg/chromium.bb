@@ -79,10 +79,10 @@ def IsBoolean(new_content_lines, metric_name, input_api):
   new_content = '\n'.join(new_content_lines)
 
   html_element_re = r'<(.*?)(^|\s+)metric\s*=\s*"%s"(.*?)>' % (metric_name)
-  type_re = (r'datatype="boolean"|type="checkbox"|type="radio".*?'
-      'value=("true"|"false")')
+  type_re = (r'datatype\s*=\s*"boolean"|type\s*=\s*"checkbox"|'
+      'type\s*=\s*"radio".*?value\s*=\s*("true"|"false")')
 
-  match = input_api.re.search(html_element_re, new_content)
+  match = input_api.re.search(html_element_re, new_content, input_api.re.DOTALL)
   return (match and
       any(input_api.re.search(type_re, match.group(i)) for i in (1, 3)))
 
