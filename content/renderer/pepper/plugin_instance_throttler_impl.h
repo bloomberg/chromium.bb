@@ -35,6 +35,9 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   bool IsHiddenForPlaceholder() const override;
   void MarkPluginEssential(PowerSaverUnthrottleMethod method) override;
   void SetHiddenForPlaceholder(bool hidden) override;
+  blink::WebPlugin* GetWebPlugin() const override;
+
+  void SetWebPlugin(blink::WebPlugin* web_plugin);
 
   bool needs_representative_keyframe() const {
     return state_ == THROTTLER_STATE_AWAITING_KEYFRAME;
@@ -82,6 +85,8 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   ThrottlerState state_;
 
   bool is_hidden_for_placeholder_;
+
+  blink::WebPlugin* web_plugin_;
 
   // Number of consecutive interesting frames we've encountered.
   int consecutive_interesting_frames_;

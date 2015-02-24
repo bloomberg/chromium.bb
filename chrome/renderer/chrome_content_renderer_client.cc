@@ -879,19 +879,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
         scoped_ptr<content::PluginInstanceThrottler> throttler =
             PluginInstanceThrottler::Create(power_saver_enabled);
-        content::PluginInstanceThrottler* throttler_raw = throttler.get();
-        blink::WebPlugin* plugin =
-            render_frame->CreatePlugin(frame, info, params, throttler.Pass());
-
         if (power_saver_enabled) {
           // PluginPreroller manages its own lifetime.
           new PluginPreroller(
               render_frame, frame, params, info, identifier, group_name,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
-              plugin, throttler_raw);
+              throttler.get());
         }
 
-        return plugin;
+        return render_frame->CreatePlugin(frame, info, params,
+                                          throttler.Pass());
 #else   // !defined(ENABLE_PLUGINS)
         return render_frame->CreatePlugin(frame, info, params, nullptr);
 #endif  // defined(ENABLE_PLUGINS)

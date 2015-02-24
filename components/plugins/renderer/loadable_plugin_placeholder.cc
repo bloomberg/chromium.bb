@@ -50,13 +50,9 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
 #endif
 
 void LoadablePluginPlaceholder::SetPremadePlugin(
-    blink::WebPlugin* plugin,
     content::PluginInstanceThrottler* throttler) {
-  DCHECK(plugin);
   DCHECK(throttler);
-  DCHECK(!premade_plugin_);
   DCHECK(!premade_throttler_);
-  premade_plugin_ = plugin;
   premade_throttler_ = throttler;
 
   premade_throttler_->AddObserver(this);
@@ -78,7 +74,6 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       is_blocked_for_power_saver_poster_(false),
       power_saver_enabled_(false),
       plugin_marked_essential_(false),
-      premade_plugin_(nullptr),
       premade_throttler_(nullptr),
       allow_loading_(false),
       placeholder_was_replaced_(false),
@@ -89,7 +84,6 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
 
 LoadablePluginPlaceholder::~LoadablePluginPlaceholder() {
 #if defined(ENABLE_PLUGINS)
-  DCHECK(!premade_plugin_);
   DCHECK(!premade_throttler_);
 
   if (!plugin_marked_essential_ && !placeholder_was_replaced_ &&
@@ -139,7 +133,9 @@ void LoadablePluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   // Save the element in case the plug-in is removed from the page during
   // initialization.
   WebElement element = container->element();
-  if (new_plugin != premade_plugin_ && !new_plugin->initialize(container)) {
+  bool plugin_needs_initialization =
+      !premade_throttler_ || new_plugin != premade_throttler_->GetWebPlugin();
+  if (plugin_needs_initialization && !new_plugin->initialize(container)) {
     // We couldn't initialize the new plug-in. Restore the old one and abort.
     container->setPlugin(plugin());
     return;
@@ -232,13 +228,10 @@ void LoadablePluginPlaceholder::UpdateMessage() {
 void LoadablePluginPlaceholder::PluginDestroyed() {
   // Since the premade plugin has been detached from the container, it will not
   // be automatically destroyed along with the page.
-  if (!placeholder_was_replaced_ && premade_plugin_) {
-    DCHECK(premade_throttler_);
+  if (!placeholder_was_replaced_ && premade_throttler_) {
     premade_throttler_->RemoveObserver(this);
+    premade_throttler_->GetWebPlugin()->destroy();
     premade_throttler_ = nullptr;
-
-    premade_plugin_->destroy();
-    premade_plugin_ = nullptr;
   }
 
   PluginPlaceholder::PluginDestroyed();
@@ -253,7 +246,6 @@ void LoadablePluginPlaceholder::WasShown() {
 }
 
 void LoadablePluginPlaceholder::OnThrottleStateChange() {
-  DCHECK(premade_plugin_);
   DCHECK(premade_throttler_);
   if (!premade_throttler_->IsThrottled()) {
     // Premade plugin has been unthrottled externally (by audio playback, etc.).
@@ -293,13 +285,12 @@ void LoadablePluginPlaceholder::LoadPlugin() {
     return;
   }
 
-  if (premade_plugin_) {
+  if (premade_throttler_) {
     premade_throttler_->RemoveObserver(this);
     premade_throttler_->SetHiddenForPlaceholder(false /* hidden */);
-    premade_throttler_ = nullptr;
 
-    ReplacePlugin(premade_plugin_);
-    premade_plugin_ = nullptr;
+    ReplacePlugin(premade_throttler_->GetWebPlugin());
+    premade_throttler_ = nullptr;
   } else {
     // TODO(mmenke):  In the case of prerendering, feed into
     //                ChromeContentRendererClient::CreatePlugin instead, to
@@ -340,7 +331,7 @@ void LoadablePluginPlaceholder::DidFinishLoadingCallback() {
 
   // Wait for the placeholder to finish loading to hide the premade plugin.
   // This is necessary to prevent a flicker.
-  if (premade_plugin_ && !placeholder_was_replaced_)
+  if (premade_throttler_ && !placeholder_was_replaced_)
     premade_throttler_->SetHiddenForPlaceholder(true /* hidden */);
 }
 

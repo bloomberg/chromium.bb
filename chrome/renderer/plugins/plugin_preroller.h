@@ -34,7 +34,6 @@ class PluginPreroller : public content::PluginInstanceThrottler::Observer,
                   const std::string& identifier,
                   const base::string16& name,
                   const base::string16& message,
-                  blink::WebPlugin* plugin,
                   content::PluginInstanceThrottler* throttler);
 
   ~PluginPreroller() override;
@@ -52,7 +51,6 @@ class PluginPreroller : public content::PluginInstanceThrottler::Observer,
   base::string16 name_;
   base::string16 message_;
 
-  blink::WebPlugin* plugin_;
   content::PluginInstanceThrottler* throttler_;
 
   GURL keyframe_data_url_;

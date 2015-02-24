@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 
 namespace blink {
+class WebPlugin;
 struct WebPluginParams;
 }
 
@@ -80,6 +81,8 @@ class CONTENT_EXPORT PluginInstanceThrottler {
 
   // Called by the placeholder when the plugin should temporarily be hidden.
   virtual void SetHiddenForPlaceholder(bool hidden) = 0;
+
+  virtual blink::WebPlugin* GetWebPlugin() const = 0;
 
  protected:
   PluginInstanceThrottler() {}

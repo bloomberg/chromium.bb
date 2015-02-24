@@ -20,7 +20,6 @@ PluginPreroller::PluginPreroller(content::RenderFrame* render_frame,
                                  const std::string& identifier,
                                  const base::string16& name,
                                  const base::string16& message,
-                                 blink::WebPlugin* plugin,
                                  content::PluginInstanceThrottler* throttler)
     : RenderFrameObserver(render_frame),
       frame_(frame),
@@ -29,9 +28,7 @@ PluginPreroller::PluginPreroller(content::RenderFrame* render_frame,
       identifier_(identifier),
       name_(name),
       message_(message),
-      plugin_(plugin),
       throttler_(throttler) {
-  DCHECK(plugin);
   DCHECK(throttler);
   throttler_->AddObserver(this);
 }
@@ -65,11 +62,12 @@ void PluginPreroller::OnThrottleStateChange() {
       ChromePluginPlaceholder::CreateBlockedPlugin(
           render_frame(), frame_, params_, info_, identifier_, name_,
           IDR_PLUGIN_POSTER_HTML, message_, keyframe_data_url_);
-  placeholder->SetPremadePlugin(plugin_, throttler_);
+  placeholder->SetPremadePlugin(throttler_);
   placeholder->set_power_saver_enabled(true);
   placeholder->set_allow_loading(true);
 
-  blink::WebPluginContainer* container = plugin_->container();
+  blink::WebPluginContainer* container =
+      throttler_->GetWebPlugin()->container();
   container->setPlugin(placeholder->plugin());
 
   bool success = placeholder->plugin()->initialize(container);

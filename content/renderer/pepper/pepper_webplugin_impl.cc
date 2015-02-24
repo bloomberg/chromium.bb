@@ -77,6 +77,9 @@ PepperWebPluginImpl::PepperWebPluginImpl(
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", init_data_->url.spec());
+
+  if (throttler_)
+    throttler_->SetWebPlugin(this);
 }
 
 PepperWebPluginImpl::~PepperWebPluginImpl() {}

@@ -37,8 +37,7 @@ class LoadablePluginPlaceholder
   void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
 
   // When we load the plugin, use this already-created plugin, not a new one.
-  void SetPremadePlugin(blink::WebPlugin* plugin,
-                        content::PluginInstanceThrottler* throttler);
+  void SetPremadePlugin(content::PluginInstanceThrottler* throttler);
 
  protected:
   LoadablePluginPlaceholder(content::RenderFrame* render_frame,
@@ -123,7 +122,6 @@ class LoadablePluginPlaceholder
   bool plugin_marked_essential_;
 
   // When we load, uses this premade plugin instead of creating a new one.
-  blink::WebPlugin* premade_plugin_;
   content::PluginInstanceThrottler* premade_throttler_;
 
   bool allow_loading_;

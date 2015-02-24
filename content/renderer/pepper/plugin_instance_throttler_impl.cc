@@ -50,6 +50,7 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
     : state_(power_saver_enabled ? THROTTLER_STATE_AWAITING_KEYFRAME
                                  : THROTTLER_STATE_POWER_SAVER_DISABLED),
       is_hidden_for_placeholder_(false),
+      web_plugin_(nullptr),
       consecutive_interesting_frames_(0),
       frames_examined_(0),
       weak_factory_(this) {
@@ -93,6 +94,16 @@ void PluginInstanceThrottlerImpl::MarkPluginEssential(
 void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
   is_hidden_for_placeholder_ = hidden;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnHiddenForPlaceholder(hidden));
+}
+
+blink::WebPlugin* PluginInstanceThrottlerImpl::GetWebPlugin() const {
+  DCHECK(web_plugin_);
+  return web_plugin_;
+}
+
+void PluginInstanceThrottlerImpl::SetWebPlugin(blink::WebPlugin* web_plugin) {
+  DCHECK(!web_plugin_);
+  web_plugin_ = web_plugin;
 }
 
 void PluginInstanceThrottlerImpl::Initialize(
