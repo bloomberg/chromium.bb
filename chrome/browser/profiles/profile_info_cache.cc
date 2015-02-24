@@ -12,6 +12,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -1032,12 +1033,22 @@ void ProfileInfoCache::DownloadHighResAvatar(
 #if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
   return;
 #endif
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461175 ProfileInfoCache::DownloadHighResAvatar::GetFileName"));
   const std::string file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index);
   // If the file is already being downloaded, don't start another download.
   if (avatar_images_downloads_in_progress_.count(file_name))
     return;
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461175 ProfileInfoCache::DownloadHighResAvatar::MakeDownloader"));
   // Start the download for this file. The cache takes ownership of the
   // |avatar_downloader|, which will be deleted when the download completes, or
   // if that never happens, when the ProfileInfoCache is destroyed.
@@ -1046,6 +1057,12 @@ void ProfileInfoCache::DownloadHighResAvatar(
       profile_path,
       this);
   avatar_images_downloads_in_progress_[file_name] = avatar_downloader;
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461175 ProfileInfoCache::DownloadHighResAvatar::StartDownload"));
   avatar_downloader->Start();
 }
 
