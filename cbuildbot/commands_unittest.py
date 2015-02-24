@@ -209,26 +209,45 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self.assertCommandCalled([
         commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
         'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
-        '--board', 'test-board'
-    ], error_code_ok=True)
+        '--board', 'test-board', '-c',
+    ], capture_output=True)
 
   def testRunHWTestSuiteMaximal(self):
     """Test RunHWTestSuite with all arguments."""
-    commands.RunHWTestSuite(self._build, self._suite, self._board,
-                            self._pool, self._num, self._file_bugs,
-                            self._wait_for_results, self._priority,
-                            self._timeout_mins, self._retry, self._max_retries,
-                            self._minimum_duts, self._suite_min_duts,
-                            debug=False)
-    self.assertCommandCalled([
+
+    job_id_output = '''
+Autotest instance: cautotest
+02-23-2015 [06:26:51] Submitted create_suite_job rpc
+02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
+@@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
+The suite job has another 3:09:50.012887 till timeout.
+The suite job has another 2:39:39.789250 till timeout.
+    '''
+
+    base_cmd = [
         commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
         'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
         '--board', 'test-board', '--pool', 'test-pool', '--num', '42',
         '--file_bugs', 'True', '--no_wait', 'True',
         '--priority', 'test-priority', '--timeout_mins', '23',
         '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
-        '--suite_min_duts', '2',
-    ], error_code_ok=True)
+        '--suite_min_duts', '2'
+        ]
+    create_cmd = base_cmd + ['-c']
+    wait_cmd = base_cmd + ['-m', '26960110']
+    self.rc.AddCmdResult(create_cmd, returncode=0, output=job_id_output)
+    self.rc.AddCmdResult(wait_cmd, returncode=12)
+    self.rc.AddCmdResult(wait_cmd, returncode=0)
+
+    commands.RunHWTestSuite(self._build, self._suite, self._board,
+                            self._pool, self._num, self._file_bugs,
+                            self._wait_for_results, self._priority,
+                            self._timeout_mins, self._retry, self._max_retries,
+                            self._minimum_duts, self._suite_min_duts,
+                            debug=False)
+    self.assertCommandCalled(create_cmd, capture_output=True)
+    self.assertCommandCalled(wait_cmd)
+    self.assertCommandCalled(wait_cmd)
 
   def testRunHWTestSuiteFailure(self):
     """Test RunHWTestSuite when ERROR is returned."""

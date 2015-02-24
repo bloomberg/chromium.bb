@@ -17,6 +17,7 @@ import re
 import shutil
 import tempfile
 
+from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cli.cros.tests import cros_vm_test
@@ -854,7 +855,62 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                     a suite that has higher priority.
     debug: Whether we are in debug mode.
   """
-  # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
+  cmd = _CreateRunSuiteCommand(build, suite, board, pool, num, file_bugs,
+                               wait_for_results, priority, timeout_mins, retry,
+                               max_retries, minimum_duts, suite_min_duts)
+  try:
+    HWTestCreateAndWait(cmd, debug)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    # run_suite error codes:
+    #   0 - OK: Tests ran and passed.
+    #   1 - ERROR: Tests ran and failed (or timed out).
+    #   2 - WARNING: Tests ran and passed with warning(s). Note that 2
+    #         may also be CLIENT_HTTP_CODE error returned by
+    #         autotest_rpc_client.py. We ignore that case for now.
+    #   3 - INFRA_FAILURE: Tests did not complete due to lab issues.
+    #   4 - SUITE_TIMEOUT: Suite timed out. This could be caused by
+    #         infrastructure failures or by test failures.
+    # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
+    lab_warning_codes = (2,)
+    infra_error_codes = (3,
+                         autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
+                         autotest_rpc_errors.PROXY_CONNECTION_LOST,
+                         autotest_rpc_errors.PROXY_TIMED_OUT,)
+    timeout_codes = (4,)
+    board_not_available_codes = (5,)
+
+    if result.returncode in lab_warning_codes:
+      raise failures_lib.TestWarning('** Suite passed with a warning code **')
+    elif result.returncode in infra_error_codes:
+      raise failures_lib.TestLabFailure(
+          '** HWTest did not complete due to infrastructure issues '
+          '(code %d) **' % result.returncode)
+    elif result.returncode in timeout_codes:
+      raise failures_lib.SuiteTimedOut(
+          '** Suite timed out before completion **')
+    elif result.returncode in board_not_available_codes:
+      raise failures_lib.BoardNotAvailable(
+          '** Board was not availble in the lab **')
+    elif result.returncode != 0:
+      raise failures_lib.TestFailure(
+          '** HWTest failed (code %d) **' % result.returncode)
+
+
+# pylint: disable=docstring-missing-args
+def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
+                           file_bugs=None, wait_for_results=None,
+                           priority=None, timeout_mins=None,
+                           retry=None, max_retries=None, minimum_duts=0,
+                           suite_min_duts=0):
+  """Create a proxied run_suite command for the given arguments.
+
+   Args:
+     See RunHWTestSuite.
+
+   Returns:
+     Proxied run_suite command.
+  """
   cmd = [_AUTOTEST_RPC_CLIENT,
          _AUTOTEST_RPC_HOSTNAME,
          'RunSuite',
@@ -893,46 +949,66 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
   if suite_min_duts != 0:
     cmd += ['--suite_min_duts', str(suite_min_duts)]
 
+  return cmd
+# pylint: enable=docstring-missing-args
+
+
+# TODO(akeshet): This function exists solely to support a caller in
+# paygen_build_lib. That caller should be refactored to use RunHWTestSuite, at
+# which point this can be folded into RunHWTestSuite.
+def HWTestCreateAndWait(cmd, debug=False):
+  """Start and wait on HWTest suite in the lab, retrying on proxy failures.
+
+  Args:
+    cmd: Proxied run_suite command as returned by _CreateRunSuiteCommand.
+    debug: If True, log command rather than running it.
+  """
+  job_id = _HWTestStart(cmd, debug)
+  if job_id is not None:
+    _HWTestWait(cmd, job_id)
+
+
+def _HWTestStart(cmd, debug=True):
+  """Start a suite in the HWTest lab, and return its id.
+
+  Args:
+    cmd: The base run_suite command, as created by _CreateRunSuiteCommand.
+    debug: If True, log command that would have run rather than starting suite.
+
+  Returns:
+    Job id of created suite. Returned id will be None if no job id was created.
+  """
+  cmd = list(cmd)
+  cmd += ['-c']
+
   if debug:
     logging.info('RunHWTestSuite would run: %s', cros_build_lib.CmdToStr(cmd))
   else:
-    if timeout_mins is None:
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
-    else:
-      with timeout_util.Timeout(
-          timeout_mins * 60 + constants.HWTEST_TIMEOUT_EXTENSION):
-        result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+    max_retry = 10
+    retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,)
+    result = retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on,
+                                              capture_output=True)
+    m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
+                  result.output)
+    if m:
+      return m.group('job_id')
 
-    # run_suite error codes:
-    #   0 - OK: Tests ran and passed.
-    #   1 - ERROR: Tests ran and failed (or timed out).
-    #   2 - WARNING: Tests ran and passed with warning(s). Note that 2
-    #         may also be CLIENT_HTTP_CODE error returned by
-    #         autotest_rpc_client.py. We ignore that case for now.
-    #   3 - INFRA_FAILURE: Tests did not complete due to lab issues.
-    #   4 - SUITE_TIMEOUT: Suite timed out. This could be caused by
-    #         infrastructure failures or by test failures.
-    # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
-    lab_warning_codes = (2,)
-    infra_error_codes = (3, 11, 12, 13)
-    timeout_codes = (4,)
-    board_not_available_codes = (5,)
 
-    if result.returncode in lab_warning_codes:
-      raise failures_lib.TestWarning('** Suite passed with a warning code **')
-    elif result.returncode in infra_error_codes:
-      raise failures_lib.TestLabFailure(
-          '** HWTest did not complete due to infrastructure issues '
-          '(code %d) **' % result.returncode)
-    elif result.returncode in timeout_codes:
-      raise failures_lib.SuiteTimedOut(
-          '** Suite timed out before completion **')
-    elif result.returncode in board_not_available_codes:
-      raise failures_lib.BoardNotAvailable(
-          '** Board was not availble in the lab **')
-    elif result.returncode != 0:
-      raise failures_lib.TestFailure(
-          '** HWTest failed (code %d) **' % result.returncode)
+def _HWTestWait(cmd, job_id):
+  """Wait for HWTest suite to complete, retrying rpc failures.
+
+  Args:
+    cmd: The base run_suite command that was used to launcht the suite, as
+         created by _CreateRunSuiteCommand.
+    job_id: The job id of the suite that was created.
+  """
+  cmd = list(cmd)
+  cmd += ['-m', str(job_id)]
+
+  retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
+              autotest_rpc_errors.PROXY_CONNECTION_LOST,)
+  max_retry = 10
+  retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on)
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):

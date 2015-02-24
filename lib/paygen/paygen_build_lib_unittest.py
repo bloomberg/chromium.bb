@@ -14,6 +14,7 @@ import tempfile
 import unittest
 
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 
@@ -1282,8 +1283,12 @@ DOC = "Faux doc"
     self.mox.StubOutWithMock(gslib, 'Copy')
     gslib.Copy(tarball_path, test_upload_path, acl='public-read')
 
+    # Both utils and cros_build_lib versions of RunCommand exist. For now, stub
+    # them both out just to be safe (don't want unit tests running actual
+    # commands).
     # TODO(garnold) remove the dryrun argument.
     self.mox.StubOutWithMock(utils, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     expected_command = [
@@ -1298,9 +1303,23 @@ DOC = "Faux doc"
         '--no_wait', 'False',
         '--suite_min_duts', '2']
 
-    utils.RunCommand(expected_command, error_ok=True, redirect_stdout=True,
-                     redirect_stderr=True, return_result=True).AndReturn(
-                         utils.CommandResult(returncode=0))
+    job_id_output = '''
+Autotest instance: cautotest
+02-23-2015 [06:26:51] Submitted create_suite_job rpc
+02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
+@@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
+The suite job has another 3:09:50.012887 till timeout.
+The suite job has another 2:39:39.789250 till timeout.
+    '''
+
+    cros_build_lib.RunCommand(
+        expected_command + ['-c'], capture_output=True).AndReturn(
+            utils.CommandResult(returncode=0, output=job_id_output))
+    cros_build_lib.RunCommand(
+        expected_command + ['-m', '26960110']).AndReturn(utils.CommandResult(
+            returncode=0,
+            output=job_id_output))
+
 
     self.mox.ReplayAll()
 
@@ -1311,10 +1330,9 @@ DOC = "Faux doc"
     paygen = paygen_build_lib._PaygenBuild(
         self.foo_build, self.tempdir)
 
-    self.mox.StubOutWithMock(paygen_build_lib.commands,
-                             'RunHWTestSuite')
-    self.mox.StubOutWithMock(paygen_build_lib.utils,
-                             'RunCommand')
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    self.mox.StubOutWithMock(utils, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     expected_command = [
@@ -1328,9 +1346,9 @@ DOC = "Faux doc"
         '--timeout_mins', str(timeout_mins),
         '--no_wait', 'False',
         '--suite_min_duts', '2']
-    utils.RunCommand(expected_command, error_ok=True, redirect_stdout=True,
-                     redirect_stderr=True, return_result=True).AndReturn(
-                         utils.CommandResult(returncode=0))
+    cros_build_lib.RunCommand(
+        expected_command + ['-c'], capture_output=True).AndReturn(
+            utils.CommandResult(returncode=0, output=''))
 
     self.mox.ReplayAll()
 
@@ -1345,10 +1363,9 @@ DOC = "Faux doc"
     paygen = paygen_build_lib._PaygenBuild(
         self.foo_build, self.tempdir, run_on_builder=True)
 
-    self.mox.StubOutWithMock(paygen_build_lib.commands,
-                             'RunHWTestSuite')
-    self.mox.StubOutWithMock(paygen_build_lib.utils,
-                             'RunCommand')
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    self.mox.StubOutWithMock(utils, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     paygen_build_lib.commands.RunHWTestSuite(
@@ -1370,10 +1387,9 @@ DOC = "Faux doc"
     paygen = paygen_build_lib._PaygenBuild(
         self.foo_build, self.tempdir, run_on_builder=True)
 
-    self.mox.StubOutWithMock(paygen_build_lib.commands,
-                             'RunHWTestSuite')
-    self.mox.StubOutWithMock(paygen_build_lib.utils,
-                             'RunCommand')
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    self.mox.StubOutWithMock(utils, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     paygen_build_lib.commands.RunHWTestSuite(
