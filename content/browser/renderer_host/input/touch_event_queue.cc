@@ -541,15 +541,6 @@ void TouchEventQueue::OnGestureScrollEvent(
       DCHECK(!touchmove_slop_suppressor_->suppressing_touchmoves())
           <<  "A touch handler should be offered a touchmove before scrolling.";
     }
-    if (!has_handler_for_current_sequence_ &&
-        !drop_remaining_touches_in_sequence_) {
-      // If no touch points have a consumer, prevent all subsequent touch events
-      // received during the scroll from reaching the renderer. This ensures
-      // that the first touchstart the renderer sees in any given sequence can
-      // always be preventDefault'ed (cancelable == true).
-      // TODO(jdduke): Revisit if touchstarts during scroll are made cancelable.
-      drop_remaining_touches_in_sequence_ = true;
-    }
 
     pending_async_touchmove_.reset();
 

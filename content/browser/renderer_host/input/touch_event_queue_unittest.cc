@@ -1487,8 +1487,8 @@ TEST_F(TouchEventQueueTest, SecondaryTouchForwardedAfterPrimaryHadNoConsumer) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
-// Tests that no touch points will be forwarded after scrolling begins while no
-// touch points have a consumer.
+// Tests that secondary touch points can be forwarded after scrolling begins
+// while first touch point has no consumer.
 TEST_F(TouchEventQueueTest, NoForwardingAfterScrollWithNoTouchConsumers) {
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
@@ -1504,17 +1504,18 @@ TEST_F(TouchEventQueueTest, NoForwardingAfterScrollWithNoTouchConsumers) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 
-  // The secondary pointer press should not be forwarded.
+  // The secondary pointer press should be forwarded.
   PressTouchPoint(20, 0);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 
-  // Neither should any further touchmoves be forwarded.
+  // TouchMove with a secondary pointer should also be forwarded.
   MoveTouchPoint(1, 25, 0);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 }
 
 TEST_F(TouchEventQueueTest, AsyncTouch) {
