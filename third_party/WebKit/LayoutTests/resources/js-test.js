@@ -341,16 +341,16 @@ function shouldBeType(_a, _type) {
   }
 }
 
-// Variant of shouldBe()--confirms that result of eval(_to_eval) is within
-// numeric _tolerance of numeric _target.
-function shouldBeCloseTo(_to_eval, _target, _tolerance, _quiet)
+// Variant of shouldBe()--confirms that result of eval(_a_raw) is within
+// numeric _tolerance of _b_raw.
+function shouldBeCloseTo(_a_raw, _b_raw, _tolerance, _quiet)
 {
-  if (typeof _to_eval != "string") {
-    testFailed("shouldBeCloseTo() requires string argument _to_eval. was type " + typeof _to_eval);
+  if (typeof _a_raw != "string") {
+    testFailed("shouldBeCloseTo() requires string argument _a_raw. was type " + typeof _a_raw);
     return;
   }
-  if (typeof _target != "number") {
-    testFailed("shouldBeCloseTo() requires numeric argument _target. was type " + typeof _target);
+  if (typeof _b_raw != "number" && typeof _b_raw != "string") {
+    testFailed("shouldBeCloseTo() requires numeric or string argument _b_raw. was type " + typeof _b_raw);
     return;
   }
   if (typeof _tolerance != "number") {
@@ -358,25 +358,38 @@ function shouldBeCloseTo(_to_eval, _target, _tolerance, _quiet)
     return;
   }
 
-  var _result;
+  var _a_evaled;
   try {
-     _result = eval(_to_eval);
+     _a_evaled = eval(_a_raw);
   } catch (e) {
-    testFailed(_to_eval + " should be within " + _tolerance + " of "
-               + _target + ". Threw exception " + e);
+    testFailed(_a_raw + " should be within " + _tolerance + " of "
+               + _b_raw + ". Threw exception " + e);
     return;
   }
 
-  if (typeof(_result) != typeof(_target)) {
-    testFailed(_to_eval + " should be of type " + typeof _target
-               + " but was of type " + typeof _result);
-  } else if (Math.abs(_result - _target) <= _tolerance) {
+  var _b_evaled;
+  if (typeof _b_raw == "number") {
+    _b_evaled = _b_raw;
+  } else {
+    try {
+      _b_evaled = eval(_b_raw);
+    } catch (e) {
+      testFailed(_a_raw + " should be within " + _tolerance + " of "
+          + _b_raw + ". Threw exception " + e);
+      return;
+    }
+  }
+
+  if (typeof(_a_evaled) != typeof(_b_evaled)) {
+    testFailed(_a_raw + " should be of type " + typeof _b_evaled
+               + " but was of type " + typeof _a_evaled);
+  } else if (Math.abs(_a_evaled - _b_evaled) <= _tolerance) {
     if (!_quiet) {
-        testPassed(_to_eval + " is within " + _tolerance + " of " + _target);
+        testPassed(_a_raw + " is within " + _tolerance + " of " + _b_raw);
     }
   } else {
-    testFailed(_to_eval + " should be within " + _tolerance + " of " + _target
-               + ". Was " + _result + ".");
+    testFailed(_a_raw + " should be within " + _tolerance + " of " + _b_raw
+               + ". Was " + _a_evaled + ".");
   }
 }
 
