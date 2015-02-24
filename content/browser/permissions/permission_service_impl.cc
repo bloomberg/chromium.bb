@@ -126,8 +126,12 @@ void PermissionServiceImpl::RevokePermission(
   PermissionType permission_type = PermissionNameToPermissionType(permission);
   PermissionStatus status = GetPermissionStatus(permission_type, origin_url);
 
-  if (status != PERMISSION_STATUS_GRANTED)
+  // Resetting the permission should only be possible if the permission is
+  // already granted.
+  if (status != PERMISSION_STATUS_GRANTED) {
     callback.Run(status);
+    return;
+  }
 
   ResetPermissionStatus(permission_type, origin_url);
 
