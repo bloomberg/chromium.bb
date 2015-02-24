@@ -12,7 +12,6 @@
 
 namespace ui {
 
-struct AXNodeData;
 class AXPlatformNodeDelegate;
 
 class AXPlatformNodeBase : public AXPlatformNode {
@@ -20,55 +19,19 @@ class AXPlatformNodeBase : public AXPlatformNode {
    virtual void Init(AXPlatformNodeDelegate* delegate);
 
   // These are simple wrappers to our delegate.
-  const AXNodeData& GetData() const;
+  AXRole GetRole() const;
   gfx::Rect GetBoundsInScreen() const;
   gfx::NativeViewAccessible GetParent();
   int GetChildCount();
   gfx::NativeViewAccessible ChildAtIndex(int index);
 
-  // This needs to be implemented for each platform.
-  virtual int GetIndexInParent() = 0;
-
-  // AXPlatformNode.
+  // AXPlatformNode
   void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  AXPlatformNodeDelegate* GetDelegate() const override;
-
-  // Helpers.
-  AXPlatformNodeBase* GetPreviousSibling();
-  AXPlatformNodeBase* GetNextSibling();
-  bool IsDescendant(AXPlatformNodeBase* descendant);
-
-  bool HasBoolAttribute(ui::AXBoolAttribute attr) const;
-  bool GetBoolAttribute(ui::AXBoolAttribute attr) const;
-  bool GetBoolAttribute(ui::AXBoolAttribute attr, bool* value) const;
-
-  bool HasFloatAttribute(ui::AXFloatAttribute attr) const;
-  float GetFloatAttribute(ui::AXFloatAttribute attr) const;
-  bool GetFloatAttribute(ui::AXFloatAttribute attr, float* value) const;
-
-  bool HasIntAttribute(ui::AXIntAttribute attribute) const;
-  int GetIntAttribute(ui::AXIntAttribute attribute) const;
-  bool GetIntAttribute(ui::AXIntAttribute attribute, int* value) const;
-
-  bool HasStringAttribute(
-      ui::AXStringAttribute attribute) const;
-  const std::string& GetStringAttribute(ui::AXStringAttribute attribute) const;
-  bool GetStringAttribute(ui::AXStringAttribute attribute,
-                          std::string* value) const;
-  bool GetString16Attribute(ui::AXStringAttribute attribute,
-                            base::string16* value) const;
-  base::string16 GetString16Attribute(
-      ui::AXStringAttribute attribute) const;
 
  protected:
   AXPlatformNodeBase();
   ~AXPlatformNodeBase() override;
-
-  // Cast a gfx::NativeViewAccessible to an AXPlatformNodeBase if it is one,
-  // or return NULL if it's not an instance of this class.
-  static AXPlatformNodeBase* FromNativeViewAccessible(
-      gfx::NativeViewAccessible accessible);
 
   AXPlatformNodeDelegate* delegate_;  // Weak. Owns this.
 

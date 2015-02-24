@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/sys_string_conversions.h"
-#import "ui/accessibility/ax_node_data.h"
 #import "ui/accessibility/platform/ax_platform_node_delegate.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
@@ -237,7 +236,7 @@ RoleMap BuildSubroleMap() {
 - (NSString*)AXRole {
   if (!node_)
     return nil;
-  return [[self class] nativeRoleFromAXRole:node_->GetData().role];
+  return [[self class] nativeRoleFromAXRole:node_->GetRole()];
 }
 
 - (NSValue*)AXSize {
@@ -303,7 +302,7 @@ AXPlatformNodeMac::~AXPlatformNodeMac() {
 void AXPlatformNodeMac::Destroy() {
   if (native_node_)
     [native_node_ detach];
-  delegate_ = nullptr;
+  delegate_ = NULL;
   delete this;
 }
 
@@ -311,15 +310,6 @@ gfx::NativeViewAccessible AXPlatformNodeMac::GetNativeViewAccessible() {
   if (!native_node_)
     native_node_.reset([[AXPlatformNodeCocoa alloc] initWithNode:this]);
   return native_node_.get();
-}
-
-void AXPlatformNodeMac::NotifyAccessibilityEvent(ui::AXEvent event_type) {
-  // TODO(dmazzoni): implement this.  http://crbug.com/396137
-}
-
-int AXPlatformNodeMac::GetIndexInParent() {
-  // TODO(dmazzoni): implement this.  http://crbug.com/396137
-  return -1;
 }
 
 }  // namespace ui

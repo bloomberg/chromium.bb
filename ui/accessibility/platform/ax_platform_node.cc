@@ -9,21 +9,10 @@
 
 namespace ui {
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_MACOSX)
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
-  return nullptr;
-}
-#endif
-
-#if !defined(OS_WIN)
-// This is the default implementation for platforms where native views
-// accessibility is unsupported or unfinished.
-//
-// static
-AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
-    gfx::NativeViewAccessible accessible) {
-  return nullptr;
+  return NULL;
 }
 #endif
 

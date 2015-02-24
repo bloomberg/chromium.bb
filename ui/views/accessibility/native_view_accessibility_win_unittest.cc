@@ -81,6 +81,35 @@ TEST_F(NativeViewAcccessibilityWinTest, TextfieldAccessibility) {
   ASSERT_STREQ(L"New value", textfield->text().c_str());
 }
 
+TEST_F(NativeViewAcccessibilityWinTest, UnattachedWebView) {
+  // This is a regression test. Calling get_accChild on the native accessible
+  // object for a WebView with no attached WebContents was causing an
+  // infinite loop and crash. This test simulates that with an ordinary
+  // View that registers itself as a web view with NativeViewAcccessibility.
+
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  View* web_view = new View;
+  content->AddChildView(web_view);
+  NativeViewAccessibility::RegisterWebView(web_view);
+
+  ScopedComPtr<IAccessible> web_view_accessible(
+      web_view->GetNativeViewAccessible());
+  ScopedComPtr<IDispatch> result_dispatch;
+  ScopedVariant child_index(-999);
+  ASSERT_EQ(E_FAIL, web_view_accessible->get_accChild(
+      child_index, result_dispatch.Receive()));
+
+  NativeViewAccessibility::UnregisterWebView(web_view);
+}
+
 TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   Widget widget;
   Widget::InitParams init_params =
@@ -95,14 +124,6 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(1L, child_count);
 
-  ScopedComPtr<IDispatch> child_view_dispatch;
-  ScopedComPtr<IAccessible> child_view_accessible;
-  ScopedVariant child_index_1(1);
-  ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-      child_index_1, child_view_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_view_dispatch.QueryInterface(
-      child_view_accessible.Receive()));
-
   Widget owned_widget;
   Widget::InitParams owned_init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -113,34 +134,6 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
 
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(2L, child_count);
-
-  ScopedComPtr<IDispatch> child_widget_dispatch;
-  ScopedComPtr<IAccessible> child_widget_accessible;
-  ScopedVariant child_index_2(2);
-  ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-      child_index_2, child_widget_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_widget_dispatch.QueryInterface(
-      child_widget_accessible.Receive()));
-
-  ScopedComPtr<IDispatch> child_widget_sibling_dispatch;
-  ScopedComPtr<IAccessible> child_widget_sibling_accessible;
-  ScopedVariant childid_self(CHILDID_SELF);
-  ScopedVariant result;
-  ASSERT_EQ(S_OK, child_widget_accessible->accNavigate(
-      NAVDIR_PREVIOUS, childid_self, result.Receive()));
-  ASSERT_EQ(VT_DISPATCH, V_VT(&result));
-  child_widget_sibling_dispatch = V_DISPATCH(&result);
-  ASSERT_EQ(S_OK, child_widget_sibling_dispatch.QueryInterface(
-      child_widget_sibling_accessible.Receive()));
-  ASSERT_EQ(child_view_accessible.get(), child_widget_sibling_accessible.get());
-
-  ScopedComPtr<IDispatch> child_widget_parent_dispatch;
-  ScopedComPtr<IAccessible> child_widget_parent_accessible;
-  ASSERT_EQ(S_OK, child_widget_accessible->get_accParent(
-      child_widget_parent_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_widget_parent_dispatch.QueryInterface(
-      child_widget_parent_accessible.Receive()));
-  ASSERT_EQ(root_view_accessible.get(), child_widget_parent_accessible.get());
 }
 
 TEST_F(NativeViewAcccessibilityWinTest, RetrieveAllAlerts) {

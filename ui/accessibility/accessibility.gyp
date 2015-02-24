@@ -50,16 +50,7 @@
         'platform/ax_platform_node_delegate.h',
         'platform/ax_platform_node_mac.h',
         'platform/ax_platform_node_mac.mm',
-        'platform/ax_platform_node_win.h',
-        'platform/ax_platform_node_win.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            '../../third_party/iaccessible2/iaccessible2.gyp:iaccessible2'
-          ],
-        }],
-      ],
+      ]
     },
     {
       'target_name': 'accessibility_test_support',
@@ -69,10 +60,8 @@
         'accessibility'
       ],
       'sources': [
-        'platform/test_ax_node_wrapper.cc',
-        'platform/test_ax_node_wrapper.h',
         'tree_generator.cc',
-        'tree_generator.h',
+        'tree_generator.h'
       ]
     },
     {
@@ -93,15 +82,7 @@
         'ax_text_utils_unittest.cc',
         'ax_tree_serializer_unittest.cc',
         'ax_tree_unittest.cc',
-	'platform/ax_platform_node_win_unittest.cc'
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            '../../third_party/iaccessible2/iaccessible2.gyp:iaccessible2'
-          ],
-        }],
-      ],
+      ]
     },
     {
       'target_name': 'ax_gen',

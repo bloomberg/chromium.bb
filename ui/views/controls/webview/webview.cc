@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
+#include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
@@ -36,10 +37,12 @@ WebView::WebView(content::BrowserContext* browser_context)
       browser_context_(browser_context),
       allow_accelerators_(false) {
   AddChildView(holder_);  // Takes ownership of |holder_|.
+  NativeViewAccessibility::RegisterWebView(this);
 }
 
 WebView::~WebView() {
   SetWebContents(NULL);  // Make sure all necessary tear-down takes place.
+  NativeViewAccessibility::UnregisterWebView(this);
 }
 
 content::WebContents* WebView::GetWebContents() {
