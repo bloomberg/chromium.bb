@@ -35,6 +35,8 @@ public:
     // Set frame name replicated from another process.
     virtual void setReplicatedName(const WebString&) const = 0;
 
+    virtual void DispatchLoadEventForFrameOwner() const = 0;
+
     virtual void didStartLoading() = 0;
     virtual void didStopLoading() = 0;
 };

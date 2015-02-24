@@ -5,6 +5,8 @@
 #include "config.h"
 #include "web/RemoteBridgeFrameOwner.h"
 
+#include "public/web/WebFrameClient.h"
+
 namespace blink {
 
 RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
@@ -21,7 +23,8 @@ DEFINE_TRACE(RemoteBridgeFrameOwner)
 
 void RemoteBridgeFrameOwner::dispatchLoad()
 {
-    // FIXME: Implement. Most likely goes through m_frame->client().
+    if (m_frame->client())
+        m_frame->client()->dispatchLoad();
 }
 
 } // namespace blink

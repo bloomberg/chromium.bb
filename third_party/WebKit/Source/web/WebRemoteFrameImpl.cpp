@@ -798,6 +798,12 @@ void WebRemoteFrameImpl::setReplicatedName(const WebString& name) const
     frame()->tree().setName(name, nullAtom);
 }
 
+void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() const
+{
+    ASSERT(frame()->owner()->isLocal());
+    frame()->owner()->dispatchLoad();
+}
+
 void WebRemoteFrameImpl::didStartLoading()
 {
     frame()->setIsLoading(true);

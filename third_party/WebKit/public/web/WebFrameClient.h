@@ -312,6 +312,10 @@ public:
     // The frame's theme color has changed.
     virtual void didChangeThemeColor() { }
 
+    // Called to dispatch a load event for this frame in the FrameOwner of an
+    // out-of-process parent frame.
+    virtual void dispatchLoad() { }
+
 
     // Transition navigations -----------------------------------------------
 

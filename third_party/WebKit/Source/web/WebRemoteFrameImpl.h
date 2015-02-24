@@ -188,6 +188,7 @@ public:
     virtual void setReplicatedOrigin(const WebSecurityOrigin&) const override;
     virtual void setReplicatedSandboxFlags(WebSandboxFlags) const override;
     virtual void setReplicatedName(const WebString&) const override;
+    virtual void DispatchLoadEventForFrameOwner() const override;
 
     void didStartLoading() override;
     void didStopLoading() override;
