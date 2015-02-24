@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="1227224963052638717">Ukendt politik.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
+<translation id="5872918882028971132">Forslag fra forældre</translation>
 <translation id="337363190475750230">Fjernet</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7977590112176369853">&lt;indtast forespørgsel&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Forkert tidsstempel for politik</translation>
 <translation id="2025623846716345241">Bekræft genindlæsning</translation>
 <translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Forslag fra forældre</translation>
 <translation id="111844081046043029">Er du sikker på, at du vil forlade denne side?</translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
 <translation id="3650584904733503804">Valideringen er fuldført</translation>
+<translation id="2359808026110333948">Fortsæt</translation>
 <translation id="6915804003454593391">Bruger:</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="2270192940992995399">Artiklen kunne ikke findes.</translation>
@@ -172,7 +175,7 @@
     servertype: <ph name="SERVER_TYPE"/>
     feltsignatur: <ph name="FIELD_SIGNATURE"/>
     formsignatur: <ph name="FORM_SIGNATURE"/>
-    eksperiment-id: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
+    test-id: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="5509780412636533143">Administrerede bogmærker</translation>
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Ugyldig første signatur</translation>
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="385051799172605136">Tilbage</translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="2581221116934462656">Skal <ph name="PRODUCT_NAME"/> tilbyde at oversætte sider på <ph name="LANGUAGE_NAME"/> fra dette website næste gang?</translation>
 <translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>

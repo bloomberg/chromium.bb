@@ -23,7 +23,6 @@
 <translation id="3895926599014793903">Força l'activació del zoom</translation>
 <translation id="2440823041667407902">Accés a la ubicació</translation>
 <translation id="6600253697437303777">Demana permís abans d'accedir a la càmera i al micròfon (recomanat)</translation>
-<translation id="7015922086425404465">Baixeu aplicacions de Google Play Store: <ph name="APP_ACTION"/>.</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="5233638681132016545">Pestanya nova</translation>
 <translation id="641643625718530986">Imprimeix…</translation>
@@ -33,8 +32,8 @@
 <translation id="5210365745912300556">Tanca la pestanya</translation>
 <translation id="5902828464777634901">Se suprimiran totes les dades que aquest lloc web hagi emmagatzemat, incloses les galetes.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="3435896845095436175">Activa</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
-<translation id="9189669987942139609">TB</translation>
 <translation id="2351097562818989364">S'ha restablert la configuració de traducció.</translation>
 <translation id="119944043368869598">Esborra-ho tot</translation>
 <translation id="6458785801851713928">La sincronització no està disponible per al vostre domini.</translation>
@@ -46,6 +45,7 @@
 <translation id="9133515669113036225">Restableix les credencials del dispositiu</translation>
 <translation id="2381756643783702095">Demana permís abans de fer cap enviament (recomanat)</translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>
+<translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="3358663646935160692"><ph name="DOMAIN_NAME"/> s'encarrega de gestionar aquest compte.
 
@@ -62,6 +62,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="1091134514807961917">Heu iniciat la sessió al compte de Google següent.</translation>
 <translation id="7019652137705190998">Passeu al mode d'incògnit per navegar de manera privada o per iniciar la sessió temporalment</translation>
 <translation id="1426410128494586442">Sí</translation>
+<translation id="908263542783690259">Elimina dades de navegació</translation>
 <translation id="5595485650161345191">Edita l'adreça</translation>
 <translation id="4256782883801055595">Llicències de programari lliure</translation>
 <translation id="8218346974737627104">Confirmació de l'inici de sessió</translation>
@@ -79,16 +80,22 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="988938288723502454">No es pot crear un directori de baixada a la targeta SD.</translation>
 <translation id="3896036286668839683">Lector de certificats</translation>
 <translation id="2321958826496381788">Arrossegueu el control lliscant fins que ho pugueu llegir còmodament. El text ha de ser almenys així de gran després de tocar dos cops un paràgraf.</translation>
+<translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
+<translation id="5860033963881614850">Desactivat</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Tots els drets reservats.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="6388207532828177975">Esborra i restableix</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de dades desades</translation>
+<translation id="7378810950367401542">/</translation>
+<translation id="7473891865547856676">No, gràcies</translation>
+<translation id="4089663545127310568">Esborra les contrasenyes desades</translation>
 <translation id="3656115297268584622">Activeu la ubicació a la <ph name="BEGIN_LINK"/>configuració d'Android<ph name="END_LINK"/>.</translation>
 <translation id="7423098979219808738">Demana primer</translation>
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
+<translation id="5317780077021120954">Desa</translation>
 <translation id="1151972924205500581">Es requereix una contrasenya</translation>
 <translation id="2870560284913253234">Lloc</translation>
 <translation id="2718352093833049315">Només amb Wi-Fi</translation>
@@ -122,10 +129,10 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="4543661749405994812">Copia l'adreça electrònica</translation>
 <translation id="5646376287012673985">Ubicació</translation>
 <translation id="5659593005791499971">Correu electrònic</translation>
-<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
 <translation id="5668404140385795438">Substitueix la sol·licitud d'un lloc web per evitar que s'apropi</translation>
 <translation id="8428213095426709021">Configuració</translation>
+<translation id="7493994139787901920"><ph name="VERSION"/> (última actualització: <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="6064211167623632605">Camí executable</translation>
@@ -133,9 +140,11 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="2903493209154104877">Adreces</translation>
 <translation id="3661699943263275414">Els llocs web de tercers poden desar i llegir les dades de les galetes</translation>
 <translation id="1173289567081511873">Heu iniciat la sessió als comptes de Google següents. Afegiu o suprimiu comptes a la configuració d'Android.</translation>
+<translation id="8026334261755873520">Supressió de les dades de navegació</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="4827948050554950725">Afegeix una targeta de crèdit</translation>
 <translation id="4278390842282768270">Permeses</translation>
+<translation id="4686372254213217147">Mida original</translation>
 <translation id="7817177303494746697">Versió de Blink</translation>
 <translation id="2532336938189706096">Visualització web</translation>
 <translation id="6571070086367343653">Edita la targeta de crèdit</translation>
@@ -155,7 +164,6 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="3063601790762993062">Desa el vídeo</translation>
 <translation id="8106211421800660735">Número de targeta de crèdit</translation>
 <translation id="6042308850641462728">Més</translation>
-<translation id="7267430310003164111">Sol·licitud per baixar l'aplicació de Google Play Store. Nom de l'aplicació: <ph name="APP_NAME"/>. Puntuació mitjana de l'aplicació: <ph name="APP_RATING"/></translation>
 <translation id="6108923351542677676">Configuració en curs...</translation>
 <translation id="7358682983403815415">S'estan sincronitzant les pestanyes obertes, les adreces d'interès, l'historial i altres elements amb el vostre compte de Google.</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
@@ -172,6 +180,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="5424715742813396254">Editar el nom, la contrasenya o l'excepció desats</translation>
 <translation id="6978479750597523876">Restableix la configuració de traducció</translation>
 <translation id="2476578072172137802">Configuració del lloc</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="651048280540227067">Descarta el menú</translation>
 <translation id="748127970106343339">Confirma la supressió de les credencials del dispositiu</translation>
@@ -189,16 +198,15 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
 <translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
 <translation id="2359808026110333948">Continua</translation>
-<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Emplenament automàtic de camps</translation>
 <translation id="8515416241041728525">Afeg. compte per a <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Descripció:</translation>
+<translation id="8261506727792406068">Elimina</translation>
 <translation id="1080790410959514870">Esteu tancant la sessió d'un compte que gestiona <ph name="DOMAIN_NAME"/>. Aquesta acció farà que se suprimeixin les dades de Chrome emmagatzemades en aquest dispositiu, però les dades es conservaran al vostre compte de Google.</translation>
 <translation id="4510973599275542560">No tornis a carregar</translation>
 <translation id="1206892813135768548">Copia el text de l'enllaç</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
 <translation id="1416550906796893042">Versió de l'aplicació</translation>
-<translation id="5420752959853967987">bytes</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
 <translation id="4271185234001491831">No tradueixis mai de: <ph name="LANGUAGE"/></translation>
 <translation id="7981795308302452224">No s'ha pogut iniciar la baixada</translation>
@@ -240,6 +248,7 @@ Quan estigui DESACTIVAT, és possible que no pugueu reproduir vídeos premium en
 <translation id="8928220460877261598">S'ha iniciat la sessió a Chrome.</translation>
 <translation id="5032574515228824816">Sol·licitud</translation>
 <translation id="8920114477895755567">S'està esperant la informació parental.</translation>
+<translation id="6165508094623778733">Més informació</translation>
 <translation id="3003595280608617736">No hi ha cap targeta SD</translation>
 <translation id="862875433388403934">És possible que el contingut (pel·lícules, música, etc.) que hàgiu baixat en altres aplicacions ja no es pugui reproduir fins que aquestes aplicacions no tornin a adquirir llicències basades en les credencials del dispositiu nou.
 
@@ -248,11 +257,13 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 Arrossegueu des de la part superior per sortir-ne.</translation>
 <translation id="1692118695553449118">Sincronització activada</translation>
 <translation id="7961015016161918242">Mai</translation>
+<translation id="5040262127954254034">Privadesa</translation>
 <translation id="6820607729870073286">No heu desat cap configuració de llocs web.</translation>
 <translation id="1159783623621444829">Aquest compte pertany a un nen</translation>
 <translation id="8109148095642131923">No s'ha pogut afegir al Gestor de baixades l'element que s'ha baixat.</translation>
 <translation id="6295158916970320988">Tots els llocs</translation>
 <translation id="497421865427891073">Vés endavant</translation>
+<translation id="6643016212128521049">Esborra</translation>
 <translation id="4056223980640387499">Sèpia</translation>
 <translation id="8310344678080805313">Pestanyes estàndard</translation>
 <translation id="8396312449826231789">Només els llocs aprovats</translation>
@@ -260,10 +271,11 @@ Arrossegueu des de la part superior per sortir-ne.</translation>
 <translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
 <translation id="7634554953375732414">La vostra connexió amb aquest lloc no és privada.</translation>
 <translation id="6409731863280057959">Finestres emergents</translation>
-<translation id="8776285424728638733">GB</translation>
+<translation id="6518133107902771759">Verifica</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="1742134235943978220">S'ha traduït a <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6738867403308150051">Baixada en curs...</translation>
+<translation id="5916664084637901428">Activat</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6375900123462779979">Accés al micròfon i a la càmera</translation>
 <translation id="7437998757836447326">Tancar la sessió de Chrome</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="bn">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
 <translation id="777702478322588152">জেলা</translation>
 <translation id="3713769522066937702">এই পিন কোডের ফরম্যাটটি স্বীকৃত নয়৷ একটি বৈধ পিন কোডের উদাহরণ হল: <ph name="EXAMPLE"/>৷ আপনার পিন কোড জানেন না? এটিকে <ph name="BEGIN_LINK"/>এখানে<ph name="END_LINK"/> খুঁজুন৷</translation>
 <translation id="7393381084163773901">রাস্তার ঠিকানা</translation>
@@ -8,16 +6,21 @@
 <translation id="1340068511406764697">আপনাকে অবশ্যই একটি পোস্টাল কোড প্রদান করতে হবে, যেমন <ph name="EXAMPLE"/>৷ আপনার পোস্টাল কোড জানেন না? এটিকে <ph name="BEGIN_LINK"/>এখানে<ph name="END_LINK"/> খুঁজুন৷</translation>
 <translation id="6403469950615936250">এই পোস্টল কোডের ফরম্যাটটি স্বীকৃত নয়৷ একটি বৈধ পোস্টাল কোডের উদাহরণ হল: <ph name="EXAMPLE"/>৷ আপনার পোস্টাল কোড জানেন না? এটিকে <ph name="BEGIN_LINK"/>এখানে<ph name="END_LINK"/> খুঁজুন৷</translation>
 <translation id="6327653052522436195">শহর</translation>
+<translation id="6271429879296260742">PIN কোড</translation>
 <translation id="6839929833149231406">এলাকা</translation>
 <translation id="3885155851504623709">পারিশ</translation>
 <translation id="8184169487503545976">এই পিন কোড ফর্ম্যাটটি স্বীকৃত নয়৷</translation>
+<translation id="7805765407568469194">গ্রাম / টাউনশিপ</translation>
 <translation id="7602447984296396718">এই পিন কোডটির এই ঠিকানার বাকি অংশের সাথে মিল আছে বলে মনে হচ্ছে না৷</translation>
+<translation id="8449204988444194299">পোস্ট টাউন</translation>
 <translation id="6247152910634872706">সংগঠন</translation>
 <translation id="2053553514270667976">পিন কোড</translation>
+<translation id="2577522251608256362">খুব পরিচিত ক্ষেত্র</translation>
 <translation id="7087282848513945231">দেশ</translation>
 <translation id="2096368010154057602">বিভাগ</translation>
 <translation id="7738983109397305830">এই পিন কোডটি এই ঠিকানার বাকি অংশের জন্য মিলছে বলে মনে হচ্ছে না৷ আপনার পিন কোড জানেন না? এটিকে <ph name="BEGIN_LINK"/>এখানে<ph name="END_LINK"/> খুঁজুন৷</translation>
 <translation id="3174168572213147020">দ্বীপ</translation>
+<translation id="6132429659673988671">শহরতলী</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
 <translation id="6970216967273061347">জেলা</translation>
 <translation id="6207937957461833379">দেশ/অঞ্চল</translation>

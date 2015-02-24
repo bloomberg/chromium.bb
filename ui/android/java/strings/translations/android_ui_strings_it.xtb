@@ -9,8 +9,6 @@
 <translation id="793640675459356075">Impossibile aprire file selez.</translation>
 <translation id="7569983096843329377">Nero</translation>
 <translation id="3845599764535987402">Ora</translation>
-<translation id="5860033963881614850">OFF</translation>
-<translation id="5317780077021120954">Salva</translation>
 <translation id="5901630391730855834">Giallo</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="7942349550061667556">Rosso</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">Impossibile completare l'operazione precedente. Memoria insufficiente.</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">Più</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Valore</translation>
 <translation id="161042844686301425">Ciano</translation>
-<translation id="8261506727792406068">Elimina</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="8889402386540077796">Tonalità</translation>
 <translation id="2713444072780614174">Bianco</translation>
 <translation id="5789643057113097023">.</translation>
-<translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="3329013043687509092">Saturazione</translation>
 <translation id="1768717197362323622">Millisecondo</translation>
 <translation id="2841013758207633010">Ora</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="7781164152564914424">Imposta mese</translation>
-<translation id="6518133107902771759">Verifica</translation>
-<translation id="5916664084637901428">On</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6555463879959038093">Impossibile copiare negli appunti</translation>
 <translation id="6444070574980481588">Imposta data e ora</translation>
 </translationbundle>

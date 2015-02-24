@@ -23,7 +23,6 @@
 <translation id="3895926599014793903">Memaksa pengaktifan pembesaran/pengecilan</translation>
 <translation id="2440823041667407902">Akses lokasi</translation>
 <translation id="6600253697437303777">Tanyakan sebelum mengakses kamera dan mikrofon (disarankan)</translation>
-<translation id="7015922086425404465">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
 <translation id="5233638681132016545">Tab baru</translation>
 <translation id="641643625718530986">Cetak...</translation>
@@ -33,8 +32,8 @@
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
 <translation id="7658239707568436148">Batal</translation>
+<translation id="3435896845095436175">Aktifkan</translation>
 <translation id="2154710561487035718">Salin URL</translation>
-<translation id="9189669987942139609">TB</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="119944043368869598">Hapus semua</translation>
 <translation id="6458785801851713928">Sinkronisasi tidak tersedia untuk domain Anda.</translation>
@@ -46,6 +45,7 @@
 <translation id="9133515669113036225">Menyetel ulang kredensial perangkat</translation>
 <translation id="2381756643783702095">Tanyakan sebelum mengirim (disarankan)</translation>
 <translation id="9019902583201351841">Dikelola oleh orang tua Anda</translation>
+<translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="3358663646935160692">Akun ini dikelola oleh <ph name="DOMAIN_NAME"/>.
 
@@ -62,6 +62,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="1091134514807961917">Anda masuk ke Akun Google berikut.</translation>
 <translation id="7019652137705190998">Gunakan mode penyamaran untuk menjelajah secara pribadi atau masuk untuk sementara</translation>
 <translation id="1426410128494586442">Ya</translation>
+<translation id="908263542783690259">Hapus riwayat jelajah</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
 <translation id="8218346974737627104">Konfirmasi proses masuk</translation>
@@ -79,16 +80,22 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="988938288723502454">Tidak dapat membuat direktori unduhan pada kartu SD.</translation>
 <translation id="3896036286668839683">Penampil Sertifikat</translation>
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
+<translation id="3282568296779691940">Masuk ke Chrome</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>
+<translation id="5860033963881614850">Nonaktif</translation>
 <translation id="2960796085439532066">Hak cipta <ph name="YEAR"/> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> data tersimpan</translation>
+<translation id="7378810950367401542">/</translation>
+<translation id="7473891865547856676">Tidak, Terima Kasih</translation>
+<translation id="4089663545127310568">Hapus sandi yang disimpan</translation>
 <translation id="3656115297268584622">Aktifkan lokasi di <ph name="BEGIN_LINK"/>Setelan Android<ph name="END_LINK"/>.</translation>
 <translation id="7423098979219808738">Tanyakan terlebih dahulu</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="552553974213252141">Apakah teks diekstrak dengan benar?</translation>
+<translation id="5317780077021120954">Simpan</translation>
 <translation id="1151972924205500581">Sandi wajib ada</translation>
 <translation id="2870560284913253234">Situs</translation>
 <translation id="2718352093833049315">Hanya pada Wi-Fi</translation>
@@ -122,10 +129,10 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="4543661749405994812">Salin alamat email</translation>
 <translation id="5646376287012673985">Lokasi</translation>
 <translation id="5659593005791499971">Email</translation>
-<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
 <translation id="5668404140385795438">Mengganti permintaan situs web untuk mencegah pembesaran</translation>
 <translation id="8428213095426709021">Setelan</translation>
+<translation id="7493994139787901920"><ph name="VERSION"/> (Diperbarui <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Ups. Laman ini tidak dapat diterjemahkan.</translation>
 <translation id="1987317783729300807">Akun</translation>
 <translation id="6064211167623632605">Jalur yang dapat dijalankan</translation>
@@ -133,9 +140,11 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="3661699943263275414">Situs web pihak ketiga dapat menyimpan dan membaca data cookie</translation>
 <translation id="1173289567081511873">Anda masuk ke Akun Google berikut. Tambahkan dan buang akun di setelan Android.</translation>
+<translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="4827948050554950725">Tambahkan kartu kredit</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
+<translation id="4686372254213217147">Ukuran asli</translation>
 <translation id="7817177303494746697">Versi berkedip</translation>
 <translation id="2532336938189706096">Tampilan Web</translation>
 <translation id="6571070086367343653">Edit kartu kredit</translation>
@@ -155,7 +164,6 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="3063601790762993062">Simpan video</translation>
 <translation id="8106211421800660735">Nomor kartu kredit</translation>
 <translation id="6042308850641462728">Lainnya</translation>
-<translation id="7267430310003164111">Permintaan untuk mendapatkan aplikasi dari Google Play Store. Nama aplikasi: <ph name="APP_NAME"/>. Peringkat rata-rata aplikasi: <ph name="APP_RATING"/>.</translation>
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
 <translation id="7358682983403815415">Tab yang dibuka, bookmark, riwayat, dan lainnya sedang disinkronkan dengan Akun Google Anda.</translation>
 <translation id="1943432128510653496">Menyimpan sandi</translation>
@@ -172,6 +180,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="5424715742813396254">Edit pengecualian atau nama/sandi yang tersimpan</translation>
 <translation id="6978479750597523876">Setel ulang setelan terjemahan</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="651048280540227067">Tutup menu</translation>
 <translation id="748127970106343339">Mengonfirmasi penghapusan kredensial perangkat</translation>
@@ -189,16 +198,15 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
 <translation id="2359808026110333948">Lanjut</translation>
-<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Isi Otomatis formulir</translation>
 <translation id="8515416241041728525">Tambah akun untuk <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
+<translation id="8261506727792406068">Hapus</translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME"/>. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
 <translation id="4510973599275542560">Jangan muat ulang</translation>
 <translation id="1206892813135768548">Salin teks tautan</translation>
 <translation id="9154176715500758432">Tetap di Laman ini</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
-<translation id="5420752959853967987">byte</translation>
 <translation id="7063006564040364415">Tidak dapat menyambung ke server sinkronisasi.</translation>
 <translation id="4271185234001491831">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE"/></translation>
 <translation id="7981795308302452224">Gagal memulai unduhan</translation>
@@ -240,6 +248,7 @@ Jika NONAKTIF, Anda mungkin tidak dapat memutar video premium di perangkat ini.<
 <translation id="8928220460877261598">Sekarang Anda sudah masuk ke Chrome.</translation>
 <translation id="5032574515228824816">Meminta</translation>
 <translation id="8920114477895755567">Menunggu detail orang tua.</translation>
+<translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="3003595280608617736">Tidak ada kartu SD</translation>
 <translation id="862875433388403934">Konten (film, musik, dsb.) yang diunduh di aplikasi lain mungkin tidak dapat diputar lagi hingga aplikasi tersebut mendapatkan kembali lisensi berdasarkan kredensial perangkat yang baru.
 
@@ -248,11 +257,13 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 Seret dari atas untuk keluar.</translation>
 <translation id="1692118695553449118">Sinkronisasi aktif</translation>
 <translation id="7961015016161918242">Tidak pernah</translation>
+<translation id="5040262127954254034">Privasi</translation>
 <translation id="6820607729870073286">Anda tidak memiliki setelan situs web yang tersimpan.</translation>
 <translation id="1159783623621444829">Ini adalah akun anak</translation>
 <translation id="8109148095642131923">Gagal menambahkan item yang diunduh ke pengelola unduhan.</translation>
 <translation id="6295158916970320988">Semua situs</translation>
 <translation id="497421865427891073">Maju</translation>
+<translation id="6643016212128521049">Hapus</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Tab standar</translation>
 <translation id="8396312449826231789">Hanya situs yang disetujui</translation>
@@ -260,10 +271,11 @@ Seret dari atas untuk keluar.</translation>
 <translation id="6277522088822131679">Terjadi masalah saat mencetak laman. Coba lagi.</translation>
 <translation id="7634554953375732414">Sambungan Anda ke situs ini tidak bersifat pribadi.</translation>
 <translation id="6409731863280057959">Munculan</translation>
-<translation id="8776285424728638733">GB</translation>
+<translation id="6518133107902771759">Verifikasi</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="1742134235943978220">Diterjemahkan ke <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6738867403308150051">Mengunduh…</translation>
+<translation id="5916664084637901428">Aktif</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6375900123462779979">Mengakses mikrofon dan kamera</translation>
 <translation id="7437998757836447326">Keluar dari Chrome</translation>

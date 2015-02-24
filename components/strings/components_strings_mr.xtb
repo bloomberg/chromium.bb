@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">धोरणानुसार डीफॉल्ट शोध अक्षम केल्याने दुर्लक्ष करण्‍यात आले.</translation>
 <translation id="1227224963052638717">अज्ञात धोरण.</translation>
 <translation id="9207861905230894330">लेख जोडण्यात अयशस्वी.</translation>
+<translation id="5872918882028971132">पालक सूचना</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
 <translation id="2367567093518048410">दर्जा</translation>
 <translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करा&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">खराब धोरण टाइमस्टँप</translation>
 <translation id="2025623846716345241">रीलोड करण्याची पुष्टी करा</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> बुकमार्क</translation>
+<translation id="4300246636397505754">पालक सूचना</translation>
 <translation id="111844081046043029">आपली खात्री आहे की आपण हे पृष्ठ सोडू इच्छिता?</translation>
 <translation id="1973335181906896915">क्रमीकरण त्रुटी</translation>
 <translation id="5989320800837274978">निश्चित प्रॉक्‍सी सर्व्हर किंवा .pac स्क्रिप्ट URL देखील निर्दिष्‍ट केलेली नाही.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">धोरण सेटिंग्ज लोड करण्यात अयशस्वी</translation>
 <translation id="2354001756790975382">इतर बुकमार्क</translation>
 <translation id="3650584904733503804">प्रमाणीकरण यशस्वी</translation>
+<translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="6915804003454593391">वापरकर्ता:</translation>
 <translation id="3377188786107721145">धोरण विश्लेषण त्रुटी</translation>
 <translation id="2270192940992995399">लेख शोधण्यात अयशस्वी.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">खराब मूळ स्वाक्षरी</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
 <translation id="2639739919103226564">स्थिती:</translation>
+<translation id="385051799172605136">मागील</translation>
 <translation id="5095208057601539847">प्रांत</translation>
 <translation id="2581221116934462656">आपण पुढील वेळी या साइटवरून <ph name="PRODUCT_NAME"/> ने <ph name="LANGUAGE_NAME"/> पृष्‍ठे भाषांतरित करण्‍याची ऑफर द्यावी असे इच्छिता?</translation>
 <translation id="3934680773876859118">PDF दस्तऐवज लोड करणे अयशस्वी</translation>

@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Valoare ignorată, deoarece politica a dezactivat căutarea prestabilită.</translation>
 <translation id="1227224963052638717">Politică necunoscută.</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
+<translation id="5872918882028971132">Sugestii parentale</translation>
 <translation id="337363190475750230">Scos din uz</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="7977590112176369853">&lt;introdu interogarea&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Marcaj temporal greșit pentru politică</translation>
 <translation id="2025623846716345241">Confirmați reîncărcarea</translation>
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Sugestii parentale</translation>
 <translation id="111844081046043029">Sigur vrei să ieși de pe această pagină?</translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="3650584904733503804">Validarea a reușit</translation>
+<translation id="2359808026110333948">Continuă</translation>
 <translation id="6915804003454593391">Utilizator:</translation>
 <translation id="3377188786107721145">Eroare la analizarea politicii</translation>
 <translation id="2270192940992995399">Articolul nu a fost găsit.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Semnătură inițială incorectă</translation>
 <translation id="20817612488360358">Setările proxy de sistem sunt setate pentru a fi utilizate, dar o configurație explicită pentru proxy este, de asemenea, specificată.</translation>
 <translation id="2639739919103226564">Stare:</translation>
+<translation id="385051799172605136">Înapoi</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="2581221116934462656">Dorești ca produsul <ph name="PRODUCT_NAME"/> să ofere traducerea paginilor din <ph name="LANGUAGE_NAME"/> de pe acest site data următoare când îl accesezi?</translation>
 <translation id="3934680773876859118">Documentul PDF nu a fost încărcat</translation>

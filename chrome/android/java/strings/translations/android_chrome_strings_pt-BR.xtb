@@ -23,7 +23,6 @@
 <translation id="3895926599014793903">Forçar ativação de zoom</translation>
 <translation id="2440823041667407902">Acesso ao local</translation>
 <translation id="6600253697437303777">Perguntar antes de acessar a câmera e o microfone (recomendado)</translation>
-<translation id="7015922086425404465">Comprar aplicativo na Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atualizar esta página</translation>
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="641643625718530986">Imprimir...</translation>
@@ -33,8 +32,8 @@
 <translation id="5210365745912300556">Fechar guia</translation>
 <translation id="5902828464777634901">Os dados locais armazenados por este site serão excluídos, inclusive os cookies.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="3435896845095436175">Ativar</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
-<translation id="9189669987942139609">TB</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="6458785801851713928">A sincronização não está disponível para seu domínio.</translation>
@@ -46,6 +45,7 @@
 <translation id="9133515669113036225">Redefinir as credenciais do dispositivo</translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
+<translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="7596558890252710462">Sistema operacional</translation>
 <translation id="3358663646935160692">Esta conta é administrada por <ph name="DOMAIN_NAME"/>.
 
@@ -62,6 +62,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="1091134514807961917">Você está conectado à Conta do Google a seguir.</translation>
 <translation id="7019652137705190998">Entre no modo anônimo para navegar de maneira privada ou fazer login temporariamente</translation>
 <translation id="1426410128494586442">Sim</translation>
+<translation id="908263542783690259">Limpar histórico de navegação</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="8218346974737627104">Confirmar login</translation>
@@ -79,16 +80,22 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="988938288723502454">Não é possível criar o diretório de download no cartão SD.</translation>
 <translation id="3896036286668839683">Leitor de certificados</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até que você possa ler confortavelmente. O texto deve ter pelo menos este tamanho após um toque duplo em um parágrafo.</translation>
+<translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">Limpando os dados da conta</translation>
+<translation id="5860033963881614850">Desativado</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos os direitos reservados.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="6388207532828177975">Limpar e redefinir</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de dados armazenados</translation>
+<translation id="7378810950367401542">/</translation>
+<translation id="7473891865547856676">Não, obrigado</translation>
+<translation id="4089663545127310568">Apagar senhas salvas</translation>
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK"/>Configurações do Android<ph name="END_LINK"/>.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="552553974213252141">O texto foi extraído corretamente?</translation>
+<translation id="5317780077021120954">Salvar</translation>
 <translation id="1151972924205500581">Senha obrigatória</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2718352093833049315">Apenas com Wi-Fi</translation>
@@ -122,10 +129,10 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="4543661749405994812">Copiar endereço de e-mail</translation>
 <translation id="5646376287012673985">Local</translation>
 <translation id="5659593005791499971">E-mail</translation>
-<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="5668404140385795438">Substituir a solicitação de um site para evitar a aplicação de zoom</translation>
 <translation id="8428213095426709021">Configurações</translation>
+<translation id="7493994139787901920"><ph name="VERSION"/> (atualizada <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
 <translation id="1987317783729300807">Contas</translation>
 <translation id="6064211167623632605">Caminho do arquivo executável</translation>
@@ -133,9 +140,11 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="3661699943263275414">Websites de terceiros podem salvar e ler dados de cookies</translation>
 <translation id="1173289567081511873">Você está conectado às Contas do Google a seguir. Adicione ou remova contas nas configurações do Android.</translation>
+<translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4278390842282768270">Permitido</translation>
+<translation id="4686372254213217147">Tamanho original</translation>
 <translation id="7817177303494746697">Versão do Blink</translation>
 <translation id="2532336938189706096">Visualização da Web</translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
@@ -155,7 +164,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="3063601790762993062">Salvar vídeo</translation>
 <translation id="8106211421800660735">Número do cartão de crédito</translation>
 <translation id="6042308850641462728">Mais</translation>
-<translation id="7267430310003164111">Prompt para comprar o aplicativo na Google Play Store. Nome do aplicativo: <ph name="APP_NAME"/>. Classificação média do aplicativo: <ph name="APP_RATING"/>.</translation>
 <translation id="6108923351542677676">Configuração em andamento...</translation>
 <translation id="7358682983403815415">Guias abertas, favoritos, histórico e outros itens estão sendo sincronizados com sua Conta do Google.</translation>
 <translation id="1943432128510653496">Salvar senhas</translation>
@@ -172,6 +180,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="5424715742813396254">Editar nome/senha salvos ou exceção</translation>
 <translation id="6978479750597523876">Redefinir configurações do Google Tradutor</translation>
 <translation id="2476578072172137802">Configurações do site</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="651048280540227067">Ignorar menu</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
@@ -189,16 +198,15 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Preenchimento automático de formulários</translation>
 <translation id="8515416241041728525">Adicionar conta para <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Descrição:</translation>
+<translation id="8261506727792406068">Excluir</translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME"/>. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
 <translation id="4510973599275542560">Não atualizar</translation>
 <translation id="1206892813135768548">Copiar texto do link</translation>
 <translation id="9154176715500758432">Permanecer nesta página</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
-<translation id="5420752959853967987">bytes</translation>
 <translation id="7063006564040364415">Não foi possível conectar ao servidor de sincronização.</translation>
 <translation id="4271185234001491831">Nunca traduzir <ph name="LANGUAGE"/></translation>
 <translation id="7981795308302452224">Falha ao iniciar o download</translation>
@@ -240,6 +248,7 @@ Se o conteúdo protegido estiver desativado, não será possível reproduzir ví
 <translation id="8928220460877261598">Você fez login no Chrome.</translation>
 <translation id="5032574515228824816">Prompt</translation>
 <translation id="8920114477895755567">Aguardando detalhes dos pais.</translation>
+<translation id="6165508094623778733">Saiba mais</translation>
 <translation id="3003595280608617736">Nenhum cartão SD</translation>
 <translation id="862875433388403934">Conteúdo (filmes, música, etc.) baixado em outros aplicativos pode não ser cobrado até que esses aplicativos readquiram licenças baseadas em uma nova credencial do dispositivo.
 Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado.</translation>
@@ -247,11 +256,13 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 Arraste para sair desse modo.</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="7961015016161918242">Nunca</translation>
+<translation id="5040262127954254034">Privacidade</translation>
 <translation id="6820607729870073286">Você não tem configurações do website salvas.</translation>
 <translation id="1159783623621444829">Esta conta é de uma criança</translation>
 <translation id="8109148095642131923">Ocorreu uma falha ao fazer o download do item no gerenciador de download.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="497421865427891073">Avançar</translation>
+<translation id="6643016212128521049">Limpar</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="8310344678080805313">Guias padrão</translation>
 <translation id="8396312449826231789">Somente sites aprovados</translation>
@@ -259,10 +270,11 @@ Arraste para sair desse modo.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="7634554953375732414">Sua conexão a este site não é particular.</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
-<translation id="8776285424728638733">GB</translation>
+<translation id="6518133107902771759">Confirmar</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6738867403308150051">Fazendo o download...</translation>
+<translation id="5916664084637901428">Ativado</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6375900123462779979">Acessar microfone e câmera</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>

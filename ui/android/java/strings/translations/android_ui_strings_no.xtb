@@ -9,8 +9,6 @@
 <translation id="793640675459356075">Kunne ikke åpne den valgte filen</translation>
 <translation id="7569983096843329377">Svart</translation>
 <translation id="3845599764535987402">Time</translation>
-<translation id="5860033963881614850">Av</translation>
-<translation id="5317780077021120954">Lagre</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="4932733599132424254">Dato</translation>
 <translation id="7942349550061667556">Rød</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">Kan ikke fullføre forrige handling på grunn av lite minne</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">Mer</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Verdi</translation>
 <translation id="161042844686301425">Cyan</translation>
-<translation id="8261506727792406068">Slett</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="8889402386540077796">Fargetone</translation>
 <translation id="2713444072780614174">Hvit</translation>
 <translation id="5789643057113097023">.</translation>
-<translation id="6165508094623778733">Les mer</translation>
 <translation id="3329013043687509092">Metning</translation>
 <translation id="1768717197362323622">Millisekund</translation>
 <translation id="2841013758207633010">Klokkeslett</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="7781164152564914424">Angi måned</translation>
-<translation id="6518133107902771759">Bekreft</translation>
-<translation id="5916664084637901428">På</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6555463879959038093">Kunne ikke kopiere til utklippstavlen</translation>
 <translation id="6444070574980481588">Angi dato og klokkeslett</translation>
 </translationbundle>

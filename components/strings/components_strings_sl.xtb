@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Prezrto, ker je pravilnik onemogočil privzeto iskanje.</translation>
 <translation id="1227224963052638717">Neznan pravilnik</translation>
 <translation id="9207861905230894330">Članka ni bilo mogoče dodati.</translation>
+<translation id="5872918882028971132">Predlogi staršev</translation>
 <translation id="337363190475750230">Nepripravljen</translation>
 <translation id="2367567093518048410">Raven</translation>
 <translation id="7977590112176369853">&lt;vnesite poizvedbo&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Napačen časovni žig pravilnika</translation>
 <translation id="2025623846716345241">Potrditev vnovičnega nalaganja</translation>
 <translation id="1962204205936693436">Zaznamki domene <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Predlogi staršev</translation>
 <translation id="111844081046043029">Ali ste prepričani, da želite zapustiti to stran?</translation>
 <translation id="1973335181906896915">Napaka pri serializaciji</translation>
 <translation id="5989320800837274978">Določeni niso ne stalni strežniki proxy ne URL skripta .pac.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Nastavitev pravilnika ni bilo mogoče naložiti</translation>
 <translation id="2354001756790975382">Drugi zaznamki</translation>
 <translation id="3650584904733503804">Preverjanje veljavnosti uspešno</translation>
+<translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="6915804003454593391">Uporabnik:</translation>
 <translation id="3377188786107721145">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="2270192940992995399">Članka ni bilo mogoče najti.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Napačen začetni podpis</translation>
 <translation id="20817612488360358">Za uporabo so nastavljene sistemske nastavitve strežnika proxy, vendar je navedena tudi izrecna konfiguracija proxyja.</translation>
 <translation id="2639739919103226564">Stanje:</translation>
+<translation id="385051799172605136">Nazaj</translation>
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="2581221116934462656">Želite, da <ph name="PRODUCT_NAME"/> naslednjič ponudi prevajanje strani v jeziku <ph name="LANGUAGE_NAME"/> na tem spletnem mestu?</translation>
 <translation id="3934680773876859118">Dokumenta PDF ni bilo mogoče naložiti</translation>

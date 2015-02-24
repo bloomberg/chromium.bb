@@ -1,17 +1,21 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="8586442755830160949">ลิขสิทธิ์ <ph name="YEAR"/> The Chromium Authors สงวนลิขสิทธิ์</translation>
+<translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="6373523479360886564">คุณแน่ใจหรือไม่ว่าต้องการถอนการติดตั้ง Chromium</translation>
+<translation id="1260240842868558614">แสดง:</translation>
 <translation id="6510925080656968729">ถอนการติดตั้ง Chromium</translation>
 <translation id="2615699638672665509">อีกไม่นานคอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Chromium เนื่องจากฮาร์ดแวร์ไม่ได้รับการสนับสนุนอีกต่อไป</translation>
 <translation id="5532301346661895910">Chromium จะเก็บข้อมูลนี้ไว้ใน|รหัสผ่านที่ Google บันทึกไว้| และจดจดไว้ในครั้งถัดไปที่คุณต้องการใช้</translation>
 <translation id="6893813176749746474">Chromium ได้รับการอัปเดตแล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="2732467638532545152">คุณใช้คอมพิวเตอร์ Microsoft Windows เวอร์ชันเก่าที่ไม่สามารถดำเนินการกับใบรับรองความปลอดภัยของเว็บไซต์นี้ได้ ซึ่งปัญหานี้ทำให้ Chromium ไม่สามารถบอกได้ว่าใบรับรองมาจาก <ph name="SITE"/> หรือจากบุคคลอื่นในเครือข่ายของคุณซึ่งตบตาว่าเป็น <ph name="SITE"/> โปรดอัปเดตคอมพิวเตอร์เป็นเวอร์ชัน Windows ที่ใหม่กว่านี้</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
+<translation id="7982789257301363584">เครือข่าย</translation>
 <translation id="6613594504749178791">การเปลี่ยนแปลงของคุณจะมีผลในครั้งถัดไปที่คุณเปิด Chromium ขึ้นอีก</translation>
 <translation id="9089354809943900324">Chromium ล้าสมัย</translation>
 <translation id="59625444380784159">รายละเอียดจากรายชื่อติดต่อของคุณช่วยให้คุณสามารถกรอกฟอร์มได้อย่างรวดเร็วขึ้นใน Chromium</translation>
 <translation id="3748537968684000502">คุณกำลังดูหน้าเว็บ Chromium ที่ปลอดภัย</translation>
+<translation id="1165039591588034296">ข้อผิดพลาด</translation>
 <translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
 <translation id="1065672644894730302">ค่ากำหนดของคุณไม่สามารถอ่านได้ คุณลักษณะบางอย่างอาจใช้ไม่ได้และการเปลี่ยนแปลงค่ากำหนดจะไม่ได้รับการบันทึก</translation>
 <translation id="7861509383340276692">ไปที่
@@ -39,7 +43,9 @@
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="1396446129537741364">Chromium กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="8987477933582888019">เว็บเบราว์เซอร์</translation>
+<translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและคุณลักษณะใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
 <translation id="2886012850691518054">ตัวเลือก: ช่วยปรับปรุง Chromium ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
+<translation id="1124772482545689468">ผู้ใช้</translation>
 <translation id="580822234363523061">ไปที่
           เมนู Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -48,6 +54,7 @@
           &gt;
           <ph name="PROXIES_TITLE"/>
           และตรวจสอบว่าคุณตั้งการกำหนดค่าของคุณเป็น &quot;ไม่มีพร็อกซี&quot; หรือ &quot;โดยตรง&quot;</translation>
+<translation id="1864111464094315414">ลงชื่อเข้าใช้</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">Chromium ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากไม่สามารถใช้การซิงค์กับโดเมนของคุณ</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
@@ -74,10 +81,12 @@
 <translation id="734373864078049451">เว็บของคุณ บุ๊กมาร์ก และข้อมูลอื่นๆ ใน Chromium พร้อมใช้แล้วที่นี่</translation>
 <translation id="3197823471738295152">อุปกรณ์ของคุณทันสมัยแล้ว</translation>
 <translation id="3065280201209294872">ไซต์ใช้การตั้งค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจทำให้ Chromium เวอร์ชันใหม่ๆ ในอนาคตไม่สามารถเข้าถึงไซต์ได้อย่างปลอดภัย</translation>
+<translation id="2660779039299703961">กิจกรรม</translation>
 <translation id="8551886023433311834">เกือบจะทันสมัยแล้ว! รีสตาร์ทอุปกรณ์ของคุณเพื่อเสร็จสิ้นการอัปเดต</translation>
 <translation id="8353224596138547809">คุณต้องการให้ Chromium บันทึกรหัสผ่านของคุณสำหรับไซต์นี้หรือไม่</translation>
 <translation id="8738058698779197622">หากต้องเริ่มการเชื่อมต่อที่ปลอดภัย นาฬิกาจะต้องตั้งค่าไว้อย่างถูกต้อง เนื่องจากใบรับรองที่เว็บไซต์ใช้เพื่อระบุตนเองจะใช้ได้เฉพาะช่วงเวลาหนึ่งเท่านั้น นาฬิกาของอุปกรณ์ไม่ถูกต้อง Chromium จึงไม่สามารถยืนยันใบรับรองเหล่านี้ได้</translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
+<translation id="2739191690716947896">แก้ปัญหา</translation>
 <translation id="7463979740390522693">Chromium - การแจ้งเตือน (ยังไม่ได้อ่าน <ph name="QUANTITY"/>)</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
 <translation id="5823381412099532241">Chromium ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดคุณลักษณะเจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องอัปเดต Chromium</translation>
@@ -153,6 +162,7 @@
 <translation id="8684913864886094367">Chromium ไม่ได้ปิดอย่างถูกต้อง</translation>
 <translation id="3582788516608077514">กำลังอัปเดต Chromium...</translation>
 <translation id="7223968959479464213">ตัวจัดการงาน - Chromium</translation>
+<translation id="6723839937902243910">พลังงาน</translation>
 <translation id="1779356040007214683">เพื่อให้ Chromium ปลอดภัยขึ้น เราได้ปิดส่วนขยายบางรายการที่ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="6638567566961868659">ค้นหาบุ๊กมาร์กของคุณในเมนู Chromium หรือในแถบบุ๊กมาร์ก</translation>
 <translation id="2673087257647337101">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว! เปิด Chromium อีกครั้งเพื่อให้การอัปเดตเสร็จสิ้น</translation>
@@ -162,7 +172,7 @@
 <translation id="5942520288919337908">เพิ่ม <ph name="EXTENSION_NAME"/> ลงใน Chromium แล้ว</translation>
 <translation id="549669000822060376">โปรดรอขณะที่ Chromium ติดตั้งการอัปเดตระบบล่าสุด</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="3281987435599047980">ส่งคำและบริบทโดยรอบไปยัง Google Search เพื่อแสดงคำจำกัดความ รูปภาพ ผลการค้นหา และรายละเอียดอื่นๆ</translation>
+<translation id="4130199216115862831">บันทึกของอุปกรณ์</translation>
 <translation id="4559775032954821361">ไปที่
           เมนู Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -178,6 +188,10 @@
 
 คุณลักษณะบางประการอาจไม่มี โปรดระบุไดเรกทอรีโปรไฟล์อื่น หรือใช้ Chromium รุ่นใหม่</translation>
 <translation id="8907580949721785412">Chromium กำลังพยายามแสดงรหัสผ่าน พิมพ์รหัสผ่าน Windows ของคุณเพื่อแสดงรหัสผ่าน</translation>
+<translation id="4404275227760602850">ไปที่เมนู Chromium &gt; การตั้งค่า &gt; ความเป็นส่วนตัว (ขั้นสูง)
+          และปิดใช้ &quot;ดึงทรัพยากรบนหน้าล่วงหน้า&quot;
+          หากวิธีนี้ไม่ช่วยแก้ปัญหา เราขอแนะนำให้เปิดใช้ตัวเลือกนี้
+          อีกครั้งเพื่อให้ประสิทธิภาพการทำงานดียิ่งขึ้น</translation>
 <translation id="1174473354587728743">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chromium ในแบบที่คุณชอบได้แล้ว</translation>
 <translation id="9013087743919948559">เพิ่มลงใน Chromium</translation>
 <translation id="2525993619214772747">หาก Chromium ทำงานผิดแปลกไป</translation>
@@ -225,6 +239,7 @@
 <translation id="2119636228670142020">เกี่ยวกับ &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Chromium รุ่นใหม่ที่ปลอดภัยกว่าเดิมพร้อมให้ใช้งานแล้ว</translation>
 <translation id="378917192836375108">Chromium ช่วยให้คุณสามารถคลิกหมายเลขโทรศัพท์บนเว็บและโทรออกด้วย Skype ได้!</translation>
+<translation id="2242687258748107519">ข้อมูลไฟล์</translation>
 <translation id="8724049448828509830">ขณะนี้อยู่ระหว่างการดาวน์โหลดหนึ่งรายการ คุณต้องการออกจาก Chromium และยกเลิกการดาวน์โหลดหรือไม่</translation>
 <translation id="608189560609172163">Chromium ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="4888717733111232871">กฎขาเข้าสำหรับ Chromium เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
@@ -235,6 +250,7 @@
 การลงชื่อเข้าใช้ต่อไปจะรวมข้อมูล Chromium เช่น บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ เข้ากับ <ph name="ACCOUNT_EMAIL_NEW"/></translation>
 <translation id="2739631515503418643">ขณะนี้อยู่ระหว่างการดาวน์โหลดหลายรายการ คุณต้องการออกจาก Chromium และยกเลิกการดาวน์โหลดหรือไม่</translation>
 <translation id="9013262824292842194">Chromium ต้องใช้ Windows Vista หรือ Windows XP พร้อม SP2 หรือใหม่กว่า</translation>
+<translation id="6231881193380278751">เพิ่มพารามิเตอร์ข้อความค้นหาใน URL เพื่อรีเฟรชหน้าโดยอัตโนมัติ: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="1967743265616885482">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันนี้จะขัดแย้งกับ Chromium</translation>
 <translation id="7962572577636132072">Chromium จะอัปเดตโดยอัตโนมัติเพื่อให้คุณได้ใช้เวอร์ชันใหม่ล่าสุดอยู่เสมอ</translation>
 <translation id="722928257909516027">แสดงเมนู Chromium</translation>
@@ -248,6 +264,7 @@
 Chromium ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
 <translation id="918373042641772655">การยกเลิกการเชื่อมต่อกับ <ph name="USERNAME"/> จะล้างประวัติการเข้าชม บุ๊กมาร์ก การตั้งค่า และข้อมูลอื่นๆ ของ Chromium ที่เก็บไว้ในอุปกรณ์นี้ ข้อมูลที่เก็บไว้ในบัญชี Google ของคุณจะไม่ถูกล้างและสามารถจัดการได้บน <ph name="GOOGLE_DASHBOARD_LINK"/>Google แดชบอร์ด<ph name="END_GOOGLE_DASHBOARD_LINK"/></translation>
 <translation id="6403826409255603130">Chromium เป็นเว็บเบราว์เซอร์ที่เรียกใช้หน้าเว็บและแอปพลิเคชันด้วยความเร็วสูง มีความรวดเร็ว เสถียร และง่ายในการใช้งาน เรียกดูเว็บได้อย่างปลอดภัยมากขึ้นด้วยการป้องกันมัลแวร์และฟิชชิงที่สร้างอยู่ภายใน Chromium</translation>
+<translation id="930268624053534560">การประทับเวลาโดยละเอียด</translation>
 <translation id="4230135487732243613">เชื่อมโยงข้อมูล Chromium กับบัญชีนี้ไหม</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium ดีขึ้นกว่าเดิม</translation>

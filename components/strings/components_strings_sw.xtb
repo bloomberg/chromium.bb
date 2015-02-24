@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Imepuuzwa kwa sababu utafutaji chaguo-msingi unalemazwa kwa sera.</translation>
 <translation id="1227224963052638717">Sera isiyojulikana.</translation>
 <translation id="9207861905230894330">Haikufaulu kuongeza makala.</translation>
+<translation id="5872918882028971132">Mapendekezo ya Wazazi</translation>
 <translation id="337363190475750230">Imewekwa katika hali ya kutotumika</translation>
 <translation id="2367567093518048410">Kiwango</translation>
 <translation id="7977590112176369853">&lt;weka hoja&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Muhuri wa muda wa sera mbaya</translation>
 <translation id="2025623846716345241">Thibitisha Upakiaji Upya</translation>
 <translation id="1962204205936693436">Alamisho za <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Mapendekezo ya wazazi</translation>
 <translation id="111844081046043029">Je, una hakika kuwa ungependa kuondoka kwenye ukurasa huu?</translation>
 <translation id="1973335181906896915">Hitilafu ya namba tambulishi</translation>
 <translation id="5989320800837274978">Siyo seva proksi za kudumu wala URL ya hati ya .pac zimebainishwa.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Imeshindwa kupakia mipangilio ya sera</translation>
 <translation id="2354001756790975382">Alamisho zingine</translation>
 <translation id="3650584904733503804">Uhalalishaji umefanikiwa</translation>
+<translation id="2359808026110333948">Endelea</translation>
 <translation id="6915804003454593391">Mtumiaji:</translation>
 <translation id="3377188786107721145">Hitilafu ya kuchanganua sera</translation>
 <translation id="2270192940992995399">Haikufaulu kupata makala.</translation>
@@ -196,6 +199,7 @@
 <translation id="8713130696108419660">Sahihi mbaya ya mwanzo</translation>
 <translation id="20817612488360358">Mipangilio ya mfumo ya proksi imewekwa ili kutumiwa lakini usanidi dhahiri wa proksi pia umebainishwa.</translation>
 <translation id="2639739919103226564">Hali:</translation>
+<translation id="385051799172605136">Nyuma</translation>
 <translation id="5095208057601539847">Mkoa</translation>
 <translation id="2581221116934462656">Ungependa <ph name="PRODUCT_NAME"/> itafsiri kurasa za <ph name="LANGUAGE_NAME"/> kutoka tovuti hii wakati ujao?</translation>
 <translation id="3934680773876859118">Imeshindwa kupakia hati ya PDF</translation>

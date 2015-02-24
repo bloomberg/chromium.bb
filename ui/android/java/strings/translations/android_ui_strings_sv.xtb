@@ -9,8 +9,6 @@
 <translation id="793640675459356075">Det gick inte att öppna filen</translation>
 <translation id="7569983096843329377">Svart</translation>
 <translation id="3845599764535987402">Timme</translation>
-<translation id="5860033963881614850">Av</translation>
-<translation id="5317780077021120954">Spara</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="7942349550061667556">Röd</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">Föregående åtgärd kan inte slutföras. För lite minne.</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">Mer</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Värde</translation>
 <translation id="161042844686301425">Cyanblå</translation>
-<translation id="8261506727792406068">Radera</translation>
 <translation id="1822429046913737220">FM/EM</translation>
 <translation id="8889402386540077796">Nyans</translation>
 <translation id="2713444072780614174">Vit</translation>
 <translation id="5789643057113097023">,</translation>
-<translation id="6165508094623778733">Läs mer</translation>
 <translation id="3329013043687509092">Mättnad</translation>
 <translation id="1768717197362323622">Millisekund</translation>
 <translation id="2841013758207633010">Tid</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="7781164152564914424">Ange månad</translation>
-<translation id="6518133107902771759">Verifiera</translation>
-<translation id="5916664084637901428">På</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6555463879959038093">Det gick inte att kopiera till Urklipp</translation>
 <translation id="6444070574980481588">Ange datum och tid</translation>
 </translationbundle>

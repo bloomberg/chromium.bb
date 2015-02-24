@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Binalewala dahil hindi pinagana ng patakaran ang default na paghahanap.</translation>
 <translation id="1227224963052638717">Hindi kilalang patakaran</translation>
 <translation id="9207861905230894330">Hindi naidagdag ang artikulo.</translation>
+<translation id="5872918882028971132">Mga Suhestyon ng Magulang</translation>
 <translation id="337363190475750230">Naalis sa pagkakaprobisyon</translation>
 <translation id="2367567093518048410">Antas</translation>
 <translation id="7977590112176369853">&lt;ilagay ang query&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Maling timestamp ng patakaran</translation>
 <translation id="2025623846716345241">Kumpirmahin ang Pag-reload</translation>
 <translation id="1962204205936693436">Mga Bookmark ng <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Mga suhestyon ng magulang</translation>
 <translation id="111844081046043029">Sigurado ka ba na nais mong iwanan ang pahinang ito?</translation>
 <translation id="1973335181906896915">Error sa serialization</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Nabigong i-load ang mga setting ng patakaran</translation>
 <translation id="2354001756790975382">Iba pang mga bookmark</translation>
 <translation id="3650584904733503804">Matagumpay ang pagpapatunay</translation>
+<translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="6915804003454593391">User:</translation>
 <translation id="3377188786107721145">Error sa pag-parse ng patakaran</translation>
 <translation id="2270192940992995399">Hindi nahanap ang artikulo.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Maling lagda ng inisyal</translation>
 <translation id="20817612488360358">Itinatakda ang mga setting ng proxy ng system upang magamit ngunit tinutukoy rin ang isang tahasang configuration ng proxy.</translation>
 <translation id="2639739919103226564">Katayuan:</translation>
+<translation id="385051799172605136">Bumalik</translation>
 <translation id="5095208057601539847">Probinsya</translation>
 <translation id="2581221116934462656">Gusto mo bang mag-alok ang <ph name="PRODUCT_NAME"/> na i-translate ang mga page ng <ph name="LANGUAGE_NAME"/> mula sa site na ito sa susunod na pagkakataon?</translation>
 <translation id="3934680773876859118">Nabigong i-load ang dokumentong PDF</translation>

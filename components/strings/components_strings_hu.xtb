@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
 <translation id="1227224963052638717">Ismeretlen házirend</translation>
 <translation id="9207861905230894330">A cikk hozzáadása sikertelen.</translation>
+<translation id="5872918882028971132">Szülői javaslatok</translation>
 <translation id="337363190475750230">Deaktiválva</translation>
 <translation id="2367567093518048410">Szint</translation>
 <translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Hibás az irányelv időbélyege</translation>
 <translation id="2025623846716345241">Újratöltés megerősítése</translation>
 <translation id="1962204205936693436">A(z) <ph name="DOMAIN"/> könyvjelzői</translation>
+<translation id="4300246636397505754">Szülői javaslatok</translation>
 <translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Az irányelv-beállítások betöltése sikertelen</translation>
 <translation id="2354001756790975382">További könyvjelzők</translation>
 <translation id="3650584904733503804">Sikeres érvényesítés</translation>
+<translation id="2359808026110333948">Folytatás</translation>
 <translation id="6915804003454593391">Felhasználó:</translation>
 <translation id="3377188786107721145">Irányelv-előfeldolgozási hiba</translation>
 <translation id="2270192940992995399">Nem sikerült megtalálni a cikket.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Helytelen első aláírás</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
 <translation id="2639739919103226564">Állapot:</translation>
+<translation id="385051799172605136">Vissza</translation>
 <translation id="5095208057601539847">Tartomány</translation>
 <translation id="2581221116934462656">Szeretné, hogy a(z) <ph name="PRODUCT_NAME"/> legközelebb felajánlja a webhely <ph name="LANGUAGE_NAME"/> nyelvű oldalainak lefordítását?</translation>
 <translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>

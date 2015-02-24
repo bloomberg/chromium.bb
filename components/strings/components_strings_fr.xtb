@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Ignoré parce que la recherche par défaut est désactivée par une règle.</translation>
 <translation id="1227224963052638717">Règle inconnue</translation>
 <translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
+<translation id="5872918882028971132">Suggestions des parents</translation>
 <translation id="337363190475750230">Révoqué</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
 <translation id="2025623846716345241">Confirmer l'actualisation</translation>
 <translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Suggestions des parents</translation>
 <translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Échec du chargement des paramètres de la règle.</translation>
 <translation id="2354001756790975382">Autres favoris</translation>
 <translation id="3650584904733503804">Validation réussie.</translation>
+<translation id="2359808026110333948">Continuer</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
 <translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
 <translation id="2270192940992995399">Échec de la détection de l'article.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Signature initiale incorrecte.</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
 <translation id="2639739919103226564">État :</translation>
+<translation id="385051799172605136">Retour</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="2581221116934462656">Souhaitez-vous que <ph name="PRODUCT_NAME"/> vous propose de traduire les pages en <ph name="LANGUAGE_NAME"/> de ce site lors de votre prochaine visite ?</translation>
 <translation id="3934680773876859118">Échec du chargement du document PDF</translation>

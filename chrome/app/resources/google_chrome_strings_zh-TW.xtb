@@ -45,6 +45,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="8556340503434111824">Google Chrome 推出全新版本，速度更勝以往。</translation>
 <translation id="8987477933582888019">網路瀏覽器</translation>
+<translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載 Google Chrome。</translation>
@@ -136,6 +137,10 @@ Google Chrome 無法復原您的設定。</translation>
         以增進效能。</translation>
 <translation id="2290014774651636340">缺少 Google API 金鑰，系統將停用 Google Chrome 的部分功能。</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
+<translation id="5423788048750135178">前往 Chrome 選單 &gt; [設定] &gt; (進階) [隱私權]
+          停用 [預先擷取網頁資源]。
+          如果仍然無法解決問題，建議您重新啟用這個選項，
+          讓 Chrome 的效能更優異。</translation>
 <translation id="4794050651896644714">在 Chrome 中儲存詳細資料</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>
@@ -170,7 +175,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6235018212288296708">允許 mDNS 流量的 Google Chrome 輸入規則。</translation>
 <translation id="7984945080620862648">您目前無法造訪 <ph name="SITE"/>，因為這個網站傳送的憑證經過編碼，導致 Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="3281987435599047980">將某個字詞及其上下文傳送給 Google 搜尋，就會傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="5028489144783860647">Google Chrome 無法同步處理您的資料，請更新您的同步通關密語。</translation>
 <translation id="9026991721384951619">您的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理您的資料。</translation>
@@ -252,7 +256,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. 版權所有。</translation>
 <translation id="1698376642261615901">Google Chrome 瀏覽器開啟網頁和執行應用程式的速度奇快無比！除了執行速度迅速、穩定且容易使用之外，內建防護機制還可讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
-<translation id="4523402702161492148">由於 Google 更新群組政策設定不一致，因此無法更新 Google Chrome。請使用群組政策編輯器為 Google Chrome Binaries 應用程式設定更新政策覆寫，然後再試一次。詳情請見 https://goo.gl/uJ9gV。</translation>
 <translation id="853189717709780425">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。</translation>
 <translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
 <translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>

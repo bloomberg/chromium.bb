@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">由於政策停用了預設搜尋，因此遭到略過。</translation>
 <translation id="1227224963052638717">不明政策。</translation>
 <translation id="9207861905230894330">無法新增文章。</translation>
+<translation id="5872918882028971132">家長建議</translation>
 <translation id="337363190475750230">已取消佈建</translation>
 <translation id="2367567093518048410">等級</translation>
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
 <translation id="2025623846716345241">確認重新載入</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> 書籤</translation>
+<translation id="4300246636397505754">家長建議</translation>
 <translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
 <translation id="1973335181906896915">序列化錯誤</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">無法載入政策設定</translation>
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="3650584904733503804">驗證成功</translation>
+<translation id="2359808026110333948">繼續</translation>
 <translation id="6915804003454593391">使用者：</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="2270192940992995399">找不到文章。</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">初始簽名錯誤</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
 <translation id="2639739919103226564">狀態：</translation>
+<translation id="385051799172605136">返回</translation>
 <translation id="5095208057601539847">省</translation>
 <translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME"/> 翻譯這個網站的<ph name="LANGUAGE_NAME"/>網頁嗎？</translation>
 <translation id="3934680773876859118">無法載入 PDF 文件</translation>

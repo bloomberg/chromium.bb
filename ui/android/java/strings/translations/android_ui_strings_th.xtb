@@ -9,8 +9,6 @@
 <translation id="793640675459356075">ไม่สามารถเปิดไฟล์ที่เลือก</translation>
 <translation id="7569983096843329377">สีดำ</translation>
 <translation id="3845599764535987402">ชั่วโมง</translation>
-<translation id="5860033963881614850">ปิด</translation>
-<translation id="5317780077021120954">บันทึก</translation>
 <translation id="5901630391730855834">สีเหลือง</translation>
 <translation id="4932733599132424254">วันที่</translation>
 <translation id="7942349550061667556">สีแดง</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">ไม่สามารถดำเนินการก่อนหน้าให้สิ้นสุดได้เพราะหน่วยความจำเหลือน้อย</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">ราคา</translation>
 <translation id="161042844686301425">สีฟ้า</translation>
-<translation id="8261506727792406068">ลบ</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="8889402386540077796">โทนสี</translation>
 <translation id="2713444072780614174">สีขาว</translation>
 <translation id="5789643057113097023">.</translation>
-<translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="3329013043687509092">ความอิ่มตัวของสี</translation>
 <translation id="1768717197362323622">มิลลิวินาที</translation>
 <translation id="2841013758207633010">เวลา</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="7781164152564914424">ตั้งเดือน</translation>
-<translation id="6518133107902771759">ยืนยัน</translation>
-<translation id="5916664084637901428">เปิด</translation>
-<translation id="6965382102122355670">ตกลง</translation>
 <translation id="6555463879959038093">ไม่สามารถคัดลอกไปยังคลิปบอร์ด</translation>
 <translation id="6444070574980481588">ตั้งวันที่และเวลา</translation>
 </translationbundle>

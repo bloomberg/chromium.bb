@@ -9,8 +9,6 @@
 <translation id="793640675459356075">Nie udało się otworzyć pliku</translation>
 <translation id="7569983096843329377">Czarny</translation>
 <translation id="3845599764535987402">Godzina</translation>
-<translation id="5860033963881614850">Wyłączone</translation>
-<translation id="5317780077021120954">Zapisz</translation>
 <translation id="5901630391730855834">Żółty</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="7942349550061667556">Czerwony</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">Zbyt mało pamięci, by ukończyć poprzednią operację</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">Więcej</translation>
-<translation id="6820686453637990663">Kod CVC</translation>
 <translation id="7535087603100972091">Wartość</translation>
 <translation id="161042844686301425">Cyjan</translation>
-<translation id="8261506727792406068">Usuń</translation>
 <translation id="1822429046913737220">rano/po południu</translation>
 <translation id="8889402386540077796">Odcień</translation>
 <translation id="2713444072780614174">Biały</translation>
 <translation id="5789643057113097023">.</translation>
-<translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="3329013043687509092">Nasycenie</translation>
 <translation id="1768717197362323622">Milisekunda</translation>
 <translation id="2841013758207633010">Godzina</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="7781164152564914424">Ustaw miesiąc</translation>
-<translation id="6518133107902771759">Zweryfikuj</translation>
-<translation id="5916664084637901428">Włącz</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6555463879959038093">Nie udało się skopiować do schowka</translation>
 <translation id="6444070574980481588">Ustaw datę i godzinę</translation>
 </translationbundle>

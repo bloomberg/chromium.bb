@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="iw">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
 <translation id="777702478322588152">משטרת מחוז</translation>
 <translation id="3713769522066937702">פורמט המיקוד הזה אינו מזוהה. דוגמה למיקוד חוקי: <ph name="EXAMPLE"/>. אינך יודע מה המיקוד? תוכל לגלות <ph name="BEGIN_LINK"/>כאן<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">כתובת</translation>
@@ -8,16 +6,21 @@
 <translation id="1340068511406764697">עליך לספק מיקוד, לדוגמה <ph name="EXAMPLE"/>. אינך יודע מה המיקוד? תוכל לגלות <ph name="BEGIN_LINK"/>כאן<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">פורמט המיקוד הזה אינו מזוהה. דוגמה למיקוד חוקי: <ph name="EXAMPLE"/>. אינך יודע מה המיקוד? תוכל לגלות <ph name="BEGIN_LINK"/>כאן<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">עיר</translation>
+<translation id="6271429879296260742">‏קוד PIN</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="3885155851504623709">קהילה</translation>
 <translation id="8184169487503545976">פורמט המיקוד הזה לא מזוהה.</translation>
+<translation id="7805765407568469194">כפר / עיירה</translation>
 <translation id="7602447984296396718">נראה שהמיקוד הזה לא תואם לשאר הכתובת.</translation>
+<translation id="8449204988444194299">מיקוד עיר (בריטניה)</translation>
 <translation id="6247152910634872706">ארגון</translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
+<translation id="2577522251608256362">שכונה</translation>
 <translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
 <translation id="2096368010154057602">מחלקה</translation>
 <translation id="7738983109397305830">נראה שהמיקוד הזה לא תואם לשאר הכתובת. אינך יודע מה המיקוד? תוכל לגלות <ph name="BEGIN_LINK"/>כאן<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">אי</translation>
+<translation id="6132429659673988671">פרבר</translation>
 <translation id="7139724024395191329">אמירות</translation>
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="6207937957461833379">מדינה/אזור</translation>

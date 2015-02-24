@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">تم التجاهل نظرًا لتعطيل البحث الافتراضي بواسطة السياسة.</translation>
 <translation id="1227224963052638717">سياسة غير معروفة.</translation>
 <translation id="9207861905230894330">أخفقت إضافة مقالة.</translation>
+<translation id="5872918882028971132">اقتراحات الآباء</translation>
 <translation id="337363190475750230">تم إلغاء التوفير</translation>
 <translation id="2367567093518048410">المستوى</translation>
 <translation id="7977590112176369853">&lt;أدخل طلب البحث&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">الطابع الزمني للسياسة سيئ</translation>
 <translation id="2025623846716345241">تأكيد إعادة التحميل</translation>
 <translation id="1962204205936693436">إشارات <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">اقتراحات الآباء</translation>
 <translation id="111844081046043029">هل تريد بالتأكيد مغادرة هذه الصفحة؟</translation>
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">أخفق تحميل إعدادات السياسة</translation>
 <translation id="2354001756790975382">الإشارات الأخرى</translation>
 <translation id="3650584904733503804">تم التحقق بنجاح</translation>
+<translation id="2359808026110333948">المتابعة</translation>
 <translation id="6915804003454593391">المستخدم:</translation>
 <translation id="3377188786107721145">خطأ في تحليل السياسة</translation>
 <translation id="2270192940992995399">أخفق العثور على المقالة.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">توقيع أولي غير صحيح</translation>
 <translation id="20817612488360358">تم تعيين إعدادات الخادم الوكيل ليتم استخدامها وتم أيضًا تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="2639739919103226564">الحالة:</translation>
+<translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="5095208057601539847">الإقليم</translation>
 <translation id="2581221116934462656">هل تريد أن يعرض <ph name="PRODUCT_NAME"/> ترجمة صفحات <ph name="LANGUAGE_NAME"/> من هذا الموقع في المرة القادمة؟</translation>
 <translation id="3934680773876859118">‏إخفاق تحميل مستند PDF</translation>

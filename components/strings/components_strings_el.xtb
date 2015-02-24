@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Αγνοήθηκε επειδή η προεπιλεγμένη αναζήτηση είναι απενεργοποιημένη από την πολιτική.</translation>
 <translation id="1227224963052638717">Άγνωστη πολιτική.</translation>
 <translation id="9207861905230894330">Αποτυχία προσθήκης άρθρου.</translation>
+<translation id="5872918882028971132">Γονικές προτάσεις</translation>
 <translation id="337363190475750230">Κατάργηση παροχής</translation>
 <translation id="2367567093518048410">Επίπεδο</translation>
 <translation id="7977590112176369853">&lt;πληκτρολογήστε ερώτημα&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Εσφαλμένη χρονική σήμανση πολιτικής</translation>
 <translation id="2025623846716345241">Επιβεβαίωση εκ νέου φόρτωσης</translation>
 <translation id="1962204205936693436">Σελιδοδείκτες <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Γονικές προτάσεις</translation>
 <translation id="111844081046043029">Είστε βέβαιοι ότι επιθυμείτε έξοδο από αυτή τη σελίδα;</translation>
 <translation id="1973335181906896915">Σφάλμα σειριοποίησης</translation>
 <translation id="5989320800837274978">Δεν προσδιορίζονται ούτε οι σταθεροί διακομιστές μεσολάβησης ούτε μια διεύθυνση URL σεναρίου .pac.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Αποτυχία φόρτωσης ρυθμίσεων πολιτικής</translation>
 <translation id="2354001756790975382">Άλλοι σελιδοδείκτες</translation>
 <translation id="3650584904733503804">Επιτυχής επικύρωση</translation>
+<translation id="2359808026110333948">Συνέχεια</translation>
 <translation id="6915804003454593391">Χρήστης</translation>
 <translation id="3377188786107721145">Σφάλμα ανάλυσης πολιτικής</translation>
 <translation id="2270192940992995399">Αποτυχία εύρεσης άρθρου.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Εσφαλμένη αρχική υπογραφή</translation>
 <translation id="20817612488360358">Οι ρυθμίσεις διακομιστή μεσολάβησης του συστήματος έχουν οριστεί για να χρησιμοποιηθούν, αλλά καθορίζεται επίσης μια ρητή διαμόρφωση του διακομιστή μεσολάβησης.</translation>
 <translation id="2639739919103226564">Κατάσταση:</translation>
+<translation id="385051799172605136">Πίσω</translation>
 <translation id="5095208057601539847">Επαρχία</translation>
 <translation id="2581221116934462656">Θέλετε το <ph name="PRODUCT_NAME"/> να προσφέρει τη μετάφραση σελίδων στα <ph name="LANGUAGE_NAME"/> από αυτόν τον ιστότοπο την επόμενη φορά;</translation>
 <translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>

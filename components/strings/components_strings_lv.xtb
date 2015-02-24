@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Ignorēta, jo ar politiku ir atspējota noklusējuma meklēšana.</translation>
 <translation id="1227224963052638717">Nezināma politika.</translation>
 <translation id="9207861905230894330">Rakstu neizdevās pievienot.</translation>
+<translation id="5872918882028971132">Vecāku ieteikumi</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
 <translation id="2367567093518048410">Līmenis</translation>
 <translation id="7977590112176369853">&lt;ievadīt vaicājumu&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Politikas laikspiedols nav derīgs.</translation>
 <translation id="2025623846716345241">Atkārtotas ielādes apstiprināšana</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> grāmatzīmes</translation>
+<translation id="4300246636397505754">Vecāku ieteikumi</translation>
 <translation id="111844081046043029">Vai jūs tiešām vēlaties pamest šo lapu?</translation>
 <translation id="1973335181906896915">Radās serializēšanas kļūda.</translation>
 <translation id="5989320800837274978">Nav norādīti nedz fiksēti starpniekserveri, nedz .pac skripta URL.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Neizdevās ielādēt politikas iestatījumus.</translation>
 <translation id="2354001756790975382">Citas grāmatzīmes</translation>
 <translation id="3650584904733503804">Validācija bija veiksmīga.</translation>
+<translation id="2359808026110333948">Turpināt</translation>
 <translation id="6915804003454593391">Lietotājs:</translation>
 <translation id="3377188786107721145">Radās politikas parsēšanas kļūda.</translation>
 <translation id="2270192940992995399">Rakstu neizdevās atrast.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Nederīgs sākotnējais paraksts</translation>
 <translation id="20817612488360358">Ir iestatīta datora starpniekserveru iestatījumu lietošana, bet ir norādīta arī atklāta starpniekservera konfigurācija.</translation>
 <translation id="2639739919103226564">Statuss:</translation>
+<translation id="385051799172605136">Atpakaļ</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="2581221116934462656">Vai vēlaties, lai <ph name="PRODUCT_NAME"/> nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME"/>?</translation>
 <translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>

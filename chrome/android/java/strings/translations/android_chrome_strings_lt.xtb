@@ -23,7 +23,6 @@
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
 <translation id="2440823041667407902">Prieiga prie vietovės</translation>
 <translation id="6600253697437303777">Klausti prieš naudojant fotoaparatą ir mikrofoną (rekomenduojama)</translation>
-<translation id="7015922086425404465">Gauti programą iš „Google Play“ parduotuvės: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Iš naujo įkelti šį puslapį</translation>
 <translation id="5233638681132016545">Naujas skirtukas</translation>
 <translation id="641643625718530986">Spausdinti…</translation>
@@ -33,8 +32,8 @@
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="5902828464777634901">Visi šioje svetainėje saugomi vietiniai duomenys, įskaitant slapukus, bus ištrinti.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
+<translation id="3435896845095436175">Įgalinti</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
-<translation id="9189669987942139609">TB</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
 <translation id="119944043368869598">Valyti viską</translation>
 <translation id="6458785801851713928">Sinchronizavimo paslauga nepasiekiama jūsų domenui.</translation>
@@ -46,6 +45,7 @@
 <translation id="9133515669113036225">Iš naujo nustatyti įrenginio prisijungimo duomenis</translation>
 <translation id="2381756643783702095">Klausti prieš siunčiant (rekomenduojama)</translation>
 <translation id="9019902583201351841">Tvarko jūsų tėvai</translation>
+<translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="7596558890252710462">Operacinė sistema</translation>
 <translation id="3358663646935160692">Šią paskyrą valdo <ph name="DOMAIN_NAME"/>.
 
@@ -62,6 +62,7 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="1091134514807961917">Esate prisijungę prie nurodytos „Google“ paskyros.</translation>
 <translation id="7019652137705190998">Įjunkite inkognito režimą, kad naršytumėte privačiai, arba laikinai prisijunkite</translation>
 <translation id="1426410128494586442">Taip</translation>
+<translation id="908263542783690259">Išvalyti naršymo istoriją</translation>
 <translation id="5595485650161345191">Adreso redagavimas</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
 <translation id="8218346974737627104">Patvirtinti prisijungimą</translation>
@@ -79,16 +80,22 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="988938288723502454">Nepavyko sukurti atsisiuntimo katalogo SD kortelėje.</translation>
 <translation id="3896036286668839683">Sertifikato peržiūros priemonė</translation>
 <translation id="2321958826496381788">Vilkite šliaužiklį, kol bus patogu skaityti šį tekstą. Du kartus palietus pastraipą, tekstas turėtų būti mažiausiai tokio dydžio.</translation>
+<translation id="3282568296779691940">Prisijungti prie „Chrome“</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="8583805026567836021">Valomi paskyros duomenys</translation>
+<translation id="5860033963881614850">Išjungta</translation>
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR"/> m. Visos teisės saugomos.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="6388207532828177975">Išvalyti ir nustatyti iš naujo</translation>
 <translation id="3198916472715691905">Išsaugota duomenų: <ph name="STORAGE_AMOUNT"/></translation>
+<translation id="7378810950367401542">/</translation>
+<translation id="7473891865547856676">Ne, ačiū</translation>
+<translation id="4089663545127310568">Išvalyti išsaugotus slaptažodžius</translation>
 <translation id="3656115297268584622">Įjunkite vietovę <ph name="BEGIN_LINK"/>„Android“ nustatymuose<ph name="END_LINK"/>.</translation>
 <translation id="7423098979219808738">Pirmiausia paklausti</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="552553974213252141">Ar tekstas tinkamai ištrauktas?</translation>
+<translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="1151972924205500581">Būtinas slaptažodis</translation>
 <translation id="2870560284913253234">Svetainė</translation>
 <translation id="2718352093833049315">Tik su „Wi–Fi“</translation>
@@ -122,10 +129,10 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="4543661749405994812">Kopijuoti el. pašto adresą</translation>
 <translation id="5646376287012673985">Vietovė</translation>
 <translation id="5659593005791499971">El. paštas</translation>
-<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">„Chrome“ paslaugų teikimo sąlygos</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
+<translation id="7493994139787901920"><ph name="VERSION"/> (atnaujinta <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
 <translation id="1987317783729300807">Paskyros</translation>
 <translation id="6064211167623632605">Vykdomasis kelias</translation>
@@ -133,9 +140,11 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="2903493209154104877">Adresai</translation>
 <translation id="3661699943263275414">Trečiųjų šalių svetainės gali saugoti ir nuskaityti slapukų duomenis</translation>
 <translation id="1173289567081511873">Esate prisijungę prie toliau nurodytų „Google“ paskyrų. Pridėkite arba pašalinkite paskyras „Android“ nustatymuose.</translation>
+<translation id="8026334261755873520">Išvalyti naršymo duomenis</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>
 <translation id="4827948050554950725">Pridėti kredito kortelę</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
+<translation id="4686372254213217147">Pradinis dydis</translation>
 <translation id="7817177303494746697">„Blink“ versija</translation>
 <translation id="2532336938189706096">Žiniatinklio rodinys</translation>
 <translation id="6571070086367343653">Kredito kortelės redagavimas</translation>
@@ -155,7 +164,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
 <translation id="8106211421800660735">Kredito kortelės numeris</translation>
 <translation id="6042308850641462728">Daugiau</translation>
-<translation id="7267430310003164111">Raginimas gauti programą iš „Google Play“ parduotuvės. Programos pavadinimas: „<ph name="APP_NAME"/>“. Vidutinis programos įvertinimas: <ph name="APP_RATING"/>.</translation>
 <translation id="6108923351542677676">Nustatoma…</translation>
 <translation id="7358682983403815415">Atidaryti skirtukų lapai, žymės, istorija ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
 <translation id="1943432128510653496">Slaptažodžių išsaugojimas</translation>
@@ -172,6 +180,7 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="5424715742813396254">Išsaugoto vardo / slaptažodžio arba išimties redagavimas</translation>
 <translation id="6978479750597523876">Nustatyti vertimo nustatymus iš naujo</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="651048280540227067">Atsisakyti meniu</translation>
 <translation id="748127970106343339">Patvirtinti įrenginio prisijungimo duomenų ištrynimą</translation>
@@ -189,16 +198,15 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="654446541061731451">Kad perduotumėte, pasirinkite skirtuką</translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="2359808026110333948">Tęsti</translation>
-<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Automatinis formų pildymas</translation>
 <translation id="8515416241041728525">Pridėti <ph name="ADD_ACCOUNT_USER_NAME"/> paskyrą</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
+<translation id="8261506727792406068">Panaikinti</translation>
 <translation id="1080790410959514870">Atsijungiate nuo <ph name="DOMAIN_NAME"/> tvarkomos paskyros. Bus ištrinti šiame įrenginyje saugomi „Chrome“ duomenys, bet jie išliks „Google“ paskyroje.</translation>
 <translation id="4510973599275542560">Neįkelti iš naujo</translation>
 <translation id="1206892813135768548">Kopijuoti nuorodos tekstą</translation>
 <translation id="9154176715500758432">Likti šiame puslapyje</translation>
 <translation id="1416550906796893042">Programos versija</translation>
-<translation id="5420752959853967987">bait.</translation>
 <translation id="7063006564040364415">Nepavyko prisijungti prie sinchronizavimo serverio.</translation>
 <translation id="4271185234001491831">Niekada neversti <ph name="LANGUAGE"/> k.</translation>
 <translation id="7981795308302452224">Pradedant atsisiuntimą įvyko klaida</translation>
@@ -240,6 +248,7 @@ Jei parinktis IŠJUNGTA, gali būti, kad šiame įrenginyje negalėsite leisti a
 <translation id="8928220460877261598">Prisijungėte prie „Chrome“.</translation>
 <translation id="5032574515228824816">Raginimas</translation>
 <translation id="8920114477895755567">Laukiama išsamios tėvų informacijos.</translation>
+<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="3003595280608617736">Nėra SD kortelės</translation>
 <translation id="862875433388403934">Nebegalėsite leisti kitose programose atsisiųsto turinio (filmų, muzikos ir pan.), kol tose programose nebus iš naujo gautos licencijos pagal naujus įrenginio prisijungimo duomenis.
 
@@ -248,11 +257,13 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 Vilkite nuo viršaus, kad išeitumėte.</translation>
 <translation id="1692118695553449118">Sinchronizavimas įjungtas</translation>
 <translation id="7961015016161918242">Niekada</translation>
+<translation id="5040262127954254034">Privatumas</translation>
 <translation id="6820607729870073286">Neturite išsaugotų svetainės nustatymų.</translation>
 <translation id="1159783623621444829">Tai vaiko paskyra</translation>
 <translation id="8109148095642131923">Nepavyko prie atsisiuntimų tvarkytuvės pridėti atsisiųsto elemento.</translation>
 <translation id="6295158916970320988">Visos svetainės</translation>
 <translation id="497421865427891073">Eiti pirmyn</translation>
+<translation id="6643016212128521049">Išvalyti</translation>
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="8310344678080805313">Įprasti skirtukai</translation>
 <translation id="8396312449826231789">Tik patvirtintos svetainės</translation>
@@ -260,10 +271,11 @@ Vilkite nuo viršaus, kad išeitumėte.</translation>
 <translation id="6277522088822131679">Spausdinant puslapį kilo problema. Bandykite dar kartą.</translation>
 <translation id="7634554953375732414">Jūsų ryšys su šia svetaine nėra privatus.</translation>
 <translation id="6409731863280057959">Iššokantieji langai</translation>
-<translation id="8776285424728638733">GB</translation>
+<translation id="6518133107902771759">Patvirtinti</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="1742134235943978220">Išversta į <ph name="TARGET_LANGUAGE"/> k.</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
+<translation id="5916664084637901428">Įjungta</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6375900123462779979">Prieiga prie mikrof. ir fotoap.</translation>
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>

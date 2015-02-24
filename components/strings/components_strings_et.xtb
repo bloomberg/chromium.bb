@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Seda eiratakse, kuna vaikeotsing on reegliga keelatud.</translation>
 <translation id="1227224963052638717">Tundmatud eeskirjad.</translation>
 <translation id="9207861905230894330">Artikli lisamine ebaõnnestus.</translation>
+<translation id="5872918882028971132">Vanema soovitused</translation>
 <translation id="337363190475750230">Eraldatud</translation>
 <translation id="2367567093518048410">Tase</translation>
 <translation id="7977590112176369853">&lt;sisesta päring&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Reegli ajatempel on sobimatu</translation>
 <translation id="2025623846716345241">Kinnitage uuesti laadimine</translation>
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN"/> järjehoidjad</translation>
+<translation id="4300246636397505754">Vanema soovitused</translation>
 <translation id="111844081046043029">Olete kindel, et soovite sellele lehelt lahkuda?</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
 <translation id="5989320800837274978">Määratud ei ole fikseeritud puhverservereid ega pac-skriptiga URL-i.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="2354001756790975382">Muud järjehoidjad</translation>
 <translation id="3650584904733503804">Valideerimine õnnestus</translation>
+<translation id="2359808026110333948">Jätka</translation>
 <translation id="6915804003454593391">Kasutaja:</translation>
 <translation id="3377188786107721145">Viga reegli sõelumisel</translation>
 <translation id="2270192940992995399">Artiklit ei leitud.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Sobimatu esialgne allkiri</translation>
 <translation id="20817612488360358">Kasutamiseks on määratud süsteemi puhverserveri seaded, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="2639739919103226564">Olek:</translation>
+<translation id="385051799172605136">Tagasi</translation>
 <translation id="5095208057601539847">Provints</translation>
 <translation id="2581221116934462656">Kas soovite, et rakendus <ph name="PRODUCT_NAME"/> pakub järgmisel korral sellel saidil <ph name="LANGUAGE_NAME"/> keeles lehtede tõlkimise võimalust?</translation>
 <translation id="3934680773876859118">PDF-dokumendi laadimine nurjus</translation>

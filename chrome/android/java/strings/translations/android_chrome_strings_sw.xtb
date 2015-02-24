@@ -23,7 +23,6 @@
 <translation id="3895926599014793903">Lazimisha kuwasha ukuzaji</translation>
 <translation id="2440823041667407902">Ufikiaji wa eneo</translation>
 <translation id="6600253697437303777">Uliza kabla ya kufikia kamera na maikrofoni (imependekezwa)</translation>
-<translation id="7015922086425404465">Pata programu kutoka kwenye Duka la Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Pakia Ukurasa huu Upya</translation>
 <translation id="5233638681132016545">Kichupo kipya</translation>
 <translation id="641643625718530986">Chapisha...</translation>
@@ -33,8 +32,8 @@
 <translation id="5210365745912300556">Funga kichupo</translation>
 <translation id="5902828464777634901">Data zote za ndani zilizohifadhiwa na tovuti hii, ikiwemo vidakuzi, zitafutwa.</translation>
 <translation id="7658239707568436148">Ghairi</translation>
+<translation id="3435896845095436175">Washa</translation>
 <translation id="2154710561487035718">Nakili UR:</translation>
-<translation id="9189669987942139609">TB</translation>
 <translation id="2351097562818989364">Mipangilio yako ya kutafsiri imewekwa upya.</translation>
 <translation id="119944043368869598">Ondoa vyote</translation>
 <translation id="6458785801851713928">Huduma ya usawazishaji haipatikani kwa kikoa chako.</translation>
@@ -46,6 +45,7 @@
 <translation id="9133515669113036225">Weka upya kitambulisho cha kifaa</translation>
 <translation id="2381756643783702095">Uliza kabla ya kutuma (imependekezwa)</translation>
 <translation id="9019902583201351841">Inadhibitiwa na wazazi wako</translation>
+<translation id="3738139272394829648">Gusa ili Utafute</translation>
 <translation id="7596558890252710462">Mfumo wa uendeshaji</translation>
 <translation id="3358663646935160692">Akaunti hii inasimamiwa na <ph name="DOMAIN_NAME"/>.
 
@@ -62,6 +62,7 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="1091134514807961917">Umeingia katika Akaunti ya Google inayofuata.</translation>
 <translation id="7019652137705190998">Tumia hali fiche ili kuvinjari kwa faragha au ingia katika akaunti kwa muda</translation>
 <translation id="1426410128494586442">Ndio</translation>
+<translation id="908263542783690259">Futa historia ya kuvinjari</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
 <translation id="4256782883801055595">Leseni za programu huria</translation>
 <translation id="8218346974737627104">Thibitisha kuingia katika akaunti</translation>
@@ -79,16 +80,22 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="988938288723502454">Haiwezi kuunda saraka ya upakuaji kwenye kadi ya SD.</translation>
 <translation id="3896036286668839683">Kitazama Cheti</translation>
 <translation id="2321958826496381788">Buruta kitelezi hadi uweze kusoma haya kwa starehe. Maandishi yanapaswa kuonekana angalau kwa ukubwa huu baada ya kugonga mara mbili kwenye aya.</translation>
+<translation id="3282568296779691940">Ingia katika Chrome</translation>
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="8583805026567836021">Inafuta data ya akaunti</translation>
+<translation id="5860033963881614850">Kimezimwa</translation>
 <translation id="2960796085439532066">Hakimiliki <ph name="YEAR"/> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="4250680216510889253">La</translation>
 <translation id="6388207532828177975">Futa na uweke upya</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> za data iliyohifadhiwa</translation>
+<translation id="7378810950367401542">/</translation>
+<translation id="7473891865547856676">La Asante</translation>
+<translation id="4089663545127310568">Futa manenosiri yaliyohifadhiwa</translation>
 <translation id="3656115297268584622">Washa eneo katika <ph name="BEGIN_LINK"/>Mipangilio ya Android<ph name="END_LINK"/>.</translation>
 <translation id="7423098979219808738">Uliza kwanza</translation>
 <translation id="8073388330009372546">Fungua picha katika kichupo kipya</translation>
 <translation id="552553974213252141">Je, maandishi yalitolewa kwa njia sahihi?</translation>
+<translation id="5317780077021120954">Hifadhi</translation>
 <translation id="1151972924205500581">Nenosiri linahitajika</translation>
 <translation id="2870560284913253234">Tovuti</translation>
 <translation id="2718352093833049315">Kwenye Wi-Fi pekee</translation>
@@ -122,10 +129,10 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="4543661749405994812">Nakili anwani ya barua pepe</translation>
 <translation id="5646376287012673985">Mahali</translation>
 <translation id="5659593005791499971">Barua pepe</translation>
-<translation id="3123243061080120667">KB</translation>
 <translation id="7987073022710626672">Sheria na Masharti ya Chrome</translation>
 <translation id="5668404140385795438">Batilisha ombi la tovuti ili kuzuia kuvuta karibu</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
+<translation id="7493994139787901920"><ph name="VERSION"/> (Ilisasishwa <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Lo!  Ukurasa huu haukuweza kutafsiriwa.</translation>
 <translation id="1987317783729300807">Akaunti</translation>
 <translation id="6064211167623632605">Njia tekelezi</translation>
@@ -133,9 +140,11 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="2903493209154104877">Anwani</translation>
 <translation id="3661699943263275414">Tovuti nyingine zinaweza kuhifadhi na kusoma data ya vidakuzi</translation>
 <translation id="1173289567081511873">Umeingia katika Akaunti za Google zifuatazo. Ongeza au uondoe akaunti katika mipangilio ya Android.</translation>
+<translation id="8026334261755873520">Futa data ya kuvinjari</translation>
 <translation id="8503813439785031346">Jina la mtumiaji</translation>
 <translation id="4827948050554950725">Ongeza kadi ya malipo</translation>
 <translation id="4278390842282768270">Vilivyoruhusiwa</translation>
+<translation id="4686372254213217147">Ukubwa wa Asili</translation>
 <translation id="7817177303494746697">Toleo la Blink</translation>
 <translation id="2532336938189706096">Mwonekano wa Wavuti</translation>
 <translation id="6571070086367343653">Hariri kadi ya mkopo</translation>
@@ -155,7 +164,6 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="3063601790762993062">Hifadhi video</translation>
 <translation id="8106211421800660735">Nambari ya kadi ya malipo</translation>
 <translation id="6042308850641462728">Zaidi</translation>
-<translation id="7267430310003164111">Itisha ili upate programu kutoka Duka la Play Google. Jina la Programu: <ph name="APP_NAME"/> . Ukadiriaji wastani wa programu: <ph name="APP_RATING"/> .</translation>
 <translation id="6108923351542677676">Usanidi unaendelea...</translation>
 <translation id="7358682983403815415">Vichupo vyako vilivyo wazi, alamisho, historia, na zaidi vinasawazishwa na Akaunti yako ya Google.</translation>
 <translation id="1943432128510653496">Hifadhi manenosiri</translation>
@@ -172,6 +180,7 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="5424715742813396254">Badilisha jina/nenosiri lililohifadhiwa au kighairi</translation>
 <translation id="6978479750597523876">Weka upya mipangilio ya kutafsiri</translation>
 <translation id="2476578072172137802">Mipangilio ya Tovuti</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="651048280540227067">Ondoa menyu</translation>
 <translation id="748127970106343339">Thibitisha ufutaji wa kitambulisho cha kifaa</translation>
@@ -189,16 +198,15 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="654446541061731451">Chagua kichupo cha kusambaza</translation>
 <translation id="4269820728363426813">Nakili anwani ya kiungo</translation>
 <translation id="2359808026110333948">Endelea</translation>
-<translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Jaza fomu kiotomatiki</translation>
 <translation id="8515416241041728525">Ongeza akaunti ya <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Maelezo:</translation>
+<translation id="8261506727792406068">Futa</translation>
 <translation id="1080790410959514870">Unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME"/>. Hii itafuta data ya Chrome iliyohifadhiwa kwenye kifaa hiki, lakini data itasalia katika Akaunti yako ya Google.</translation>
 <translation id="4510973599275542560">Usipakie upya</translation>
 <translation id="1206892813135768548">Nakili maandishi ya kiungo</translation>
 <translation id="9154176715500758432">Kaa kwenye Ukurasa huu</translation>
 <translation id="1416550906796893042">Toleo la programu</translation>
-<translation id="5420752959853967987">baiti</translation>
 <translation id="7063006564040364415">Haikuweza kuunganisha kwenye seva ya usawazishaji.</translation>
 <translation id="4271185234001491831">Kamwe usitafsiri <ph name="LANGUAGE"/></translation>
 <translation id="7981795308302452224">Haijafaulu kuanzisha upakuaji</translation>
@@ -240,6 +248,7 @@ Kama YAMEZIMWA, hutaweza kucheza video zanazolipiwa kwenye kifaa hiki.</translat
 <translation id="8928220460877261598">Sasa umeingia kwenye Chrome.</translation>
 <translation id="5032574515228824816">Uliza</translation>
 <translation id="8920114477895755567">Tunasubiri maelezo ya wazazi.</translation>
+<translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="3003595280608617736">Hakuna kadi ya SD</translation>
 <translation id="862875433388403934">Maudhui (filamu, muziki, n.k.) yaliyopakuliwa katika programu nyingine huenda yasichezeke tena hadi programu hizo zipate upya leseni kulingana na kitambulisho kipya cha kifaa.
 
@@ -248,11 +257,13 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 Buruta kutoka juu ili kuondoka.</translation>
 <translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="7961015016161918242">Katu</translation>
+<translation id="5040262127954254034">Faragha</translation>
 <translation id="6820607729870073286">Huna mipangilio ya tovuti iliyohifadhiwa.</translation>
 <translation id="1159783623621444829">Hii ni akaunti ya mtoto</translation>
 <translation id="8109148095642131923">Imeshindwa kuongeza kipengee kilichopakuliwa kwenye kidhibiti cha vipakuliwa.</translation>
 <translation id="6295158916970320988">Tovuti zote</translation>
 <translation id="497421865427891073">Nenda mbele</translation>
+<translation id="6643016212128521049">Futa</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Vichupo muundo-msingi</translation>
 <translation id="8396312449826231789">Tovuti zilizoidhinishwa pekee</translation>
@@ -260,10 +271,11 @@ Buruta kutoka juu ili kuondoka.</translation>
 <translation id="6277522088822131679">Kulikuwa na tatizo katika kuchapisha ukurasa. Tafadhali jaribu tena.</translation>
 <translation id="7634554953375732414">Muunganisho wako kwenye tovuti hii si wa faragha.</translation>
 <translation id="6409731863280057959">Madirisha ibukizi</translation>
-<translation id="8776285424728638733">GB</translation>
+<translation id="6518133107902771759">Thibitisha</translation>
 <translation id="6612358246767739896">Maudhui yanayolindwa</translation>
 <translation id="1742134235943978220">Imetafsiriwa katika <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6738867403308150051">Inapakua...</translation>
+<translation id="5916664084637901428">Imewashwa</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="6375900123462779979">Kufikia maikrofoni na kamera yako</translation>
 <translation id="7437998757836447326">Ondoka kwenye Chrome</translation>

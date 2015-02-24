@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Se ha ignorado el valor porque se ha establecido una política que inhabilita la búsqueda predeterminada.</translation>
 <translation id="1227224963052638717">Política desconocida</translation>
 <translation id="9207861905230894330">Se ha producido un error al añadir el artículo.</translation>
+<translation id="5872918882028971132">Sugerencias de padres</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="7977590112176369853">&lt;introducir consulta&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Marca de tiempo de política incorrecta</translation>
 <translation id="2025623846716345241">Confirmar que quieres volver a cargar la página</translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN"/></translation>
+<translation id="4300246636397505754">Sugerencias de padres</translation>
 <translation id="111844081046043029">¿Seguro que quieres abandonar esta página?</translation>
 <translation id="1973335181906896915">Error de serialización</translation>
 <translation id="5989320800837274978">No se han especificado servidores proxy fijos ni una URL de secuencia de comandos .pac.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Error al cargar la configuración de la política</translation>
 <translation id="2354001756790975382">Otros marcadores</translation>
 <translation id="3650584904733503804">Validación correcta</translation>
+<translation id="2359808026110333948">Continuar</translation>
 <translation id="6915804003454593391">Usuario:</translation>
 <translation id="3377188786107721145">Error al analizar la política</translation>
 <translation id="2270192940992995399">Se ha producido un error al buscar el artículo.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Firma inicial incorrecta</translation>
 <translation id="20817612488360358">Se ha establecido la configuración del proxy del sistema, pero también se han especificado ajustes de proxy explícitos.</translation>
 <translation id="2639739919103226564">Estado:</translation>
+<translation id="385051799172605136">Atrás</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="2581221116934462656">¿Quieres que <ph name="PRODUCT_NAME"/> ofrezca la posibilidad de traducir las páginas de este sitio escritas en <ph name="LANGUAGE_NAME"/> la próxima vez?</translation>
 <translation id="3934680773876859118">Se ha producido un error al cargar el documento PDF.</translation>

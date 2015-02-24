@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">ነባሪው ፍለጋ በመምሪያ ስለተሰናከለ ችላ ተብሏል።</translation>
 <translation id="1227224963052638717">ያልታወቀ መመሪያ።</translation>
 <translation id="9207861905230894330">ጽሑፍ ማከል አልተቻለም።</translation>
+<translation id="5872918882028971132">የወላጅ አስተያየት ጥቆማዎች</translation>
 <translation id="337363190475750230">አቅርቦት ተቋርጧል</translation>
 <translation id="2367567093518048410">ደረጃ</translation>
 <translation id="7977590112176369853">‹ጥያቄ ያስገቡ›</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">መጥፎ የመምሪያ ጊዜ ማህተም</translation>
 <translation id="2025623846716345241">ዳግም መጫን ያረጋግጡ</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> እልባቶች</translation>
+<translation id="4300246636397505754">የወላጅ አስተያየት ጥቆማዎች</translation>
 <translation id="111844081046043029">እርግጠኛ ነዎት ይህን ገጽ መተው ይፈልጋሉ?</translation>
 <translation id="1973335181906896915">የመለያ ቁጥር መስጠት ላይ ስህተት</translation>
 <translation id="5989320800837274978">ቋሚ ተኪ አገልጋዮችም ሆኑ የ.pac ስክሪፕት ዩአርኤል አልተገለጹም።</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">የመምሪያ ቅንብሮችን መጫን አልተሳካም</translation>
 <translation id="2354001756790975382">ሌላ እልባቶች</translation>
 <translation id="3650584904733503804">ማረጋገጥ ተሳክቷል</translation>
+<translation id="2359808026110333948">ቀጥል</translation>
 <translation id="6915804003454593391">ተጠቃሚ፦</translation>
 <translation id="3377188786107721145">የመምሪያ ትንተና ስህተት</translation>
 <translation id="2270192940992995399">ጽሑፉን ማግኘት አልተቻለም።</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">መጥፎ የአስጀማሪ ፊርማ</translation>
 <translation id="20817612488360358">የስርዓት ተኪ ቅንብሮች ስራ ላይ እንዲውሉ ተቀናብረዋል ግን ግልጽ የሆነ የተኪ ውቅርም ተገልጿል።</translation>
 <translation id="2639739919103226564">ሁኔታ፦</translation>
+<translation id="385051799172605136">ተመለስ</translation>
 <translation id="5095208057601539847">ጠቅላይ ግዛት</translation>
 <translation id="2581221116934462656">ቀጣዩ ጊዜ ላይ <ph name="PRODUCT_NAME"/> በዚህ ጣቢያ ያሉ የ<ph name="LANGUAGE_NAME"/> ገጾችን እንዲተረጉምልዎ ይፈልጋሉ?</translation>
 <translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>

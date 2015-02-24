@@ -9,8 +9,6 @@
 <translation id="793640675459356075">Kan geselec. bestand niet openen</translation>
 <translation id="7569983096843329377">Zwart</translation>
 <translation id="3845599764535987402">Uur</translation>
-<translation id="5860033963881614850">Uit</translation>
-<translation id="5317780077021120954">Opslaan</translation>
 <translation id="5901630391730855834">Geel</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="7942349550061667556">Rood</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">Kan vorige bewerking niet voltooien. Te weinig geheugen</translation>
 <translation id="2732718972699418926">a.m.</translation>
 <translation id="6042308850641462728">Meer</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Waarde</translation>
 <translation id="161042844686301425">Cyaan</translation>
-<translation id="8261506727792406068">Verwijderen</translation>
 <translation id="1822429046913737220">a.m./p.m.</translation>
 <translation id="8889402386540077796">Kleurtoon</translation>
 <translation id="2713444072780614174">Wit</translation>
 <translation id="5789643057113097023">.</translation>
-<translation id="6165508094623778733">Meer informatie</translation>
 <translation id="3329013043687509092">Verzadiging</translation>
 <translation id="1768717197362323622">Milliseconde</translation>
 <translation id="2841013758207633010">Tijd</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="2429669115401274487">p.m.</translation>
 <translation id="7781164152564914424">Maand instellen</translation>
-<translation id="6518133107902771759">Controleren</translation>
-<translation id="5916664084637901428">Aan</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6555463879959038093">Kopiëren naar het klembord mislukt</translation>
 <translation id="6444070574980481588">Datum en tijd instellen</translation>
 </translationbundle>

@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">Ignorované, pretože predvolený vyhľadávač je podľa pravidla zakázaný.</translation>
 <translation id="1227224963052638717">Neznáme pravidlo.</translation>
 <translation id="9207861905230894330">Článok sa nepodarilo pridať.</translation>
+<translation id="5872918882028971132">Návrhy rodiča</translation>
 <translation id="337363190475750230">Odstránené</translation>
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="7977590112176369853">&lt;zadajte dotaz&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">Chybná časová pečiatka pravidla</translation>
 <translation id="2025623846716345241">Potvrdiť opätovné načítanie</translation>
 <translation id="1962204205936693436">Záložky (<ph name="DOMAIN"/>)</translation>
+<translation id="4300246636397505754">Návrhy rodiča</translation>
 <translation id="111844081046043029">Naozaj chcete odísť z tejto stránky?</translation>
 <translation id="1973335181906896915">Chyba serializácie</translation>
 <translation id="5989320800837274978">Nie sú určené pevne dané servery proxy ani skript PAC webovej adresy.</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">Nastavenia pravidla sa nepodarilo načítať</translation>
 <translation id="2354001756790975382">Iné záložky</translation>
 <translation id="3650584904733503804">Overenie bolo úspešné</translation>
+<translation id="2359808026110333948">Pokračovať</translation>
 <translation id="6915804003454593391">Používateľ:</translation>
 <translation id="3377188786107721145">Chyba analýzy pravidla</translation>
 <translation id="2270192940992995399">Článok sa nepodarilo vyhľadať.</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">Nesprávny počiatočný podpis</translation>
 <translation id="20817612488360358">Používanie systémových nastavení servera proxy je nastavené, avšak je určená aj explicitná konfigurácia servera proxy.</translation>
 <translation id="2639739919103226564">Stav:</translation>
+<translation id="385051799172605136">Naspäť</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="2581221116934462656">Chcete, aby aplikácia <ph name="PRODUCT_NAME"/> na tomto webe nabudúce ponúkla možnosť prekladu stránok v jazyku <ph name="LANGUAGE_NAME"/>?</translation>
 <translation id="3934680773876859118">Načítanie dokumentu PDF zlyhalo</translation>

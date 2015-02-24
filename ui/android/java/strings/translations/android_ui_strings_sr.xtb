@@ -9,8 +9,6 @@
 <translation id="793640675459356075">Неуспешно отварање изабр. датот.</translation>
 <translation id="7569983096843329377">Црна</translation>
 <translation id="3845599764535987402">Сат</translation>
-<translation id="5860033963881614850">Искључено</translation>
-<translation id="5317780077021120954">Сачувај</translation>
 <translation id="5901630391730855834">Жута</translation>
 <translation id="4932733599132424254">Датум</translation>
 <translation id="7942349550061667556">Црвена</translation>
@@ -25,15 +23,12 @@
 <translation id="6315516427814392808">Није могуће довршити претходну радњу због недостатка меморије</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">Више</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Вредност</translation>
 <translation id="161042844686301425">Плавозелена</translation>
-<translation id="8261506727792406068">Избриши</translation>
 <translation id="1822429046913737220">пре подне/по подне</translation>
 <translation id="8889402386540077796">Нијанса</translation>
 <translation id="2713444072780614174">Бела</translation>
 <translation id="5789643057113097023">,</translation>
-<translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="3329013043687509092">Засићеност боја</translation>
 <translation id="1768717197362323622">Милисекунд</translation>
 <translation id="2841013758207633010">Време</translation>
@@ -41,9 +36,6 @@
 <translation id="6643016212128521049">Обриши</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="7781164152564914424">Подесите месец</translation>
-<translation id="6518133107902771759">Верификуј</translation>
-<translation id="5916664084637901428">Укључи</translation>
-<translation id="6965382102122355670">Потврди</translation>
 <translation id="6555463879959038093">Копирање у привремену меморију није успело</translation>
 <translation id="6444070574980481588">Подесите датум и време</translation>
 </translationbundle>

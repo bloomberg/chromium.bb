@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="de">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
 <translation id="777702478322588152">Präfektur</translation>
 <translation id="3713769522066937702">Dieses Postleitzahlformat wurde nicht erkannt. Beispiel für eine gültige Postleitzahl: <ph name="EXAMPLE"/>. Sie kennen Ihre Postleitzahl nicht? <ph name="BEGIN_LINK"/>Schlagen Sie sie hier nach<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Anschrift</translation>
@@ -8,16 +6,21 @@
 <translation id="1340068511406764697">Sie müssen eine Postleitzahl angeben, wie beispielsweise <ph name="EXAMPLE"/>. Sie kennen Ihre Postleitzahl nicht? <ph name="BEGIN_LINK"/>Schlagen Sie sie hier nach<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Dieses Postleitzahlformat wurde nicht erkannt. Beispiel für eine gültige Postleitzahl: <ph name="EXAMPLE"/>. Sie kennen Ihre Postleitzahl nicht? <ph name="BEGIN_LINK"/>Schlagen Sie sie hier nach<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Stadt</translation>
+<translation id="6271429879296260742">PIN-Code</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
 <translation id="3885155851504623709">Gemeinde</translation>
 <translation id="8184169487503545976">Dieses Postleitzahlenformat wird nicht erkannt.</translation>
+<translation id="7805765407568469194">Ort/Gemeinde</translation>
 <translation id="7602447984296396718">Diese Postleitzahl scheint nicht zum Rest dieser Adresse zu passen.</translation>
+<translation id="8449204988444194299">Post Town</translation>
 <translation id="6247152910634872706">Organisation</translation>
 <translation id="2053553514270667976">Postleitzahl</translation>
+<translation id="2577522251608256362">Stadtteil</translation>
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
 <translation id="7738983109397305830">Die Postleitzahl stimmt offenbar nicht mit dem Rest der Adresse überein. Sie kennen Ihre Postleitzahl nicht? <ph name="BEGIN_LINK"/>Schlagen Sie sie hier nach<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Insel</translation>
+<translation id="6132429659673988671">Vorort</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6207937957461833379">Land/Region</translation>

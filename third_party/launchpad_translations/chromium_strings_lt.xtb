@@ -1,17 +1,21 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
 <translation id="6676384891291319759">Interneto prieiga</translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR"/> m. Visos teisės saugomos.</translation>
+<translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="6373523479360886564">Ar tikrai norite pašalinti „Chromium&quot;?</translation>
+<translation id="1260240842868558614">Rodyti:</translation>
 <translation id="6510925080656968729">Pašalinti „Chromium“</translation>
 <translation id="2615699638672665509">Šiame kompiuteryje netrukus nebebus gaunami „Chromium“ naujiniai, nes jo aparatinė įranga nebepalaikoma.</translation>
 <translation id="5532301346661895910">„Chromium“ saugos slaptažodį |„Google“ išsaugotų slaptažodžių| skiltyje ir prisimins jį kitą kartą, kai jums jo reikės.</translation>
 <translation id="6893813176749746474">„Chromium“ atnaujinta, bet jos nenaudojote mažiausiai 30 dienų.</translation>
 <translation id="2732467638532545152">Kompiuteryje veikia sena „Microsoft Windows“ versija, kurią naudojant negalima apdoroti šio svetainės saugos sertifikato. Dėl šios problemos „Chromium“ negali nustatyti, ar sertifikatas gautas iš <ph name="SITE"/> ar iš kažko, kas jūsų tinkle apsimeta esantis <ph name="SITE"/>. Atnaujinkite kompiuterį į naujesnę „Windows“ versiją.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
+<translation id="7982789257301363584">Tinklas</translation>
 <translation id="6613594504749178791">Pakeitimai įsigalios kitą kartą iš naujo paleidus „Chromium“.</translation>
 <translation id="9089354809943900324">„Chromium“ versija yra pasenusi</translation>
 <translation id="59625444380784159">Turėdami išsamią kontaktų informaciją galite greičiau užpildyti formas „Chromium“.</translation>
 <translation id="3748537968684000502">Žiūrite saugų „Chromium“ puslapį.</translation>
+<translation id="1165039591588034296">Klaida</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="1065672644894730302">Jūsų nuostatų negalima nuskaityti.
 
@@ -41,7 +45,9 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4285930937574705105">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Chromium“, uždarykite ir pabandykite iš naujo.</translation>
 <translation id="1396446129537741364">„Chromium“ bando parodyti slaptažodžius.</translation>
 <translation id="8987477933582888019">Žiniatinklio naršyklė</translation>
+<translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="2886012850691518054">Pasirenkama: padėkite tobulinti „Chromium“ automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
+<translation id="1124772482545689468">Naudotojas</translation>
 <translation id="580822234363523061">Eikite į
           „Chromium“ meniu &gt;
           „<ph name="SETTINGS_TITLE"/>“
@@ -50,6 +56,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
           &gt;
           „<ph name="PROXIES_TITLE"/>“ 
           ir nustatykite konfigūraciją kaip „Nėra tarpinio serverio“ arba „Tiesioginis“.</translation>
+<translation id="1864111464094315414">Prisijungimas</translation>
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE"/>“ – „Chromium“</translation>
 <translation id="7729447699958282447">„Chromium“ negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
@@ -76,10 +83,12 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="734373864078049451">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chromium“ duomenys.</translation>
 <translation id="3197823471738295152">Įrenginyje naudojate naujausią programinės įrangos versiją.</translation>
 <translation id="3065280201209294872">Svetainėje naudojami pasenę saugos nustatymai, todėl naudojant būsimas „Chromium“ versijas gali nepavykti jos saugiai pasiekti.</translation>
+<translation id="2660779039299703961">Įvykis</translation>
 <translation id="8551886023433311834">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="8353224596138547809">Ar norite, kad „Chromium“ išsaugotų šios svetainės slaptažodį?</translation>
 <translation id="8738058698779197622">Jei norite užmegzti saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikalaujama todėl, kad svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikrą laikotarpį. Kadangi įrenginio laikrodis nustatytas netinkamai, „Chromium“ negali tinkamai patvirtinti sertifikatų.</translation>
 <translation id="7339898014177206373">Naujas langas</translation>
+<translation id="2739191690716947896">Derinti</translation>
 <translation id="7463979740390522693">„Chromium“ – pranešimai (neskaitytų: <ph name="QUANTITY"/>)</translation>
 <translation id="225614027745146050">Sveiki</translation>
 <translation id="5823381412099532241">„Chromium“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikės atnaujinti „Chromium“.</translation>
@@ -154,6 +163,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="8684913864886094367">„Chromium“ netinkamai išsijungė.</translation>
 <translation id="3582788516608077514">Atnaujinama „Chromium“...</translation>
 <translation id="7223968959479464213">Užduočių tvarkytuvė – „Chromium“</translation>
+<translation id="6723839937902243910">Maitinimas</translation>
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
 <translation id="6638567566961868659">Žymes rasite „Chromium“ meniu arba žymių juostoje.</translation>
 <translation id="2673087257647337101">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
@@ -163,7 +173,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5942520288919337908">„<ph name="EXTENSION_NAME"/>“ pridėtas prie „Chromium“.</translation>
 <translation id="549669000822060376">Palaukite, kol „Chromium“ įdiegs naujausius sistemos naujinius.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="3281987435599047980">nusiuntus žodį ir jo kontekstą „Google“ paieškai, gaunamos apibrėžtys, paveikslėliai, paieškos rezultatai ir kita išsami informacija.</translation>
+<translation id="4130199216115862831">Įrenginio žurnalas</translation>
 <translation id="4559775032954821361">Eikite į 
           „Chromium“ meniu &gt;
           „<ph name="SETTINGS_TITLE"/>“
@@ -230,6 +240,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
 <translation id="1708666629004767631">Pasiekiama nauja, saugesnė „Chromium“ versija.</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
+<translation id="2242687258748107519">Failo informacija</translation>
 <translation id="8724049448828509830">Šiuo metu vykdomas atsisiuntimas. Ar norite išeiti iš „Chromium“ ir atšaukti atsisiuntimą?</translation>
 <translation id="608189560609172163">„Chromium“ negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="4888717733111232871">„Chromium“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
@@ -240,6 +251,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 Prisijungus bet kuriuo būdu, „Chromium“ informacija, pvz., žymės, istorija ir kiti nustatymai, bus sujungta su <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Šiuo metu vykdomi atsisiuntimai. Ar norite išeiti iš „Chromium“ ir atšaukti atsisiuntimus?</translation>
 <translation id="9013262824292842194">„Chromium“ reikalinga „Windows Vista“ ar „Windows XP“ su SP2 ar naujesne versija.</translation>
+<translation id="6231881193380278751">Kad puslapis būtų atnaujintas automatiškai, pridėkite šį užklausos parametrą prie URL: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="7962572577636132072">„Chromium“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="722928257909516027">Rodyti „Chromium“ menu</translation>
@@ -253,6 +265,7 @@ Prisijungus bet kuriuo būdu, „Chromium“ informacija, pvz., žymės, istorij
 „Chromium“ negali atkurti nustatymų.</translation>
 <translation id="918373042641772655">Atjungus <ph name="USERNAME"/>, bus išvalyta jūsų istorija, žymės, nustatymai ir kiti „Chromium“ duomenys, saugomi šiame įrenginyje. „Google“ paskyroje saugomi duomenys nebus išvalyti. Juos galite tvarkyti <ph name="GOOGLE_DASHBOARD_LINK"/>„Google“ informacijos suvestinėje<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">„Chromium“ – tai žiniatinklio naršyklė, kurią naudojant akimirksniu paleidžiami tinklalapiai ir programos. Ji greita, stabili ir lengvai naudojama. Saugiau naršykite žiniatinklį naudodami į „Chromium“ integruotą apsaugą nuo kenkėjiškų programų ir sukčiavimo.</translation>
+<translation id="930268624053534560">Išsamios laiko žymės</translation>
 <translation id="4230135487732243613">Susisieti „Chromium“ duomenis su šia paskyra?</translation>
 <translation id="2572494885440352020">„Chromium“ pagalbos priemonė</translation>
 <translation id="7617377681829253106">„Chromium“ dabar dar tobulesnė</translation>

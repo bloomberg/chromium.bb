@@ -69,6 +69,7 @@
 <translation id="6458467102616083041">ポリシーによってデフォルトの検索が無効にされているため無視されます。</translation>
 <translation id="1227224963052638717">不明なポリシー。</translation>
 <translation id="9207861905230894330">記事を追加できませんでした。</translation>
+<translation id="5872918882028971132">保護者からのおすすめ</translation>
 <translation id="337363190475750230">プロビジョニングが解除されました</translation>
 <translation id="2367567093518048410">レベル</translation>
 <translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
@@ -109,6 +110,7 @@
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
 <translation id="2025623846716345241">再読み込みに関する確認</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> のブックマーク</translation>
+<translation id="4300246636397505754">保護者からのおすすめ</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
@@ -144,6 +146,7 @@
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="2354001756790975382">その他のブックマーク</translation>
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
+<translation id="2359808026110333948">続行</translation>
 <translation id="6915804003454593391">ユーザー:</translation>
 <translation id="3377188786107721145">ポリシー解析エラーです</translation>
 <translation id="2270192940992995399">記事が見つかりませんでした。</translation>
@@ -200,6 +203,7 @@
 <translation id="8713130696108419660">無効なイニシャル署名です</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2639739919103226564">ステータス:</translation>
+<translation id="385051799172605136">戻る</translation>
 <translation id="5095208057601539847">地方</translation>
 <translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME"/> でこのサイトの<ph name="LANGUAGE_NAME"/>ページを翻訳しますか？</translation>
 <translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>

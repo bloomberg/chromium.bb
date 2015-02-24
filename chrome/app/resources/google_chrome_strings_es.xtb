@@ -47,6 +47,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible que funciona a una velocidad sin precedentes.</translation>
 <translation id="8987477933582888019">Navegador web</translation>
+<translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
@@ -143,6 +144,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
           para conseguir un mejor rendimiento.</translation>
 <translation id="2290014774651636340">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Google Chrome.</translation>
 <translation id="2397416548179033562">Mostrar menú de Chrome</translation>
+<translation id="5423788048750135178">Accede al menú de Chrome, selecciona Ajustes, haz clic en Privacidad (Avanzados) e inhabilita la opción de cargar previamente recursos de página. Si esto no soluciona el problema, te recomendamos que vuelvas a habilitar esta opción para mejorar el rendimiento.</translation>
 <translation id="4794050651896644714">Guardar detalles en Chrome</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu ordenador no es compatible con Google Chrome.</translation>
@@ -177,7 +179,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="6235018212288296708">Regla entrante para que Google Chrome permita tráfico mDNS.</translation>
 <translation id="7984945080620862648">No puedes acceder a <ph name="SITE"/> en este momento porque el sitio web ha enviado credenciales codificadas que Chrome no puede procesar. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="3281987435599047980">envía una palabra y el contexto circundante a la Búsqueda de Google y muestra definiciones, imágenes, resultados de búsqueda y otros detalles.</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Google Chrome no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="9026991721384951619">Chrome OS no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
@@ -259,7 +260,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Todos los derechos reservados.</translation>
 <translation id="1698376642261615901">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a gran velocidad. Es rápido, estable y fácil de utilizar. Navega por la Web de forma más segura gracias a la protección integrada contra suplantación de identidad y software malicioso.</translation>
-<translation id="4523402702161492148">No se puede actualizar Google Chrome debido a que hay configuraciones contradictorias de la política de grupo de Google Update. Anula la política de actualización para los archivos binarios de Google Chrome con el editor de políticas de grupo y vuelve a intentarlo. Para obtener más información, consulta la página https://goo.gl/uJ9gV.</translation>
 <translation id="853189717709780425">Estas iniciando sesión con una cuenta administrada, por lo que concedes a su administrador el control sobre tu perfil de Google Chrome. Tus datos de Chrome, como aplicaciones, marcadores, historial, contraseñas y otras opciones quedarán vinculados de forma permanente a <ph name="USER_NAME"/>. Podrás eliminar estos datos mediante el panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta.</translation>
 <translation id="6049075767726609708">Un administrador ha instalado Google Chrome en este sistema y el programa se encuentra disponible para todos los usuarios. Ahora, la instalación de Google Chrome de nivel de sistema sustituirá a la instalación de nivel de usuario.</translation>
 <translation id="1818142563254268765">Chrome no ha podido actualizarse automáticamente a la última versión, por lo que te estás perdiendo algunos magníficos parches de seguridad y fantásticas funciones nuevas. Tendrás que actualizar Chrome.</translation>
