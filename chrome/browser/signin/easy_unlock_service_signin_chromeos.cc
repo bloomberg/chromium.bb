@@ -335,7 +335,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     const chromeos::EasyUnlockDeviceKeyDataList& devices) {
   allow_cryptohome_backoff_ = false;
 
-  UserData* data = user_data_[user_id_];
+  UserData* data = user_data_[user_id];
   data->state = USER_DATA_STATE_LOADED;
   if (success) {
     data->devices = devices;
