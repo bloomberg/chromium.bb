@@ -121,12 +121,10 @@ UnpackedInstaller::UnpackedInstaller(ExtensionService* extension_service)
       require_modern_manifest_version_(true),
       be_noisy_on_failure_(true),
       install_checker_(extension_service->profile()) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 UnpackedInstaller::~UnpackedInstaller() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-        BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
 void UnpackedInstaller::Load(const base::FilePath& path_in) {
@@ -140,7 +138,7 @@ void UnpackedInstaller::Load(const base::FilePath& path_in) {
 
 bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
                                             std::string* extension_id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(extension_path_.empty());
 
   if (!service_weak_.get())
@@ -178,7 +176,7 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
 }
 
 void UnpackedInstaller::ShowInstallPrompt() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_.get())
     return;
 
@@ -242,7 +240,7 @@ void UnpackedInstaller::StartInstallChecks() {
 }
 
 void UnpackedInstaller::OnInstallChecksComplete(int failed_checks) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!install_checker_.policy_error().empty()) {
     ReportExtensionLoadError(install_checker_.policy_error());
@@ -285,7 +283,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 }
 
 void UnpackedInstaller::GetAbsolutePath() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
@@ -303,7 +301,7 @@ void UnpackedInstaller::GetAbsolutePath() {
 }
 
 void UnpackedInstaller::CheckExtensionFileAccess() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_.get())
     return;
 
@@ -319,7 +317,7 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 }
 
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::string error;
   install_checker_.set_extension(
@@ -343,7 +341,7 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 }
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (service_weak_.get()) {
     ExtensionErrorReporter::GetInstance()->ReportLoadError(
