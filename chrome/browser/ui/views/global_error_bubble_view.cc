@@ -102,7 +102,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
   if (error_->ShouldAddElevationIconToAcceptButton())
-    elevation_icon_setter_.reset(new ElevationIconSetter(accept_button.get()));
+    elevation_icon_setter_.reset(
+        new ElevationIconSetter(
+            accept_button.get(),
+            base::Bind(&GlobalErrorBubbleView::SizeToContents,
+                       base::Unretained(this))));
 
   base::string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
   scoped_ptr<views::LabelButton> cancel_button;

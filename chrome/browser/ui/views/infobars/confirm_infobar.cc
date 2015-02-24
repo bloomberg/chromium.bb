@@ -71,7 +71,9 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       ok_button_ = CreateLabelButton(
           this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
       if (delegate->OKButtonTriggersUACPrompt())
-        elevation_icon_setter_.reset(new ElevationIconSetter(ok_button_));
+        elevation_icon_setter_.reset(new ElevationIconSetter(
+            ok_button_,
+            base::Bind(&ConfirmInfoBar::Layout, base::Unretained(this))));
       AddChildView(ok_button_);
     }
 

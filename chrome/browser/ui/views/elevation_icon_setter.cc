@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 
+#include "base/callback.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/views/controls/button/label_button.h"
@@ -56,7 +57,8 @@ scoped_ptr<SkBitmap> GetElevationIcon() {
 
 // ElevationIconSetter --------------------------------------------------------
 
-ElevationIconSetter::ElevationIconSetter(views::LabelButton* button)
+ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
+                                         const base::Closure& callback)
     : button_(button),
       weak_factory_(this) {
   base::PostTaskAndReplyWithResult(
@@ -64,13 +66,15 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button)
       FROM_HERE,
       base::Bind(&GetElevationIcon),
       base::Bind(&ElevationIconSetter::SetButtonIcon,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 ElevationIconSetter::~ElevationIconSetter() {
 }
 
-void ElevationIconSetter::SetButtonIcon(scoped_ptr<SkBitmap> icon) {
+void ElevationIconSetter::SetButtonIcon(const base::Closure& callback,
+                                        scoped_ptr<SkBitmap> icon) {
   if (icon) {
     float device_scale_factor = 1.0f;
 #if defined(OS_WIN)
@@ -84,5 +88,7 @@ void ElevationIconSetter::SetButtonIcon(scoped_ptr<SkBitmap> icon) {
     button_->SizeToPreferredSize();
     if (button_->parent())
       button_->parent()->Layout();
+    if (!callback.is_null())
+      callback.Run();
   }
 }

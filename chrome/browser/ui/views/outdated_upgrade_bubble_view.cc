@@ -110,7 +110,10 @@ void OutdatedUpgradeBubbleView::Init() {
   accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   accept_button_->SetIsDefault(true);
   accept_button_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
-  elevation_icon_setter_.reset(new ElevationIconSetter(accept_button_));
+  elevation_icon_setter_.reset(new ElevationIconSetter(
+      accept_button_,
+      base::Bind(&OutdatedUpgradeBubbleView::SizeToContents,
+                 base::Unretained(this))));
 
   later_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_LATER));

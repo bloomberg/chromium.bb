@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ELEVATION_ICON_SETTER_H_
 #define CHROME_BROWSER_UI_VIEWS_ELEVATION_ICON_SETTER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
@@ -20,11 +21,15 @@ class LabelButton;
 class ElevationIconSetter {
  public:
   // |button| must be guaranteed to be alive throughout this class' lifetime!
-  explicit ElevationIconSetter(views::LabelButton* button);
+  // |callback| will be called if the button icon is actually changed; callers
+  // should pass a function which does a relayout on the view containing the
+  // button, to ensure the button is correctly resized as necessary.
+  ElevationIconSetter(views::LabelButton* button,
+                      const base::Closure& callback);
   ~ElevationIconSetter();
 
  private:
-  void SetButtonIcon(scoped_ptr<SkBitmap> icon);
+  void SetButtonIcon(const base::Closure& callback, scoped_ptr<SkBitmap> icon);
 
   views::LabelButton* button_;
   base::WeakPtrFactory<ElevationIconSetter> weak_factory_;
