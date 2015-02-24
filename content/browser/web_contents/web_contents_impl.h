@@ -524,7 +524,6 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* old_host,
       RenderFrameHostImpl* new_host) override;
   void DidStartNavigationToPendingEntry(
-      RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       NavigationController::ReloadType reload_type) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,

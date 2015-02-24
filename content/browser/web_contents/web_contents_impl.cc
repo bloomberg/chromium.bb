@@ -2614,7 +2614,6 @@ void WebContentsImpl::AboutToNavigateRenderFrame(
 }
 
 void WebContentsImpl::DidStartNavigationToPendingEntry(
-      RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       NavigationController::ReloadType reload_type) {
   // Notify observers about navigation.
