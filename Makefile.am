@@ -978,8 +978,8 @@ weston_test_la_LDFLAGS = $(test_module_ldflags)
 weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_SOURCES = tests/weston-test.c
 nodist_weston_test_la_SOURCES =			\
-	protocol/wayland-test-protocol.c	\
-	protocol/wayland-test-server-protocol.h
+	protocol/weston-test-protocol.c	\
+	protocol/weston-test-server-protocol.h
 
 if ENABLE_EGL
 weston_test_la_CFLAGS += $(EGL_TESTS_CFLAGS)
@@ -1004,8 +1004,8 @@ libtest_client_la_SOURCES =			\
 	tests/weston-test-client-helper.c	\
 	tests/weston-test-client-helper.h
 nodist_libtest_client_la_SOURCES =		\
-	protocol/wayland-test-protocol.c	\
-	protocol/wayland-test-client-protocol.h
+	protocol/weston-test-protocol.c	\
+	protocol/weston-test-client-protocol.h
 libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
 
@@ -1081,9 +1081,9 @@ endif
 EXTRA_DIST += tests/weston-tests-env
 
 BUILT_SOURCES +=				\
-	protocol/wayland-test-protocol.c	\
-	protocol/wayland-test-server-protocol.h	\
-	protocol/wayland-test-client-protocol.h	\
+	protocol/weston-test-protocol.c	\
+	protocol/weston-test-server-protocol.h	\
+	protocol/weston-test-client-protocol.h	\
 	protocol/text-protocol.c		\
 	protocol/text-client-protocol.h
 
@@ -1094,7 +1094,7 @@ EXTRA_DIST +=					\
 	protocol/input-method.xml		\
 	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\
-	protocol/wayland-test.xml		\
+	protocol/weston-test.xml		\
 	protocol/xdg-shell.xml			\
 	protocol/fullscreen-shell.xml		\
 	protocol/presentation_timing.xml	\

@@ -44,20 +44,21 @@ TEST(simple_keyboard_test)
 
 		if (keyboard->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 			expect_state = WL_KEYBOARD_KEY_STATE_RELEASED;
-			wl_test_send_key(client->test->wl_test, expect_key,
-				expect_state);
+			weston_test_send_key(client->test->weston_test,
+					     expect_key, expect_state);
 		} else if (keyboard->focus) {
 			expect_focus = NULL;
-			wl_test_activate_surface(client->test->wl_test,
-						 NULL);
+			weston_test_activate_surface(
+				client->test->weston_test, NULL);
 		} else if (expect_key < 10) {
 			expect_key++;
 			expect_focus = client->surface;
 			expect_state = WL_KEYBOARD_KEY_STATE_PRESSED;
-			wl_test_activate_surface(client->test->wl_test,
-						 expect_focus->wl_surface);
-			wl_test_send_key(client->test->wl_test, expect_key,
-					 expect_state);
+			weston_test_activate_surface(
+				client->test->weston_test,
+				expect_focus->wl_surface);
+			weston_test_send_key(client->test->weston_test,
+					     expect_key, expect_state);
 		} else {
 			break;
 		}

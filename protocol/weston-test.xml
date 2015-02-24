@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="wl_test">
+<protocol name="weston_test">
 
   <copyright>
     Copyright © 2012 Intel Corporation
@@ -26,7 +26,16 @@
     THIS SOFTWARE.
   </copyright>
 
-  <interface name="wl_test" version="1">
+  <interface name="weston_test" version="1">
+    <description summary="weston internal testing">
+      Internal testing facilities for the weston compositor.
+
+      It can't be stressed enough that these should never ever be used
+      outside of running weston's tests.  The weston-test.so module should
+      never be installed.
+
+      These requests may allow clients to do very bad things.
+    </description>
     <request name="move_surface">
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>

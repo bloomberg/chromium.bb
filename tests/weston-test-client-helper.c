@@ -88,7 +88,7 @@ move_client(struct client *client, int x, int y)
 
 	client->surface->x = x;
 	client->surface->y = y;
-	wl_test_move_surface(client->test->wl_test, surface->wl_surface,
+	weston_test_move_surface(client->test->weston_test, surface->wl_surface,
 			     surface->x, surface->y);
 	/* The attach here is necessary because commit() will call configure
 	 * only on surfaces newly attached, and the one that sets the surface
@@ -109,7 +109,7 @@ get_n_egl_buffers(struct client *client)
 {
 	client->test->n_egl_buffers = -1;
 
-	wl_test_get_n_egl_buffers(client->test->wl_test);
+	weston_test_get_n_egl_buffers(client->test->weston_test);
 	wl_display_roundtrip(client->wl_display);
 
 	return client->test->n_egl_buffers;
@@ -333,7 +333,7 @@ struct wl_shm_listener shm_listener = {
 };
 
 static void
-test_handle_pointer_position(void *data, struct wl_test *wl_test,
+test_handle_pointer_position(void *data, struct weston_test *weston_test,
 			     wl_fixed_t x, wl_fixed_t y)
 {
 	struct test *test = data;
@@ -345,14 +345,14 @@ test_handle_pointer_position(void *data, struct wl_test *wl_test,
 }
 
 static void
-test_handle_n_egl_buffers(void *data, struct wl_test *wl_test, uint32_t n)
+test_handle_n_egl_buffers(void *data, struct weston_test *weston_test, uint32_t n)
 {
 	struct test *test = data;
 
 	test->n_egl_buffers = n;
 }
 
-static const struct wl_test_listener test_listener = {
+static const struct weston_test_listener test_listener = {
 	test_handle_pointer_position,
 	test_handle_n_egl_buffers,
 };
@@ -475,12 +475,12 @@ handle_global(void *data, struct wl_registry *registry,
 		wl_output_add_listener(output->wl_output,
 				       &output_listener, output);
 		client->output = output;
-	} else if (strcmp(interface, "wl_test") == 0) {
+	} else if (strcmp(interface, "weston_test") == 0) {
 		test = xzalloc(sizeof *test);
-		test->wl_test =
+		test->weston_test =
 			wl_registry_bind(registry, id,
-					 &wl_test_interface, 1);
-		wl_test_add_listener(test->wl_test, &test_listener, test);
+					 &weston_test_interface, 1);
+		weston_test_add_listener(test->weston_test, &test_listener, test);
 		client->test = test;
 	} else if (strcmp(interface, "wl_drm") == 0) {
 		client->has_wl_drm = true;
@@ -586,7 +586,7 @@ client_create(int x, int y, int width, int height)
 	/* must have WL_SHM_FORMAT_ARGB32 */
 	assert(client->has_argb);
 
-	/* must have wl_test interface */
+	/* must have weston_test interface */
 	assert(client->test);
 
 	/* must have an output */

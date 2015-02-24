@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include "weston-test-runner.h"
-#include "wayland-test-client-protocol.h"
+#include "weston-test-client-protocol.h"
 
 struct client {
 	struct wl_display *wl_display;
@@ -52,7 +52,7 @@ struct global {
 };
 
 struct test {
-	struct wl_test *wl_test;
+	struct weston_test *weston_test;
 	int pointer_x;
 	int pointer_y;
 	uint32_t n_egl_buffers;

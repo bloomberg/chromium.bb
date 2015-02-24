@@ -39,18 +39,18 @@ TEST(simple_button_test)
 	assert(pointer->button == 0);
 	assert(pointer->state == 0);
 
-	wl_test_move_pointer(client->test->wl_test, 150, 150);
+	weston_test_move_pointer(client->test->weston_test, 150, 150);
 	client_roundtrip(client);
 	assert(pointer->x == 50);
 	assert(pointer->y == 50);
 
-	wl_test_send_button(client->test->wl_test, BTN_LEFT,
+	weston_test_send_button(client->test->weston_test, BTN_LEFT,
 			    WL_POINTER_BUTTON_STATE_PRESSED);
 	client_roundtrip(client);
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_PRESSED);
 
-	wl_test_send_button(client->test->wl_test, BTN_LEFT,
+	weston_test_send_button(client->test->weston_test, BTN_LEFT,
 			    WL_POINTER_BUTTON_STATE_RELEASED);
 	client_roundtrip(client);
 	assert(pointer->button == BTN_LEFT);

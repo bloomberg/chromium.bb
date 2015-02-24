@@ -28,7 +28,7 @@
 #include <unistd.h>
 
 #include "../src/compositor.h"
-#include "wayland-test-server-protocol.h"
+#include "weston-test-server-protocol.h"
 
 #ifdef ENABLE_EGL
 #include <EGL/egl.h>
@@ -85,7 +85,7 @@ notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 	struct weston_seat *seat = get_seat(test);
 	struct weston_pointer *pointer = seat->pointer;
 
-	wl_test_send_pointer_position(resource, pointer->x, pointer->y);
+	weston_test_send_pointer_position(resource, pointer->x, pointer->y);
 }
 
 static void
@@ -233,10 +233,10 @@ get_n_buffers(struct wl_client *client, struct wl_resource *resource)
 	}
 #endif /* ENABLE_EGL */
 
-	wl_test_send_n_egl_buffers(resource, n_buffers);
+	weston_test_send_n_egl_buffers(resource, n_buffers);
 }
 
-static const struct wl_test_interface test_implementation = {
+static const struct weston_test_interface test_implementation = {
 	move_surface,
 	move_pointer,
 	send_button,
@@ -251,7 +251,7 @@ bind_test(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	struct weston_test *test = data;
 	struct wl_resource *resource;
 
-	resource = wl_resource_create(client, &wl_test_interface, 1, id);
+	resource = wl_resource_create(client, &weston_test_interface, 1, id);
 	if (!resource) {
 		wl_client_post_no_memory(client);
 		return;
@@ -304,7 +304,7 @@ module_init(struct weston_compositor *ec,
 	test->compositor = ec;
 	weston_layer_init(&test->layer, &ec->cursor_layer.link);
 
-	if (wl_global_create(ec->wl_display, &wl_test_interface, 1,
+	if (wl_global_create(ec->wl_display, &weston_test_interface, 1,
 			     test, bind_test) == NULL)
 		return -1;
 

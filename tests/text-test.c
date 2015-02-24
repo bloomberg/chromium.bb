@@ -187,7 +187,7 @@ TEST(text_test)
 	wl_text_input_add_listener(text_input, &text_input_listener, &state);
 
 	/* Make sure our test surface has keyboard focus. */
-	wl_test_activate_surface(client->test->wl_test,
+	weston_test_activate_surface(client->test->weston_test,
 				 client->surface->wl_surface);
 	client_roundtrip(client);
 	assert(client->input->keyboard->focus == client->surface);
@@ -210,7 +210,7 @@ TEST(text_test)
 	assert(state.activated == 2 && state.deactivated == 1);
 
 	/* Take keyboard focus away and verify we get leave event. */
-	wl_test_activate_surface(client->test->wl_test, NULL);
+	weston_test_activate_surface(client->test->weston_test, NULL);
 	client_roundtrip(client);
 	assert(state.activated == 2 && state.deactivated == 2);
 }
