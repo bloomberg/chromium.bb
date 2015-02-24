@@ -197,7 +197,7 @@ function testRotateLogs(callback) {
           function() {
             assertTrue(fileName !== undefined);
             // Verify the *active* log is deleted.
-            assertEquals(0, fileName.search(/import-debug-[0-9]{6}-0.log/),
+            assertEquals(0, fileName.search(/[0-9]{6}-import-debug-0.log/),
                 'Filename (' + fileName + ') does not match next pattern.');
             driveFileEntry.assertRemoved();
 

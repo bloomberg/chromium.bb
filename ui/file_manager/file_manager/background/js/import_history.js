@@ -567,7 +567,7 @@ importer.PersistentImportHistory.prototype.markImportedByUrl =
   }
 
   return Promise.reject(
-      'Unabled to match destination URL to import record > ' + destinationUrl);
+      'Unable to match destination URL to import record > ' + destinationUrl);
 };
 
 /** @override */
@@ -976,8 +976,12 @@ importer.DriveSyncWatcher.prototype.updateSyncStatus_ =
  */
 importer.DriveSyncWatcher.prototype.onFileTransfersUpdated_ =
     function(status) {
+  // TODO(smckay): What if the file isn't one we're interested in....?
+  // I guess we just let the call to markImportedByUrl fail for now.
   if (status.transferState === 'completed') {
-    this.history_.markImportedByUrl(status.fileUrl);
+    this.history_.markImportedByUrl(status.fileUrl)
+        .catch(
+            importer.getLogger().catcher('file-transfer-mark-imported-by-url'));
   }
 };
 

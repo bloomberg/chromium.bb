@@ -224,7 +224,7 @@ importer.getMachineId = function() {
 importer.getHistoryFilename = function() {
   return importer.getMachineId().then(
       function(machineId) {
-        return 'import-history-' + machineId + '.log';
+        return machineId + '-import-history.log';
       });
 };
 
@@ -236,7 +236,7 @@ importer.getHistoryFilename = function() {
 importer.getDebugLogFilename = function(logId) {
   return importer.getMachineId().then(
       function(machineId) {
-        return 'import-debug-' + machineId + '-' + logId + '.log';
+        return machineId + '-import-debug-' + logId + '.log';
       });
 };
 
@@ -645,14 +645,34 @@ importer.Logger.prototype.catcher;
  * @final
  *
  * @param {!Promise.<!FileEntry>} fileEntryPromise
+ * @param {!Promise.<!analytics.Tracker>} trackerPromise
  */
-importer.RuntimeLogger = function(fileEntryPromise) {
+importer.RuntimeLogger = function(fileEntryPromise, trackerPromise) {
 
   /** @private {!Promise.<!importer.PromisingFileEntry>} */
   this.fileEntryPromise_ = fileEntryPromise.then(
       /** @param {!FileEntry} fileEntry */
       function(fileEntry) {
         return new importer.PromisingFileEntry(fileEntry);
+      });
+
+  /** @private {!Promise.<!analytics.Tracker>} */
+  this.trackerPromise_ = trackerPromise;
+};
+
+/**
+ * Reports an error to analytics.
+ *
+ * @param {string} context MUST NOT contain any dynamic error content,
+ *    only statically defined string will dooooo.
+ */
+importer.RuntimeLogger.prototype.reportErrorContext_ = function(context) {
+  this.trackerPromise_.then(
+      /** @param {!analytics.Tracker} tracker */
+      function(tracker) {
+        tracker.sendException(
+            context,
+            false  /* fatal */ );
       });
 };
 
@@ -670,13 +690,18 @@ importer.RuntimeLogger.prototype.error = function(content) {
 
 /** @override  */
 importer.RuntimeLogger.prototype.catcher = function(context) {
+  var prefix = '(' + context + ') ';
   return function(error) {
-    var prefix = '(' + context + ')';
-    var message = prefix + ' Caught error in promise chain.';
+    this.reportErrorContext_(context);
 
+    var message = prefix + 'Caught error in promise chain.';
     if (error) {
-      this.error(message + ' Error' + error.message);
-      this.write_('STACK', prefix + ' Trace: ' + error.stack);
+      // Error can be anything...maybe an Error, maybe a string.
+      var error = error.message || error;
+      this.error(message + ' Error: ' + error);
+      if (error.stack) {
+        this.write_('STACK', prefix + error.stack);
+      }
     } else {
       this.error(message);
       error = new Error(message);
@@ -760,11 +785,34 @@ importer.getLogger = function() {
     // (getDebugLogFilename) returns promise. We exploit this.
     importer.logger_ = new importer.RuntimeLogger(
         importer.ChromeSyncFileEntryProvider.getFileEntry(
-            /** @type {!Promise<string>} */ (rotator().then(
-                importer.getDebugLogFilename.bind(null, nextLogId)))));
+            /** @type {!Promise.<string>} */ (rotator().then(
+                importer.getDebugLogFilename.bind(null, nextLogId)))),
+        importer.getTracker_());
   }
 
   return importer.logger_;
+};
+
+/**
+ * Fetch analytics.Tracker from background page.
+ * @return {!Promise.<!analytics.Tracker>}
+ * @private
+ */
+importer.getTracker_ = function() {
+  return new Promise(
+      function(resolve, reject) {
+        chrome.runtime.getBackgroundPage(
+          /** @param {Window=} opt_background */
+          function(opt_background) {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            }
+            opt_background.background.ready(
+                function() {
+                  resolve(opt_background.background.tracker);
+                });
+          });
+      });
 };
 
 /**
@@ -772,6 +820,7 @@ importer.getLogger = function() {
  * @private
  */
 importer.getNextDebugLogId_ = function() {
+  // Changes every other month.
   return new Date().getMonth() % 2;
 };
 
