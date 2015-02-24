@@ -4,15 +4,13 @@
         "top_7_stress_001.wpr": [
             "https://plus.google.com/110031535020051778989/posts"
         ], 
-        "top_7_stress_003.wpr": [
-            "Facebook"
-        ], 
         "top_7_stress_000.wpr": [
             "https://www.google.com/#hl=en&q=barack+obama", 
             "https://mail.google.com/mail/", 
             "https://www.google.com/calendar/"
         ], 
         "top_7_stress_002.wpr": [
+            "Facebook", 
             "Blogger", 
             "Wordpress"
         ]

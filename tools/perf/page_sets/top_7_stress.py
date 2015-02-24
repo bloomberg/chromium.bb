@@ -299,10 +299,10 @@ class FacebookPage(Top7StressPage):
 
   def __init__(self, page_set):
     super(FacebookPage, self).__init__(
-      url='https://www.facebook.com/barackobama',
+      url='http://www.facebook.com/barackobama',
       page_set=page_set,
       name='Facebook')
-    self.credentials = 'facebook2'
+    self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
     super(FacebookPage, self).RunNavigateSteps(action_runner)
