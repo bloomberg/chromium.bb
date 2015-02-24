@@ -432,7 +432,20 @@ int32_t toInt32(v8::Handle<v8::Value>);
 // Convert a value to a 32-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long
-uint32_t toUInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+uint32_t toUInt32Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    // Fast case. The value is already a 32-bit unsigned integer.
+    if (value->IsUint32())
+        return value->Uint32Value();
+
+    // Fast case. The value is a 32-bit signed integer with NormalConversion configuration.
+    if (value->IsInt32() && configuration == NormalConversion)
+        return value->Int32Value();
+
+    return toUInt32Slow(value, configuration, exceptionState);
+}
+
 inline uint32_t toUInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toUInt32(value, NormalConversion, exceptionState);
