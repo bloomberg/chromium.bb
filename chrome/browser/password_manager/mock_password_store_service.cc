@@ -12,7 +12,7 @@ KeyedService* MockPasswordStoreService::Build(
   scoped_refptr<password_manager::PasswordStore> store(
       new password_manager::MockPasswordStore);
   if (!store.get() || !store->Init(syncer::SyncableService::StartSyncFlare()))
-    return NULL;
+    return nullptr;
   return new MockPasswordStoreService(store);
 }
 

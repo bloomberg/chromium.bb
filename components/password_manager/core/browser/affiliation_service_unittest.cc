@@ -70,7 +70,7 @@ class AffiliationServiceTest : public testing::Test {
     base::FilePath database_path;
     ASSERT_TRUE(CreateTemporaryFile(&database_path));
     service_.reset(new AffiliationService(background_task_runner()));
-    service_->Initialize(NULL, database_path);
+    service_->Initialize(nullptr, database_path);
     // Note: the background task runner is purposely not pumped here, so that
     // the tests also verify that the service can be used synchronously right
     // away after having been constructed.

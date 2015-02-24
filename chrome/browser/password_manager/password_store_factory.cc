@@ -102,14 +102,14 @@ scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
     ServiceAccessType sat) {
   if (sat == ServiceAccessType::IMPLICIT_ACCESS && profile->IsOffTheRecord()) {
     NOTREACHED() << "This profile is OffTheRecord";
-    return NULL;
+    return nullptr;
   }
 
   PasswordStoreFactory* factory = GetInstance();
   PasswordStoreService* service = static_cast<PasswordStoreService*>(
       factory->GetServiceForBrowserContext(profile, true));
   if (!service)
-    return NULL;
+    return nullptr;
   return service->GetPasswordStore();
 }
 
@@ -271,7 +271,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
       !ps->Init(
           sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
     NOTREACHED() << "Could not initialize password manager.";
-    return NULL;
+    return nullptr;
   }
 
   return new PasswordStoreService(ps);

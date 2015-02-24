@@ -124,7 +124,7 @@ class AffiliationBackendTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     clock_->Advance(base::TimeDelta::FromMicroseconds(1));
-    backend_.reset(new AffiliationBackend(NULL, make_scoped_ptr(clock_)));
+    backend_.reset(new AffiliationBackend(nullptr, make_scoped_ptr(clock_)));
 
     base::FilePath database_path;
     ASSERT_TRUE(CreateTemporaryFile(&database_path));

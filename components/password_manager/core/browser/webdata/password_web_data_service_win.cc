@@ -65,7 +65,7 @@ scoped_ptr<WDTypedResult> PasswordWebDataService::GetIE7LoginImpl(
 
 PasswordWebDataService::PasswordWebDataService(
     scoped_refptr<base::MessageLoopProxy> ui_thread)
-    : WebDataServiceBase(NULL, ProfileErrorCallback(), ui_thread) {
+    : WebDataServiceBase(nullptr, ProfileErrorCallback(), ui_thread) {
 }
 
 PasswordWebDataService::~PasswordWebDataService() {

@@ -119,7 +119,7 @@ class PasswordAutofillManagerTest : public testing::Test {
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
   scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  InitializePasswordAutofillManager(client.get(), NULL);
+  InitializePasswordAutofillManager(client.get(), nullptr);
 
   EXPECT_CALL(*client->mock_driver(),
               FillSuggestion(test_username_, test_password_));
@@ -143,7 +143,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
 
 TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
   scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  InitializePasswordAutofillManager(client.get(), NULL);
+  InitializePasswordAutofillManager(client.get(), nullptr);
 
   EXPECT_CALL(*client->mock_driver(),
               PreviewSuggestion(test_username_, test_password_));

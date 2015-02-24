@@ -41,7 +41,7 @@ class MockLogReceiver : public password_manager::LogReceiver {
 class TestChromePasswordManagerClient : public ChromePasswordManagerClient {
  public:
   explicit TestChromePasswordManagerClient(content::WebContents* web_contents)
-      : ChromePasswordManagerClient(web_contents, NULL),
+      : ChromePasswordManagerClient(web_contents, nullptr),
         is_sync_account_credential_(false) {}
   ~TestChromePasswordManagerClient() override {}
 
@@ -82,13 +82,13 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 };
 
 ChromePasswordManagerClientTest::ChromePasswordManagerClientTest()
-    : service_(NULL) {
+    : service_(nullptr) {
 }
 
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      web_contents(), NULL);
+      web_contents(), nullptr);
   service_ = password_manager::PasswordManagerInternalsServiceFactory::
       GetForBrowserContext(profile());
   ASSERT_TRUE(service_);

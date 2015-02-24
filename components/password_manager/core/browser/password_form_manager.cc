@@ -95,7 +95,7 @@ PasswordFormManager::PasswordFormManager(
       is_new_login_(true),
       has_generated_password_(false),
       password_manager_(password_manager),
-      preferred_match_(NULL),
+      preferred_match_(nullptr),
       state_(PRE_MATCHING_PHASE),
       client_(client),
       manager_action_(kManagerActionNone),

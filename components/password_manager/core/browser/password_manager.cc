@@ -57,7 +57,7 @@ void ReportMetrics(bool password_manager_enabled,
   ran_once = true;
 
   PasswordStore* store = client->GetPasswordStore();
-  // May be NULL in tests.
+  // May be null in tests.
   if (store) {
     store->ReportMetrics(client->GetSyncUsername(),
                          client->IsPasswordSyncEnabled(
@@ -647,7 +647,7 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
           "Disabled",
           2013, 12, 31,
           base::FieldTrial::ONE_TIME_RANDOMIZED,
-          NULL));
+          nullptr));
   base::FieldTrial::Probability enabled_probability =
       client_->GetProbabilityForExperiment(kOtherPossibleUsernamesExperiment);
   trial->AppendGroup("Enabled", enabled_probability);

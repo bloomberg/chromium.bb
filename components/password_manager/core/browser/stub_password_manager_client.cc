@@ -53,11 +53,11 @@ void StubPasswordManagerClient::AutomaticPasswordSave(
 }
 
 PrefService* StubPasswordManagerClient::GetPrefs() {
-  return NULL;
+  return nullptr;
 }
 
 PasswordStore* StubPasswordManagerClient::GetPasswordStore() const {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace password_manager

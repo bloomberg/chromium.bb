@@ -13,6 +13,6 @@ KeyedService* NullPasswordStoreService::Build(
 }
 
 NullPasswordStoreService::NullPasswordStoreService()
-    : PasswordStoreService(NULL) {}
+    : PasswordStoreService(nullptr) {}
 
 NullPasswordStoreService::~NullPasswordStoreService() {}

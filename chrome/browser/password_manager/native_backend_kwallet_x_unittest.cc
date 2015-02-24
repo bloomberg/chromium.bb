@@ -477,7 +477,7 @@ dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
 dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     dbus::MethodCall* method_call, testing::Unused) {
   if (!kwallet_running_)
-    return NULL;
+    return nullptr;
   EXPECT_EQ("org.kde.KWallet", method_call->GetInterface());
 
   if (ContainsKey(failing_methods_, method_call->GetMember()))
@@ -574,7 +574,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     int handle = NativeBackendKWalletStub::kInvalidKWalletHandle;
     std::string folder_name;
     std::string key;
-    const uint8_t* bytes = NULL;
+    const uint8_t* bytes = nullptr;
     size_t length = 0;
     std::string app_name;
     EXPECT_TRUE(reader.PopInt32(&handle));
@@ -590,7 +590,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
                            TestKWallet::Blob(bytes, length)) ? 0 : 1);
   }
 
-  EXPECT_FALSE(response.get() == NULL);
+  EXPECT_TRUE(response);
   return response.release();
 }
 

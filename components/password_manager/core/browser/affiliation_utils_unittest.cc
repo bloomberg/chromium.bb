@@ -224,7 +224,7 @@ TEST(AffiliationUtilsTest, IsAffiliationBasedMatchingEnabled) {
     SCOPED_TRACE(testing::Message("Group name = ")
                  << test_case.field_trial_group);
 
-    base::FieldTrialList field_trials(NULL);
+    base::FieldTrialList field_trials(nullptr);
     base::FieldTrialList::CreateFieldTrial(kFieldTrialName,
                                            test_case.field_trial_group);
 

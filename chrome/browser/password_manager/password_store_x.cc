@@ -239,7 +239,7 @@ void PasswordStoreX::CheckMigration() {
   } else {
     LOG(WARNING) << "Native password store migration failed! " <<
                  "Falling back on default (unencrypted) store.";
-    backend_.reset(NULL);
+    backend_.reset();
   }
 }
 
@@ -247,7 +247,7 @@ bool PasswordStoreX::allow_default_store() {
   if (allow_fallback_) {
     LOG(WARNING) << "Native password store failed! " <<
                  "Falling back on default (unencrypted) store.";
-    backend_.reset(NULL);
+    backend_.reset();
     // Don't warn again. We'll use the default store because backend_ is NULL.
     allow_fallback_ = false;
   }

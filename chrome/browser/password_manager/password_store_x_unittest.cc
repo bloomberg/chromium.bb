@@ -232,8 +232,8 @@ void InitExpectedForms(bool autofillable,
         L"submit_element",
         L"username_element",
         L"password_element",
-        autofillable ? L"username_value" : NULL,
-        autofillable ? L"password_value" : NULL,
+        autofillable ? L"username_value" : nullptr,
+        autofillable ? L"password_value" : nullptr,
         autofillable,
         false,
         static_cast<double>(i + 1)};
@@ -273,7 +273,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
       case WORKING_BACKEND:
         return new MockBackend();
       default:
-        return NULL;
+        return nullptr;
     }
   }
 

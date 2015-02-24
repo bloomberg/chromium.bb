@@ -42,16 +42,16 @@ void StubPasswordManagerDriver::ClearPreviewedForm() {
 
 PasswordGenerationManager*
 StubPasswordManagerDriver::GetPasswordGenerationManager() {
-  return NULL;
+  return nullptr;
 }
 
 PasswordManager* StubPasswordManagerDriver::GetPasswordManager() {
-  return NULL;
+  return nullptr;
 }
 
 PasswordAutofillManager*
 StubPasswordManagerDriver::GetPasswordAutofillManager() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace password_manager

@@ -111,7 +111,7 @@ class PasswordManagerTest : public testing::Test {
 
     manager_.reset(new TestPasswordManager(&client_));
     password_autofill_manager_.reset(
-        new PasswordAutofillManager(client_.GetDriver(), NULL));
+        new PasswordAutofillManager(client_.GetDriver(), nullptr));
 
     EXPECT_CALL(driver_, GetPasswordManager())
         .WillRepeatedly(Return(manager_.get()));
@@ -126,7 +126,7 @@ class PasswordManagerTest : public testing::Test {
 
   void TearDown() override {
     store_->Shutdown();
-    store_ = NULL;
+    store_ = nullptr;
   }
 
   PasswordForm MakeSimpleForm() {
@@ -456,7 +456,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
   manager()->OnPasswordFormsRendered(&driver_, observed,
                                      true);  // The post-navigation layout.
 
-  ASSERT_FALSE(NULL == form_to_save.get());
+  ASSERT_TRUE(form_to_save);
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
 
   // Simulate saving the form, as if the info bar was accepted.

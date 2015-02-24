@@ -97,7 +97,7 @@ class PasswordStoreWinTest : public testing::Test {
     url_key.cbData = static_cast<DWORD>((url.size() + 1) *
                                         sizeof(std::wstring::value_type));
 
-    if (!CryptProtectData(&input, NULL, &url_key, NULL, NULL,
+    if (!CryptProtectData(&input, nullptr, &url_key, nullptr, nullptr,
                           CRYPTPROTECT_UI_FORBIDDEN, &output))
       return false;
 
@@ -139,8 +139,8 @@ class PasswordStoreWinTest : public testing::Test {
       store_->Shutdown();
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
-    wds_ = NULL;
-    wdbs_ = NULL;
+    wds_ = nullptr;
+    wdbs_ = nullptr;
     base::WaitableEvent done(false, false);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
@@ -284,8 +284,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
 
   // Release the PSW and the WDS before the query can return.
   store_->Shutdown();
-  store_ = NULL;
-  wds_ = NULL;
+  store_ = nullptr;
+  wds_ = nullptr;
 
   base::MessageLoop::current()->RunUntilIdle();
 }

@@ -48,7 +48,7 @@ bool GnomeKeyringLoader::keyring_loaded = false;
   {"gnome_keyring_"#name, reinterpret_cast<void**>(&gnome_keyring_##name)},
 const GnomeKeyringLoader::FunctionInfo GnomeKeyringLoader::functions[] = {
   GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_FUNCTION_INFO)
-  {NULL, NULL}
+  {nullptr, nullptr}
 };
 #undef GNOME_KEYRING_FUNCTION_INFO
 
@@ -175,7 +175,7 @@ void ConvertFormList(GList* found,
                      ScopedVector<autofill::PasswordForm>* forms) {
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
-  for (GList* element = g_list_first(found); element != NULL;
+  for (GList* element = g_list_first(found); element;
        element = g_list_next(element)) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
     GnomeKeyringAttributeList* attrs = data->attributes;
@@ -249,7 +249,7 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
     { "generation_upload_status", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     // This field is always "chrome" so that we can search for it.
     { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
-    { NULL }
+    { nullptr }
   }
 };
 
@@ -341,12 +341,12 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   int64 date_synced = form.date_synced.ToInternalValue();
   gnome_keyring_store_password(
       &kGnomeSchema,
-      NULL,  // Default keyring.
+      nullptr,  // Default keyring.
       form.origin.spec().c_str(),  // Display name.
       UTF16ToUTF8(form.password_value).c_str(),
       OnOperationDone,
       this,  // data
-      NULL,  // destroy_data
+      nullptr,  // destroy_data
       "origin_url", form.origin.spec().c_str(),
       "action_url", form.action.spec().c_str(),
       "username_element", UTF16ToUTF8(form.username_element).c_str(),
@@ -368,13 +368,13 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
       "application", app_string,
-      NULL);
+      nullptr);
 }
 
 void GKRMethod::AddLoginSearch(const PasswordForm& form,
                                const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  lookup_form_.reset(NULL);
+  lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendString(&attrs, "origin_url", form.origin.spec());
@@ -388,13 +388,13 @@ void GKRMethod::AddLoginSearch(const PasswordForm& form,
                            attrs.get(),
                            OnOperationGetList,
                            /*data=*/this,
-                           /*destroy_data=*/NULL);
+                           /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
                                   const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  lookup_form_.reset(NULL);
+  lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendString(&attrs, "origin_url", form.origin.spec());
@@ -407,7 +407,7 @@ void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
                            attrs.get(),
                            OnOperationGetList,
                            /*data=*/this,
-                           /*destroy_data=*/NULL);
+                           /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
@@ -417,7 +417,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
       &kGnomeSchema,
       OnOperationDone,
       this,  // data
-      NULL,  // destroy_data
+      nullptr,  // destroy_data
       "origin_url", form.origin.spec().c_str(),
       "username_element", UTF16ToUTF8(form.username_element).c_str(),
       "username_value", UTF16ToUTF8(form.username_value).c_str(),
@@ -425,7 +425,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
       "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
       "signon_realm", form.signon_realm.c_str(),
       "application", app_string,
-      NULL);
+      nullptr);
 }
 
 void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
@@ -443,13 +443,13 @@ void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
                            attrs.get(),
                            OnOperationGetList,
                            /*data=*/this,
-                           /*destroy_data=*/NULL);
+                           /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
                               const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  lookup_form_.reset(NULL);
+  lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendUint32(&attrs, "blacklisted_by_user", blacklisted_by_user);
@@ -458,12 +458,12 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
                            attrs.get(),
                            OnOperationGetList,
                            /*data=*/this,
-                           /*destroy_data=*/NULL);
+                           /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::GetAllLogins(const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  lookup_form_.reset(NULL);
+  lookup_form_.reset(nullptr);
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -472,7 +472,7 @@ void GKRMethod::GetAllLogins(const char* app_string) {
                            attrs.get(),
                            OnOperationGetList,
                            /*data=*/this,
-                           /*destroy_data=*/NULL);
+                           /*destroy_data=*/nullptr);
 }
 
 GnomeKeyringResult GKRMethod::WaitResult() {
@@ -532,7 +532,7 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
   method->forms_.clear();
   // |list| will be freed after this callback returns, so convert it now.
   ConvertFormList(list, method->lookup_form_.get(), &method->forms_);
-  method->lookup_form_.reset(NULL);
+  method->lookup_form_.reset();
   method->event_.Signal();
 }
 

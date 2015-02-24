@@ -34,7 +34,7 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
         password_generation_manager_(client, this),
-        password_autofill_manager_(this, NULL) {}
+        password_autofill_manager_(this, nullptr) {}
   ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.

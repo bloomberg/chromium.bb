@@ -104,7 +104,7 @@ void LogDeserializationWarning(int version,
 
 NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id)
     : profile_id_(id),
-      kwallet_proxy_(NULL),
+      kwallet_proxy_(nullptr),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
   folder_name_ = GetProfileSpecificFolderName();
 }
@@ -440,7 +440,7 @@ bool NativeBackendKWallet::GetLoginsList(
       return false;
     }
     dbus::MessageReader reader(response.get());
-    const uint8_t* bytes = NULL;
+    const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
@@ -527,7 +527,7 @@ bool NativeBackendKWallet::GetAllLogins(
       return false;
     }
     dbus::MessageReader reader(response.get());
-    const uint8_t* bytes = NULL;
+    const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
@@ -664,7 +664,7 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
       continue;
     }
     dbus::MessageReader reader(response.get());
-    const uint8_t* bytes = NULL;
+    const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "

@@ -113,10 +113,10 @@ struct PasswordSyncableService::SyncEntries {
       case syncer::SyncChange::ACTION_DELETE:
         return &deleted_entries;
       case syncer::SyncChange::ACTION_INVALID:
-        return NULL;
+        return nullptr;
     }
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   // List that contains the entries that are known only to sync.
@@ -230,7 +230,7 @@ syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(syncer::PASSWORDS, type);
   ScopedVector<autofill::PasswordForm> password_entries;
-  ReadFromPasswordStore(&password_entries, NULL);
+  ReadFromPasswordStore(&password_entries, nullptr);
 
   syncer::SyncDataList sync_data;
   for (PasswordForms::iterator it = password_entries.begin();

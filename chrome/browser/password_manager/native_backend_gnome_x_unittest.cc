@@ -143,12 +143,12 @@ gpointer mock_gnome_keyring_store_password(
       mock_keyring_items.pop_back();
       // GnomeKeyringResult, data
       callback(GNOME_KEYRING_RESULT_IO_ERROR, data);
-      return NULL;
+      return nullptr;
     }
   }
   // GnomeKeyringResult, data
   callback(GNOME_KEYRING_RESULT_OK, data);
-  return NULL;
+  return nullptr;
 }
 
 gpointer mock_gnome_keyring_delete_password(
@@ -187,7 +187,7 @@ gpointer mock_gnome_keyring_delete_password(
   // GnomeKeyringResult, data
   callback(deleted ? GNOME_KEYRING_RESULT_OK
                    : GNOME_KEYRING_RESULT_NO_MATCH, data);
-  return NULL;
+  return nullptr;
 }
 
 gpointer mock_gnome_keyring_find_items(
@@ -215,7 +215,7 @@ gpointer mock_gnome_keyring_find_items(
     }
   }
   // Find matches and add them to a list of results.
-  GList* results = NULL;
+  GList* results = nullptr;
   for (size_t i = 0; i < mock_keyring_items.size(); ++i) {
     const MockKeyringItem* item = &mock_keyring_items[i];
     if (item->Matches(query)) {
@@ -255,7 +255,7 @@ gpointer mock_gnome_keyring_find_items(
     element = g_list_next(element);
   }
   g_list_free(results);
-  return NULL;
+  return nullptr;
 }
 
 const gchar* mock_gnome_keyring_result_to_message(GnomeKeyringResult res) {
@@ -652,16 +652,16 @@ class NativeBackendGnomeTest : public testing::Test {
     // Don't match a non-HTML form with an HTML form.
     EXPECT_FALSE(CheckCredentialAvailability(
         other_auth_, GURL("http://www.example.com"),
-        PasswordForm::SCHEME_HTML, NULL));
+        PasswordForm::SCHEME_HTML, nullptr));
     // Don't match an HTML form with non-HTML auth form.
     EXPECT_FALSE(CheckCredentialAvailability(
-        form_google_, GURL("http://www.google.com/"), scheme, NULL));
+        form_google_, GURL("http://www.google.com/"), scheme, nullptr));
     // Don't match two different non-HTML auth forms with different origin.
     EXPECT_FALSE(CheckCredentialAvailability(
-        other_auth_, GURL("http://first.example.com"), scheme, NULL));
+        other_auth_, GURL("http://first.example.com"), scheme, nullptr));
     // Do match non-HTML forms from the same origin.
     EXPECT_TRUE(CheckCredentialAvailability(
-        other_auth_, GURL("http://www.example.com/"), scheme, NULL));
+        other_auth_, GURL("http://www.example.com/"), scheme, nullptr));
   }
 
   void CheckRemoveLoginsBetween(RemoveBetweenMethod date_to_test) {
@@ -807,14 +807,14 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
 TEST_F(NativeBackendGnomeTest, PSLMatchingNegativeDomainMismatch) {
   EXPECT_FALSE(CheckCredentialAvailability(
       form_facebook_, GURL("http://m-facebook.com/"),
-      PasswordForm::SCHEME_HTML, NULL));
+      PasswordForm::SCHEME_HTML, nullptr));
 }
 
 // Test PSL matching is off for domains excluded from it.
 TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
   EXPECT_FALSE(CheckCredentialAvailability(
       form_google_, GURL("http://one.google.com/"),
-      PasswordForm::SCHEME_HTML, NULL));
+      PasswordForm::SCHEME_HTML, nullptr));
 }
 
 // Make sure PSL matches aren't available for non-HTML forms.

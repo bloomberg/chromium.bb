@@ -190,7 +190,7 @@ class InfoBarObserver : public PromptObserver,
   void OnManagerShuttingDown(infobars::InfoBarManager* manager) override {
     ASSERT_EQ(infobar_service_, manager);
     infobar_service_->RemoveObserver(this);
-    infobar_service_ = NULL;
+    infobar_service_ = nullptr;
   }
 
   bool infobar_is_being_shown_;
