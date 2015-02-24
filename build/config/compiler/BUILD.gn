@@ -554,10 +554,12 @@ config("runtime_library") {
       "__GNU_SOURCE=1",  # Necessary for clone().
     ]
 
-    ldflags += [
-      "-Wl,--warn-shared-textrel",
-      "-nostdlib",
-    ]
+    # TODO(jdduke) Re-enable on mips after resolving linking
+    # issues with libc++ (crbug.com/456380).
+    if (cpu_arch != "mipsel" && cpu_arch != "mips64el") {
+      ldflags += [ "-Wl,--warn-shared-textrel" ]
+    }
+    ldflags += [ "-nostdlib" ]
 
     # NOTE: The stlport header include paths below are specified in cflags
     # rather than include_dirs because they need to come after include_dirs.
@@ -949,10 +951,15 @@ if (is_win) {
     if (!using_sanitizer) {
       common_optimize_on_cflags += [ "-fomit-frame-pointer" ]
     }
-    common_optimize_on_ldflags += [
-      # Warn in case of text relocations.
-      "-Wl,--warn-shared-textrel",
-    ]
+
+    # TODO(jdduke) Re-enable on mips after resolving linking
+    # issues with libc++ (crbug.com/456380).
+    if (cpu_arch != "mipsel" && cpu_arch != "mips64el") {
+      common_optimize_on_ldflags += [
+        # Warn in case of text relocations.
+        "-Wl,--warn-shared-textrel",
+      ]
+    }
   }
 
   if (is_mac) {

@@ -3593,7 +3593,9 @@
               '-gdwarf-4',
             ],
             'conditions' : [
-              ['OS=="android"', {
+              ['OS=="android" and target_arch!="mipsel" and target_arch!="mips64el"', {
+                # TODO(jdduke) Re-enable on mips after resolving linking
+                # issues with libc++ (crbug.com/456380).
                 'ldflags': [
                   # Warn in case of text relocations.
                   '-Wl,--warn-shared-textrel',
@@ -3686,14 +3688,18 @@
                   '-fomit-frame-pointer',
                 ]
               }],
-              ['OS=="android"', {
-                'variables': {
-                  'release_optimize%': 's',
-                },
+              ['OS=="android" and target_arch!="mipsel" and target_arch!="mips64el"', {
+                # TODO(jdduke) Re-enable on mips after resolving linking
+                # issues with libc++ (crbug.com/456380).
                 'ldflags': [
                   # Warn in case of text relocations.
                   '-Wl,--warn-shared-textrel',
                 ],
+              }],
+              ['OS=="android"', {
+                'variables': {
+                  'release_optimize%': 's',
+                },
               }],
               ['profiling==1', {
                 'cflags': [
