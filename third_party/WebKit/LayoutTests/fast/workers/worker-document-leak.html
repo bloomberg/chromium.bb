@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
-<body>
-<p>Verify that creation of a worker does not leak its creating document.</p>
-<div id='console'></div>
+<head>
+<script src="../../resources/js-test.js"></script>
 <script src='resources/worker-util.js'></script>
+</script>
+<body>
 <script>
+description('Verify that creation of a worker does not leak its creating document.');
+
+window.jsTestIsAsync = true;
+
 function log(message)
 {
     document.getElementById("console").innerHTML += message + "<br>";
@@ -41,7 +46,7 @@ function startTest()
         // live document at this point.
         runOneIteration();
     } else {
-        log("window.internals.numberOfLiveDocuments not available -- no point in running test");
+        debug("window.internals.numberOfLiveDocuments not available -- no point in running test");
         finishTest();
     }
 }
@@ -58,9 +63,9 @@ function runOneIteration() {
         iframe.setAttribute("src", "resources/worker-document-leak-iframe.html");
         if (createdIframe)
             document.body.appendChild(iframe);
-    } else {
-        finishTest();
+        return;
     }
+    asyncGC(finishTest);
 }
 
 function finishTest()
@@ -73,14 +78,12 @@ function finishTest()
         // at the end be more than 1 greater than the number at the
         // beginning (because of the iframe).
         if (numLiveAtEnd > numLiveAtStart + 1) {
-            log("FAIL: leaked documents during test run (started with " + numLiveAtStart + ", ended with " + numLiveAtEnd + ")");
+            testFailed("leaked documents during test run (started with " + numLiveAtStart + ", ended with " + numLiveAtEnd + ")");
         } else {
-            log("PASS: did not leak documents during test run");
+            testPassed("did not leak documents during test run");
         }
     }
-
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishJSTest();
 }
 
 window.onload = startTest;

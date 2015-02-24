@@ -5,24 +5,6 @@ function log(message)
     document.getElementById("result").innerHTML += message + "<br>";
 }
 
-function gc(forceAlloc)
-{
-    if (typeof GCController !== "undefined")
-        GCController.collect();
-
-    if (typeof GCController == "undefined" || forceAlloc) {
-        function gcRec(n) {
-            if (n < 1)
-                return {};
-            var temp = {i: "ab" + i + (i / 100000)};
-            temp += "foo";
-            gcRec(n-1);
-        }
-        for (var i = 0; i < 1000; i++)
-            gcRec(10)
-    }
-}
-
 function waitUntilWorkerThreadsExit(callback)
 {
     waitUntilThreadCountMatches(callback, 0);
@@ -32,7 +14,7 @@ function waitUntilThreadCountMatches(callback, count)
 {
     // When running in a browser, just wait for one second then call the callback.
     if (!window.testRunner) {
-        setTimeout(function() { gc(true); callback(); }, 1000);
+        setTimeout(function() { gc(); callback(); }, 1000);
         return;
     }
 
