@@ -109,6 +109,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       float load_server_info_timeout_srtt_multiplier,
       bool enable_truncated_connection_ids,
       bool enable_connection_racing,
+      bool disable_disk_cache,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -327,6 +328,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // INCHOATE_HELLO and another connection that sends CHLO after loading server
   // config from the disk cache.
   bool enable_connection_racing_;
+
+  // Set if we do not want to load server config from the disk cache.
+  bool disable_disk_cache_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that

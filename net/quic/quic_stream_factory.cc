@@ -596,6 +596,7 @@ QuicStreamFactory::QuicStreamFactory(
     float load_server_info_timeout_srtt_multiplier,
     bool enable_truncated_connection_ids,
     bool enable_connection_racing,
+    bool disable_disk_cache,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -618,6 +619,7 @@ QuicStreamFactory::QuicStreamFactory(
           load_server_info_timeout_srtt_multiplier),
       enable_truncated_connection_ids_(enable_truncated_connection_ids),
       enable_connection_racing_(enable_connection_racing),
+      disable_disk_cache_(disable_disk_cache),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
@@ -687,7 +689,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
 
   QuicServerInfo* quic_server_info = nullptr;
   if (quic_server_info_factory_) {
-    bool load_from_disk_cache = true;
+    bool load_from_disk_cache = !disable_disk_cache_;
     if (http_server_properties_) {
       const AlternateProtocolMap& alternate_protocol_map =
           http_server_properties_->alternate_protocol_map();

@@ -190,6 +190,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<float> quic_load_server_info_timeout_srtt_multiplier;
     Optional<bool> quic_enable_truncated_connection_ids;
     Optional<bool> quic_enable_connection_racing;
+    Optional<bool> quic_disable_disk_cache;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
@@ -381,6 +382,11 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Returns true if QUIC's connection racing should be enabled.
   static bool ShouldQuicEnableConnectionRacing(
+      const VariationParameters& quic_trial_params);
+
+  // Returns true if QUIC shouldn't load QUIC server information from the disk
+  // cache.
+  static bool ShouldQuicDisableDiskCache(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

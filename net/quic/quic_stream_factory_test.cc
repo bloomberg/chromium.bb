@@ -135,6 +135,11 @@ class QuicStreamFactoryPeer {
     factory->enable_connection_racing_ = enable_connection_racing;
   }
 
+  static void SetDisableDiskCache(QuicStreamFactory* factory,
+                                  bool disable_disk_cache) {
+    factory->disable_disk_cache_ = disable_disk_cache;
+  }
+
   static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
                                       const QuicServerId& server_id) {
     return (factory->active_jobs_[server_id]).size();
@@ -206,6 +211,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*load_server_info_timeout_srtt_multiplier=*/0.0f,
                  /*enable_truncated_connection_ids=*/true,
                  /*enable_connection_racing=*/false,
+                 /*disable_disk_cache=*/false,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
@@ -1697,6 +1703,41 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
   EXPECT_TRUE(socket_data.at_write_eof());
   EXPECT_EQ(0u,
             QuicStreamFactoryPeer::GetNumberOfActiveJobs(&factory_, server_id));
+}
+
+TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
+  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
+  QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
+  const size_t kLoadServerInfoTimeoutMs = 50;
+  QuicStreamFactoryPeer::SetLoadServerInfoTimeout(&factory_,
+                                                  kLoadServerInfoTimeoutMs);
+  QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
+
+  MockRead reads[] = {
+      MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(OK, request.Request(host_port_pair_, is_https_, privacy_mode_,
+                                "GET", net_log_, callback_.callback()));
+
+  // If we are waiting for disk cache, we would have posted a task. Verify that
+  // the CancelWaitForDataReady task hasn't been posted.
+  ASSERT_EQ(0u, runner_->GetPostedTasks().size());
+
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
 }
 
 }  // namespace test
