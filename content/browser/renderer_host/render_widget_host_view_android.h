@@ -26,7 +26,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "ui/base/android/window_android_observer.h"
+#include "ui/android/window_android_observer.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"

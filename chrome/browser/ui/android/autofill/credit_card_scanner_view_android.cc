@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/CreditCardScanner_jni.h"
-#include "ui/base/android/view_android.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 
 namespace autofill {
 

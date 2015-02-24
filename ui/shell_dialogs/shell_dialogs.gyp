@@ -60,6 +60,7 @@
         ['OS=="android"',
           {
             'dependencies': [
+              '../android/ui_android.gyp:ui_android',
               '../base/ui_base.gyp:ui_base_jni_headers',
             ],
             'include_dirs': [

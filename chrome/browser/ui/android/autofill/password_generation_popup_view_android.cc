@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/PasswordGenerationPopupBridge_jni.h"
-#include "ui/base/android/view_android.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 

@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/CardUnmaskBridge_jni.h"
-#include "ui/base/android/view_android.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 
 namespace autofill {
 

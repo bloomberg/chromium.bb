@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/android/view_android.h"
+#include "ui/android/view_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ViewAndroid_jni.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 
 namespace ui {
 

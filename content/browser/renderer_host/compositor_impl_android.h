@@ -20,7 +20,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/ui_resource_provider.h"
-#include "ui/base/android/window_android_compositor.h"
+#include "ui/android/window_android_compositor.h"
 
 class SkBitmap;
 struct ANativeWindow;

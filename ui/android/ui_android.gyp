@@ -35,12 +35,20 @@
         'ui_android_export.h',
         'ui_android_jni_registrar.cc',
         'ui_android_jni_registrar.h',
+        'view_android.cc',
+        'view_android.h',
+        'window_android.cc',
+        'window_android.h',
+        'window_android_compositor.h',
+        'window_android_observer.h',
       ],
     },
     {
       'target_name': 'ui_android_jni_headers',
       'type': 'none',
       'sources': [
+        'java/src/org/chromium/ui/base/ViewAndroid.java',
+        'java/src/org/chromium/ui/base/WindowAndroid.java',
         'java/src/org/chromium/ui/resources/ResourceManager.java',
       ],
       'variables': {

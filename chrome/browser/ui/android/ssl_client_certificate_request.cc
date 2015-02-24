@@ -24,8 +24,7 @@
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
-#include "ui/base/android/window_android.h"
-
+#include "ui/android/window_android.h"
 
 namespace chrome {
 

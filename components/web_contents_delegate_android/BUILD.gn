@@ -24,6 +24,7 @@ static_library("web_contents_delegate_android") {
     "//content/public/common",
     "//net",
     "//skia",
+    "//ui/android",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

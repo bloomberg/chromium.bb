@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/WindowAndroid_jni.h"
-#include "ui/base/android/window_android_compositor.h"
-#include "ui/base/android/window_android_observer.h"
+#include "ui/android/window_android_compositor.h"
+#include "ui/android/window_android_observer.h"
 
 namespace ui {
 

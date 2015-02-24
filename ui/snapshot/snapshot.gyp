@@ -37,6 +37,11 @@
         '..',
       ],
       'conditions': [
+        ['OS=="android"', {
+          'dependencies': [
+            '../android/ui_android.gyp:ui_android',
+          ],
+        }],
         ['use_aura==1 or OS=="android"', {
           'dependencies': [
             '../../cc/cc.gyp:cc',

@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ChildAccountFeedbackReporter_jni.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 #include "url/gurl.h"
 
 void ReportChildAccountFeedback(content::WebContents* web_contents,

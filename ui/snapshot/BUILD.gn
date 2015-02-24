@@ -30,6 +30,10 @@ component("snapshot") {
     "//ui/gfx/geometry",
   ]
 
+  if (is_android) {
+    deps += [ "//ui/android" ]
+  }
+
   if (use_aura || is_android) {
     deps += [
       "//cc",

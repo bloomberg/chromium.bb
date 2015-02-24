@@ -53,7 +53,10 @@ component("shell_dialogs") {
   }
 
   if (is_android) {
-    deps += [ "//ui/base:ui_base_jni_headers" ]
+    deps += [
+      "//ui/android",
+      "//ui/base:ui_base_jni_headers",
+    ]
     include_dirs = [ "$root_gen_dir/ui" ]
     libs = [ "jnigraphics" ]
 

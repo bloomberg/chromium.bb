@@ -17,7 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/resources/resource_manager.h"
-#include "ui/base/android/window_android_compositor.h"
+#include "ui/android/window_android_compositor.h"
 #include "ui/base/l10n/l10n_util_android.h"
 
 namespace content {

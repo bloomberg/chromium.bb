@@ -13,7 +13,7 @@
 #include "jni/DateTimeChooserAndroid_jni.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;

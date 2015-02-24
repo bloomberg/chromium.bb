@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/auth.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 
 using content::BrowserThread;
 using net::URLRequest;

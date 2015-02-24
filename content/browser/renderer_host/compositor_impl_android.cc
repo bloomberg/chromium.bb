@@ -53,7 +53,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/frame_time.h"
 #include "webkit/common/gpu/context_provider_in_process.h"

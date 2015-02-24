@@ -35,7 +35,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AutofillDialogControllerAndroid_jni.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/android/java_bitmap.h"

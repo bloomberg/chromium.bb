@@ -7,11 +7,15 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 
 namespace ui {
 
 static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
     {"ResourceManager", ui::ResourceManagerImpl::RegisterResourceManager},
+    {"ViewAndroid", ViewAndroid::RegisterViewAndroid},
+    {"WindowAndroid", WindowAndroid::RegisterWindowAndroid},
 };
 
 bool RegisterUIAndroidJni(JNIEnv* env) {

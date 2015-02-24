@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANDROID_VIEW_ANDROID_H_
-#define UI_BASE_ANDROID_VIEW_ANDROID_H_
+#ifndef UI_ANDROID_VIEW_ANDROID_H_
+#define UI_ANDROID_VIEW_ANDROID_H_
 
 #include <jni.h>
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/android/ui_android_export.h"
 
 namespace ui {
 
@@ -16,7 +16,7 @@ class WindowAndroid;
 
 // This class is the native counterpart for ViewAndroid. It is owned by the
 // Java ViewAndroid object.
-class UI_BASE_EXPORT ViewAndroid {
+class UI_ANDROID_EXPORT ViewAndroid {
  public:
   ViewAndroid(JNIEnv* env, jobject obj, WindowAndroid* window);
 
@@ -38,4 +38,4 @@ class UI_BASE_EXPORT ViewAndroid {
 
 }  // namespace ui
 
-#endif  // UI_BASE_ANDROID_VIEW_ANDROID_H_
+#endif  // UI_ANDROID_VIEW_ANDROID_H_

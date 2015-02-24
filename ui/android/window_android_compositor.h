@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
-#define UI_BASE_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
+#ifndef UI_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
+#define UI_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
 
 #include "cc/output/copy_output_request.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/android/ui_android_export.h"
 
 namespace cc {
 class Layer;
@@ -17,7 +17,7 @@ namespace ui {
 class ResourceManager;
 
 // Android interface for compositor-related tasks.
-class UI_BASE_EXPORT WindowAndroidCompositor {
+class UI_ANDROID_EXPORT WindowAndroidCompositor {
  public:
   virtual ~WindowAndroidCompositor() {}
 
@@ -32,4 +32,4 @@ class UI_BASE_EXPORT WindowAndroidCompositor {
 
 }  // namespace ui
 
-#endif  // UI_BASE_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
+#endif  // UI_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_

@@ -11,8 +11,8 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "jni/ContentReadbackHandler_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/android/window_android.h"
-#include "ui/base/android/window_android_compositor.h"
+#include "ui/android/window_android.h"
+#include "ui/android/window_android_compositor.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect.h"
 

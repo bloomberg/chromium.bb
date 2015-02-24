@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "jni/SelectFileDialog_jni.h"
-#include "ui/base/android/window_android.h"
+#include "ui/android/window_android.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using base::android::ConvertJavaStringToUTF8;

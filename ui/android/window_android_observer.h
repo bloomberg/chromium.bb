@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANDROID_WINDOW_ANDROID_OBSERVER_H_
-#define UI_BASE_ANDROID_WINDOW_ANDROID_OBSERVER_H_
+#ifndef UI_ANDROID_WINDOW_ANDROID_OBSERVER_H_
+#define UI_ANDROID_WINDOW_ANDROID_OBSERVER_H_
 
-#include "ui/base/ui_base_export.h"
+#include "ui/android/ui_android_export.h"
 
 namespace ui {
 
-class UI_BASE_EXPORT WindowAndroidObserver {
+class UI_ANDROID_EXPORT WindowAndroidObserver {
  public:
   virtual void OnCompositingDidCommit() = 0;
   virtual void OnAttachCompositor() = 0;
@@ -24,4 +24,4 @@ class UI_BASE_EXPORT WindowAndroidObserver {
 
 }  // namespace ui
 
-#endif  // UI_BASE_ANDROID_WINDOW_ANDROID_OBSERVER_H_
+#endif  // UI_ANDROID_WINDOW_ANDROID_OBSERVER_H_
