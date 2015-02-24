@@ -255,7 +255,9 @@ ThreadState::ThreadState()
 
     if (isMainThread()) {
         s_mainThreadStackStart = reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
-        s_mainThreadUnderestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize() - sizeof(void*);
+        size_t underestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize();
+        if (underestimatedStackSize > sizeof(void*))
+            s_mainThreadUnderestimatedStackSize = underestimatedStackSize - sizeof(void*);
     }
 
     for (int heapIndex = 0; heapIndex < LargeObjectHeapIndex; heapIndex++)
