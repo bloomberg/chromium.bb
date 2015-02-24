@@ -43,7 +43,7 @@ WebSerializedScriptValue WebSerializedScriptValue::fromString(const WebString& s
     return SerializedScriptValueFactory::instance().createFromWire(s);
 }
 
-WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Handle<v8::Value> value)
+WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Local<v8::Value> value)
 {
     TrackExceptionState exceptionState;
     WebSerializedScriptValue serializedValue = SerializedScriptValueFactory::instance().create(value, 0, 0, exceptionState, v8::Isolate::GetCurrent());
@@ -72,7 +72,7 @@ WebString WebSerializedScriptValue::toString() const
     return m_private->toWireString();
 }
 
-v8::Handle<v8::Value> WebSerializedScriptValue::deserialize()
+v8::Local<v8::Value> WebSerializedScriptValue::deserialize()
 {
     return m_private->deserialize();
 }

@@ -38,7 +38,6 @@
 
 namespace v8 {
 class Value;
-template <class T> class Handle;
 template <class T> class Local;
 }
 
@@ -185,7 +184,7 @@ public:
 
     // Conversion utilities to/from V8 native objects and NPVariant wrappers.
     BLINK_EXPORT static void toNPVariant(v8::Local<v8::Value>, NPObject* root, NPVariant* result);
-    BLINK_EXPORT static v8::Handle<v8::Value> toV8Value(const NPVariant*);
+    BLINK_EXPORT static v8::Local<v8::Value> toV8Value(const NPVariant*);
 };
 
 } // namespace blink

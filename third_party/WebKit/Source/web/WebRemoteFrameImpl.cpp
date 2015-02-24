@@ -272,11 +272,11 @@ bool WebRemoteFrameImpl::checkIfRunInsecureContent(const WebURL&) const
     return false;
 }
 
-v8::Handle<v8::Value> WebRemoteFrameImpl::executeScriptAndReturnValue(
+v8::Local<v8::Value> WebRemoteFrameImpl::executeScriptAndReturnValue(
     const WebScriptSource&)
 {
     ASSERT_NOT_REACHED();
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
 }
 
 void WebRemoteFrameImpl::executeScriptInIsolatedWorld(

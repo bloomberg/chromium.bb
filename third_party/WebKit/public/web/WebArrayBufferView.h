@@ -34,7 +34,7 @@
 
 namespace v8 {
 class Value;
-template <class T> class Handle;
+template <class T> class Local;
 }
 
 namespace blink {
@@ -55,7 +55,7 @@ public:
     BLINK_EXPORT void assign(const WebArrayBufferView&);
     BLINK_EXPORT void reset();
 
-    BLINK_EXPORT static WebArrayBufferView* createFromV8Value(v8::Handle<v8::Value>);
+    BLINK_EXPORT static WebArrayBufferView* createFromV8Value(v8::Local<v8::Value>);
 
 #if BLINK_IMPLEMENTATION
     WebArrayBufferView(const WTF::PassRefPtr<DOMArrayBufferView>&);

@@ -30,12 +30,12 @@ public:
         m_loggedActivities.append(apiName);
     }
 
-    void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) override
+    void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) override
     {
         m_loggedActivities.append(apiName + " | " + toCoreStringWithUndefinedOrNullCheck(newValue));
     }
 
-    void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) override
+    void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) override
     {
         String activityString = apiName;
         for (int i = 0; i  < argc; i++)

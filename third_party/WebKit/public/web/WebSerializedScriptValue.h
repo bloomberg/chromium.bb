@@ -36,7 +36,7 @@
 
 namespace v8 {
 class Value;
-template <class T> class Handle;
+template <class T> class Local;
 }
 
 namespace blink {
@@ -59,7 +59,7 @@ public:
 
     BLINK_EXPORT static WebSerializedScriptValue fromString(const WebString&);
 
-    BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Handle<v8::Value>);
+    BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Local<v8::Value>);
 
     // Create a WebSerializedScriptValue that represents a serialization error.
     BLINK_EXPORT static WebSerializedScriptValue createInvalid();
@@ -73,7 +73,7 @@ public:
     BLINK_EXPORT WebString toString() const;
 
     // Convert the serialized value to a parsed v8 value.
-    BLINK_EXPORT v8::Handle<v8::Value> deserialize();
+    BLINK_EXPORT v8::Local<v8::Value> deserialize();
 
 #if BLINK_IMPLEMENTATION
     WebSerializedScriptValue(const WTF::PassRefPtr<SerializedScriptValue>&);

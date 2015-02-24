@@ -511,7 +511,7 @@ WebLocalFrame* WebLocalFrame::frameForCurrentContext()
     return frameForContext(context);
 }
 
-WebLocalFrame* WebLocalFrame::frameForContext(v8::Handle<v8::Context> context)
+WebLocalFrame* WebLocalFrame::frameForContext(v8::Local<v8::Context> context)
 {
     return WebLocalFrameImpl::fromFrame(toLocalFrame(toFrameIfNotDetached(context)));
 }
@@ -806,7 +806,7 @@ bool WebLocalFrameImpl::checkIfRunInsecureContent(const WebURL& url) const
     return MixedContentChecker::shouldBlockFetch(frame(), WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
 }
 
-v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebScriptSource& source)
+v8::Local<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebScriptSource& source)
 {
     ASSERT(frame());
 
@@ -1937,7 +1937,7 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
         frame()->localDOMWindow()->sendOrientationChangeEvent();
 }
 
-v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValueForTests(const WebScriptSource& source)
+v8::Local<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValueForTests(const WebScriptSource& source)
 {
     // FIXME: This fake UserGestureIndicator is required for a bunch of browser
     // tests to pass. We should update the tests to simulate input and get rid

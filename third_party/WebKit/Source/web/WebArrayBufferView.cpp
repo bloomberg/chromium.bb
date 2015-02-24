@@ -58,7 +58,7 @@ unsigned WebArrayBufferView::byteLength() const
     return m_private->byteLength();
 }
 
-WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Handle<v8::Value> value)
+WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Local<v8::Value> value)
 {
     if (!value->IsArrayBufferView())
         return 0;

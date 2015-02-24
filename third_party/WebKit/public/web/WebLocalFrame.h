@@ -31,7 +31,7 @@ public:
     // Returns the frame corresponding to the given context. This can return 0
     // if the context is detached from the frame, or if the context doesn't
     // correspond to a frame (e.g., workers).
-    BLINK_EXPORT static WebLocalFrame* frameForContext(v8::Handle<v8::Context>);
+    BLINK_EXPORT static WebLocalFrame* frameForContext(v8::Local<v8::Context>);
 
     // Returns the frame inside a given frame or iframe element. Returns 0 if
     // the given element is not a frame, iframe or if the frame is empty.
@@ -95,7 +95,7 @@ public:
 
     // ONLY FOR TESTS: Forwards to executeScriptAndReturnValue, but sets a fake
     // UserGestureIndicator before execution.
-    virtual v8::Handle<v8::Value> executeScriptAndReturnValueForTests(const WebScriptSource&) = 0;
+    virtual v8::Local<v8::Value> executeScriptAndReturnValueForTests(const WebScriptSource&) = 0;
 
     // Associates an isolated world with human-readable name which is useful for
     // extension debugging.

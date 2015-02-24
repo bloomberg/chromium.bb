@@ -40,7 +40,7 @@
 
 namespace v8 {
 class Value;
-template <class T> class Handle;
+template <class T> class Local;
 }
 
 namespace blink {
@@ -60,7 +60,7 @@ public:
 
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT static WebDOMMediaStreamTrack fromV8Value(v8::Handle<v8::Value>);
+    BLINK_EXPORT static WebDOMMediaStreamTrack fromV8Value(v8::Local<v8::Value>);
 
     BLINK_EXPORT void reset();
     BLINK_EXPORT void assign(const WebDOMMediaStreamTrack&);

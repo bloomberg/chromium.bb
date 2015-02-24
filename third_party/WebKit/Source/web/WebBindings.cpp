@@ -386,7 +386,7 @@ void WebBindings::toNPVariant(v8::Local<v8::Value> object, NPObject* root, NPVar
     convertV8ObjectToNPVariant(v8::Isolate::GetCurrent(), object, root, result);
 }
 
-v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
+v8::Local<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (variant->type == NPVariantType_Object) {

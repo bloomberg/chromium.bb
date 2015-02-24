@@ -44,8 +44,8 @@ public:
     virtual ~V8DOMActivityLogger() { }
 
     virtual void logGetter(const String& apiName) { }
-    virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) { }
-    virtual void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) { }
+    virtual void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) { }
+    virtual void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) { }
     virtual void logEvent(const String& eventName, int argc, const String* argv) { }
 
     // Associates a logger with the world identified by worldId (worlId may be 0

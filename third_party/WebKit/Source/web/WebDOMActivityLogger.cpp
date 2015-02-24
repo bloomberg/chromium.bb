@@ -52,12 +52,12 @@ public:
         m_domActivityLogger->logGetter(WebString(apiName), getURL(), getTitle());
     }
 
-    virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) override
+    virtual void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) override
     {
         m_domActivityLogger->logSetter(WebString(apiName), newValue, getURL(), getTitle());
     }
 
-    virtual void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) override
+    virtual void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) override
     {
         m_domActivityLogger->logMethod(WebString(apiName), argc, argv, getURL(), getTitle());
     }

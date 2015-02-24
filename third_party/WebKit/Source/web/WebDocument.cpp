@@ -349,7 +349,7 @@ WebVector<WebDraggableRegion> WebDocument::draggableRegions() const
     return draggableRegions;
 }
 
-v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode& ec)
+v8::Local<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString& name, v8::Local<v8::Value> options, WebExceptionCode& ec)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     Document* document = unwrap<Document>();
@@ -357,11 +357,11 @@ v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString
     ElementRegistrationOptions registrationOptions;
     V8ElementRegistrationOptions::toImpl(isolate, options, registrationOptions, exceptionState);
     if (exceptionState.hadException())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     ScriptValue constructor = document->registerElement(ScriptState::current(isolate), name, registrationOptions, exceptionState, CustomElement::EmbedderNames);
     ec = exceptionState.code();
     if (exceptionState.hadException())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     return constructor.v8Value();
 }
 

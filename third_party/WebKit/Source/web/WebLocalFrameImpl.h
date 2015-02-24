@@ -111,7 +111,7 @@ public:
     virtual void addMessageToConsole(const WebConsoleMessage&) override;
     virtual void collectGarbage() override;
     virtual bool checkIfRunInsecureContent(const WebURL&) const override;
-    virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
+    virtual v8::Local<v8::Value> executeScriptAndReturnValue(
         const WebScriptSource&) override;
     virtual void requestExecuteScriptAndReturnValue(
         const WebScriptSource&, bool userGesture, WebScriptExecutionCallback*) override;
@@ -233,7 +233,7 @@ public:
     virtual void addStyleSheetByURL(const WebString& url) override;
     virtual void navigateToSandboxedMarkup(const WebData& markup) override;
     virtual void sendOrientationChangeEvent() override;
-    virtual v8::Handle<v8::Value> executeScriptAndReturnValueForTests(
+    virtual v8::Local<v8::Value> executeScriptAndReturnValueForTests(
         const WebScriptSource&) override;
 
     void willDetachParent();

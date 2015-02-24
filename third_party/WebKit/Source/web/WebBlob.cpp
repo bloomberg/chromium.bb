@@ -51,10 +51,10 @@ WebBlob WebBlob::createFromFile(const WebString& path, long long size)
     return Blob::create(BlobDataHandle::create(blobData.release(), size));
 }
 
-WebBlob WebBlob::fromV8Value(v8::Handle<v8::Value> value)
+WebBlob WebBlob::fromV8Value(v8::Local<v8::Value> value)
 {
     if (V8Blob::hasInstance(value, v8::Isolate::GetCurrent())) {
-        v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
         Blob* blob = V8Blob::toImpl(object);
         ASSERT(blob);
         return blob;
@@ -79,10 +79,10 @@ WebString WebBlob::uuid()
     return m_private->uuid();
 }
 
-v8::Handle<v8::Value> WebBlob::toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> WebBlob::toV8Value(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!m_private.get())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     return toV8(m_private.get(), creationContext, isolate);
 }
 

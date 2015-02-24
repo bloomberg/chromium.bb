@@ -67,10 +67,10 @@ WebString WebDOMError::message() const
     return m_private->message();
 }
 
-v8::Handle<v8::Value>  WebDOMError::toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value>  WebDOMError::toV8Value(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!m_private.get())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     return toV8(m_private.get(), creationContext, isolate);
 }
 

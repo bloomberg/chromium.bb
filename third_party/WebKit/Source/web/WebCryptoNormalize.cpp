@@ -41,7 +41,7 @@
 
 namespace blink {
 
-WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Handle<v8::Object> algorithmObject, WebCryptoOperation operation, int* exceptionCode, WebString* errorDetails, v8::Isolate* isolate)
+WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Local<v8::Object> algorithmObject, WebCryptoOperation operation, int* exceptionCode, WebString* errorDetails, v8::Isolate* isolate)
 {
     // FIXME: Avoid using NonThrowableExceptionState.
     NonThrowableExceptionState exceptionState;

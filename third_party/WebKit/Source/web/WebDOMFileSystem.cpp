@@ -44,17 +44,17 @@
 
 namespace blink {
 
-WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
+WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Local<v8::Value> value)
 {
     if (!V8DOMFileSystem::hasInstance(value, v8::Isolate::GetCurrent()))
         return WebDOMFileSystem();
-    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
     DOMFileSystem* domFileSystem = V8DOMFileSystem::toImpl(object);
     ASSERT(domFileSystem);
     return WebDOMFileSystem(domFileSystem);
 }
 
-WebURL WebDOMFileSystem::createFileSystemURL(v8::Handle<v8::Value> value)
+WebURL WebDOMFileSystem::createFileSystemURL(v8::Local<v8::Value> value)
 {
     const FileEntry* const entry = V8FileEntry::toImplWithTypeCheck(v8::Isolate::GetCurrent(), value);
     if (entry)
@@ -116,21 +116,21 @@ WebURL WebDOMFileSystem::rootURL() const
     return m_private->rootURL();
 }
 
-v8::Handle<v8::Value> WebDOMFileSystem::toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> WebDOMFileSystem::toV8Value(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!m_private.get())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     return toV8(m_private.get(), creationContext, isolate);
 }
 
-v8::Handle<v8::Value> WebDOMFileSystem::createV8Entry(
+v8::Local<v8::Value> WebDOMFileSystem::createV8Entry(
     const WebString& path,
     EntryType entryType,
-    v8::Handle<v8::Object> creationContext,
+    v8::Local<v8::Object> creationContext,
     v8::Isolate* isolate)
 {
     if (!m_private.get())
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     if (entryType == EntryTypeDirectory)
         return toV8(DirectoryEntry::create(m_private.get(), path), creationContext, isolate);
     ASSERT(entryType == EntryTypeFile);

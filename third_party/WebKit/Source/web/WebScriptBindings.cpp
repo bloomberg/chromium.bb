@@ -41,7 +41,7 @@ v8::Local<v8::String> WebScriptBindings::toV8String(const WebString& string, v8:
     return v8String(isolate, string);
 }
 
-WebString WebScriptBindings::toWebString(v8::Handle<v8::String> v8String)
+WebString WebScriptBindings::toWebString(v8::Local<v8::String> v8String)
 {
     return v8StringToWebCoreString<String>(v8String, Externalize);
 }

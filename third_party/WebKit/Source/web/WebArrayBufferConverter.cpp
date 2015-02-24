@@ -35,14 +35,14 @@
 
 namespace blink {
 
-v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!buffer)
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
     return toV8(PassRefPtr<DOMArrayBuffer>(*buffer), creationContext, isolate);
 }
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (!V8ArrayBuffer::hasInstance(value, isolate))
         return 0;

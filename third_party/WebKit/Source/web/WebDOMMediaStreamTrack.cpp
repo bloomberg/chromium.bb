@@ -41,10 +41,10 @@ WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<MediaStrea
 {
 }
 
-WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Handle<v8::Value> value)
+WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Local<v8::Value> value)
 {
     if (V8MediaStreamTrack::hasInstance(value, v8::Isolate::GetCurrent())) {
-        v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
         return WebDOMMediaStreamTrack(V8MediaStreamTrack::toImpl(object));
     }
     return WebDOMMediaStreamTrack(nullptr);
