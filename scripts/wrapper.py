@@ -117,9 +117,13 @@ def FindTarget(target):
       '\tCHROMITE_PATH: %s' % (parent, CHROMITE_PATH))
   parent = parent[len(CHROMITE_PATH):].split(os.sep)
   target = ['chromite'] + parent + [target]
-  # Our bin dir is just scripts stuff.
-  if target[1] == 'bin':
-    target[1] = 'scripts'
+
+  if target[-2] == 'bin':
+    # Convert <path>/bin/foo -> <path>/scripts/foo.
+    target[-2] = 'scripts'
+  elif target[1] == 'bootstrap' and len(target) == 3:
+    # Convert <git_repo>/bootstrap/foo -> <git_repo>/bootstrap/scripts/foo.
+    target.insert(2, 'scripts')
 
   module = cros_import.ImportModule(target)
 
