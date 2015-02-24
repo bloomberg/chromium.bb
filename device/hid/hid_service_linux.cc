@@ -13,12 +13,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/hid/device_monitor_linux.h"
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info_linux.h"
@@ -282,29 +282,30 @@ void HidServiceLinux::OpenDevice(scoped_ptr<ConnectParams> params) {
     base::File::Error file_error = device_file.error_details();
 
     if (file_error == base::File::FILE_ERROR_ACCESS_DENIED) {
-      VLOG(1) << "Access denied opening device read-write, trying read-only.";
+      HID_LOG(EVENT)
+          << "Access denied opening device read-write, trying read-only.";
       flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
       device_file.Initialize(device_path, flags);
     }
   }
   if (!device_file.IsValid()) {
-    LOG(ERROR) << "Failed to open '" << params->device_info->device_node()
-               << "': "
-               << base::File::ErrorToString(device_file.error_details());
+    HID_LOG(EVENT) << "Failed to open '" << params->device_info->device_node()
+                   << "': "
+                   << base::File::ErrorToString(device_file.error_details());
     task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
     return;
   }
 
   int result = fcntl(device_file.GetPlatformFile(), F_GETFL);
   if (result == -1) {
-    PLOG(ERROR) << "Failed to get flags from the device file descriptor";
+    HID_PLOG(ERROR) << "Failed to get flags from the device file descriptor";
     task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
     return;
   }
 
   result = fcntl(device_file.GetPlatformFile(), F_SETFL, result | O_NONBLOCK);
   if (result == -1) {
-    PLOG(ERROR) << "Failed to set the non-blocking flag on the device fd";
+    HID_PLOG(ERROR) << "Failed to set the non-blocking flag on the device fd";
     task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
     return;
   }

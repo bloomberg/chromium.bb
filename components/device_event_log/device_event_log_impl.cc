@@ -30,6 +30,7 @@ const char* kLogTypeNetworkDesc = "Network";
 const char* kLogTypePowerDesc = "Power";
 const char* kLogTypeLoginDesc = "Login";
 const char* kLogTypeUsbDesc = "USB";
+const char* kLogTypeHidDesc = "HID";
 
 std::string GetLogTypeString(LogType type) {
   switch (type) {
@@ -41,6 +42,8 @@ std::string GetLogTypeString(LogType type) {
       return kLogTypeLoginDesc;
     case LOG_TYPE_USB:
       return kLogTypeUsbDesc;
+    case LOG_TYPE_HID:
+      return kLogTypeHidDesc;
     default:
       NOTREACHED();
       return "Unknown";

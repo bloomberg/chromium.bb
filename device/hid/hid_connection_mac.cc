@@ -10,9 +10,18 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_connection_mac.h"
 
 namespace device {
+
+namespace {
+
+std::string HexErrorCode(IOReturn error_code) {
+  return base::StringPrintf("0x%04x", error_code);
+}
+
+}  // namespace
 
 HidConnectionMac::HidConnectionMac(
     IOHIDDeviceRef device,
@@ -59,8 +68,7 @@ void HidConnectionMac::PlatformClose() {
       device_.get(), CFRunLoopGetMain(), kCFRunLoopDefaultMode);
   IOReturn result = IOHIDDeviceClose(device_.get(), 0);
   if (result != kIOReturnSuccess) {
-    VLOG(1) << "Failed to close HID device: "
-            << base::StringPrintf("0x%04x", result);
+    HID_LOG(EVENT) << "Failed to close HID device: " << HexErrorCode(result);
   }
 
   while (!pending_reads_.empty()) {
@@ -120,8 +128,7 @@ void HidConnectionMac::InputReportCallback(void* context,
                                            CFIndex report_length) {
   HidConnectionMac* connection = static_cast<HidConnectionMac*>(context);
   if (result != kIOReturnSuccess) {
-    VLOG(1) << "Failed to read input report: "
-            << base::StringPrintf("0x%08x", result);
+    HID_LOG(EVENT) << "Failed to read input report: " << HexErrorCode(result);
     return;
   }
 
@@ -186,8 +193,7 @@ void HidConnectionMac::GetFeatureReportAsync(uint8_t report_id,
                    this,
                    base::Bind(callback, true, buffer, report_size)));
   } else {
-    VLOG(1) << "Failed to get feature report: "
-            << base::StringPrintf("0x%08x", result);
+    HID_LOG(EVENT) << "Failed to get feature report: " << HexErrorCode(result);
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&HidConnectionMac::ReturnAsyncResult,
                                       this,
@@ -222,7 +228,7 @@ void HidConnectionMac::SetReportAsync(IOHIDReportType report_type,
                                       this,
                                       base::Bind(callback, true)));
   } else {
-    VLOG(1) << "Failed to set report: " << base::StringPrintf("0x%08x", result);
+    HID_LOG(EVENT) << "Failed to set report: " << HexErrorCode(result);
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&HidConnectionMac::ReturnAsyncResult,
                                       this,

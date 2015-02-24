@@ -12,6 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/win/object_watcher.h"
+#include "components/device_event_log/device_event_log.h"
 
 #define INITGUID
 
@@ -83,7 +84,7 @@ void PendingHidTransfer::TakeResultFromWindowsAPI(BOOL result) {
     AddRef();
     watcher_.StartWatching(event_.Get(), this);
   } else {
-    VPLOG(1) << "HID transfer failed";
+    HID_PLOG(EVENT) << "HID transfer failed";
     callback_.Run(this, false);
   }
 }
@@ -216,7 +217,7 @@ void HidConnectionWin::OnReadComplete(scoped_refptr<net::IOBuffer> buffer,
           file_.Get(), transfer->GetOverlapped(), &bytes_transferred, FALSE)) {
     CompleteRead(buffer, bytes_transferred, callback);
   } else {
-    VPLOG(1) << "HID read failed";
+    HID_PLOG(EVENT) << "HID read failed";
     callback.Run(false, NULL, 0);
   }
 }
@@ -236,7 +237,7 @@ void HidConnectionWin::OnReadFeatureComplete(
           file_.Get(), transfer->GetOverlapped(), &bytes_transferred, FALSE)) {
     callback.Run(true, buffer, bytes_transferred);
   } else {
-    VPLOG(1) << "HID read failed";
+    HID_PLOG(EVENT) << "HID read failed";
     callback.Run(false, NULL, 0);
   }
 }
@@ -254,7 +255,7 @@ void HidConnectionWin::OnWriteComplete(const WriteCallback& callback,
           file_.Get(), transfer->GetOverlapped(), &bytes_transferred, FALSE)) {
     callback.Run(true);
   } else {
-    VPLOG(1) << "HID write failed";
+    HID_PLOG(EVENT) << "HID write failed";
     callback.Run(false);
   }
 }

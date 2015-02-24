@@ -72,6 +72,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   html->AddLocalizedString("logTypeNetworkText", IDS_DEVICE_LOG_TYPE_NETWORK);
   html->AddLocalizedString("logTypePowerText", IDS_DEVICE_LOG_TYPE_POWER);
   html->AddLocalizedString("logTypeUsbText", IDS_DEVICE_LOG_TYPE_USB);
+  html->AddLocalizedString("logTypeHidText", IDS_DEVICE_LOG_TYPE_HID);
 
   html->AddLocalizedString("logEntryFormat", IDS_DEVICE_LOG_ENTRY);
   html->SetJsonPath("strings.js");

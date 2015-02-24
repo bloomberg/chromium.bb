@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/device_event_log/device_event_log_export.h"
 
@@ -34,12 +35,22 @@
 #define USB_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_USB, \
              ::device_event_log::LOG_LEVEL_##level)
+#define HID_LOG(level)                         \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_HID, \
+             ::device_event_log::LOG_LEVEL_##level)
+#define HID_PLOG(level)                         \
+  DEVICE_PLOG(::device_event_log::LOG_TYPE_HID, \
+              ::device_event_log::LOG_LEVEL_##level)
 
-// Generally prefer the above macros unless |type| or  |level| is not constant.
+// Generally prefer the above macros unless |type| or |level| is not constant.
 
 #define DEVICE_LOG(type, level)                                            \
   ::device_event_log::internal::DeviceEventLogInstance(__FILE__, __LINE__, \
                                                        type, level).stream()
+#define DEVICE_PLOG(type, level)                                            \
+  ::device_event_log::internal::DeviceEventSystemErrorLogInstance(          \
+      __FILE__, __LINE__, type, level, ::logging::GetLastSystemErrorCode()) \
+      .stream()
 
 // Declare {Type_LOG_IF_SLOW() at the top of a method to log slow methods
 // where "slow" is defined by kSlowMethodThresholdMs in the .cc file.
@@ -66,6 +77,8 @@ enum LogType {
   LOG_TYPE_LOGIN,
   // USB device related events (i.e. device/usb).
   LOG_TYPE_USB,
+  // Human-interface device related events (i.e. device/hid).
+  LOG_TYPE_HID,
   // Used internally
   LOG_TYPE_UNKNOWN
 };
@@ -154,6 +167,30 @@ class DEVICE_EVENT_LOG_EXPORT DeviceEventLogInstance {
   std::ostringstream stream_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEventLogInstance);
+};
+
+// Implementation class for DEVICE_PLOG macros. Provides a stream for creating
+// a log string and adds the event, including system error code, using
+// device_event_log::AddEntry on destruction.
+class DEVICE_EVENT_LOG_EXPORT DeviceEventSystemErrorLogInstance {
+ public:
+  DeviceEventSystemErrorLogInstance(const char* file,
+                                    int line,
+                                    device_event_log::LogType type,
+                                    device_event_log::LogLevel level,
+                                    logging::SystemErrorCode err);
+  ~DeviceEventSystemErrorLogInstance();
+
+  std::ostream& stream() { return log_instance_.stream(); }
+
+ private:
+  logging::SystemErrorCode err_;
+  // Constructor parameters are passed to |log_instance_| which will update the
+  // log when it is destroyed (after a string description of |err_| is appended
+  // to the stream).
+  DeviceEventLogInstance log_instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceEventSystemErrorLogInstance);
 };
 
 // Implementation class for SCOPED_LOG_IF_SLOW macros. Tests the elapsed time on

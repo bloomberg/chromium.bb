@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "components/device_event_log/device_event_log.h"
+
 namespace device {
 
 namespace {
@@ -82,7 +84,7 @@ void HidConnection::Close() {
 void HidConnection::Read(const ReadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_input_report_size() == 0) {
-    VLOG(1) << "This device does not support input reports.";
+    HID_LOG(USER) << "This device does not support input reports.";
     callback.Run(false, NULL, 0);
     return;
   }
@@ -95,25 +97,25 @@ void HidConnection::Write(scoped_refptr<net::IOBuffer> buffer,
                           const WriteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_output_report_size() == 0) {
-    VLOG(1) << "This device does not support output reports.";
+    HID_LOG(USER) << "This device does not support output reports.";
     callback.Run(false);
     return;
   }
   if (size > device_info_->max_output_report_size() + 1) {
-    VLOG(1) << "Output report buffer too long (" << size << " > "
-            << (device_info_->max_output_report_size() + 1) << ").";
+    HID_LOG(USER) << "Output report buffer too long (" << size << " > "
+                  << (device_info_->max_output_report_size() + 1) << ").";
     callback.Run(false);
     return;
   }
   DCHECK_GE(size, 1u);
   uint8_t report_id = buffer->data()[0];
   if (device_info_->has_report_id() != (report_id != 0)) {
-    VLOG(1) << "Invalid output report ID.";
+    HID_LOG(USER) << "Invalid output report ID.";
     callback.Run(false);
     return;
   }
   if (IsReportIdProtected(report_id)) {
-    VLOG(1) << "Attempt to set a protected output report.";
+    HID_LOG(USER) << "Attempt to set a protected output report.";
     callback.Run(false);
     return;
   }
@@ -125,17 +127,17 @@ void HidConnection::GetFeatureReport(uint8_t report_id,
                                      const ReadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_feature_report_size() == 0) {
-    VLOG(1) << "This device does not support feature reports.";
+    HID_LOG(USER) << "This device does not support feature reports.";
     callback.Run(false, NULL, 0);
     return;
   }
   if (device_info_->has_report_id() != (report_id != 0)) {
-    VLOG(1) << "Invalid feature report ID.";
+    HID_LOG(USER) << "Invalid feature report ID.";
     callback.Run(false, NULL, 0);
     return;
   }
   if (IsReportIdProtected(report_id)) {
-    VLOG(1) << "Attempt to get a protected feature report.";
+    HID_LOG(USER) << "Attempt to get a protected feature report.";
     callback.Run(false, NULL, 0);
     return;
   }
@@ -148,19 +150,19 @@ void HidConnection::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                                       const WriteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_feature_report_size() == 0) {
-    VLOG(1) << "This device does not support feature reports.";
+    HID_LOG(USER) << "This device does not support feature reports.";
     callback.Run(false);
     return;
   }
   DCHECK_GE(size, 1u);
   uint8_t report_id = buffer->data()[0];
   if (device_info_->has_report_id() != (report_id != 0)) {
-    VLOG(1) << "Invalid feature report ID.";
+    HID_LOG(USER) << "Invalid feature report ID.";
     callback.Run(false);
     return;
   }
   if (IsReportIdProtected(report_id)) {
-    VLOG(1) << "Attempt to set a protected feature report.";
+    HID_LOG(USER) << "Attempt to set a protected feature report.";
     callback.Run(false);
     return;
   }
@@ -174,7 +176,7 @@ bool HidConnection::CompleteRead(scoped_refptr<net::IOBuffer> buffer,
   DCHECK_GE(size, 1u);
   uint8_t report_id = buffer->data()[0];
   if (IsReportIdProtected(report_id)) {
-    VLOG(1) << "Filtered a protected input report.";
+    HID_LOG(EVENT) << "Filtered a protected input report.";
     return false;
   }
 

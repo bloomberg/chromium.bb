@@ -14,6 +14,8 @@
         '../..',
       ],
       'dependencies': [
+        '../../components/components.gyp:device_event_log_component',
+        '../../net/net.gyp:net',
         '../core/core.gyp:device_core',
       ],
       'sources': [

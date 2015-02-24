@@ -18,6 +18,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_connection_win.h"
 #include "device/hid/hid_device_info.h"
 #include "net/base/io_buffer.h"
@@ -64,7 +65,7 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
 
   base::win::ScopedHandle file(OpenDevice(device_info->device_id()));
   if (!file.IsValid()) {
-    PLOG(ERROR) << "Failed to open device";
+    HID_PLOG(EVENT) << "Failed to open device";
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
@@ -186,20 +187,20 @@ void HidServiceWin::AddDeviceOnFileThread(
   HIDD_ATTRIBUTES attrib = {0};
   attrib.Size = sizeof(HIDD_ATTRIBUTES);
   if (!HidD_GetAttributes(device_handle.Get(), &attrib)) {
-    VLOG(1) << "Failed to get device attributes.";
+    HID_LOG(EVENT) << "Failed to get device attributes.";
     return;
   }
 
   PHIDP_PREPARSED_DATA preparsed_data = nullptr;
   if (!HidD_GetPreparsedData(device_handle.Get(), &preparsed_data) ||
       !preparsed_data) {
-    VLOG(1) << "Failed to get device data.";
+    HID_LOG(EVENT) << "Failed to get device data.";
     return;
   }
 
   HIDP_CAPS capabilities = {0};
   if (HidP_GetCaps(preparsed_data, &capabilities) != HIDP_STATUS_SUCCESS) {
-    VLOG(1) << "Failed to get device capabilities.";
+    HID_LOG(EVENT) << "Failed to get device capabilities.";
     HidD_FreePreparsedData(preparsed_data);
     return;
   }

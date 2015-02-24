@@ -1353,6 +1353,9 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
       <message name="IDS_DEVICE_LOG_TYPE_USB" desc="Checkbox to enable showing events of type USB">
         USB
       </message>
+      <message name="IDS_DEVICE_LOG_TYPE_HID" desc="Checkbox to enable showing events of type HID (Human Interface Device)">
+        HID
+      </message>
       <message name="IDS_DEVICE_LOG_FILEINFO" desc="File info checkbox in device event log">
         File Info
       </message>

@@ -84,6 +84,19 @@ DeviceEventLogInstance::~DeviceEventLogInstance() {
   device_event_log::AddEntry(file_, line_, type_, level_, stream_.str());
 }
 
+DeviceEventSystemErrorLogInstance::DeviceEventSystemErrorLogInstance(
+    const char* file,
+    int line,
+    device_event_log::LogType type,
+    device_event_log::LogLevel level,
+    logging::SystemErrorCode err)
+    : err_(err), log_instance_(file, line, type, level) {
+}
+
+DeviceEventSystemErrorLogInstance::~DeviceEventSystemErrorLogInstance() {
+  stream() << ": " << ::logging::SystemErrorCodeToString(err_);
+}
+
 ScopedDeviceLogIfSlow::ScopedDeviceLogIfSlow(LogType type,
                                              const char* file,
                                              const std::string& name)
