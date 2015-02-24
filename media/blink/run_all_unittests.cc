@@ -41,10 +41,10 @@ const unsigned char* TestBlinkPlatformSupport::getTraceCategoryEnabledFlag(
 class BlinkMediaTestSuite : public base::TestSuite {
  public:
   BlinkMediaTestSuite(int argc, char** argv);
-  virtual ~BlinkMediaTestSuite();
+  ~BlinkMediaTestSuite() override;
 
  protected:
-  virtual void Initialize() override;
+  void Initialize() override;
 
  private:
   scoped_ptr<TestBlinkPlatformSupport> blink_platform_support_;
