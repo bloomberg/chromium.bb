@@ -20,6 +20,9 @@ WebRtcBrowserTest.CallWithDataAndMedia
 ServiceWorkerVersionBrowserTest.Activate_NoEventListener
 ServiceWorkerBrowserTest.ImportsBustMemcache
 
+# crbug.com/461489
+ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
+
 # http://crbug.com/293125
 WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
 
