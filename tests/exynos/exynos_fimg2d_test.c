@@ -668,11 +668,21 @@ int main(int argc, char **argv)
 
 	getchar();
 
+	/*
+	 * The blend test uses the userptr functionality of exynos-drm, which
+	 * is currently not safe to use. If the kernel hasn't been build with
+	 * exynos-iommu support, then the blend test is going to produce (kernel)
+	 * memory corruption, eventually leading to a system crash.
+	 *
+	 * Disable the test for now, until the kernel code has been sanitized.
+	 */
+#if 0
 	ret  = test_case.blend(dev, src, bo, G2D_IMGBUF_USERPTR);
 	if (ret < 0)
 		fprintf(stderr, "failed to test blend operation.\n");
 
 	getchar();
+#endif
 
 err_free_src:
 	if (src)
