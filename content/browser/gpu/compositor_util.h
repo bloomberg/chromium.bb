@@ -17,6 +17,10 @@ namespace content {
 // flags, or platform default).
 CONTENT_EXPORT bool IsPinchVirtualViewportEnabled();
 
+// Returns true if property tree verification is enabled (via flags or platform
+// default).
+CONTENT_EXPORT bool IsPropertyTreeVerificationEnabled();
+
 // Returns true if delegated-renderer is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 

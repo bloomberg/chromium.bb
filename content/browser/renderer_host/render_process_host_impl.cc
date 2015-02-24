@@ -1071,6 +1071,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsPinchVirtualViewportEnabled())
     command_line->AppendSwitch(cc::switches::kEnablePinchVirtualViewport);
 
+  if (IsPropertyTreeVerificationEnabled())
+    command_line->AppendSwitch(cc::switches::kEnablePropertyTreeVerification);
+
   if (IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 

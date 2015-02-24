@@ -58,6 +58,11 @@ const char kStrictLayerPropertyChangeChecking[] =
 const char kEnablePinchVirtualViewport[] = "enable-pinch-virtual-viewport";
 const char kDisablePinchVirtualViewport[] = "disable-pinch-virtual-viewport";
 
+// Ensures that the draw properties computed via the property trees match those
+// computed by CalcDrawProperties.
+const char kEnablePropertyTreeVerification[] =
+    "enable-property-tree-verification";
+
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 

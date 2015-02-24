@@ -179,6 +179,12 @@ bool IsPinchVirtualViewportEnabled() {
   return true;
 }
 
+bool IsPropertyTreeVerificationEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(cc::switches::kEnablePropertyTreeVerification);
+}
+
 bool IsDelegatedRendererEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
