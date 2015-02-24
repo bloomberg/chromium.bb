@@ -167,6 +167,12 @@ enum EntryPropertyName {
   externalFileUrl
 };
 
+// Entry property visibility for setEntryTag();
+enum EntryTagVisibility {
+  private,
+  public
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -863,6 +869,13 @@ interface Functions {
 
   // Is UMA enabled?
   static void isUMAEnabled(BooleanCallback callback);
+
+  // Sets a tag on a file or a directory. Only Drive files are supported.
+  static void setEntryTag(DOMString entryURL,
+                          EntryTagVisibility visibility,
+                          DOMString key,
+                          DOMString value,
+                          SimpleCallback callback);
 };
 
 interface Events {

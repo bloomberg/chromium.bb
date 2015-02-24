@@ -935,4 +935,54 @@ FileManagerPrivateIsUMAEnabledFunction::Run() {
       ChromeMetricsServiceAccessor::IsMetricsReportingEnabled())));
 }
 
+FileManagerPrivateSetEntryTagFunction::FileManagerPrivateSetEntryTagFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction FileManagerPrivateSetEntryTagFunction::Run() {
+  using extensions::api::file_manager_private::SetEntryTag::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
+      render_view_host(), chrome_details_.GetProfile(),
+      GURL(params->entry_url));
+  const base::FilePath drive_path = drive::util::ExtractDrivePath(local_path);
+  if (drive_path.empty())
+    return RespondNow(Error("Only Drive files and directories are supported."));
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
+  // |file_system| is NULL if Drive is disabled.
+  if (!file_system)
+    return RespondNow(Error("Drive is disabled."));
+
+  google_apis::drive::Property::Visibility visibility;
+  switch (params->visibility) {
+    case extensions::api::file_manager_private::ENTRY_TAG_VISIBILITY_PRIVATE:
+      visibility = google_apis::drive::Property::VISIBILITY_PRIVATE;
+      break;
+    case extensions::api::file_manager_private::ENTRY_TAG_VISIBILITY_PUBLIC:
+      visibility = google_apis::drive::Property::VISIBILITY_PUBLIC;
+      break;
+    default:
+      NOTREACHED();
+      return RespondNow(Error("Invalid visibility."));
+      break;
+  }
+
+  file_system->SetProperty(
+      drive_path, visibility, params->key, params->value,
+      base::Bind(
+          &FileManagerPrivateSetEntryTagFunction::OnSetEntryPropertyCompleted,
+          this));
+  return RespondLater();
+}
+
+void FileManagerPrivateSetEntryTagFunction::OnSetEntryPropertyCompleted(
+    drive::FileError result) {
+  Respond(result == drive::FILE_ERROR_OK ? NoArguments()
+                                         : Error("Failed to set a tag."));
+}
+
 }  // namespace extensions

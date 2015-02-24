@@ -11,6 +11,8 @@
 
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 class GURL;
@@ -300,6 +302,25 @@ class FileManagerPrivateIsUMAEnabledFunction
  private:
   ExtensionFunction::ResponseAction Run() override;
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsUMAEnabledFunction);
+};
+
+// Implements the chrome.fileManagerPrivate.setEntryTag method.
+class FileManagerPrivateSetEntryTagFunction : public UIThreadExtensionFunction {
+ public:
+  FileManagerPrivateSetEntryTagFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.setEntryTag",
+                             FILEMANAGERPRIVATE_SETENTRYTAG)
+ protected:
+  ~FileManagerPrivateSetEntryTagFunction() override {}
+
+ private:
+  const ChromeExtensionFunctionDetails chrome_details_;
+
+  // Called when setting a tag is completed with either a success or an error.
+  void OnSetEntryPropertyCompleted(drive::FileError result);
+
+  ExtensionFunction::ResponseAction Run() override;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateSetEntryTagFunction);
 };
 
 }  // namespace extensions
