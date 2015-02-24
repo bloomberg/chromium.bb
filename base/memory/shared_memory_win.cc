@@ -144,7 +144,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
                          rand_values[2], rand_values[3]);
   }
   mapped_file_ = CreateFileMapping(INVALID_HANDLE_VALUE, &sa,
-      PAGE_READWRITE, 0, static_cast<DWORD>(rounded_size), name_.c_str());
+      PAGE_READWRITE, 0, static_cast<DWORD>(rounded_size),
+      name_.empty() ? nullptr : name_.c_str());
   if (!mapped_file_)
     return false;
 
