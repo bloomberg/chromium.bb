@@ -1224,6 +1224,7 @@ static void PreCalculateMetaInformation(
 
   layer->draw_properties().sorted_for_recursion = false;
   layer->draw_properties().has_child_with_a_scroll_parent = false;
+  layer->draw_properties().visited = false;
 
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
@@ -1590,6 +1591,9 @@ static void CalculateDrawPropertiesInternal(
   // which layer roots the subtree the scale is applied to.
   DCHECK(globals.page_scale_application_layer ||
          (globals.page_scale_factor == 1.f));
+
+  CHECK(!layer->draw_properties().visited);
+  layer->draw_properties().visited = true;
 
   DataForRecursion<LayerType> data_for_children;
   typename LayerType::RenderSurfaceType*

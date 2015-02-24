@@ -34,6 +34,7 @@ struct CC_EXPORT DrawProperties {
         layer_or_descendant_has_input_handler(false),
         has_child_with_a_scroll_parent(false),
         sorted_for_recursion(false),
+        visited(false),
         index_of_first_descendants_addition(0),
         num_descendants_added(0),
         index_of_first_render_surface_layer_list_addition(0),
@@ -122,6 +123,9 @@ struct CC_EXPORT DrawProperties {
   // This is true if the order (wrt to its siblings in the tree) in which the
   // layer will be visited while computing draw properties has been determined.
   bool sorted_for_recursion;
+
+  // This is used to sanity-check CDP and ensure that we don't revisit a layer.
+  bool visited;
 
   // If this layer is visited out of order, its contribution to the descendant
   // and render surface layer lists will be put aside in a temporary list.
