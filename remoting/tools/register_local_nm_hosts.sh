@@ -46,7 +46,10 @@ register_hosts() {
 register_hosts_for_all_channels() {
   local build_dir="$1"
 
-  if [ $(uname -s) == "Darwin" ]; then
+  if [ -n "$CHROME_USER_DATA_DIR" ]; then
+    register_hosts "${build_dir}" \
+        "${CHROME_USER_DATA_DIR}/NativeMessagingHosts"
+  elif [ $(uname -s) == "Darwin" ]; then
     register_hosts "${build_dir}" \
         "${HOME}/Library/Application Support/Google/Chrome/NativeMessagingHosts"
     register_hosts "${build_dir}" \
@@ -71,7 +74,10 @@ unregister_hosts() {
 }
 
 unregister_hosts_for_all_channels() {
-  if [ $(uname -s) == "Darwin" ]; then
+  if [ -n "$CHROME_USER_DATA_DIR" ]; then
+    unregister_hosts \
+        "${CHROME_USER_DATA_DIR}/NativeMessagingHosts"
+  elif [ $(uname -s) == "Darwin" ]; then
     unregister_hosts \
         "${HOME}/Library/Application Support/Google/Chrome/NativeMessagingHosts"
     unregister_hosts \
