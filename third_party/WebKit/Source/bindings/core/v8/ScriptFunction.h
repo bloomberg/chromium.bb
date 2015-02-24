@@ -53,7 +53,7 @@ class ScriptFunction : public GarbageCollectedFinalized<ScriptFunction> {
 public:
     virtual ~ScriptFunction() { }
     ScriptState* scriptState() const { return m_scriptState.get(); }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit ScriptFunction(ScriptState* scriptState)

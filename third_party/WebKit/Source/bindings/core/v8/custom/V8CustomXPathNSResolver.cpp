@@ -91,7 +91,7 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     return returnString;
 }
 
-void V8CustomXPathNSResolver::trace(Visitor* visitor)
+DEFINE_TRACE(V8CustomXPathNSResolver)
 {
     XPathNSResolver::trace(visitor);
 }

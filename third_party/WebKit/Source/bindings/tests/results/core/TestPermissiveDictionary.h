@@ -21,7 +21,7 @@ public:
     bool booleanMember() const { return m_booleanMember.get(); }
     void setBooleanMember(bool value) { m_booleanMember = value; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     Nullable<bool> m_booleanMember;

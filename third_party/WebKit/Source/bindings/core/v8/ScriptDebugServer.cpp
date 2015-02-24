@@ -86,7 +86,7 @@ ScriptDebugServer::~ScriptDebugServer()
 {
 }
 
-void ScriptDebugServer::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptDebugServer)
 {
 }
 

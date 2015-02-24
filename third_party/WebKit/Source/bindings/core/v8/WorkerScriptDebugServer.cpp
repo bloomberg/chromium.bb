@@ -49,7 +49,7 @@ WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobal
     ASSERT(m_isolate);
 }
 
-void WorkerScriptDebugServer::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerScriptDebugServer)
 {
     visitor->trace(m_workerGlobalScope);
     ScriptDebugServer::trace(visitor);

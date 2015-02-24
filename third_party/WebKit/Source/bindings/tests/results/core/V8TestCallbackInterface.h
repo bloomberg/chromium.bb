@@ -24,7 +24,7 @@ public:
 
     virtual ~V8TestCallbackInterface();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void voidMethod() override;
     virtual bool booleanMethod() override;

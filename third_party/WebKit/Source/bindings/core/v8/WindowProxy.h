@@ -55,7 +55,7 @@ public:
     static PassOwnPtrWillBeRawPtr<WindowProxy> create(Frame*, DOMWrapperWorld&, v8::Isolate*);
 
     ~WindowProxy();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     v8::Local<v8::Context> context() const { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
     ScriptState* scriptState() const { return m_scriptState.get(); }

@@ -20,7 +20,7 @@ WindowProxyManager::~WindowProxyManager()
 {
 }
 
-void WindowProxyManager::trace(Visitor* visitor)
+DEFINE_TRACE(WindowProxyManager)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);

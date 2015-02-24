@@ -413,7 +413,7 @@ ScriptStreamer::~ScriptStreamer()
 {
 }
 
-void ScriptStreamer::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptStreamer)
 {
     visitor->trace(m_resource);
 }

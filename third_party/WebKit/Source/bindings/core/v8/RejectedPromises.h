@@ -26,7 +26,7 @@ public:
 
     RejectedPromises();
     void dispose();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void add(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 

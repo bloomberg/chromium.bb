@@ -46,7 +46,7 @@ public:
     GarbageCollectedHolder(GarbageCollectedScriptWrappable* scriptWrappable)
         : m_scriptWrappable(scriptWrappable) { }
 
-    void trace(Visitor* visitor) { visitor->trace(m_scriptWrappable); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_scriptWrappable); }
 
     // This should be public in order to access a Member<X> object.
     Member<GarbageCollectedScriptWrappable> m_scriptWrappable;

@@ -238,7 +238,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
 }
 
-void V8CustomElementLifecycleCallbacks::trace(Visitor* visitor)
+DEFINE_TRACE(V8CustomElementLifecycleCallbacks)
 {
     CustomElementLifecycleCallbacks::trace(visitor);
     ContextLifecycleObserver::trace(visitor);

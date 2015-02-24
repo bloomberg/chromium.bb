@@ -93,7 +93,7 @@ WindowProxy::~WindowProxy()
     ASSERT(!isContextInitialized());
 }
 
-void WindowProxy::trace(Visitor* visitor)
+DEFINE_TRACE(WindowProxy)
 {
     visitor->trace(m_frame);
 }

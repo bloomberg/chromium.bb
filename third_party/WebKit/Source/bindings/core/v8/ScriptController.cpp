@@ -102,7 +102,7 @@ ScriptController::~ScriptController()
 {
 }
 
-void ScriptController::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptController)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_windowProxyManager);

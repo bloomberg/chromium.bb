@@ -45,7 +45,7 @@ ScriptSourceCode::~ScriptSourceCode()
 {
 }
 
-void ScriptSourceCode::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptSourceCode)
 {
     visitor->trace(m_streamer);
 }

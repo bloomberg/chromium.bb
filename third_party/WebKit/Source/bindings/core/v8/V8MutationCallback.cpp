@@ -85,7 +85,7 @@ void V8MutationCallback::setWeakCallback(const v8::WeakCallbackData<v8::Function
     data.GetParameter()->m_callback.clear();
 }
 
-void V8MutationCallback::trace(Visitor* visitor)
+DEFINE_TRACE(V8MutationCallback)
 {
     MutationCallback::trace(visitor);
     ActiveDOMCallback::trace(visitor);

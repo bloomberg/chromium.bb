@@ -55,7 +55,7 @@ public:
     ScriptSourceCode(PassRefPtrWillBeRawPtr<ScriptStreamer>, ScriptResource*);
 
     ~ScriptSourceCode();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool isEmpty() const { return m_source.isEmpty(); }
 

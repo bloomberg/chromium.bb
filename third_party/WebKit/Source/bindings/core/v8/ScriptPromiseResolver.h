@@ -86,7 +86,7 @@ public:
     // promise is pending and the associated ExecutionContext isn't stopped.
     void keepAliveWhilePending();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     // You need to call suspendIfNeeded after the construction because

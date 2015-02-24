@@ -21,7 +21,7 @@ TestDictionary::TestDictionary()
     setUnrestrictedDoubleMember(3.14);
 }
 
-void TestDictionary::trace(Visitor* visitor)
+DEFINE_TRACE(TestDictionary)
 {
     visitor->trace(m_elementOrNullMember);
     visitor->trace(m_eventTargetMember);

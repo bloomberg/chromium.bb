@@ -21,7 +21,7 @@ namespace blink {
     {% endfor %}
 }
 
-void {{cpp_class}}::trace(Visitor* visitor)
+DEFINE_TRACE({{cpp_class}})
 {
     {% for member in members if member.is_traceable %}
     visitor->trace(m_{{member.cpp_name}});

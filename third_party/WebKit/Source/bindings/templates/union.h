@@ -32,7 +32,7 @@ public:
 
     {% endfor %}
     {% if container.needs_trace %}
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     {% endif %}
 private:

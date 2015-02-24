@@ -390,7 +390,7 @@ NodeOrNodeList NodeOrNodeList::fromNodeList(PassRefPtrWillBeRawPtr<NodeList> val
     return container;
 }
 
-void NodeOrNodeList::trace(Visitor* visitor)
+DEFINE_TRACE(NodeOrNodeList)
 {
     visitor->trace(m_node);
     visitor->trace(m_nodeList);
@@ -952,7 +952,7 @@ TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fro
     return container;
 }
 
-void TestInterfaceGarbageCollectedOrString::trace(Visitor* visitor)
+DEFINE_TRACE(TestInterfaceGarbageCollectedOrString)
 {
     visitor->trace(m_testInterfaceGarbageCollected);
 }
@@ -1222,7 +1222,7 @@ TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCo
     return container;
 }
 
-void TestInterfaceWillBeGarbageCollectedOrTestDictionary::trace(Visitor* visitor)
+DEFINE_TRACE(TestInterfaceWillBeGarbageCollectedOrTestDictionary)
 {
     visitor->trace(m_testInterfaceWillBeGarbageCollected);
     visitor->trace(m_testDictionary);

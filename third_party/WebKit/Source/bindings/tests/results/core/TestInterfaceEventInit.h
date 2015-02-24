@@ -22,7 +22,7 @@ public:
     String stringMember() const { return m_stringMember; }
     void setStringMember(String value) { m_stringMember = value; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     String m_stringMember;

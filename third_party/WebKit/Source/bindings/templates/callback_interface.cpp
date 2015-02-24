@@ -25,7 +25,7 @@ namespace blink {
 {
 }
 
-void {{v8_class}}::trace(Visitor* visitor)
+DEFINE_TRACE({{v8_class}})
 {
     {{cpp_class}}::trace(visitor);
     ActiveDOMCallback::trace(visitor);

@@ -29,7 +29,7 @@ V8TestCallbackInterface::~V8TestCallbackInterface()
 {
 }
 
-void V8TestCallbackInterface::trace(Visitor* visitor)
+DEFINE_TRACE(V8TestCallbackInterface)
 {
     TestCallbackInterface::trace(visitor);
     ActiveDOMCallback::trace(visitor);

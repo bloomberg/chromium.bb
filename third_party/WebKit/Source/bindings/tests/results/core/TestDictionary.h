@@ -140,7 +140,7 @@ public:
     double unrestrictedDoubleMember() const { return m_unrestrictedDoubleMember.get(); }
     void setUnrestrictedDoubleMember(double value) { m_unrestrictedDoubleMember = value; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     Nullable<bool> m_booleanMember;

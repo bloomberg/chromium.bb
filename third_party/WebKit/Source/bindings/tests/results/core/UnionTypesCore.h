@@ -200,7 +200,7 @@ public:
     void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
     static NodeOrNodeList fromNodeList(PassRefPtrWillBeRawPtr<NodeList>);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     enum SpecificTypes {
@@ -497,7 +497,7 @@ public:
     void setString(String);
     static TestInterfaceGarbageCollectedOrString fromString(String);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     enum SpecificTypes {
@@ -643,7 +643,7 @@ public:
     void setTestDictionary(TestDictionary);
     static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestDictionary(TestDictionary);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     enum SpecificTypes {

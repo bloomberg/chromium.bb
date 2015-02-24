@@ -52,7 +52,7 @@ class ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDeb
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
 public:
     virtual ~ScriptDebugServer();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);

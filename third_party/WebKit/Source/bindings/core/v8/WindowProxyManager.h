@@ -23,7 +23,7 @@ public:
     static PassOwnPtrWillBeRawPtr<WindowProxyManager> create(Frame&);
 
     ~WindowProxyManager();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     Frame* frame() const { return m_frame.get(); }
     v8::Isolate* isolate() const { return m_isolate; }

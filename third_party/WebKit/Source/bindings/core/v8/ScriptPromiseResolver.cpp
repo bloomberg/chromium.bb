@@ -109,7 +109,7 @@ void ScriptPromiseResolver::clear()
     }
 }
 
-void ScriptPromiseResolver::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptPromiseResolver)
 {
     ActiveDOMObject::trace(visitor);
 }

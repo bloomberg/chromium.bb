@@ -44,7 +44,7 @@ public:
     static PageScriptDebugServer& shared();
 
     ~PageScriptDebugServer() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     static void setMainThreadIsolate(v8::Isolate*);
 

@@ -21,7 +21,7 @@ public:
         return adoptPtrWillBeNoop(new Message(promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack));
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_callStack);
     }
@@ -57,7 +57,7 @@ RejectedPromises::RejectedPromises()
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
 
-void RejectedPromises::trace(Visitor* visitor)
+DEFINE_TRACE(RejectedPromises)
 {
     visitor->trace(m_queue);
 }

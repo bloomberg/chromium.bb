@@ -14,7 +14,7 @@ TestInterfaceEventInit::TestInterfaceEventInit()
 {
 }
 
-void TestInterfaceEventInit::trace(Visitor* visitor)
+DEFINE_TRACE(TestInterfaceEventInit)
 {
     EventInitDictionary::trace(visitor);
 }

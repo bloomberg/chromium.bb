@@ -24,7 +24,7 @@ public:
 
     virtual ~{{v8_class}}();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 {% for method in methods %}
     virtual {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;

@@ -74,7 +74,7 @@ public:
         m_controller->m_globalScopeExecutionState = m_outerState;
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_errorEventFromImportedScript);
     }

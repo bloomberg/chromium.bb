@@ -52,7 +52,7 @@ public:
     static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const String& handler);
 
     ~ScheduledAction();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void execute(ExecutionContext*);
 

@@ -26,7 +26,7 @@ public:
     String derivedStringMemberWithDefault() const { return m_derivedStringMemberWithDefault; }
     void setDerivedStringMemberWithDefault(String value) { m_derivedStringMemberWithDefault = value; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     String m_derivedStringMember;

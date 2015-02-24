@@ -57,7 +57,7 @@ PassOwnPtrWillBeRawPtr<ScheduledAction> ScheduledAction::create(ScriptState* scr
     return adoptPtrWillBeNoop(new ScheduledAction(scriptState, handler));
 }
 
-void ScheduledAction::trace(Visitor* visitor)
+DEFINE_TRACE(ScheduledAction)
 {
     visitor->trace(m_code);
 }

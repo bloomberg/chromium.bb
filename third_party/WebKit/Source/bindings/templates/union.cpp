@@ -56,7 +56,7 @@ void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}}
 
 {% endfor %}
 {% if container.needs_trace %}
-void {{container.cpp_class}}::trace(Visitor* visitor)
+DEFINE_TRACE({{container.cpp_class}})
 {
     {% for member in container.members if member.is_traceable %}
     visitor->trace(m_{{member.cpp_name}});

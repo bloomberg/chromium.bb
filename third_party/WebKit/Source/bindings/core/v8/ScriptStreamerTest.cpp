@@ -41,7 +41,7 @@ public:
 
     PendingScript& get() { return m_pendingScript; }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_pendingScript);
     }

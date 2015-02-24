@@ -97,7 +97,7 @@ PageScriptDebugServer::~PageScriptDebugServer()
 {
 }
 
-void PageScriptDebugServer::trace(Visitor* visitor)
+DEFINE_TRACE(PageScriptDebugServer)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_listenersMap);

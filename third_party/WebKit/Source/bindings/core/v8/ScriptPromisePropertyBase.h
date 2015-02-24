@@ -40,7 +40,7 @@ public:
 
     ScriptPromise promise(DOMWrapperWorld&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     ScriptPromisePropertyBase(ExecutionContext*, Name);

@@ -78,7 +78,7 @@ public:
     }
 
     ~ScriptController();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool initializeMainWorld();
     WindowProxy* windowProxy(DOMWrapperWorld&);

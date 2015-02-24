@@ -82,7 +82,7 @@ public:
         // Otherwise: set |key| and |value| and return true.
         virtual bool next(ScriptState*, KeyType&, ValueType&, ExceptionState&) = 0;
 
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
 private:
@@ -137,7 +137,7 @@ private:
             return next(scriptState, exceptionState);
         }
 
-        void trace(Visitor* visitor) override
+        DEFINE_INLINE_VIRTUAL_TRACE()
         {
             visitor->trace(m_source);
             Iterator::trace(visitor);

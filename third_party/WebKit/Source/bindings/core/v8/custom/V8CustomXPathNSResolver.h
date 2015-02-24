@@ -48,7 +48,7 @@ public:
 
     virtual AtomicString lookupNamespaceURI(const String& prefix) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     V8CustomXPathNSResolver(v8::Handle<v8::Object> resolver, v8::Isolate*);

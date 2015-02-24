@@ -15,7 +15,7 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs()
     setDerivedStringMemberWithDefault(String("default string value"));
 }
 
-void TestDictionaryDerivedImplementedAs::trace(Visitor* visitor)
+DEFINE_TRACE(TestDictionaryDerivedImplementedAs)
 {
     TestDictionary::trace(visitor);
 }

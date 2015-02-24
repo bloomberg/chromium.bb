@@ -14,7 +14,7 @@ TestPermissiveDictionary::TestPermissiveDictionary()
 {
 }
 
-void TestPermissiveDictionary::trace(Visitor* visitor)
+DEFINE_TRACE(TestPermissiveDictionary)
 {
 }
 

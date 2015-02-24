@@ -47,7 +47,7 @@ public:
     }
 
     ~WorkerScriptDebugServer() override { }
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void addListener(ScriptDebugListener*);
     void removeListener(ScriptDebugListener*);
