@@ -20,7 +20,7 @@ function initialize_LayersPanelnMouseEvents()
 InspectorTest.findLayerTreeElement = function(layer)
 {
     var layerTree = WebInspector.panels.layers._layerTreeOutline._treeOutline;
-    var element = layerTree.getCachedTreeElement(layer);
+    var element = layer[WebInspector.LayerTreeElement._symbol];
     element.reveal();
     return element.listItemElement;
 }

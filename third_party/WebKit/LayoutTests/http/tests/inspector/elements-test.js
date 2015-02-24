@@ -473,7 +473,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
             return "";
 
         var userProperties = "";
-        var node = treeItem.representedObject;
+        var node = treeItem._node;
         if (node) {
             userProperties += dumpMap("userProperties", node._userProperties);
             var dump = dumpMap("descendantUserAttributeCounters", node._descendantUserPropertyCounters);
@@ -490,8 +490,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 
     function print(treeItem, prefix, depth)
     {
-        var isRoot = treeItem === treeItem.treeOutline._rootElement;
-        if (!isRoot) {
+        if (!treeItem.root) {
             var expander;
             if (treeItem.hasChildren) {
                 if (treeItem.expanded)
@@ -522,7 +521,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
             return;
 
         var children = treeItem.children();
-        var newPrefix = isRoot ? "" : prefix + "    ";
+        var newPrefix = treeItem.root ? "" : prefix + "    ";
         for (var i = 0; depth && children && i < children.length; ++i) {
             if (!children[i]._elementCloseTag)
                 print(children[i], newPrefix, depth - 1);
@@ -555,7 +554,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
     function print(treeItem, prefix, depth)
     {
         if (!treeItem.root) {
-            var elementXPath = WebInspector.DOMPresentationUtils.xPath(treeItem._node, true);
+            var elementXPath = WebInspector.DOMPresentationUtils.xPath(treeItem.node(), true);
             var highlightedElements = treeItem.listItemElement.querySelectorAll(".dom-update-highlight");
             for (var i = 0; i < highlightedElements.length; ++i) {
                 var element = highlightedElements[i];
@@ -578,7 +577,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
             return;
 
         var children = treeItem.children();
-        var newPrefix = treeItem === treeItem.treeOutline ? "" : prefix + "    ";
+        var newPrefix = treeItem.root ? "" : prefix + "    ";
         for (var i = 0; depth && children && i < children.length; ++i) {
             if (!children[i]._elementCloseTag)
                 print(children[i], newPrefix, depth - 1);

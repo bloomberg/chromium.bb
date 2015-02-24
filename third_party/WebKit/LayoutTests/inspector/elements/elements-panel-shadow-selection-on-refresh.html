@@ -78,7 +78,7 @@ function test()
         function dumpSelectedNode()
         {
             var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
-            var nodeName = selectedElement ? selectedElement.representedObject.nodeNameInCorrectCase() : "null";
+            var nodeName = selectedElement ? selectedElement.node().nodeNameInCorrectCase() : "null";
             InspectorTest.addResult("Selected node: '" + nodeName + "'");
         }
     }

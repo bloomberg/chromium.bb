@@ -31,17 +31,6 @@ function initialize_LayerTreeTests()
         root.children().forEach(InspectorTest.dumpLayerTree.bind(InspectorTest, prefix + "    "));
     }
 
-    InspectorTest.dumpLayerTreeOutline = function(prefix, root)
-    {
-        if (!prefix)
-            prefix = "";
-        if (!root)
-            root = WebInspector.panels.layers._layerTree._treeOutline;
-        if (root.representedObject)
-            InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.representedObject));
-        root.children.forEach(InspectorTest.dumpLayerTreeOutline.bind(InspectorTest, prefix + "    "));
-    }
-
     InspectorTest.dumpLayers3DView = function(prefix, root)
     {
         if (!prefix)

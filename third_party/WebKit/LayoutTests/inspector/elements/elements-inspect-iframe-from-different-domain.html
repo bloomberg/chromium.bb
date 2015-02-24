@@ -32,7 +32,7 @@ function test()
         var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
         if (!selectedElement)
             return "<no selected node>";
-        return selectedElement.representedObject.getAttribute("id");
+        return selectedElement.node().getAttribute("id");
     }
 
     function step1()

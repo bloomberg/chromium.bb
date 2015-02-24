@@ -61,7 +61,7 @@ function test()
     function dumpSelectedNode()
     {
         var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
-        var selectedNode = selectedElement ? selectedElement.representedObject : null;
+        var selectedNode = selectedElement ? selectedElement.node() : null;
         InspectorTest.addResult("The following node is now selected: " + nodeToString(selectedNode));
     }
 

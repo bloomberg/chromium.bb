@@ -31,7 +31,7 @@ function test()
     {
         InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
-        InspectorTest.addResult("Node selected: " + selectedElement.representedObject.getAttribute("id"));
+        InspectorTest.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
         InspectorTest.completeTest();
     }
 }

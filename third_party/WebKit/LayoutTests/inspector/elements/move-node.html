@@ -35,8 +35,10 @@ function test()
                 next();
             }
 
-            treeOutline._treeElementBeingDragged = treeOutline.getCachedTreeElement(InspectorTest.expandedNodeWithId("child2"));
-            var treeElementToDropOn = treeOutline.getCachedTreeElement(InspectorTest.expandedNodeWithId("child4"));
+            var child2 = InspectorTest.expandedNodeWithId("child2");
+            var child4 = InspectorTest.expandedNodeWithId("child4");
+            treeOutline._treeElementBeingDragged = child2[WebInspector.ElementsTreeElement.symbol];
+            var treeElementToDropOn = child4[WebInspector.ElementsTreeElement.symbol];
             treeOutline._doMove(treeElementToDropOn);
         }
     ]);
