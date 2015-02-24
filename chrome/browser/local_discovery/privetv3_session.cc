@@ -48,6 +48,8 @@ const char kPrivetV3AuthPath[] = "/privet/v3/auth";
 
 const char kUrlPlaceHolder[] = "http://host/";
 
+const int kUrlFetcherTimeoutSec = 30;
+
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
   GURL::Replacements replacements;
@@ -154,20 +156,26 @@ class PrivetV3Session::FetcherDelegate : public PrivetURLFetcher::Delegate {
                                      net::URLFetcher::RequestType request_type);
 
  private:
-  void DeleteThis();
+  void ReplyAndDestroyItself(Result result, const base::DictionaryValue& value);
+  void OnTimeout();
 
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
 
   base::WeakPtr<PrivetV3Session> session_;
   std::string auth_token_;
   MessageCallback callback_;
+
+  base::WeakPtrFactory<FetcherDelegate> weak_ptr_factory_;
 };
 
 PrivetV3Session::FetcherDelegate::FetcherDelegate(
     const base::WeakPtr<PrivetV3Session>& session,
     const std::string& auth_token,
     const PrivetV3Session::MessageCallback& callback)
-    : session_(session), auth_token_(auth_token), callback_(callback) {
+    : session_(session),
+      auth_token_(auth_token),
+      callback_(callback),
+      weak_ptr_factory_(this) {
 }
 
 PrivetV3Session::FetcherDelegate::~FetcherDelegate() {
@@ -187,25 +195,20 @@ void PrivetV3Session::FetcherDelegate::OnNeedPrivetToken(
 void PrivetV3Session::FetcherDelegate::OnError(
     PrivetURLFetcher* fetcher,
     PrivetURLFetcher::ErrorType error) {
-  if (session_) {
-    DeleteThis();
-    LOG(ERROR) << "PrivetURLFetcher url: " << fetcher->url()
-               << ", error: " << error
-               << ", response code: " << fetcher->response_code();
-    callback_.Run(Result::STATUS_CONNECTIONERROR, base::DictionaryValue());
-  }
+  LOG(ERROR) << "PrivetURLFetcher url: " << fetcher->url()
+             << ", error: " << error
+             << ", response code: " << fetcher->response_code();
+  ReplyAndDestroyItself(Result::STATUS_CONNECTIONERROR,
+                        base::DictionaryValue());
 }
 
 void PrivetV3Session::FetcherDelegate::OnParsedJson(
     PrivetURLFetcher* fetcher,
     const base::DictionaryValue& value,
     bool has_error) {
-  if (session_) {
-    DeleteThis();
-    LOG_IF(ERROR, has_error) << "Response: " << value;
-    callback_.Run(
-        has_error ? Result::STATUS_DEVICEERROR : Result::STATUS_SUCCESS, value);
-  }
+  LOG_IF(ERROR, has_error) << "Response: " << value;
+  ReplyAndDestroyItself(
+      has_error ? Result::STATUS_DEVICEERROR : Result::STATUS_SUCCESS, value);
 }
 
 PrivetURLFetcher* PrivetV3Session::FetcherDelegate::CreateURLFetcher(
@@ -215,13 +218,32 @@ PrivetURLFetcher* PrivetV3Session::FetcherDelegate::CreateURLFetcher(
   url_fetcher_ =
       session_->client_->CreateURLFetcher(url, request_type, this).Pass();
   url_fetcher_->V3Mode();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FetcherDelegate::OnTimeout, weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kUrlFetcherTimeoutSec));
   return url_fetcher_.get();
 }
 
-void PrivetV3Session::FetcherDelegate::DeleteThis() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&PrivetV3Session::DeleteFetcher, session_,
-                            base::Unretained(this)));
+void PrivetV3Session::FetcherDelegate::ReplyAndDestroyItself(
+    Result result,
+    const base::DictionaryValue& value) {
+  if (session_) {
+    if (!callback_.is_null()) {
+      callback_.Run(result, value);
+      callback_.Reset();
+    }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&PrivetV3Session::DeleteFetcher, session_,
+                              base::Unretained(this)));
+    session_.reset();
+  }
+}
+
+void PrivetV3Session::FetcherDelegate::OnTimeout() {
+  LOG(ERROR) << "PrivetURLFetcher timeout, url: " << url_fetcher_->url();
+  ReplyAndDestroyItself(Result::STATUS_CONNECTIONERROR,
+                        base::DictionaryValue());
 }
 
 PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetHTTPClient> client)
