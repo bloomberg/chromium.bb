@@ -1772,5 +1772,11 @@
     'net_base_test_mac_ios_sources': [
       'base/mac/url_conversions_unittest.mm',
     ],
+    'net_docs_script': 'tools/net_docs/net_docs.py',
+    'net_docs_sources': [
+      'README.md',
+      'sdch/README.md',
+    ],
+    'net_docs_output_dir': '<(PRODUCT_DIR)/net/docs',
   }
 }
