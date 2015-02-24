@@ -6,7 +6,7 @@
     ['OS=="android"', {
       'variables': {
         'files': [
-          '<(DEPTH)/android_webview/test/data/device_files/',
+          '<(DEPTH)/android_webview/test/data/',
         ],
       },
     }],
