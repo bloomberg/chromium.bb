@@ -656,7 +656,8 @@ datalist {
 }
 
 area {
-    display: inline
+    display: inline;
+    cursor: pointer;
 }
 
 param {
