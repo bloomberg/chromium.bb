@@ -205,9 +205,11 @@ function addPeerConnection(data) {
   if (!peerConnectionElement) {
     peerConnectionElement = tabView.addTab(id, data.url + ' [' + id + ']');
   }
-  peerConnectionElement.innerHTML =
-      '<p>' + data.url + ' ' + data.rtcConfiguration + ' ' + data.constraints +
-      '</p>';
+
+  var p = document.createElement('p');
+  p.textContent = data.url + ', ' + data.rtcConfiguration + ', ' +
+      data.constraints;
+  peerConnectionElement.appendChild(p);
 
   return peerConnectionElement;
 }
