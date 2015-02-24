@@ -17,16 +17,16 @@
 #include "net/base/url_util.h"
 
 namespace google_apis {
+namespace drive {
 namespace {
 
 // Parses the JSON value to FileResource instance and runs |callback| on the
 // UI thread once parsing is done.
 // This is customized version of ParseJsonAndRun defined above to adapt the
 // remaining response type.
-void ParseFileResourceWithUploadRangeAndRun(
-    const drive::UploadRangeCallback& callback,
-    const UploadRangeResponse& response,
-    scoped_ptr<base::Value> value) {
+void ParseFileResourceWithUploadRangeAndRun(const UploadRangeCallback& callback,
+                                            const UploadRangeResponse& response,
+                                            scoped_ptr<base::Value> value) {
   DCHECK(!callback.is_null());
 
   scoped_ptr<FileResource> file_resource;
@@ -45,9 +45,72 @@ void ParseFileResourceWithUploadRangeAndRun(
   callback.Run(response, file_resource.Pass());
 }
 
-}  // namespace
+// Attaches |properties| to the |request_body| if |properties| is not empty.
+// |request_body| must not be NULL.
+void AttachProperties(const Properties& properties,
+                      base::DictionaryValue* request_body) {
+  DCHECK(request_body);
+  if (properties.empty())
+    return;
 
-namespace drive {
+  base::ListValue* const properties_value = new base::ListValue;
+  for (const auto& property : properties) {
+    base::DictionaryValue* const property_value = new base::DictionaryValue;
+    std::string visibility_as_string;
+    switch (property.visibility()) {
+      case Property::VISIBILITY_PRIVATE:
+        visibility_as_string = "PRIVATE";
+        break;
+      case Property::VISIBILITY_PUBLIC:
+        visibility_as_string = "PUBLIC";
+        break;
+    }
+    property_value->SetString("visibility", visibility_as_string);
+    property_value->SetString("key", property.key());
+    property_value->SetString("value", property.value());
+    properties_value->Append(property_value);
+  }
+  request_body->Set("properties", properties_value);
+}
+
+// Creates metadata JSON string for multipart uploading.
+// All the values are optional. If the value is empty or null, the value does
+// not appear in the metadata.
+std::string CreateMultipartUploadMetadataJson(
+    const std::string& title,
+    const std::string& parent_resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const Properties& properties) {
+  base::DictionaryValue root;
+  if (!title.empty())
+    root.SetString("title", title);
+
+  // Fill parent link.
+  if (!parent_resource_id.empty()) {
+    scoped_ptr<base::ListValue> parents(new base::ListValue);
+    parents->Append(
+        google_apis::util::CreateParentValue(parent_resource_id).release());
+    root.Set("parents", parents.release());
+  }
+
+  if (!modified_date.is_null()) {
+    root.SetString("modifiedDate",
+                   google_apis::util::FormatTimeAsString(modified_date));
+  }
+
+  if (!last_viewed_by_me_date.is_null()) {
+    root.SetString("lastViewedByMeDate", google_apis::util::FormatTimeAsString(
+                                             last_viewed_by_me_date));
+  }
+
+  AttachProperties(properties, &root);
+  std::string json_string;
+  base::JSONWriter::Write(&root, &json_string);
+  return json_string;
+}
+
+}  // namespace
 
 Property::Property() : visibility_(VISIBILITY_PRIVATE) {
 }
@@ -160,7 +223,9 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
   if (!title_.empty())
     root.SetString("title", title_);
 
+  AttachProperties(properties_, &root);
   base::JSONWriter::Write(&root, upload_content);
+
   DVLOG(1) << "FilesInsert data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
@@ -232,28 +297,9 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
     root.Set("parents", parents_value);
   }
 
-  if (!properties_.empty()) {
-    base::ListValue* properties_value = new base::ListValue;
-    for (const auto& property : properties_) {
-      base::DictionaryValue* const property_value = new base::DictionaryValue;
-      std::string visibility_as_string;
-      switch (property.visibility()) {
-        case Property::VISIBILITY_PRIVATE:
-          visibility_as_string = "PRIVATE";
-          break;
-        case Property::VISIBILITY_PUBLIC:
-          visibility_as_string = "PUBLIC";
-          break;
-      }
-      property_value->SetString("visibility", visibility_as_string);
-      property_value->SetString("key", property.key());
-      property_value->SetString("value", property.value());
-      properties_value->Append(property_value);
-    }
-    root.Set("properties", properties_value);
-  }
-
+  AttachProperties(properties_, &root);
   base::JSONWriter::Write(&root, upload_content);
+
   DVLOG(1) << "FilesPatch data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
@@ -594,6 +640,7 @@ bool InitiateUploadNewFileRequest::GetContentData(
                    util::FormatTimeAsString(last_viewed_by_me_date_));
   }
 
+  AttachProperties(properties_, &root);
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "InitiateUploadNewFile data: " << *upload_content_type << ", ["
@@ -661,6 +708,7 @@ bool InitiateUploadExistingFileRequest::GetContentData(
                    util::FormatTimeAsString(last_viewed_by_me_date_));
   }
 
+  AttachProperties(properties_, &root);
   if (root.empty())
     return false;
 
@@ -744,19 +792,23 @@ MultipartUploadNewFileRequest::MultipartUploadNewFileRequest(
     const base::Time& modified_date,
     const base::Time& last_viewed_by_me_date,
     const base::FilePath& local_file_path,
+    const Properties& properties,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
-    : MultipartUploadRequestBase(sender,
-                                 title,
-                                 parent_resource_id,
-                                 content_type,
-                                 content_length,
-                                 modified_date,
-                                 last_viewed_by_me_date,
-                                 local_file_path,
-                                 callback,
-                                 progress_callback),
+    : MultipartUploadRequestBase(
+          sender,
+          CreateMultipartUploadMetadataJson(title,
+                                            parent_resource_id,
+                                            modified_date,
+                                            last_viewed_by_me_date,
+                                            properties),
+          content_type,
+          content_length,
+          local_file_path,
+          callback,
+          progress_callback),
+      has_modified_date_(!modified_date.is_null()),
       url_generator_(url_generator) {
 }
 
@@ -764,7 +816,7 @@ MultipartUploadNewFileRequest::~MultipartUploadNewFileRequest() {
 }
 
 GURL MultipartUploadNewFileRequest::GetURL() const {
-  return url_generator_.GetMultipartUploadNewFileUrl(has_modified_date());
+  return url_generator_.GetMultipartUploadNewFileUrl(has_modified_date_);
 }
 
 net::URLFetcher::RequestType MultipartUploadNewFileRequest::GetRequestType()
@@ -785,21 +837,25 @@ MultipartUploadExistingFileRequest::MultipartUploadExistingFileRequest(
     const base::Time& last_viewed_by_me_date,
     const base::FilePath& local_file_path,
     const std::string& etag,
+    const Properties& properties,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
-    : MultipartUploadRequestBase(sender,
-                                 title,
-                                 parent_resource_id,
-                                 content_type,
-                                 content_length,
-                                 modified_date,
-                                 last_viewed_by_me_date,
-                                 local_file_path,
-                                 callback,
-                                 progress_callback),
+    : MultipartUploadRequestBase(
+          sender,
+          CreateMultipartUploadMetadataJson(title,
+                                            parent_resource_id,
+                                            modified_date,
+                                            last_viewed_by_me_date,
+                                            properties),
+          content_type,
+          content_length,
+          local_file_path,
+          callback,
+          progress_callback),
       resource_id_(resource_id),
       etag_(etag),
+      has_modified_date_(!modified_date.is_null()),
       url_generator_(url_generator) {
 }
 
@@ -815,8 +871,8 @@ MultipartUploadExistingFileRequest::GetExtraRequestHeaders() const {
 }
 
 GURL MultipartUploadExistingFileRequest::GetURL() const {
-  return url_generator_.GetMultipartUploadExistingFileUrl(
-      resource_id_, has_modified_date());
+  return url_generator_.GetMultipartUploadExistingFileUrl(resource_id_,
+                                                          has_modified_date_);
 }
 
 net::URLFetcher::RequestType

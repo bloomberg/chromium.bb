@@ -105,40 +105,6 @@ bool IsSuccessfulResponseCode(int response_code) {
   return 200 <= response_code && response_code <= 299;
 }
 
-// Creates metadata JSON string for multipart uploading.
-// All the values are optional. If the value is empty or null, the value does
-// not appear in the metadata.
-std::string CreateMultipartUploadMetadataJson(
-    const std::string& title,
-    const std::string& parent_resource_id,
-    const base::Time& modified_date,
-    const base::Time& last_viewed_by_me_date) {
-  base::DictionaryValue root;
-  if (!title.empty())
-    root.SetString("title", title);
-
-  // Fill parent link.
-  if (!parent_resource_id.empty()) {
-    scoped_ptr<base::ListValue> parents(new base::ListValue);
-    parents->Append(
-        google_apis::util::CreateParentValue(parent_resource_id).release());
-    root.Set("parents", parents.release());
-  }
-
-  if (!modified_date.is_null())
-    root.SetString("modifiedDate",
-                   google_apis::util::FormatTimeAsString(modified_date));
-
-  if (!last_viewed_by_me_date.is_null()) {
-    root.SetString("lastViewedByMeDate", google_apis::util::FormatTimeAsString(
-                                             last_viewed_by_me_date));
-  }
-
-  std::string json_string;
-  base::JSONWriter::Write(&root, &json_string);
-  return json_string;
-}
-
 // Obtains the multipart body for the metadata string and file contents. If
 // predetermined_boundary is empty, the function generates the boundary string.
 bool GetMultipartContent(const std::string& predetermined_boundary,
@@ -787,23 +753,16 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
 
 MultipartUploadRequestBase::MultipartUploadRequestBase(
     RequestSender* sender,
-    const std::string& title,
-    const std::string& parent_resource_id,
+    const std::string& metadata_json,
     const std::string& content_type,
     int64 content_length,
-    const base::Time& modified_date,
-    const base::Time& last_viewed_by_me_date,
     const base::FilePath& local_file_path,
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
     : UrlFetchRequestBase(sender),
-      metadata_json_(CreateMultipartUploadMetadataJson(title,
-                                                       parent_resource_id,
-                                                       modified_date,
-                                                       last_viewed_by_me_date)),
+      metadata_json_(metadata_json),
       content_type_(content_type),
       local_path_(local_file_path),
-      has_modified_date_(!modified_date.is_null()),
       callback_(callback),
       progress_callback_(progress_callback),
       weak_ptr_factory_(this) {

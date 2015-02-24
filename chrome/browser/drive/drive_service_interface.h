@@ -51,6 +51,9 @@ class DriveServiceInterface {
     // last_viewed_by_me_date of the directory.
     // Pass the null Time if you are not interested in setting this property.
     base::Time last_viewed_by_me_date;
+
+    // List of properties for a new directory.
+    google_apis::drive::Properties properties;
   };
 
   // Optional parameters for InitiateUploadNewFile() and
@@ -66,6 +69,9 @@ class DriveServiceInterface {
     // last_viewed_by_me_date of the file.
     // Pass the null Time if you are not interested in setting this property.
     base::Time last_viewed_by_me_date;
+
+    // List of properties for a new file.
+    google_apis::drive::Properties properties;
   };
 
   // Optional parameters for InitiateUploadExistingFile() and
@@ -94,6 +100,10 @@ class DriveServiceInterface {
     // New last_viewed_by_me_date of the file.
     // Pass the null Time if you are not interested in setting this property.
     base::Time last_viewed_by_me_date;
+
+    // List of new properties for an existing file (it will be merged with
+    // existing properties).
+    google_apis::drive::Properties properties;
   };
 
   virtual ~DriveServiceInterface() {}

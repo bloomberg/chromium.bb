@@ -109,6 +109,20 @@ class DriveApiRequestsTest : public testing::Test {
     ResetExpectedResponse();
     received_bytes_ = 0;
     content_length_ = 0;
+
+    // Testing properties used by multiple test cases.
+    drive::Property private_property;
+    private_property.set_key("key1");
+    private_property.set_value("value1");
+
+    drive::Property public_property;
+    public_property.set_visibility(drive::Property::VISIBILITY_PUBLIC);
+    public_property.set_key("key2");
+    public_property.set_value("value2");
+
+    testing_properties_.clear();
+    testing_properties_.push_back(private_property);
+    testing_properties_.push_back(public_property);
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
@@ -139,6 +153,9 @@ class DriveApiRequestsTest : public testing::Test {
   // parameters like HTTP method (ex. some requests should use DELETE
   // instead of GET).
   net::test_server::HttpRequest http_request_;
+
+  // Testing properties used by multiple test cases.
+  drive::Properties testing_properties_;
 
  private:
   void ResetExpectedResponse() {
@@ -451,6 +468,7 @@ TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
     request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
     request->add_parent("root");
     request->set_title("new directory");
+    request->set_properties(testing_properties_);
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -461,12 +479,16 @@ TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_EQ("{\"lastViewedByMeDate\":\"2013-07-19T15:59:13.123Z\","
-            "\"mimeType\":\"application/vnd.google-apps.folder\","
-            "\"modifiedDate\":\"2012-07-19T15:59:13.123Z\","
-            "\"parents\":[{\"id\":\"root\"}],"
-            "\"title\":\"new directory\"}",
-            http_request_.content);
+  EXPECT_EQ(
+      "{\"lastViewedByMeDate\":\"2013-07-19T15:59:13.123Z\","
+      "\"mimeType\":\"application/vnd.google-apps.folder\","
+      "\"modifiedDate\":\"2012-07-19T15:59:13.123Z\","
+      "\"parents\":[{\"id\":\"root\"}],"
+      "\"properties\":["
+      "{\"key\":\"key1\",\"value\":\"value1\",\"visibility\":\"PRIVATE\"},"
+      "{\"key\":\"key2\",\"value\":\"value2\",\"visibility\":\"PUBLIC\"}],"
+      "\"title\":\"new directory\"}",
+      http_request_.content);
 
   scoped_ptr<FileResource> expected(
       FileResource::CreateFrom(
@@ -511,20 +533,7 @@ TEST_F(DriveApiRequestsTest, FilesPatchRequest) {
         base::Time::FromUTCExploded(kLastViewedByMeDate));
     request->add_parent("parent_resource_id");
 
-    drive::Property private_property;
-    private_property.set_key("key1");
-    private_property.set_value("value1");
-
-    drive::Property public_property;
-    public_property.set_visibility(drive::Property::VISIBILITY_PUBLIC);
-    public_property.set_key("key2");
-    public_property.set_value("value2");
-
-    drive::Properties properties;
-    properties.push_back(private_property);
-    properties.push_back(public_property);
-    request->set_properties(properties);
-
+    request->set_properties(testing_properties_);
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -964,6 +973,7 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
             test_util::CreateQuitCallback(
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request->set_properties(testing_properties_);
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -979,12 +989,16 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_EQ("{\"parents\":[{"
-            "\"id\":\"parent_resource_id\","
-            "\"kind\":\"drive#fileLink\""
-            "}],"
-            "\"title\":\"new file title\"}",
-            http_request_.content);
+  EXPECT_EQ(
+      "{\"parents\":[{"
+      "\"id\":\"parent_resource_id\","
+      "\"kind\":\"drive#fileLink\""
+      "}],"
+      "\"properties\":["
+      "{\"key\":\"key1\",\"value\":\"value1\",\"visibility\":\"PRIVATE\"},"
+      "{\"key\":\"key2\",\"value\":\"value2\",\"visibility\":\"PUBLIC\"}],"
+      "\"title\":\"new file title\"}",
+      http_request_.content);
 
   // Upload the content to the upload URL.
   UploadRangeResponse response;
@@ -1377,6 +1391,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
             test_util::CreateQuitCallback(
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request->set_properties(testing_properties_);
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -1392,7 +1407,11 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   EXPECT_EQ("/upload/drive/v2/files/resource_id?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_TRUE(http_request_.content.empty());
+  EXPECT_EQ(
+      "{\"properties\":["
+      "{\"key\":\"key1\",\"value\":\"value1\",\"visibility\":\"PRIVATE\"},"
+      "{\"key\":\"key2\",\"value\":\"value2\",\"visibility\":\"PUBLIC\"}]}",
+      http_request_.content);
 
   // Upload the content to the upload URL.
   UploadRangeResponse response;

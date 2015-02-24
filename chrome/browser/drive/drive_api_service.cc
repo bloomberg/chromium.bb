@@ -460,6 +460,7 @@ CancelCallback DriveAPIService::AddNewDirectory(
   request->set_modified_date(options.modified_date);
   request->add_parent(parent_resource_id);
   request->set_title(directory_title);
+  request->set_properties(options.properties);
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithRetry(request);
 }
@@ -564,6 +565,7 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
                                        callback);
   request->set_modified_date(options.modified_date);
   request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
+  request->set_properties(options.properties);
   return sender_->StartRequestWithRetry(request);
 }
 
@@ -588,6 +590,7 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
   request->set_title(options.title);
   request->set_modified_date(options.modified_date);
   request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
+  request->set_properties(options.properties);
   return sender_->StartRequestWithRetry(request);
 }
 
@@ -646,7 +649,8 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
       new google_apis::drive::MultipartUploadNewFileRequest(
           sender_.get(), title, parent_resource_id, content_type,
           content_length, options.modified_date, options.last_viewed_by_me_date,
-          local_file_path, url_generator_, callback, progress_callback));
+          local_file_path, options.properties, url_generator_, callback,
+          progress_callback));
 }
 
 CancelCallback DriveAPIService::MultipartUploadExistingFile(
@@ -665,7 +669,7 @@ CancelCallback DriveAPIService::MultipartUploadExistingFile(
           sender_.get(), options.title, resource_id, options.parent_resource_id,
           content_type, content_length, options.modified_date,
           options.last_viewed_by_me_date, local_file_path, options.etag,
-          url_generator_, callback, progress_callback));
+          options.properties, url_generator_, callback, progress_callback));
 }
 
 CancelCallback DriveAPIService::AuthorizeApp(

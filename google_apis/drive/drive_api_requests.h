@@ -269,6 +269,11 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
   const std::string& title() const { return title_; }
   void set_title(const std::string& title) { title_ = title; }
 
+  const Properties& properties() const { return properties_; }
+  void set_properties(const Properties& properties) {
+    properties_ = properties;
+  }
+
  protected:
   // Overridden from GetDataRequest.
   net::URLFetcher::RequestType GetRequestType() const override;
@@ -286,6 +291,7 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
   base::Time modified_date_;
   std::vector<std::string> parents_;
   std::string title_;
+  Properties properties_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesInsertRequest);
 };
@@ -795,6 +801,10 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
   void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
     last_viewed_by_me_date_ = last_viewed_by_me_date;
   }
+  const Properties& properties() const { return properties_; }
+  void set_properties(const Properties& properties) {
+    properties_ = properties;
+  }
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -810,6 +820,7 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
 
   base::Time modified_date_;
   base::Time last_viewed_by_me_date_;
+  Properties properties_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileRequest);
 };
@@ -851,6 +862,10 @@ class InitiateUploadExistingFileRequest : public InitiateUploadRequestBase {
   void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
     last_viewed_by_me_date_ = last_viewed_by_me_date;
   }
+  const Properties& properties() const { return properties_; }
+  void set_properties(const Properties& properties) {
+    properties_ = properties;
+  }
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -869,6 +884,7 @@ class InitiateUploadExistingFileRequest : public InitiateUploadRequestBase {
   std::string title_;
   base::Time modified_date_;
   base::Time last_viewed_by_me_date_;
+  Properties properties_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileRequest);
 };
@@ -953,6 +969,7 @@ class MultipartUploadNewFileRequest : public MultipartUploadRequestBase {
                                 const base::Time& modified_date,
                                 const base::Time& last_viewed_by_me_date,
                                 const base::FilePath& local_file_path,
+                                const Properties& properties,
                                 const DriveApiUrlGenerator& url_generator,
                                 const FileResourceCallback& callback,
                                 const ProgressCallback& progress_callback);
@@ -964,6 +981,7 @@ class MultipartUploadNewFileRequest : public MultipartUploadRequestBase {
   net::URLFetcher::RequestType GetRequestType() const override;
 
  private:
+  const bool has_modified_date_;
   const DriveApiUrlGenerator url_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(MultipartUploadNewFileRequest);
@@ -988,6 +1006,7 @@ class MultipartUploadExistingFileRequest : public MultipartUploadRequestBase {
                                      const base::Time& last_viewed_by_me_date,
                                      const base::FilePath& local_file_path,
                                      const std::string& etag,
+                                     const Properties& properties,
                                      const DriveApiUrlGenerator& url_generator,
                                      const FileResourceCallback& callback,
                                      const ProgressCallback& progress_callback);
@@ -1002,6 +1021,7 @@ class MultipartUploadExistingFileRequest : public MultipartUploadRequestBase {
  private:
   const std::string resource_id_;
   const std::string etag_;
+  const bool has_modified_date_;
   const DriveApiUrlGenerator url_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(MultipartUploadExistingFileRequest);
