@@ -69,7 +69,12 @@ input[type="week" i] {
     width: 10em;
 }
 
+input[type="datetime-local" i] {
+    width: 15em;
+}
+
 input::-webkit-date-and-time-value {
     margin: 1px 24px 1px 4px;
+    overflow: hidden;
     white-space: pre;
 }
