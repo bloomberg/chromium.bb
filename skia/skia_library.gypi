@@ -75,13 +75,14 @@
     '../third_party/skia/src/utils/debugger/SkObjectParser.cpp',
     '../third_party/skia/src/utils/debugger/SkObjectParser.h',
 
+    '../third_party/skia/include/core/SkFontStyle.h',
+
     '../third_party/skia/include/images/SkMovie.h',
     '../third_party/skia/include/images/SkPageFlipper.h',
 
     '../third_party/skia/include/ports/SkFontConfigInterface.h',
     '../third_party/skia/include/ports/SkFontMgr.h',
     '../third_party/skia/include/ports/SkFontMgr_indirect.h',
-    '../third_party/skia/include/ports/SkFontStyle.h',
     '../third_party/skia/include/ports/SkRemotableFontMgr.h',
     '../third_party/skia/include/ports/SkTypeface_win.h',
   ],
