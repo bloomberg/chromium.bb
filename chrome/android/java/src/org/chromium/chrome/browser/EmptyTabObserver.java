@@ -37,9 +37,6 @@ public class EmptyTabObserver implements TabObserver {
     public void onOverlayContentViewCoreRemoved(Tab tab, ContentViewCore content) { }
 
     @Override
-    public void onLoadUrl(Tab tab, String url, int loadType) { }
-
-    @Override
     public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) { }
 
     @Override

@@ -62,13 +62,6 @@ public interface TabObserver {
     void onOverlayContentViewCoreRemoved(Tab tab, ContentViewCore content);
 
     /**
-     * Use onLoadUrl(Tab, LoadUrlParams, int)
-     * TODO(yfriedman): Remove this
-     */
-    @Deprecated
-    void onLoadUrl(Tab tab, String url, int loadType);
-
-    /**
      * Called when loadUrl is triggered on a a {@link Tab}.
      * @param tab      The notifying {@link Tab}.
      * @param params   The params describe the page being loaded.
