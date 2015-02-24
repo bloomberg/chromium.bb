@@ -50,6 +50,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutFieldset.h"
+#include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutListMarker.h"
@@ -57,7 +58,6 @@
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTextFragment.h"
@@ -963,7 +963,7 @@ String AXRenderObject::stringValue() const
         return text();
 
     if (m_renderer->isFileUploadControl())
-        return toRenderFileUploadControl(m_renderer)->fileTextValue();
+        return toLayoutFileUploadControl(m_renderer)->fileTextValue();
 
     // Handle other HTML input elements that aren't text controls, like date and time
     // controls, by returning the string value, with the exception of checkboxes
@@ -1200,7 +1200,7 @@ String AXRenderObject::textUnderElement(TextUnderElementMode mode) const
         return String();
 
     if (m_renderer->isFileUploadControl())
-        return toRenderFileUploadControl(m_renderer)->buttonValue();
+        return toLayoutFileUploadControl(m_renderer)->buttonValue();
 
     if (m_renderer->isText())
         return toRenderText(m_renderer)->plainText();

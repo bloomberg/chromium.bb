@@ -37,6 +37,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutDetailsMarker.h"
+#include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
@@ -52,7 +53,6 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
-#include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/HexNumber.h"
@@ -222,7 +222,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
 
     if (!(o.isText() && !o.isBR())) {
         if (o.isFileUploadControl())
-            ts << " " << quoteAndEscapeNonPrintables(toRenderFileUploadControl(&o)->fileTextValue());
+            ts << " " << quoteAndEscapeNonPrintables(toLayoutFileUploadControl(&o)->fileTextValue());
 
         if (o.parent()) {
             Color color = o.resolveColor(CSSPropertyColor);

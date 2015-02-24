@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/FileUploadControlPainter.h"
 
+#include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderButton.h"
-#include "core/rendering/RenderFileUploadControl.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
@@ -45,7 +45,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
             return;
 
         int buttonWidth = (button && button->layoutBox()) ? button->layoutBox()->pixelSnappedWidth() : 0;
-        LayoutUnit buttonAndSpacingWidth = buttonWidth + RenderFileUploadControl::afterButtonSpacing;
+        LayoutUnit buttonAndSpacingWidth = buttonWidth + LayoutFileUploadControl::afterButtonSpacing;
         float textWidth = font.width(textRun);
         LayoutUnit textX;
         if (m_renderFileUploadControl.style()->isLeftToRightDirection())

@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef RenderFileUploadControl_h
-#define RenderFileUploadControl_h
+#ifndef LayoutFileUploadControl_h
+#define LayoutFileUploadControl_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
@@ -27,14 +27,14 @@ namespace blink {
 
 class HTMLInputElement;
 
-// Each RenderFileUploadControl contains a RenderButton (for opening the file chooser), and
+// Each LayoutFileUploadControl contains a RenderButton (for opening the file chooser), and
 // sufficient space to draw a file icon and filename. The RenderButton has a shadow node
 // associated with it to receive click/hover events.
 
-class RenderFileUploadControl final : public RenderBlockFlow {
+class LayoutFileUploadControl final : public RenderBlockFlow {
 public:
-    RenderFileUploadControl(HTMLInputElement*);
-    virtual ~RenderFileUploadControl();
+    LayoutFileUploadControl(HTMLInputElement*);
+    virtual ~LayoutFileUploadControl();
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFileUploadControl || RenderBlockFlow::isOfType(type); }
 
@@ -47,7 +47,7 @@ public:
     static const int afterButtonSpacing = 4;
 
 private:
-    virtual const char* renderName() const override { return "RenderFileUploadControl"; }
+    virtual const char* renderName() const override { return "LayoutFileUploadControl"; }
 
     virtual void updateFromElement() override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
@@ -61,8 +61,8 @@ private:
     bool m_canReceiveDroppedFiles;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFileUploadControl, isFileUploadControl());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, isFileUploadControl());
 
 } // namespace blink
 
-#endif // RenderFileUploadControl_h
+#endif // LayoutFileUploadControl_h

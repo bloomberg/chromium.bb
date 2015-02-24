@@ -1,5 +1,5 @@
 
-This can cause a crash if AccessibilityRenderObject assumes that a file input element's renderer must be type RenderFileUploadControl, but in corner cases (display:run-in) this may not be true.
+This can cause a crash if AccessibilityRenderObject assumes that a file input element's renderer must be type LayoutFileUploadControl, but in corner cases (display:run-in) this may not be true.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

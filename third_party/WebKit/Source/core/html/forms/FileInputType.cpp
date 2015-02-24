@@ -32,9 +32,9 @@
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/layout/LayoutFileUploadControl.h"
 #include "core/page/Chrome.h"
 #include "core/page/DragData.h"
-#include "core/rendering/RenderFileUploadControl.h"
 #include "platform/FileMetadata.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -168,7 +168,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
 
 LayoutObject* FileInputType::createRenderer(const LayoutStyle&) const
 {
-    return new RenderFileUploadControl(&element());
+    return new LayoutFileUploadControl(&element());
 }
 
 bool FileInputType::canSetStringValue() const

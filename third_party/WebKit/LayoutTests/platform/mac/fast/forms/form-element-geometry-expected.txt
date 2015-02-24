@@ -93,7 +93,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               RenderBlock {DIV} at (1,1) size 38x61 [border: (2px solid #0000FF)]
             LayoutTableCell {TD} at (125,2) size 243x24 [r=0 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 241x22 [border: (2px solid #0000FF)]
-                RenderFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
+                LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
                   RenderButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 61.56x13
                       RenderText {#text} at (0,0) size 62x13
@@ -171,7 +171,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTextControl {INPUT} at (27.98,18) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (100,18) size 5x18
           text run at (100,18) width 5: " "
-        RenderFileUploadControl {INPUT} at (104.98,19) size 237x18 "No file chosen"
+        LayoutFileUploadControl {INPUT} at (104.98,19) size 237x18 "No file chosen"
           RenderButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
             RenderBlock (anonymous) at (8,2) size 61.56x13
               RenderText {#text} at (0,0) size 62x13

@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderFileUploadControl.h"
+#include "core/layout/LayoutFileUploadControl.h"
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
@@ -45,17 +45,17 @@ using namespace HTMLNames;
 
 const int defaultWidthNumChars = 34;
 
-RenderFileUploadControl::RenderFileUploadControl(HTMLInputElement* input)
+LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
     : RenderBlockFlow(input)
     , m_canReceiveDroppedFiles(input->canReceiveDroppedFiles())
 {
 }
 
-RenderFileUploadControl::~RenderFileUploadControl()
+LayoutFileUploadControl::~LayoutFileUploadControl()
 {
 }
 
-void RenderFileUploadControl::updateFromElement()
+void LayoutFileUploadControl::updateFromElement()
 {
     HTMLInputElement* input = toHTMLInputElement(node());
     ASSERT(input->type() == InputTypeNames::file);
@@ -76,18 +76,18 @@ void RenderFileUploadControl::updateFromElement()
         setShouldDoFullPaintInvalidation();
 }
 
-int RenderFileUploadControl::maxFilenameWidth() const
+int LayoutFileUploadControl::maxFilenameWidth() const
 {
     int uploadButtonWidth = (uploadButton() && uploadButton()->layoutBox()) ? uploadButton()->layoutBox()->pixelSnappedWidth() : 0;
     return std::max(0, contentBoxRect().pixelSnappedWidth() - uploadButtonWidth - afterButtonSpacing);
 }
 
-void RenderFileUploadControl::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFileUploadControl::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     FileUploadControlPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-void RenderFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+void LayoutFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     // Figure out how big the filename space needs to be for a given number of characters
     // (using "0" as the nominal character).
@@ -95,21 +95,22 @@ void RenderFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
     const String characterAsString = String(&character, 1);
     const Font& font = style()->font();
     // FIXME: Remove the need for this const_cast by making constructTextRun take a const LayoutObject*.
-    RenderFileUploadControl* renderer = const_cast<RenderFileUploadControl*>(this);
+    LayoutFileUploadControl* renderer = const_cast<LayoutFileUploadControl*>(this);
     float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(renderer, font, characterAsString, styleRef(), TextRun::AllowTrailingExpansion));
 
     const String label = toHTMLInputElement(node())->locale().queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
     float defaultLabelWidth = font.width(constructTextRun(renderer, font, label, styleRef(), TextRun::AllowTrailingExpansion));
-    if (HTMLInputElement* button = uploadButton())
+    if (HTMLInputElement* button = uploadButton()) {
         if (LayoutObject* buttonRenderer = button->renderer())
             defaultLabelWidth += buttonRenderer->maxPreferredLogicalWidth() + afterButtonSpacing;
+    }
     maxLogicalWidth = static_cast<int>(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));
 
     if (!style()->width().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }
 
-void RenderFileUploadControl::computePreferredLogicalWidths()
+void LayoutFileUploadControl::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
 
@@ -139,12 +140,12 @@ void RenderFileUploadControl::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-PositionWithAffinity RenderFileUploadControl::positionForPoint(const LayoutPoint&)
+PositionWithAffinity LayoutFileUploadControl::positionForPoint(const LayoutPoint&)
 {
     return PositionWithAffinity();
 }
 
-HTMLInputElement* RenderFileUploadControl::uploadButton() const
+HTMLInputElement* LayoutFileUploadControl::uploadButton() const
 {
     // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
     HTMLInputElement* input = toHTMLInputElement(node());
@@ -152,7 +153,7 @@ HTMLInputElement* RenderFileUploadControl::uploadButton() const
     return isHTMLInputElement(buttonNode) ? toHTMLInputElement(buttonNode) : 0;
 }
 
-String RenderFileUploadControl::buttonValue()
+String LayoutFileUploadControl::buttonValue()
 {
     if (HTMLInputElement* button = uploadButton())
         return button->value();
@@ -160,7 +161,7 @@ String RenderFileUploadControl::buttonValue()
     return String();
 }
 
-String RenderFileUploadControl::fileTextValue() const
+String LayoutFileUploadControl::fileTextValue() const
 {
     HTMLInputElement* input = toHTMLInputElement(node());
     ASSERT(input->files());

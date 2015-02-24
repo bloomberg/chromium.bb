@@ -9,16 +9,16 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderFileUploadControl;
+class LayoutFileUploadControl;
 
 class FileUploadControlPainter {
 public:
-    FileUploadControlPainter(RenderFileUploadControl& renderFileUploadControl) : m_renderFileUploadControl(renderFileUploadControl) { }
+    FileUploadControlPainter(LayoutFileUploadControl& renderFileUploadControl) : m_renderFileUploadControl(renderFileUploadControl) { }
 
     void paintObject(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderFileUploadControl& m_renderFileUploadControl;
+    LayoutFileUploadControl& m_renderFileUploadControl;
 };
 
 } // namespace blink
