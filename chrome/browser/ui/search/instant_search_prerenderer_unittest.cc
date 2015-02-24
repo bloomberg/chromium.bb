@@ -484,6 +484,18 @@ TEST_F(TestUsePrerenderPage, ExtractSearchTermsAndUsePrerenderPage) {
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
 
+TEST_F(TestUsePrerenderPage, DoNotUsePrerenderPage) {
+  PrerenderSearchQuery(ASCIIToUTF16("foo"));
+
+  // Do not use prerendered page for renderer initiated search request.
+  GURL url("https://www.google.com/alt#quux=foo");
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_LINK,
+                                            true  /* is_renderer_initiated */));
+  EXPECT_NE(GetPrerenderURL(), GetActiveWebContents()->GetURL());
+  EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
+}
+
 TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   PrerenderSearchQuery(ASCIIToUTF16("foo"));
   EXPECT_TRUE(browser()->instant_controller());
