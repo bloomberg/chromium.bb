@@ -113,6 +113,7 @@ public:
     String nameForAutofill() const;
 
     virtual void setFocus(bool flag) override;
+    virtual void copyNonAttributePropertiesFromElement(const Element&) override;
 
 #if !ENABLE(OILPAN)
     using Node::ref;

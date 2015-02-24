@@ -634,4 +634,10 @@ void HTMLFormControlElement::setFocus(bool flag)
         dispatchFormControlChangeEvent();
 }
 
+void HTMLFormControlElement::copyNonAttributePropertiesFromElement(const Element& source)
+{
+    HTMLElement::copyNonAttributePropertiesFromElement(source);
+    setNeedsValidityCheck();
+}
+
 } // namespace blink
