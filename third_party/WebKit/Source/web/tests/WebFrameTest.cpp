@@ -1317,7 +1317,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentsMode)
     EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
     EXPECT_EQ(viewportWidth, compositor->containerLayer()->size().width());
-    EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
+    EXPECT_EQ(viewportHeight, compositor->containerLayer()->size().height());
 
     LocalFrame* frame = webViewHelper.webViewImpl()->mainFrameImpl()->frame();
     PinchViewport& pinchViewport = frame->page()->frameHost().pinchViewport();
@@ -1358,6 +1358,49 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeight)
 
     webViewHelper.webView()->settings()->setForceZeroLayoutHeight(false);
     EXPECT_LE(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
+}
+
+TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged)
+{
+    // this unit test is an attempt to target a real world case where an app could
+    // 1. call resize(width, 0) and setForceZeroLayoutHeight(true)
+    // 2. load content (hoping that the viewport height would increase
+    // as more content is added)
+    // 3. fail to register touch events aimed at the loaded content
+    // because the layout is only updated if either width or height is changed
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("button.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+
+    webViewHelper.initializeAndLoad(m_baseURL + "button.html", true, 0, &client, configurePinchVirtualViewport);
+    // set view height to zero so that if the height of the view is not
+    // successfully updated during later resizes touch events will fail
+    // (as in not hit content included in the view)
+    webViewHelper.webView()->resize(WebSize(viewportWidth, 0));
+    webViewHelper.webView()->layout();
+
+    webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    IntPoint hitPoint = IntPoint(30, 30); // button size is 100x100
+
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("tap_button");
+
+    ASSERT_NE(nullptr, element);
+    EXPECT_EQ(String("oldValue"), element->innerText());
+
+    PlatformGestureEvent gestureEvent(PlatformEvent::Type::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, false, false, false, false, 0.0, 0.0, 0.0, 0.0, false);
+    webViewHelper.webViewImpl()->mainFrameImpl()->frame()->eventHandler().handleGestureEvent(gestureEvent);
+    // when pressed, the button changes its own text to "updatedValue"
+    EXPECT_EQ(String("updatedValue"), element->innerText());
 }
 
 TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)

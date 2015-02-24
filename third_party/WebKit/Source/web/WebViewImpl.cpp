@@ -1696,6 +1696,11 @@ void WebViewImpl::performResize()
     if (pinchVirtualViewportEnabled())
         page()->frameHost().pinchViewport().setSize(m_size);
 
+    if (mainFrameImpl()->frameView()) {
+        if (!mainFrameImpl()->frameView()->needsLayout())
+            postLayoutResize(mainFrameImpl());
+    }
+
     // When device emulation is enabled, device size values may change - they are
     // usually set equal to the view size. These values are not considered viewport-dependent
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
@@ -4017,6 +4022,18 @@ void WebViewImpl::resumeTreeViewCommits()
     }
 }
 
+void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)
+{
+    FrameView* view = webframe->frame()->view();
+    if (pinchVirtualViewportEnabled()) {
+        if (webframe == mainFrame()) {
+            view->resize(mainFrameSize());
+        } else {
+            view->resize(webframe->frameView()->layoutSize());
+        }
+    }
+}
+
 void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 {
     if (!m_client || !webframe->frame()->isLocalRoot())
@@ -4044,13 +4061,7 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 
     FrameView* view = webframe->frame()->view();
 
-    if (pinchVirtualViewportEnabled()) {
-        if (webframe == mainFrame()) {
-            view->resize(mainFrameSize());
-        } else {
-            view->resize(webframe->frameView()->layoutSize());
-        }
-    }
+    postLayoutResize(webframe);
 
     // Relayout immediately to avoid violating the rule that needsLayout()
     // isn't set at the end of a layout.
