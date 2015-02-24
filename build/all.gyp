@@ -620,6 +620,10 @@
             }],
           ],
         },
+      ]},
+    ], # OS!="ios" and OS!="android"
+    ['OS!="iOS"', {
+      'targets': [
         {
           'target_name': 'blink_tests',
           'type': 'none',
