@@ -1529,7 +1529,7 @@ crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebasel
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.4-1.html [ NeedsManualRebaseline ]
 
-crbug.com/435867 [ Linux Debug ] webaudio/scriptprocessornode-detached-no-crash.html [ Pass Crash ]
+crbug.com/435867 [ Linux Win ] webaudio/scriptprocessornode-detached-no-crash.html [ Pass Crash ]
 
 # Timing out on WinXP after r183502
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pass Timeout ]
