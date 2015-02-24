@@ -1726,6 +1726,8 @@ crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
 
+crbug.com/461238 [ Linux Win Debug ] editing/execCommand/delete-non-editable-range-crash.html [ Pass Timeout ]
+
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/458420 [ Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
