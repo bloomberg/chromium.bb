@@ -1345,11 +1345,23 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   EXPECT_EQ(0, on_after_user_action_);
 
   input_method_->Clear();
+
+  // Changing the Textfield to readonly shouldn't change the input client, since
+  // it's still required for selections and clipboard copy.
+  ui::TextInputClient* text_input_client = textfield_->GetTextInputClient();
+  EXPECT_TRUE(text_input_client);
+  EXPECT_NE(ui::TEXT_INPUT_TYPE_NONE, text_input_client->GetTextInputType());
   textfield_->SetReadOnly(true);
   EXPECT_TRUE(input_method_->text_input_type_changed());
-  EXPECT_FALSE(textfield_->GetTextInputClient());
+  EXPECT_EQ(text_input_client, textfield_->GetTextInputClient());
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, text_input_client->GetTextInputType());
 
+  input_method_->Clear();
   textfield_->SetReadOnly(false);
+  EXPECT_TRUE(input_method_->text_input_type_changed());
+  EXPECT_EQ(text_input_client, textfield_->GetTextInputClient());
+  EXPECT_NE(ui::TEXT_INPUT_TYPE_NONE, text_input_client->GetTextInputType());
+
   input_method_->Clear();
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_TRUE(input_method_->text_input_type_changed());

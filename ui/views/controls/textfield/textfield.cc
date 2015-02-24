@@ -706,7 +706,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 ui::TextInputClient* Textfield::GetTextInputClient() {
-  return read_only_ ? NULL : this;
+  return this;
 }
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
