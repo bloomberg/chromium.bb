@@ -231,6 +231,8 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     std::string enterprise_domain(connector->GetEnterpriseDomain());
     if (!enterprise_domain.empty())
       params.SetString("enterpriseDomain", enterprise_domain);
+    params.SetString("clientId",
+                     GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     if (!command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
       command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
                                       kMinuteMaidPath);
@@ -381,8 +383,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());
-  Delegate()->SetDisplayEmail(gaia::SanitizeEmail(email));
-  UserContext user_context(email);
+  const std::string sanitized_email = gaia::SanitizeEmail(email);
+  Delegate()->SetDisplayEmail(sanitized_email);
+  UserContext user_context(sanitized_email);
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);

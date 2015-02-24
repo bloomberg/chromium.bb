@@ -23,6 +23,8 @@ cr.define('cr.login', function() {
   var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   var SAML_HEADER = 'google-accounts-saml';
   var LOCATION_HEADER = 'location';
+  var SET_COOKIE_HEADER = 'set-cookie';
+  var OAUTH_CODE_COOKIE = 'oauth_code';
   var SERVICE_ID = 'chromeoslogin';
 
   /**
@@ -63,7 +65,8 @@ cr.define('cr.login', function() {
     'service',       // Name of Gaia service;
     'continueUrl',   // Continue url to use;
     'frameUrl',      // Initial frame URL to use. If empty defaults to gaiaUrl.
-    'constrained'    // Whether the extension is loaded in a constrained window;
+    'constrained',   // Whether the extension is loaded in a constrained window;
+    'clientId'       // Chrome client id;
   ];
 
   /**
@@ -90,6 +93,7 @@ cr.define('cr.login', function() {
     this.initialFrameUrl_ = null;
     this.reloadUrl_ = null;
     this.trusted_ = true;
+    this.oauth_code_ = null;
 
     this.webview_.addEventListener('droplink', this.onDropLink_.bind(this));
     this.webview_.addEventListener(
@@ -106,7 +110,7 @@ cr.define('cr.login', function() {
         ['responseHeaders']);
     this.webview_.request.onHeadersReceived.addListener(
         this.onHeadersReceived_.bind(this),
-        {urls: ['<all_urls>'], types: ['main_frame']},
+        {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
         ['responseHeaders']);
     window.addEventListener(
         'message', this.onMessageFromWebview_.bind(this), false);
@@ -132,6 +136,7 @@ cr.define('cr.login', function() {
         this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
         this.continueUrl_;
     this.isConstrainedWindow_ = data.constrained == '1';
+    this.isMinuteMaidChromeOS = data.isMinuteMaidChromeOS;
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -161,10 +166,15 @@ cr.define('cr.login', function() {
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
 
-    if (data.enterpriseDomain)
-      url = appendParam(url, 'managedomain', data.enterpriseDomain);
-    url = appendParam(url, 'continue', this.continueUrl_);
-    url = appendParam(url, 'service', data.service || SERVICE_ID);
+    if (this.isMinuteMaidChromeOS) {
+      if (data.clientId)
+        url = appendParam(url, 'client_id', data.clientId);
+      if (data.enterpriseDomain)
+        url = appendParam(url, 'managedomain', data.enterpriseDomain);
+    } else {
+      url = appendParam(url, 'continue', this.continueUrl_);
+      url = appendParam(url, 'service', data.service || SERVICE_ID);
+    }
     if (data.hl)
       url = appendParam(url, 'hl', data.hl);
     if (data.email)
@@ -290,6 +300,12 @@ cr.define('cr.login', function() {
         // URL will contain a source=3 field.
         var location = decodeURIComponent(header.value);
         this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
+      } else if (this.isMinuteMaidChromeOS && headerName == SET_COOKIE_HEADER) {
+        var headerValue = header.value;
+        if (headerValue.indexOf(OAUTH_CODE_COOKIE + '=', 0) == 0) {
+          this.oauth_code_ =
+              headerValue.substring(OAUTH_CODE_COOKIE.length + 1).split(';')[0];
+        }
       }
     }
   };
@@ -329,6 +345,7 @@ cr.define('cr.login', function() {
                         {detail: {email: this.email_ || '',
                                   gaiaId: this.gaiaId_ || '',
                                   password: this.password_ || '',
+                                  authCode: this.oauth_code_,
                                   usingSAML: this.authFlow_ == AuthFlow.SAML,
                                   chooseWhatToSync: this.chooseWhatToSync_,
                                   skipForNow: this.skipForNow_,
@@ -384,11 +401,8 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadCommit_ = function(e) {
-    var currentUrl = e.url;
-
-    // TODO(rsorokin): temporary solution. Need to wait for oauth_code in
-    // headers.
-    if (currentUrl.indexOf('#close', 0) != -1) {
+    // TODO(rsorokin): Investigate whether this breaks SAML.
+    if (this.oauth_code_) {
       this.skipForNow_ = true;
       this.onAuthCompleted_();
     }

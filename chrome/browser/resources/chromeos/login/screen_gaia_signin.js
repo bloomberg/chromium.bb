@@ -318,6 +318,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         if (data.enterpriseDomain)
           params.enterpriseDomain = data.enterpriseDomain;
         data.useEmbedded = false;
+        params.isMinuteMaidChromeOS = true;
         $('login-header-bar').showGuestButton = true;
       }
 
