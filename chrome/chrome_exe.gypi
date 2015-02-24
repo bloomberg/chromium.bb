@@ -133,14 +133,15 @@
                 }],
               ],
               'inputs': [
-                'tools/build/linux/sed.sh',
+                'tools/build/linux/sed.py',
                 'app/resources/manpage.1.in',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/chrome.1',
               ],
               'action': [
-                'tools/build/linux/sed.sh',
+                'python',
+                'tools/build/linux/sed.py',
                 'app/resources/manpage.1.in',
                 '<@(_outputs)',
                 '-e', 's/@@NAME@@/<(name)/',

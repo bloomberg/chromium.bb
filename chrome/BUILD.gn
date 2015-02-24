@@ -92,8 +92,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     }
 
     if (is_linux) {
-      # TODO(GYP) manpage action
-
       sources += [
         "app/chrome_dll_resource.h",
         "app/chrome_main.cc",
@@ -106,6 +104,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         # Chromium functionality directly into the executable.
         ":browser_dependencies",
         ":child_dependencies",
+        ":manpage",
         "//base/allocator",
 
         # Needed to use the master_preferences functions
@@ -696,6 +695,39 @@ if (is_android) {
       "//chrome/utility",
       "//components/enhanced_bookmarks",
       "//content/public/app:browser",
+    ]
+  }
+}
+
+if (is_linux) {
+  action("manpage") {
+    if (is_chrome_branded) {
+      name = "Google Chrome"
+      filename = "google-chrome"
+      confdir = "google-chrome"
+    } else {
+      name = "Chromium"
+      filename = "chromium-browser"
+      confdir = "chromium"
+    }
+
+    script = "//chrome/tools/build/linux/sed.py"
+    infile = "app/resources/manpage.1.in"
+    inputs = [
+      infile,
+    ]
+
+    outfile = "$root_out_dir/chrome.1"
+    outputs = [
+      outfile,
+    ]
+
+    args = [
+      rebase_path(infile, root_build_dir),
+      rebase_path(outfile, root_build_dir),
+      "-e s/@@NAME@@/$name/",
+      "-e s/@@FILENAME@@/$filename/",
+      "-e s/@@CONFDIR@@/$confdir/",
     ]
   }
 }
