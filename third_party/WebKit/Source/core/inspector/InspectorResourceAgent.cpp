@@ -764,7 +764,7 @@ void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, 
     RefPtr<TypeBuilder::Network::WebSocketFrame> frameObject = TypeBuilder::Network::WebSocketFrame::create()
         .setOpcode(opCode)
         .setMask(masked)
-        .setPayloadData(String(payload, payloadLength));
+        .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength));
     m_frontend->webSocketFrameReceived(IdentifiersFactory::requestId(identifier), currentTime(), frameObject);
 }
 
@@ -773,7 +773,7 @@ void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, int
     RefPtr<TypeBuilder::Network::WebSocketFrame> frameObject = TypeBuilder::Network::WebSocketFrame::create()
         .setOpcode(opCode)
         .setMask(masked)
-        .setPayloadData(String(payload, payloadLength));
+        .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength));
     m_frontend->webSocketFrameSent(IdentifiersFactory::requestId(identifier), currentTime(), frameObject);
 }
 
