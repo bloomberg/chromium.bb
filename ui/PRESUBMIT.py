@@ -22,11 +22,22 @@ def CheckScopedPtr(input_api, output_api,
   for f in input_api.AffectedSourceFiles(source_file_filter):
     for line_number, line in f.ChangedContents():
       # Disallow:
+      # return scoped_ptr<T>(foo);
+      # bar = scoped_ptr<T>(foo);
+      # But allow:
+      # return scoped_ptr<T[]>(foo);
+      # bar = scoped_ptr<T[]>(foo);
+      if input_api.re.search(
+              r'(=|\breturn)\s*scoped_ptr<[^\[\]>]+>\([^)]+\)', line):
+        errors.append(output_api.PresubmitError(
+            ('%s:%d uses explicit scoped_ptr constructor. ' +
+             'Use make_scoped_ptr() instead.') % (f.LocalPath(), line_number)))
+      # Disallow:
       # scoped_ptr<T>()
       if input_api.re.search(r'\bscoped_ptr<.*?>\(\)', line):
         errors.append(output_api.PresubmitError(
-          '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
-          (f.LocalPath(), line_number)))
+            '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
+            (f.LocalPath(), line_number)))
   return errors
 
 
