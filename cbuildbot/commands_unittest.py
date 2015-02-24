@@ -210,10 +210,22 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
         commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
         'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
         '--board', 'test-board'
-    ], error_code_ok=True)
+    ], capture_output=True)
 
   def testRunHWTestSuiteMaximal(self):
     """Test RunHWTestSuite with all arguments."""
+
+    job_id_output = '''
+Autotest instance: cautotest
+02-23-2015 [06:26:51] Submitted create_suite_job rpc
+02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
+@@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
+The suite job has another 3:09:50.012887 till timeout.
+The suite job has another 2:39:39.789250 till timeout.
+    '''
+
+    self.rc.SetDefaultCmdResult(returncode=12, output=job_id_output)
+    self.rc.AddCmdResult(partial_mock.In('-m'), returncode=0)
     commands.RunHWTestSuite(self._build, self._suite, self._board,
                             self._pool, self._num, self._file_bugs,
                             self._wait_for_results, self._priority,
@@ -228,7 +240,16 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
         '--priority', 'test-priority', '--timeout_mins', '23',
         '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
         '--suite_min_duts', '2',
-    ], error_code_ok=True)
+    ], capture_output=True)
+    self.assertCommandCalled([
+        commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
+        'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
+        '--board', 'test-board', '--pool', 'test-pool', '--num', '42',
+        '--file_bugs', 'True', '--no_wait', 'True',
+        '--priority', 'test-priority', '--timeout_mins', '23',
+        '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
+        '--suite_min_duts', '2', '-m', '26960110'
+    ])
 
   def testRunHWTestSuiteFailure(self):
     """Test RunHWTestSuite when ERROR is returned."""
