@@ -25,13 +25,13 @@ PermissionInfobarDelegate::PermissionInfobarDelegate(
       type_(type) {
 }
 
-void PermissionInfobarDelegate::InfoBarDismissed() {
-  SetPermission(false, false);
-}
-
 infobars::InfoBarDelegate::Type
 PermissionInfobarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+void PermissionInfobarDelegate::InfoBarDismissed() {
+  SetPermission(false, false);
 }
 
 base::string16 PermissionInfobarDelegate::GetButtonLabel(

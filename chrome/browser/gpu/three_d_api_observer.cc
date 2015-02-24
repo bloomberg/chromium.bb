@@ -38,8 +38,9 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ThreeDAPIInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
   int GetIconID() const override;
+  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
+  ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate() override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
@@ -85,17 +86,22 @@ ThreeDAPIInfoBarDelegate::~ThreeDAPIInfoBarDelegate() {
   }
 }
 
+int ThreeDAPIInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_3D_BLOCKED;
+}
+
 bool ThreeDAPIInfoBarDelegate::EqualsDelegate(
     infobars::InfoBarDelegate* delegate) const {
   // For the time being, if a given web page is actually using both
   // WebGL and Pepper 3D and both APIs are blocked, just leave the
   // first infobar up. If the user selects "try again", both APIs will
   // be unblocked and the web page reload will succeed.
-  return delegate->GetIconID() == GetIconID();
+  return !!delegate->AsThreeDAPIInfoBarDelegate();
 }
 
-int ThreeDAPIInfoBarDelegate::GetIconID() const {
-  return IDR_INFOBAR_3D_BLOCKED;
+ThreeDAPIInfoBarDelegate*
+    ThreeDAPIInfoBarDelegate::AsThreeDAPIInfoBarDelegate() {
+  return this;
 }
 
 base::string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {

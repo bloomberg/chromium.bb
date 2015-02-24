@@ -42,8 +42,8 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   ~ThemeInstalledInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
   Type GetInfoBarType() const override;
+  int GetIconID() const override;
   ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate() override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;

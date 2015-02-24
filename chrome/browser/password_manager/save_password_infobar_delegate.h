@@ -44,19 +44,16 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   ~SavePasswordInfoBarDelegate() override;
 
-  // InfoBarDelegate
-  bool ShouldExpire(const NavigationDetails& details) const override;
-
-  // ConfirmInfoBarDelegate
-  int GetIconID() const override;
+  // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
+  InfoBarAutomationType GetInfoBarAutomationType() const override;
+  int GetIconID() const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
+  void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  void InfoBarDismissed() override;
-
-  InfoBarAutomationType GetInfoBarAutomationType() const override;
 
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.

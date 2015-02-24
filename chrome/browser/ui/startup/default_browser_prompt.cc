@@ -74,12 +74,12 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   int GetIconID() const override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool OKButtonTriggersUACPrompt() const override;
   bool Accept() override;
   bool Cancel() override;
-  bool ShouldExpireInternal(const NavigationDetails& details) const override;
 
   // The prefs to use.
   PrefService* prefs_;
@@ -136,6 +136,11 @@ int DefaultBrowserInfoBarDelegate::GetIconID() const {
   return IDR_PRODUCT_LOGO_32;
 }
 
+bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
+    const NavigationDetails& details) const {
+  return should_expire_;
+}
+
 base::string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
 }
@@ -167,11 +172,6 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   // User clicked "Don't ask me again", remember that.
   prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
   return true;
-}
-
-bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  return should_expire_;
 }
 
 void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {

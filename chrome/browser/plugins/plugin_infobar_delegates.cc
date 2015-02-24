@@ -135,8 +135,8 @@ OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
 }
 
-std::string OutdatedPluginInfoBarDelegate::GetLearnMoreURL() const {
-  return chrome::kOutdatedPluginLearnMoreURL;
+void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
+  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
@@ -172,14 +172,14 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
   return true;
 }
 
-void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
-  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
-}
-
 bool OutdatedPluginInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
   return PluginInfoBarDelegate::LinkClicked(disposition);
+}
+
+std::string OutdatedPluginInfoBarDelegate::GetLearnMoreURL() const {
+  return chrome::kOutdatedPluginLearnMoreURL;
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadStarted() {

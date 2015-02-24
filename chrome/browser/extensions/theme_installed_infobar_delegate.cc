@@ -103,15 +103,15 @@ ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   theme_service_->OnInfobarDestroyed();
 }
 
+infobars::InfoBarDelegate::Type
+ThemeInstalledInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
 int ThemeInstalledInfoBarDelegate::GetIconID() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.
   return IDR_INFOBAR_THEME;
-}
-
-infobars::InfoBarDelegate::Type ThemeInstalledInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
 }
 
 ThemeInstalledInfoBarDelegate*

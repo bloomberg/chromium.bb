@@ -52,11 +52,11 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate
   int GetIconID() const override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  bool ShouldExpireInternal(const NavigationDetails& details) const override;
 
   // The prefs to use.
   PrefService* prefs_;  // weak
@@ -108,6 +108,11 @@ int KeystonePromotionInfoBarDelegate::GetIconID() const {
   return IDR_PRODUCT_LOGO_32;
 }
 
+bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
+    const NavigationDetails& details) const {
+  return can_expire_;
+}
+
 base::string16 KeystonePromotionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_PROMOTE_INFOBAR_TEXT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
@@ -127,11 +132,6 @@ bool KeystonePromotionInfoBarDelegate::Accept() {
 bool KeystonePromotionInfoBarDelegate::Cancel() {
   prefs_->SetBoolean(prefs::kShowUpdatePromotionInfoBar, false);
   return true;
-}
-
-bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  return can_expire_;
 }
 
 }  // namespace

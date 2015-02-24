@@ -56,9 +56,9 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
  private:
   // ConfirmInfoBarDelegate:
-  void InfoBarDismissed() override;
-  int GetIconID() const override;
   Type GetInfoBarType() const override;
+  int GetIconID() const override;
+  void InfoBarDismissed() override;
   AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate() override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;

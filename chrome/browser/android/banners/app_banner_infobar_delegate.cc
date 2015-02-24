@@ -70,6 +70,68 @@ AppBannerInfoBar* AppBannerInfoBarDelegate::CreateForWebApp(
       ? infobar : nullptr;
 }
 
+AppBannerInfoBarDelegate::~AppBannerInfoBarDelegate() {
+  TrackDismissEvent(DISMISS_EVENT_DISMISSED);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AppBannerInfoBarDelegate_destroy(env,
+                                        java_delegate_.obj());
+  java_delegate_.Reset();
+}
+
+void AppBannerInfoBarDelegate::UpdateInstallState(JNIEnv* env, jobject obj) {
+  if (native_app_data_.is_null())
+    return;
+
+  int newState = Java_AppBannerInfoBarDelegate_determineInstallState(
+      env,
+      java_delegate_.obj(),
+      native_app_data_.obj());
+  static_cast<AppBannerInfoBar*>(infobar())->OnInstallStateChanged(newState);
+}
+
+void AppBannerInfoBarDelegate::OnInstallIntentReturned(
+    JNIEnv* env,
+    jobject obj,
+    jboolean jis_installing) {
+  if (!infobar())
+    return;
+
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  if (!web_contents)
+    return;
+
+  if (jis_installing) {
+    AppBannerSettingsHelper::RecordBannerEvent(
+        web_contents,
+        web_contents->GetURL(),
+        native_app_package_,
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+        AppBannerManager::GetCurrentTime());
+
+    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_STARTED);
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Installed",
+                                            web_contents->GetURL());
+  }
+
+  UpdateInstallState(env, obj);
+}
+
+void AppBannerInfoBarDelegate::OnInstallFinished(JNIEnv* env,
+                                                 jobject obj,
+                                                 jboolean success) {
+  if (!infobar())
+    return;
+
+  if (success) {
+    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_COMPLETED);
+    UpdateInstallState(env, obj);
+  } else if (infobar()->owner()) {
+    TrackDismissEvent(DISMISS_EVENT_INSTALL_TIMEOUT);
+    infobar()->owner()->RemoveInfoBar(infobar());
+  }
+}
+
 AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
     const base::string16& app_title,
     SkBitmap* app_icon,
@@ -86,22 +148,6 @@ AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
   java_delegate_.Reset(Java_AppBannerInfoBarDelegate_create(
       env,
       reinterpret_cast<intptr_t>(this)));
-}
-
-AppBannerInfoBarDelegate::~AppBannerInfoBarDelegate() {
-  TrackDismissEvent(DISMISS_EVENT_DISMISSED);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AppBannerInfoBarDelegate_destroy(env,
-                                        java_delegate_.obj());
-  java_delegate_.Reset();
-}
-
-base::string16 AppBannerInfoBarDelegate::GetMessageText() const {
-  return app_title_;
-}
-
-int AppBannerInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
 }
 
 gfx::Image AppBannerInfoBarDelegate::GetIcon() const {
@@ -135,6 +181,14 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
     rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Dismissed",
                                             web_contents->GetURL());
   }
+}
+
+base::string16 AppBannerInfoBarDelegate::GetMessageText() const {
+  return app_title_;
+}
+
+int AppBannerInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
 }
 
 bool AppBannerInfoBarDelegate::Accept() {
@@ -216,61 +270,6 @@ bool AppBannerInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
   return true;
 }
-
-void AppBannerInfoBarDelegate::OnInstallIntentReturned(
-    JNIEnv* env,
-    jobject obj,
-    jboolean jis_installing) {
-  if (!infobar())
-    return;
-
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-  if (!web_contents)
-    return;
-
-  if (jis_installing) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents,
-        web_contents->GetURL(),
-        native_app_package_,
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-        AppBannerManager::GetCurrentTime());
-
-    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_STARTED);
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Installed",
-                                            web_contents->GetURL());
-  }
-
-  UpdateInstallState(env, obj);
-}
-
-void AppBannerInfoBarDelegate::OnInstallFinished(JNIEnv* env,
-                                                 jobject obj,
-                                                 jboolean success) {
-  if (!infobar())
-    return;
-
-  if (success) {
-    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_COMPLETED);
-    UpdateInstallState(env, obj);
-  } else if (infobar()->owner()) {
-    TrackDismissEvent(DISMISS_EVENT_INSTALL_TIMEOUT);
-    infobar()->owner()->RemoveInfoBar(infobar());
-  }
-}
-
-void AppBannerInfoBarDelegate::UpdateInstallState(JNIEnv* env, jobject obj) {
-  if (native_app_data_.is_null())
-    return;
-
-  int newState = Java_AppBannerInfoBarDelegate_determineInstallState(
-      env,
-      java_delegate_.obj(),
-      native_app_data_.obj());
-  static_cast<AppBannerInfoBar*>(infobar())->OnInstallStateChanged(newState);
-}
-
 
 bool RegisterAppBannerInfoBarDelegate(JNIEnv* env) {
  return RegisterNativesImpl(env);

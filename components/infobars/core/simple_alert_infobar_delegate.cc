@@ -36,15 +36,15 @@ int SimpleAlertInfoBarDelegate::GetIconID() const {
   return icon_id_;
 }
 
+bool SimpleAlertInfoBarDelegate::ShouldExpireInternal(
+    const NavigationDetails& details) const {
+  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpireInternal(details);
+}
+
 base::string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
 int SimpleAlertInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
-}
-
-bool SimpleAlertInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpireInternal(details);
 }

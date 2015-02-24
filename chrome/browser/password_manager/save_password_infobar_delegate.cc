@@ -67,19 +67,29 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   }
 }
 
-bool SavePasswordInfoBarDelegate::ShouldExpire(
-    const NavigationDetails& details) const {
-  return !details.is_redirect &&
-         infobars::InfoBarDelegate::ShouldExpire(details);
+infobars::InfoBarDelegate::Type
+SavePasswordInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+infobars::InfoBarDelegate::InfoBarAutomationType
+SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
+  return PASSWORD_INFOBAR;
 }
 
 int SavePasswordInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_SAVE_PASSWORD;
 }
 
-infobars::InfoBarDelegate::Type SavePasswordInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
+bool SavePasswordInfoBarDelegate::ShouldExpire(
+    const NavigationDetails& details) const {
+  return !details.is_redirect &&
+         infobars::InfoBarDelegate::ShouldExpire(details);
+}
+
+void SavePasswordInfoBarDelegate::InfoBarDismissed() {
+  DCHECK(form_to_save_.get());
+  infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetMessageText() const {
@@ -104,14 +114,4 @@ bool SavePasswordInfoBarDelegate::Cancel() {
   form_to_save_->PermanentlyBlacklist();
   infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
   return true;
-}
-
-void SavePasswordInfoBarDelegate::InfoBarDismissed() {
-  DCHECK(form_to_save_.get());
-  infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;
-}
-
-infobars::InfoBarDelegate::InfoBarAutomationType
-SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
-  return PASSWORD_INFOBAR;
 }

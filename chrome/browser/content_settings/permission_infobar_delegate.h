@@ -27,19 +27,14 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
                             ContentSettingsType type);
   ~PermissionInfobarDelegate() override;
 
+ private:
   // ConfirmInfoBarDelegate:
-  base::string16 GetMessageText() const override = 0;
-
-  infobars::InfoBarDelegate::Type GetInfoBarType() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-
-  // Remember to call RegisterActionTaken for these methods if you are
-  // overriding them.
+  Type GetInfoBarType() const override;
   void InfoBarDismissed() override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
- private:
   void SetPermission(bool update_content_setting, bool allowed);
 
   PermissionQueueController* controller_; // not owned by us

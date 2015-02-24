@@ -74,17 +74,17 @@ void ProtectedMediaIdentifierInfoBarDelegate::SetPermission(
                                update_content_setting, allowed);
 }
 
-void ProtectedMediaIdentifierInfoBarDelegate::InfoBarDismissed() {
-  SetPermission(false, false);
+infobars::InfoBarDelegate::Type
+ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
 }
 
 int ProtectedMediaIdentifierInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
 }
 
-infobars::InfoBarDelegate::Type
-ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
+void ProtectedMediaIdentifierInfoBarDelegate::InfoBarDismissed() {
+  SetPermission(false, false);
 }
 
 bool ProtectedMediaIdentifierInfoBarDelegate::ShouldExpireInternal(

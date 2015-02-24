@@ -38,9 +38,9 @@ class DataReductionProxyInfoBarDelegate : public ConfirmInfoBarDelegate {
       scoped_ptr<DataReductionProxyInfoBarDelegate> delegate);
 
   // ConfirmInfoBarDelegate
+  bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
-  bool ShouldExpire(const NavigationDetails& details) const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   std::string link_url_;

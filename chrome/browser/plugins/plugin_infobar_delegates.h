@@ -62,11 +62,11 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   ~OutdatedPluginInfoBarDelegate() override;
 
   // PluginInfoBarDelegate:
+  void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  void InfoBarDismissed() override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
   std::string GetLearnMoreURL() const override;
 

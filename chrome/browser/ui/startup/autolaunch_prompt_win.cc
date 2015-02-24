@@ -48,12 +48,12 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const override;
+  virtual bool ShouldExpireInternal(
+      const NavigationDetails& details) const override;
   virtual base::string16 GetMessageText() const override;
   virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
   virtual bool Accept() override;
   virtual bool Cancel() override;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const override;
 
   // Weak pointer to the profile, not owned by us.
   Profile* profile_;
@@ -101,6 +101,11 @@ int AutolaunchInfoBarDelegate::GetIconID() const {
   return IDR_PRODUCT_LOGO_32;
 }
 
+bool AutolaunchInfoBarDelegate::ShouldExpireInternal(
+    const NavigationDetails& details) const {
+  return should_expire_;
+}
+
 base::string16 AutolaunchInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_INFOBAR_TEXT);
 }
@@ -121,11 +126,6 @@ bool AutolaunchInfoBarDelegate::Cancel() {
       base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
                  profile_->GetPath().BaseName().value()));
   return true;
-}
-
-bool AutolaunchInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  return should_expire_;
 }
 
 }  // namespace

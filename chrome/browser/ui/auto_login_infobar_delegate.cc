@@ -173,18 +173,18 @@ void AutoLoginInfoBarDelegate::RecordHistogramAction(Actions action) {
                             HISTOGRAM_BOUNDING_VALUE);
 }
 
-void AutoLoginInfoBarDelegate::InfoBarDismissed() {
-  RecordHistogramAction(DISMISSED);
-  button_pressed_ = true;
+infobars::InfoBarDelegate::Type AutoLoginInfoBarDelegate::GetInfoBarType()
+    const {
+  return PAGE_ACTION_TYPE;
 }
 
 int AutoLoginInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_AUTOLOGIN;
 }
 
-infobars::InfoBarDelegate::Type AutoLoginInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
+void AutoLoginInfoBarDelegate::InfoBarDismissed() {
+  RecordHistogramAction(DISMISSED);
+  button_pressed_ = true;
 }
 
 AutoLoginInfoBarDelegate*

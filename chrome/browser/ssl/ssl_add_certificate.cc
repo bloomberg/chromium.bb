@@ -32,56 +32,81 @@ namespace {
 
 class SSLAddCertificateInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an SSL certificate enrollment result infobar and delegate.
+  // Creates an SSL certificate enrollment result infobar and delegate and adds
+   // the infobar to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
-                     net::X509Certificate* cert) {
-    infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-        scoped_ptr<ConfirmInfoBarDelegate>(
-            new SSLAddCertificateInfoBarDelegate(cert))));
-  }
+                     net::X509Certificate* cert);
 
  private:
-  explicit SSLAddCertificateInfoBarDelegate(net::X509Certificate* cert)
-      : cert_(cert) {}
-  ~SSLAddCertificateInfoBarDelegate() override {}
+  explicit SSLAddCertificateInfoBarDelegate(net::X509Certificate* cert);
+  ~SSLAddCertificateInfoBarDelegate() override;
 
-  // ConfirmInfoBarDelegate implementation:
-  int GetIconID() const override {
-    // TODO(davidben): Use a more appropriate icon.
-    return IDR_INFOBAR_SAVE_PASSWORD;
-  }
-
-  Type GetInfoBarType() const override { return PAGE_ACTION_TYPE; }
-
-  base::string16 GetMessageText() const override {
-    // TODO(evanm): GetDisplayName should return UTF-16.
-    return l10n_util::GetStringFUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
-                                      base::UTF8ToUTF16(
-                                          cert_->issuer().GetDisplayName()));
-  }
-
-  int GetButtons() const override { return BUTTON_OK; }
-
-  base::string16 GetButtonLabel(InfoBarButton button) const override {
-    DCHECK_EQ(BUTTON_OK, button);
-    return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
-  }
-
-  bool Accept() override {
-    WebContents* web_contents =
-        InfoBarService::WebContentsFromInfoBar(infobar());
-    ShowCertificateViewer(web_contents,
-                          web_contents->GetTopLevelNativeWindow(),
-                          cert_.get());
-    // It looks weird to hide the infobar just as the dialog opens.
-    return false;
-  }
+  // ConfirmInfoBarDelegate:
+  Type GetInfoBarType() const override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
 
   // The certificate that was added.
   scoped_refptr<net::X509Certificate> cert_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertificateInfoBarDelegate);
 };
+
+// static
+void SSLAddCertificateInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                              net::X509Certificate* cert) {
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new SSLAddCertificateInfoBarDelegate(cert))));
+}
+
+SSLAddCertificateInfoBarDelegate::SSLAddCertificateInfoBarDelegate(
+    net::X509Certificate* cert)
+    : cert_(cert) {
+}
+
+SSLAddCertificateInfoBarDelegate::~SSLAddCertificateInfoBarDelegate() {
+}
+
+infobars::InfoBarDelegate::Type
+SSLAddCertificateInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+int SSLAddCertificateInfoBarDelegate::GetIconID() const {
+  // TODO(davidben): Use a more appropriate icon.
+  return IDR_INFOBAR_SAVE_PASSWORD;
+}
+
+base::string16 SSLAddCertificateInfoBarDelegate::GetMessageText() const {
+  // TODO(evanm): GetDisplayName should return UTF-16.
+  return l10n_util::GetStringFUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
+                                    base::UTF8ToUTF16(
+                                        cert_->issuer().GetDisplayName()));
+}
+
+int SSLAddCertificateInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+base::string16 SSLAddCertificateInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
+}
+
+bool SSLAddCertificateInfoBarDelegate::Accept() {
+  WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  ShowCertificateViewer(web_contents,
+                        web_contents->GetTopLevelNativeWindow(),
+                        cert_.get());
+  // It looks weird to hide the infobar just as the dialog opens.
+  return false;
+}
 
 void ShowErrorInfoBar(int message_id,
                       int render_process_id,

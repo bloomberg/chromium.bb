@@ -51,17 +51,17 @@ void AutofillCCInfoBarDelegate::LogUserAction(
   had_user_interaction_ = true;
 }
 
-void AutofillCCInfoBarDelegate::InfoBarDismissed() {
-  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
+infobars::InfoBarDelegate::Type
+AutofillCCInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
 }
 
 int AutofillCCInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_AUTOFILL_CC;
 }
 
-infobars::InfoBarDelegate::Type AutofillCCInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
+void AutofillCCInfoBarDelegate::InfoBarDismissed() {
+  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
 bool AutofillCCInfoBarDelegate::ShouldExpireInternal(

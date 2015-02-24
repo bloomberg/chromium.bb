@@ -27,13 +27,13 @@ CollectedCookiesInfoBarDelegate::CollectedCookiesInfoBarDelegate()
 CollectedCookiesInfoBarDelegate::~CollectedCookiesInfoBarDelegate() {
 }
 
-int CollectedCookiesInfoBarDelegate::GetIconID() const {
-  return IDR_INFOBAR_COOKIE;
-}
-
 infobars::InfoBarDelegate::Type
 CollectedCookiesInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+int CollectedCookiesInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_COOKIE;
 }
 
 base::string16 CollectedCookiesInfoBarDelegate::GetMessageText() const {

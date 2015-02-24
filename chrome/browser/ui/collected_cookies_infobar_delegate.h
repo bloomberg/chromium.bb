@@ -25,8 +25,8 @@ class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~CollectedCookiesInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  int GetIconID() const override;
   Type GetInfoBarType() const override;
+  int GetIconID() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;

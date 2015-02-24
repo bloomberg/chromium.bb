@@ -41,9 +41,9 @@ class ProtectedMediaIdentifierInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  void InfoBarDismissed() override;
-  int GetIconID() const override;
   Type GetInfoBarType() const override;
+  int GetIconID() const override;
+  void InfoBarDismissed() override;
   bool ShouldExpireInternal(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;

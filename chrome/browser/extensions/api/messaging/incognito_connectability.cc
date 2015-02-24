@@ -37,55 +37,81 @@ class IncognitoConnectabilityInfoBarDelegate : public ConfirmInfoBarDelegate {
   // |infobar_service|.
   static InfoBar* Create(InfoBarManager* infobar_manager,
                          const base::string16& message,
-                         const InfoBarCallback& callback) {
-    return infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
-        scoped_ptr<ConfirmInfoBarDelegate>(
-            new IncognitoConnectabilityInfoBarDelegate(message, callback))));
-  }
+                         const InfoBarCallback& callback);
 
-  // Set the infobar answered so that the callback is not executed when the
+  // Marks the infobar as answered so that the callback is not executed when the
   // delegate is destroyed.
-  void SetAnswered() { answered_ = true; }
+  void set_answered() { answered_ = true; }
 
  private:
   IncognitoConnectabilityInfoBarDelegate(const base::string16& message,
-                                         const InfoBarCallback& callback)
-      : message_(message), answered_(false), callback_(callback) {}
-
-  ~IncognitoConnectabilityInfoBarDelegate() override {
-    if (!answered_) {
-      // The infobar has closed without the user expressing an explicit
-      // preference. The current request should be denied but further requests
-      // should show an interactive prompt.
-      callback_.Run(IncognitoConnectability::ScopedAlertTracker::INTERACTIVE);
-    }
-  }
+                                         const InfoBarCallback& callback);
+  ~IncognitoConnectabilityInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  base::string16 GetMessageText() const override { return message_; }
-  base::string16 GetButtonLabel(InfoBarButton button) const override {
-    return l10n_util::GetStringUTF16(
-        (button == BUTTON_OK) ? IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
-  }
-
-  bool Accept() override {
-    callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
-    answered_ = true;
-    return true;
-  }
-  bool Cancel() override {
-    callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_DENY);
-    answered_ = true;
-    return true;
-  }
-
-  // InfoBarDelegate:
-  Type GetInfoBarType() const override { return PAGE_ACTION_TYPE; }
+  Type GetInfoBarType() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
 
   base::string16 message_;
   bool answered_;
   InfoBarCallback callback_;
 };
+
+// static
+InfoBar* IncognitoConnectabilityInfoBarDelegate::Create(
+    InfoBarManager* infobar_manager,
+    const base::string16& message,
+    const IncognitoConnectabilityInfoBarDelegate::InfoBarCallback& callback) {
+  return infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new IncognitoConnectabilityInfoBarDelegate(message, callback))));
+}
+
+IncognitoConnectabilityInfoBarDelegate::IncognitoConnectabilityInfoBarDelegate(
+    const base::string16& message,
+    const InfoBarCallback& callback)
+    : message_(message), answered_(false), callback_(callback) {
+}
+
+IncognitoConnectabilityInfoBarDelegate::
+    ~IncognitoConnectabilityInfoBarDelegate() {
+  if (!answered_) {
+    // The infobar has closed without the user expressing an explicit
+    // preference. The current request should be denied but further requests
+    // should show an interactive prompt.
+    callback_.Run(IncognitoConnectability::ScopedAlertTracker::INTERACTIVE);
+  }
+}
+
+infobars::InfoBarDelegate::Type
+IncognitoConnectabilityInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+base::string16 IncognitoConnectabilityInfoBarDelegate::GetMessageText() const {
+  return message_;
+}
+
+base::string16 IncognitoConnectabilityInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16(
+      (button == BUTTON_OK) ? IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
+}
+
+bool IncognitoConnectabilityInfoBarDelegate::Accept() {
+  callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
+  answered_ = true;
+  return true;
+}
+
+bool IncognitoConnectabilityInfoBarDelegate::Cancel() {
+  callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_DENY);
+  answered_ = true;
+  return true;
+}
 
 }  // namespace
 
@@ -231,7 +257,7 @@ void IncognitoConnectability::OnInteractiveResponse(
         IncognitoConnectabilityInfoBarDelegate* delegate =
             static_cast<IncognitoConnectabilityInfoBarDelegate*>(
                 other_tab_context.infobar->delegate());
-        delegate->SetAnswered();
+        delegate->set_answered();
         other_infobar_manager->RemoveInfoBar(other_tab_context.infobar);
       }
       callbacks.insert(callbacks.end(), other_tab_context.callbacks.begin(),

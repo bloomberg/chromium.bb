@@ -30,10 +30,10 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~RegisterProtocolHandlerInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  InfoBarAutomationType GetInfoBarAutomationType() const override;
   Type GetInfoBarType() const override;
+  InfoBarAutomationType GetInfoBarAutomationType() const override;
   RegisterProtocolHandlerInfoBarDelegate*
-  AsRegisterProtocolHandlerInfoBarDelegate() override;
+      AsRegisterProtocolHandlerInfoBarDelegate() override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool OKButtonTriggersUACPrompt() const override;

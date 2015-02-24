@@ -92,11 +92,11 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   return true;
 }
 
-int AlternateNavInfoBarDelegate::GetIconID() const {
-  return IDR_INFOBAR_ALT_NAV_URL;
+infobars::InfoBarDelegate::Type
+AlternateNavInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
 }
 
-infobars::InfoBarDelegate::Type AlternateNavInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
+int AlternateNavInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_ALT_NAV_URL;
 }

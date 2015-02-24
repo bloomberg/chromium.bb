@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/test_switches.h"
@@ -136,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, DISABLED_ContextLossInfoBarReload) {
   ASSERT_EQ(1u, infobar_service->infobar_count());
   infobars::InfoBarDelegate* delegate =
       infobar_service->infobar_at(0)->delegate();
-  ASSERT_EQ(IDR_INFOBAR_3D_BLOCKED, delegate->GetIconID());
+  ASSERT_TRUE(delegate->AsThreeDAPIInfoBarDelegate());
   delegate->AsConfirmInfoBarDelegate()->Cancel();
 
   // The page should reload and another message sent to the

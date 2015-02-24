@@ -74,12 +74,9 @@ MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
   DCHECK(controller_->HasAudio() || controller_->HasVideo());
 }
 
-void MediaStreamInfoBarDelegate::InfoBarDismissed() {
-  // Deny the request if the infobar was closed with the 'x' button, since
-  // we don't want WebRTC to be waiting for an answer that will never come.
-  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
-                            kCancel, kPermissionActionsMax);
-  controller_->Deny(false, content::MEDIA_DEVICE_PERMISSION_DISMISSED);
+infobars::InfoBarDelegate::Type
+MediaStreamInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
 }
 
 int MediaStreamInfoBarDelegate::GetIconID() const {
@@ -87,9 +84,12 @@ int MediaStreamInfoBarDelegate::GetIconID() const {
       IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }
 
-infobars::InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
+void MediaStreamInfoBarDelegate::InfoBarDismissed() {
+  // Deny the request if the infobar was closed with the 'x' button, since
+  // we don't want WebRTC to be waiting for an answer that will never come.
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                            kCancel, kPermissionActionsMax);
+  controller_->Deny(false, content::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }
 
 MediaStreamInfoBarDelegate*

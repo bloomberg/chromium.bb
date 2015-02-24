@@ -29,11 +29,11 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
   inline_link_range_ = gfx::Range(offset, offset + link.length());
 }
 
-int GeneratedPasswordSavedInfoBarDelegateAndroid::GetIconID() const {
-  return IDR_INFOBAR_SAVE_PASSWORD;
-}
-
 infobars::InfoBarDelegate::Type
 GeneratedPasswordSavedInfoBarDelegateAndroid::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+int GeneratedPasswordSavedInfoBarDelegateAndroid::GetIconID() const {
+  return IDR_INFOBAR_SAVE_PASSWORD;
 }

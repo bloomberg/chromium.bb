@@ -56,16 +56,6 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
                          jobject obj,
                          jboolean success);
 
-  // InfoBarDelegate overrides.
-  gfx::Image GetIcon() const override;
-  void InfoBarDismissed() override;
-
-  // ConfirmInfoBarDelegate overrides.
-  base::string16 GetMessageText() const override;
-  int GetButtons() const override;
-  bool Accept() override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
-
  private:
   AppBannerInfoBarDelegate(
       const base::string16& app_title,
@@ -73,6 +63,14 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const content::Manifest& web_app_data,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const std::string& native_app_package);
+
+  // ConfirmInfoBarDelegate:
+  gfx::Image GetIcon() const override;
+  void InfoBarDismissed() override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  bool Accept() override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
 

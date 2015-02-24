@@ -54,14 +54,14 @@ RegisterProtocolHandlerInfoBarDelegate::
     ~RegisterProtocolHandlerInfoBarDelegate() {
 }
 
-infobars::InfoBarDelegate::InfoBarAutomationType
-RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
-  return RPH_INFOBAR;
-}
-
 infobars::InfoBarDelegate::Type
 RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+infobars::InfoBarDelegate::InfoBarAutomationType
+RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
+  return RPH_INFOBAR;
 }
 
 RegisterProtocolHandlerInfoBarDelegate*

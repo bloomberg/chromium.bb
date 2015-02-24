@@ -170,8 +170,8 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ExtensionDevToolsInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  void InfoBarDismissed() override;
   Type GetInfoBarType() const override;
+  void InfoBarDismissed() override;
   bool ShouldExpireInternal(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
@@ -210,14 +210,14 @@ ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
 ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
 }
 
-void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
-  if (client_host_)
-    client_host_->MarkAsDismissed();
-}
-
 infobars::InfoBarDelegate::Type
 ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
+}
+
+void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
+  if (client_host_)
+    client_host_->MarkAsDismissed();
 }
 
 bool ExtensionDevToolsInfoBarDelegate::ShouldExpireInternal(

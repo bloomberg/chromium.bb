@@ -197,10 +197,10 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  void InfoBarDismissed() override;
+  Type GetInfoBarType() const override;
   int GetIconID() const override;
-  infobars::InfoBarDelegate::Type GetInfoBarType() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
+  void InfoBarDismissed() override;
   TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
 
   bool is_off_the_record_;

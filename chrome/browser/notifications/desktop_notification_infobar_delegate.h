@@ -12,8 +12,8 @@
 class DesktopNotificationInfoBarDelegate : public PermissionInfobarDelegate {
  public:
   // Creates a Notification permission infobar and delegate and adds the
-  // infobar to |infobar_service|.
-  // Returns the infobar if it was successfully added.
+  // infobar to |infobar_service|.  Returns the infobar if it was successfully
+  // added.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    PermissionQueueController* controller,
                                    const PermissionRequestID& id,
@@ -28,8 +28,8 @@ class DesktopNotificationInfoBarDelegate : public PermissionInfobarDelegate {
   ~DesktopNotificationInfoBarDelegate() override;
 
   // PermissionInfoBarDelegate:
-  base::string16 GetMessageText() const override;
   int GetIconID() const override;
+  base::string16 GetMessageText() const override;
 
   GURL requesting_frame_;
   std::string display_languages_;
