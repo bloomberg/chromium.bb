@@ -673,6 +673,9 @@ bool ThreadState::shouldForceConservativeGC()
     if (UNLIKELY(m_gcForbiddenCount))
         return false;
 
+    if (Heap::isUrgentGCRequested())
+        return true;
+
     size_t newSize = Heap::allocatedObjectSize();
     if (newSize >= 300 * 1024 * 1024) {
         // If we consume too much memory, trigger a conservative GC
@@ -697,14 +700,18 @@ void ThreadState::scheduleGCIfNeeded()
 {
     checkThread();
     // Allocation is allowed during sweeping, but those allocations should not
-    // trigger nested GCs
-    if (isSweepingInProgress())
+    // trigger nested GCs. Does not apply if an urgent GC has been requested.
+    if (isSweepingInProgress() && UNLIKELY(!Heap::isUrgentGCRequested()))
         return;
     ASSERT(!sweepForbidden());
 
-    if (shouldForceConservativeGC())
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithoutSweep);
-    else if (shouldSchedulePreciseGC())
+    if (shouldForceConservativeGC()) {
+        // If GC is deemed urgent, eagerly sweep and finalize any external allocations right away.
+        GCType gcType = Heap::isUrgentGCRequested() ? GCWithSweep : GCWithoutSweep;
+        Heap::collectGarbage(HeapPointersOnStack, gcType);
+        return;
+    }
+    if (shouldSchedulePreciseGC())
         schedulePreciseGC();
     else if (shouldScheduleIdleGC())
         scheduleIdleGC();

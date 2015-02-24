@@ -999,7 +999,24 @@ public:
     static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
+
     static double estimatedMarkingTime();
+
+    // On object allocation, register the object's externally allocated memory.
+    static inline void increaseExternallyAllocatedBytes(size_t);
+    static size_t externallyAllocatedBytes() { return acquireLoad(&s_externallyAllocatedBytes); }
+
+    // On object tracing, register the object's externally allocated memory (as still live.)
+    static void increaseExternallyAllocatedBytesAlive(size_t delta)
+    {
+        ASSERT(ThreadState::current()->isInGC());
+        s_externallyAllocatedBytesAlive += delta;
+    }
+    static size_t externallyAllocatedBytesAlive() { return s_externallyAllocatedBytesAlive; }
+
+    static void requestUrgentGC();
+    static void clearUrgentGC() { releaseStore(&s_requestedUrgentGC, 0); }
+    static bool isUrgentGCRequested() { return acquireLoad(&s_requestedUrgentGC); }
 
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
@@ -1021,8 +1038,8 @@ private:
         RegionTree* m_right;
     };
 
-    static void resetAllocatedObjectSize() { ASSERT(ThreadState::current()->isInGC()); s_allocatedObjectSize = 0; }
-    static void resetMarkedObjectSize() { ASSERT(ThreadState::current()->isInGC()); s_markedObjectSize = 0; }
+    // Reset counters that track live and allocated-since-last-GC sizes.
+    static void resetHeapCounters();
 
     static Visitor* s_markingVisitor;
     static CallbackStack* s_markingStack;
@@ -1038,6 +1055,10 @@ private:
     static size_t s_allocatedSpace;
     static size_t s_allocatedObjectSize;
     static size_t s_markedObjectSize;
+    static size_t s_externallyAllocatedBytes;
+    static size_t s_externallyAllocatedBytesAlive;
+    static unsigned s_requestedUrgentGC;
+
     friend class ThreadState;
 };
 
@@ -1503,6 +1524,28 @@ Address Heap::reallocate(void* previous, size_t size)
         copySize = size;
     memcpy(address, previous, copySize);
     return address;
+}
+
+void Heap::increaseExternallyAllocatedBytes(size_t delta)
+{
+    // Flag GC urgency on a 50% increase in external allocation
+    // since the last GC, but not for less than 100M.
+    //
+    // FIXME: consider other, 'better' policies (e.g., have the count of
+    // heap objects with external allocations be taken into
+    // account, ...) The overall goal here is to trigger a
+    // GC such that it considerably lessens memory pressure
+    // for a renderer process, when absolutely needed.
+    size_t externalBytesAllocatedSinceLastGC = atomicAdd(&s_externallyAllocatedBytes, static_cast<long>(delta));
+    if (LIKELY(externalBytesAllocatedSinceLastGC < 100 * 1024 * 1024))
+        return;
+
+    if (UNLIKELY(isUrgentGCRequested()))
+        return;
+
+    size_t externalBytesAliveAtLastGC = externallyAllocatedBytesAlive();
+    if (UNLIKELY(externalBytesAllocatedSinceLastGC > externalBytesAliveAtLastGC / 2))
+        Heap::requestUrgentGC();
 }
 
 class HeapAllocatorQuantizer {

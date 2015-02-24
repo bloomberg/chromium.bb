@@ -42,13 +42,48 @@
 
 namespace blink {
 
+#if ENABLE(OILPAN)
+namespace {
+// If the external string kept by a Text node exceed this threshold length,
+// Oilpan is informed. External allocation amounts owned by heap objects are
+// taken into account when scheduling urgent Oilpan GCs.
+//
+// FIXME: having only Text nodes with strings above an ad-hoc local threshold
+// influence Oilpan's GC behavior isn't a satisfactory long-term solution.
+// But code that allocates a lot of Text nodes in tight loops, and not much more,
+// we do have to trigger Oilpan GCs to avoid PartitionAlloc OOMs. The accounting
+// does add overhead on the allocation of every Text node however, so for now, only
+// register those above the given threshold. TBC.
+const size_t stringLengthThreshold = 256;
+
+void increaseExternallyAllocatedBytesIfNeeded(size_t length)
+{
+    if (length > stringLengthThreshold)
+        Heap::increaseExternallyAllocatedBytes(length);
+}
+
+void increaseExternallyAllocatedBytesAliveIfNeeded(size_t length)
+{
+    if (length > stringLengthThreshold)
+        Heap::increaseExternallyAllocatedBytesAlive(length);
+}
+
+} // namespace
+#endif
+
 PassRefPtrWillBeRawPtr<Text> Text::create(Document& document, const String& data)
 {
+#if ENABLE(OILPAN)
+    increaseExternallyAllocatedBytesIfNeeded(data.length());
+#endif
     return adoptRefWillBeNoop(new Text(document, data, CreateText));
 }
 
 PassRefPtrWillBeRawPtr<Text> Text::createEditingText(Document& document, const String& data)
 {
+#if ENABLE(OILPAN)
+    increaseExternallyAllocatedBytesIfNeeded(data.length());
+#endif
     return adoptRefWillBeNoop(new Text(document, data, CreateEditingText));
 }
 
@@ -406,6 +441,14 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
 PassRefPtrWillBeRawPtr<Text> Text::cloneWithData(const String& data)
 {
     return create(document(), data);
+}
+
+void Text::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    increaseExternallyAllocatedBytesAliveIfNeeded(m_data.length());
+#endif
+    CharacterData::trace(visitor);
 }
 
 #ifndef NDEBUG

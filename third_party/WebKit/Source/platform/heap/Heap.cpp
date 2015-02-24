@@ -2475,8 +2475,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     s_markingVisitor->configureEagerTraceLimit();
     ASSERT(s_markingVisitor->canTraceEagerly());
 
-    Heap::resetMarkedObjectSize();
-    Heap::resetAllocatedObjectSize();
+    Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
     ThreadState::visitPersistentRoots(s_markingVisitor);
@@ -2840,6 +2839,32 @@ void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
     delete current;
 }
 
+void Heap::resetHeapCounters()
+{
+    ASSERT(ThreadState::current()->isInGC());
+
+    s_allocatedObjectSize = 0;
+    s_markedObjectSize = 0;
+
+    // Similarly, reset the amount of externally allocated memory.
+    s_externallyAllocatedBytes = 0;
+    s_externallyAllocatedBytesAlive = 0;
+
+    s_requestedUrgentGC = false;
+}
+
+void Heap::requestUrgentGC()
+{
+    // The urgent-gc flag will be considered the next time an out-of-line
+    // allocation is made. Bump allocations from the current block will
+    // go ahead until it can no longer service an allocation request.
+    //
+    // FIXME: if that delays urgently needed GCs for too long, consider
+    // flushing out per-heap "allocation points" to trigger the GC
+    // right away.
+    releaseStore(&s_requestedUrgentGC, 1);
+}
+
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_postMarkingCallbackStack;
@@ -2854,5 +2879,9 @@ Heap::RegionTree* Heap::s_regionTree = nullptr;
 size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_markedObjectSize = 0;
+
+size_t Heap::s_externallyAllocatedBytes = 0;
+size_t Heap::s_externallyAllocatedBytesAlive = 0;
+unsigned Heap::s_requestedUrgentGC = false;
 
 } // namespace blink
