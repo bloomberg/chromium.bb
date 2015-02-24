@@ -228,16 +228,21 @@ def GetScriptName():
   return os.sep.join(script_components[build_index:])
 
 
-def DoGenerate(options, source_paths):
+def DoGenerate(output_dir, source_paths, print_output_only=False):
   output_paths = []
   for source_path in source_paths:
     enum_definitions = DoParseHeaderFile(source_path)
+    if not enum_definitions:
+      raise Exception('No enums found in %s\n'
+                      'Did you forget prefixing enums with '
+                      '"// GENERATED_JAVA_ENUM_PACKAGE: foo"?' %
+                      source_path)
     for enum_definition in enum_definitions:
       package_path = enum_definition.enum_package.replace('.', os.path.sep)
       file_name = enum_definition.class_name + '.java'
-      output_path = os.path.join(options.output_dir, package_path, file_name)
+      output_path = os.path.join(output_dir, package_path, file_name)
       output_paths.append(output_path)
-      if not options.print_output_only:
+      if not print_output_only:
         build_utils.MakeDirectory(os.path.dirname(output_path))
         DoWriteOutput(source_path, output_path, enum_definition)
   return output_paths
@@ -300,24 +305,32 @@ def AssertFilesList(output_paths, assert_files_list):
                     'add %s and remove %s.' % (need_to_add, need_to_remove))
 
 def DoMain(argv):
-  parser = optparse.OptionParser()
+  usage = 'usage: %prog [options] output_dir input_file(s)...'
+  parser = optparse.OptionParser(usage=usage)
 
   parser.add_option('--assert_file', action="append", default=[],
                     dest="assert_files_list", help='Assert that the given '
                     'file is an output. There can be multiple occurrences of '
                     'this flag.')
-  parser.add_option('--output_dir', help='Base path for generated files.')
   parser.add_option('--print_output_only', help='Only print output paths.',
+                    action='store_true')
+  parser.add_option('--verbose', help='Print more information.',
                     action='store_true')
 
   options, args = parser.parse_args(argv)
-
-  output_paths = DoGenerate(options, args)
+  if len(args) < 2:
+    parser.error('Need to specify output directory and at least one input file')
+  output_paths = DoGenerate(args[0], args[1:],
+                            print_output_only=options.print_output_only)
 
   if options.assert_files_list:
     AssertFilesList(output_paths, options.assert_files_list)
 
-  return " ".join(output_paths)
+  if options.verbose:
+    print 'Output paths:'
+    print '\n'.join(output_paths)
+
+  return ' '.join(output_paths)
 
 if __name__ == '__main__':
   DoMain(sys.argv[1:])

@@ -14,6 +14,7 @@ import os
 import sys
 import unittest
 
+import java_cpp_enum
 from java_cpp_enum import EnumDefinition, GenerateOutput, GetScriptName
 from java_cpp_enum import HeaderParser
 
@@ -150,6 +151,14 @@ public class ClassName {
     """.split('\n')
     with self.assertRaises(Exception):
       HeaderParser(test_data).ParseDefinitions()
+
+  def testParseReturnsEmptyListWithoutDirectives(self):
+    test_data = """
+      enum EnumName {
+        VALUE_ONE,
+      };
+    """.split('\n')
+    self.assertEqual([], HeaderParser(test_data).ParseDefinitions())
 
   def testParseEnumClass(self):
     test_data = """
@@ -402,6 +411,15 @@ public class ClassName {
     definition.AppendEntry('NAME_LAST', None)
     definition.Finalize()
     self.assertEqual(['A', 'B', 'NAME_LAST'], definition.entries.keys())
+
+  def testGenerateThrowsOnEmptyInput(self):
+    with self.assertRaises(Exception):
+      original_do_parse = java_cpp_enum.DoParseHeaderFile
+      try:
+        java_cpp_enum.DoParseHeaderFile = lambda _: []
+        java_cpp_enum.DoGenerate('dir', ['file'])
+      finally:
+        java_cpp_enum.DoParseHeaderFile = original_do_parse
 
 def main(argv):
   parser = optparse.OptionParser()

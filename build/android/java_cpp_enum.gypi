@@ -24,7 +24,7 @@
     # Location where all generated Java sources will be placed.
     'output_dir': '<(SHARED_INTERMEDIATE_DIR)/enums/<(_target_name)',
     'generator_path': '<(DEPTH)/build/android/gyp/java_cpp_enum.py',
-    'generator_args': '--output_dir=<(output_dir) <(source_file)',
+    'generator_args': '<(output_dir) <(source_file)',
   },
   'direct_dependent_settings': {
     'variables': {
