@@ -2,14 +2,14 @@
 <html>
   <head>
     <script src="../resources/js-test.js"></script>
-    <script src="resources/audio-testing.js"/>
     <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
     <title>OfflineAudioContext.startRendering Promise with oncomplete</title>
   </head>
 
   <body>
     <script>
-      description("Test OfflineAudioContext.startRendering Promise with oncomplete")
+      description("Test OfflineAudioContext.startRendering Promise with oncomplete");
 
       var context;
       var promise;
@@ -27,20 +27,19 @@
         if (renderedData === promiseData) {
           testPassed("AudioBuffer returned by oncomplete and promise are identical");
         } else {
-          testPassed("AudioBuffer returned by oncomplete and promise are NOT identical");
+          testFailed("AudioBuffer returned by oncomplete and promise are NOT identical");
         }
         finishJSTest();
       }
 
-      function checkResult (event)
-      {
+      function checkResult (event) {
         renderedData = event.renderedBuffer;
         promise.then(function (result) {
-                       promiseData = result;
-                       compareData();
-                     });
-      
+          promiseData = result;
+          compareData();
+        });
       }
+
       // Create an offline context and verify that both the oncomplete and promise are returned with
       // the same stuff.
       function runTest() {
