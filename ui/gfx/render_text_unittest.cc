@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2142,6 +2143,57 @@ TEST_F(RenderTextTest, Multiline_NewlineCharacterReplacement) {
     EXPECT_EQ(WideToUTF16(kTestStrings[i]), render_text.GetDisplayText());
   }
 }
+
+#if !defined(OS_MACOSX)
+// Ensure horizontal alignment works in multiline mode.
+TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
+  const struct {
+    const wchar_t* const text;
+    const gfx::HorizontalAlignment alignment;
+  } kTestStrings[] = {
+    { L"abcdefghij\nhijkl", gfx::ALIGN_LEFT },
+    { L"nhijkl\nabcdefghij", gfx::ALIGN_LEFT },
+    // hebrew, 2nd line shorter
+    { L"\x5d0\x5d1\x5d2\x5d3\x5d4\x5d5\x5d6\x5d7\n\x5d0\x5d1\x5d2\x5d3",
+      gfx::ALIGN_RIGHT },
+    // hebrew, 2nd line longer
+    { L"\x5d0\x5d1\x5d2\x5d3\n\x5d0\x5d1\x5d2\x5d3\x5d4\x5d5\x5d6\x5d7",
+      gfx::ALIGN_RIGHT },
+    // arabic, 2nd line shorter
+    { L"\x62a\x62b\x62c\x62d\x62e\x62f\x630\n\x660\x661\x662\x663\x664",
+      gfx::ALIGN_RIGHT },
+    // arabic, 2nd line longer
+    { L"\x660\x661\x662\x663\x664\n\x62a\x62b\x62c\x62d\x62e\x62f\x630",
+      gfx::ALIGN_RIGHT },
+  };
+  const int kGlyphSize = 5;
+  RenderTextHarfBuzz render_text;
+  render_text.SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  render_text.set_glyph_width_for_test(kGlyphSize);
+  render_text.SetDisplayRect(Rect(100, 1000));
+  render_text.SetMultiline(true);
+
+  Canvas canvas;
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "] %ls", i,
+                                    kTestStrings[i].text));
+    render_text.SetText(WideToUTF16(kTestStrings[i].text));
+    render_text.Draw(&canvas);
+    ASSERT_LE(2u, render_text.lines().size());
+    if (kTestStrings[i].alignment == gfx::ALIGN_LEFT) {
+      EXPECT_EQ(0, render_text.GetAlignmentOffset(0).x());
+      EXPECT_EQ(0, render_text.GetAlignmentOffset(1).x());
+    } else {
+      std::vector<base::string16> lines;
+      base::SplitString(base::WideToUTF16(kTestStrings[i].text), '\n', &lines);
+      ASSERT_EQ(2u, lines.size());
+      int difference = (lines[0].length() - lines[1].length()) * kGlyphSize;
+      EXPECT_EQ(render_text.GetAlignmentOffset(0).x() + difference,
+                render_text.GetAlignmentOffset(1).x());
+    }
+  }
+}
+#endif
 
 TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
   const wchar_t* kTestStrings[] = {
