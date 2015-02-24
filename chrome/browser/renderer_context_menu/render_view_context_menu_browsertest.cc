@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -41,13 +43,17 @@ namespace {
 
 class ContextMenuBrowserTest : public InProcessBrowserTest {
  public:
-  ContextMenuBrowserTest() { }
+  ContextMenuBrowserTest() {}
 
-  TestRenderViewContextMenu* CreateContextMenu(GURL unfiltered_url, GURL url) {
+  TestRenderViewContextMenu* CreateContextMenu(
+      const GURL& unfiltered_url,
+      const GURL& url,
+      blink::WebContextMenuData::MediaType media_type) {
     content::ContextMenuParams params;
-    params.media_type = blink::WebContextMenuData::MediaTypeNone;
+    params.media_type = media_type;
     params.unfiltered_link_url = unfiltered_url;
     params.link_url = url;
+    params.src_url = url;
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
@@ -62,13 +68,19 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     menu->Init();
     return menu;
   }
+
+  TestRenderViewContextMenu* CreateContextMenuMediaTypeNone(
+      const GURL& unfiltered_url,
+      const GURL& url) {
+    return CreateContextMenu(unfiltered_url, url,
+                             blink::WebContextMenuData::MediaTypeNone);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryPresentForNormalURLs) {
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("http://www.google.com/"),
-                        GURL("http://www.google.com/")));
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenuMediaTypeNone(
+      GURL("http://www.google.com/"), GURL("http://www.google.com/")));
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
@@ -78,8 +90,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryAbsentForFilteredURLs) {
   scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("chrome://history"),
-                        GURL()));
+      CreateContextMenuMediaTypeNone(GURL("chrome://history"), GURL()));
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
@@ -296,6 +307,44 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ViewPageInfoWithNoEntry) {
 
   // Ensure that viewing page info doesn't crash even if you can get to it.
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_VIEWPAGEINFO, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, DataSaverOpenOrigImageInNewTab) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxy);
+
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenu(GURL(), GURL("http://url.com/image.png"),
+                        blink::WebContextMenuData::MediaTypeImage));
+
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
+  ASSERT_TRUE(menu->IsItemPresent(
+      IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       DataSaverHttpsOpenImageInNewTab) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxy);
+
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenu(GURL(), GURL("https://url.com/image.png"),
+                        blink::WebContextMenuData::MediaTypeImage));
+
+  ASSERT_FALSE(
+      menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenImageInNewTab) {
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenu(GURL(), GURL("http://url.com/image.png"),
+                        blink::WebContextMenuData::MediaTypeImage));
+  ASSERT_FALSE(
+      menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
 }
 
 class ThumbnailResponseWatcher : public content::NotificationObserver {

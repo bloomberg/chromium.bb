@@ -31,6 +31,8 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -148,69 +150,70 @@ const struct UmaEnumCommandIdPair {
   int enum_id;
   int control_id;
 } kUmaEnumToControlId[] = {
-      /*
-        enum id for 0, 1 are detected using
-        RenderViewContextMenu::IsContentCustomCommandId and
-        ContextMenuMatcher::IsExtensionsCustomCommandId
-      */
-      {2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST},
-      {3, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB},
-      {4, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW},
-      {5, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD},
-      {6, IDC_CONTENT_CONTEXT_SAVELINKAS},
-      {7, IDC_CONTENT_CONTEXT_SAVEAVAS},
-      {8, IDC_CONTENT_CONTEXT_SAVEIMAGEAS},
-      {9, IDC_CONTENT_CONTEXT_COPYLINKLOCATION},
-      {10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION},
-      {11, IDC_CONTENT_CONTEXT_COPYAVLOCATION},
-      {12, IDC_CONTENT_CONTEXT_COPYIMAGE},
-      {13, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB},
-      {14, IDC_CONTENT_CONTEXT_OPENAVNEWTAB},
-      {15, IDC_CONTENT_CONTEXT_PLAYPAUSE},
-      {16, IDC_CONTENT_CONTEXT_MUTE},
-      {17, IDC_CONTENT_CONTEXT_LOOP},
-      {18, IDC_CONTENT_CONTEXT_CONTROLS},
-      {19, IDC_CONTENT_CONTEXT_ROTATECW},
-      {20, IDC_CONTENT_CONTEXT_ROTATECCW},
-      {21, IDC_BACK},
-      {22, IDC_FORWARD},
-      {23, IDC_SAVE_PAGE},
-      {24, IDC_RELOAD},
-      {25, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP},
-      {26, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP},
-      {27, IDC_PRINT},
-      {28, IDC_VIEW_SOURCE},
-      {29, IDC_CONTENT_CONTEXT_INSPECTELEMENT},
-      {30, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE},
-      {31, IDC_CONTENT_CONTEXT_VIEWPAGEINFO},
-      {32, IDC_CONTENT_CONTEXT_TRANSLATE},
-      {33, IDC_CONTENT_CONTEXT_RELOADFRAME},
-      {34, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE},
-      {35, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
-      {36, IDC_CONTENT_CONTEXT_UNDO},
-      {37, IDC_CONTENT_CONTEXT_REDO},
-      {38, IDC_CONTENT_CONTEXT_CUT},
-      {39, IDC_CONTENT_CONTEXT_COPY},
-      {40, IDC_CONTENT_CONTEXT_PASTE},
-      {41, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
-      {42, IDC_CONTENT_CONTEXT_DELETE},
-      {43, IDC_CONTENT_CONTEXT_SELECTALL},
-      {44, IDC_CONTENT_CONTEXT_SEARCHWEBFOR},
-      {45, IDC_CONTENT_CONTEXT_GOTOURL},
-      {46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
-      {47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
-      {48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE},
-      {52, IDC_CONTENT_CONTEXT_OPENLINKWITH},
-      {53, IDC_CHECK_SPELLING_WHILE_TYPING},
-      {54, IDC_SPELLCHECK_MENU},
-      {55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
-      {56, IDC_SPELLCHECK_LANGUAGES_FIRST},
-      {57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
-      {58, IDC_SPELLCHECK_SUGGESTION_0},
-      {59, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
-      {60, IDC_SPELLPANEL_TOGGLE},
-      // Add new items here and use |enum_id| from the next line.
-      {61, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
+    /*
+      enum id for 0, 1 are detected using
+      RenderViewContextMenu::IsContentCustomCommandId and
+      ContextMenuMatcher::IsExtensionsCustomCommandId
+    */
+    {2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST},
+    {3, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB},
+    {4, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW},
+    {5, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD},
+    {6, IDC_CONTENT_CONTEXT_SAVELINKAS},
+    {7, IDC_CONTENT_CONTEXT_SAVEAVAS},
+    {8, IDC_CONTENT_CONTEXT_SAVEIMAGEAS},
+    {9, IDC_CONTENT_CONTEXT_COPYLINKLOCATION},
+    {10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION},
+    {11, IDC_CONTENT_CONTEXT_COPYAVLOCATION},
+    {12, IDC_CONTENT_CONTEXT_COPYIMAGE},
+    {13, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB},
+    {14, IDC_CONTENT_CONTEXT_OPENAVNEWTAB},
+    {15, IDC_CONTENT_CONTEXT_PLAYPAUSE},
+    {16, IDC_CONTENT_CONTEXT_MUTE},
+    {17, IDC_CONTENT_CONTEXT_LOOP},
+    {18, IDC_CONTENT_CONTEXT_CONTROLS},
+    {19, IDC_CONTENT_CONTEXT_ROTATECW},
+    {20, IDC_CONTENT_CONTEXT_ROTATECCW},
+    {21, IDC_BACK},
+    {22, IDC_FORWARD},
+    {23, IDC_SAVE_PAGE},
+    {24, IDC_RELOAD},
+    {25, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP},
+    {26, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP},
+    {27, IDC_PRINT},
+    {28, IDC_VIEW_SOURCE},
+    {29, IDC_CONTENT_CONTEXT_INSPECTELEMENT},
+    {30, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE},
+    {31, IDC_CONTENT_CONTEXT_VIEWPAGEINFO},
+    {32, IDC_CONTENT_CONTEXT_TRANSLATE},
+    {33, IDC_CONTENT_CONTEXT_RELOADFRAME},
+    {34, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE},
+    {35, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
+    {36, IDC_CONTENT_CONTEXT_UNDO},
+    {37, IDC_CONTENT_CONTEXT_REDO},
+    {38, IDC_CONTENT_CONTEXT_CUT},
+    {39, IDC_CONTENT_CONTEXT_COPY},
+    {40, IDC_CONTENT_CONTEXT_PASTE},
+    {41, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
+    {42, IDC_CONTENT_CONTEXT_DELETE},
+    {43, IDC_CONTENT_CONTEXT_SELECTALL},
+    {44, IDC_CONTENT_CONTEXT_SEARCHWEBFOR},
+    {45, IDC_CONTENT_CONTEXT_GOTOURL},
+    {46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
+    {47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
+    {48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE},
+    {52, IDC_CONTENT_CONTEXT_OPENLINKWITH},
+    {53, IDC_CHECK_SPELLING_WHILE_TYPING},
+    {54, IDC_SPELLCHECK_MENU},
+    {55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
+    {56, IDC_SPELLCHECK_LANGUAGES_FIRST},
+    {57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
+    {58, IDC_SPELLCHECK_SUGGESTION_0},
+    {59, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
+    {60, IDC_SPELLPANEL_TOGGLE},
+    {61, IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB},
+    // Add new items here and use |enum_id| from the next line.
+    {62, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -692,8 +695,16 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
-                                  IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+  if (!browser_context_->IsOffTheRecord() &&
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context_)->CanUseDataReductionProxy(params_.src_url)) {
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB,
+        IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB);
+  } else {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
+                                    IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+  }
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
@@ -1102,6 +1113,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     // The images shown in the most visited thumbnails can't be opened or
     // searched for conventionally.
+    case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       return params_.src_url.is_valid() &&
@@ -1398,6 +1410,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       GetImageThumbnailForSearch();
+      break;
+
+    case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
+      OpenURLWithExtraHeaders(
+          params_.src_url, GetDocumentURL(params_), NEW_BACKGROUND_TAB,
+          ui::PAGE_TRANSITION_LINK,
+          data_reduction_proxy::kDataReductionPassThroughHeader);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:

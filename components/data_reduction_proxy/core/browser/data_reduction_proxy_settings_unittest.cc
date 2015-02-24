@@ -71,6 +71,23 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   test_context_->RunUntilIdle();
 }
 
+TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
+  settings_->InitPrefMembers();
+  // The proxy is disabled initially.
+  test_context_->config()->SetStateForTest(false, false, false, false);
+
+  GURL http_gurl("http://url.com/");
+  EXPECT_FALSE(settings_->CanUseDataReductionProxy(http_gurl));
+
+  CheckOnPrefChange(true, true, false);
+  EXPECT_TRUE(settings_->CanUseDataReductionProxy(http_gurl));
+
+  GURL https_gurl("https://url.com/");
+  EXPECT_FALSE(settings_->CanUseDataReductionProxy(https_gurl));
+
+  test_context_->RunUntilIdle();
+}
+
 TEST_F(DataReductionProxySettingsTest, TestResetDataReductionStatistics) {
   int64 original_content_length;
   int64 received_content_length;

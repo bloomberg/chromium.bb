@@ -57262,6 +57262,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="58" label="IDC_SPELLCHECK_SUGGESTION"/>
   <int value="59" label="IDC_SPELLCHECK_ADD_TO_DICTIONARY"/>
   <int value="60" label="IDC_SPELLPANEL_TOGGLE"/>
+  <int value="61" label="IDC_CONTENT_CONTEXT_OPENORIGINALIMAGENEWTAB"/>
 </enum>
 
 <enum name="ReportProcessingResult" type="int">

@@ -47,6 +47,9 @@ bool IsEnabledOnCommandLine() {
 
 namespace data_reduction_proxy {
 
+const char kDataReductionPassThroughHeader[] =
+    "X-PSA-Client-Options: v=1,m=1\nCache-Control: no-cache";
+
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       allowed_(false),
@@ -110,8 +113,14 @@ void DataReductionProxySettings::SetOnDataReductionEnabledCallback(
   on_data_reduction_proxy_enabled_.Run(IsDataReductionProxyEnabled());
 }
 
-bool DataReductionProxySettings::IsDataReductionProxyEnabled() {
+bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
   return spdy_proxy_auth_enabled_.GetValue() || IsEnabledOnCommandLine();
+}
+
+bool DataReductionProxySettings::CanUseDataReductionProxy(
+    const GURL& url) const {
+  return url.is_valid() && url.scheme() == url::kHttpScheme &&
+      IsDataReductionProxyEnabled();
 }
 
 bool

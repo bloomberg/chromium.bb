@@ -29,6 +29,11 @@ class DataReductionProxyStatisticsPrefs;
 // The number of days of bandwidth usage statistics that are tracked.
 const unsigned int kNumDaysInHistory = 60;
 
+// The header used to request a data reduction proxy pass through. When a
+// request is sent to the data reduction proxy with this header, it will respond
+// with the original uncompressed response.
+extern const char kDataReductionPassThroughHeader[];
+
 // The number of days of bandwidth usage statistics that are presented.
 const unsigned int kNumDaysInHistorySummary = 30;
 
@@ -74,7 +79,17 @@ class DataReductionProxySettings {
       const base::Callback<void(bool)>& on_data_reduction_proxy_enabled);
 
   // Returns true if the proxy is enabled.
-  bool IsDataReductionProxyEnabled();
+  bool IsDataReductionProxyEnabled() const;
+
+  // Returns true if the proxy can be used for the given url. This method does
+  // not take into account the proxy config or proxy retry list, so it can
+  // return true even when the proxy will not be used. Specifically, if
+  // another proxy configuration overrides use of data reduction proxy, or
+  // if data reduction proxy is in proxy retry list, then data reduction proxy
+  // will not be used, but this method will still return true. If this method
+  // returns false, then we are guaranteed that data reduction proxy will not be
+  // used.
+  bool CanUseDataReductionProxy(const GURL& url) const;
 
   // Returns true if the alternative proxy is enabled.
   bool IsDataReductionProxyAlternativeEnabled() const;
@@ -186,7 +201,8 @@ class DataReductionProxySettings {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestIsProxyEnabledOrManaged);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
-                           TestContentLengths);
+                           TestCanUseDataReductionProxy);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest, TestContentLengths);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestGetDailyContentLengths);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
