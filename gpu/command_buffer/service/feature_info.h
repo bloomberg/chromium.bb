@@ -56,7 +56,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
     bool native_vertex_array_object;
+    bool ext_texture_format_atc;
     bool ext_texture_format_bgra8888;
+    bool ext_texture_format_dxt1;
+    bool ext_texture_format_dxt5;
     bool enable_shader_name_hashing;
     bool enable_samplers;
     bool ext_draw_buffers;

@@ -140,6 +140,29 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
   return new DevToolsChannelData(res.release());
 }
 
+bool IsSupportedImageFormat(const gpu::Capabilities& capabilities,
+                            gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+      return capabilities.texture_format_atc;
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      return capabilities.texture_format_bgra8888;
+    case gfx::GpuMemoryBuffer::DXT1:
+      return capabilities.texture_format_dxt1;
+    case gfx::GpuMemoryBuffer::DXT5:
+      return capabilities.texture_format_dxt5;
+    case gfx::GpuMemoryBuffer::ETC1:
+      return capabilities.texture_format_etc1;
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -953,6 +976,11 @@ void GpuCommandBufferStub::OnCreateImage(int32 id,
   DCHECK(image_manager);
   if (image_manager->LookupImage(id)) {
     LOG(ERROR) << "Image already exists with same ID.";
+    return;
+  }
+
+  if (!IsSupportedImageFormat(decoder_->GetCapabilities(), format)) {
+    LOG(ERROR) << "Image format is not supported.";
     return;
   }
 
