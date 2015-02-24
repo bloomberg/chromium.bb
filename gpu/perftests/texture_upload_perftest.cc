@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/perftests/measurements.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -232,10 +233,14 @@ class TextureUploadPerfTest : public testing::Test {
     EXPECT_EQ(pixels, pixels_rendered);
 
     std::vector<Measurement> measurements;
-    measurements.push_back(total_timers.GetAsMeasurement("total"));
-    measurements.push_back(tex_timers.GetAsMeasurement("teximage2d"));
-    measurements.push_back(draw_timers.GetAsMeasurement("drawarrays"));
-    measurements.push_back(finish_timers.GetAsMeasurement("finish"));
+    bool gpu_timer_errors =
+        gpu_timing_.IsAvailable() && gpu_timing_.CheckAndResetTimerErrors();
+    if (!gpu_timer_errors) {
+      measurements.push_back(total_timers.GetAsMeasurement("total"));
+      measurements.push_back(tex_timers.GetAsMeasurement("teximage2d"));
+      measurements.push_back(draw_timers.GetAsMeasurement("drawarrays"));
+      measurements.push_back(finish_timers.GetAsMeasurement("finish"));
+    }
     return measurements;
   }
 
@@ -259,22 +264,29 @@ TEST_F(TextureUploadPerfTest, glTexImage2d) {
   std::vector<uint8> pixels;
   base::SmallMap<std::map<std::string, Measurement>>
       aggregates;  // indexed by name
+  int successful_runs = 0;
   for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
     GenerateTextureData(size_, i + 1, &pixels);
     auto run = UploadAndDraw(pixels, GL_RGBA, GL_UNSIGNED_BYTE);
-    if (i >= kUploadPerfWarmupRuns) {
-      for (const Measurement& m : run) {
-        auto& agg = aggregates[m.name];
-        agg.name = m.name;
-        agg.Increment(m);
-      }
+    if (i < kUploadPerfWarmupRuns || !run.size()) {
+      continue;
+    }
+    successful_runs++;
+    for (const Measurement& measurement : run) {
+      auto& aggregate = aggregates[measurement.name];
+      aggregate.name = measurement.name;
+      aggregate.Increment(measurement);
     }
   }
 
-  for (const auto& entry : aggregates) {
-    const auto m = entry.second.Divide(kUploadPerfTestRuns);
-    m.PrintResult();
+  if (successful_runs) {
+    for (const auto& entry : aggregates) {
+      const auto m = entry.second.Divide(successful_runs);
+      m.PrintResult();
+    }
   }
+  perf_test::PrintResult("sample_runs", "", "",
+                         static_cast<size_t>(successful_runs), "laps", true);
 }
 
 }  // namespace

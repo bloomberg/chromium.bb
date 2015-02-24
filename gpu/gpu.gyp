@@ -298,6 +298,23 @@
         'perftests/run_all_tests.cc',
         'perftests/texture_upload_perftest.cc',
       ],
+      'conditions': [
+        ['OS == "android"',
+          {
+            'dependencies': [
+              '../testing/android/native_test.gyp:native_test_native_code',
+            ],
+          }
+        ],
+        # See http://crbug.com/162998#c4 for why this is needed.
+        ['OS=="linux" and use_allocator!="none"',
+          {
+            'dependencies': [
+              '../base/allocator/allocator.gyp:allocator',
+            ],
+          }
+        ],
+      ],
     },
     {
       # GN version: //gpu:gl_tests
@@ -665,6 +682,17 @@
           ],
           'variables': {
             'test_suite_name': 'gpu_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+        {
+          'target_name': 'gpu_perftests_apk',
+          'type': 'none',
+          'dependencies': [
+            'gpu_perftests',
+          ],
+          'variables': {
+            'test_suite_name': 'gpu_perftests',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
