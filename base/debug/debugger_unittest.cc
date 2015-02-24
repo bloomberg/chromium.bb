@@ -31,8 +31,7 @@ TEST(Debugger, CrashAtBreakpoint) {
 }
 
 #if defined(OS_WIN)
-// TODO(scottmg): http://crbug.com/461160
-TEST(Debugger, DISABLED_DoesntExecuteBeyondBreakpoint) {
+TEST(Debugger, DoesntExecuteBeyondBreakpoint) {
   EXPECT_EXIT(CrashWithBreakDebugger(),
               ::testing::ExitedWithCode(0x80000003), "");
 }

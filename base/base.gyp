@@ -774,6 +774,14 @@
           'msvs_disabled_warnings': [
             4267,
           ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/',
+              'files': [
+                '../build/win/dbghelp_xp/dbghelp.dll',
+              ],
+            },
+          ],
           'conditions': [
             # This is needed so base_unittests uses the allocator shim, as
             # SecurityTest.MemoryAllocationRestriction* tests are dependent
