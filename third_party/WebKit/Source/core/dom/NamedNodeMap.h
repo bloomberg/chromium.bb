@@ -67,7 +67,7 @@ public:
 
     Element* element() const { return m_element; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit NamedNodeMap(Element* element)

@@ -88,7 +88,7 @@ public:
     virtual void documentWasDisposed() override;
 #endif
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     static Fullscreen* fromIfExistsSlow(Document&);

@@ -132,7 +132,7 @@ PassOwnPtrWillBeRawPtr<CustomElementCallbackInvocation> CustomElementCallbackInv
     return adoptPtrWillBeNoop(new AttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
-void CustomElementCallbackInvocation::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementCallbackInvocation)
 {
     visitor->trace(m_callbacks);
     CustomElementProcessingStep::trace(visitor);

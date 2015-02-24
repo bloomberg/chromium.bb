@@ -45,7 +45,7 @@ public:
     // API for CustomElement to kick off notifications
     static void notifyElementWasDestroyed(Element*);
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     CustomElementObserver() { }

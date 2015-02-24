@@ -58,7 +58,7 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskResolutionStep::process
     return CustomElementMicrotaskStep::FinishedProcessing;
 }
 
-void CustomElementMicrotaskResolutionStep::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementMicrotaskResolutionStep)
 {
     visitor->trace(m_context);
     visitor->trace(m_element);

@@ -135,7 +135,7 @@ void PendingScript::notifyAppendData(ScriptResource* resource)
         m_streamer->notifyAppendData(resource);
 }
 
-void PendingScript::trace(Visitor* visitor)
+DEFINE_TRACE(PendingScript)
 {
     visitor->trace(m_element);
     visitor->trace(m_streamer);

@@ -204,7 +204,7 @@ bool DatasetDOMStringMap::deleteItem(const String& name)
     return false;
 }
 
-void DatasetDOMStringMap::trace(Visitor* visitor)
+DEFINE_TRACE(DatasetDOMStringMap)
 {
     visitor->trace(m_element);
     DOMStringMap::trace(visitor);

@@ -54,7 +54,7 @@ MessageChannel::MessageChannel(ExecutionContext* context)
     createChannel(m_port1.get(), m_port2.get());
 }
 
-void MessageChannel::trace(Visitor* visitor)
+DEFINE_TRACE(MessageChannel)
 {
     visitor->trace(m_port1);
     visitor->trace(m_port2);

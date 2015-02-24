@@ -315,7 +315,7 @@ void ProcessingInstruction::clearSheet()
     m_sheet.release()->clearOwnerNode();
 }
 
-void ProcessingInstruction::trace(Visitor* visitor)
+DEFINE_TRACE(ProcessingInstruction)
 {
     visitor->trace(m_sheet);
     CharacterData::trace(visitor);

@@ -58,7 +58,7 @@ public:
 
     static void movePendingAsyncScript(Document&, Document&, ScriptLoader*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit ScriptRunner(Document*);

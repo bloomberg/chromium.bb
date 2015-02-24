@@ -41,7 +41,7 @@ class ExecutionContext;
 class StringCallback : public GarbageCollectedFinalized<StringCallback> {
 public:
     virtual ~StringCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(const String& data) = 0;
 
     // Helper to post callback task.

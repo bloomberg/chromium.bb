@@ -508,7 +508,7 @@ void ContainerNode::disconnectDescendantFrames()
     ChildFrameDisconnector(*this).disconnect();
 }
 
-void ContainerNode::trace(Visitor* visitor)
+DEFINE_TRACE(ContainerNode)
 {
     visitor->trace(m_firstChild);
     visitor->trace(m_lastChild);

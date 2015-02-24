@@ -124,7 +124,7 @@ public:
 
     StyleSheetList* styleSheets();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ShadowRoot(Document&, ShadowRootType);

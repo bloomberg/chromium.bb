@@ -118,7 +118,7 @@ inline void UserActionElementSet::setFlags(Element* element, unsigned flags)
     m_elements.add(element, flags);
 }
 
-void UserActionElementSet::trace(Visitor* visitor)
+DEFINE_TRACE(UserActionElementSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_elements);

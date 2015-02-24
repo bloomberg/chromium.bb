@@ -24,7 +24,7 @@ public:
     bool isEmpty() const { return m_queue.isEmpty(); }
     void dispatch();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 #if !defined(NDEBUG)
     void show(unsigned indent);

@@ -133,7 +133,7 @@ public:
     WillBeHeapVector<RefPtrWillBeMember<Attr> >* attrNodeList() { return m_attrNodeList.get(); }
     void removeAttrNodeList() { m_attrNodeList.clear(); }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     short m_tabindex;

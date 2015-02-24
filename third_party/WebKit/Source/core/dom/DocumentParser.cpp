@@ -51,7 +51,7 @@ DocumentParser::~DocumentParser()
 #endif
 }
 
-void DocumentParser::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentParser)
 {
     visitor->trace(m_document);
 #if ENABLE(OILPAN)

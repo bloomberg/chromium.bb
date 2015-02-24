@@ -61,7 +61,7 @@ public:
     virtual bool canContainRangeEndPoint() const override final { return true; }
     virtual NodeType nodeType() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     Text(TreeScope& treeScope, const String& data, ConstructionType type)

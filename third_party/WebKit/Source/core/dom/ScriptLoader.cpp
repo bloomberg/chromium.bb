@@ -80,7 +80,7 @@ ScriptLoader::~ScriptLoader()
     m_pendingScript.stopWatchingForLoad(this);
 }
 
-void ScriptLoader::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptLoader)
 {
     visitor->trace(m_element);
     visitor->trace(m_pendingScript);

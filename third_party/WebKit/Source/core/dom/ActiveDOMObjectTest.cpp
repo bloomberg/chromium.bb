@@ -44,7 +44,7 @@ class MockActiveDOMObject final : public GarbageCollectedFinalized<MockActiveDOM
 public:
     explicit MockActiveDOMObject(ExecutionContext* context) : ActiveDOMObject(context) { }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         ActiveDOMObject::trace(visitor);
     }

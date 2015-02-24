@@ -60,7 +60,7 @@ public:
     float width() const { return m_rect.width(); }
     float height() const { return m_rect.height(); }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     ClientRect();

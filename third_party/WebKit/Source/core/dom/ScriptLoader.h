@@ -44,7 +44,7 @@ public:
     }
 
     virtual ~ScriptLoader();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     Element* element() const { return m_element; }
 

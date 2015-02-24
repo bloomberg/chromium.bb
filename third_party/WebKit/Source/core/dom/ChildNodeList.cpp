@@ -66,7 +66,7 @@ Node* ChildNodeList::traverseBackwardToOffset(unsigned offset, Node& currentNode
     return 0;
 }
 
-void ChildNodeList::trace(Visitor* visitor)
+DEFINE_TRACE(ChildNodeList)
 {
     visitor->trace(m_parent);
     visitor->trace(m_collectionIndexCache);

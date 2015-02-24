@@ -54,7 +54,7 @@ public:
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32> m_nodes;

@@ -76,7 +76,7 @@ PassRefPtrWillBeRawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget
     return adoptRefWillBeNoop(new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos, m_pagePos, m_radius, m_rotationAngle, m_force, m_absoluteLocation));
 }
 
-void Touch::trace(Visitor* visitor)
+DEFINE_TRACE(Touch)
 {
     visitor->trace(m_target);
 }

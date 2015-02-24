@@ -65,7 +65,7 @@ void StyleSheetCollection::appendSheetForList(StyleSheet* sheet)
     m_styleSheetsForStyleSheetList.append(sheet);
 }
 
-void StyleSheetCollection::trace(Visitor* visitor)
+DEFINE_TRACE(StyleSheetCollection)
 {
     visitor->trace(m_activeAuthorStyleSheets);
     visitor->trace(m_styleSheetsForStyleSheetList);

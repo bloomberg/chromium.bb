@@ -96,7 +96,7 @@ public:
 
     WillBeHeapHashSet<RawPtrWillBeMember<Node> > getObservedNodes() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     struct ObserverLessThan;

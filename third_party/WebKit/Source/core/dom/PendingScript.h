@@ -75,7 +75,7 @@ public:
     virtual void notifyFinished(Resource*);
     virtual void notifyAppendData(ScriptResource*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 

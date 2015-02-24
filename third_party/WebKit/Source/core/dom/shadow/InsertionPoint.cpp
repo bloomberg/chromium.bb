@@ -247,7 +247,7 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
     HTMLElement::removedFrom(insertionPoint);
 }
 
-void InsertionPoint::trace(Visitor* visitor)
+DEFINE_TRACE(InsertionPoint)
 {
     visitor->trace(m_distribution);
     HTMLElement::trace(visitor);

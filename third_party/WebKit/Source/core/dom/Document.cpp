@@ -372,7 +372,7 @@ DocumentVisibilityObserver::~DocumentVisibilityObserver()
 #endif
 }
 
-void DocumentVisibilityObserver::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentVisibilityObserver)
 {
     visitor->trace(m_document);
 }
@@ -5683,7 +5683,7 @@ v8::Handle<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, cons
     return wrapper;
 }
 
-void Document::trace(Visitor* visitor)
+DEFINE_TRACE(Document)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_importsController);
@@ -5734,7 +5734,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_timeline);
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
-    visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
+    visitor->template registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
 #endif
     TreeScope::trace(visitor);

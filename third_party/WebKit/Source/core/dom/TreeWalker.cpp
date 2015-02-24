@@ -276,7 +276,7 @@ Children:
     return 0;
 }
 
-void TreeWalker::trace(Visitor* visitor)
+DEFINE_TRACE(TreeWalker)
 {
     visitor->trace(m_current);
     NodeIteratorBase::trace(visitor);

@@ -56,7 +56,7 @@ WillBeHeapVector<RefPtrWillBeMember<Attr> >& ElementRareData::ensureAttrNodeList
     return *m_attrNodeList;
 }
 
-void ElementRareData::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(ElementRareData)
 {
     visitor->trace(m_dataset);
     visitor->trace(m_classList);

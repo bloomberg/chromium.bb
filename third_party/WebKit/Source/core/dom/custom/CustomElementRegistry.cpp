@@ -98,7 +98,7 @@ CustomElementDefinition* CustomElementRegistry::find(const CustomElementDescript
     return m_definitions.get(descriptor);
 }
 
-void CustomElementRegistry::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementRegistry)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_definitions);

@@ -69,7 +69,7 @@ public:
     static bool isTextMIMEType(const String&);
     static bool isJSONMIMEType(const String&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMImplementation(Document&);

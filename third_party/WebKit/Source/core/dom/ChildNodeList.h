@@ -58,7 +58,7 @@ public:
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
     Node* traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ChildNodeList(ContainerNode& rootNode);

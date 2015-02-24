@@ -2360,7 +2360,7 @@ void Node::setCustomElementState(CustomElementState newState)
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Unresolved)); // :unresolved has changed
 }
 
-void Node::trace(Visitor* visitor)
+DEFINE_TRACE(Node)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_parentOrShadowHostNode);

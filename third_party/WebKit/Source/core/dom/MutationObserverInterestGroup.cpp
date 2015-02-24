@@ -83,7 +83,7 @@ void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtrWillBeRawPtr
     }
 }
 
-void MutationObserverInterestGroup::trace(Visitor* visitor)
+DEFINE_TRACE(MutationObserverInterestGroup)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_observers);

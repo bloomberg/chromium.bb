@@ -210,7 +210,7 @@ void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenc
     }
 }
 
-void NodeIterator::trace(Visitor* visitor)
+DEFINE_TRACE(NodeIterator)
 {
     visitor->trace(m_referenceNode);
     visitor->trace(m_candidateNode);

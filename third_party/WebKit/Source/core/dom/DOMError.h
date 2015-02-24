@@ -59,7 +59,7 @@ public:
     const String& name() const { return m_name; }
     const String& message() const { return m_message; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 protected:
     explicit DOMError(const String& name);

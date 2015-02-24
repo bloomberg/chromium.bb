@@ -87,7 +87,7 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
     return FinishedProcessing;
 }
 
-void CustomElementMicrotaskImportStep::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementMicrotaskImportStep)
 {
     visitor->trace(m_import);
     visitor->trace(m_queue);

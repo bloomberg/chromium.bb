@@ -82,7 +82,7 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     m_phase = Quiescent;
 }
 
-void CustomElementMicrotaskDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementMicrotaskDispatcher)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_elements);

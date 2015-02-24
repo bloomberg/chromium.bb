@@ -91,7 +91,7 @@ public:
     DocumentMarkerVector markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 #ifndef NDEBUG
     void showMarkers() const;

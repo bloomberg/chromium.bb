@@ -20,7 +20,7 @@ public:
     double z() const { return m_z; }
     double w() const { return m_w; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 protected:
     DOMPointReadOnly(double x, double y, double z, double w);

@@ -85,7 +85,7 @@ public:
 
     virtual Element* element() = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     DOMStringMap() { }

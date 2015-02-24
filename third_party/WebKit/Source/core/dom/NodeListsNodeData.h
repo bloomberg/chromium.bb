@@ -201,7 +201,7 @@ public:
         }
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     NodeListsNodeData()

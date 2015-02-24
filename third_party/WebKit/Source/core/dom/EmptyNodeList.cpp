@@ -49,7 +49,7 @@ Node* EmptyNodeList::virtualOwnerNode() const
     return &ownerNode();
 }
 
-void EmptyNodeList::trace(Visitor* visitor)
+DEFINE_TRACE(EmptyNodeList)
 {
     visitor->trace(m_owner);
     NodeList::trace(visitor);

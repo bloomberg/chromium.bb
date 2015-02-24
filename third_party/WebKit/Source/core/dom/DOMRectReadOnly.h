@@ -25,7 +25,7 @@ public:
     double bottom() const { return std::max(m_y, m_y + m_height); }
     double left() const { return std::min(m_x, m_x + m_width); }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 protected:
     DOMRectReadOnly(double x, double y, double width, double height);

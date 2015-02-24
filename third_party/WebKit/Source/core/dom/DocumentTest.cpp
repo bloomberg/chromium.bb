@@ -75,7 +75,7 @@ public:
         return adoptPtrWillBeNoop(new MockDocumentVisibilityObserver(document));
     }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     MOCK_METHOD1(didChangeVisibilityState, void(PageVisibilityState));
 

@@ -40,7 +40,7 @@ private:
                 executionContext()->consumeWindowInteraction();
         }
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             ContextLifecycleObserver::trace(visitor);
         }

@@ -58,7 +58,7 @@ public:
     void documentDidRemoveLastRef();
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     enum ElementFlags {

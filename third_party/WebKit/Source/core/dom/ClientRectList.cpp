@@ -60,7 +60,7 @@ ClientRect* ClientRectList::item(unsigned index)
     return m_list[index].get();
 }
 
-void ClientRectList::trace(Visitor* visitor)
+DEFINE_TRACE(ClientRectList)
 {
     visitor->trace(m_list);
 }

@@ -62,7 +62,7 @@ public:
 
     void resolve(Element*, const CustomElementDescriptor&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 protected:
     CustomElementRegistrationContext();

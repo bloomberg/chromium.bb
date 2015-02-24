@@ -56,7 +56,7 @@ public:
         return NotInsideLink;
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit VisitedLinkState(const Document&);

@@ -122,7 +122,7 @@ bool ElementData::isEquivalent(const ElementData* other) const
     return true;
 }
 
-void ElementData::trace(Visitor* visitor)
+DEFINE_TRACE(ElementData)
 {
     if (m_isUnique)
         toUniqueElementData(this)->traceAfterDispatch(visitor);
@@ -130,7 +130,7 @@ void ElementData::trace(Visitor* visitor)
         toShareableElementData(this)->traceAfterDispatch(visitor);
 }
 
-void ElementData::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(ElementData)
 {
     visitor->trace(m_inlineStyle);
 }
@@ -211,7 +211,7 @@ PassRefPtrWillBeRawPtr<ShareableElementData> UniqueElementData::makeShareableCop
     return adoptRefWillBeNoop(new (slot) ShareableElementData(*this));
 }
 
-void UniqueElementData::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(UniqueElementData)
 {
     visitor->trace(m_presentationAttributeStyle);
     ElementData::traceAfterDispatch(visitor);

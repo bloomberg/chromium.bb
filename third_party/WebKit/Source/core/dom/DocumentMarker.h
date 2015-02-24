@@ -124,7 +124,7 @@ public:
         return !(*this == o);
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     MarkerType m_type;
@@ -149,7 +149,7 @@ public:
     virtual bool isDescription() const { return false; }
     virtual bool isTextMatch() const { return false; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

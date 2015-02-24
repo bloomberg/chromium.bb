@@ -1763,7 +1763,7 @@ FloatRect Range::boundingRect() const
     return result;
 }
 
-void Range::trace(Visitor* visitor)
+DEFINE_TRACE(Range)
 {
     visitor->trace(m_ownerDocument);
     visitor->trace(m_start);

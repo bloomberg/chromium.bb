@@ -223,7 +223,7 @@ void Attr::attachToElement(Element* element, const AtomicString& attachedLocalNa
     m_standaloneValueOrAttachedLocalName = attachedLocalName;
 }
 
-void Attr::trace(Visitor* visitor)
+DEFINE_TRACE(Attr)
 {
     visitor->trace(m_element);
     ContainerNode::trace(visitor);

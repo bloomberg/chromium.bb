@@ -51,7 +51,7 @@ short NodeIteratorBase::acceptNode(Node* node, ExceptionState& exceptionState) c
     return m_filter->acceptNode(node, exceptionState);
 }
 
-void NodeIteratorBase::trace(Visitor* visitor)
+DEFINE_TRACE(NodeIteratorBase)
 {
     visitor->trace(m_root);
     visitor->trace(m_filter);

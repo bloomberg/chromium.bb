@@ -319,7 +319,7 @@ StyleSheetList* ShadowRoot::styleSheets()
     return m_shadowRootRareData->styleSheets();
 }
 
-void ShadowRoot::trace(Visitor* visitor)
+DEFINE_TRACE(ShadowRoot)
 {
     visitor->trace(m_prev);
     visitor->trace(m_next);

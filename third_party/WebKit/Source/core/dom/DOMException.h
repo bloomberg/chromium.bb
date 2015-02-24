@@ -58,7 +58,7 @@ public:
     static String getErrorName(ExceptionCode);
     static String getErrorMessage(ExceptionCode);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     DOMException(unsigned short m_code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage);

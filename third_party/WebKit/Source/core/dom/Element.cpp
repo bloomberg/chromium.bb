@@ -3377,7 +3377,7 @@ bool Element::supportsStyleSharing() const
     return true;
 }
 
-void Element::trace(Visitor* visitor)
+DEFINE_TRACE(Element)
 {
 #if ENABLE(OILPAN)
     if (hasRareData())

@@ -69,7 +69,7 @@ public:
 
     void didDistributeNode(const Node*, InsertionPoint*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     ElementShadow();

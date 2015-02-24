@@ -84,7 +84,7 @@ Element* LiveNodeList::traverseBackwardToOffset(unsigned offset, Element& curren
     return traverseMatchingElementsBackwardToOffset(currentElement, &rootNode(), offset, currentOffset, IsMatch(*this));
 }
 
-void LiveNodeList::trace(Visitor* visitor)
+DEFINE_TRACE(LiveNodeList)
 {
     visitor->trace(m_collectionItemsCache);
     LiveNodeListBase::trace(visitor);

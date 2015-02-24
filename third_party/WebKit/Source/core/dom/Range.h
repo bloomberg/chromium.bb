@@ -156,7 +156,7 @@ public:
     void formatForDebugger(char* buffer, unsigned length) const;
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit Range(Document&);

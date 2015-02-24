@@ -93,7 +93,7 @@ PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomEleme
     return candidates.release();
 }
 
-void CustomElementUpgradeCandidateMap::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementUpgradeCandidateMap)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_upgradeCandidates);

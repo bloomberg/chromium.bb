@@ -45,7 +45,7 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
         cache.value->invalidateCache();
 }
 
-void NodeListsNodeData::trace(Visitor* visitor)
+DEFINE_TRACE(NodeListsNodeData)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_childNodeList);

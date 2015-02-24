@@ -53,7 +53,7 @@ public:
     void add(const CustomElementDescriptor&, Element*);
     PassOwnPtrWillBeRawPtr<ElementSet> takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CustomElementUpgradeCandidateMap() { }

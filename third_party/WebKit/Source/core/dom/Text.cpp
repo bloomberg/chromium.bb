@@ -443,7 +443,7 @@ PassRefPtrWillBeRawPtr<Text> Text::cloneWithData(const String& data)
     return create(document(), data);
 }
 
-void Text::trace(Visitor* visitor)
+DEFINE_TRACE(Text)
 {
 #if ENABLE(OILPAN)
     increaseExternallyAllocatedBytesAliveIfNeeded(m_data.length());

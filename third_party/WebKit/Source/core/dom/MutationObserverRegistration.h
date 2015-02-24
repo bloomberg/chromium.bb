@@ -61,7 +61,7 @@ public:
 
     void addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node> >&) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void dispose();
 

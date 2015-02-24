@@ -58,7 +58,7 @@ public:
     Element* getElementByLowercasedMapName(const AtomicString&, const TreeScope*) const;
     Element* getElementByLabelForAttribute(const AtomicString&, const TreeScope*) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     template<bool keyMatches(const AtomicString&, const Element&)>
@@ -72,7 +72,7 @@ private:
         {
         }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         RawPtrWillBeMember<Element> element;
         unsigned count;

@@ -62,7 +62,7 @@ public:
     virtual const AtomicString& namespaceURI() const override { return m_name.namespaceURI(); }
     const AtomicString& prefix() const { return m_name.prefix(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     Attr(Element&, const QualifiedName&);

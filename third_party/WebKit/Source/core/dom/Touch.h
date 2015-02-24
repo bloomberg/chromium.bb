@@ -73,7 +73,7 @@ public:
     const FloatPoint& screenLocation() const { return m_screenPos; }
     PassRefPtrWillBeRawPtr<Touch> cloneWithNewTarget(EventTarget*) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Touch(LocalFrame* frame, EventTarget* target, unsigned identifier,

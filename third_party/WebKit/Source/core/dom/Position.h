@@ -202,7 +202,7 @@ public:
     void showTreeForThis() const;
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     int offsetForPositionAfterAnchor() const;

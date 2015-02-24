@@ -34,7 +34,7 @@ class StyleElement : public WillBeGarbageCollectedMixin {
 public:
     StyleElement(Document*, bool createdByParser);
     virtual ~StyleElement();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual const AtomicString& type() const = 0;

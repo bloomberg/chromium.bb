@@ -43,7 +43,7 @@ public:
         return adoptPtrWillBeNoop(new NodeMutationObserverData);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
         visitor->trace(registry);
@@ -106,9 +106,9 @@ public:
         ConnectedFrameCountBits = 10, // Must fit Page::maxNumberOfFrames.
     };
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
     void finalizeGarbageCollectedObject();
 
 protected:

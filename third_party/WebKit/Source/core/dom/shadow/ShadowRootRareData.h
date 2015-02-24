@@ -70,7 +70,7 @@ public:
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
     void setStyleSheets(PassRefPtrWillBeRawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_shadowInsertionPointOfYoungerShadowRoot);
         visitor->trace(m_descendantInsertionPoints);

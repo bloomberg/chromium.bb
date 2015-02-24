@@ -38,7 +38,7 @@ namespace blink {
 class RequestAnimationFrameCallback : public GarbageCollectedFinalized<RequestAnimationFrameCallback> {
 public:
     virtual ~RequestAnimationFrameCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(double highResTimeMs) = 0;
 
     int m_id;

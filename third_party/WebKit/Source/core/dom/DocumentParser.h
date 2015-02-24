@@ -39,7 +39,7 @@ class TextResourceDecoder;
 class DocumentParser : public RefCountedWillBeGarbageCollectedFinalized<DocumentParser> {
 public:
     virtual ~DocumentParser();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     virtual ScriptableDocumentParser* asScriptableDocumentParser() { return 0; }
 

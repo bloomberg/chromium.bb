@@ -209,7 +209,7 @@ public:
     void setObservedDocument(Document&);
 
 protected:
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     void registerObserver(Document&);
@@ -1042,7 +1042,7 @@ public:
 
     void updateStyleInvalidationIfNeeded();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool hasSVGFilterElementsRequiringLayerUpdate() const { return m_layerUpdateSVGFilterElements.size(); }
     void didRecalculateStyleForElement() { ++m_styleRecalcElementCounter; }

@@ -84,7 +84,7 @@ public:
         m_condition = condition;
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit NodeFilter(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition) : m_condition(condition) { }

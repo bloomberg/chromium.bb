@@ -38,7 +38,7 @@ class ProcessingInstruction final : public CharacterData, private ResourceOwner<
 public:
     static PassRefPtrWillBeRawPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
     virtual ~ProcessingInstruction();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     const String& target() const { return m_target; }
 

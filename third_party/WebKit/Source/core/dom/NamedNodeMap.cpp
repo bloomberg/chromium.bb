@@ -101,7 +101,7 @@ size_t NamedNodeMap::length() const
     return m_element->attributes().size();
 }
 
-void NamedNodeMap::trace(Visitor* visitor)
+DEFINE_TRACE(NamedNodeMap)
 {
     visitor->trace(m_element);
 }

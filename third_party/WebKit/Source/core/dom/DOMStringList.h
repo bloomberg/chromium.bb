@@ -57,7 +57,7 @@ public:
 
     operator const Vector<String>&() const { return m_strings; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     DOMStringList() { }

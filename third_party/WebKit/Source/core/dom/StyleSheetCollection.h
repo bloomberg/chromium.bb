@@ -59,7 +59,7 @@ public:
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > m_styleSheetsForStyleSheetList;

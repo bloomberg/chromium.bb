@@ -163,7 +163,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
     document().changedSelectorWatch();
 }
 
-void CSSSelectorWatch::trace(Visitor* visitor)
+DEFINE_TRACE(CSSSelectorWatch)
 {
     visitor->trace(m_watchedCallbackSelectors);
     visitor->trace(m_document);

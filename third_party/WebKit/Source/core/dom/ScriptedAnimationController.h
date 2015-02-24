@@ -50,7 +50,7 @@ public:
         return adoptRefWillBeNoop(new ScriptedAnimationController(document));
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void clearDocumentPointer() { m_document = nullptr; }
 
     typedef int CallbackId;

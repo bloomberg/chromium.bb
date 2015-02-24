@@ -58,7 +58,7 @@ public:
     virtual void detached(Element*) = 0;
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit CustomElementLifecycleCallbacks(CallbackType type) : m_callbackType(type) { }

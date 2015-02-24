@@ -47,7 +47,7 @@ public:
 
     Node& ownerNode() const { return *m_owner; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) { }

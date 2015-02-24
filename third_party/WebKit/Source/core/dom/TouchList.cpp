@@ -41,7 +41,7 @@ const Touch* TouchList::item(unsigned index) const
     return const_cast<TouchList*>(this)->item(index);
 }
 
-void TouchList::trace(Visitor* visitor)
+DEFINE_TRACE(TouchList)
 {
     visitor->trace(m_values);
 }

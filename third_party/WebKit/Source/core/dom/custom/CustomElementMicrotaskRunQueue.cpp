@@ -54,7 +54,7 @@ void CustomElementMicrotaskRunQueue::requestDispatchIfNeeded()
     m_dispatchIsPending = true;
 }
 
-void CustomElementMicrotaskRunQueue::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementMicrotaskRunQueue)
 {
     visitor->trace(m_syncQueue);
     visitor->trace(m_asyncQueue);

@@ -69,7 +69,7 @@ public:
 
     virtual String oldValue() { return String(); }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 };
 

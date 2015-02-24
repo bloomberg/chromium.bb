@@ -486,7 +486,7 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
     return result;
 }
 
-void DocumentMarkerController::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentMarkerController)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_markers);

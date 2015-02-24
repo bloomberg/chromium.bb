@@ -55,7 +55,7 @@ public:
 
     void updateSelectorMatches(const Vector<String>& removedSelectors, const Vector<String>& addedSelectors);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit CSSSelectorWatch(Document&);

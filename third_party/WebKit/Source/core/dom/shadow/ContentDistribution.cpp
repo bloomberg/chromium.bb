@@ -71,7 +71,7 @@ Node* ContentDistribution::previousTo(const Node* node) const
     return at(index - 1).get();
 }
 
-void ContentDistribution::trace(Visitor* visitor)
+DEFINE_TRACE(ContentDistribution)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_nodes);

@@ -53,7 +53,7 @@ public:
     unsigned length() const;
     ClientRect* item(unsigned index);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     ClientRectList();

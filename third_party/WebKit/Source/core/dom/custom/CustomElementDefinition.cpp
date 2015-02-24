@@ -44,7 +44,7 @@ CustomElementDefinition::CustomElementDefinition(const CustomElementDescriptor& 
 {
 }
 
-void CustomElementDefinition::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementDefinition)
 {
     visitor->trace(m_callbacks);
 }

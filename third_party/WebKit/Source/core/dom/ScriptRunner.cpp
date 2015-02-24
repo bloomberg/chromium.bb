@@ -183,7 +183,7 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
     }
 }
 
-void ScriptRunner::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptRunner)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);

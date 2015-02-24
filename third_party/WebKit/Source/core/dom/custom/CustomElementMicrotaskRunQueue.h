@@ -25,7 +25,7 @@ public:
     void requestDispatchIfNeeded();
     bool isEmpty() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     static void dispatchIfAlive(WeakPtr<CustomElementMicrotaskRunQueue> self);

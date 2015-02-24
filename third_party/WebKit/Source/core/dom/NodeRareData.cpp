@@ -46,7 +46,7 @@ struct SameSizeAsNodeRareData {
 
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), "NodeRareData should stay small");
 
-void NodeRareData::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(NodeRareData)
 {
     visitor->trace(m_mutationObserverData);
     // Do not keep empty NodeListsNodeData objects around.
@@ -56,7 +56,7 @@ void NodeRareData::traceAfterDispatch(Visitor* visitor)
         visitor->trace(m_nodeLists);
 }
 
-void NodeRareData::trace(Visitor* visitor)
+DEFINE_TRACE(NodeRareData)
 {
     if (m_isElementRareData)
         static_cast<ElementRareData*>(this)->traceAfterDispatch(visitor);

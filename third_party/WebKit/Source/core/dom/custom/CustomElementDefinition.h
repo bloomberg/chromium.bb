@@ -45,7 +45,7 @@ public:
     const CustomElementDescriptor& descriptor() const { return m_descriptor; }
     CustomElementLifecycleCallbacks* callbacks() const { return m_callbacks.get(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     CustomElementDefinition(const CustomElementDescriptor&, PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>);

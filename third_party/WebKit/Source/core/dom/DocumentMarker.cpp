@@ -148,7 +148,7 @@ bool DocumentMarker::activeMatch() const
     return false;
 }
 
-void DocumentMarker::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentMarker)
 {
     visitor->trace(m_details);
 }

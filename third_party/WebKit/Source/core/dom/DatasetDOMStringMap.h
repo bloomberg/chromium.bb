@@ -54,7 +54,7 @@ public:
 
     virtual Element* element() override { return m_element; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit DatasetDOMStringMap(Element* element)

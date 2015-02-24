@@ -179,14 +179,14 @@ Element* DocumentOrderedMap::getElementByLabelForAttribute(const AtomicString& k
     return get<keyMatchesLabelForAttribute>(key, scope);
 }
 
-void DocumentOrderedMap::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentOrderedMap)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_map);
 #endif
 }
 
-void DocumentOrderedMap::MapEntry::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentOrderedMap::MapEntry)
 {
     visitor->trace(element);
 #if ENABLE(OILPAN)

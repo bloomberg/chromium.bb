@@ -176,7 +176,7 @@ public:
 
     void platformColorsChanged();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     // CSSFontSelectorClient implementation.
@@ -232,7 +232,7 @@ private:
         TreeScope* operator[](size_t i) { return m_treeScopes[i]; }
         const TreeScope* operator[](size_t i) const { return m_treeScopes[i]; }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 16> m_treeScopes;

@@ -224,7 +224,7 @@ void StyleElement::startLoadingDynamicSheet(Document& document)
     document.styleEngine()->addPendingSheet();
 }
 
-void StyleElement::trace(Visitor* visitor)
+DEFINE_TRACE(StyleElement)
 {
     visitor->trace(m_sheet);
 }

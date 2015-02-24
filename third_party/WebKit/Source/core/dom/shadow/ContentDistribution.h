@@ -62,7 +62,7 @@ public:
 
     const WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes() const { return m_nodes; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;

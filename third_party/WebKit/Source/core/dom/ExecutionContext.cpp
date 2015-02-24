@@ -53,7 +53,7 @@ public:
         , m_callStack(callStack)
     {
     }
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_callStack);
     }
@@ -231,7 +231,7 @@ bool ExecutionContext::isWindowInteractionAllowed() const
     return m_windowInteractionTokens > 0 || WindowFocusAllowedIndicator::windowFocusAllowed();
 }
 
-void ExecutionContext::trace(Visitor* visitor)
+DEFINE_TRACE(ExecutionContext)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingExceptions);

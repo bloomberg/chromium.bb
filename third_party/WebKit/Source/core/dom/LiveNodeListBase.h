@@ -84,7 +84,7 @@ protected:
     template <typename MatchFunc>
     static Element* traverseMatchingElementsBackwardToOffset(Element& currentElement, const ContainerNode* stayWithin, unsigned offset, unsigned& currentOffset, MatchFunc);
 
-    virtual void trace(Visitor* visitor) { visitor->trace(m_ownerNode); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_ownerNode); }
 
 private:
     RefPtrWillBeMember<ContainerNode> m_ownerNode; // Cannot be null.

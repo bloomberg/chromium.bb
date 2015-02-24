@@ -371,7 +371,7 @@ void ElementShadow::clearDistribution()
         root->setShadowInsertionPointOfYoungerShadowRoot(nullptr);
 }
 
-void ElementShadow::trace(Visitor* visitor)
+DEFINE_TRACE(ElementShadow)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_nodeToInsertionPoints);

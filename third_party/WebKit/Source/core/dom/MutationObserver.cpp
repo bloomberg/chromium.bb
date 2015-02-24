@@ -276,7 +276,7 @@ void MutationObserver::deliverMutations()
     }
 }
 
-void MutationObserver::trace(Visitor* visitor)
+DEFINE_TRACE(MutationObserver)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_callback);

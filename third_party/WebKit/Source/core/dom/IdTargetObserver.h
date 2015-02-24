@@ -36,7 +36,7 @@ class IdTargetObserverRegistry;
 class IdTargetObserver : public NoBaseWillBeGarbageCollectedFinalized<IdTargetObserver> {
 public:
     virtual ~IdTargetObserver();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
     virtual void idTargetChanged() = 0;
     virtual void unregister();
 

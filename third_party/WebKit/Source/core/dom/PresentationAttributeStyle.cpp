@@ -60,7 +60,7 @@ static bool operator!=(const PresentationAttributeCacheKey& a, const Presentatio
 struct PresentationAttributeCacheEntry final : public NoBaseWillBeGarbageCollectedFinalized<PresentationAttributeCacheEntry> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    void trace(Visitor* visitor) { visitor->trace(value); }
+    DEFINE_INLINE_TRACE() { visitor->trace(value); }
 
     PresentationAttributeCacheKey key;
     RefPtrWillBeMember<StylePropertySet> value;

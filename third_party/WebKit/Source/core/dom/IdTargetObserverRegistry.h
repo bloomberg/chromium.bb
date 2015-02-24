@@ -42,7 +42,7 @@ class IdTargetObserverRegistry final : public NoBaseWillBeGarbageCollectedFinali
     friend class IdTargetObserver;
 public:
     static PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> create();
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void notifyObservers(const AtomicString& id);
     bool hasObservers(const AtomicString& id) const;
 

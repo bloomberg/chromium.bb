@@ -79,8 +79,8 @@ public:
 
     bool isUnique() const { return m_isUnique; }
 
-    void traceAfterDispatch(Visitor*);
-    void trace(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
+    DECLARE_TRACE();
 
 protected:
     ElementData();
@@ -132,7 +132,7 @@ public:
     explicit ShareableElementData(const UniqueElementData&);
     ~ShareableElementData();
 
-    void traceAfterDispatch(Visitor* visitor) { ElementData::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { ElementData::traceAfterDispatch(visitor); }
 
     // Add support for placement new as ShareableElementData is not allocated
     // with a fixed size. Instead the allocated memory size is computed based on
@@ -173,7 +173,7 @@ public:
     explicit UniqueElementData(const ShareableElementData&);
     explicit UniqueElementData(const UniqueElementData&);
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
     // FIXME: We might want to support sharing element data for elements with
     // presentation attribute style. Lots of table cells likely have the same

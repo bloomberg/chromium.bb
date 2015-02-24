@@ -65,7 +65,7 @@ public:
     void append(PassOwnPtrWillBeRawPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
     bool inCreatedCallback() const { return m_inCreatedCallback; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit CustomElementCallbackQueue(PassRefPtrWillBeRawPtr<Element>);

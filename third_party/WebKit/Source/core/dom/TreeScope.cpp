@@ -566,7 +566,7 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
     }
 }
 
-void TreeScope::trace(Visitor* visitor)
+DEFINE_TRACE(TreeScope)
 {
     visitor->trace(m_rootNode);
     visitor->trace(m_document);

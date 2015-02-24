@@ -55,7 +55,7 @@ public:
     Element* traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset) const;
     Element* traverseBackwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset) const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual Node* virtualOwnerNode() const override final;

@@ -53,7 +53,7 @@ public:
     {
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_target);
         visitor->trace(m_addedNodes);
@@ -86,7 +86,7 @@ public:
     {
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_target);
         visitor->trace(m_addedNodes);
@@ -149,7 +149,7 @@ public:
     {
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_record);
         MutationRecord::trace(visitor);

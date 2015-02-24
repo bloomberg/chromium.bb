@@ -64,7 +64,7 @@ public:
     void enterMutationScope() { m_mutationScopes++; }
     void leaveMutationScope();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     ChildListMutationAccumulator(PassRefPtrWillBeRawPtr<Node>, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup>);

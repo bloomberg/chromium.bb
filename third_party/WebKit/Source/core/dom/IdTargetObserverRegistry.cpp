@@ -35,7 +35,7 @@ PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::creat
     return adoptPtrWillBeNoop(new IdTargetObserverRegistry());
 }
 
-void IdTargetObserverRegistry::trace(Visitor* visitor)
+DEFINE_TRACE(IdTargetObserverRegistry)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_registry);

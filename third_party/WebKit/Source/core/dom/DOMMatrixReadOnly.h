@@ -56,7 +56,7 @@ public:
 
     const TransformationMatrix& matrix() const { return m_matrix; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 protected:
     TransformationMatrix m_matrix;

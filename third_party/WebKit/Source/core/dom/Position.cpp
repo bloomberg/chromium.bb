@@ -1235,7 +1235,7 @@ TextDirection Position::primaryDirection() const
     return primaryDirection;
 }
 
-void Position::trace(Visitor* visitor)
+DEFINE_TRACE(Position)
 {
     visitor->trace(m_anchorNode);
 }

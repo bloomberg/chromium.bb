@@ -56,7 +56,7 @@ public:
     Node* previousNode(ExceptionState&);
     Node* nextNode(ExceptionState&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     TreeWalker(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);

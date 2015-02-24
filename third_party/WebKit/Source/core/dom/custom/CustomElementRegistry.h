@@ -50,7 +50,7 @@ class CustomElementRegistry final {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
     DISALLOW_ALLOCATION();
 public:
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void documentWasDetached() { m_documentWasDetached = true; }
 
 protected:

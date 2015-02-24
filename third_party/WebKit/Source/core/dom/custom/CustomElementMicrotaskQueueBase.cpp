@@ -17,7 +17,7 @@ void CustomElementMicrotaskQueueBase::dispatch()
     m_inDispatch = false;
 }
 
-void CustomElementMicrotaskQueueBase::trace(Visitor* visitor)
+DEFINE_TRACE(CustomElementMicrotaskQueueBase)
 {
     visitor->trace(m_queue);
 }

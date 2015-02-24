@@ -141,7 +141,7 @@ void MutationObserverRegistration::addRegistrationNodesToSet(WillBeHeapHashSet<R
         nodes.add(iter->get());
 }
 
-void MutationObserverRegistration::trace(Visitor* visitor)
+DEFINE_TRACE(MutationObserverRegistration)
 {
     visitor->trace(m_observer);
     visitor->trace(m_registrationNode);

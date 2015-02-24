@@ -47,7 +47,7 @@ public:
 
     PassRefPtrWillBeRawPtr<ShareableElementData> cachedShareableElementDataWithAttributes(const Vector<Attribute>&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     ElementDataCache();

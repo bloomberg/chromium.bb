@@ -170,7 +170,7 @@ void StyleEngine::OrderedTreeScopeSet::remove(TreeScope* treeScope)
     m_hash.remove(treeScope);
 }
 
-void StyleEngine::OrderedTreeScopeSet::trace(Visitor* visitor)
+DEFINE_TRACE(StyleEngine::OrderedTreeScopeSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_treeScopes);
@@ -738,7 +738,7 @@ void StyleEngine::platformColorsChanged()
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
 }
 
-void StyleEngine::trace(Visitor* visitor)
+DEFINE_TRACE(StyleEngine)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);

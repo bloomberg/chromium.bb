@@ -50,7 +50,7 @@ public:
     MessagePort* port1() const { return m_port1.get(); }
     MessagePort* port2() const { return m_port2.get(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit MessageChannel(ExecutionContext*);

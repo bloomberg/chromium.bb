@@ -157,7 +157,7 @@ bool ChildListMutationAccumulator::isEmpty()
     return result;
 }
 
-void ChildListMutationAccumulator::trace(Visitor* visitor)
+DEFINE_TRACE(ChildListMutationAccumulator)
 {
     visitor->trace(m_target);
     visitor->trace(m_removedNodes);

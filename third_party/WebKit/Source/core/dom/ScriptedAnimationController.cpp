@@ -53,7 +53,7 @@ ScriptedAnimationController::ScriptedAnimationController(Document* document)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedAnimationController);
 
-void ScriptedAnimationController::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptedAnimationController)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_callbacks);

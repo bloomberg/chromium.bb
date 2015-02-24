@@ -23,7 +23,7 @@ public:
     virtual ScriptValue next(ScriptState*, ScriptValue /* value */, ExceptionState&) = 0;
     Iterator* iterator(ScriptState*, ExceptionState&) { return this; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

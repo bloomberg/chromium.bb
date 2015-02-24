@@ -602,7 +602,7 @@ void Fullscreen::pushFullscreenElementStack(Element& element, RequestType reques
     m_fullScreenElementStack.append(std::make_pair(&element, requestType));
 }
 
-void Fullscreen::trace(Visitor* visitor)
+DEFINE_TRACE(Fullscreen)
 {
     visitor->trace(m_fullScreenElement);
     visitor->trace(m_fullScreenElementStack);

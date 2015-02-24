@@ -69,7 +69,7 @@ public:
     virtual String input() const override { return m_input; }
     virtual void setInput(const String&) override;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     DOMURL(const String& url, const KURL& base, ExceptionState&);

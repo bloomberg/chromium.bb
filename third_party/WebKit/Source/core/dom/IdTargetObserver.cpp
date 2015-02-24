@@ -44,7 +44,7 @@ IdTargetObserver::~IdTargetObserver()
 #endif
 }
 
-void IdTargetObserver::trace(Visitor* visitor)
+DEFINE_TRACE(IdTargetObserver)
 {
     visitor->trace(m_registry);
 }

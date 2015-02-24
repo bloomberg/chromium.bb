@@ -64,7 +64,7 @@ public:
     void urlDidChange(Document*);
 
 #if ENABLE(OILPAN)
-    virtual void trace(Visitor* visitor) override { HeapSupplement<Page>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Page>::trace(visitor); }
 #endif
 
 private:

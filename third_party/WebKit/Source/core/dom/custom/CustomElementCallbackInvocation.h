@@ -54,7 +54,7 @@ protected:
 
     CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RefPtrWillBeMember<CustomElementLifecycleCallbacks> m_callbacks;

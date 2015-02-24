@@ -24,7 +24,7 @@ public:
 
     bool elementQueueIsEmpty() { return m_elements.isEmpty(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     CustomElementMicrotaskDispatcher();

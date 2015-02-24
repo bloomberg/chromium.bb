@@ -59,7 +59,7 @@ public:
     // This function is called before any node is removed from the document tree.
     void nodeWillBeRemoved(Node&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     NodeIterator(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
@@ -77,7 +77,7 @@ private:
         RefPtrWillBeMember<Node> node;
         bool isPointerBeforeNode;
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(node);
         }

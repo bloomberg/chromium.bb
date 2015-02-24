@@ -54,7 +54,7 @@ class ScriptCallStack;
 class ExecutionContext
     : public ContextLifecycleNotifier, public WillBeHeapSupplementable<ExecutionContext> {
 public:
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }

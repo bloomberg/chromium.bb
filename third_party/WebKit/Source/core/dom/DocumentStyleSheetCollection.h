@@ -48,7 +48,7 @@ public:
     void updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
     void collectStyleSheets(StyleEngine*, DocumentStyleSheetCollector&);
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         TreeScopeStyleSheetCollection::trace(visitor);
     }

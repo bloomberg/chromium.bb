@@ -369,7 +369,7 @@ PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String&
     return HTMLDocument::create(init);
 }
 
-void DOMImplementation::trace(Visitor* visitor)
+DEFINE_TRACE(DOMImplementation)
 {
     visitor->trace(m_document);
 }

@@ -45,7 +45,7 @@ public:
     virtual void dispatch(Element*) = 0;
     virtual bool isCreatedCallback() const { return false; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink
