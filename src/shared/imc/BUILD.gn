@@ -7,27 +7,27 @@ static_library("imc") {
     "nacl_imc_common.cc",
   ]
 
-  if (os == "nacl") {
+  if (current_os == "nacl") {
     sources += [
       "nacl/nacl_imc.cc",
     ]
   }
 
-  if (os == "mac") {
+  if (current_os == "mac") {
     sources += [
       "osx/nacl_imc.cc",
       "posix/nacl_imc_posix.cc",
     ]
   }
 
-  if (os == "linux") {
+  if (current_os == "linux") {
     sources += [
       "linux/nacl_imc.cc",
       "posix/nacl_imc_posix.cc",
     ]
   }
 
-  if (os == "win") {
+  if (current_os == "win") {
     sources += [
       "win/nacl_imc.cc",
       "win/nacl_shm.cc",

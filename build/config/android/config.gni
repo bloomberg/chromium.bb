@@ -27,9 +27,9 @@ if (is_android) {
 
   # Defines the name the Android build gives to the current host CPU
   # architecture, which is different than the names GN uses.
-  if (build_cpu_arch == "x64") {
+  if (host_cpu == "x64") {
     android_host_arch = "x86_64"
-  } else if (build_cpu_arch == "x86") {
+  } else if (host_cpu == "x86") {
     android_host_arch = "x86"
   } else {
     assert(false, "Need Android toolchain support for your build CPU arch.")
@@ -37,7 +37,7 @@ if (is_android) {
 
   # Defines the name the Android build gives to the current host CPU
   # architecture, which is different than the names GN uses.
-  if (build_os == "linux") {
+  if (host_os == "linux") {
     android_host_os = "linux"
   } else {
     assert(false, "Need Android toolchain support for your build OS.")
@@ -73,13 +73,13 @@ if (is_android) {
   # Location of libgcc. This is only needed for the current GN toolchain, so we
   # only need to define the current one, rather than one for every platform
   # like the toolchain roots.
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     android_libgcc_file =
       "$x86_android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
-  } else if (cpu_arch == "arm") {
+  } else if (current_cpu == "arm") {
     android_libgcc_file =
       "$arm_android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
-  } else if (cpu_arch == "mipsel") {
+  } else if (current_cpu == "mipsel") {
     android_libgcc_file =
       "$mips_android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
   } else {
@@ -100,19 +100,19 @@ if (is_android) {
 
   # ABI ------------------------------------------------------------------------
 
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     android_app_abi = "x86"
-  } else if (cpu_arch == "arm") {
+  } else if (current_cpu == "arm") {
     import("//build/config/arm.gni")
     if (arm_version < 7) {
       android_app_abi = "armeabi"
     } else {
       android_app_abi = "armeabi-v7a"
     }
-  } else if (cpu_arch == "mipsel") {
+  } else if (current_cpu == "mipsel") {
     android_app_abi = "mips"
   } else {
-    assert(false, "Unknown Android ABI: " + cpu_arch)
+    assert(false, "Unknown Android ABI: " + current_cpu)
   }
 } else {
   if (!defined(is_android_webview_build)) {

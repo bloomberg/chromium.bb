@@ -14,7 +14,7 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - ar
 #  - ld
 # and the following which is used in the toolchain_args
-#  - toolchain_cpu_arch  (What "cpu_arch" should be set to when invoking a
+#  - toolchain_cpu  (What "current_cpu" should be set to when invoking a
 #                         build using this toolchain.)
 #  - toolchain_os  (What "os" should be set to when invoking a build using this
 #                   toolchain.)
@@ -40,8 +40,8 @@ template("gcc_toolchain") {
     assert(defined(invoker.cxx), "gcc_toolchain() must specify a \"cxx\" value")
     assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ar\" value")
     assert(defined(invoker.ld), "gcc_toolchain() must specify a \"ld\" value")
-    assert(defined(invoker.toolchain_cpu_arch),
-           "gcc_toolchain() must specify a \"toolchain_cpu_arch\"")
+    assert(defined(invoker.toolchain_cpu),
+           "gcc_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
            "gcc_toolchain() must specify a \"toolchain_os\"")
 
@@ -212,8 +212,19 @@ template("gcc_toolchain") {
     # When invoking this toolchain not as the default one, these args will be
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
-      cpu_arch = invoker.toolchain_cpu_arch
-      os = invoker.toolchain_os
+      current_cpu = invoker.toolchain_cpu
+      current_os = invoker.toolchain_os
+
+      # These values need to be passed through unchanged.
+      target_os = target_os
+      target_cpu = target_cpu
+
+      # TODO(dpranke): These values are here for backwards compatibility and
+      # should be deleted when all of the builders and configs have been
+      # updated.
+      cpu_arch = current_cpu
+      os = current_os
+
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
       }

@@ -13,7 +13,7 @@ static_library("dfa_validate") {
     "validator_features_validator.c",
     "dfa_validate_common.c",
   ]
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     sources += [
       validator32,
       "dfa_validate_32.c",

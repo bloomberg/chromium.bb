@@ -4,9 +4,9 @@
 
 #  Generated from GYP
 
-if (os == "linux") {
+if (current_os == "linux") {
 
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   import("//native_client/build/config/arm.gni")
 }
 
@@ -16,26 +16,26 @@ bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
 
 linker_script_path = rebase_path("nacl_bootstrap.x")
 
-if (cpu_arch == "x64") {
+if (current_cpu == "x64") {
   nacl_reserve_top = "0x0"
   linker_emulation = "elf_x86_64"
 }
-if (cpu_arch == "x86") {
+if (current_cpu == "x86") {
   nacl_reserve_top = "0x40000000"
   linker_emulation = "elf_i386"
 }
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   nacl_reserve_top = "0x40002000"
   linker_emulation = "armelf_linux_eabi"
 }
-if (cpu_arch == "mipsel") {
+if (current_cpu == "mipsel") {
   nacl_reserve_top = "0x40008000"
   linker_emulation = "elf32ltsmip"
 }
 
 if (is_android) {
   compiler = "g++"
-} else if (cpu_arch == "arm") {
+} else if (current_cpu == "arm") {
   compiler = "arm-linux-gnueabihf-g++"
 } else {
   compiler = "g++"
@@ -46,15 +46,15 @@ static_library("nacl_bootstrap_lib") {
   cflags = []
   ldflags = []
 
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     cflags += ["-m32"]
     ldflags += ["-m32"]
   }
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     cflags += ["-m64"]
     ldflags += ["-m64"]
   }
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     if (!is_android_webview_build) {
       cflags += [
         "-march=$arm_arch",

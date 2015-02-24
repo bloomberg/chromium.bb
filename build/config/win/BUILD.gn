@@ -49,7 +49,7 @@ config("sdk") {
 
 # Linker flags for Windows SDK setup, this is applied only to EXEs and DLLs.
 config("sdk_link") {
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     ldflags = [ "/MACHINE:X64" ]
     lib_dirs = [
       "$windows_sdk_path\Lib\win8\um\x64",

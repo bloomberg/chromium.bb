@@ -57,7 +57,7 @@ enable_print_preview = !is_android
 # Do not disable seccomp_bpf anywhere without talking to
 # security@chromium.org!
 use_seccomp_bpf = (is_linux || is_android) &&
-  (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
+  (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm")
 
 enable_webrtc = !is_ios
 

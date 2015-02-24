@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   declare_args() {
     # Version of the ARM processor when compiling on ARM. Ignored on non-ARM
     # platforms.

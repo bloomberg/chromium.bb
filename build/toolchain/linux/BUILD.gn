@@ -13,7 +13,7 @@ gcc_toolchain("arm") {
   ar = "arm-linux-gnueabi-ar"
   ld = cxx
 
-  toolchain_cpu_arch = "arm"
+  toolchain_cpu = "arm"
   toolchain_os = "linux"
 }
 
@@ -23,7 +23,7 @@ gcc_toolchain("trusted_arm") {
   ar = "arm-linux-gnueabi-ar"
   ld = cxx
 
-  toolchain_cpu_arch = "arm"
+  toolchain_cpu = "arm"
   toolchain_os = "linux"
 }
 
@@ -46,7 +46,7 @@ gcc_toolchain("x86") {
   ar = "ar"
   ld = cxx
 
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolchain_os = "linux"
 }
 
@@ -69,7 +69,7 @@ gcc_toolchain("x64") {
   ar = "ar"
   ld = cxx
 
-  toolchain_cpu_arch = "x64"
+  toolchain_cpu = "x64"
   toolchain_os = "linux"
 }
 
@@ -92,7 +92,7 @@ gcc_toolchain("trusted_x86") {
   ar = "ar"
   ld = cxx
 
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolchain_os = "linux"
 }
 
@@ -115,7 +115,7 @@ gcc_toolchain("trusted_x64") {
   ar = "ar"
   ld = cxx
 
-  toolchain_cpu_arch = "x64"
+  toolchain_cpu = "x64"
   toolchain_os = "linux"
 }
 
@@ -125,6 +125,6 @@ gcc_toolchain("mipsel") {
   ar = "mipsel-linux-gnu-ar"
   ld = cxx
 
-  toolchain_cpu_arch = "mipsel"
+  toolchain_cpu = "mipsel"
   toolchain_os = "linux"
 }

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(os == "nacl", "This file contains untrusted code only.")
+assert(current_os == "nacl", "This file contains untrusted code only.")
 
 static_library("nacl_dyncode_private") {
   cflags_c = []
@@ -10,7 +10,7 @@ static_library("nacl_dyncode_private") {
     "dyncode_private.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -26,7 +26,7 @@ static_library("nacl_random_private") {
     "irt_random",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -50,7 +50,7 @@ static_library("nacl_sys_private") {
     ]
   }
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -72,7 +72,7 @@ static_library("imc_syscalls") {
     "imc_socketpair.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -88,7 +88,7 @@ static_library("nacl_exception_private") {
     "nacl_exception_private.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -104,7 +104,7 @@ static_library("nacl_list_mappings_private") {
     "list_mappings_private.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -120,7 +120,7 @@ static_library("nacl_dyncode") {
     "dyncode.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -337,13 +337,13 @@ static_library("nacl") {
     ]
   }
 
-  if ((os != "glibc") && (cpu_arch == "arm")) {
+  if ((os != "glibc") && (current_cpu == "arm")) {
     sources += [
       "aeabi_read_tp.S",
     ]
   }
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -361,7 +361,7 @@ source_set("irt_random") {
     "../../untrusted/irt/irt_random.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -378,7 +378,7 @@ static_library("nacl_exception") {
     "nacl_exception.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -395,7 +395,7 @@ static_library("nacl_list_mappings") {
     "list_mappings.c",
   ]
 
-  if (cpu_arch == "pnacl") {
+  if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
       "-allow-asm",
@@ -414,7 +414,7 @@ if (os != "glibc") {
       "sys_private.c",
     ]
 
-    if (cpu_arch == "pnacl") {
+    if (current_cpu == "pnacl") {
       cflags_c += [
         "-Wno-self-assign",
         "-allow-asm",
@@ -431,7 +431,7 @@ if (os != "glibc") {
       "gc_hooks_private.c",
     ]
 
-    if (cpu_arch == "pnacl") {
+    if (current_cpu == "pnacl") {
       cflags_c += [
         "-Wno-self-assign",
         "-allow-asm",
@@ -447,7 +447,7 @@ if (os != "glibc") {
       "../../untrusted/irt/irt_blockhook.c",
     ]
 
-    if (cpu_arch == "pnacl") {
+    if (current_cpu == "pnacl") {
       cflags_c += [
         "-Wno-self-assign",
         "-allow-asm",

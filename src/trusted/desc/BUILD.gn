@@ -23,7 +23,7 @@ static_library("nrd_xfer") {
       "nrd_all_modules.c",
       "nrd_xfer.c",
   ]
-  if (os != "win") {
+  if (current_os != "win") {
     sources += [
       "posix/nacl_desc.c",
       "posix/nacl_desc_conn_cap.c",
@@ -32,7 +32,7 @@ static_library("nrd_xfer") {
     ]
   }
 
-  if (os == "win") {
+  if (current_os == "win") {
     sources += [
       "nacl_desc_imc_bound_desc.c",
       "win/nacl_desc.c",

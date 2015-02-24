@@ -14,14 +14,14 @@ static_library("debug_stub") {
     "transport_common.cc",
     "util.cc",
   ]
-  if (os != "win") {
+  if (current_os != "win") {
     sources += [
       "posix/debug_stub_posix.cc",
       "posix/platform_impl.cc",
       "posix/thread_impl.cc",
     ]
   }
-  if (os == "win") {
+  if (current_os == "win") {
     sources += [
       "win/debug_stub_win.cc",
       "win/platform_impl.cc",

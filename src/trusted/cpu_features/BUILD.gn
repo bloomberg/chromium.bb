@@ -15,7 +15,7 @@ static_library("cpu_features") {
     "arch/mips/cpu_mips.c",
   ]
 
-  if (cpu_arch == "x64" || cpu_arch == "x86") {
+  if (current_cpu == "x64" || current_cpu == "x86") {
     sources += [
       "arch/x86/cpu_x86.c",
       "arch/x86/cpu_xgetbv.S",

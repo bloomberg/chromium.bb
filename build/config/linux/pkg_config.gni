@@ -30,7 +30,7 @@ template("pkg_config") {
   config(target_name) {
     if (sysroot != "") {
       # Pass the sysroot if we're using one (it requires the CPU arch also).
-      args = ["-s", sysroot, "-a", cpu_arch] + invoker.packages
+      args = ["-s", sysroot, "-a", current_cpu] + invoker.packages
     } else {
       args = invoker.packages
     }

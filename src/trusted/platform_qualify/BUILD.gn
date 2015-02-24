@@ -7,31 +7,31 @@
 
 static_library("platform_qual_lib") {
   sources = []
-  if (os != "win") {
+  if (current_os != "win") {
     sources += [
       "posix/nacl_dep_qualify.c",
     ]
   }
 
-  if (cpu_arch != "arm") {
+  if (current_cpu != "arm") {
     sources += [
       "arch/x86/nacl_cpuwhitelist.c",
     ]
   }
 
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     sources += [
       "arch/x86_32/nacl_dep_qualify_arch.c",
     ]
   }
 
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     sources += [
       "arch/x86_64/nacl_dep_qualify_arch.c",
     ]
   }
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     sources += [
       "arch/arm/nacl_dep_qualify_arch.c",
       "arch/arm/nacl_qualify_fpu.c",
@@ -40,20 +40,20 @@ static_library("platform_qual_lib") {
     ]
   }
 
-  if (os == "win") {
+  if (current_os == "win") {
     sources += [
       "win/nacl_dep_qualify.c",
       "win/nacl_os_qualify.c",
     ]
   }
 
-  if (os == "mac") {
+  if (current_os == "mac") {
     sources += [
       "osx/nacl_os_qualify.c",
     ]
   }
 
-  if (os == "linux") {
+  if (current_os == "linux") {
     sources += [
       "linux/nacl_os_qualify.c",
     ]
@@ -65,20 +65,20 @@ static_library("platform_qual_lib") {
   ]
 }
 
-if (cpu_arch != "arm") {
+if (current_cpu != "arm") {
   static_library("vcpuid") {
     cflags_c = []
     sources = [
       "arch/x86/vcpuid.c",
     ]
 
-    if (os == "linux") {
+    if (current_os == "linux") {
       cflags_c += [
         "-msse3",
       ]
     }
 
-    if (os == "mac") {
+    if (current_os == "mac") {
       cflags_c += [
         "-mdynamic-no-pic",
       ]

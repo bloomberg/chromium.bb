@@ -23,7 +23,7 @@ static_library("nonnacl_srpc") {
   ]
 }
 
-if (os == "nacl") {
+if (current_os == "nacl") {
   static_library("srpc") {
     deps = [
       "//native_client/build/config/nacl:nacl_base",

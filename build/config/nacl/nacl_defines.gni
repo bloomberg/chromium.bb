@@ -33,28 +33,28 @@ if (is_mac) {
   nacl_defines += ["NACL_OSX=0"]
 }
 
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   nacl_defines += [
     "NACL_BUILD_ARCH=arm",
     "NACL_BUILD_SUBARCH=32"
   ]
 }
 
-if (cpu_arch == "mips") {
+if (current_cpu == "mips") {
   nacl_defines += [
     "NACL_BUILD_ARCH=mips",
     "NACL_BUILD_SUBARCH=32"
   ]
 }
 
-if (cpu_arch == "x86") {
+if (current_cpu == "x86") {
   nacl_defines += [
     "NACL_BUILD_ARCH=x86",
     "NACL_BUILD_SUBARCH=32",
   ]
 }
 
-if (cpu_arch == "x64") {
+if (current_cpu == "x64") {
   nacl_defines += [
     "NACL_BUILD_ARCH=x86",
     "NACL_BUILD_SUBARCH=64"

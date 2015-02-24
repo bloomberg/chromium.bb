@@ -26,7 +26,7 @@ source_set("nacl_base") {
   public_configs = [
     ":nacl_defines"
   ]
-  if (os == "nacl") {
+  if (current_os == "nacl") {
     public_configs += [
       ":nexe_defines"
     ]

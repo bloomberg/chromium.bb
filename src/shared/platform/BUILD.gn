@@ -6,7 +6,7 @@
 
 
 static_library("platform") {
-  if (os == "nacl") {
+  if (current_os == "nacl") {
     sources = [
       "nacl_check.c",
       "nacl_log.c",
@@ -34,7 +34,7 @@ static_library("platform") {
       "platform_init.c",
       "refcount_base.cc",
     ]
-    if (os != "win") {
+    if (current_os != "win") {
       sources += [
         "posix/aligned_malloc.c",
         "posix/condition_variable.c",
@@ -53,7 +53,7 @@ static_library("platform") {
       ]
     }
 
-    if (os == "win") {
+    if (current_os == "win") {
       sources += [
         "win/aligned_malloc.c",
         "win/condition_variable.cc",
@@ -77,7 +77,7 @@ static_library("platform") {
       ]
     }
 
-    if (os == "mac") {
+    if (current_os == "mac") {
       sources += [
         "osx/nacl_clock.c",
         "osx/nacl_host_dir.c",
@@ -86,7 +86,7 @@ static_library("platform") {
       ]
     }
 
-    if (os == "linux") {
+    if (current_os == "linux") {
       sources += [
         "linux/nacl_clock.c",
         "linux/nacl_host_dir.c",
@@ -94,7 +94,7 @@ static_library("platform") {
       ]
     }
 
-    if (os == "win") {
+    if (current_os == "win") {
       cflags_c = [
         "/DUNICODE",
         "/D_CRT_RAND_S",

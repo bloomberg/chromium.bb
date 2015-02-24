@@ -16,7 +16,53 @@
 # KEEP IN ALPHABETICAL ORDER and write a good description for everything.
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
+
+# TODO(dpranke): The os and cpu_arch variables exist for backwards
+# compatibility and should be deleted once all of the build files and
+# bots have been updated to use current_cpu/target_cpu and
+# current_os/target_os instead.
+
+if (target_os == "") {
+  if (defined(os)) {
+    # If os is defined, it was set in an args file and needs to be
+    # used for backwards-compatibility.
+    target_os = os
+  } else {
+    target_os = host_os
+  }
+}
+
+if (target_cpu == "") {
+  if (defined(cpu_arch)) {
+    # If cpu_arch is defined, it was set in an args file and needs to be
+    # used for backwards-compatibility.
+    target_cpu = cpu_arch
+  } else if (target_os == "android") {
+    # If we're building for Android, we should assume that we want to
+    # build for ARM by default, not the host_cpu (which is likely x64).
+    # This allows us to not have to specify both target_os and target_cpu
+    # on the command line.
+    target_cpu = "arm"
+  } else {
+    target_cpu = host_cpu
+  }
+}
+
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+if (current_os == "") {
+  current_os = target_os
+}
+
 declare_args() {
+  # TODO(dpranke): These values are here for backwards compatibility and
+  # should be deleted when all of the builders and configs have been updated.
+  cpu_arch = target_cpu
+  os = target_os
+  build_cpu_arch = host_cpu
+  build_os = host_os
+
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
   #   2 means regular build with symbols.
@@ -27,13 +73,15 @@ declare_args() {
 
   # Component build.
   is_component_build = false
+
   # Debug build.
   is_debug = true
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
   # NACL CHANGE: don't use clang on Linux because we don't DEPS it in.
-  is_clang = (os == "mac" || os == "ios" || os == "chromeos")
+  is_clang =
+      current_os == "mac" || current_os == "ios" || current_os == "chromeos"
 
   # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
   # we build 32-bit on Windows regardless of the current host OS bit depth.
@@ -66,23 +114,17 @@ declare_args() {
   # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
 
-  if (os == "chromeos") {
+  if (current_os == "chromeos") {
     # Allows the target toolchain to be injected as arguments. This is needed
     # to support the CrOS build system which supports per-build-configuration
     # toolchains.
     cros_use_custom_toolchain = false
   }
-
-  # TODO(cjhopman): Make target_arch work for all platforms.
-
-  # Architecture of the target device. For Android builds, this will be equal to
-  # the cpu_arch of the default toolchain. When checking the CPU architecture
-  # for source files and build dependencies you should almost alway use cpu_arch
-  # instead. cpu_arch is the architecture of the current toolchain and allows
-  # cross-compiles (compiling the same target for multiple toolchains in the
-  # same build) to work.
-  target_arch = "arm"
 }
+
+# TODO(dpranke): Remove these asserts when os and cpu_arch are removed.
+assert(current_cpu == cpu_arch)
+assert(current_os == os)
 
 # =============================================================================
 # OS DEFINITIONS
@@ -102,7 +144,7 @@ declare_args() {
 # aix or one of the BSDs. If you need to check these, just check the os value
 # directly.
 
-if (os == "win") {
+if (current_os == "win") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -111,7 +153,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = false
   is_win = true
-} else if (os == "mac") {
+} else if (current_os == "mac") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -120,7 +162,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "android") {
+} else if (current_os == "android") {
   is_android = true
   is_chromeos = false
   is_ios = false
@@ -129,7 +171,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "chromeos") {
+} else if (current_os == "chromeos") {
   is_android = false
   is_chromeos = true
   is_ios = false
@@ -138,8 +180,8 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "nacl") {
-  # os == "nacl" will be passed by the nacl toolchain definition. It is not
+} else if (current_os == "nacl") {
+  # current_os == "nacl" will be passed by the nacl toolchain definition. It is not
   # set by default or on the command line. We treat is as a Posix variant.
   is_android = false
   is_chromeos = false
@@ -149,7 +191,7 @@ if (os == "win") {
   is_nacl = true
   is_posix = true
   is_win = false
-} else if (os == "ios") {
+} else if (current_os == "ios") {
   is_android = false
   is_chromeos = false
   is_ios = true
@@ -158,7 +200,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "linux") {
+} else if (current_os == "linux") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -179,18 +221,10 @@ if (is_win) {
   # Always use 32-bit on Windows, even when compiling on a 64-bit host OS,
   # unless the override flag is specified.
   if (force_win64) {
-    cpu_arch = "x64"
+    current_cpu = "x64"
   } else {
-    cpu_arch = "x86"
+    current_cpu = "x86"
   }
-}
-
-if (is_android) {
-  # TODO(cjhopman): enable this assert once bots are updated to not set
-  # cpu_arch.
-  #assert(cpu_arch == build_cpu_arch, "Android device target architecture should
-  #    be set with 'target_arch', not 'cpu_arch'")
-  cpu_arch = target_arch
 }
 
 # =============================================================================
@@ -258,9 +292,7 @@ if (!is_ios) {
   ]
 }
 if (!is_mac && !is_ios) {
-  sources_assignment_filter += [
-    "*.mm",
-  ]
+  sources_assignment_filter += [ "*.mm" ]
 }
 if (!is_linux) {
   sources_assignment_filter += [
@@ -289,6 +321,7 @@ if (!is_chromeos) {
     "*\bchromeos/*",
   ]
 }
+
 # DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
 # below.
 
@@ -329,9 +362,8 @@ if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
 # For NaCl targets, we inject a dependency on prepping the library for cooked
 # toolchain targets.  For raw targets we inject a dependency on untarring.
 #
-_nacl_compiler_configs = [
-  "//native_client/build/config/compiler:chromium_code",
-]
+_nacl_compiler_configs =
+    [ "//native_client/build/config/compiler:chromium_code" ]
 
 # Holds all configs used for making native executables and libraries, to avoid
 # duplication in each target below.
@@ -342,16 +374,19 @@ _native_compiler_configs = [
 ]
 
 if (is_clang) {
-  _native_compiler_configs += [ "//native_client/build/config/clang:find_bad_constructs" ]
+  _native_compiler_configs +=
+      [ "//native_client/build/config/clang:find_bad_constructs" ]
 }
 
 # Optimizations and debug checking.
 if (is_debug) {
   _native_compiler_configs += [ "//native_client/build/config:debug" ]
-  _default_optimization_config = "//native_client/build/config/compiler:no_optimize"
+  _default_optimization_config =
+      "//native_client/build/config/compiler:no_optimize"
 } else {
   _native_compiler_configs += [ "//native_client/build/config:release" ]
-  _default_optimization_config = "//native_client/build/config/compiler:optimize"
+  _default_optimization_config =
+      "//native_client/build/config/compiler:optimize"
 }
 
 _native_compiler_configs += [ _default_optimization_config ]
@@ -371,7 +406,8 @@ if (symbol_level == -1) {
 if (symbol_level == 2) {
   _default_symbols_config = "//native_client/build/config/compiler:symbols"
 } else if (symbol_level == 1) {
-  _default_symbols_config = "//native_client/build/config/compiler:minimal_symbols"
+  _default_symbols_config =
+      "//native_client/build/config/compiler:minimal_symbols"
 } else if (symbol_level == 0) {
   _default_symbols_config = "//native_client/build/config/compiler:no_symbols"
 } else {
@@ -383,15 +419,16 @@ _native_compiler_configs += [ _default_symbols_config ]
 if (is_win) {
   if (is_debug) {
     _default_incremental_linking_config =
-      "//native_client/build/config/win:incremental_linking"
+        "//native_client/build/config/win:incremental_linking"
   } else {
     _default_incremental_linking_config =
-      "//native_client/build/config/win:no_incremental_linking"
+        "//native_client/build/config/win:no_incremental_linking"
   }
   _windows_linker_configs = [
     _default_incremental_linking_config,
     "//native_client/build/config/win:sdk_link",
     "//native_client/build/config/win:common_linker_setup",
+
     # Default to console-mode apps. Most of our targets are tests and such
     # that shouldn't use the windows subsystem.
     "//native_client/build/config/win:console",
@@ -401,17 +438,16 @@ if (is_win) {
 set_defaults("executable") {
   configs = []
   if (os != "nacl") {
-    configs = _native_compiler_configs + [
-      "//native_client/build/config:default_libs",
-    ]
+    configs = _native_compiler_configs +
+              [ "//native_client/build/config:default_libs" ]
     if (is_win) {
       configs += _windows_linker_configs
     } else if (is_mac) {
-  #    configs += [
-  #      "///native_clientbuild/config/mac:mac_dynamic_flags",
-  #      "//native_client/build/config/mac:mac_executable_flags" ]
+      #    configs += [
+      #      "///native_clientbuild/config/mac:mac_dynamic_flags",
+      #      "//native_client/build/config/mac:mac_executable_flags" ]
     } else if (is_linux) {
-  #    configs += [ "//native_client/build/config/linux:executable_ldconfig" ]
+      #    configs += [ "//native_client/build/config/linux:executable_ldconfig" ]
     }
   } else {
     configs = _nacl_compiler_configs
@@ -430,9 +466,8 @@ set_defaults("static_library") {
 set_defaults("shared_library") {
   configs = []
   if (os != "nacl") {
-    configs += _native_compiler_configs + [
-      "//native_client/build/config:default_libs",
-    ]
+    configs += _native_compiler_configs +
+               [ "//native_client/build/config:default_libs" ]
     if (is_win) {
       configs += _windows_linker_configs
     } else if (is_mac) {
@@ -462,29 +497,28 @@ set_defaults("source_set") {
 # default toolchain.
 
 if (is_nacl) {
-  if (build_os == "mac") {
+  if (host_os == "mac") {
     host_toolchain = "//native_client/build/toolchain/mac:clang"
-  }
-  else {
-    host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
+  } else {
+    host_toolchain = "//native_client/build/toolchain/${host_os}:${host_cpu}"
   }
 } else if (is_win) {
-  # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
+  # TODO(brettw) name the toolchains the same as current_cpu as with Linux below
   # to eliminate these conditionals.
-  if (build_cpu_arch == "x64") {
+  if (host_cpu == "x64") {
     host_toolchain = "//native_client/build/toolchain/win:64"
-  } else if (build_cpu_arch == "x86") {
+  } else if (host_cpu == "x86") {
     host_toolchain = "//native_client/build/toolchain/win:32"
   }
 
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     set_default_toolchain("//native_client/build/toolchain/win:64")
-  } else if (cpu_arch == "x86") {
+  } else if (current_cpu == "x86") {
     set_default_toolchain("//native_client/build/toolchain/win:32")
   }
 } else if (is_linux) {
-  host_toolchain = "//native_client/build/toolchain/linux:$build_cpu_arch"
-  set_default_toolchain("//native_client/build/toolchain/linux:$cpu_arch")
+  host_toolchain = "//native_client/build/toolchain/linux:$host_cpu"
+  set_default_toolchain("//native_client/build/toolchain/linux:$current_cpu")
 } else if (is_mac) {
   host_toolchain = "//native_client/build/toolchain/mac:clang"
   set_default_toolchain(host_toolchain)
@@ -518,38 +552,91 @@ template("component") {
       # the original target may have override it for some assignments.
       set_sources_assignment_filter([])
 
-      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
-      if (defined(invoker.cflags)) { cflags = invoker.cflags }
-      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
-      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
-      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
-      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
-      if (defined(invoker.data)) { data = invoker.data }
-      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
-      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.all_dependent_configs)) {
+        all_dependent_configs = invoker.all_dependent_configs
+      }
+      if (defined(invoker.allow_circular_includes_from)) {
+        allow_circular_includes_from = invoker.allow_circular_includes_from
+      }
+      if (defined(invoker.cflags)) {
+        cflags = invoker.cflags
+      }
+      if (defined(invoker.cflags_c)) {
+        cflags_c = invoker.cflags_c
+      }
+      if (defined(invoker.cflags_cc)) {
+        cflags_cc = invoker.cflags_cc
+      }
+      if (defined(invoker.cflags_objc)) {
+        cflags_objc = invoker.cflags_objc
+      }
+      if (defined(invoker.cflags_objcc)) {
+        cflags_objcc = invoker.cflags_objcc
+      }
+      if (defined(invoker.check_includes)) {
+        check_includes = invoker.check_includes
+      }
+      if (defined(invoker.data)) {
+        data = invoker.data
+      }
+      if (defined(invoker.datadeps)) {
+        datadeps = invoker.datadeps
+      }
+      if (defined(invoker.defines)) {
+        defines = invoker.defines
+      }
+
       # All shared libraries must have the sanitizer deps to properly link in
       # asan mode (this target will be empty in other cases).
       if (defined(invoker.deps)) {
         deps = invoker.deps + [ "//build/config/sanitizers:deps" ]
       } else {
-        deps = [ "//build/config/sanitizers:deps" ]
+        deps = [
+          "//build/config/sanitizers:deps",
+        ]
       }
-      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
-      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
-      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
-      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
-      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
-      if (defined(invoker.libs)) { libs = invoker.libs }
-      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
-      if (defined(invoker.output_name)) { output_name = invoker.output_name }
-      if (defined(invoker.public)) { public = invoker.public }
-      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
-      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
-      if (defined(invoker.sources)) { sources = invoker.sources }
-      if (defined(invoker.testonly)) { testonly = invoker.testonly }
-      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+      if (defined(invoker.direct_dependent_configs)) {
+        direct_dependent_configs = invoker.direct_dependent_configs
+      }
+      if (defined(invoker.forward_dependent_configs_from)) {
+        forward_dependent_configs_from = invoker.forward_dependent_configs_from
+      }
+      if (defined(invoker.include_dirs)) {
+        include_dirs = invoker.include_dirs
+      }
+      if (defined(invoker.ldflags)) {
+        ldflags = invoker.ldflags
+      }
+      if (defined(invoker.lib_dirs)) {
+        lib_dirs = invoker.lib_dirs
+      }
+      if (defined(invoker.libs)) {
+        libs = invoker.libs
+      }
+      if (defined(invoker.output_extension)) {
+        output_extension = invoker.output_extension
+      }
+      if (defined(invoker.output_name)) {
+        output_name = invoker.output_name
+      }
+      if (defined(invoker.public)) {
+        public = invoker.public
+      }
+      if (defined(invoker.public_configs)) {
+        public_configs = invoker.public_configs
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.sources)) {
+        sources = invoker.sources
+      }
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
     }
   } else {
     source_set(target_name) {
@@ -560,32 +647,84 @@ template("component") {
       # See above call.
       set_sources_assignment_filter([])
 
-      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
-      if (defined(invoker.cflags)) { cflags = invoker.cflags }
-      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
-      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
-      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
-      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
-      if (defined(invoker.data)) { data = invoker.data }
-      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
-      if (defined(invoker.defines)) { defines = invoker.defines }
-      if (defined(invoker.deps)) { deps = invoker.deps }
-      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
-      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
-      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
-      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
-      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
-      if (defined(invoker.libs)) { libs = invoker.libs }
-      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
-      if (defined(invoker.output_name)) { output_name = invoker.output_name }
-      if (defined(invoker.public)) { public = invoker.public }
-      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
-      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
-      if (defined(invoker.sources)) { sources = invoker.sources }
-      if (defined(invoker.testonly)) { testonly = invoker.testonly }
-      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+      if (defined(invoker.all_dependent_configs)) {
+        all_dependent_configs = invoker.all_dependent_configs
+      }
+      if (defined(invoker.allow_circular_includes_from)) {
+        allow_circular_includes_from = invoker.allow_circular_includes_from
+      }
+      if (defined(invoker.cflags)) {
+        cflags = invoker.cflags
+      }
+      if (defined(invoker.cflags_c)) {
+        cflags_c = invoker.cflags_c
+      }
+      if (defined(invoker.cflags_cc)) {
+        cflags_cc = invoker.cflags_cc
+      }
+      if (defined(invoker.cflags_objc)) {
+        cflags_objc = invoker.cflags_objc
+      }
+      if (defined(invoker.cflags_objcc)) {
+        cflags_objcc = invoker.cflags_objcc
+      }
+      if (defined(invoker.check_includes)) {
+        check_includes = invoker.check_includes
+      }
+      if (defined(invoker.data)) {
+        data = invoker.data
+      }
+      if (defined(invoker.datadeps)) {
+        datadeps = invoker.datadeps
+      }
+      if (defined(invoker.defines)) {
+        defines = invoker.defines
+      }
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      }
+      if (defined(invoker.direct_dependent_configs)) {
+        direct_dependent_configs = invoker.direct_dependent_configs
+      }
+      if (defined(invoker.forward_dependent_configs_from)) {
+        forward_dependent_configs_from = invoker.forward_dependent_configs_from
+      }
+      if (defined(invoker.include_dirs)) {
+        include_dirs = invoker.include_dirs
+      }
+      if (defined(invoker.ldflags)) {
+        ldflags = invoker.ldflags
+      }
+      if (defined(invoker.lib_dirs)) {
+        lib_dirs = invoker.lib_dirs
+      }
+      if (defined(invoker.libs)) {
+        libs = invoker.libs
+      }
+      if (defined(invoker.output_extension)) {
+        output_extension = invoker.output_extension
+      }
+      if (defined(invoker.output_name)) {
+        output_name = invoker.output_name
+      }
+      if (defined(invoker.public)) {
+        public = invoker.public
+      }
+      if (defined(invoker.public_configs)) {
+        public_configs = invoker.public_configs
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.sources)) {
+        sources = invoker.sources
+      }
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
     }
   }
 }
@@ -610,31 +749,81 @@ template("test") {
 
       testonly = true
 
-      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
-      if (defined(invoker.cflags)) { cflags = invoker.cflags }
-      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
-      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
-      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
-      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
-      if (defined(invoker.data)) { data = invoker.data }
-      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
-      if (defined(invoker.defines)) { defines = invoker.defines }
-      if (defined(invoker.deps)) { deps = invoker.deps }
-      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
-      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
-      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
-      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
-      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
-      if (defined(invoker.libs)) { libs = invoker.libs }
-      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
-      if (defined(invoker.output_name)) { output_name = invoker.output_name }
-      if (defined(invoker.public)) { public = invoker.public }
-      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
-      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
-      if (defined(invoker.sources)) { sources = invoker.sources }
-      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+      if (defined(invoker.all_dependent_configs)) {
+        all_dependent_configs = invoker.all_dependent_configs
+      }
+      if (defined(invoker.allow_circular_includes_from)) {
+        allow_circular_includes_from = invoker.allow_circular_includes_from
+      }
+      if (defined(invoker.cflags)) {
+        cflags = invoker.cflags
+      }
+      if (defined(invoker.cflags_c)) {
+        cflags_c = invoker.cflags_c
+      }
+      if (defined(invoker.cflags_cc)) {
+        cflags_cc = invoker.cflags_cc
+      }
+      if (defined(invoker.cflags_objc)) {
+        cflags_objc = invoker.cflags_objc
+      }
+      if (defined(invoker.cflags_objcc)) {
+        cflags_objcc = invoker.cflags_objcc
+      }
+      if (defined(invoker.check_includes)) {
+        check_includes = invoker.check_includes
+      }
+      if (defined(invoker.data)) {
+        data = invoker.data
+      }
+      if (defined(invoker.datadeps)) {
+        datadeps = invoker.datadeps
+      }
+      if (defined(invoker.defines)) {
+        defines = invoker.defines
+      }
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      }
+      if (defined(invoker.direct_dependent_configs)) {
+        direct_dependent_configs = invoker.direct_dependent_configs
+      }
+      if (defined(invoker.forward_dependent_configs_from)) {
+        forward_dependent_configs_from = invoker.forward_dependent_configs_from
+      }
+      if (defined(invoker.include_dirs)) {
+        include_dirs = invoker.include_dirs
+      }
+      if (defined(invoker.ldflags)) {
+        ldflags = invoker.ldflags
+      }
+      if (defined(invoker.lib_dirs)) {
+        lib_dirs = invoker.lib_dirs
+      }
+      if (defined(invoker.libs)) {
+        libs = invoker.libs
+      }
+      if (defined(invoker.output_extension)) {
+        output_extension = invoker.output_extension
+      }
+      if (defined(invoker.output_name)) {
+        output_name = invoker.output_name
+      }
+      if (defined(invoker.public)) {
+        public = invoker.public
+      }
+      if (defined(invoker.public_configs)) {
+        public_configs = invoker.public_configs
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.sources)) {
+        sources = invoker.sources
+      }
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
     }
   } else {
     executable(target_name) {
@@ -647,37 +836,88 @@ template("test") {
 
       testonly = true
 
-      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
-      if (defined(invoker.cflags)) { cflags = invoker.cflags }
-      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
-      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
-      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
-      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
-      if (defined(invoker.data)) { data = invoker.data }
-      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
-      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.all_dependent_configs)) {
+        all_dependent_configs = invoker.all_dependent_configs
+      }
+      if (defined(invoker.allow_circular_includes_from)) {
+        allow_circular_includes_from = invoker.allow_circular_includes_from
+      }
+      if (defined(invoker.cflags)) {
+        cflags = invoker.cflags
+      }
+      if (defined(invoker.cflags_c)) {
+        cflags_c = invoker.cflags_c
+      }
+      if (defined(invoker.cflags_cc)) {
+        cflags_cc = invoker.cflags_cc
+      }
+      if (defined(invoker.cflags_objc)) {
+        cflags_objc = invoker.cflags_objc
+      }
+      if (defined(invoker.cflags_objcc)) {
+        cflags_objcc = invoker.cflags_objcc
+      }
+      if (defined(invoker.check_includes)) {
+        check_includes = invoker.check_includes
+      }
+      if (defined(invoker.data)) {
+        data = invoker.data
+      }
+      if (defined(invoker.datadeps)) {
+        datadeps = invoker.datadeps
+      }
+      if (defined(invoker.defines)) {
+        defines = invoker.defines
+      }
+
       # All shared libraries must have the sanitizer deps to properly link in
       # asan mode (this target will be empty in other cases).
       if (defined(invoker.deps)) {
         deps = invoker.deps + [ "//build/config/sanitizers:deps" ]
       } else {
-        deps = [ "//build/config/sanitizers:deps" ]
+        deps = [
+          "//build/config/sanitizers:deps",
+        ]
       }
-      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
-      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
-      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
-      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
-      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
-      if (defined(invoker.libs)) { libs = invoker.libs }
-      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
-      if (defined(invoker.output_name)) { output_name = invoker.output_name }
-      if (defined(invoker.public)) { public = invoker.public }
-      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
-      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
-      if (defined(invoker.sources)) { sources = invoker.sources }
-      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+      if (defined(invoker.direct_dependent_configs)) {
+        direct_dependent_configs = invoker.direct_dependent_configs
+      }
+      if (defined(invoker.forward_dependent_configs_from)) {
+        forward_dependent_configs_from = invoker.forward_dependent_configs_from
+      }
+      if (defined(invoker.include_dirs)) {
+        include_dirs = invoker.include_dirs
+      }
+      if (defined(invoker.ldflags)) {
+        ldflags = invoker.ldflags
+      }
+      if (defined(invoker.lib_dirs)) {
+        lib_dirs = invoker.lib_dirs
+      }
+      if (defined(invoker.libs)) {
+        libs = invoker.libs
+      }
+      if (defined(invoker.output_extension)) {
+        output_extension = invoker.output_extension
+      }
+      if (defined(invoker.output_name)) {
+        output_name = invoker.output_name
+      }
+      if (defined(invoker.public)) {
+        public = invoker.public
+      }
+      if (defined(invoker.public_configs)) {
+        public_configs = invoker.public_configs
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.sources)) {
+        sources = invoker.sources
+      }
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
     }
   }
 }

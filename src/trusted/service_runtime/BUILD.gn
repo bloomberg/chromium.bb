@@ -84,13 +84,13 @@ static_library("sel") {
     "thread_suspension_unwind.c",
   ]
 
-  if (os == "linux") {
+  if (current_os == "linux") {
     sources += [
       "linux/nacl_signal.c",
     ]
   }
 
-  if (os == "mac") {
+  if (current_os == "mac") {
     sources += [
       "osx/crash_filter.c",
       "osx/mach_exception_handler.c",
@@ -104,7 +104,7 @@ static_library("sel") {
       "posix/x86/sel_segments.c",
     ]
   }
-  if (os == "win") {
+  if (current_os == "win") {
     sources += [
       "win/addrspace_teardown.c",
       "win/debug_exception_handler.c",
@@ -117,7 +117,7 @@ static_library("sel") {
     ]
   }
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     sources += [
       "arch/arm/nacl_app.c",
       "arch/arm/nacl_switch_to_app_arm.c",
@@ -131,7 +131,7 @@ static_library("sel") {
       "linux/nacl_signal_arm.c",
     ]
   }
-  if (cpu_arch == "mipsel") {
+  if (current_cpu == "mipsel") {
     sources += [
       "arch/mips/nacl_app.c",
       "arch/mips/nacl_switch.S",
@@ -145,7 +145,7 @@ static_library("sel") {
       "linux/nacl_signal_mips.c",
     ]
   }
-  if (os == "linux" || os == "android") {
+  if (current_os == "linux" || current_os == "android") {
     sources += [
       "linux/nacl_bootstrap_args.c",
       "linux/nacl_thread_nice.c",
@@ -155,18 +155,18 @@ static_library("sel") {
       "posix/addrspace_teardown.c",
       "posix/sel_memory.c",
     ]
-    if (cpu_arch == "x86" || cpu_arch == "x64") {
+    if (current_cpu == "x86" || current_cpu == "x64") {
       sources += [
         "linux/x86/nacl_ldt.c",
         "posix/x86/sel_segments.c",
       ]
     }
-    if (cpu_arch == "arm") {
+    if (current_cpu == "arm") {
       sources += [
           "linux/arm/sel_segments.c",
       ]
     }
-    if (cpu_arch == "mipsel") {
+    if (current_cpu == "mipsel") {
       sources += [
         "linux/mips/sel_segments.c",
       ]
@@ -213,13 +213,13 @@ static_library("sel") {
     "//native_client/src/trusted/validator:validation_cache",
     "//native_client/src/trusted/validator:validators",
   ]
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     deps += [
       "//native_client/src/trusted/service_runtime/arch/x86:service_runtime_x86_common",
       "//native_client/src/trusted/service_runtime/arch/x86_32:service_runtime_x86_32",
     ]
   }
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     deps += [
       "//native_client/src/trusted/service_runtime/arch/x86:service_runtime_x86_common",
       "//native_client/src/trusted/service_runtime/arch/x86_64:service_runtime_x86_64",

@@ -16,16 +16,16 @@ import("//native_client/build/toolchain/gcc_toolchain.gni")
 #  - ar
 #  - ld
 # and the following which is used in the toolchain_args
-#  - toolchain_cpu_arch  (What "cpu_arch" should be set to when invoking a
-#                         build using this toolchain.)
+#  - toolchain_cpu  (What "current_cpu" should be set to when invoking a
+#                    build using this toolchain.)
 
 template("nacl_toolchain") {
   assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
   assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
   assert(defined(invoker.ar), "nacl_toolchain() must specify a \"ar\" value")
   assert(defined(invoker.ld), "nacl_toolchain() must specify a \"ld\" value")
-  assert(defined(invoker.toolchain_cpu_arch),
-         "nacl_toolchain() must specify a \"toolchain_cpu_arch\"")
+  assert(defined(invoker.toolchain_cpu),
+         "nacl_toolchain() must specify a \"toolchain_cpu\"")
 
   toolchain_os = "nacl"
   if (defined(invoker.is_clang)) {
@@ -36,7 +36,7 @@ template("nacl_toolchain") {
   } else {
     executable_extension = ".nexe"
   }
-  toolchain_cpu_arch = invoker.toolchain_cpu_arch
+  toolchain_cpu = invoker.toolchain_cpu
 
   cc = invoker.cc
   cxx = invoker.cxx

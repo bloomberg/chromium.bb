@@ -8,11 +8,11 @@
 if (is_android) {
   import("//native_client/build/config/android/config.gni")
   if (!is_android_webview_build) {
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
-    } else if (cpu_arch == "arm") {
+    } else if (current_cpu == "arm") {
       sysroot = rebase_path("$android_ndk_root/$arm_android_sysroot_subdir")
-    } else if (cpu_arch == "mipsel") {
+    } else if (current_cpu == "mipsel") {
       sysroot = rebase_path("$android_ndk_root/$mips_android_sysroot_subdir")
     } else {
       sysroot = ""
@@ -23,17 +23,17 @@ if (is_android) {
 } else if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
   # For official builds, use the sysroot checked into the internal source repo
   # so that the builds work on older versions of Linux.
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     sysroot =
         rebase_path("//chrome/installer/linux/debian_wheezy_amd64-sysroot")
-  } else if (cpu_arch == "x86") {
+  } else if (current_cpu == "x86") {
     sysroot = rebase_path("//chrome/installer/linux/debian_wheezy_i386-sysroot")
   } else {
     # Any other builds don't use a sysroot.
     sysroot = ""
   }
 } else if (is_linux && !is_chromeos) {
-  if (cpu_arch == "mipsel") {
+  if (current_cpu == "mipsel") {
     sysroot = rebase_path("//mipsel-sysroot/sysroot")
   } else {
     sysroot = ""

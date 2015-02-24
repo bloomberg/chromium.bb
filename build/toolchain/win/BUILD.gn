@@ -142,7 +142,7 @@ toolchain("64") {
   # When invoking this toolchain not as the default one, these args will be
   # passed to the build. They are ignored when this is the default toolchain.
   toolchain_args() {
-    cpu_arch = "x64"
+    current_cpu = "x64"
     # Normally the build config resets the CPU architecture to 32-bits. Setting
     # this flag overrides that behavior.
     force_win64 = true
@@ -267,7 +267,7 @@ toolchain("trusted_x64") {
   # When invoking this toolchain not as the default one, these args will be
   # passed to the build. They are ignored when this is the default toolchain.
   toolchain_args() {
-    cpu_arch = "x64"
+    toolchain_cpu = "x64"
     # Normally the build config resets the CPU architecture to 32-bits. Setting
     # this flag overrides that behavior.
     force_win64 = true

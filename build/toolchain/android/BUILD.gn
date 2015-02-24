@@ -8,9 +8,9 @@ import("//native_client/build/toolchain/goma.gni")
 import("//native_client/build/toolchain/gcc_toolchain.gni")
 
 # Get the Android version of the name of the build host's architecture.
-if (build_cpu_arch == "x64") {
+if (host_cpu == "x64") {
   android_host_arch = "x86_64"
-} else if (build_cpu_arch == "x86") {
+} else if (host_cpu == "x86") {
   android_host_arch = "x86"
 } else {
   assert(false, "Need Android toolchain support for your build OS.")
@@ -23,7 +23,7 @@ gcc_toolchain("x86") {
   ar  = prefix + "ar"
   ld  = cxx
 
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolchain_os = "android"
 }
 
@@ -34,7 +34,7 @@ gcc_toolchain("arm") {
   ar  = prefix + "ar"
   ld  = cxx
 
-  toolchain_cpu_arch = "arm"
+  toolchain_cpu = "arm"
   toolchain_os = "android"
 }
 
@@ -45,6 +45,6 @@ gcc_toolchain("mipsel") {
   ar  = prefix + "ar"
   ld  = cxx
 
-  toolchain_cpu_arch = "mipsel"
+  toolchain_cpu = "mipsel"
   toolchain_os = "android"
 }

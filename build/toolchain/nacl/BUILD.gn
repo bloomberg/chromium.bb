@@ -30,7 +30,7 @@ pnacl_newlib_rev = revisions[3]
 nacl_toolchain("newlib_arm") {
   toolchain_package = "nacl_arm_newlib"
   toolchain_revision = nacl_arm_newlib_rev
-  toolchain_cpu_arch = "arm"
+  toolchain_cpu = "arm"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/arm-nacl-"
 
   cc = toolprefix + "gcc"
@@ -42,7 +42,7 @@ nacl_toolchain("newlib_arm") {
 nacl_toolchain("newlib_x86") {
   toolchain_package = "nacl_x86_newlib"
   toolchain_revision = nacl_x86_newlib_rev
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
 
   cc = toolprefix + "gcc"
@@ -54,7 +54,7 @@ nacl_toolchain("newlib_x86") {
 nacl_toolchain("newlib_x64") {
   toolchain_package = "nacl_x86_newlib"
   toolchain_revision = nacl_x86_newlib_rev
-  toolchain_cpu_arch = "x64"
+  toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
 
   cc = toolprefix + "gcc"
@@ -66,7 +66,7 @@ nacl_toolchain("newlib_x64") {
 nacl_toolchain("glibc_x86") {
   toolchain_package = "nacl_x86_glibc"
   toolchain_revision = nacl_x86_glibc_rev
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
 
   cc = toolprefix + "gcc"
@@ -78,7 +78,7 @@ nacl_toolchain("glibc_x86") {
 nacl_toolchain("glibc_x64") {
   toolchain_package = "nacl_x86_glibc"
   toolchain_revision = nacl_x86_glibc_rev
-  toolchain_cpu_arch = "x64"
+  toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
 
   cc = toolprefix + "gcc"
@@ -90,7 +90,7 @@ nacl_toolchain("glibc_x64") {
 nacl_toolchain("clang_newlib_x86") {
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
   is_clang = true
 
@@ -103,7 +103,7 @@ nacl_toolchain("clang_newlib_x86") {
 nacl_toolchain("clang_newlib_x64") {
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu_arch = "x64"
+  toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
   is_clang = true
 
@@ -118,7 +118,7 @@ link_irt = rebase_path("//native_client/build/link_irt.py", root_build_dir)
 nacl_toolchain("irt_x86") {
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
   is_clang = true
 
@@ -139,7 +139,7 @@ nacl_toolchain("irt_x86") {
 nacl_toolchain("irt_x64") {
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu_arch = "x64"
+  toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
   is_clang = true
 
@@ -161,7 +161,7 @@ nacl_toolchain("irt_x64") {
 nacl_toolchain("irt_arm") {
   toolchain_package = "nacl_arm_newlib"
   toolchain_revision = nacl_arm_newlib_rev
-  toolchain_cpu_arch = "arm"
+  toolchain_cpu = "arm"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/arm-nacl-"
 
   cc = toolprefix + "gcc"

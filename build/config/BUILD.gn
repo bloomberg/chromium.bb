@@ -196,7 +196,7 @@ config("debug") {
       # have to tell it to turn it off.
       defines += [ "_HAS_ITERATOR_DEBUGGING=0" ]
     }
-  } else if (is_linux && !is_android && cpu_arch == "x64" &&
+  } else if (is_linux && !is_android && current_cpu == "x64" &&
              !disable_iterator_debugging) {
     # Enable libstdc++ debugging facilities to help catch problems early, see
     # http://crbug.com/65151 .
