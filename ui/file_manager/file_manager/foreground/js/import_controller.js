@@ -491,6 +491,20 @@ importer.RuntimeCommandWidget = function() {
 
   /** @private {function(!importer.ClickSource)} */
   this.clickListener_;
+
+  document.addEventListener('keydown', this.onKeyDown_.bind(this));
+};
+
+/**
+ * Handle document scoped key-down events.
+ * @param {Event} event Key event.
+ * @private
+ */
+importer.RuntimeCommandWidget.prototype.onKeyDown_ = function(event) {
+  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+    case 'U+001B':
+      this.setDetailsVisible_(false);
+  }
 };
 
 /**
