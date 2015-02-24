@@ -184,6 +184,8 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
     return 'service_worker.service_worker'
 
 
+# Disabled due to redness on the tree. crbug.com/442752
+@benchmark.Disabled
 class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
   """This test measures the performance of pages using ServiceWorker.
 
