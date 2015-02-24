@@ -1306,8 +1306,8 @@ TEST_F(WindowSelectorSwipeToCloseEnabledTest,
 
   ToggleOverview();
 
-  gfx::Rect bounds = ToNearestRect(GetTransformedBoundsInRootWindow(
-      window.get()));
+  gfx::Rect bounds =
+      ToNearestRect(GetTransformedBoundsInRootWindow(window.get()));
   ui::test::EventGenerator event_generator(window->GetRootWindow());
 
   const gfx::Point drag_start_point(bounds.CenterPoint());

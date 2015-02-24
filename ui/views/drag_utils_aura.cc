@@ -6,6 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/drag_drop_client.h"
 
 namespace views {
@@ -15,12 +16,12 @@ void RunShellDrag(gfx::NativeView view,
                   const gfx::Point& location,
                   int operation,
                   ui::DragDropTypes::DragEventSource source) {
-  gfx::Point root_location(location);
+  gfx::Point screen_location(location);
+  wm::ConvertPointToScreen(view, &screen_location);
   aura::Window* root_window = view->GetRootWindow();
-  aura::Window::ConvertPointToTarget(view, root_window, &root_location);
   if (aura::client::GetDragDropClient(root_window)) {
     aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, view, root_location, operation, source);
+        data, root_window, view, screen_location, operation, source);
   }
 }
 

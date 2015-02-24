@@ -261,8 +261,9 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
 }
 
 void WindowSelectorItem::OnGestureEvent(ui::GestureEvent* event) {
-  if (!Shell::GetInstance()->window_selector_controller()->
-      swipe_to_close_enabled())
+  if (!Shell::GetInstance()
+           ->window_selector_controller()
+           ->swipe_to_close_enabled())
     return;
 
   int delta_x = 0;
@@ -282,8 +283,7 @@ void WindowSelectorItem::OnGestureEvent(ui::GestureEvent* event) {
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       event->SetHandled();
-      ScopedTransformOverviewWindow::ScopedAnimationSettings
-          animation_settings;
+      ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
       transform_window_.BeginScopedAnimation(
           OverviewAnimationType::OVERVIEW_ANIMATION_SCROLL_SELECTOR_ITEM,
           &animation_settings);
@@ -294,8 +294,8 @@ void WindowSelectorItem::OnGestureEvent(ui::GestureEvent* event) {
           transform_window_.get_overview_transform());
       transform_window_.SetTransform(root_window(), new_transform);
 
-      const float opacity = CalculateOpacityFromScrollDistance(delta_x,
-          GetMinimumCloseDistance());
+      const float opacity = CalculateOpacityFromScrollDistance(
+          delta_x, GetMinimumCloseDistance());
       transform_window_.SetOpacity(opacity);
       break;
     }
@@ -345,7 +345,7 @@ void WindowSelectorItem::ResetScrolledWindow() {
       &animation_settings);
 
   transform_window_.SetTransform(root_window(),
-                                  transform_window_.get_overview_transform());
+                                 transform_window_.get_overview_transform());
   transform_window_.SetOpacity(1.0);
 
   SetupFadeInAfterLayout(close_button_widget_.GetNativeWindow());

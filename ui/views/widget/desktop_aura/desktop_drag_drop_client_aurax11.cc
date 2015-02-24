@@ -648,7 +648,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     const ui::OSExchangeData& data,
     aura::Window* root_window,
     aura::Window* source_window,
-    const gfx::Point& root_location,
+    const gfx::Point& screen_location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
   UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,

@@ -31,7 +31,7 @@ class VIEWS_EXPORT DesktopDragDropClientWin
       const ui::OSExchangeData& data,
       aura::Window* root_window,
       aura::Window* source_window,
-      const gfx::Point& root_location,
+      const gfx::Point& screen_location,
       int operation,
       ui::DragDropTypes::DragEventSource source) override;
   virtual void DragUpdate(aura::Window* target,

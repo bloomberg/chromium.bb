@@ -33,7 +33,7 @@ int DesktopDragDropClientWin::StartDragAndDrop(
     const ui::OSExchangeData& data,
     aura::Window* root_window,
     aura::Window* source_window,
-    const gfx::Point& root_location,
+    const gfx::Point& screen_location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
   drag_drop_in_progress_ = true;

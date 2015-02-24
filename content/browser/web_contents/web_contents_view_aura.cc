@@ -45,7 +45,6 @@
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -1234,18 +1233,11 @@ void WebContentsViewAura::StartDragging(
     gfx::NativeView content_native_view = GetContentNativeView();
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-
-    gfx::Point root_point(event_info.event_location);
-    aura::client::ScreenPositionClient* spc =
-        aura::client::GetScreenPositionClient(root_window);
-    if (spc)
-      spc->ConvertPointFromScreen(root_window, &root_point);
-
     result_op = aura::client::GetDragDropClient(root_window)
         ->StartDragAndDrop(data,
                            root_window,
                            content_native_view,
-                           root_point,
+                           event_info.event_location,
                            ConvertFromWeb(operations),
                            event_info.event_source);
   }
