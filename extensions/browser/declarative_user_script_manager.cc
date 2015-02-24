@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/declarative_user_script_manager.h"
+#include "extensions/browser/declarative_user_script_manager.h"
 
-#include "chrome/browser/extensions/declarative_user_script_master.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
+#include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
-DeclarativeUserScriptManager::DeclarativeUserScriptManager(Profile* profile)
-    : profile_(profile), extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+DeclarativeUserScriptManager::DeclarativeUserScriptManager(
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
 }
 
 DeclarativeUserScriptManager::~DeclarativeUserScriptManager() {
@@ -34,7 +35,7 @@ DeclarativeUserScriptMaster*
 DeclarativeUserScriptManager::CreateDeclarativeUserScriptMaster(
     const HostID& host_id) {
   linked_ptr<DeclarativeUserScriptMaster> master(
-      new DeclarativeUserScriptMaster(profile_, host_id));
+      new DeclarativeUserScriptMaster(browser_context_, host_id));
   declarative_user_script_masters_[host_id] = master;
   return master.get();
 }

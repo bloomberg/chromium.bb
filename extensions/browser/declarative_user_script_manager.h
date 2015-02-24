@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_DECLARATIVE_USER_SCRIPT_MANAGER_H_
-#define CHROME_BROWSER_EXTENSIONS_DECLARATIVE_USER_SCRIPT_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MANAGER_H_
+#define EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MANAGER_H_
 
 #include <map>
 
@@ -13,7 +13,9 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/host_id.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 class DeclarativeUserScriptMaster;
@@ -21,7 +23,8 @@ class DeclarativeUserScriptMaster;
 // Manages a set of DeclarativeUserScriptMaster objects for script injections.
 class DeclarativeUserScriptManager : public ExtensionRegistryObserver {
  public:
-  explicit DeclarativeUserScriptManager(Profile* profile);
+  explicit DeclarativeUserScriptManager(
+      content::BrowserContext* browser_context);
   ~DeclarativeUserScriptManager() override;
 
   // Gets the user script master for declarative scripts by the given
@@ -46,7 +49,7 @@ class DeclarativeUserScriptManager : public ExtensionRegistryObserver {
   // is lazily initialized.
   UserScriptMasterMap declarative_user_script_masters_;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
@@ -56,4 +59,4 @@ class DeclarativeUserScriptManager : public ExtensionRegistryObserver {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_DECLARATIVE_USER_SCRIPT_MANAGER_H_
+#endif  // EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MANAGER_H_

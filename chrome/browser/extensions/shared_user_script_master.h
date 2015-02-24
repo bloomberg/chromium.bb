@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/extension_user_script_loader.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/extension_user_script_loader.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/user_script.h"
 

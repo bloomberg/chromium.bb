@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_user_script_loader.h"
+#include "extensions/browser/extension_user_script_loader.h"
 
 #include <set>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/version.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,6 +26,8 @@
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/one_shot_event.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::BrowserContext;
 
 namespace extensions {
 
@@ -109,20 +111,22 @@ bool ExtensionLoadScriptContent(
 }  // namespace
 
 ExtensionUserScriptLoader::ExtensionUserScriptLoader(
-    Profile* profile,
+    BrowserContext* browser_context,
     const HostID& host_id,
     bool listen_for_extension_system_loaded)
-    : UserScriptLoader(profile,
-                       host_id,
-                       ExtensionSystem::Get(profile)->content_verifier()),
+    : UserScriptLoader(
+          browser_context,
+          host_id,
+          ExtensionSystem::Get(browser_context)->content_verifier()),
       extension_registry_observer_(this),
       weak_factory_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
-    ExtensionSystem::Get(profile)->ready().Post(
-        FROM_HERE,
-        base::Bind(&ExtensionUserScriptLoader::OnExtensionSystemReady,
-                   weak_factory_.GetWeakPtr()));
+    ExtensionSystem::Get(browser_context)
+        ->ready()
+        .Post(FROM_HERE,
+              base::Bind(&ExtensionUserScriptLoader::OnExtensionSystemReady,
+                         weak_factory_.GetWeakPtr()));
   } else {
     SetReady(true);
   }
@@ -133,7 +137,7 @@ ExtensionUserScriptLoader::~ExtensionUserScriptLoader() {
 
 void ExtensionUserScriptLoader::UpdateHostsInfo(
     const std::set<HostID>& changed_hosts) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
   for (const HostID& host_id : changed_hosts) {
     const Extension* extension =
         registry->GetExtensionById(host_id.id(), ExtensionRegistry::ENABLED);

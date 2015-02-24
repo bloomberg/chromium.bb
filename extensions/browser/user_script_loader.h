@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LOADER_H_
+#ifndef EXTENSIONS_BROWSER_USER_SCRIPT_LOADER_H_
+#define EXTENSIONS_BROWSER_USER_SCRIPT_LOADER_H_
 
 #include <map>
 #include <set>
@@ -26,8 +26,6 @@ namespace content {
 class BrowserContext;
 class RenderProcessHost;
 }
-
-class Profile;
 
 namespace extensions {
 
@@ -56,7 +54,7 @@ class UserScriptLoader : public content::NotificationObserver {
   static bool ParseMetadataHeader(const base::StringPiece& script_text,
                                   UserScript* script);
 
-  UserScriptLoader(Profile* profile,
+  UserScriptLoader(content::BrowserContext* browser_context,
                    const HostID& host_id,
                    const scoped_refptr<ContentVerifier>& content_verifier);
   ~UserScriptLoader() override;
@@ -103,7 +101,7 @@ class UserScriptLoader : public content::NotificationObserver {
   // set to be true, calls AttempLoad() to bootstrap.
   void SetReady(bool ready);
 
-  Profile* profile() const { return profile_; }
+  content::BrowserContext* browser_context() const { return browser_context_; }
   const HostID& host_id() const { return host_id_; }
 
  private:
@@ -173,8 +171,8 @@ class UserScriptLoader : public content::NotificationObserver {
   // Whether or not we are currently loading.
   bool is_loading_;
 
-  // The profile for which the scripts managed here are installed.
-  Profile* profile_;
+  // The browser_context for which the scripts managed here are installed.
+  content::BrowserContext* browser_context_;
 
   // ID of the host that owns these scripts, if any. This is only set to a
   // non-empty value for declarative user script shared memory regions.
@@ -190,4 +188,4 @@ class UserScriptLoader : public content::NotificationObserver {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LOADER_H_
+#endif  // EXTENSIONS_BROWSER_USER_SCRIPT_LOADER_H_

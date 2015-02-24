@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/declarative_user_script_master.h"
 #include "extensions/browser/api/declarative/declarative_rule.h"
+#include "extensions/browser/declarative_user_script_master.h"
 
 namespace base {
 class Time;

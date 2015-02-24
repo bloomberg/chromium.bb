@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/declarative_user_script_master.h"
+#include "extensions/browser/declarative_user_script_master.h"
 
 #include <set>
 
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 
 namespace extensions {
 
-DeclarativeUserScriptMaster::DeclarativeUserScriptMaster(Profile* profile,
-                                                         const HostID& host_id)
+DeclarativeUserScriptMaster::DeclarativeUserScriptMaster(
+    content::BrowserContext* browser_context,
+    const HostID& host_id)
     : host_id_(host_id),
-      loader_(profile,
+      loader_(browser_context,
               host_id,
               false /* listen_for_extension_system_loaded */) {
 }

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_DECLARATIVE_USER_SCRIPT_MASTER_H_
-#define CHROME_BROWSER_EXTENSIONS_DECLARATIVE_USER_SCRIPT_MASTER_H_
+#ifndef EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_
+#define EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/extension_user_script_loader.h"
+#include "extensions/browser/extension_user_script_loader.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -20,7 +22,8 @@ class UserScript;
 // and clearing scripts.
 class DeclarativeUserScriptMaster {
  public:
-  DeclarativeUserScriptMaster(Profile* profile, const HostID& host_id);
+  DeclarativeUserScriptMaster(content::BrowserContext* browser_context,
+                              const HostID& host_id);
   ~DeclarativeUserScriptMaster();
 
   // Adds script to shared memory region. This may not happen right away if a
@@ -50,4 +53,4 @@ class DeclarativeUserScriptMaster {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_DECLARATIVE_USER_SCRIPT_MASTER_H_
+#endif  // EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_

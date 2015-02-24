@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/user_script_loader.h"
+#include "extensions/browser/user_script_loader.h"
 
 #include <set>
 #include <string>
@@ -12,16 +12,19 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/content_verifier.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/file_util.h"
 
 using content::BrowserThread;
+using content::BrowserContext;
 
 namespace extensions {
 
@@ -261,14 +264,14 @@ void UserScriptLoader::LoadScriptsForTest(UserScriptList* user_scripts) {
 }
 
 UserScriptLoader::UserScriptLoader(
-    Profile* profile,
+    BrowserContext* browser_context,
     const HostID& host_id,
     const scoped_refptr<ContentVerifier>& content_verifier)
     : user_scripts_(new UserScriptList()),
       clear_scripts_(false),
       ready_(false),
       pending_load_(false),
-      profile_(profile),
+      browser_context_(browser_context),
       host_id_(host_id),
       content_verifier_(content_verifier),
       weak_factory_(this) {
@@ -313,8 +316,8 @@ void UserScriptLoader::Observe(int type,
   DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_CREATED);
   content::RenderProcessHost* process =
       content::Source<content::RenderProcessHost>(source).ptr();
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  if (!profile_->IsSameProfile(profile))
+  if (!ExtensionsBrowserClient::Get()->IsSameContext(
+          browser_context_, process->GetBrowserContext()))
     return;
   if (scripts_ready()) {
     SendUpdate(process, shared_memory_.get(),
@@ -451,7 +454,7 @@ void UserScriptLoader::OnScriptsLoaded(
 
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      content::Source<Profile>(profile_),
+      content::Source<BrowserContext>(browser_context_),
       content::Details<base::SharedMemory>(shared_memory_.get()));
 }
 
@@ -462,9 +465,9 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
   if (process->IsIsolatedGuest())
     return;
 
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  // Make sure we only send user scripts to processes in our profile.
-  if (!profile_->IsSameProfile(profile))
+  // Make sure we only send user scripts to processes in our browser_context.
+  if (!ExtensionsBrowserClient::Get()->IsSameContext(
+          browser_context_, process->GetBrowserContext()))
     return;
 
   // If the process is being started asynchronously, early return.  We'll end up

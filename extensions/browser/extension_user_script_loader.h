@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_USER_SCRIPT_LOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_USER_SCRIPT_LOADER_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_USER_SCRIPT_LOADER_H_
+#define EXTENSIONS_BROWSER_EXTENSION_USER_SCRIPT_LOADER_H_
 
 #include "base/memory/shared_memory.h"
-#include "chrome/browser/extensions/user_script_loader.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/user_script_loader.h"
 #include "extensions/common/extension.h"
 
 namespace content {
 class BrowserContext;
 }
-
-class Profile;
 
 namespace extensions {
 
@@ -27,7 +25,7 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
   // The listen_for_extension_system_loaded is only set true when initilizing
   // the Extension System, e.g, when constructs SharedUserScriptMaster in
   // ExtensionSystemImpl.
-  ExtensionUserScriptLoader(Profile* profile,
+  ExtensionUserScriptLoader(content::BrowserContext* browser_context,
                             const HostID& host_id,
                             bool listen_for_extension_system_loaded);
   ~ExtensionUserScriptLoader() override;
@@ -56,4 +54,4 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_USER_SCRIPT_LOADER_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_USER_SCRIPT_LOADER_H_
