@@ -492,7 +492,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
     {
         if (!treeItem.root) {
             var expander;
-            if (treeItem.hasChildren) {
+            if (treeItem.isExpandable()) {
                 if (treeItem.expanded)
                     expander = "- ";
                 else
@@ -595,7 +595,7 @@ InspectorTest.expandElementsTree = function(callback)
         var children = treeItem.children();
         for (var i = 0; children && i < children.length; ++i) {
             var child = children[i];
-            if (child.hasChildren && !child.expanded) {
+            if (child.isExpandable() && !child.expanded) {
                 child.expand();
                 expandedSomething = true;
             }
