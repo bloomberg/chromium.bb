@@ -17,4 +17,7 @@ const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
 // Override the URL to which metrics logs are sent for debugging.
 const char kOverrideMetricsUploadUrl[] = "override-metrics-upload-url";
 
+// Disable features that require WiFi management.
+const char kNoWifi[] = "no-wifi";
+
 }  // namespace switches

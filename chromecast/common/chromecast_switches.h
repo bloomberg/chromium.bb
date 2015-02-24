@@ -19,6 +19,9 @@ extern const char kEnableLocalFileAccesses[];
 // Metrics switches
 extern const char kOverrideMetricsUploadUrl[];
 
+// Network switches
+extern const char kNoWifi[];
+
 }  // namespace switches
 
 #endif  // CHROMECAST_COMMON_CHROMECAST_SWITCHES_H_

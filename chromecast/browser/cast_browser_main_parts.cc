@@ -101,6 +101,8 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // consistent with other clients.
   { switches::kDisableEncryptedMedia, ""},
 #if defined(OS_ANDROID)
+  // Disables Chromecast-specific WiFi-related features on ATV for now.
+  { switches::kNoWifi, "" },
   { switches::kMediaDrmEnableNonCompositing, ""},
   { switches::kEnableOverlayFullscreenVideo, ""},
   { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
