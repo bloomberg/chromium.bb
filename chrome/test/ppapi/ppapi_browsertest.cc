@@ -1306,13 +1306,13 @@ class PackagedAppTest : public ExtensionBrowserTest {
   explicit PackagedAppTest(const std::string& toolchain)
       : toolchain_(toolchain) { }
 
-  void LaunchTestingApp() {
+  void LaunchTestingApp(const std::string& extension_dirname) {
     base::FilePath data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &data_dir));
     base::FilePath app_dir = data_dir.AppendASCII("ppapi")
                                      .AppendASCII("tests")
                                      .AppendASCII("extensions")
-                                     .AppendASCII("packaged_app")
+                                     .AppendASCII(extension_dirname)
                                      .AppendASCII(toolchain_);
 
     const extensions::Extension* extension = LoadExtension(app_dir);
@@ -1325,9 +1325,9 @@ class PackagedAppTest : public ExtensionBrowserTest {
     OpenApplication(params);
   }
 
-  void RunTests() {
-    ExtensionTestMessageListener listener("hello", true);
-    LaunchTestingApp();
+  void RunTests(const std::string& extension_dirname) {
+    ExtensionTestMessageListener listener("PASS", true);
+    LaunchTestingApp(extension_dirname);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
  protected:
@@ -1363,17 +1363,21 @@ class TransitionalNonSfiPackagedAppTest : public NonSfiPackagedAppTest {
 // Load a packaged app, and wait for it to successfully post a "hello" message
 // back.
 IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, SuccessfulLoad) {
-  RunTests();
+  RunTests("packaged_app");
 }
 
 IN_PROC_BROWSER_TEST_F(NonSfiPackagedAppTest,
                        MAYBE_PNACL_NONSFI(SuccessfulLoad)) {
-  RunTests();
+  RunTests("packaged_app");
 }
 
 IN_PROC_BROWSER_TEST_F(TransitionalNonSfiPackagedAppTest,
                        MAYBE_PNACL_TRANSITIONAL_NONSFI(SuccessfulLoad)) {
-  RunTests();
+  RunTests("packaged_app");
+}
+
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, SocketPermissions) {
+  RunTests("socket_permissions");
 }
 
 class MojoPPAPITest : public InProcessBrowserTest {

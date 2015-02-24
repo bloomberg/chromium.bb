@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,12 +17,9 @@ var onControlMessageReceived = function(message) {
   chrome.test.runTests([testAll]);
 }
 
-var pass_count = 0
 var onPluginMessageReceived = function(message) {
   if (message.data == "PASS") {
-    pass_count++;
-    if (pass_count == 2)
-      chrome.test.sendMessage("PASS", onControlMessageReceived);
+    chrome.test.sendMessage("PASS", onControlMessageReceived);
   } else if (message.data) {
     chrome.test.fail(message.data);
   }

@@ -97,5 +97,26 @@
         '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:aot',
       ],
     },
+    {
+      'target_name': 'ppapi_tests_extensions_socket_permissions',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_tests_extensions_socket_permissions',
+        # Only newlib build is used in tests, no need to build others.
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        'nexe_destination_dir': 'test_data/ppapi/tests/extensions/socket_permissions',
+        'sources': [
+          'socket_permissions/test_socket_permissions.cc',
+        ],
+        'test_files': [
+          'socket_permissions/controller.js',
+          'socket_permissions/index.html',
+          'socket_permissions/main.js',
+          'socket_permissions/manifest.json',
+        ],
+      },
+    },
   ],
 }
