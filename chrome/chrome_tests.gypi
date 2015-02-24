@@ -482,6 +482,7 @@
       'browser/ui/pdf/pdf_browsertest.cc',
       'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
       'browser/ui/search/new_tab_page_interceptor_browsertest.cc',
+      'browser/ui/search_engines/search_engine_tab_helper_browsertest.cc',
       'browser/ui/settings_window_manager_browsertest.cc',
       'browser/ui/startup/startup_browser_creator_browsertest.cc',
       'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',

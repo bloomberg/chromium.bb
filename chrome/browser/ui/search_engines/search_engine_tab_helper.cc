@@ -110,8 +110,12 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // keyword.
 
   // Make sure that the page is the current page and other basic checks.
-  if (!osdd_url.is_valid())
+  // When |page_url| has file: scheme, this method doesn't work because of
+  // http://b/issue?id=863583. For that reason, this doesn't check and allow
+  // urls referring to osdd urls with same schemes.
+  if (!osdd_url.is_valid() || !osdd_url.SchemeIsHTTPOrHTTPS())
     return;
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (page_url != web_contents()->GetLastCommittedURL() ||
