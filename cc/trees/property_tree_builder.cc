@@ -120,8 +120,6 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
       layer->layer_animation_controller()->IsAnimatingProperty(
           Animation::TRANSFORM);
 
-  const bool has_transform_origin = layer->transform_origin() != gfx::Point3F();
-
   const bool has_surface = !!layer->render_surface();
 
   const bool flattening_change = layer->parent() &&
@@ -131,7 +129,7 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   bool requires_node = is_root || is_scrollable || is_fixed ||
                        has_significant_transform || has_animated_transform ||
                        is_page_scale_application_layer || flattening_change ||
-                       has_transform_origin || has_surface;
+                       has_surface;
 
   Layer* transform_parent = GetTransformParent(data_from_ancestor, layer);
 
