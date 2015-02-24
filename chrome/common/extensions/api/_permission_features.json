@@ -948,8 +948,8 @@
     ]
   },
   "wallpaper": {
-    "channel": "dev",
-    "extension_types": ["platform_app"],
+    "channel": "stable",
+    "extension_types": ["platform_app", "extension"],
     "platforms": ["chromeos"]
   },
   "wallpaperPrivate": {
