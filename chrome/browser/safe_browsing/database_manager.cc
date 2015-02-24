@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/leak_tracker.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -29,8 +30,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/metrics/metrics_service.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "url/url_constants.h"
@@ -596,8 +597,10 @@ void SafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   DCHECK(!callback.is_null());
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingDatabaseManager::GetAllChunksFromDatabase, this, callback));
+  safe_browsing_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SafeBrowsingDatabaseManager::GetAllChunksFromDatabase, this,
+                 callback));
 }
 
 void SafeBrowsingDatabaseManager::AddChunks(
@@ -607,18 +610,18 @@ void SafeBrowsingDatabaseManager::AddChunks(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   DCHECK(!callback.is_null());
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingDatabaseManager::AddDatabaseChunks, this, list,
-      base::Passed(&chunks), callback));
+  safe_browsing_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SafeBrowsingDatabaseManager::AddDatabaseChunks,
+                            this, list, base::Passed(&chunks), callback));
 }
 
 void SafeBrowsingDatabaseManager::DeleteChunks(
     scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingDatabaseManager::DeleteDatabaseChunks, this,
-      base::Passed(&chunk_deletes)));
+  safe_browsing_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SafeBrowsingDatabaseManager::DeleteDatabaseChunks,
+                            this, base::Passed(&chunk_deletes)));
 }
 
 void SafeBrowsingDatabaseManager::UpdateStarted() {
@@ -633,17 +636,19 @@ void SafeBrowsingDatabaseManager::UpdateFinished(bool update_succeeded) {
   DCHECK(enabled_);
   if (update_in_progress_) {
     update_in_progress_ = false;
-    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManager::DatabaseUpdateFinished,
-                 this, update_succeeded));
+    safe_browsing_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SafeBrowsingDatabaseManager::DatabaseUpdateFinished, this,
+                   update_succeeded));
   }
 }
 
 void SafeBrowsingDatabaseManager::ResetDatabase() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingDatabaseManager::OnResetDatabase, this));
+  safe_browsing_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SafeBrowsingDatabaseManager::OnResetDatabase, this));
 }
 
 void SafeBrowsingDatabaseManager::StartOnIOThread() {
@@ -651,14 +656,31 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
   if (enabled_)
     return;
 
-  DCHECK(!safe_browsing_thread_.get());
+  DCHECK(!safe_browsing_task_runner_);
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
   tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "455469 SafeBrowsingDatabaseManager::StartOnIOThread"));
-  safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
-  if (!safe_browsing_thread_->Start())
-    return;
+  // Use the blocking pool instead of a dedicated thread for safe browsing work,
+  // if specified by an experiment.
+  const bool use_blocking_pool =
+      variations::GetVariationParamValue("LightSpeed", "SBThreadingMode") ==
+      "BlockingPool";
+  if (use_blocking_pool) {
+    base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+    safe_browsing_task_runner_ =
+        pool->GetSequencedTaskRunnerWithShutdownBehavior(
+            pool->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  } else {
+    DCHECK(!safe_browsing_thread_.get());
+
+    safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
+    if (!safe_browsing_thread_->Start())
+      return;
+    safe_browsing_task_runner_ = safe_browsing_thread_->task_runner();
+  }
+
   enabled_ = true;
 
   MakeDatabaseAvailable();
@@ -734,7 +756,8 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
   // Checking DatabaseAvailable() avoids both of these.
   if (DatabaseAvailable()) {
     closing_database_ = true;
-    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
+    safe_browsing_task_runner_->PostTask(
+        FROM_HERE,
         base::Bind(&SafeBrowsingDatabaseManager::OnCloseDatabase, this));
   }
 
@@ -744,7 +767,7 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
   // Note that to avoid leaking the database, we rely on the fact that no new
   // tasks will be added to the db thread between the call above and this one.
   // See comments on the declaration of |safe_browsing_thread_|.
-  {
+  if (safe_browsing_thread_) {
     // A ScopedAllowIO object is required to join the thread when calling Stop.
     // See http://crbug.com/72696. Note that we call Stop() first to clear out
     // any remaining tasks before clearing safe_browsing_thread_.
@@ -752,6 +775,7 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
     safe_browsing_thread_->Stop();
     safe_browsing_thread_.reset();
   }
+  safe_browsing_task_runner_ = nullptr;
 
   // Delete pending checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
   // We have to do this after the db thread returns because methods on it can
@@ -786,7 +810,7 @@ bool SafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
           "455469 SafeBrowsingDatabaseManager::MakeDatabaseAvailable"));
   if (DatabaseAvailable())
     return true;
-  safe_browsing_thread_->message_loop()->PostTask(
+  safe_browsing_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&SafeBrowsingDatabaseManager::GetDatabase),
                  this));
@@ -794,22 +818,19 @@ bool SafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
 }
 
 SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+
   if (database_)
     return database_;
   startup_metric_utils::ScopedSlowStartupUMA
       scoped_timer("Startup.SlowStartupSafeBrowsingGetDatabase");
   const base::TimeTicks before = base::TimeTicks::Now();
 
-  SafeBrowsingDatabase* database =
-      SafeBrowsingDatabase::Create(enable_download_protection_,
-                                   enable_csd_whitelist_,
-                                   enable_download_whitelist_,
-                                   enable_extension_blacklist_,
-                                   enable_side_effect_free_whitelist_,
-                                   enable_ip_blacklist_,
-                                   enable_unwanted_software_blacklist_);
+  SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create(
+      safe_browsing_task_runner_, enable_download_protection_,
+      enable_csd_whitelist_, enable_download_whitelist_,
+      enable_extension_blacklist_, enable_side_effect_free_whitelist_,
+      enable_ip_blacklist_, enable_unwanted_software_blacklist_);
 
   database->Init(SafeBrowsingService::GetBaseFilename());
   {
@@ -881,8 +902,7 @@ void SafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
 
 void SafeBrowsingDatabaseManager::GetAllChunksFromDatabase(
     GetChunksCallback callback) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
 
   bool database_error = true;
   std::vector<SBListChunkRanges> lists;
@@ -952,8 +972,7 @@ void SafeBrowsingDatabaseManager::AddDatabaseChunks(
     const std::string& list_name,
     scoped_ptr<ScopedVector<SBChunkData> > chunks,
     AddChunksCallback callback) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   if (chunks)
     GetDatabase()->InsertChunks(list_name, chunks->get());
   BrowserThread::PostTask(
@@ -964,16 +983,14 @@ void SafeBrowsingDatabaseManager::AddDatabaseChunks(
 
 void SafeBrowsingDatabaseManager::DeleteDatabaseChunks(
     scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   if (chunk_deletes)
     GetDatabase()->DeleteChunks(*chunk_deletes);
 }
 
 void SafeBrowsingDatabaseManager::DatabaseUpdateFinished(
     bool update_succeeded) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   GetDatabase()->UpdateFinished(update_succeeded);
   DCHECK(database_update_in_progress_);
   database_update_in_progress_ = false;
@@ -984,8 +1001,7 @@ void SafeBrowsingDatabaseManager::DatabaseUpdateFinished(
 }
 
 void SafeBrowsingDatabaseManager::OnCloseDatabase() {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(closing_database_);
 
   // Because |closing_database_| is true, nothing on the IO thread will be
@@ -1002,8 +1018,8 @@ void SafeBrowsingDatabaseManager::OnCloseDatabase() {
 }
 
 void SafeBrowsingDatabaseManager::OnResetDatabase() {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+
   GetDatabase()->ResetDatabase();
 }
 
@@ -1085,8 +1101,7 @@ bool SafeBrowsingDatabaseManager::HandleOneCheck(
 
 void SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
     SafeBrowsingCheck* check) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(enable_download_protection_);
 
   std::vector<SBPrefix> prefix_hits;
@@ -1110,8 +1125,7 @@ void SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
 
 void SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
     SafeBrowsingCheck* check) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
+  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<SBPrefix> prefixes;
   for (std::vector<SBFullHash>::iterator it = check->full_hashes.begin();
@@ -1182,7 +1196,7 @@ void SafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
       new base::WeakPtrFactory<SafeBrowsingDatabaseManager>(this));
   checks_.insert(check);
 
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, task);
+  safe_browsing_task_runner_->PostTask(FROM_HERE, task);
 
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManager::TimeoutCallback,

@@ -15,8 +15,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
@@ -34,6 +34,7 @@ class SafeBrowsingDatabaseFactory {
   SafeBrowsingDatabaseFactory() { }
   virtual ~SafeBrowsingDatabaseFactory() { }
   virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
@@ -64,13 +65,15 @@ class SafeBrowsingDatabase {
   // It is not thread safe.
   // The browse list and off-domain inclusion whitelist are always on;
   // availability of other lists is controlled by the flags on this method.
-  static SafeBrowsingDatabase* Create(bool enable_download_protection,
-                                      bool enable_client_side_whitelist,
-                                      bool enable_download_whitelist,
-                                      bool enable_extension_blacklist,
-                                      bool side_effect_free_whitelist,
-                                      bool enable_ip_blacklist,
-                                      bool enable_unwanted_software_list);
+  static SafeBrowsingDatabase* Create(
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+      bool enable_download_protection,
+      bool enable_client_side_whitelist,
+      bool enable_download_whitelist,
+      bool enable_extension_blacklist,
+      bool side_effect_free_whitelist,
+      bool enable_ip_blacklist,
+      bool enable_unwanted_software_list);
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingDatabase. This is used for tests.
@@ -295,19 +298,17 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Create a database with the stores below. Takes ownership of all store
   // objects handed to this constructor. Ignores all future operations on lists
   // for which the store is initialized to NULL.
-  SafeBrowsingDatabaseNew(SafeBrowsingStore* browse_store,
-                          SafeBrowsingStore* download_store,
-                          SafeBrowsingStore* csd_whitelist_store,
-                          SafeBrowsingStore* download_whitelist_store,
-                          SafeBrowsingStore* inclusion_whitelist_store,
-                          SafeBrowsingStore* extension_blacklist_store,
-                          SafeBrowsingStore* side_effect_free_whitelist_store,
-                          SafeBrowsingStore* ip_blacklist_store,
-                          SafeBrowsingStore* unwanted_software_store);
-
-  // Create a database with a browse store. This is a legacy interface that
-  // useds Sqlite.
-  SafeBrowsingDatabaseNew();
+  SafeBrowsingDatabaseNew(
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+      SafeBrowsingStore* browse_store,
+      SafeBrowsingStore* download_store,
+      SafeBrowsingStore* csd_whitelist_store,
+      SafeBrowsingStore* download_whitelist_store,
+      SafeBrowsingStore* inclusion_whitelist_store,
+      SafeBrowsingStore* extension_blacklist_store,
+      SafeBrowsingStore* side_effect_free_whitelist_store,
+      SafeBrowsingStore* ip_blacklist_store,
+      SafeBrowsingStore* unwanted_software_store);
 
   ~SafeBrowsingDatabaseNew() override;
 
@@ -392,7 +393,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       UNWANTED_SOFTWARE,
     };
 
-    // Obtained through BeginReadTransaction(NoLockOnMainThread)?(): a
+    // Obtained through BeginReadTransaction(NoLockOnMainTaskRunner)?(): a
     // ReadTransaction allows read-only observations of the
     // ThreadSafeStateManager's state. The |prefix_gethash_cache_| has a special
     // allowance to be writable from a ReadTransaction but can't benefit from
@@ -407,18 +408,18 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     // before grabbing a WriteTransaction to swap it in atomically).
     class WriteTransaction;
 
-    explicit ThreadSafeStateManager(const base::ThreadChecker& thread_checker);
+    explicit ThreadSafeStateManager(
+        const scoped_refptr<const base::SequencedTaskRunner>& db_task_runner);
     ~ThreadSafeStateManager();
 
     scoped_ptr<ReadTransaction> BeginReadTransaction();
-    scoped_ptr<ReadTransaction> BeginReadTransactionNoLockOnMainThread();
+    scoped_ptr<ReadTransaction> BeginReadTransactionNoLockOnMainTaskRunner();
     scoped_ptr<WriteTransaction> BeginWriteTransaction();
 
    private:
-    // The SafeBrowsingDatabase's ThreadChecker, used to verify that writes are
-    // only made on its main thread. This is important as it allows reading from
-    // the main thread without holding the lock.
-    const base::ThreadChecker& thread_checker_;
+    // The sequenced task runner for this object, used to verify that its state
+    // is only ever accessed from the runner.
+    scoped_refptr<const base::SequencedTaskRunner> db_task_runner_;
 
     // Lock for protecting access to this class' state.
     mutable base::Lock lock_;
@@ -459,56 +460,55 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // main thread) state of this class.
   class DatabaseStateManager {
    public:
-    explicit DatabaseStateManager(const base::ThreadChecker& thread_checker)
-        : thread_checker_(thread_checker),
-          corruption_detected_(false),
-          change_detected_(false) {}
+    explicit DatabaseStateManager(
+        const scoped_refptr<const base::SequencedTaskRunner>& db_task_runner);
+    ~DatabaseStateManager();
 
     void init_filename_base(const base::FilePath& filename_base) {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       DCHECK(filename_base_.empty()) << "filename already initialized";
       filename_base_ = filename_base;
     }
 
     const base::FilePath& filename_base() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       return filename_base_;
     }
 
     void set_corruption_detected() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       corruption_detected_ = true;
     }
 
     void reset_corruption_detected() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       corruption_detected_ = false;
     }
 
     bool corruption_detected() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       return corruption_detected_;
     }
 
     void set_change_detected() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       change_detected_ = true;
     }
 
     void reset_change_detected() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       change_detected_ = false;
     }
 
     bool change_detected() {
-      DCHECK(thread_checker_.CalledOnValidThread());
+      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
       return change_detected_;
     }
 
    private:
-    // The SafeBrowsingDatabase's ThreadChecker, used to verify that this class'
-    // state is only ever accessed from the database's main thread.
-    const base::ThreadChecker& thread_checker_;
+    // The sequenced task runner for this object, used to verify that its state
+    // is only ever accessed from the runner.
+    scoped_refptr<const base::SequencedTaskRunner> db_task_runner_;
 
     // The base filename passed to Init(), used to generate the store and prefix
     // set filenames used to store data on disk.
@@ -635,7 +635,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // |filename|.
   void RecordFileSizeHistogram(const base::FilePath& file_path);
 
-  base::ThreadChecker thread_checker_;
+  // The sequenced task runner for this object, used to verify that its state
+  // is only ever accessed from the runner and post some tasks to it.
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   ThreadSafeStateManager state_manager_;
 

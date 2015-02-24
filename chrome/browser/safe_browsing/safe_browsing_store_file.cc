@@ -554,14 +554,23 @@ bool ReadDbStateHelper(const base::FilePath& filename,
 
 }  // namespace
 
-SafeBrowsingStoreFile::SafeBrowsingStoreFile()
-    : chunks_written_(0), empty_(false), corruption_seen_(false) {}
+SafeBrowsingStoreFile::SafeBrowsingStoreFile(
+    const scoped_refptr<const base::SequencedTaskRunner>& task_runner)
+    : task_runner_(task_runner),
+      chunks_written_(0),
+      empty_(false),
+      corruption_seen_(false) {
+}
 
 SafeBrowsingStoreFile::~SafeBrowsingStoreFile() {
   // Thread-checking is disabled in the destructor due to crbug.com/338486.
-  DetachFromThread();
+  task_runner_ = nullptr;
 
   Close();
+}
+
+bool SafeBrowsingStoreFile::CalledOnValidThread() {
+  return !task_runner_ || task_runner_->RunsTasksOnCurrentThread();
 }
 
 bool SafeBrowsingStoreFile::Delete() {

@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequenced_task_runner.h"
 
 // Implement SafeBrowsingStore in terms of a flat file.  The file
 // format is pretty literal:
@@ -123,10 +123,10 @@
 //   - Delete original file.
 //   - Rename temp file to original filename.
 
-class SafeBrowsingStoreFile : public SafeBrowsingStore,
-                              public base::NonThreadSafe {
+class SafeBrowsingStoreFile : public SafeBrowsingStore {
  public:
-  SafeBrowsingStoreFile();
+  explicit SafeBrowsingStoreFile(
+      const scoped_refptr<const base::SequencedTaskRunner>& task_runner);
   ~SafeBrowsingStoreFile() override;
 
   void Init(const base::FilePath& filename,
@@ -183,6 +183,10 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore,
   static bool DeleteStore(const base::FilePath& basename);
 
  private:
+  // Checks whether the current thread is part of the sequenced task runner
+  // this object was initialized with.
+  bool CalledOnValidThread();
+
   // Does the actual update for FinishUpdate(), so that FinishUpdate() can clean
   // up correctly in case of error.
   virtual bool DoUpdate(safe_browsing::PrefixSetBuilder* builder,
@@ -228,6 +232,10 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore,
     base::hash_set<int32>().swap(add_del_cache_);
     base::hash_set<int32>().swap(sub_del_cache_);
   }
+
+  // The sequenced task runner for this object, used to verify that its state
+  // is only ever accessed from the runner.
+  scoped_refptr<const base::SequencedTaskRunner> task_runner_;
 
   // Buffers for collecting data between BeginChunk() and
   // FinishChunk().

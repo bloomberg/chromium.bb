@@ -399,6 +399,9 @@ class SafeBrowsingDatabaseManager
   // cause a race condition at shutdown time that leads to a database leak.
   scoped_ptr<base::Thread> safe_browsing_thread_;
 
+  // The sequenced task runner for running safe browsing database operations.
+  scoped_refptr<base::SequencedTaskRunner> safe_browsing_task_runner_;
+
   // Indicates if we're currently in an update cycle.
   bool update_in_progress_;
 

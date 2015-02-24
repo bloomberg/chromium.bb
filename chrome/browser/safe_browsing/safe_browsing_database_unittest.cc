@@ -14,6 +14,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
@@ -253,6 +254,8 @@ class ScopedLogMessageIgnorer {
 
 class SafeBrowsingDatabaseTest : public PlatformTest {
  public:
+  SafeBrowsingDatabaseTest() : task_runner_(new base::TestSimpleTaskRunner) {}
+
   void SetUp() override {
     PlatformTest::SetUp();
 
@@ -273,30 +276,29 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   // Reloads the |database_| in a new SafeBrowsingDatabaseNew object with all
   // stores enabled.
   void ResetAndReloadFullDatabase() {
-    SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
-    SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
-    SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
+    SafeBrowsingStoreFile* browse_store =
+        new SafeBrowsingStoreFile(task_runner_);
+    SafeBrowsingStoreFile* download_store =
+        new SafeBrowsingStoreFile(task_runner_);
+    SafeBrowsingStoreFile* csd_whitelist_store =
+        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* download_whitelist_store =
-        new SafeBrowsingStoreFile();
+        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* inclusion_whitelist_store =
-        new SafeBrowsingStoreFile();
+        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* extension_blacklist_store =
-        new SafeBrowsingStoreFile();
+        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* side_effect_free_whitelist_store =
-        new SafeBrowsingStoreFile();
-    SafeBrowsingStoreFile* ip_blacklist_store = new SafeBrowsingStoreFile();
+        new SafeBrowsingStoreFile(task_runner_);
+    SafeBrowsingStoreFile* ip_blacklist_store =
+        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* unwanted_software_store =
-        new SafeBrowsingStoreFile();
-    database_.reset(
-        new SafeBrowsingDatabaseNew(browse_store,
-                                    download_store,
-                                    csd_whitelist_store,
-                                    download_whitelist_store,
-                                    inclusion_whitelist_store,
-                                    extension_blacklist_store,
-                                    side_effect_free_whitelist_store,
-                                    ip_blacklist_store,
-                                    unwanted_software_store));
+        new SafeBrowsingStoreFile(task_runner_);
+    database_.reset(new SafeBrowsingDatabaseNew(
+        task_runner_, browse_store, download_store, csd_whitelist_store,
+        download_whitelist_store, inclusion_whitelist_store,
+        extension_blacklist_store, side_effect_free_whitelist_store,
+        ip_blacklist_store, unwanted_software_store));
     database_->Init(database_filename_);
   }
 
@@ -330,6 +332,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   // Utility function for setting up the database for the caching test.
   void PopulateDatabaseForCacheTest();
 
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<SafeBrowsingDatabaseNew> database_;
   base::FilePath database_filename_;
   base::ScopedTempDir temp_dir_;
@@ -1115,9 +1118,9 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   // file-backed.
   database_.reset();
   base::MessageLoop loop;
-  SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile();
-  database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL, NULL,
-                                              NULL, NULL, NULL, NULL));
+  SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile(task_runner_);
+  database_.reset(new SafeBrowsingDatabaseNew(
+      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1290,9 +1293,9 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   };
 
   // If the whitelist is disabled everything should match the whitelist.
-  database_.reset(new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile(), NULL,
-                                              NULL, NULL, NULL, NULL, NULL,
-                                              NULL, NULL));
+  database_.reset(new SafeBrowsingDatabaseNew(
+      task_runner_, new SafeBrowsingStoreFile(task_runner_), NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(std::string("Tested list at fault => ") +

@@ -256,6 +256,7 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
   ~TestSafeBrowsingDatabaseFactory() override {}
 
   SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,

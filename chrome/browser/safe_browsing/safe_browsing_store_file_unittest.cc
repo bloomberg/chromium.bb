@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -40,6 +41,10 @@ namespace safe_browsing {
 
 class SafeBrowsingStoreFileTest : public PlatformTest {
  public:
+  SafeBrowsingStoreFileTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        corruption_detected_(false) {}
+
   void SetUp() override {
     PlatformTest::SetUp();
 
@@ -48,11 +53,10 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     filename_ = temp_dir_.path();
     filename_ = filename_.AppendASCII("SafeBrowsingTestStore");
 
-    store_.reset(new SafeBrowsingStoreFile());
+    store_.reset(new SafeBrowsingStoreFile(task_runner_));
     store_->Init(filename_,
                  base::Bind(&SafeBrowsingStoreFileTest::OnCorruptionDetected,
                             base::Unretained(this)));
-    corruption_detected_ = false;
   }
   void TearDown() override {
     if (store_.get())
@@ -112,6 +116,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     return shard_stride;
   }
 
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   base::FilePath filename_;
   scoped_ptr<SafeBrowsingStoreFile> store_;
@@ -461,7 +466,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteTemp) {
 
   // Pull the rug out from under the existing store, simulating a
   // crash.
-  store_.reset(new SafeBrowsingStoreFile());
+  store_.reset(new SafeBrowsingStoreFile(task_runner_));
   store_->Init(filename_, base::Closure());
   EXPECT_FALSE(base::PathExists(filename_));
   EXPECT_TRUE(base::PathExists(temp_file));
@@ -748,7 +753,8 @@ TEST_F(SafeBrowsingStoreFileTest, Version7) {
   ASSERT_TRUE(base::CopyFile(golden_path, filename_));
 
   // Reset the store to make sure it re-reads the file.
-  store_.reset(new SafeBrowsingStoreFile());
+  ASSERT_TRUE(!task_runner_->HasPendingTask());
+  store_.reset(new SafeBrowsingStoreFile(task_runner_));
   store_->Init(filename_,
                base::Bind(&SafeBrowsingStoreFileTest::OnCorruptionDetected,
                           base::Unretained(this)));
@@ -781,7 +787,8 @@ TEST_F(SafeBrowsingStoreFileTest, Version8) {
   ASSERT_TRUE(base::CopyFile(golden_path, filename_));
 
   // Reset the store to make sure it re-reads the file.
-  store_.reset(new SafeBrowsingStoreFile());
+  ASSERT_TRUE(!task_runner_->HasPendingTask());
+  store_.reset(new SafeBrowsingStoreFile(task_runner_));
   store_->Init(filename_,
                base::Bind(&SafeBrowsingStoreFileTest::OnCorruptionDetected,
                           base::Unretained(this)));
