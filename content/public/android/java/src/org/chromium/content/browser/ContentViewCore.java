@@ -2191,6 +2191,9 @@ public class ContentViewCore
                 hidePastePopup();
                 break;
 
+            case SelectionEventType.INSERTION_DRAG_STOPPED:
+                break;
+
             default:
                 assert false : "Invalid selection event type.";
         }

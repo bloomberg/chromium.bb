@@ -39,6 +39,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:test_support_base',
+        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events_test_support',

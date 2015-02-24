@@ -61,7 +61,6 @@ TouchSelectionController::TouchSelectionController(
       temporarily_hidden_(false),
       selection_handle_dragged_(false) {
   DCHECK(client_);
-  HideAndDisallowShowingAutomatically();
 }
 
 TouchSelectionController::~TouchSelectionController() {
@@ -268,7 +267,9 @@ void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
 }
 
 void TouchSelectionController::OnHandleDragEnd(const TouchHandle& handle) {
-  if (&handle != insertion_handle_.get())
+  if (&handle == insertion_handle_.get())
+    client_->OnSelectionEvent(INSERTION_DRAG_STOPPED, handle.position());
+  else
     client_->OnSelectionEvent(SELECTION_DRAG_STOPPED, handle.position());
 }
 

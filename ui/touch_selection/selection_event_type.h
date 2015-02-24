@@ -22,6 +22,7 @@ enum SelectionEventType {
   INSERTION_TAPPED,
   INSERTION_CLEARED,
   INSERTION_DRAG_STARTED,
+  INSERTION_DRAG_STOPPED,
 };
 
 }  // namespace ui

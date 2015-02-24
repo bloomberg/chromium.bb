@@ -41,6 +41,7 @@ test("ui_touch_selection_unittests") {
   deps = [
     ":touch_selection",
     "//base/test:run_all_unittests",
+    "//testing/gmock:gmock",
     "//testing/gtest:gtest",
     "//ui/base:base",
     "//ui/events:test_support",
