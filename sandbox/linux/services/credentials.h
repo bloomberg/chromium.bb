@@ -56,6 +56,7 @@ class SANDBOX_EXPORT Credentials {
   // change.
   // If this call succeeds, the current process will be granted a full set of
   // capabilities in the new namespace.
+  // This will fail if the process is not mono-threaded.
   static bool MoveToNewUserNS() WARN_UNUSED_RESULT;
 
   // Remove the ability of the process to access the file system. File

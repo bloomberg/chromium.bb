@@ -38,6 +38,14 @@ bool IsRunningOnValgrind();
 #define DISABLE_ON_TSAN(test_name) test_name
 #endif  // defined(THREAD_SANITIZER)
 
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) ||    \
+    defined(UNDEFINED_SANITIZER) || defined(SANITIZER_COVERAGE)
+#define DISABLE_ON_SANITIZERS(test_name) DISABLED_##test_name
+#else
+#define DISABLE_ON_SANITIZERS(test_name) test_name
+#endif
+
 #if defined(OS_ANDROID)
 #define DISABLE_ON_ANDROID(test_name) DISABLED_##test_name
 #else

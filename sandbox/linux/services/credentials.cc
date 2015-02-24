@@ -22,6 +22,7 @@
 #include "base/process/launch.h"
 #include "base/template_util.h"
 #include "base/third_party/valgrind/valgrind.h"
+#include "build/build_config.h"
 #include "sandbox/linux/services/namespace_utils.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
@@ -133,7 +134,11 @@ void CheckCloneNewUserErrno(int error) {
 
 bool Credentials::DropAllCapabilities(int proc_fd) {
   DCHECK_LE(0, proc_fd);
+#if !defined(THREAD_SANITIZER)
+  // With TSAN, accept to break the security model as it is a testing
+  // configuration.
   CHECK(ThreadHelpers::IsSingleThreaded(proc_fd));
+#endif
 
   ScopedCap cap(cap_init());
   CHECK(cap);
@@ -171,6 +176,12 @@ bool Credentials::CanCreateProcessInNewUserNS() {
   if (IsRunningOnValgrind()) {
     return false;
   }
+
+#if defined(THREAD_SANITIZER)
+  // With TSAN, processes will always have threads running and can never
+  // enter a new user namespace with MoveToNewUserNS().
+  return false;
+#endif
 
   // This is roughly a fork().
   const pid_t pid = sys_clone(CLONE_NEWUSER | SIGCHLD, 0, 0, 0, 0);
