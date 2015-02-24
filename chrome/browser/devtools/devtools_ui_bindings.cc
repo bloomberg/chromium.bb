@@ -573,6 +573,8 @@ void DevToolsUIBindings::IndexPath(int request_id,
     IndexingDone(request_id, file_system_path);
     return;
   }
+  if (indexing_jobs_.count(request_id) != 0)
+    return;
   indexing_jobs_[request_id] =
       scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>(
           file_system_indexer_->IndexPath(
