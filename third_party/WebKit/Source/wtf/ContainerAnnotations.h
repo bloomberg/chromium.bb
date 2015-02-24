@@ -7,7 +7,7 @@
 
 #include "wtf/Alignment.h"
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) && OS(LINUX)
 #define ANNOTATE_CONTIGUOUS_CONTAINER
 #define ANNOTATE_NEW_BUFFER(buffer, capacity, newSize) \
     if (buffer) { \
