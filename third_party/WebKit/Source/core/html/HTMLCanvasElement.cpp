@@ -741,14 +741,6 @@ GraphicsContext* HTMLCanvasElement::drawingContext() const
     return buffer() ? m_imageBuffer->context() : nullptr;
 }
 
-GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
-{
-    if (!hasImageBuffer())
-        return nullptr;
-
-    return drawingContext();
-}
-
 SkCanvas* HTMLCanvasElement::drawingCanvas() const
 {
     return buffer() ? m_imageBuffer->canvas() : nullptr;
