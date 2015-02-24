@@ -56,7 +56,7 @@ Console::~Console()
 {
 }
 
-void Console::trace(Visitor* visitor)
+DEFINE_TRACE(Console)
 {
     ConsoleBase::trace(visitor);
     DOMWindowProperty::trace(visitor);

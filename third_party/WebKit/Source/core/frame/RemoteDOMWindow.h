@@ -22,7 +22,7 @@ public:
     ExecutionContext* executionContext() const override;
 
     // DOMWindow overrides:
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     bool isRemoteDOMWindow() const override { return true; }
     RemoteFrame* frame() const override;
     Screen* screen() const override;

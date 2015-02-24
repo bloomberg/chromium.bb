@@ -41,7 +41,7 @@ BarProp::BarProp(LocalFrame* frame, Type type)
 {
 }
 
-void BarProp::trace(Visitor* visitor)
+DEFINE_TRACE(BarProp)
 {
     DOMWindowProperty::trace(visitor);
 }

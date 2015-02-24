@@ -59,7 +59,7 @@ public:
     // references to handlers that are no longer related to it.
     void documentDetached(Document&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void clearWeakMembers(Visitor*);
 
 private:

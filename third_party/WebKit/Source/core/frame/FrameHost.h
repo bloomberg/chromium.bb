@@ -87,7 +87,7 @@ public:
 
     ConsoleMessageStorage& consoleMessageStorage() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // Don't allow more than a certain number of frames in a page.
     // This seems like a reasonable upper bound, and otherwise mutually

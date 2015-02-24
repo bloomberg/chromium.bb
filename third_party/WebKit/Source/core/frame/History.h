@@ -63,7 +63,7 @@ public:
 
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, FrameLoadType, ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit History(LocalFrame*);

@@ -143,7 +143,7 @@ Vector<String> Navigator::languages()
     return languages;
 }
 
-void Navigator::trace(Visitor* visitor)
+DEFINE_TRACE(Navigator)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_plugins);

@@ -47,7 +47,7 @@ Location::Location(Frame* frame)
 {
 }
 
-void Location::trace(Visitor* visitor)
+DEFINE_TRACE(Location)
 {
     visitor->trace(m_frame);
 }

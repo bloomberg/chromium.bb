@@ -47,7 +47,7 @@ History::History(LocalFrame* frame)
 {
 }
 
-void History::trace(Visitor* visitor)
+DEFINE_TRACE(History)
 {
     DOMWindowProperty::trace(visitor);
 }

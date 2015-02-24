@@ -233,7 +233,7 @@ FloatSize ImageBitmap::sourceSize() const
     return FloatSize(width(), height());
 }
 
-void ImageBitmap::trace(Visitor* visitor)
+DEFINE_TRACE(ImageBitmap)
 {
     visitor->trace(m_imageElement);
     ImageLoaderClient::trace(visitor);

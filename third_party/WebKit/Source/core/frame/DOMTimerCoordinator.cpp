@@ -47,7 +47,7 @@ void DOMTimerCoordinator::didChangeTimerAlignmentInterval()
         iter->value->didChangeAlignmentInterval();
 }
 
-void DOMTimerCoordinator::trace(Visitor* visitor)
+DEFINE_TRACE(DOMTimerCoordinator)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_timers);

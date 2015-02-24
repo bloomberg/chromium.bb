@@ -55,7 +55,7 @@ class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
     virtual ~Frame();
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool isLocalFrame() const { return false; }
     virtual bool isRemoteFrame() const { return false; }

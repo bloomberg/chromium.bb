@@ -62,7 +62,7 @@ Frame::~Frame()
 #endif
 }
 
-void Frame::trace(Visitor* visitor)
+DEFINE_TRACE(Frame)
 {
     visitor->trace(m_treeNode);
     visitor->trace(m_host);

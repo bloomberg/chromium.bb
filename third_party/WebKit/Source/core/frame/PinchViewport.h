@@ -68,7 +68,7 @@ public:
         return adoptPtrWillBeNoop(new PinchViewport(host));
     }
     virtual ~PinchViewport();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
     GraphicsLayer* rootGraphicsLayer()

@@ -81,7 +81,7 @@ namespace blink {
 
         // Frame overrides:
         virtual ~LocalFrame();
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
         virtual bool isLocalFrame() const override { return true; }
         virtual DOMWindow* domWindow() const override;
         WindowProxy* windowProxy(DOMWrapperWorld&) override;

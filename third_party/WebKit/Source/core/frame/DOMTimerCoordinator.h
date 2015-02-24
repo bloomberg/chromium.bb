@@ -49,7 +49,7 @@ public:
     // deeper timer nesting level, see DOMTimer::DOMTimer.
     void setTimerNestingLevel(int level) { m_timerNestingLevel = level; }
 
-    void trace(Visitor*); // Oilpan.
+    DECLARE_TRACE(); // Oilpan.
 
 private:
     int nextID();

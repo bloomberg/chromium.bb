@@ -39,7 +39,7 @@ public:
 
     LocalFrame* frame() const { return m_frame; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit FrameDestructionObserver(LocalFrame*);

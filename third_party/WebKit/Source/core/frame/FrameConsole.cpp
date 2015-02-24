@@ -204,7 +204,7 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
     storage->reportMessage(m_frame->document(), consoleMessage.release());
 }
 
-void FrameConsole::trace(Visitor* visitor)
+DEFINE_TRACE(FrameConsole)
 {
     visitor->trace(m_frame);
 }

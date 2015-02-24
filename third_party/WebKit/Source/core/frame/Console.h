@@ -53,7 +53,7 @@ public:
 
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual ExecutionContext* context() override;

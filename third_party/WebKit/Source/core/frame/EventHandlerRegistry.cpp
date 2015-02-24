@@ -196,9 +196,9 @@ void EventHandlerRegistry::notifyDidAddOrRemoveEventHandlerTarget(EventHandlerCl
         scrollingCoordinator->touchEventTargetRectsDidChange();
 }
 
-void EventHandlerRegistry::trace(Visitor* visitor)
+DEFINE_TRACE(EventHandlerRegistry)
 {
-    visitor->registerWeakMembers<EventHandlerRegistry, &EventHandlerRegistry::clearWeakMembers>(this);
+    visitor->template registerWeakMembers<EventHandlerRegistry, &EventHandlerRegistry::clearWeakMembers>(this);
 }
 
 void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)

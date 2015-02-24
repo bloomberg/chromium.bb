@@ -77,7 +77,7 @@ PinchViewport::~PinchViewport()
 {
 }
 
-void PinchViewport::trace(Visitor* visitor)
+DEFINE_TRACE(PinchViewport)
 {
     visitor->trace(m_frameHost);
 }

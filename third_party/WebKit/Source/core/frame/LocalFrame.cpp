@@ -211,7 +211,7 @@ LocalFrame::~LocalFrame()
 #endif
 }
 
-void LocalFrame::trace(Visitor* visitor)
+DEFINE_TRACE(LocalFrame)
 {
     visitor->trace(m_instrumentingAgents);
 #if ENABLE(OILPAN)
@@ -228,7 +228,7 @@ void LocalFrame::trace(Visitor* visitor)
     visitor->trace(m_eventHandler);
     visitor->trace(m_console);
     visitor->trace(m_inputMethodController);
-    visitor->registerWeakMembers<LocalFrame, &LocalFrame::clearWeakMembers>(this);
+    visitor->template registerWeakMembers<LocalFrame, &LocalFrame::clearWeakMembers>(this);
     HeapSupplementable<LocalFrame>::trace(visitor);
 #endif
     Frame::trace(visitor);

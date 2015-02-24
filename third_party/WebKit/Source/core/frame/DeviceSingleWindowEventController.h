@@ -21,7 +21,7 @@ public:
 
     // Inherited from DeviceEventControllerBase.
     virtual void didUpdateData() override;
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     // Inherited from DOMWindowLifecycleObserver.
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;

@@ -69,7 +69,7 @@ public:
 
     void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit FrameConsole(LocalFrame&);

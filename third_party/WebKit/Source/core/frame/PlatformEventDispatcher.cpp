@@ -80,12 +80,12 @@ void PlatformEventDispatcher::notifyControllers()
         purgeControllers();
 }
 
-void PlatformEventDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(PlatformEventDispatcher)
 {
 #if ENABLE(OILPAN)
     // Trace the backing store, the weak(&bare) element references won't be.
     visitor->trace(m_controllers);
-    visitor->registerWeakMembers<PlatformEventDispatcher, &PlatformEventDispatcher::clearWeakMembers>(this);
+    visitor->template registerWeakMembers<PlatformEventDispatcher, &PlatformEventDispatcher::clearWeakMembers>(this);
 #endif
 }
 

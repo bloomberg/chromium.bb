@@ -59,7 +59,7 @@ public:
     unsigned availHeight() const;
     unsigned availWidth() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit Screen(LocalFrame*);

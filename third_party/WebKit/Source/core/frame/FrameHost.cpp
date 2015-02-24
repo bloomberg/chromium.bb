@@ -106,7 +106,7 @@ ConsoleMessageStorage& FrameHost::consoleMessageStorage() const
     return *m_consoleMessageStorage;
 }
 
-void FrameHost::trace(Visitor* visitor)
+DEFINE_TRACE(FrameHost)
 {
     visitor->trace(m_page);
     visitor->trace(m_topControls);

@@ -34,7 +34,7 @@ public:
 
     virtual void setFrameRect(const IntRect&) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit RemoteFrameView(RemoteFrame*);

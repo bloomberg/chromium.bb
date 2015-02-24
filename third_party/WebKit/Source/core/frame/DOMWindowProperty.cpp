@@ -89,7 +89,7 @@ void DOMWindowProperty::willDetachGlobalObjectFromFrame()
 #endif
 }
 
-void DOMWindowProperty::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowProperty)
 {
     visitor->trace(m_frame);
 }

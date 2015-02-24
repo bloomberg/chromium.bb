@@ -200,7 +200,7 @@ double DOMTimer::alignedFireTime(double fireTime) const
     return fireTime;
 }
 
-void DOMTimer::trace(Visitor* visitor)
+DEFINE_TRACE(DOMTimer)
 {
     visitor->trace(m_action);
     SuspendableTimer::trace(visitor);

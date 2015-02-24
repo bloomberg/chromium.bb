@@ -16,7 +16,7 @@ namespace blink {
 class FrameOwner : public WillBeGarbageCollectedMixin {
 public:
     virtual ~FrameOwner() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool isLocal() const = 0;
 

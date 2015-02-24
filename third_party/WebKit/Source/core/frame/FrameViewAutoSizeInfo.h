@@ -28,7 +28,7 @@ public:
     void configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
     void autoSizeIfNeeded();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit FrameViewAutoSizeInfo(FrameView*);

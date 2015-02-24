@@ -45,7 +45,7 @@ public:
     virtual ~DOMWindow();
 
     // RefCountedWillBeGarbageCollectedFinalized overrides:
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool isLocalDOMWindow() const { return false; }
     virtual bool isRemoteDOMWindow() const { return false; }

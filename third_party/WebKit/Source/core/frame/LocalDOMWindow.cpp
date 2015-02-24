@@ -132,7 +132,7 @@ LocalDOMWindow::WindowFrameObserver::~WindowFrameObserver()
 }
 #endif
 
-void LocalDOMWindow::WindowFrameObserver::trace(Visitor* visitor)
+DEFINE_TRACE(LocalDOMWindow::WindowFrameObserver)
 {
     visitor->trace(m_window);
     FrameDestructionObserver::trace(visitor);
@@ -176,7 +176,7 @@ public:
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
     LocalDOMWindow* source() const { return m_source.get(); }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_window);
         visitor->trace(m_source);
@@ -1792,7 +1792,7 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
     dialogFrame->host()->chrome().runModal();
 }
 
-void LocalDOMWindow::trace(Visitor* visitor)
+DEFINE_TRACE(LocalDOMWindow)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frameObserver);

@@ -64,7 +64,7 @@ void FrameDestructionObserver::willDetachFrameHost()
     // Subclasses should override this function to handle this notification.
 }
 
-void FrameDestructionObserver::trace(Visitor* visitor)
+DEFINE_TRACE(FrameDestructionObserver)
 {
     visitor->trace(m_frame);
 }

@@ -22,7 +22,7 @@ FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(FrameView* view)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
 
-void FrameViewAutoSizeInfo::trace(Visitor* visitor)
+DEFINE_TRACE(FrameViewAutoSizeInfo)
 {
     visitor->trace(m_frameView);
 }

@@ -210,7 +210,7 @@ void FrameView::dispose()
 #endif
 }
 
-void FrameView::trace(Visitor* visitor)
+DEFINE_TRACE(FrameView)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);

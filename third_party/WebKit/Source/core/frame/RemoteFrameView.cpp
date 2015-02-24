@@ -56,7 +56,7 @@ void RemoteFrameView::frameRectsChanged()
     // FIXME: Notify embedder via WebLocalFrameClient when that is possible.
 }
 
-void RemoteFrameView::trace(Visitor* visitor)
+DEFINE_TRACE(RemoteFrameView)
 {
     visitor->trace(m_remoteFrame);
     Widget::trace(visitor);

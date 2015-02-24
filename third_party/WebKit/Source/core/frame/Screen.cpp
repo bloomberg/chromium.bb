@@ -118,7 +118,7 @@ unsigned Screen::availWidth() const
     return static_cast<unsigned>(screenAvailableRect(m_frame->view()).width());
 }
 
-void Screen::trace(Visitor* visitor)
+DEFINE_TRACE(Screen)
 {
 #if ENABLE(OILPAN)
     HeapSupplementable<Screen>::trace(visitor);

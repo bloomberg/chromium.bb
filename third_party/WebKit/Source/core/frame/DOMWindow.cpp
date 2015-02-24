@@ -114,7 +114,7 @@ void DOMWindow::resetLocation()
     }
 }
 
-void DOMWindow::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindow)
 {
     visitor->trace(m_location);
     EventTargetWithInlineData::trace(visitor);

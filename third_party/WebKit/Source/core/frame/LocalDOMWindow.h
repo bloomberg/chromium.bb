@@ -78,7 +78,7 @@ public:
     virtual LocalDOMWindow* toDOMWindow() override;
 
     // DOMWindow overrides:
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     bool isLocalDOMWindow() const override { return true; }
     virtual LocalFrame* frame() const override;
     Screen* screen() const override;
@@ -227,7 +227,7 @@ private:
     public:
         static PassOwnPtrWillBeRawPtr<WindowFrameObserver> create(LocalDOMWindow*, LocalFrame&);
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         WindowFrameObserver(LocalDOMWindow*, LocalFrame&);

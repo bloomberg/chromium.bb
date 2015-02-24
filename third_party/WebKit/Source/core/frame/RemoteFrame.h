@@ -24,7 +24,7 @@ public:
     virtual ~RemoteFrame();
 
     // Frame overrides:
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     bool isRemoteFrame() const override { return true; }
     DOMWindow* domWindow() const override;
     WindowProxy* windowProxy(DOMWrapperWorld&) override;

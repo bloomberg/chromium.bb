@@ -38,7 +38,7 @@ RemoteFrame::~RemoteFrame()
 {
 }
 
-void RemoteFrame::trace(Visitor* visitor)
+DEFINE_TRACE(RemoteFrame)
 {
     visitor->trace(m_view);
     visitor->trace(m_domWindow);

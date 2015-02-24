@@ -26,7 +26,7 @@ public:
     }
 
     ~TopControls();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // The amount that the viewport was shrunk by to accommodate the top
     // controls.

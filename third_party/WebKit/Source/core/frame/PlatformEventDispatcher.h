@@ -16,7 +16,7 @@ public:
     void addController(PlatformEventController*);
     void removeController(PlatformEventController*);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     PlatformEventDispatcher();

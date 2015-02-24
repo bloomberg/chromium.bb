@@ -28,7 +28,7 @@ TopControls::~TopControls()
 {
 }
 
-void TopControls::trace(Visitor* visitor)
+DEFINE_TRACE(TopControls)
 {
     visitor->trace(m_frameHost);
 }

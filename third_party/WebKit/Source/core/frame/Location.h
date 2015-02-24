@@ -83,7 +83,7 @@ public:
 
     PassRefPtrWillBeRawPtr<DOMStringList> ancestorOrigins() const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit Location(Frame*);

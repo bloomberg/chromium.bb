@@ -549,7 +549,7 @@ public:
 
     virtual bool isFrameView() const override { return true; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     void notifyPageThatContentAreaWillPaint() const;
     FrameView* parentFrameView() const;
 
