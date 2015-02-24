@@ -76,15 +76,6 @@ bool HTMLFieldSetElement::isValidElement()
     return true;
 }
 
-void HTMLFieldSetElement::setNeedsValidityCheck()
-{
-    // For now unconditionally order style recalculation, which triggers
-    // validity recalculation. In the near future, consider implement validity
-    // cache and recalculate style only if it changed.
-    pseudoStateChanged(CSSSelector::PseudoValid);
-    pseudoStateChanged(CSSSelector::PseudoInvalid);
-}
-
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
 {
     for (HTMLFormControlElement& element : Traversal<HTMLFormControlElement>::descendantsOf(base))
