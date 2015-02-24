@@ -9,6 +9,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif  // defined(OS_CHROMEOS)
+
 class ChromeMetricsServiceAccessorTest : public testing::Test {
  public:
   ChromeMetricsServiceAccessorTest()
@@ -21,6 +26,10 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
 
  private:
   ScopedTestingLocalState testing_local_state_;
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+#endif // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServiceAccessorTest);
 };

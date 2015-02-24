@@ -41,6 +41,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif  // defined(OS_CHROMEOS)
+
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
 using ::testing::_;
@@ -115,6 +120,11 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   scoped_ptr<extensions::ExternalProviderImpl> provider_;
 
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+#endif // defined(OS_CHROMEOS)
 };
 
 DeviceLocalAccountExternalPolicyLoaderTest::

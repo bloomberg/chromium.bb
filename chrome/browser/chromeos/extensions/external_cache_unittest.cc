@@ -14,6 +14,8 @@
 #include "base/run_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -150,6 +152,9 @@ class ExternalCacheTest : public testing::Test,
   base::ScopedTempDir temp_dir_;
   scoped_ptr<base::DictionaryValue> prefs_;
   std::map<std::string, std::string> installed_extensions_;
+
+  ScopedTestDeviceSettingsService test_device_settings_service_;
+  ScopedTestCrosSettings test_cros_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalCacheTest);
 };
