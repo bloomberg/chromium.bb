@@ -1705,6 +1705,7 @@ const char kReadDirectoryEntryIds[] = "ReadDirectoryEntryIds";
 const char kGetFileInfo[] = "GetFileInfo";
 const char kReadFileChunk[] = "ReadFileChunk";
 const char kCopyFileFromLocal[] = "CopyFileFromLocal";
+const char kDeleteObject[] = "DeleteObject";
 
 // Signals.
 const char kMTPStorageAttached[] = "MTPStorageAttached";
