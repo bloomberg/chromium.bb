@@ -47,7 +47,6 @@ class CONTENT_EXPORT BrowserPluginManager : public RenderProcessObserver {
   void RemoveBrowserPlugin(int browser_plugin_instance_id);
   BrowserPlugin* GetBrowserPlugin(int browser_plugin_instance_id) const;
 
-  void UpdateDeviceScaleFactor();
   void UpdateFocusState();
 
   // Returns a new instance ID to be used by BrowserPlugin. Instance IDs are

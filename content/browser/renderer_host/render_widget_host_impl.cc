@@ -1151,6 +1151,9 @@ const NativeWebKeyboardEvent*
 }
 
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
+  if (delegate_)
+    delegate_->ScreenInfoChanged();
+
   // The resize message (which may not happen immediately) will carry with it
   // the screen info as well as the new size (if the screen has changed scale
   // factor).

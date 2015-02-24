@@ -1388,6 +1388,11 @@ void WebContentsImpl::RenderWidgetWasResized(
                     MainFrameWasResized(width_changed));
 }
 
+void WebContentsImpl::ScreenInfoChanged() {
+  if (browser_plugin_embedder_)
+    browser_plugin_embedder_->ScreenInfoChanged();
+}
+
 bool WebContentsImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {

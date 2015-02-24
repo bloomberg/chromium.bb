@@ -53,3 +53,9 @@ IPC_MESSAGE_CONTROL4(GuestViewHostMsg_CreateMimeHandlerViewGuest,
                      std::string /* view_id */,
                      int /* element_instance_id */,
                      gfx::Size /* element_size */)
+
+// A renderer sends this message when it wants to resize a guest.
+IPC_MESSAGE_CONTROL3(GuestViewHostMsg_ResizeGuest,
+                     int /* routing_id */,
+                     int /* element_instance_id*/,
+                     gfx::Size /* new_size */)

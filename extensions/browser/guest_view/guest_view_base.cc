@@ -402,16 +402,6 @@ void GuestViewBase::DidDetach() {
   element_instance_id_ = guestview::kInstanceIDNone;
 }
 
-void GuestViewBase::ElementSizeChanged(const gfx::Size& size) {
-  if (size.IsEmpty())
-    return;
-
-  // Only resize if needed.
-  guest_sizer_->SizeContents(size);
-  DispatchOnResizeEvent(guest_size_, size);
-  guest_size_ = size;
-}
-
 WebContents* GuestViewBase::GetOwnerWebContents() const {
   return owner_web_contents_;
 }

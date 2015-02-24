@@ -76,7 +76,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       owner_web_contents_(nullptr),
       attached_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
-      guest_device_scale_factor_(1.0f),
       focused_(false),
       mouse_locked_(false),
       pending_lock_request_(false),
@@ -214,7 +213,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
@@ -238,8 +236,7 @@ void BrowserPluginGuest::InitInternal(
   UpdateVisibility();
 
   is_full_page_plugin_ = params.is_full_page_plugin;
-  guest_window_rect_ = gfx::Rect(params.origin,
-                                 params.resize_guest_params.view_size);
+  guest_window_rect_ = gfx::Rect(params.origin, params.view_size);
 
   if (owner_web_contents_ != owner_web_contents) {
     WebContentsViewGuest* new_view =
@@ -277,9 +274,12 @@ void BrowserPluginGuest::InitInternal(
 
   embedder_visibility_observer_.reset(new EmbedderVisibilityObserver(this));
 
-  // The instance ID does not matter here. This instance ID is used by the IPC
-  // for routing, but here we're calling OnResizeGuest for initialization.
-  OnResizeGuest(browser_plugin::kInstanceIDNone, params.resize_guest_params);
+  DCHECK(GetWebContents()->GetRenderViewHost());
+
+  // Initialize the device scale factor by calling |NotifyScreenInfoChanged|.
+  auto render_widget_host =
+      RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
+  render_widget_host->NotifyScreenInfoChanged();
 
   // TODO(chrishtr): this code is wrong. The navigate_on_drag_drop field will
   // be reset again the next time preferences are updated.
@@ -519,7 +519,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_ImeSetComposition::ID:
     case BrowserPluginHostMsg_LockMouse_ACK::ID:
     case BrowserPluginHostMsg_ReclaimCompositorResources::ID:
-    case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
@@ -779,29 +778,6 @@ void BrowserPluginGuest::OnLockMouseAck(int browser_plugin_instance_id,
   pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
-}
-
-void BrowserPluginGuest::OnResizeGuest(
-    int browser_plugin_instance_id,
-    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  // If we are setting the size for the first time before navigating then
-  // BrowserPluginGuest does not yet have a RenderViewHost.
-  if (guest_device_scale_factor_ != params.scale_factor &&
-      GetWebContents()->GetRenderViewHost()) {
-    auto render_widget_host =
-        RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
-    guest_device_scale_factor_ = params.scale_factor;
-    render_widget_host->NotifyScreenInfoChanged();
-  }
-
-  if (last_seen_browser_plugin_size_ != params.view_size) {
-    delegate_->ElementSizeChanged(params.view_size);
-    last_seen_browser_plugin_size_ = params.view_size;
-  }
-
-  // Just repaint the WebContents if needed.
-  if (params.repaint)
-    Send(new ViewMsg_Repaint(routing_id(), params.view_size));
 }
 
 void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,

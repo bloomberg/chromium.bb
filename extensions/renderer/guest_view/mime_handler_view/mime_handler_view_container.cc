@@ -168,6 +168,8 @@ bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
 void MimeHandlerViewContainer::DidResizeElement(const gfx::Size& old_size,
                                                 const gfx::Size& new_size) {
   element_size_ = new_size;
+  render_frame()->Send(new GuestViewHostMsg_ResizeGuest(
+      render_frame()->GetRoutingID(), element_instance_id(), new_size));
 }
 
 v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(

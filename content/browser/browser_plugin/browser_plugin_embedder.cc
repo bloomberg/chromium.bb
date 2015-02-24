@@ -46,6 +46,24 @@ void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
   }
 }
 
+// static
+bool BrowserPluginEmbedder::NotifyScreenInfoChanged(
+    WebContents* guest_web_contents) {
+  if (guest_web_contents->GetRenderViewHost()) {
+    auto render_widget_host =
+        RenderWidgetHostImpl::From(guest_web_contents->GetRenderViewHost());
+    render_widget_host->NotifyScreenInfoChanged();
+  }
+
+  // Returns false to iterate over all guests.
+  return false;
+}
+
+void BrowserPluginEmbedder::ScreenInfoChanged() {
+  GetBrowserPluginGuestManager()->ForEachGuest(web_contents(), base::Bind(
+      &BrowserPluginEmbedder::NotifyScreenInfoChanged));
+}
+
 void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
   guest_started_drag_ = guest->AsWeakPtr();
   guest_drag_ending_ = false;

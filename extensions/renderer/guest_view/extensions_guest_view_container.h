@@ -99,6 +99,8 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
  private:
   void OnHandleCallback(const IPC::Message& message);
 
+  void CallElementResizeCallback(const gfx::Size& old_size,
+                                 const gfx::Size& new_size);
   void EnqueueRequest(linked_ptr<Request> request);
   void PerformPendingRequest();
   void HandlePendingResponseCallback(const IPC::Message& message);
@@ -113,6 +115,9 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
 
   ScopedPersistent<v8::Function> element_resize_callback_;
   v8::Isolate* element_resize_isolate_;
+
+  // Weak pointer factory used for calling the element resize callback.
+  base::WeakPtrFactory<ExtensionsGuestViewContainer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewContainer);
 };

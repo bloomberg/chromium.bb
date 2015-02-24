@@ -56,6 +56,9 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
                                     const std::string& view_id,
                                     int element_instance_id,
                                     const gfx::Size& element_size);
+  void OnResizeGuest(int render_frame_id,
+                     int element_instance_id,
+                     const gfx::Size& new_size);
 
   // Runs on UI thread.
   void MimeHandlerViewGuestCreatedCallback(int element_instance_id,

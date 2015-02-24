@@ -52,10 +52,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
 
-  // Embedder's device scale factor changed, we need to update the guest
-  // renderer.
-  void UpdateDeviceScaleFactor();
-
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
 
@@ -155,14 +151,7 @@ class CONTENT_EXPORT BrowserPlugin :
   gfx::Size plugin_size() const { return plugin_rect_.size(); }
   gfx::Rect plugin_rect() const { return plugin_rect_; }
 
-  float GetDeviceScaleFactor() const;
-
   void ShowSadGraphic();
-
-  // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state.
-  void PopulateResizeGuestParameters(
-      const gfx::Size& view_size,
-      BrowserPluginHostMsg_ResizeGuest_Params* params);
 
   // IPC message handlers.
   // Please keep in alphabetical order.
@@ -185,7 +174,6 @@ class CONTENT_EXPORT BrowserPlugin :
   const int render_view_routing_id_;
   blink::WebPluginContainer* container_;
   gfx::Rect plugin_rect_;
-  float last_device_scale_factor_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;

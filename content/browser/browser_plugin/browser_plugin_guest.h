@@ -42,7 +42,6 @@
 class GuestSizer;
 class SkBitmap;
 struct BrowserPluginHostMsg_Attach_Params;
-struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
@@ -266,9 +265,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
                    bool privileged);
   void OnLockMouseAck(int instance_id, bool succeeded);
   // Resizes the guest's web contents.
-  void OnResizeGuest(
-      int browser_plugin_instance_id,
-      const BrowserPluginHostMsg_ResizeGuest_Params& params);
   void OnSetFocus(int instance_id,
                   bool focused,
                   blink::WebFocusType focus_type);
@@ -352,7 +348,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
 
   // An identifier that uniquely identifies a browser plugin within an embedder.
   int browser_plugin_instance_id_;
-  float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
   bool focused_;
   bool mouse_locked_;
@@ -371,8 +366,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
 
   // Last seen size of guest contents (by SwapCompositorFrame).
   gfx::Size last_seen_view_size_;
-  // Last seen size of BrowserPlugin (by OnResizeGuest).
-  gfx::Size last_seen_browser_plugin_size_;
 
   bool is_in_destruction_;
 

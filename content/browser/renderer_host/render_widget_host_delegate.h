@@ -38,6 +38,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
                                       bool width_changed) {}
 
+  // The screen info has changed.
+  virtual void ScreenInfoChanged() {}
+
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer.
   // Returns true if the |event| was handled. Otherwise, if the |event| would

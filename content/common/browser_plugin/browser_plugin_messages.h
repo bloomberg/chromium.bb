@@ -38,22 +38,11 @@
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDragStatus, blink::WebDragStatusLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::WebFocusTypeLast)
 
-IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
-  // The new size of guest view.
-  IPC_STRUCT_MEMBER(gfx::Size, view_size)
-  // Indicates the scale factor of the embedder WebView.
-  IPC_STRUCT_MEMBER(float, scale_factor)
-  // Indicates a request for a full repaint of the page.
-  // This is required for switching from compositing to the software
-  // rendering path.
-  IPC_STRUCT_MEMBER(bool, repaint)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
-  IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
-                    resize_guest_params)
+  // The new size of the guest view.
+  IPC_STRUCT_MEMBER(gfx::Size, view_size)
   IPC_STRUCT_MEMBER(gfx::Point, origin)
   // Whether the browser plugin is a full page plugin document.
   IPC_STRUCT_MEMBER(bool, is_full_page_plugin)
@@ -156,16 +145,6 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_UnlockMouse_ACK,
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_UpdateGeometry,
                     int /* browser_plugin_instance_id */,
                     gfx::Rect /* view_rect */)
-
-// -----------------------------------------------------------------------------
-// These messages are from the guest renderer to the browser process
-
-// A embedder sends this message to the browser when it wants
-// to resize a guest plugin container so that the guest is relaid out
-// according to the new size.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
-                    int /* browser_plugin_instance_id*/,
-                    BrowserPluginHostMsg_ResizeGuest_Params)
 
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.

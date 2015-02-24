@@ -63,7 +63,6 @@ BrowserPlugin::BrowserPlugin(RenderFrame* render_frame,
     : attached_(false),
       render_view_routing_id_(render_frame->GetRenderView()->GetRoutingID()),
       container_(nullptr),
-      last_device_scale_factor_(GetDeviceScaleFactor()),
       sad_guest_(nullptr),
       guest_crashed_(false),
       plugin_focused_(false),
@@ -132,11 +131,7 @@ void BrowserPlugin::Attach() {
     attach_params.is_full_page_plugin =
         frame->view()->mainFrame()->document().isPluginDocument();
   }
-  gfx::Size view_size(width(), height());
-  if (!view_size.IsEmpty()) {
-    PopulateResizeGuestParameters(view_size,
-                                  &attach_params.resize_guest_params);
-  }
+  attach_params.view_size = gfx::Size(width(), height());
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Attach(
       render_view_routing_id_,
       browser_plugin_instance_id_,
@@ -266,25 +261,6 @@ void BrowserPlugin::ShowSadGraphic() {
   // nullptr so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
-}
-
-float BrowserPlugin::GetDeviceScaleFactor() const {
-  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
-  if (!render_view)
-    return 1.0f;
-  return render_view->GetWebView()->deviceScaleFactor();
-}
-
-void BrowserPlugin::UpdateDeviceScaleFactor() {
-  if (last_device_scale_factor_ == GetDeviceScaleFactor())
-    return;
-
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(plugin_size(), &params);
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ResizeGuest(
-      render_view_routing_id_,
-      browser_plugin_instance_id_,
-      params));
 }
 
 void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
@@ -462,27 +438,9 @@ void BrowserPlugin::updateGeometry(
     return;
   }
 
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(plugin_size(), &params);
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ResizeGuest(
-      render_view_routing_id_,
-      browser_plugin_instance_id_,
-      params));
-
   if (delegate_) {
     delegate_->DidResizeElement(
         gfx::Size(old_width, old_height), plugin_size());
-  }
-}
-
-void BrowserPlugin::PopulateResizeGuestParameters(
-    const gfx::Size& view_size,
-    BrowserPluginHostMsg_ResizeGuest_Params* params) {
-  params->view_size = view_size;
-  params->scale_factor = GetDeviceScaleFactor();
-  if (last_device_scale_factor_ != params->scale_factor) {
-    last_device_scale_factor_ = params->scale_factor;
-    params->repaint = true;
   }
 }
 

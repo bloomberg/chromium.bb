@@ -3570,9 +3570,6 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
-
-  if (BrowserPluginManager::Get())
-    BrowserPluginManager::Get()->UpdateDeviceScaleFactor();
 }
 
 bool RenderViewImpl::SetDeviceColorProfile(

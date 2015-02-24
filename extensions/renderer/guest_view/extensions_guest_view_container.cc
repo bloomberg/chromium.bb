@@ -147,7 +147,8 @@ ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
     : GuestViewContainer(render_frame),
       ready_(false),
       destruction_isolate_(nullptr),
-      element_resize_isolate_(nullptr) {
+      element_resize_isolate_(nullptr),
+      weak_ptr_factory_(this) {
 }
 
 ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
@@ -200,7 +201,14 @@ void ExtensionsGuestViewContainer::RegisterElementResizeCallback(
 
 void ExtensionsGuestViewContainer::DidResizeElement(const gfx::Size& old_size,
                                                     const gfx::Size& new_size) {
-  // TODO(paulmeyer): Call the |element_resize_callback_| callback here.
+  // Call the element resize callback, if one is registered.
+  if (element_resize_callback_.IsEmpty())
+    return;
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ExtensionsGuestViewContainer::CallElementResizeCallback,
+                 weak_ptr_factory_.GetWeakPtr(), old_size, new_size));
 }
 
 bool ExtensionsGuestViewContainer::OnMessageReceived(
@@ -231,6 +239,29 @@ void ExtensionsGuestViewContainer::OnHandleCallback(
   HandlePendingResponseCallback(message);
   // Perform the subsequent attach request if one exists.
   PerformPendingRequest();
+}
+
+void ExtensionsGuestViewContainer::CallElementResizeCallback(
+    const gfx::Size& old_size,
+    const gfx::Size& new_size) {
+  v8::HandleScope handle_scope(element_resize_isolate_);
+  v8::Handle<v8::Function> callback =
+      element_resize_callback_.NewHandle(element_resize_isolate_);
+  v8::Handle<v8::Context> context = callback->CreationContext();
+  if (context.IsEmpty())
+    return;
+
+  const int argc = 4;
+  v8::Handle<v8::Value> argv[argc] = {
+    v8::Integer::New(element_resize_isolate_, old_size.width()),
+    v8::Integer::New(element_resize_isolate_, old_size.height()),
+    v8::Integer::New(element_resize_isolate_, new_size.width()),
+    v8::Integer::New(element_resize_isolate_, new_size.height())};
+
+  v8::Context::Scope context_scope(context);
+  blink::WebScopedMicrotaskSuppression suppression;
+
+  callback->Call(context->Global(), argc, argv);
 }
 
 void ExtensionsGuestViewContainer::EnqueueRequest(linked_ptr<Request> request) {

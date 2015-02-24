@@ -269,7 +269,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const content::WebContents::CreateParams& create_params) final;
   void DidAttach(int guest_proxy_routing_id) final;
   void DidDetach() final;
-  void ElementSizeChanged(const gfx::Size& size) final;
   content::WebContents* GetOwnerWebContents() const final;
   void GuestSizeChanged(const gfx::Size& new_size) final;
   void RegisterDestructionCallback(const DestructionCallback& callback) final;

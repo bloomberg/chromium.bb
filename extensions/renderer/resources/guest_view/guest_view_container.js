@@ -112,6 +112,14 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
+GuestViewContainer.prototype.onElementResize = function(oldWidth, oldHeight,
+                                                        newWidth, newHeight) {
+  if (!this.guest.getId())
+    return;
+  this.guest.setSize(
+      {normal: {width: newWidth, height: newHeight}});
+};
+
 GuestViewContainer.prototype.buildParams = function() {
   var params = this.buildContainerParams();
   params['instanceId'] = this.viewInstanceId;
@@ -128,8 +136,6 @@ GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {
   this.guest.destroy();
 };
-GuestViewContainer.prototype.onElementResize = function(oldWidth, oldHeight,
-                                                        newWidth, newHeight) {};
 
 // Registers the browser plugin <object> custom element. |viewType| is the
 // name of the specific guestview container (e.g. 'webview').

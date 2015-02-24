@@ -47,14 +47,6 @@ int BrowserPluginManager::GetNextInstanceID() {
   return RenderThreadImpl::current()->GenerateRoutingID();
 }
 
-void BrowserPluginManager::UpdateDeviceScaleFactor() {
-  IDMap<BrowserPlugin>::iterator iter(&instances_);
-  while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->UpdateDeviceScaleFactor();
-    iter.Advance();
-  }
-}
-
 void BrowserPluginManager::UpdateFocusState() {
   IDMap<BrowserPlugin>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {

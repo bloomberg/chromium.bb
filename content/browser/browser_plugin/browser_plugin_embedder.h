@@ -53,6 +53,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // Indicates that a drag operation has left the bounds of a given |guest|.
   void DragLeftGuest(BrowserPluginGuest* guest);
 
+  // Called when the screen info has changed.
+  void ScreenInfoChanged();
+
   // Called by WebContentsViewGuest when a drag operation is started within
   // |guest|. This |guest| will be signaled at the end of the drag operation.
   void StartDrag(BrowserPluginGuest* guest);
@@ -79,6 +82,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void ClearGuestDragStateIfApplicable();
 
   static bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
+
+  // Notifies a guest that the embedder's screen info has changed.
+  static bool NotifyScreenInfoChanged(WebContents* guest_web_contents);
 
   static bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                              WebContents* guest);
