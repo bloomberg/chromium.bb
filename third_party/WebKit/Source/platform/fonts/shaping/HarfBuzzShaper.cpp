@@ -788,6 +788,17 @@ void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
         ICUScriptToHBScript(script)));
 }
 
+static inline bool isValidCachedResult(const Font* font, hb_direction_t dir,
+    const String& localeString, const CachedShapingResults* cachedResults)
+{
+    ASSERT(cachedResults);
+    return cachedResults->dir == dir
+        && cachedResults->font == *font
+        && !cachedResults->font.loadingCustomFonts()
+        && !font->loadingCustomFonts()
+        && cachedResults->locale == localeString;
+}
+
 static const uint16_t* toUint16(const UChar* src)
 {
     // FIXME: This relies on undefined behavior however it works on the
@@ -795,6 +806,25 @@ static const uint16_t* toUint16(const UChar* src)
     // a copy of the string.
     static_assert(sizeof(UChar) == sizeof(uint16_t), "UChar should be the same size as uint16_t");
     return reinterpret_cast<const uint16_t*>(src);
+}
+
+static inline void addToHarfBuzzBufferInternal(hb_buffer_t* buffer,
+    const FontDescription& fontDescription, const UChar* normalizedBuffer,
+    unsigned startIndex, unsigned numCharacters)
+{
+    if (fontDescription.variant() == FontVariantSmallCaps
+        && u_islower(normalizedBuffer[startIndex])) {
+        String upperText = String(normalizedBuffer + startIndex, numCharacters)
+            .upper();
+        // TextRun is 16 bit, therefore upperText is 16 bit, even after we call
+        // makeUpper().
+        ASSERT(!upperText.is8Bit());
+        hb_buffer_add_utf16(buffer, toUint16(upperText.characters16()),
+            numCharacters, 0, numCharacters);
+    } else {
+        hb_buffer_add_utf16(buffer, toUint16(normalizedBuffer + startIndex),
+            numCharacters, 0, numCharacters);
+    }
 }
 
 bool HarfBuzzShaper::shapeHarfBuzzRuns()
@@ -826,19 +856,16 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 
         CachedShapingResults* cachedResults = runCache.find(key);
         if (cachedResults) {
-            if (cachedResults->dir == currentRun->direction() && cachedResults->font == *m_font
-                && !cachedResults->font.loadingCustomFonts() && !m_font->loadingCustomFonts() && cachedResults->locale == localeString) {
+            if (isValidCachedResult(m_font, currentRun->direction(),
+                localeString, cachedResults)) {
                 currentRun->applyShapeResult(cachedResults->buffer);
-                setGlyphPositionsForHarfBuzzRun(currentRun, cachedResults->buffer, previousRun);
-
+                setGlyphPositionsForHarfBuzzRun(currentRun,
+                    cachedResults->buffer, previousRun);
                 hb_buffer_clear_contents(harfBuzzBuffer.get());
-
                 runCache.moveToBack(cachedResults);
-
                 previousRun = currentRun;
                 continue;
             }
-
             runCache.remove(cachedResults);
         }
 
@@ -847,13 +874,9 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
         static const uint16_t preContext = space;
         hb_buffer_add_utf16(harfBuzzBuffer.get(), &preContext, 1, 1, 0);
 
-        if (fontDescription.variant() == FontVariantSmallCaps && u_islower(m_normalizedBuffer[currentRun->startIndex()])) {
-            String upperText = String(m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters()).upper();
-            ASSERT(!upperText.is8Bit()); // m_normalizedBuffer is 16 bit, therefore upperText is 16 bit, even after we call makeUpper().
-            hb_buffer_add_utf16(harfBuzzBuffer.get(), toUint16(upperText.characters16()), currentRun->numCharacters(), 0, currentRun->numCharacters());
-        } else {
-            hb_buffer_add_utf16(harfBuzzBuffer.get(), toUint16(m_normalizedBuffer.get() + currentRun->startIndex()), currentRun->numCharacters(), 0, currentRun->numCharacters());
-        }
+        addToHarfBuzzBufferInternal(harfBuzzBuffer.get(),
+            fontDescription, m_normalizedBuffer.get(), currentRun->startIndex(),
+            currentRun->numCharacters());
 
         if (fontDescription.orientation() == Vertical)
             face->setScriptForVerticalGlyphSubstitution(harfBuzzBuffer.get());
