@@ -201,7 +201,7 @@ public:
     {
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_result);
     }
@@ -250,7 +250,7 @@ public:
         resolve();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_session);
         ContentDecryptionModuleResultPromise::trace(visitor);
@@ -300,7 +300,7 @@ public:
         resolve(result);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_session);
         ContentDecryptionModuleResultPromise::trace(visitor);
@@ -934,7 +934,7 @@ void MediaKeySession::stop()
     m_asyncEventQueue->close();
 }
 
-void MediaKeySession::trace(Visitor* visitor)
+DEFINE_TRACE(MediaKeySession)
 {
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_pendingActions);

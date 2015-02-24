@@ -63,7 +63,7 @@ public:
 
     blink::WebContentDecryptionModule* contentDecryptionModule();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // ContextLifecycleObserver
     virtual void contextDestroyed() override;

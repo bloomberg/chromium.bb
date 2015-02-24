@@ -64,7 +64,7 @@ public:
     {
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_result);
     }
@@ -196,7 +196,7 @@ WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
     return m_cdm.get();
 }
 
-void MediaKeys::trace(Visitor* visitor)
+DEFINE_TRACE(MediaKeys)
 {
     visitor->trace(m_pendingActions);
     ContextLifecycleObserver::trace(visitor);

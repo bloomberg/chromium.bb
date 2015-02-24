@@ -50,7 +50,7 @@ const AtomicString& MediaEncryptedEvent::interfaceName() const
     return EventNames::MediaEncryptedEvent;
 }
 
-void MediaEncryptedEvent::trace(Visitor* visitor)
+DEFINE_TRACE(MediaEncryptedEvent)
 {
     Event::trace(visitor);
 }

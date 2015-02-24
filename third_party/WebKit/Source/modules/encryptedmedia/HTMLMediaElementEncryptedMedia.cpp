@@ -54,7 +54,7 @@ public:
     static ScriptPromise create(ScriptState*, HTMLMediaElement&, MediaKeys*);
     virtual ~SetMediaKeysHandler();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);
@@ -239,7 +239,7 @@ void SetMediaKeysHandler::reportSetFailed(ExceptionCode code, const String& erro
     reject(DOMException::create(code, errorMessage));
 }
 
-void SetMediaKeysHandler::trace(Visitor* visitor)
+DEFINE_TRACE(SetMediaKeysHandler)
 {
     visitor->trace(m_element);
     visitor->trace(m_newMediaKeys);
@@ -597,7 +597,7 @@ WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionMod
     return thisElement.contentDecryptionModule();
 }
 
-void HTMLMediaElementEncryptedMedia::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLMediaElementEncryptedMedia)
 {
     visitor->trace(m_mediaKeys);
     WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);

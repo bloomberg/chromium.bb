@@ -32,7 +32,7 @@ public:
         return m_status;
     }
 
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
     }
 
@@ -69,7 +69,7 @@ public:
         return true;
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_map);
         PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::trace(visitor);
@@ -125,7 +125,7 @@ bool MediaKeyStatusMap::getMapEntry(ScriptState*, const ArrayBufferOrArrayBuffer
     return false;
 }
 
-void MediaKeyStatusMap::trace(Visitor* visitor)
+DEFINE_TRACE(MediaKeyStatusMap)
 {
     visitor->trace(m_entries);
 }

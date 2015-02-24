@@ -145,7 +145,7 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)
     return promise;
 }
 
-void MediaKeySystemAccess::trace(Visitor*)
+DEFINE_TRACE(MediaKeySystemAccess)
 {
 }
 

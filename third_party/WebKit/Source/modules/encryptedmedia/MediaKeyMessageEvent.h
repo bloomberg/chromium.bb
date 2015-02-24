@@ -55,7 +55,7 @@ public:
     String messageType() const { return m_messageType; }
     DOMArrayBuffer* message() const { return m_message.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaKeyMessageEvent();

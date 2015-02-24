@@ -27,7 +27,7 @@ public:
     virtual void requestSucceeded(WebContentDecryptionModuleAccess*) = 0;
     virtual void requestNotSupported(const WebString& errorMessage) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

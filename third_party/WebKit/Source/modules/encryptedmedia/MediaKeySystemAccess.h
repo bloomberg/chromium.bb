@@ -24,7 +24,7 @@ public:
     void getConfiguration(MediaKeySystemConfiguration& result);
     ScriptPromise createMediaKeys(ScriptState*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     const String m_keySystem;

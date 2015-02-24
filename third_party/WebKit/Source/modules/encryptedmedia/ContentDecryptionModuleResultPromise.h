@@ -31,7 +31,7 @@ public:
     // It is only valid to call this before completion.
     ScriptPromise promise();
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit ContentDecryptionModuleResultPromise(ScriptState*);

@@ -51,7 +51,7 @@ public:
     String initDataType() const { return m_initDataType; }
     DOMArrayBuffer* initData() const { return m_initData.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaEncryptedEvent();

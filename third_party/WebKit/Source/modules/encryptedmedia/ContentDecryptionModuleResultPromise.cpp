@@ -89,7 +89,7 @@ ExecutionContext* ContentDecryptionModuleResultPromise::executionContext() const
     return m_resolver->executionContext();
 }
 
-void ContentDecryptionModuleResultPromise::trace(Visitor* visitor)
+DEFINE_TRACE(ContentDecryptionModuleResultPromise)
 {
     visitor->trace(m_resolver);
     ContentDecryptionModuleResult::trace(visitor);

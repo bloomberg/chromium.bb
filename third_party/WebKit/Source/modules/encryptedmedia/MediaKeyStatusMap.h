@@ -43,7 +43,7 @@ public:
     // IDL attributes / methods
     size_t size() const { return m_entries.size(); }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
