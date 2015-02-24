@@ -17,10 +17,6 @@
 #ifndef COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_PRECONNECT_H_
 #define COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_PRECONNECT_H_
 
-#include <map>
-
-#include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
 namespace network_hints {
@@ -32,21 +28,10 @@ class RendererPreconnect {
   RendererPreconnect();
   ~RendererPreconnect();
 
-  // Push a name into the queue to be preconnected.
+  // Submit a preconnect request for a single connection.
   void Preconnect(const GURL &url);
 
-  // SubmitPreconnect processes the buffered URLs, and submits them for
-  // preconnecting.  Multiple requests for the same URL will increase the number
-  // of connections requested.
-  void SubmitPreconnect();
-
  private:
-  // url_request_count_map_ contains (for each URL) a count for the number of
-  // times it was requested.
-  typedef std::map<GURL, int> UrlRequestCountMap;
-  UrlRequestCountMap url_request_count_map_;
-
-  base::WeakPtrFactory<RendererPreconnect> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPreconnect);
 };  // class RendererPreconnect

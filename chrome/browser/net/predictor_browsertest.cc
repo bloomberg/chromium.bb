@@ -2,16 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
+#include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +28,7 @@ using testing::HasSubstr;
 
 namespace {
 
+const char kBlinkPreconnectFeature[] = "LinkPreconnect";
 const char kChromiumHostname[] = "chromium.org";
 
 // Records a history of all hostnames for which resolving has been requested,
@@ -91,6 +99,51 @@ class HostResolutionRequestRecorder : public net::HostResolverProc {
   DISALLOW_COPY_AND_ASSIGN(HostResolutionRequestRecorder);
 };
 
+// Watches the NetLog event stream for a connect event to the provided
+// host:port pair.
+class ConnectNetLogObserver : public net::NetLog::ThreadSafeObserver {
+ public:
+  explicit ConnectNetLogObserver(const std::string& host_port_pair)
+      : host_port_pair_(host_port_pair) {
+  }
+
+  ~ConnectNetLogObserver() override {
+  }
+
+  void Attach() {
+    g_browser_process->net_log()->AddThreadSafeObserver(
+        this, net::NetLog::LOG_ALL_BUT_BYTES);
+  }
+
+  void Detach() {
+    if (net_log())
+      net_log()->RemoveThreadSafeObserver(this);
+  }
+
+  void WaitForConnect() {
+    run_loop_.Run();
+  }
+
+ private:
+  void OnAddEntry(const net::NetLog::Entry& entry) override {
+    scoped_ptr<base::Value> param_value(entry.ParametersToValue());
+    base::DictionaryValue* param_dict = NULL;
+    std::string group_name;
+
+    if (entry.source().type == net::NetLog::SOURCE_CONNECT_JOB &&
+        param_value.get() != NULL &&
+        param_value->GetAsDictionary(&param_dict) &&
+        param_dict != NULL &&
+        param_dict->GetString("group_name", &group_name) &&
+        host_port_pair_ == group_name) {
+      run_loop_.Quit();
+    }
+  }
+
+  base::RunLoop run_loop_;
+  const std::string host_port_pair_;
+};
+
 }  // namespace
 
 namespace chrome_browser_net {
@@ -109,6 +162,13 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     scoped_host_resolver_proc_.reset(new net::ScopedDefaultHostResolverProc(
         host_resolution_request_recorder_.get()));
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitchASCII(
+        switches::kEnableBlinkFeatures, kBlinkPreconnectFeature);
   }
 
   void TearDownInProcessBrowserTestFixture() override {
@@ -198,6 +258,29 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DnsPrefetch) {
       browser(),
       GURL(test_server()->GetURL("files/predictor/dns_prefetch.html")));
   WaitUntilHostHasBeenRequested(kChromiumHostname);
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, Preconnect) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Create a HTML preconnect reference to the local server in the form
+  // <link rel="preconnect" href="http://test-server/">
+  // and navigate to it as a data URI.
+  GURL preconnect_url = test_server()->GetURL("");
+  std::string preconnect_content =
+      "<link rel=\"preconnect\" href=\"" + preconnect_url.spec() + "\">";
+  std::string encoded;
+  base::Base64Encode(preconnect_content, &encoded);
+  std::string data_uri = "data:text/html;base64," + encoded;
+
+  net::HostPortPair host_port_pair = net::HostPortPair::FromURL(preconnect_url);
+  ConnectNetLogObserver net_log_observer(host_port_pair.ToString());
+  net_log_observer.Attach();
+
+  ui_test_utils::NavigateToURL(browser(), GURL(data_uri));
+
+  net_log_observer.WaitForConnect();
+  net_log_observer.Detach();
 }
 
 }  // namespace chrome_browser_net
