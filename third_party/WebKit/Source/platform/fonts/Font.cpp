@@ -150,10 +150,8 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
         // Enabling text-blobs forces the blob rendering path even for uncacheable blobs.
         TextBlobPtr uncacheableTextBlob;
         TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
-        FloatRect blobBounds = runInfo.bounds;
-        blobBounds.moveBy(-point);
 
-        textBlob = buildTextBlob(glyphBuffer, blobBounds);
+        textBlob = buildTextBlob(glyphBuffer);
         if (textBlob) {
             drawTextBlob(context, textBlob.get(), point.data());
             return;
@@ -256,7 +254,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatRect& bounds) const
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer) const
 {
     ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
 

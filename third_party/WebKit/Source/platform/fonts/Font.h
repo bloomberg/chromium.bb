@@ -139,7 +139,7 @@ private:
 
     // Returns the total advance.
     float buildGlyphBuffer(const TextRunPaintInfo&, GlyphBuffer&, ForTextEmphasisOrNot = NotForTextEmphasis) const;
-    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, const FloatRect& bounds) const;
+    PassTextBlobPtr buildTextBlob(const GlyphBuffer&) const;
     SkPaint textFillPaint(GraphicsContext*, const SimpleFontData*) const;
     SkPaint textStrokePaint(GraphicsContext*, const SimpleFontData*, bool isFilling) const;
     void paintGlyphs(GraphicsContext*, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
