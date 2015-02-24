@@ -1042,9 +1042,6 @@ crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
 
-crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
-crbug.com/429069 http/tests/xmlhttprequest/xmlhttprequest-responseXML-nopartial.html [ Pass Timeout ]
-
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Added in r171958 and timing out on some platforms ever since.
@@ -1482,9 +1479,6 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
-crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
-crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort-sync.html [ Pass Timeout ]
-crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort-timer.html [ Pass Timeout ]
 
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
 
