@@ -240,9 +240,10 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId)
     if (m_attached)
         return;
 
+    // Set the attached bit first so that sync notifications were delivered.
+    m_attached = true;
     inspectorController()->connectFrontend(hostId, this);
     Platform::current()->currentThread()->addTaskObserver(this);
-    m_attached = true;
 }
 
 void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& savedState)
@@ -250,9 +251,10 @@ void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& sa
     if (m_attached)
         return;
 
+    // Set the attached bit first so that sync notifications were delivered.
+    m_attached = true;
     inspectorController()->reuseFrontend(hostId, this, savedState);
     Platform::current()->currentThread()->addTaskObserver(this);
-    m_attached = true;
 }
 
 void WebDevToolsAgentImpl::detach()
