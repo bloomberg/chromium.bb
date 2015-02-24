@@ -68,7 +68,7 @@ void DOMWindowPagePopup::uninstall(LocalDOMWindow& window)
     window.removeSupplement(supplementName());
 }
 
-void DOMWindowPagePopup::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowPagePopup)
 {
     visitor->trace(m_controller);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);

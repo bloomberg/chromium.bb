@@ -54,7 +54,7 @@ public:
     void clearPagePopupClient();
     void histogramEnumeration(const String& name, int sample, int boundaryValue);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit PagePopupController(PagePopupClient*);

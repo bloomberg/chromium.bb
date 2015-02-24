@@ -39,7 +39,7 @@ public:
     void dispose();
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     void detach();

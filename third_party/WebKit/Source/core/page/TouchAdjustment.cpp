@@ -52,7 +52,7 @@ public:
         : m_node(node)
         , m_quad(quad)
     { }
-    void trace(Visitor* visitor) { visitor->trace(m_node); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
 
     Node* node() const { return m_node; }
     FloatQuad quad() const { return m_quad; }

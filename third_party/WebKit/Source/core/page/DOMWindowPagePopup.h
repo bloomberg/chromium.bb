@@ -48,7 +48,7 @@ public:
     static void uninstall(LocalDOMWindow&);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPagePopup);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowPagePopup(PagePopupClient*);

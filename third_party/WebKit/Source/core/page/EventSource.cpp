@@ -439,7 +439,7 @@ PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
     return event.release();
 }
 
-void EventSource::trace(Visitor* visitor)
+DEFINE_TRACE(EventSource)
 {
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);

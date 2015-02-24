@@ -29,7 +29,7 @@ PassRefPtrWillBeRawPtr<PageAnimator> PageAnimator::create(Page& page)
     return adoptRefWillBeNoop(new PageAnimator(page));
 }
 
-void PageAnimator::trace(Visitor* visitor)
+DEFINE_TRACE(PageAnimator)
 {
     visitor->trace(m_page);
 }

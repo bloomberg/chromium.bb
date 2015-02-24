@@ -66,7 +66,7 @@ public:
     void setFocused(bool);
     bool isFocused() const { return m_isFocused; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit FocusController(Page*);

@@ -54,7 +54,7 @@ public:
     void didLosePointerLock();
     void dispatchLockedMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit PointerLockController(Page*);

@@ -42,7 +42,7 @@ class ContextMenuItem;
 class ContextMenuProvider : public RefCountedWillBeGarbageCollectedFinalized<ContextMenuProvider> {
 public:
     virtual ~ContextMenuProvider() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void populateContextMenu(ContextMenu*) = 0;
     virtual void contextMenuItemSelected(const ContextMenuItem*) = 0;

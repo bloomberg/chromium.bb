@@ -968,7 +968,7 @@ void DragController::cleanupAfterSystemDrag()
 {
 }
 
-void DragController::trace(Visitor* visitor)
+DEFINE_TRACE(DragController)
 {
     visitor->trace(m_page);
     visitor->trace(m_documentUnderMouse);

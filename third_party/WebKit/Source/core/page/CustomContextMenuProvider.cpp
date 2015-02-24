@@ -29,7 +29,7 @@ CustomContextMenuProvider::~CustomContextMenuProvider()
 {
 }
 
-void CustomContextMenuProvider::trace(Visitor* visitor)
+DEFINE_TRACE(CustomContextMenuProvider)
 {
     visitor->trace(m_menu);
     visitor->trace(m_subjectElement);

@@ -25,7 +25,7 @@ public:
         return adoptRefWillBeNoop(new CustomContextMenuProvider(menu, subject));
     }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CustomContextMenuProvider(HTMLMenuElement&, HTMLElement&);

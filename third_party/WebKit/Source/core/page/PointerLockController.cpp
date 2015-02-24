@@ -159,7 +159,7 @@ void PointerLockController::enqueueEvent(const AtomicString& type, Document* doc
         document->domWindow()->enqueueDocumentEvent(Event::create(type));
 }
 
-void PointerLockController::trace(Visitor* visitor)
+DEFINE_TRACE(PointerLockController)
 {
     visitor->trace(m_page);
     visitor->trace(m_element);

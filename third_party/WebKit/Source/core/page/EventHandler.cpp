@@ -230,7 +230,7 @@ EventHandler::~EventHandler()
     ASSERT(!m_fakeMouseMoveEventTimer.isActive());
 }
 
-void EventHandler::trace(Visitor* visitor)
+DEFINE_TRACE(EventHandler)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_mousePressNode);

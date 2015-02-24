@@ -62,7 +62,7 @@ public:
     unsigned scopedChildCount() const;
     void invalidateScopedChildCount();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Frame* deepLastChild() const;

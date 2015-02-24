@@ -73,7 +73,7 @@ ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
     detach();
 }
 
-void ScopedPageLoadDeferrer::trace(Visitor* visitor)
+DEFINE_TRACE(ScopedPageLoadDeferrer)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_deferredFrames);

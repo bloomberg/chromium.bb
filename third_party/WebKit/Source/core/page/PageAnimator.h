@@ -15,7 +15,7 @@ class Page;
 class PageAnimator final : public RefCountedWillBeGarbageCollected<PageAnimator> {
 public:
     static PassRefPtrWillBeRawPtr<PageAnimator> create(Page&);
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void scheduleVisualUpdate(LocalFrame* = 0);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 

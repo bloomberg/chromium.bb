@@ -60,7 +60,7 @@ PassOwnPtrWillBeRawPtr<ContextMenuController> ContextMenuController::create(Page
     return adoptPtrWillBeNoop(new ContextMenuController(page, client));
 }
 
-void ContextMenuController::trace(Visitor* visitor)
+DEFINE_TRACE(ContextMenuController)
 {
     visitor->trace(m_menuProvider);
     visitor->trace(m_hitTestResult);

@@ -71,7 +71,7 @@ public:
     bool populateDragDataTransfer(LocalFrame* src, const DragState&, const IntPoint& dragOrigin);
     bool startDrag(LocalFrame* src, const DragState&, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     static const int DragIconRightInset;
     static const int DragIconBottomInset;

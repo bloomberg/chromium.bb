@@ -198,7 +198,7 @@ public:
 
     static void networkStateChanged(bool online);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void willBeDestroyed();
 
 private:

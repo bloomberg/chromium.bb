@@ -44,7 +44,7 @@ public:
     DragSourceAction m_dragType;
     RefPtrWillBeMember<DataTransfer> m_dragDataTransfer; // used on only the source side of dragging
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_dragSrc);
         visitor->trace(m_dragDataTransfer);

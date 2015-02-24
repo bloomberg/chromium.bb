@@ -377,7 +377,7 @@ Frame* FrameTree::deepLastChild() const
     return result;
 }
 
-void FrameTree::trace(Visitor* visitor)
+DEFINE_TRACE(FrameTree)
 {
     visitor->trace(m_thisFrame);
 }

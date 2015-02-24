@@ -87,7 +87,7 @@ class EventHandler : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> 
 public:
     explicit EventHandler(LocalFrame*);
     ~EventHandler();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void clear();
     void nodeWillBeRemoved(Node&);

@@ -1004,7 +1004,7 @@ bool FocusController::advanceFocusDirectionally(WebFocusType type)
     return consumed;
 }
 
-void FocusController::trace(Visitor* visitor)
+DEFINE_TRACE(FocusController)
 {
     visitor->trace(m_page);
     visitor->trace(m_focusedFrame);

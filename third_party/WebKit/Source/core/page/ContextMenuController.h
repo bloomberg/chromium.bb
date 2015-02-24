@@ -49,7 +49,7 @@ namespace blink {
     public:
         static PassOwnPtrWillBeRawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
         ~ContextMenuController();
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         ContextMenu* contextMenu() const { return m_contextMenu.get(); }
         void clearContextMenu();
