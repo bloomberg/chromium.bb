@@ -3747,6 +3747,7 @@
             'dom/DocumentTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
             'dom/RangeTest.cpp',
+            'dom/ScriptRunnerTest.cpp',
             'dom/TreeScopeTest.cpp',
             'editing/CompositionUnderlineRangeFilterTest.cpp',
             'editing/FrameSelectionTest.cpp',

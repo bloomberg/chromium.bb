@@ -36,7 +36,7 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader final : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
+class ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
 public:
     static PassOwnPtrWillBeRawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
     {
@@ -54,7 +54,7 @@ public:
     String scriptCharset() const { return m_characterEncoding; }
     String scriptContent() const;
     void executeScript(const ScriptSourceCode&, double* compilationFinishTime = 0);
-    void execute();
+    virtual void execute();
 
     // XML parser calls these
     void dispatchLoadEvent();
@@ -78,14 +78,15 @@ public:
     void handleSourceAttribute(const String& sourceUrl);
     void handleAsyncAttribute();
 
-    bool isReady() const { return m_pendingScript.isReady(); }
+    virtual bool isReady() const { return m_pendingScript.isReady(); }
 
     // Clears the connection to the PendingScript (and Element and Resource).
     void detach();
 
-private:
+protected:
     ScriptLoader(Element*, bool createdByParser, bool isEvaluated);
 
+private:
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
 

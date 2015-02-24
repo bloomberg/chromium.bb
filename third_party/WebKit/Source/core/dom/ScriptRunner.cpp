@@ -30,12 +30,22 @@
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/Scheduler.h"
+#include "wtf/Functional.h"
+
+// This bit of magic is needed by oilpan to prevent the ScriptRunner from leaking.
+namespace WTF {
+template<>
+struct ParamStorageTraits<blink::ScriptRunner*> : public PointerParamStorageTraits<blink::ScriptRunner*, false> {
+};
+}
 
 namespace blink {
 
+
 ScriptRunner::ScriptRunner(Document* document)
     : m_document(document)
-    , m_timer(this, &ScriptRunner::timerFired)
+    , m_executeScriptsTaskFactory(WTF::bind(&ScriptRunner::executeScripts, this))
 {
     ASSERT(document);
 }
@@ -77,13 +87,13 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, Execution
 
 void ScriptRunner::suspend()
 {
-    m_timer.stop();
+    m_executeScriptsTaskFactory.cancel();
 }
 
 void ScriptRunner::resume()
 {
     if (hasPendingScripts())
-        m_timer.startOneShot(0, FROM_HERE);
+        postTaskIfOneIsNotAlreadyInFlight();
 }
 
 void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType executionType)
@@ -103,7 +113,7 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!m_scriptsToExecuteInOrder.isEmpty());
         break;
     }
-    m_timer.startOneShot(0, FROM_HERE);
+    postTaskIfOneIsNotAlreadyInFlight();
 }
 
 void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionType executionType)
@@ -161,26 +171,52 @@ void ScriptRunner::movePendingAsyncScript(ScriptRunner* newRunner, ScriptLoader*
     }
 }
 
-void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
+void ScriptRunner::executeScripts()
 {
-    ASSERT_UNUSED(timer, timer == &m_timer);
-
     RefPtrWillBeRawPtr<Document> protect(m_document.get());
 
-    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > scriptLoaders;
-    scriptLoaders.swap(m_scriptsToExecuteSoon);
-
-    size_t numInOrderScriptsToExecute = 0;
-    for (; numInOrderScriptsToExecute < m_scriptsToExecuteInOrder.size() && m_scriptsToExecuteInOrder[numInOrderScriptsToExecute]->isReady(); ++numInOrderScriptsToExecute)
-        scriptLoaders.append(m_scriptsToExecuteInOrder[numInOrderScriptsToExecute]);
-    if (numInOrderScriptsToExecute)
-        m_scriptsToExecuteInOrder.remove(0, numInOrderScriptsToExecute);
-
-    size_t size = scriptLoaders.size();
-    for (size_t i = 0; i < size; ++i) {
-        scriptLoaders[i]->execute();
+    // New scripts are always appended to m_scriptsToExecuteSoon and m_scriptsToExecuteInOrder (never prepended)
+    // so as long as we keep track of the current totals, we can ensure the order of execution if new scripts
+    // are added while executing the current ones.
+    // NOTE a yield followed by a notifyScriptReady(... ASYNC_EXECUTION) will result in that script executing
+    // before any pre-existing ScriptsToExecuteInOrder.
+    size_t numScriptsToExecuteSoon = m_scriptsToExecuteSoon.size();
+    size_t numScriptsToExecuteInOrder = m_scriptsToExecuteInOrder.size();
+    for (size_t i = 0; i < numScriptsToExecuteSoon; i++) {
+        ASSERT(!m_scriptsToExecuteSoon.isEmpty());
+        m_scriptsToExecuteSoon.takeFirst()->execute();
         m_document->decrementLoadEventDelayCount();
+        if (yieldForHighPriorityWork())
+            return;
     }
+
+    for (size_t i = 0; i < numScriptsToExecuteInOrder; i++) {
+        ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
+        if (!m_scriptsToExecuteInOrder.first()->isReady())
+            break;
+        m_scriptsToExecuteInOrder.takeFirst()->execute();
+        m_document->decrementLoadEventDelayCount();
+        if (yieldForHighPriorityWork())
+            return;
+    }
+}
+
+bool ScriptRunner::yieldForHighPriorityWork()
+{
+    if (!Scheduler::shared()->shouldYieldForHighPriorityWork())
+        return false;
+
+    postTaskIfOneIsNotAlreadyInFlight();
+    return true;
+}
+
+void ScriptRunner::postTaskIfOneIsNotAlreadyInFlight()
+{
+    if (m_executeScriptsTaskFactory.isPending())
+        return;
+
+    // FIXME: Rename task() so that it's obvious it cancels any pending task.
+    Scheduler::shared()->postLoadingTask(FROM_HERE, m_executeScriptsTaskFactory.task());
 }
 
 DEFINE_TRACE(ScriptRunner)
