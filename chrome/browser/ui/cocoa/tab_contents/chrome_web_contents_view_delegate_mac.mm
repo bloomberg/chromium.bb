@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/chrome_web_contents_view_delegate_mac.h"
 
+#include "base/profiler/scoped_tracker.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -44,6 +45,10 @@ content::WebDragDestDelegate*
 void ChromeWebContentsViewDelegateMac::ShowContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
+  // TODO(erikchen): Remove ScopedTracker below once crbug.com/458401 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "458401 ChromeWebContentsViewDelegateMac::ShowContextMenu"));
   ShowMenu(
       BuildMenu(content::WebContents::FromRenderFrameHost(render_frame_host),
                 params));
@@ -51,6 +56,11 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
 
 void ChromeWebContentsViewDelegateMac::ShowMenu(
     scoped_ptr<RenderViewContextMenuBase> menu) {
+  // TODO(erikchen): Remove ScopedTracker below once crbug.com/458401 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "458401 ChromeWebContentsViewDelegateMac::ShowMenu"));
+
   context_menu_ = menu.Pass();
   if (!context_menu_.get())
     return;
@@ -73,6 +83,10 @@ scoped_ptr<RenderViewContextMenuBase>
 ChromeWebContentsViewDelegateMac::BuildMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
+  // TODO(erikchen): Remove ScopedTracker below once crbug.com/458401 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "458401 ChromeWebContentsViewDelegateMac::BuildMenu"));
   scoped_ptr<RenderViewContextMenuBase> menu;
   content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   // If the frame tree does not have a focused frame at this point, do not
@@ -82,8 +96,20 @@ ChromeWebContentsViewDelegateMac::BuildMenu(
   if (focused_frame) {
     content::RenderWidgetHostView* widget_view =
         GetActiveRenderWidgetHostView();
+
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458401
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "458401 ChromeWebContentsViewDelegateMac::BuildMenu::MakeMenu"));
     menu.reset(new RenderViewContextMenuMac(
         focused_frame, params, widget_view->GetNativeView()));
+
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458401
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "458401 ChromeWebContentsViewDelegateMac::BuildMenu::InitMenu"));
     menu->Init();
   }
 
