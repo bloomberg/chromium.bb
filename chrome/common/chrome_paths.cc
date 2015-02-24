@@ -58,7 +58,7 @@ const base::FilePath::CharType kPepperFlashBaseDirectory[] =
 #if defined(OS_WIN)
 const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
     FILE_PATH_LITERAL("Macromed\\Flash");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
 const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
     FILE_PATH_LITERAL("Internet Plug-Ins/PepperFlashPlayer");
 #endif
@@ -295,11 +295,12 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_WIN)
       if (!GetSystemFlashDirectory(&cur))
         return false;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
       if (!GetLocalLibraryDirectory(&cur))
         return false;
       cur = cur.Append(kPepperFlashSystemBaseDirectory);
 #else
+      // Chrome on iOS does not supports PPAPI binaries, return false.
       // TODO(wfh): If Adobe release PPAPI binaries for Linux, add support here.
       return false;
 #endif
