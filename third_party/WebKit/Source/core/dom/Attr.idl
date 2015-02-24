@@ -31,8 +31,7 @@ interface Attr : Node {
     [ImplementedAs=valueForBindings, MeasureAs=AttrNodeValue] attribute DOMString? nodeValue; // legacy alias of .value
     [ImplementedAs=valueForBindings, MeasureAs=AttrTextContent] attribute DOMString? textContent; // legacy alias of .value
 
-    // FIXME: ownerElement should be nullable.
-    [MeasureAs=AttributeOwnerElement] readonly attribute Element ownerElement;
+    [MeasureAs=AttributeOwnerElement] readonly attribute Element? ownerElement;
 
     [MeasureAs=AttributeSpecified] readonly attribute boolean specified; // useless; always returns true
 
