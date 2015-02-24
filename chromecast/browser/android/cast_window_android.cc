@@ -12,8 +12,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/renderer_preferences.h"
 #include "jni/CastWindowAndroid_jni.h"
+#include "ui/gfx/skia_util.h"
 
 namespace chromecast {
 namespace shell {
@@ -40,6 +42,13 @@ CastWindowAndroid* CastWindowAndroid::CreateNewWindow(
 
   if (!url.is_empty())
     window_android->LoadURL(url);
+
+  content::RenderWidgetHostView* rwhv =
+      window_android->web_contents_->GetRenderWidgetHostView();
+  if (rwhv) {
+    rwhv->SetBackgroundColor(SK_ColorBLACK);
+  }
+
   return window_android;
 }
 
