@@ -214,6 +214,14 @@ static void exynos_destroy_buffer(struct exynos_bo *bo)
 	exynos_bo_destroy(bo);
 }
 
+static void wait_for_user_input(int last)
+{
+	printf("press <ENTER> to %s\n", last ? "exit test application" :
+			"skip to next test");
+
+	getchar();
+}
+
 static int g2d_solid_fill_test(struct exynos_device *dev, struct exynos_bo *dst)
 {
 	struct g2d_context *ctx;
@@ -644,7 +652,7 @@ int main(int argc, char **argv)
 		goto err_rm_fb;
 	}
 
-	getchar();
+	wait_for_user_input(0);
 
 	src = exynos_create_buffer(dev, screen_width * screen_height * 4, 0);
 	if (!src) {
@@ -658,7 +666,7 @@ int main(int argc, char **argv)
 		goto err_free_src;
 	}
 
-	getchar();
+	wait_for_user_input(0);
 
 	ret = test_case.copy_with_scale(dev, src, bo, G2D_IMGBUF_GEM);
 	if (ret < 0) {
@@ -666,7 +674,7 @@ int main(int argc, char **argv)
 		goto err_free_src;
 	}
 
-	getchar();
+	wait_for_user_input(1);
 
 	/*
 	 * The blend test uses the userptr functionality of exynos-drm, which
