@@ -84,6 +84,9 @@ class MockNativeWidgetMac : public NativeWidgetMac {
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.
     delegate()->OnNativeWidgetCreated(true);
+
+    // To allow events to dispatch to a view, it needs a way to get focus.
+    bridge_->SetFocusManager(GetWidget()->GetFocusManager());
   }
 
   void ReorderNativeViews() override {
@@ -150,6 +153,7 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   scoped_ptr<views::View> view_;
   scoped_ptr<BridgedNativeWidget> bridge_;
   BridgedContentView* ns_view_;  // Weak. Owned by bridge_.
+  base::MessageLoopForUI message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);
@@ -165,6 +169,12 @@ void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
   Textfield* textfield = new Textfield();
   textfield->SetText(ASCIIToUTF16(text));
   view_->AddChildView(textfield);
+
+  // Request focus so the InputMethod can dispatch events to the RootView, and
+  // have them delivered to the textfield. Note that focusing a textfield
+  // schedules a task to flash the cursor, so this requires |message_loop_|.
+  textfield->RequestFocus();
+
   [ns_view_ setTextInputClient:textfield];
 }
 
