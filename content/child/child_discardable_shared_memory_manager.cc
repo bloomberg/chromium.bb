@@ -187,6 +187,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   sender_->Send(
       new ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory(
           size, &handle));
+  CHECK(base::SharedMemory::IsHandleValid(handle));
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   CHECK(memory->Map(size));
