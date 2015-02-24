@@ -240,7 +240,8 @@ MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
 #else
 #define MAYBE_GetTerminationStatusCrash GetTerminationStatusCrash
 #endif
-TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
+// TODO(scottmg): http://crbug.com/461160
+TEST_F(ProcessUtilTest, DISABLED_GetTerminationStatusCrash) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileCrash);
   remove(signal_file.c_str());
