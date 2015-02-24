@@ -25,6 +25,7 @@ typedef struct _GdkColor GdkColor;
 typedef struct _GtkBorder GtkBorder;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
+typedef struct _PangoFontDescription PangoFontDescription;
 
 class SkBitmap;
 
