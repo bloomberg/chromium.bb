@@ -645,6 +645,7 @@
         'timer/timer_unittest.cc',
         'tools_sanity_unittest.cc',
         'trace_event/memory_dump_manager_unittest.cc',
+        'trace_event/process_memory_maps_dump_provider_unittest.cc',
         'trace_event/process_memory_totals_dump_provider_unittest.cc',
         'trace_event/trace_event_argument_unittest.cc',
         'trace_event/trace_event_memory_unittest.cc',

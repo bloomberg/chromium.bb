@@ -6,6 +6,7 @@
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_DUMP_H_
 
 #include "base/base_export.h"
+#include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
 
 namespace base {
@@ -31,9 +32,16 @@ class BASE_EXPORT ProcessMemoryDump {
   bool has_process_totals() const { return has_process_totals_; }
   void set_has_process_totals() { has_process_totals_ = true; }
 
+  ProcessMemoryMaps* process_mmaps() { return &process_mmaps_; }
+  bool has_process_mmaps() const { return has_process_mmaps_; }
+  void set_has_process_mmaps() { has_process_mmaps_ = true; }
+
  private:
   ProcessMemoryTotals process_totals_;
   bool has_process_totals_;
+
+  ProcessMemoryMaps process_mmaps_;
+  bool has_process_mmaps_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDump);
 };

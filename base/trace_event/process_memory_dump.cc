@@ -10,7 +10,8 @@
 namespace base {
 namespace trace_event {
 
-ProcessMemoryDump::ProcessMemoryDump() : has_process_totals_(false) {
+ProcessMemoryDump::ProcessMemoryDump()
+    : has_process_totals_(false), has_process_mmaps_(false) {
 }
 
 ProcessMemoryDump::~ProcessMemoryDump() {
@@ -21,6 +22,11 @@ void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
   if (has_process_totals_) {
     value->BeginDictionary("process_totals");
     process_totals_.AsValueInto(value);
+    value->EndDictionary();
+  }
+  if (has_process_mmaps_) {
+    value->BeginDictionary("process_mmaps");
+    process_mmaps_.AsValueInto(value);
     value->EndDictionary();
   }
 }
