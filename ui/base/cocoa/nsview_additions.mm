@@ -91,7 +91,9 @@ static NSView* g_childBeingDrawnTo = nil;
   DCHECK(!g_ancestorBeingDrawnFrom && !g_childBeingDrawnTo);
   g_ancestorBeingDrawnFrom = ancestorView;
   g_childBeingDrawnTo = self;
-  [ancestorView drawRect:[self convertRect:dirtyRect toView:ancestorView]];
+  [ancestorView drawRect:NSIntersectionRect(
+                             [ancestorView bounds],
+                             [self convertRect:dirtyRect toView:ancestorView])];
   g_childBeingDrawnTo = nil;
   g_ancestorBeingDrawnFrom = nil;
 }
