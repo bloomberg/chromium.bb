@@ -315,11 +315,7 @@ source_set("test_support") {
   ]
 
   if (is_mac) {
-    sources += [
-      "chrome_breakpad_client.cc",
-      "chrome_breakpad_client_mac.mm",
-      "chrome_main_mac.mm",
-    ]
+    sources += [ "chrome_main_mac.mm" ]
   }
 
   # TODO(gyp) if (enable_plugins and enable_nacl) {
