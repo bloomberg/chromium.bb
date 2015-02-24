@@ -65,7 +65,7 @@ public:
 
     bool equals(const CSSFontFaceSrcValue&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSFontFaceSrcValue(const String& resource, bool local, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)

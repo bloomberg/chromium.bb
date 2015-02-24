@@ -226,7 +226,7 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
     return faceResult.storedValue->value.get();
 }
 
-void FontFaceCache::trace(Visitor* visitor)
+DEFINE_TRACE(FontFaceCache)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_fontFaces);

@@ -133,7 +133,7 @@ String MediaQuery::cssText() const
     return m_serializationCache;
 }
 
-void MediaQuery::trace(Visitor* visitor)
+DEFINE_TRACE(MediaQuery)
 {
     // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery> > >).
     // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.

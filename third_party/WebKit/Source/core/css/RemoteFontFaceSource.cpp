@@ -131,7 +131,7 @@ bool RemoteFontFaceSource::ensureFontData()
     return m_font->ensureCustomFontData();
 }
 
-void RemoteFontFaceSource::trace(Visitor* visitor)
+DEFINE_TRACE(RemoteFontFaceSource)
 {
     visitor->trace(m_fontLoader);
     CSSFontFaceSource::trace(visitor);

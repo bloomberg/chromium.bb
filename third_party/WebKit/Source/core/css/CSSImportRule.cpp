@@ -94,7 +94,7 @@ void CSSImportRule::reattach(StyleRuleBase*)
     ASSERT_NOT_REACHED();
 }
 
-void CSSImportRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSImportRule)
 {
     visitor->trace(m_importRule);
     visitor->trace(m_mediaCSSOMWrapper);

@@ -22,7 +22,7 @@ public:
 
     bool equals(const CSSPathValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
     const String& pathString() const { return m_pathString; }
 

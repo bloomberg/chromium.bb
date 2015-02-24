@@ -96,7 +96,7 @@ public:
 
     MediaQueryExp(const MediaQueryExp& other);
 
-    void trace(Visitor* visitor) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     MediaQueryExp(const String&, const MediaQueryExpValue&);

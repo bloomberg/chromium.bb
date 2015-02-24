@@ -55,7 +55,7 @@ public:
     MatchedProperties();
     ~MatchedProperties();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     RefPtrWillBeMember<StylePropertySet> properties;
 

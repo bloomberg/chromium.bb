@@ -48,7 +48,7 @@ public:
             && compareCSSValuePtr(m_bottom, other.m_bottom);
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 protected:
     RectBase() { }

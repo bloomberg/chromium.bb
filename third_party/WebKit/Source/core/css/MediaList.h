@@ -61,7 +61,7 @@ public:
 
     PassRefPtrWillBeRawPtr<MediaQuerySet> copy() const { return adoptRefWillBeNoop(new MediaQuerySet(*this)); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     MediaQuerySet();
@@ -105,7 +105,7 @@ public:
 
     void reattach(MediaQuerySet*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     MediaList(MediaQuerySet*, CSSStyleSheet* parentSheet);

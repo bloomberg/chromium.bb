@@ -686,7 +686,7 @@ void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID id, const St
     exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + getPropertyNameString(id) + "' property is read-only.");
 }
 
-void CSSComputedStyleDeclaration::trace(Visitor* visitor)
+DEFINE_TRACE(CSSComputedStyleDeclaration)
 {
     visitor->trace(m_node);
     CSSStyleDeclaration::trace(visitor);

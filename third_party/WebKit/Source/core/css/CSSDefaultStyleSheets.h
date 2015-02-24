@@ -55,7 +55,7 @@ public:
     StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet.get(); }
     StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet.get(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     CSSDefaultStyleSheets();

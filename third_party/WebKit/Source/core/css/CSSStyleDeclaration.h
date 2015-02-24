@@ -69,7 +69,7 @@ public:
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     CSSStyleDeclaration() { }

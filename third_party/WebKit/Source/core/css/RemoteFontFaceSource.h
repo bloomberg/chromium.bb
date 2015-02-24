@@ -34,7 +34,7 @@ public:
     virtual bool hadBlankText() override { return m_histograms.hadBlankText(); }
     void paintRequested() { m_histograms.fallbackFontPainted(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;

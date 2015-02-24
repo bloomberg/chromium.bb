@@ -51,7 +51,7 @@ public:
     size_t rowCount() const { return m_rowCount; }
     size_t columnCount() const { return m_columnCount; }
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSGridTemplateAreasValue(const NamedGridAreaMap&, size_t rowCount, size_t columnCount);

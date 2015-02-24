@@ -60,7 +60,7 @@ public:
 
     PassOwnPtrWillBeRawPtr<MediaQuery> copy() const { return adoptPtrWillBeNoop(new MediaQuery(*this)); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     MediaQuery(const MediaQuery&);

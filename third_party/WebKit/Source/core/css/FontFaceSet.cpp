@@ -61,7 +61,7 @@ public:
     virtual void notifyLoaded(FontFace*) override;
     virtual void notifyError(FontFace*) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     LoadFontPromiseResolver(FontFaceArray faces, ScriptState* scriptState)
@@ -107,7 +107,7 @@ void LoadFontPromiseResolver::notifyError(FontFace* fontFace)
     }
 }
 
-void LoadFontPromiseResolver::trace(Visitor* visitor)
+DEFINE_TRACE(LoadFontPromiseResolver)
 {
     visitor->trace(m_fontFaces);
     visitor->trace(m_resolver);
@@ -128,7 +128,7 @@ public:
 
     ScriptPromise promise() { return m_resolver->promise(); }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_resolver);
     }
@@ -586,7 +586,7 @@ void FontFaceSet::didLayout(Document& document)
         fonts->didLayout();
 }
 
-void FontFaceSet::trace(Visitor* visitor)
+DEFINE_TRACE(FontFaceSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_loadingFonts);

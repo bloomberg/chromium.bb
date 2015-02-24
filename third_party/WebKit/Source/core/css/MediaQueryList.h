@@ -65,7 +65,7 @@ public:
     // Will return true if a DOM event should be scheduled.
     bool mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // From ActiveDOMObject
     virtual bool hasPendingActivity() const override;

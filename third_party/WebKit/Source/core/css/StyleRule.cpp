@@ -53,7 +53,7 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* paren
     return createCSSOMWrapper(0, parentRule);
 }
 
-void StyleRuleBase::trace(Visitor* visitor)
+DEFINE_TRACE(StyleRuleBase)
 {
     switch (type()) {
     case Style:
@@ -266,7 +266,7 @@ void StyleRule::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> propertie
     m_properties = properties;
 }
 
-void StyleRule::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRule)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);
@@ -300,7 +300,7 @@ void StyleRulePage::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> prope
     m_properties = properties;
 }
 
-void StyleRulePage::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRulePage)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);
@@ -333,7 +333,7 @@ void StyleRuleFontFace::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> p
     m_properties = properties;
 }
 
-void StyleRuleFontFace::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRuleFontFace)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);
@@ -363,7 +363,7 @@ void StyleRuleGroup::wrapperRemoveRule(unsigned index)
     m_childRules.remove(index);
 }
 
-void StyleRuleGroup::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRuleGroup)
 {
     visitor->trace(m_childRules);
     StyleRuleBase::traceAfterDispatch(visitor);
@@ -382,7 +382,7 @@ StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& o)
         m_mediaQueries = o.m_mediaQueries->copy();
 }
 
-void StyleRuleMedia::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRuleMedia)
 {
     visitor->trace(m_mediaQueries);
     StyleRuleGroup::traceAfterDispatch(visitor);
@@ -429,7 +429,7 @@ void StyleRuleViewport::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> p
     m_properties = properties;
 }
 
-void StyleRuleViewport::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRuleViewport)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);

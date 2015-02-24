@@ -186,7 +186,7 @@ void CSSSegmentedFontFace::match(const String& text, WillBeHeapVector<RefPtrWill
     }
 }
 
-void CSSSegmentedFontFace::trace(Visitor* visitor)
+DEFINE_TRACE(CSSSegmentedFontFace)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_fontSelector);

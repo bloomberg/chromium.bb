@@ -83,7 +83,7 @@ void CSSViewportRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
 }
 
-void CSSViewportRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSViewportRule)
 {
     visitor->trace(m_viewportRule);
     visitor->trace(m_propertiesCSSOMWrapper);

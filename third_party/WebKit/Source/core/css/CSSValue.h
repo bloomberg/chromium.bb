@@ -89,8 +89,8 @@ public:
     bool equals(const CSSValue&) const;
 
     void finalizeGarbageCollectedObject();
-    void traceAfterDispatch(Visitor*) { }
-    void trace(Visitor*);
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { }
+    DECLARE_TRACE();
 
 protected:
 

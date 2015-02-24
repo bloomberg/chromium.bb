@@ -51,7 +51,7 @@ public:
         return adoptPtrWillBeNoop(new StyleSheetCSSRuleList(sheet));
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
         CSSRuleList::trace(visitor);
@@ -438,7 +438,7 @@ void CSSStyleSheet::setLoadCompleted(bool completed)
         m_contents->clientLoadStarted(this);
 }
 
-void CSSStyleSheet::trace(Visitor* visitor)
+DEFINE_TRACE(CSSStyleSheet)
 {
     visitor->trace(m_contents);
     visitor->trace(m_mediaQueries);

@@ -158,7 +158,7 @@ public:
     RuleSet& ensureRuleSet(const MediaQueryEvaluator&, AddRuleFlags);
     void clearRuleSet();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext&);

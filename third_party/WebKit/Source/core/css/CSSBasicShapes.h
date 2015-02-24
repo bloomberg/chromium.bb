@@ -60,7 +60,7 @@ public:
     bool isCircle() const { return type() == CSSBasicShapeCircleType; }
     bool isInset() const { return type() == CSSBasicShapeInsetType; }
 
-    virtual void trace(Visitor* visitor) { visitor->trace(m_referenceBox); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_referenceBox); }
 
 protected:
     CSSBasicShape() { }
@@ -82,7 +82,7 @@ public:
     void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
     void setRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSBasicShapeCircle() { }
@@ -111,7 +111,7 @@ public:
     void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSBasicShapeEllipse() { }
@@ -144,7 +144,7 @@ public:
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSBasicShapePolygon()
@@ -209,7 +209,7 @@ public:
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSBasicShapeInset() { }

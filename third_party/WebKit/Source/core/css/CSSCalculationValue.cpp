@@ -272,7 +272,7 @@ public:
     }
 
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_value);
         CSSCalcExpressionNode::trace(visitor);
@@ -538,7 +538,7 @@ public:
         return CSSPrimitiveValue::CSS_UNKNOWN;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_leftSide);
         visitor->trace(m_rightSide);
@@ -759,7 +759,7 @@ PassRefPtrWillBeRawPtr<CSSCalcValue> CSSCalcValue::create(PassRefPtrWillBeRawPtr
     return adoptRefWillBeNoop(new CSSCalcValue(expression, range));
 }
 
-void CSSCalcValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSCalcValue)
 {
     visitor->trace(m_expression);
     CSSValue::traceAfterDispatch(visitor);

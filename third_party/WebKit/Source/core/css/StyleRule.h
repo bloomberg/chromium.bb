@@ -77,8 +77,8 @@ public:
     PassRefPtrWillBeRawPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
     PassRefPtrWillBeRawPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
 
-    void trace(Visitor*);
-    void traceAfterDispatch(Visitor*) { };
+    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { };
     void finalizeGarbageCollectedObject();
 
 protected:
@@ -114,7 +114,7 @@ public:
 
     static unsigned averageSizeInBytes();
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     StyleRule();
@@ -137,7 +137,7 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRuleFontFace> copy() const { return adoptRefWillBeNoop(new StyleRuleFontFace(*this)); }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     StyleRuleFontFace();
@@ -162,7 +162,7 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRulePage> copy() const { return adoptRefWillBeNoop(new StyleRulePage(*this)); }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     StyleRulePage();
@@ -179,7 +179,7 @@ public:
     void wrapperInsertRule(unsigned, PassRefPtrWillBeRawPtr<StyleRuleBase>);
     void wrapperRemoveRule(unsigned);
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
     StyleRuleGroup(Type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRule);
@@ -200,7 +200,7 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRuleMedia> copy() const { return adoptRefWillBeNoop(new StyleRuleMedia(*this)); }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     StyleRuleMedia(PassRefPtrWillBeRawPtr<MediaQuerySet>, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules);
@@ -220,7 +220,7 @@ public:
     bool conditionIsSupported() const { return m_conditionIsSupported; }
     PassRefPtrWillBeRawPtr<StyleRuleSupports> copy() const { return adoptRefWillBeNoop(new StyleRuleSupports(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleGroup::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleGroup::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleSupports(const String& conditionText, bool conditionIsSupported, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules);
@@ -243,7 +243,7 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRuleViewport> copy() const { return adoptRefWillBeNoop(new StyleRuleViewport(*this)); }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     StyleRuleViewport();

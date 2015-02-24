@@ -194,7 +194,7 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
     return thisElementNeedsStyleRecalc;
 }
 
-void StyleInvalidator::trace(Visitor* visitor)
+DEFINE_TRACE(StyleInvalidator)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingInvalidationMap);

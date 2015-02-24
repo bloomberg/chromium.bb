@@ -83,7 +83,7 @@ public:
 
     const StylePropertyMetadata& metadata() const { return m_metadata; }
 
-    void trace(Visitor* visitor) { visitor->trace(m_value); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_value); }
 
 private:
     StylePropertyMetadata m_metadata;

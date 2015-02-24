@@ -43,7 +43,7 @@ MatchedProperties::~MatchedProperties()
 {
 }
 
-void MatchedProperties::trace(Visitor* visitor)
+DEFINE_TRACE(MatchedProperties)
 {
     visitor->trace(properties);
 }

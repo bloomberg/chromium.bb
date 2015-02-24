@@ -96,7 +96,7 @@ public:
     FontTraits traits() const;
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool hadBlankText() const;
 
@@ -105,7 +105,7 @@ public:
         virtual ~LoadFontCallback() { }
         virtual void notifyLoaded(FontFace*) = 0;
         virtual void notifyError(FontFace*) = 0;
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
     void loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback>, ExecutionContext*);
 

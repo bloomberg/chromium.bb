@@ -110,7 +110,7 @@ void FontLoader::clearPendingFonts()
     m_fontsToBeginLoading.clear();
 }
 
-void FontLoader::trace(Visitor* visitor)
+DEFINE_TRACE(FontLoader)
 {
     visitor->trace(m_resourceFetcher);
     visitor->trace(m_fontSelector);

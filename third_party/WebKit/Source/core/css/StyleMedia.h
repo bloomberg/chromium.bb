@@ -46,7 +46,7 @@ public:
     AtomicString type() const;
     bool matchMedium(const String&) const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit StyleMedia(LocalFrame*);

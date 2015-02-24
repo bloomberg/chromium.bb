@@ -48,7 +48,7 @@ const CSSParserContext& CSSRule::parserContext() const
     return styleSheet ? styleSheet->contents()->parserContext() : strictCSSParserContext();
 }
 
-void CSSRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSRule)
 {
 #if ENABLE(OILPAN)
     // This makes the parent link strong, which is different from the

@@ -206,7 +206,7 @@ RuleFeature::RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocume
 {
 }
 
-void RuleFeature::trace(Visitor* visitor)
+DEFINE_TRACE(RuleFeature)
 {
     visitor->trace(rule);
 }
@@ -638,7 +638,7 @@ StyleInvalidator& RuleFeatureSet::styleInvalidator()
     return m_styleInvalidator;
 }
 
-void RuleFeatureSet::trace(Visitor* visitor)
+DEFINE_TRACE(RuleFeatureSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(siblingRules);

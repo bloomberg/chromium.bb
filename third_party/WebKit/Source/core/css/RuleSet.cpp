@@ -349,17 +349,17 @@ void RuleSet::compactRules()
     m_shadowDistributedRules.shrinkToFit();
 }
 
-void MinimalRuleData::trace(Visitor* visitor)
+DEFINE_TRACE(MinimalRuleData)
 {
     visitor->trace(m_rule);
 }
 
-void RuleData::trace(Visitor* visitor)
+DEFINE_TRACE(RuleData)
 {
     visitor->trace(m_rule);
 }
 
-void RuleSet::PendingRuleMaps::trace(Visitor* visitor)
+DEFINE_TRACE(RuleSet::PendingRuleMaps)
 {
 #if ENABLE(OILPAN)
     visitor->trace(idRules);
@@ -369,7 +369,7 @@ void RuleSet::PendingRuleMaps::trace(Visitor* visitor)
 #endif
 }
 
-void RuleSet::trace(Visitor* visitor)
+DEFINE_TRACE(RuleSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_idRules);

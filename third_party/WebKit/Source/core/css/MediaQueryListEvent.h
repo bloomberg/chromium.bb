@@ -39,7 +39,7 @@ public:
 
     virtual const AtomicString& interfaceName() const override { return EventNames::MediaQueryListEvent; }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         Event::trace(visitor);
         visitor->trace(m_mediaQueryList);

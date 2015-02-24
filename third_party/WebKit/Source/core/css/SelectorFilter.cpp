@@ -170,12 +170,12 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector, unsign
     *hash = 0;
 }
 
-void SelectorFilter::ParentStackFrame::trace(Visitor* visitor)
+DEFINE_TRACE(SelectorFilter::ParentStackFrame)
 {
     visitor->trace(element);
 }
 
-void SelectorFilter::trace(Visitor* visitor)
+DEFINE_TRACE(SelectorFilter)
 {
     visitor->trace(m_parentStack);
 }

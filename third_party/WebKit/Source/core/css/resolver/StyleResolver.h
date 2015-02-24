@@ -200,7 +200,7 @@ public:
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElementIfNeeded(Element& parent, PseudoId);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void addTreeBoundaryCrossingScope(ContainerNode& scope);
 

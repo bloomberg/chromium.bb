@@ -44,7 +44,7 @@ public:
 
     bool equals(const CSSFontFeatureValue&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSFontFeatureValue(const AtomicString& tag, int value);

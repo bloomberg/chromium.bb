@@ -137,7 +137,7 @@ bool CSSValueList::hasFailedOrCanceledSubresources() const
     return false;
 }
 
-void CSSValueList::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSValueList)
 {
     visitor->trace(m_values);
     CSSValue::traceAfterDispatch(visitor);

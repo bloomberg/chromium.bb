@@ -646,7 +646,7 @@ void StyleSheetContents::findFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<c
     findFontFaceRulesFromRules(childRules(), fontFaceRules);
 }
 
-void StyleSheetContents::trace(Visitor* visitor)
+DEFINE_TRACE(StyleSheetContents)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_ownerRule);

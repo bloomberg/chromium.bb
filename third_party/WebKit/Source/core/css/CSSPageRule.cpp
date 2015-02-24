@@ -103,7 +103,7 @@ void CSSPageRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_pageRule->mutableProperties());
 }
 
-void CSSPageRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSPageRule)
 {
     visitor->trace(m_pageRule);
     visitor->trace(m_propertiesCSSOMWrapper);

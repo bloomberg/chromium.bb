@@ -60,7 +60,7 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
     CSSValueList(ClassType, ValueListSeparator);

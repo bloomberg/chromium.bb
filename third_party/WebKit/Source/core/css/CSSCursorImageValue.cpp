@@ -201,7 +201,7 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
         && compareCSSValuePtr(m_imageValue, other.m_imageValue);
 }
 
-void CSSCursorImageValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSCursorImageValue)
 {
     visitor->trace(m_imageValue);
     CSSValue::traceAfterDispatch(visitor);

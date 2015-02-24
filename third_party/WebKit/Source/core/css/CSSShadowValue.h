@@ -53,7 +53,7 @@ public:
     RefPtrWillBeMember<CSSPrimitiveValue> style;
     RefPtrWillBeMember<CSSPrimitiveValue> color;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSShadowValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x,

@@ -62,7 +62,7 @@ public:
             && m_identicalValuesPolicy == other.m_identicalValuesPolicy;
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Pair()

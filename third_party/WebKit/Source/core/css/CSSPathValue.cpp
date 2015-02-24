@@ -23,7 +23,7 @@ bool CSSPathValue::equals(const CSSPathValue& other) const
     return m_pathString == other.m_pathString;
 }
 
-void CSSPathValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSPathValue)
 {
     CSSValue::traceAfterDispatch(visitor);
 }

@@ -37,7 +37,7 @@ class FontFaceSet;
 class FontFaceSetForEachCallback : public GarbageCollectedFinalized<FontFaceSetForEachCallback> {
 public:
     virtual ~FontFaceSetForEachCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual bool handleItem(ScriptValue thisValue, FontFace*, FontFace*, FontFaceSet*) = 0;
     virtual bool handleItem(FontFace*, FontFace*, FontFaceSet*) = 0;
 };

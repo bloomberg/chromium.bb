@@ -137,7 +137,7 @@ void PropertySetCSSStyleDeclaration::deref()
 }
 #endif
 
-void PropertySetCSSStyleDeclaration::trace(Visitor* visitor)
+DEFINE_TRACE(PropertySetCSSStyleDeclaration)
 {
     visitor->trace(m_propertySet);
     AbstractPropertySetCSSStyleDeclaration::trace(visitor);
@@ -279,7 +279,7 @@ bool AbstractPropertySetCSSStyleDeclaration::cssPropertyMatches(CSSPropertyID pr
     return propertySet().propertyMatches(propertyID, propertyValue);
 }
 
-void AbstractPropertySetCSSStyleDeclaration::trace(Visitor* visitor)
+DEFINE_TRACE(AbstractPropertySetCSSStyleDeclaration)
 {
     CSSStyleDeclaration::trace(visitor);
 }
@@ -346,7 +346,7 @@ void StyleRuleCSSStyleDeclaration::reattach(MutableStylePropertySet& propertySet
 #endif
 }
 
-void StyleRuleCSSStyleDeclaration::trace(Visitor* visitor)
+DEFINE_TRACE(StyleRuleCSSStyleDeclaration)
 {
     visitor->trace(m_parentRule);
     PropertySetCSSStyleDeclaration::trace(visitor);
@@ -388,7 +388,7 @@ void InlineCSSStyleDeclaration::deref()
 }
 #endif
 
-void InlineCSSStyleDeclaration::trace(Visitor* visitor)
+DEFINE_TRACE(InlineCSSStyleDeclaration)
 {
     visitor->trace(m_parentElement);
     AbstractPropertySetCSSStyleDeclaration::trace(visitor);

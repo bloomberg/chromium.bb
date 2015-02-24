@@ -55,7 +55,7 @@ public:
 
     bool equals(const CSSCursorImageValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot);

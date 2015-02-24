@@ -115,7 +115,7 @@ public:
     bool loadCompleted() const { return m_loadCompleted; }
     void startLoadingDynamicSheet();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule);

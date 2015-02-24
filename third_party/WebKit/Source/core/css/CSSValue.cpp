@@ -418,7 +418,7 @@ void CSSValue::finalizeGarbageCollectedObject()
     ASSERT_NOT_REACHED();
 }
 
-void CSSValue::trace(Visitor* visitor)
+DEFINE_TRACE(CSSValue)
 {
     switch (classType()) {
     case BorderImageSliceClass:

@@ -211,7 +211,7 @@ void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
         resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);
 }
 
-void ScopedStyleResolver::trace(Visitor* visitor)
+DEFINE_TRACE(ScopedStyleResolver)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_scope);
@@ -249,7 +249,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     m_treeBoundaryCrossingRuleSet->append(RuleSubSet::create(parentStyleSheet, sheetIndex, ruleSetForScope.release()));
 }
 
-void ScopedStyleResolver::RuleSubSet::trace(Visitor* visitor)
+DEFINE_TRACE(ScopedStyleResolver::RuleSubSet)
 {
     visitor->trace(m_ruleSet);
 }

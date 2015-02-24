@@ -36,7 +36,7 @@ public:
 
     String cssText() const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
     static PassOwnPtr<Vector<double> > createKeyList(CSSParserValueList*);
 

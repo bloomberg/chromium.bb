@@ -59,7 +59,7 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRuleKeyframes> copy() const { return adoptRefWillBeNoop(new StyleRuleKeyframes(*this)); }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
     void styleChanged() { m_version++; }
     unsigned version() const { return m_version; }
@@ -107,7 +107,7 @@ public:
 
     void styleChanged() { m_keyframesRule->styleChanged(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);

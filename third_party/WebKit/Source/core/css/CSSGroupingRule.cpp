@@ -153,7 +153,7 @@ void CSSGroupingRule::reattach(StyleRuleBase* rule)
     }
 }
 
-void CSSGroupingRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSGroupingRule)
 {
     CSSRule::trace(visitor);
 #if ENABLE(OILPAN)

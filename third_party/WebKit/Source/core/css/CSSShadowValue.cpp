@@ -88,7 +88,7 @@ bool CSSShadowValue::equals(const CSSShadowValue& other) const
         && compareCSSValuePtr(style, other.style);
 }
 
-void CSSShadowValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSShadowValue)
 {
     visitor->trace(x);
     visitor->trace(y);

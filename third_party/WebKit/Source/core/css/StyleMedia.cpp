@@ -67,7 +67,7 @@ bool StyleMedia::matchMedium(const String& query) const
     return screenEval.eval(media.get());
 }
 
-void StyleMedia::trace(Visitor* visitor)
+DEFINE_TRACE(StyleMedia)
 {
     DOMWindowProperty::trace(visitor);
 }

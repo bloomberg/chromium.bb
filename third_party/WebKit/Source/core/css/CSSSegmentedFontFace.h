@@ -68,7 +68,7 @@ public:
     void match(const String&, WillBeHeapVector<RefPtrWillBeMember<FontFace> >&) const;
     void willUseFontData(const FontDescription&, UChar32);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     CSSSegmentedFontFace(CSSFontSelector*, FontTraits);

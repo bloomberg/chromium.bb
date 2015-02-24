@@ -22,7 +22,7 @@ public:
     bool equals(const CSSFunctionValue& other) const { return m_valueID == other.m_valueID && CSSValueList::equals(other); }
     CSSValueID functionType() const { return m_valueID; }
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValueList::traceAfterDispatch(visitor); }
 
 private:
     CSSFunctionValue(CSSValueID id)

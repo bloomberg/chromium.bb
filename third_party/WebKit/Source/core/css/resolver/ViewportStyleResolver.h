@@ -56,7 +56,7 @@ public:
 
     void resolve();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit ViewportStyleResolver(Document*);

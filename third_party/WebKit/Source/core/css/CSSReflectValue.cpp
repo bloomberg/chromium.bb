@@ -44,7 +44,7 @@ bool CSSReflectValue::equals(const CSSReflectValue& other) const
         && compareCSSValuePtr(m_mask, other.m_mask);
 }
 
-void CSSReflectValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSReflectValue)
 {
     visitor->trace(m_direction);
     visitor->trace(m_offset);

@@ -50,7 +50,7 @@ public:
             && separator() == other.separator();
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Counter(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)

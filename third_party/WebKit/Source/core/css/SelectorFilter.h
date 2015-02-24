@@ -46,7 +46,7 @@ public:
         ParentStackFrame() : element(nullptr) { }
         explicit ParentStackFrame(Element& element) : element(&element) { }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         RawPtrWillBeMember<Element> element;
         Vector<unsigned, 4> identifierHashes;
@@ -65,7 +65,7 @@ public:
     inline bool fastRejectSelector(const unsigned* identifierHashes) const;
     static void collectIdentifierHashes(const CSSSelector&, unsigned* identifierHashes, unsigned maximumIdentifierCount);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     WillBeHeapVector<ParentStackFrame> m_parentStack;

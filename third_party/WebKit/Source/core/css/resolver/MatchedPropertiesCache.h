@@ -46,7 +46,7 @@ public:
 
     void set(const LayoutStyle&, const LayoutStyle& parentStyle, const MatchResult&);
     void clear();
-    void trace(Visitor* visitor) { visitor->trace(matchedProperties); }
+    DEFINE_INLINE_TRACE() { visitor->trace(matchedProperties); }
 };
 
 // Specialize the HashTraits for CachedMatchedProperties to check for dead
@@ -72,7 +72,7 @@ public:
 
     static bool isCacheable(const Element*, const LayoutStyle&, const LayoutStyle& parentStyle);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
 #if ENABLE(OILPAN)

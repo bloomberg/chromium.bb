@@ -164,7 +164,7 @@ String MediaQuerySet::mediaText() const
     return text.toString();
 }
 
-void MediaQuerySet::trace(Visitor* visitor)
+DEFINE_TRACE(MediaQuerySet)
 {
     // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery> > >).
     // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
@@ -240,7 +240,7 @@ void MediaList::reattach(MediaQuerySet* mediaQueries)
     m_mediaQueries = mediaQueries;
 }
 
-void MediaList::trace(Visitor* visitor)
+DEFINE_TRACE(MediaList)
 {
     visitor->trace(m_mediaQueries);
     visitor->trace(m_parentStyleSheet);

@@ -50,7 +50,7 @@ public:
 
     virtual CSSStyleSheet* styleSheet() const = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     CSSRuleList() { }
@@ -72,7 +72,7 @@ public:
 
     virtual CSSStyleSheet* styleSheet() const override { return 0; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     StaticCSSRuleList();
@@ -100,7 +100,7 @@ public:
     virtual void deref() override { m_rule->deref(); }
 #endif
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_rule);
         CSSRuleList::trace(visitor);

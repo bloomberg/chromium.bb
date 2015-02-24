@@ -80,7 +80,7 @@ bool CSSFontValue::equals(const CSSFontValue& other) const
         && compareCSSValuePtr(family, other.family);
 }
 
-void CSSFontValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSFontValue)
 {
     visitor->trace(style);
     visitor->trace(variant);

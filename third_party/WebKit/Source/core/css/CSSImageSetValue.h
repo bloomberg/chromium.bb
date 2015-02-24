@@ -63,7 +63,7 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValueList::traceAfterDispatch(visitor); }
 
 protected:
     ImageWithScale bestImageForScaleFactor();

@@ -203,7 +203,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     return result;
 }
 
-void ViewportStyleResolver::trace(Visitor* visitor)
+DEFINE_TRACE(ViewportStyleResolver)
 {
     visitor->trace(m_propertySet);
     visitor->trace(m_document);

@@ -69,7 +69,7 @@ public:
         return !m_color;
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 };
 
 } // namespace blink
@@ -110,7 +110,7 @@ public:
 
     void loadSubimages(ResourceFetcher*) { }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
     CSSGradientValue(ClassType classType, CSSGradientRepeat repeat, CSSGradientType gradientType)
@@ -179,7 +179,7 @@ public:
 
     bool equals(const CSSLinearGradientValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSLinearGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
@@ -226,7 +226,7 @@ public:
 
     bool equals(const CSSRadialGradientValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSRadialGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)

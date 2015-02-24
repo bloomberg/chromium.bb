@@ -7,7 +7,7 @@
 
 namespace blink {
 
-void Counter::trace(Visitor* visitor)
+DEFINE_TRACE(Counter)
 {
     visitor->trace(m_identifier);
     visitor->trace(m_listStyle);

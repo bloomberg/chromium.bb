@@ -46,7 +46,7 @@ public:
     bool supports(const String& property, const String& value) const;
     bool supports(const String& conditionText) const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     DOMWindowCSS() { }

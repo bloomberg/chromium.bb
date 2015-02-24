@@ -67,7 +67,7 @@ public:
     void resetAuthorStyle();
     void collectViewportRulesTo(StyleResolver*) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit ScopedStyleResolver(TreeScope& scope)
@@ -98,7 +98,7 @@ private:
         unsigned m_parentIndex;
         OwnPtrWillBeMember<RuleSet> m_ruleSet;
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         RuleSubSet(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)

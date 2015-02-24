@@ -187,7 +187,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
     ASSERT(m_defaultStyle->features().siblingRules.isEmpty());
 }
 
-void CSSDefaultStyleSheets::trace(Visitor* visitor)
+DEFINE_TRACE(CSSDefaultStyleSheets)
 {
     visitor->trace(m_defaultStyle);
     visitor->trace(m_defaultViewportStyle);

@@ -56,7 +56,7 @@ public:
     // For UMA reporting
     virtual bool hadBlankText() { return false; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     CSSFontFaceSource();

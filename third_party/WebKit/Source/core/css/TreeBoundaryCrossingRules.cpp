@@ -71,7 +71,7 @@ void TreeBoundaryCrossingRules::removeScope(const ContainerNode& scopingNode)
     m_scopingNodes.remove(&scopingNode);
 }
 
-void TreeBoundaryCrossingRules::trace(Visitor* visitor)
+DEFINE_TRACE(TreeBoundaryCrossingRules)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_scopingNodes);

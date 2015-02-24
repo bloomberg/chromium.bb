@@ -91,7 +91,7 @@ CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
     return item->sheet();
 }
 
-void StyleSheetList::trace(Visitor* visitor)
+DEFINE_TRACE(StyleSheetList)
 {
     visitor->trace(m_treeScope);
 }

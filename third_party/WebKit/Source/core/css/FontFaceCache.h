@@ -64,7 +64,7 @@ public:
     unsigned version() const { return m_version; }
     void incrementVersion() { ++m_version; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSSegmentedFontFace> > TraitsMap;

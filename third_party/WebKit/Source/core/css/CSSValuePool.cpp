@@ -150,7 +150,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const Ato
     return value;
 }
 
-void CSSValuePool::trace(Visitor* visitor)
+DEFINE_TRACE(CSSValuePool)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_inheritedValue);

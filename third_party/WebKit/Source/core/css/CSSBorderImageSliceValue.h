@@ -45,7 +45,7 @@ public:
 
     bool equals(const CSSBorderImageSliceValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
     // These four values are used to make "cuts" in the border image. They can be numbers
     // or percentages.

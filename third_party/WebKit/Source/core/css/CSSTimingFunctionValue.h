@@ -48,7 +48,7 @@ public:
 
     bool equals(const CSSCubicBezierTimingFunctionValue&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
@@ -82,7 +82,7 @@ public:
 
     bool equals(const CSSStepsTimingFunctionValue&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSStepsTimingFunctionValue(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)

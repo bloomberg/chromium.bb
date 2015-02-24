@@ -131,7 +131,7 @@ bool MediaQueryList::matches()
     return m_matches;
 }
 
-void MediaQueryList::trace(Visitor* visitor)
+DEFINE_TRACE(MediaQueryList)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_matcher);

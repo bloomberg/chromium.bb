@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void CSSGradientColorStop::trace(Visitor* visitor)
+DEFINE_TRACE(CSSGradientColorStop)
 {
     visitor->trace(m_position);
     visitor->trace(m_color);
@@ -556,7 +556,7 @@ bool CSSGradientValue::knownToBeOpaque(const LayoutObject* object) const
     return true;
 }
 
-void CSSGradientValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSGradientValue)
 {
     visitor->trace(m_firstX);
     visitor->trace(m_firstY);
@@ -821,7 +821,7 @@ bool CSSLinearGradientValue::equals(const CSSLinearGradientValue& other) const
     return equalXandY && m_stops == other.m_stops;
 }
 
-void CSSLinearGradientValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSLinearGradientValue)
 {
     visitor->trace(m_angle);
     CSSGradientValue::traceAfterDispatch(visitor);
@@ -1259,7 +1259,7 @@ bool CSSRadialGradientValue::equals(const CSSRadialGradientValue& other) const
     return equalShape && equalSizingBehavior && equalHorizontalAndVerticalSize && m_stops == other.m_stops;
 }
 
-void CSSRadialGradientValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSRadialGradientValue)
 {
     visitor->trace(m_firstRadius);
     visitor->trace(m_secondRadius);

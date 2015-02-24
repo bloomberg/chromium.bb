@@ -32,7 +32,7 @@ public:
     void clearResourceFetcherAndFontSelector();
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     FontLoader(CSSFontSelector*, ResourceFetcher*);

@@ -217,7 +217,7 @@ bool CSSCrossfadeValue::equals(const CSSCrossfadeValue& other) const
         && compareCSSValuePtr(m_percentageValue, other.m_percentageValue);
 }
 
-void CSSCrossfadeValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSCrossfadeValue)
 {
     visitor->trace(m_fromValue);
     visitor->trace(m_toValue);

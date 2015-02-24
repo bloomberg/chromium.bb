@@ -75,7 +75,7 @@ CSSPropertySourceData::CSSPropertySourceData(const CSSPropertySourceData& other)
 {
 }
 
-void CSSRuleSourceData::trace(Visitor* visitor)
+DEFINE_TRACE(CSSRuleSourceData)
 {
     visitor->trace(ruleHeaderRange);
     visitor->trace(ruleBodyRange);

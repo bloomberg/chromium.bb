@@ -191,7 +191,7 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const LayoutSty
     return true;
 }
 
-void MatchedPropertiesCache::trace(Visitor* visitor)
+DEFINE_TRACE(MatchedPropertiesCache)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_cache);

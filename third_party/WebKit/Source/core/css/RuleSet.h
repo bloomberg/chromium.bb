@@ -61,7 +61,7 @@ public:
     {
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     RawPtrWillBeMember<StyleRule> m_rule;
     unsigned m_selectorIndex;
@@ -90,7 +90,7 @@ public:
     static const unsigned maximumIdentifierCount = 4;
     const unsigned* descendantSelectorIdentifierHashes() const { return m_descendantSelectorIdentifierHashes; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<StyleRule> m_rule;
@@ -159,7 +159,7 @@ public:
     void show();
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<WillBeHeapLinkedStack<RuleData> > > PendingRuleMap;
@@ -191,7 +191,7 @@ private:
         PendingRuleMap tagRules;
         PendingRuleMap shadowPseudoElementRules;
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         PendingRuleMaps() { }

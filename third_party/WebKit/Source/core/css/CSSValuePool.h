@@ -58,7 +58,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(T value) { return CSSPrimitiveValue::create(value); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     CSSValuePool();

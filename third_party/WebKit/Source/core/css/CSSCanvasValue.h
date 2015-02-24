@@ -52,7 +52,7 @@ public:
 
     bool equals(const CSSCanvasValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     explicit CSSCanvasValue(const String& name)
@@ -84,7 +84,7 @@ private:
             m_ownerValue->canvasDestroyed(canvas);
         }
 #endif
-        virtual void trace(Visitor* visitor) override
+        DEFINE_INLINE_VIRTUAL_TRACE()
         {
             visitor->trace(m_ownerValue);
             CanvasObserver::trace(visitor);

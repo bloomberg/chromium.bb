@@ -50,7 +50,7 @@ public:
     String selectorText() const;
     void setSelectorText(const String&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSPageRule(StyleRulePage*, CSSStyleSheet*);

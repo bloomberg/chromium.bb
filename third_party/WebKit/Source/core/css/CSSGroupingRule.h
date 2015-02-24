@@ -47,7 +47,7 @@ public:
     unsigned length() const;
     CSSRule* item(unsigned index) const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* parent);

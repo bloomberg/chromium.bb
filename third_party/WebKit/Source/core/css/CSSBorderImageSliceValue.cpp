@@ -53,7 +53,7 @@ bool CSSBorderImageSliceValue::equals(const CSSBorderImageSliceValue& other) con
     return m_fill == other.m_fill && compareCSSValuePtr(m_slices, other.m_slices);
 }
 
-void CSSBorderImageSliceValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSBorderImageSliceValue)
 {
     visitor->trace(m_slices);
     CSSValue::traceAfterDispatch(visitor);

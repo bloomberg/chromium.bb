@@ -42,7 +42,7 @@ public:
     {
     }
 
-    void trace(Visitor* visitor) { visitor->trace(m_expression); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_expression); }
 
     const MediaQueryExp* expression() const
     {

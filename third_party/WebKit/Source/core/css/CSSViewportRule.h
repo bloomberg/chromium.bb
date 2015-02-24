@@ -54,7 +54,7 @@ public:
 
     CSSStyleDeclaration* style() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);

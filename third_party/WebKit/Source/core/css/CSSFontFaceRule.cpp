@@ -70,7 +70,7 @@ void CSSFontFaceRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_fontFaceRule->mutableProperties());
 }
 
-void CSSFontFaceRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSFontFaceRule)
 {
     visitor->trace(m_fontFaceRule);
     visitor->trace(m_propertiesCSSOMWrapper);

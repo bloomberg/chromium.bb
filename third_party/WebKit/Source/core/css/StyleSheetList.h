@@ -53,7 +53,7 @@ public:
 
     CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit StyleSheetList(TreeScope*);

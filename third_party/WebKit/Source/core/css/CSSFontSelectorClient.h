@@ -44,7 +44,7 @@ public:
 
     virtual void fontsNeedUpdate(CSSFontSelector*) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

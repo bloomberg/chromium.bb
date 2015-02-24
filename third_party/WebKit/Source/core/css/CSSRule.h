@@ -74,7 +74,7 @@ public:
         m_parentRule = rule;
     }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     CSSStyleSheet* parentStyleSheet() const
     {

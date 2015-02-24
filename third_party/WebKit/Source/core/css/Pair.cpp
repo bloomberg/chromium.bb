@@ -7,7 +7,7 @@
 
 namespace blink {
 
-void Pair::trace(Visitor* visitor)
+DEFINE_TRACE(Pair)
 {
     visitor->trace(m_first);
     visitor->trace(m_second);

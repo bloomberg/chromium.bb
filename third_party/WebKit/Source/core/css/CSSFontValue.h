@@ -41,7 +41,7 @@ public:
 
     bool equals(const CSSFontValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
     RefPtrWillBeMember<CSSPrimitiveValue> style;
     RefPtrWillBeMember<CSSPrimitiveValue> variant;

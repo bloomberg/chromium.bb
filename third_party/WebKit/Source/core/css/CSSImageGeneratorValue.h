@@ -66,7 +66,7 @@ public:
 
     void loadSubimages(ResourceFetcher*);
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 protected:
     explicit CSSImageGeneratorValue(ClassType);

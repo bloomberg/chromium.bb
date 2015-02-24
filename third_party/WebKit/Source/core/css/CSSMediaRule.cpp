@@ -76,7 +76,7 @@ void CSSMediaRule::reattach(StyleRuleBase* rule)
         m_mediaCSSOMWrapper->reattach(mediaQueries());
 }
 
-void CSSMediaRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSMediaRule)
 {
     visitor->trace(m_mediaCSSOMWrapper);
     CSSGroupingRule::trace(visitor);

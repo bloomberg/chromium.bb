@@ -70,7 +70,7 @@ void CSSKeyframeRule::reattach(StyleRuleBase*)
     ASSERT_NOT_REACHED();
 }
 
-void CSSKeyframeRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSKeyframeRule)
 {
     visitor->trace(m_keyframe);
     visitor->trace(m_propertiesCSSOMWrapper);

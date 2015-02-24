@@ -99,7 +99,7 @@ PassOwnPtr<Vector<double> > StyleRuleKeyframe::createKeyList(CSSParserValueList*
     return keyVector.release();
 }
 
-void StyleRuleKeyframe::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRuleKeyframe)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);

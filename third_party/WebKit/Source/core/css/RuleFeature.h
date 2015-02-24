@@ -41,7 +41,7 @@ struct RuleFeature {
 public:
     RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     RawPtrWillBeMember<StyleRule> rule;
     unsigned selectorIndex;
@@ -94,7 +94,7 @@ public:
 
     StyleInvalidator& styleInvalidator();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     WillBeHeapVector<RuleFeature> siblingRules;
     WillBeHeapVector<RuleFeature> uncommonAttributeRules;

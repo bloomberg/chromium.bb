@@ -42,7 +42,7 @@ public:
     void removeScope(const ContainerNode&);
     void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     size_t size() const { return m_scopingNodes.size(); }

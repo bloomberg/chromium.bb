@@ -78,7 +78,7 @@ public:
 
     bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes && !m_customPseudoInvalid; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void toTracedValue(TracedValue*) const;
 

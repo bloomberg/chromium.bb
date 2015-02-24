@@ -86,7 +86,7 @@ public:
     virtual CSSPrimitiveValue::UnitType primitiveType() const = 0;
     bool isInteger() const { return m_isInteger; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     CSSCalcExpressionNode(CalculationCategory category, bool isInteger)
@@ -127,7 +127,7 @@ public:
     String customCSSText() const;
     bool equals(const CSSCalcValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSCalcValue(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> expression, ValueRange range)

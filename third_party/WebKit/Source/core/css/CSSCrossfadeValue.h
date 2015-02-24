@@ -66,7 +66,7 @@ public:
 
     bool equals(const CSSCrossfadeValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSCrossfadeValue(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue)

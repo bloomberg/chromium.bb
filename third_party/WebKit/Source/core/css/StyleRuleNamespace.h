@@ -22,7 +22,7 @@ public:
     AtomicString prefix() const { return m_prefix; }
     AtomicString uri() const { return m_uri; }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleNamespace(AtomicString prefix, AtomicString uri)

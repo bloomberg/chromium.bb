@@ -85,7 +85,7 @@ int StyleRuleKeyframes::findKeyframeIndex(const String& key) const
     return -1;
 }
 
-void StyleRuleKeyframes::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(StyleRuleKeyframes)
 {
     visitor->trace(m_keyframes);
     StyleRuleBase::traceAfterDispatch(visitor);
@@ -208,7 +208,7 @@ void CSSKeyframesRule::reattach(StyleRuleBase* rule)
     m_keyframesRule = toStyleRuleKeyframes(rule);
 }
 
-void CSSKeyframesRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSKeyframesRule)
 {
     CSSRule::trace(visitor);
 #if ENABLE(OILPAN)

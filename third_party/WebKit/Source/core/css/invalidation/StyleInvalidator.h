@@ -26,7 +26,7 @@ public:
 
     void clearPendingInvalidations();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     struct RecursionData {

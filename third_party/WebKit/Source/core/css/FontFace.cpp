@@ -560,7 +560,7 @@ void FontFace::initCSSFontFace(const unsigned char* data, unsigned size)
     m_cssFontFace->addSource(source.release());
 }
 
-void FontFace::trace(Visitor* visitor)
+DEFINE_TRACE(FontFace)
 {
     visitor->trace(m_src);
     visitor->trace(m_style);

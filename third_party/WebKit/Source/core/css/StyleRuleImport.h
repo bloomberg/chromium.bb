@@ -52,7 +52,7 @@ public:
 
     void requestStyleSheet();
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     // FIXME: inherit from StyleSheetResourceClient directly to eliminate raw back pointer, as there are no space savings in this.

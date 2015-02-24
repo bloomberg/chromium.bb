@@ -130,7 +130,7 @@ void CSSStyleRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_styleRule->mutableProperties());
 }
 
-void CSSStyleRule::trace(Visitor* visitor)
+DEFINE_TRACE(CSSStyleRule)
 {
     visitor->trace(m_styleRule);
     visitor->trace(m_propertiesCSSOMWrapper);

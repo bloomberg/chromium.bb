@@ -1225,7 +1225,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     return false;
 }
 
-void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
+DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue)
 {
 #if ENABLE(OILPAN)
     switch (m_primitiveUnitType) {

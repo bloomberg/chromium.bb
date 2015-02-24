@@ -45,7 +45,7 @@ public:
 
     MediaList* media() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);

@@ -136,7 +136,7 @@ bool CSSBasicShapeCircle::equals(const CSSBasicShape& shape) const
         && compareCSSValuePtr(m_referenceBox, other.m_referenceBox);
 }
 
-void CSSBasicShapeCircle::trace(Visitor* visitor)
+DEFINE_TRACE(CSSBasicShapeCircle)
 {
     visitor->trace(m_centerX);
     visitor->trace(m_centerY);
@@ -218,7 +218,7 @@ bool CSSBasicShapeEllipse::equals(const CSSBasicShape& shape) const
         && compareCSSValuePtr(m_referenceBox, other.m_referenceBox);
 }
 
-void CSSBasicShapeEllipse::trace(Visitor* visitor)
+DEFINE_TRACE(CSSBasicShapeEllipse)
 {
     visitor->trace(m_centerX);
     visitor->trace(m_centerY);
@@ -296,7 +296,7 @@ bool CSSBasicShapePolygon::equals(const CSSBasicShape& shape) const
     return compareCSSValueVector(m_values, rhs.m_values);
 }
 
-void CSSBasicShapePolygon::trace(Visitor* visitor)
+DEFINE_TRACE(CSSBasicShapePolygon)
 {
     visitor->trace(m_values);
     CSSBasicShape::trace(visitor);
@@ -435,7 +435,7 @@ bool CSSBasicShapeInset::equals(const CSSBasicShape& shape) const
         && compareCSSValuePtr(m_bottomLeftRadius, other.m_bottomLeftRadius);
 }
 
-void CSSBasicShapeInset::trace(Visitor* visitor)
+DEFINE_TRACE(CSSBasicShapeInset)
 {
     visitor->trace(m_top);
     visitor->trace(m_right);

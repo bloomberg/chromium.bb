@@ -108,7 +108,7 @@ public:
 
     void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     static PassRefPtrWillBeRawPtr<FontFaceSet> create(Document& document)

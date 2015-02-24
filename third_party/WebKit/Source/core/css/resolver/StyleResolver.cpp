@@ -1501,7 +1501,7 @@ bool StyleResolver::mediaQueryAffectedByViewportChange() const
     return false;
 }
 
-void StyleResolver::trace(Visitor* visitor)
+DEFINE_TRACE(StyleResolver)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_matchedPropertiesCache);

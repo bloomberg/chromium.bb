@@ -233,7 +233,7 @@ bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
     return false;
 }
 
-void CSSFontFace::trace(Visitor* visitor)
+DEFINE_TRACE(CSSFontFace)
 {
     visitor->trace(m_segmentedFontFace);
     visitor->trace(m_sources);

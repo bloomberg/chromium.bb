@@ -61,7 +61,7 @@ public:
     uint64_t position() const { return m_position; }
     unsigned specificity() const { return ruleData()->specificity() + m_specificity; }
     const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_parentStyleSheet);
     }
@@ -88,7 +88,7 @@ class StyleRuleList final : public RefCountedWillBeGarbageCollected<StyleRuleLis
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleList> create() { return adoptRefWillBeNoop(new StyleRuleList()); }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_list);

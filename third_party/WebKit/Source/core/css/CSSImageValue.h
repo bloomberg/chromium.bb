@@ -68,7 +68,7 @@ public:
 
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
     void restoreCachedResourceIfNeeded(Document&);
 
 private:

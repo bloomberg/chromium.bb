@@ -46,7 +46,7 @@ public:
     SourceRange(unsigned start, unsigned end);
     unsigned length() const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     unsigned start;
     unsigned end;
@@ -58,7 +58,7 @@ public:
     CSSPropertySourceData(const String& name, const String& value, bool important, bool disabled, bool parsedOk, const SourceRange& range);
     CSSPropertySourceData(const CSSPropertySourceData& other);
 
-    void trace(Visitor* visitor) { visitor->trace(range); }
+    DEFINE_INLINE_TRACE() { visitor->trace(range); }
 
     String name;
     String value;
@@ -74,7 +74,7 @@ struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSour
         return adoptRefWillBeNoop(new CSSStyleSourceData());
     }
 
-    void trace(Visitor* visitor) { visitor->trace(propertyData); }
+    DEFINE_INLINE_TRACE() { visitor->trace(propertyData); }
 
     WillBeHeapVector<CSSPropertySourceData> propertyData;
 };
@@ -85,7 +85,7 @@ public:
     CSSMediaQueryExpSourceData(const SourceRange& valueRange)
         : valueRange(valueRange) { }
 
-    void trace(Visitor* visitor) { visitor->trace(valueRange); }
+    DEFINE_INLINE_TRACE() { visitor->trace(valueRange); }
 
     SourceRange valueRange;
 };
@@ -96,7 +96,7 @@ struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollected<CSSMedi
         return adoptRefWillBeNoop(new CSSMediaQuerySourceData());
     }
 
-    void trace(Visitor* visitor) { visitor->trace(expData); }
+    DEFINE_INLINE_TRACE() { visitor->trace(expData); }
 
     WillBeHeapVector<CSSMediaQueryExpSourceData> expData;
 };
@@ -107,7 +107,7 @@ struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSour
         return adoptRefWillBeNoop(new CSSMediaSourceData());
     }
 
-    void trace(Visitor* visitor) { visitor->trace(queryData); }
+    DEFINE_INLINE_TRACE() { visitor->trace(queryData); }
 
     WillBeHeapVector<RefPtrWillBeMember<CSSMediaQuerySourceData> > queryData;
 };
@@ -149,7 +149,7 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
             mediaSourceData = CSSMediaSourceData::create();
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     Type type;
 

@@ -50,7 +50,7 @@ public:
 
     bool equals(const CSSReflectValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSReflectValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> direction, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, PassRefPtrWillBeRawPtr<CSSValue> mask)

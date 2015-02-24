@@ -146,7 +146,7 @@ public:
 
     String toString() const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 protected:
     CSSMatrix(const TransformationMatrix&);
