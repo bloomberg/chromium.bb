@@ -42,6 +42,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
+#include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRegion.h"
 #include "core/layout/LayoutTableCell.h"
@@ -61,7 +62,6 @@
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
@@ -1066,9 +1066,9 @@ void RenderBlock::removeLeftoverAnonymousBlock(RenderBlock* child)
     // Remove all the information in the flow thread associated with the leftover anonymous block.
     child->removeFromLayoutFlowThread();
 
-    // RenderGrid keeps track of its children, we must notify it about changes in the tree.
-    if (child->parent()->isRenderGrid())
-        toRenderGrid(child->parent())->dirtyGrid();
+    // LayoutGrid keeps track of its children, we must notify it about changes in the tree.
+    if (child->parent()->isLayoutGrid())
+        toLayoutGrid(child->parent())->dirtyGrid();
 
     child->setParent(0);
     child->setPreviousSibling(0);

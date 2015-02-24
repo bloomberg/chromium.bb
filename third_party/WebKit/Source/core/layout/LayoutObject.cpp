@@ -53,6 +53,7 @@
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutImageResourceStyleImage.h"
 #include "core/layout/LayoutListItem.h"
@@ -75,7 +76,6 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
@@ -210,7 +210,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
         return new RenderFlexibleBox(element);
     case GRID:
     case INLINE_GRID:
-        return new RenderGrid(element);
+        return new LayoutGrid(element);
     }
 
     return 0;

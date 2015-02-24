@@ -44,13 +44,13 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/ContentData.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/style/PathStyleMotionPath.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderGrid.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -571,11 +571,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
 {
     const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridTemplateColumns() : style.gridTemplateRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
-    bool isRenderGrid = renderer && renderer->isRenderGrid();
+    bool isLayoutGrid = renderer && renderer->isLayoutGrid();
 
     // Handle the 'none' case.
     bool trackListIsEmpty = trackSizes.isEmpty();
-    if (isRenderGrid && trackListIsEmpty) {
+    if (isLayoutGrid && trackListIsEmpty) {
         // For grids we should consider every listed track, whether implicitly or explicitly created. If we don't have
         // any explicit track and there are no children then there are no implicit tracks. We cannot simply check the
         // number of rows/columns in our internal grid representation because it's always at least 1x1 (see r143331).
@@ -588,8 +588,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
     }
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    if (isRenderGrid) {
-        const Vector<LayoutUnit>& trackPositions = direction == ForColumns ? toRenderGrid(renderer)->columnPositions() : toRenderGrid(renderer)->rowPositions();
+    if (isLayoutGrid) {
+        const Vector<LayoutUnit>& trackPositions = direction == ForColumns ? toLayoutGrid(renderer)->columnPositions() : toLayoutGrid(renderer)->rowPositions();
         // There are at least #tracks + 1 grid lines (trackPositions). Apart from that, the grid container can generate implicit grid tracks,
         // so we'll have more trackPositions than trackSizes as the latter only contain the explicit grid.
         ASSERT(trackPositions.size() - 1 >= trackSizes.size());

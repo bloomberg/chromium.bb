@@ -10,16 +10,16 @@ namespace blink {
 struct PaintInfo;
 class LayoutPoint;
 class LayoutBox;
-class RenderGrid;
+class LayoutGrid;
 
 class GridPainter {
 public:
-    GridPainter(RenderGrid& renderGrid) : m_renderGrid(renderGrid) { }
+    GridPainter(LayoutGrid& layoutGrid) : m_layoutGrid(layoutGrid) { }
 
     void paintChildren(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderGrid& m_renderGrid;
+    LayoutGrid& m_layoutGrid;
 };
 
 } // namespace blink

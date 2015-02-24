@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderGrid_h
-#define RenderGrid_h
+#ifndef LayoutGrid_h
+#define LayoutGrid_h
 
 #include "core/layout/OrderIterator.h"
 #include "core/layout/style/GridResolvedPosition.h"
@@ -37,10 +37,10 @@ struct GridSpan;
 class GridTrack;
 class GridItemWithSpan;
 
-class RenderGrid final : public RenderBlock {
+class LayoutGrid final : public RenderBlock {
 public:
-    RenderGrid(Element*);
-    virtual ~RenderGrid();
+    LayoutGrid(Element*);
+    virtual ~LayoutGrid();
 
     virtual const char* renderName() const override;
 
@@ -62,7 +62,7 @@ public:
 
     typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderGrid || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || RenderBlock::isOfType(type); }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
 
@@ -100,7 +100,7 @@ private:
     void offsetAndBreadthForPositionedChild(const LayoutBox&, GridTrackSizingDirection, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth);
     void populateGridPositions(const GridSizingData&, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows);
 
-    typedef LayoutUnit (RenderGrid::* SizingFunction)(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>&);
+    typedef LayoutUnit (LayoutGrid::* SizingFunction)(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>&);
     typedef const LayoutUnit& (GridTrack::* AccumulatorGetter)() const;
     typedef bool (GridTrackSize::* FilterFunction)() const;
     void resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection, const GridCoordinate&, LayoutBox& gridItem, GridTrack&, Vector<GridTrack>& columnTracks);
@@ -162,7 +162,7 @@ private:
 
     bool hasDefiniteLogicalSize(GridTrackSizingDirection) const;
 
-    typedef Vector<Vector<GridCell> > GridRepresentation;
+    typedef Vector<Vector<GridCell>> GridRepresentation;
     GridRepresentation m_grid;
     bool m_gridIsDirty;
     Vector<LayoutUnit> m_rowPositions;
@@ -173,8 +173,8 @@ private:
     HashMap<const LayoutBox*, size_t> m_gridItemsIndexesMap;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, isLayoutGrid());
 
 } // namespace blink
 
-#endif // RenderGrid_h
+#endif // LayoutGrid_h

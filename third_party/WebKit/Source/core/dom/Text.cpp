@@ -280,7 +280,7 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
 
     if (parent.isTable() || parent.isTableRow() || parent.isTableSection()
         || parent.isLayoutTableCol() || parent.isFrameSet()
-        || parent.isFlexibleBox() || parent.isRenderGrid()
+        || parent.isFlexibleBox() || parent.isLayoutGrid()
         || parent.isSVGRoot()
         || parent.isSVGContainer()
         || parent.isSVGImage()

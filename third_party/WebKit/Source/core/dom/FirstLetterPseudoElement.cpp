@@ -139,7 +139,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
         } else if (firstLetterTextRenderer->isReplaced() || firstLetterTextRenderer->isRenderButton()
             || firstLetterTextRenderer->isMenuList()) {
             return nullptr;
-        } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isRenderGrid()) {
+        } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isLayoutGrid()) {
             firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
         } else if (firstLetterTextRenderer->style()->hasPseudoStyle(FIRST_LETTER)
             && firstLetterTextRenderer->canHaveGeneratedChildren())  {

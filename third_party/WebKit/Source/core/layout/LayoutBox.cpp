@@ -40,6 +40,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
@@ -55,7 +56,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
@@ -280,7 +280,7 @@ void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const LayoutStyle& style,
 
 void LayoutBox::updateGridPositionAfterStyleChange(const LayoutStyle* oldStyle)
 {
-    if (!oldStyle || !parent() || !parent()->isRenderGrid())
+    if (!oldStyle || !parent() || !parent()->isLayoutGrid())
         return;
 
     if (oldStyle->gridColumnStart() == style()->gridColumnStart()
@@ -293,7 +293,7 @@ void LayoutBox::updateGridPositionAfterStyleChange(const LayoutStyle* oldStyle)
 
     // It should be possible to not dirty the grid in some cases (like moving an explicitly placed grid item).
     // For now, it's more simple to just always recompute the grid.
-    toRenderGrid(parent())->dirtyGrid();
+    toLayoutGrid(parent())->dirtyGrid();
 }
 
 void LayoutBox::updateFromStyle()
@@ -2000,7 +2000,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
         computedValues.m_margins.m_end, style()->marginStart(), style()->marginEnd());
 
     if (!hasPerpendicularContainingBlock && containerLogicalWidth && containerLogicalWidth != (computedValues.m_extent + computedValues.m_margins.m_start + computedValues.m_margins.m_end)
-        && !isFloating() && !isInline() && !cb->isFlexibleBoxIncludingDeprecated() && !cb->isRenderGrid()) {
+        && !isFloating() && !isInline() && !cb->isFlexibleBoxIncludingDeprecated() && !cb->isLayoutGrid()) {
         LayoutUnit newMargin = containerLogicalWidth - computedValues.m_extent - cb->marginStartForChild(*this);
         bool hasInvertedDirection = cb->style()->isLeftToRightDirection() != style()->isLeftToRightDirection();
         if (hasInvertedDirection)
@@ -2295,7 +2295,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // grab our cached flexible height.
         // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
-        if (hasOverrideHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isRenderGrid())) {
+        if (hasOverrideHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
             h = Length(overrideLogicalContentHeight(), Fixed);
         } else if (treatAsReplaced) {
             h = Length(computeReplacedLogicalHeight(), Fixed);
