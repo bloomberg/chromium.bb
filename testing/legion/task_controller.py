@@ -49,27 +49,28 @@ class TaskController(object):
   _task_count = 0
   _tasks = []
 
-  def __init__(self, isolate_file, config_vars, dimensions, priority=100,
+  def __init__(self, isolated_hash, dimensions, priority=100,
                idle_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS,
                connection_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS,
-               verbosity='ERROR', name=None):
-    assert isinstance(config_vars, dict)
+               verbosity='ERROR', name=None, run_id=None):
     assert isinstance(dimensions, dict)
     type(self)._tasks.append(self)
     type(self)._task_count += 1
     self.verbosity = verbosity
     self._name = name or 'Task%d' % type(self)._task_count
     self._priority = priority
-    self._isolate_file = isolate_file
-    self._isolated_file = isolate_file + 'd'
+    self._isolated_hash = isolated_hash
     self._idle_timeout_secs = idle_timeout_secs
-    self._config_vars = config_vars
     self._dimensions = dimensions
     self._connect_event = threading.Event()
     self._connected = False
     self._ip_address = None
     self._otp = self._CreateOTP()
     self._rpc = None
+
+    run_id = run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    self._task_name = '%s/%s/%s' % (
+        os.path.splitext(sys.argv[0])[0], self._name, run_id)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--isolate-server')
@@ -137,7 +138,6 @@ class TaskController(object):
     """Creates the task machine."""
     logging.info('Creating %s', self.name)
     self._connect_event.clear()
-    self._ExecuteIsolate()
     self._ExecuteSwarming()
 
   def WaitForConnection(self):
@@ -163,31 +163,15 @@ class TaskController(object):
       self._rpc = None
       self._connected = False
 
-  def _ExecuteIsolate(self):
-    """Executes isolate.py."""
-    cmd = [
-        'python',
-        ISOLATE_PY,
-        'archive',
-        '--isolate', self._isolate_file,
-        '--isolated', self._isolated_file,
-        ]
-
-    if self._isolate_server:
-      cmd.extend(['--isolate-server', self._isolate_server])
-    for key, value in self._config_vars.iteritems():
-      cmd.extend(['--config-var', key, value])
-
-    self._ExecuteProcess(cmd)
-
   def _ExecuteSwarming(self):
     """Executes swarming.py."""
     cmd = [
         'python',
         SWARMING_PY,
         'trigger',
-        self._isolated_file,
+        self._isolated_hash,
         '--priority', str(self._priority),
+        '--task-name', self._task_name,
         ]
 
     if self._isolate_server:

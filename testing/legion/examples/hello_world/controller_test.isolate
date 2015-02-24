@@ -10,10 +10,10 @@
     ['multi_machine == 1', {
       'variables': {
         'command': [
-          'subprocess_test.py',
+          'controller_test.py',
         ],
         'files': [
-          'subprocess_test.py',
+          'controller_test.py',
         ],
       },
     }],
