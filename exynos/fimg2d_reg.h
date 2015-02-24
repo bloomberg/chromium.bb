@@ -15,7 +15,7 @@
 
 #define SOFT_RESET_REG			(0x0000)
 #define INTEN_REG			(0x0004)
-#define INTC_PEND_REG			(0x000c)
+#define INTC_PEND_REG			(0x000C)
 #define FIFO_STAT_REG			(0x0010)
 #define AXI_MODE_REG			(0x001C)
 #define DMA_SFR_BASE_ADDR_REG		(0x0080)
