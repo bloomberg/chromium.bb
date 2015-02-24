@@ -211,6 +211,13 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
     runner->Run();
   }
 
+  void EnableExperimentalFeatures() {
+    // TODO(riju): remove when the DeviceLight feature goes stable.
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    if (!cmd_line->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
+      cmd_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
   FakeDataFetcher* fetcher_;
 
  private:
@@ -233,15 +240,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, LightTest) {
   // The test page will register an event handler for light events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
+  EnableExperimentalFeatures();
   GURL test_url = GetTestUrl("device_sensors", "device_light_test.html");
-
-  // TODO(riju): remove command line args when the feature goes stable.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
@@ -261,34 +261,20 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   fetcher_->stopped_motion_.Wait();
 }
 
-// crbug/416406. The test is flaky.
 IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-                       DISABLED_LightOneOffInfintyTest) {
-  // The test page will register an event handler for light events,
-  // expects to get an event with value equal to Infinity. This tests that the
-  // one-off infinity event still propagates to window after the alert is
-  // dismissed and the callback is invoked which navigates to #pass.
+    LightOneOffInfintyTest) {
+  // The test page registers an event handler for light events and expects
+  // to get an event with value equal to infinity, because no sensor data can
+  // be provided.
+  EnableExperimentalFeatures();
   fetcher_->SetSensorDataAvailable(false);
+  GURL test_url = GetTestUrl("device_sensors",
+                             "device_light_infinity_test.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
-  // TODO(riju): remove command line args when the feature goes stable.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
-  TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
-
-  GURL test_url =
-      GetTestUrl("device_sensors", "device_light_infinity_test.html");
-  shell()->LoadURL(test_url);
-
-  WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(1000));
-
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   fetcher_->started_light_.Wait();
   fetcher_->stopped_light_.Wait();
-  same_tab_observer.Wait();
-  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationNullTest) {
@@ -299,6 +285,7 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationNullTest) {
   GURL test_url = GetTestUrl("device_sensors",
                              "device_orientation_null_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
+
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   fetcher_->started_orientation_.Wait();
   fetcher_->stopped_orientation_.Wait();
