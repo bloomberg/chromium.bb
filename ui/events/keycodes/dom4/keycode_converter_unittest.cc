@@ -18,7 +18,7 @@ namespace {
 #if defined(OS_WIN)
 const size_t kExpectedMappedKeyCount = 138;
 #elif defined(OS_LINUX)
-const size_t kExpectedMappedKeyCount = 155;
+const size_t kExpectedMappedKeyCount = 167;
 #elif defined(OS_MACOSX)
 const size_t kExpectedMappedKeyCount = 118;
 #else

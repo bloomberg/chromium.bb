@@ -152,17 +152,23 @@ DomKey NonPrintableXkbKeySymToDomKey(xkb_keysym_t keysym) {
       return DomKey::F11;
     case XKB_KEY_F12:
       return DomKey::F12;
+    case XKB_KEY_XF86Tools:  // XKB 'inet' mapping of F13
     case XKB_KEY_F13:
       return DomKey::F13;
     case XKB_KEY_F14:
+    case XKB_KEY_XF86Launch5:  // XKB 'inet' mapping of F14
       return DomKey::F14;
     case XKB_KEY_F15:
+    case XKB_KEY_XF86Launch6:  // XKB 'inet' mapping of F15
       return DomKey::F15;
     case XKB_KEY_F16:
+    case XKB_KEY_XF86Launch7:  // XKB 'inet' mapping of F16
       return DomKey::F16;
     case XKB_KEY_F17:
+    case XKB_KEY_XF86Launch8:  // XKB 'inet' mapping of F17
       return DomKey::F17;
     case XKB_KEY_F18:
+    case XKB_KEY_XF86Launch9:  // XKB 'inet' mapping of F18
       return DomKey::F18;
     case XKB_KEY_F19:
       return DomKey::F19;
