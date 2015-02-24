@@ -157,11 +157,14 @@ void FindLayersThatNeedVisibleRects(Layer* layer,
                                     const TransformTree& tree,
                                     bool subtree_is_visible_from_ancestor,
                                     std::vector<Layer*>* layers_to_update) {
-  const bool subtree_is_invisble =
-      layer->opacity() == 0.0f ||
+  const bool layer_is_invisible =
+      (!layer->opacity() && !layer->OpacityIsAnimating() &&
+       !layer->OpacityCanAnimateOnImplThread());
+  const bool layer_is_backfacing =
       (layer->has_render_surface() && !layer->double_sided() &&
        IsSurfaceBackFaceExposed(layer, tree));
 
+  const bool subtree_is_invisble = layer_is_invisible || layer_is_backfacing;
   if (subtree_is_invisble)
     return;
 

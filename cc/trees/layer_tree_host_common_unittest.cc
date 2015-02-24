@@ -8747,5 +8747,33 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
   EXPECT_EQ(affected_by_delta, sublayer->visible_content_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
+  const gfx::Transform identity_matrix;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> animated =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+  root->AddChild(animated);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(animated.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false);
+
+  root->SetMasksToBounds(true);
+  root->SetForceRenderSurface(true);
+  animated->SetOpacity(0.f);
+
+  AddOpacityTransitionToController(animated->layer_animation_controller(), 10.0,
+                                   0.f, 1.f, false);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_FALSE(animated->visible_rect_from_property_trees().IsEmpty());
+}
+
 }  // namespace
 }  // namespace cc
