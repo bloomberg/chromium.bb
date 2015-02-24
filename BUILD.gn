@@ -144,7 +144,8 @@ group("root") {
   ]
   deps += root_extra_deps
 
-  if (enable_extensions) {
+  # TODO(GYP): Get this working on the mac?
+  if (enable_extensions && !is_mac) {
     deps += [ "//extensions/shell:app_shell_unittests" ]
   }
 
