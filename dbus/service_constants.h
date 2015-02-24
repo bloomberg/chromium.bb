@@ -1808,6 +1808,10 @@ const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
 const char kRequestPathAccess[] = "RequestPathAccess";
 const char kRequestTcpPortAccess[] = "RequestTcpPortAccess";
 const char kRequestUdpPortAccess[] = "RequestUdpPortAccess";
+const char kReleaseTcpPort[] = "ReleaseTcpPort";
+const char kReleaseUdpPort[] = "ReleaseUdpPort";
+const char kRequestVpnSetup[] = "RequestVpnSetup";
+const char kRemoveVpnSetup[] = "RemoveVpnSetup";
 }  // namespace permission_broker
 
 namespace system_clock {
