@@ -87,6 +87,10 @@ static unsigned int g2d_get_blend_op(enum e_g2d_op op)
 		SET_BF(val, G2D_COEFF_MODE_ONE, 0, 0, 0,
 				G2D_COEFF_MODE_SRC_ALPHA, 1, 0, 0);
 		break;
+	case G2D_OP_INTERPOLATE:
+		SET_BF(val, G2D_COEFF_MODE_SRC_ALPHA, 0, 0, 0,
+				G2D_COEFF_MODE_SRC_ALPHA, 1, 0, 0);
+		break;
 	default:
 		fprintf(stderr, "Not support operation(%d).\n", op);
 		SET_BF(val, G2D_COEFF_MODE_ONE, 0, 0, 0, G2D_COEFF_MODE_ZERO,
