@@ -151,9 +151,9 @@ FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
   channel_->Close();
 
   if (child_process_.IsValid()) {
-    base::WaitForSingleProcess(child_process_.Handle(),
-                               base::TimeDelta::FromSeconds(5));
-    child_process_.Close();
+    int exit_code;
+    child_process_.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(5),
+                                          &exit_code);
   }
 }
 

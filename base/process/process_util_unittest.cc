@@ -151,8 +151,9 @@ MULTIPROCESS_TEST_MAIN(SimpleChildProcess) {
 TEST_F(ProcessUtilTest, SpawnChild) {
   base::Process process = SpawnChild("SimpleChildProcess");
   ASSERT_TRUE(process.IsValid());
-  EXPECT_TRUE(base::WaitForSingleProcess(process.Handle(),
-                                         TestTimeouts::action_max_timeout()));
+  int exit_code;
+  EXPECT_TRUE(process.WaitForExitWithTimeout(
+                  TestTimeouts::action_max_timeout(), &exit_code));
 }
 
 MULTIPROCESS_TEST_MAIN(SlowChildProcess) {
@@ -167,8 +168,9 @@ TEST_F(ProcessUtilTest, KillSlowChild) {
   base::Process process = SpawnChild("SlowChildProcess");
   ASSERT_TRUE(process.IsValid());
   SignalChildren(signal_file.c_str());
-  EXPECT_TRUE(base::WaitForSingleProcess(process.Handle(),
-                                         TestTimeouts::action_max_timeout()));
+  int exit_code;
+  EXPECT_TRUE(process.WaitForExitWithTimeout(
+                  TestTimeouts::action_max_timeout(), &exit_code));
   remove(signal_file.c_str());
 }
 
@@ -550,12 +552,12 @@ int ProcessUtilTest::CountOpenFDsInChild() {
 
 #if defined(THREAD_SANITIZER)
   // Compiler-based ThreadSanitizer makes this test slow.
-  CHECK(base::WaitForSingleProcess(process.Handle(),
-                                   base::TimeDelta::FromSeconds(3)));
+  base::TimeDelta timeout = base::TimeDelta::FromSeconds(3);
 #else
-  CHECK(base::WaitForSingleProcess(process.Handle(),
-                                   base::TimeDelta::FromSeconds(1)));
+  base::TimeDelta timeout = base::TimeDelta::FromSeconds(1);
 #endif
+  int exit_code;
+  CHECK(process.WaitForExitWithTimeout(timeout, &exit_code));
   ret = IGNORE_EINTR(close(fds[0]));
   DPCHECK(ret == 0);
 
@@ -891,8 +893,9 @@ TEST_F(ProcessUtilTest, DelayedTermination) {
   base::Process child_process = SpawnChild("process_util_test_never_die");
   ASSERT_TRUE(child_process.IsValid());
   base::EnsureProcessTerminated(child_process.Duplicate());
-  base::WaitForSingleProcess(child_process.Handle(),
-                             base::TimeDelta::FromSeconds(5));
+  int exit_code;
+  child_process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(5),
+                                       &exit_code);
 
   // Check that process was really killed.
   EXPECT_TRUE(IsProcessDead(child_process.Handle()));

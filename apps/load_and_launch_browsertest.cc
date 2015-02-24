@@ -62,8 +62,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(process.IsValid());
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ASSERT_TRUE(base::WaitForSingleProcess(process.Handle(),
-                                         TestTimeouts::action_timeout()));
+  int exit_code;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
+  ASSERT_EQ(0, exit_code);
 }
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
@@ -102,8 +104,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(process.IsValid());
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ASSERT_TRUE(base::WaitForSingleProcess(process.Handle(),
-                                         TestTimeouts::action_timeout()));
+  int exit_code;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
+  ASSERT_EQ(0, exit_code);
 }
 
 namespace {

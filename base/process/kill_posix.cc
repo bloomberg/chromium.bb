@@ -84,6 +84,97 @@ bool WaitpidWithTimeout(ProcessHandle handle,
 
   return ret_pid > 0;
 }
+
+#if defined(OS_MACOSX)
+// Using kqueue on Mac so that we can wait on non-child processes.
+// We can't use kqueues on child processes because we need to reap
+// our own children using wait.
+static bool WaitForSingleNonChildProcess(ProcessHandle handle,
+                                         TimeDelta wait) {
+  DCHECK_GT(handle, 0);
+  DCHECK(wait.InMilliseconds() == kNoTimeout || wait > TimeDelta());
+
+  ScopedFD kq(kqueue());
+  if (!kq.is_valid()) {
+    DPLOG(ERROR) << "kqueue";
+    return false;
+  }
+
+  struct kevent change = {0};
+  EV_SET(&change, handle, EVFILT_PROC, EV_ADD, NOTE_EXIT, 0, NULL);
+  int result = HANDLE_EINTR(kevent(kq.get(), &change, 1, NULL, 0, NULL));
+  if (result == -1) {
+    if (errno == ESRCH) {
+      // If the process wasn't found, it must be dead.
+      return true;
+    }
+
+    DPLOG(ERROR) << "kevent (setup " << handle << ")";
+    return false;
+  }
+
+  // Keep track of the elapsed time to be able to restart kevent if it's
+  // interrupted.
+  bool wait_forever = wait.InMilliseconds() == kNoTimeout;
+  TimeDelta remaining_delta;
+  TimeTicks deadline;
+  if (!wait_forever) {
+    remaining_delta = wait;
+    deadline = TimeTicks::Now() + remaining_delta;
+  }
+
+  result = -1;
+  struct kevent event = {0};
+
+  while (wait_forever || remaining_delta > TimeDelta()) {
+    struct timespec remaining_timespec;
+    struct timespec* remaining_timespec_ptr;
+    if (wait_forever) {
+      remaining_timespec_ptr = NULL;
+    } else {
+      remaining_timespec = remaining_delta.ToTimeSpec();
+      remaining_timespec_ptr = &remaining_timespec;
+    }
+
+    result = kevent(kq.get(), NULL, 0, &event, 1, remaining_timespec_ptr);
+
+    if (result == -1 && errno == EINTR) {
+      if (!wait_forever) {
+        remaining_delta = deadline - TimeTicks::Now();
+      }
+      result = 0;
+    } else {
+      break;
+    }
+  }
+
+  if (result < 0) {
+    DPLOG(ERROR) << "kevent (wait " << handle << ")";
+    return false;
+  } else if (result > 1) {
+    DLOG(ERROR) << "kevent (wait " << handle << "): unexpected result "
+                << result;
+    return false;
+  } else if (result == 0) {
+    // Timed out.
+    return false;
+  }
+
+  DCHECK_EQ(result, 1);
+
+  if (event.filter != EVFILT_PROC ||
+      (event.fflags & NOTE_EXIT) == 0 ||
+      event.ident != static_cast<uintptr_t>(handle)) {
+    DLOG(ERROR) << "kevent (wait " << handle
+                << "): unexpected event: filter=" << event.filter
+                << ", fflags=" << event.fflags
+                << ", ident=" << event.ident;
+    return false;
+  }
+
+  return true;
+}
+#endif  // OS_MACOSX
 #endif  // !defined(OS_NACL_NONSFI)
 
 TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
@@ -230,7 +321,19 @@ bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
 
 bool WaitForExitCodeWithTimeout(ProcessHandle handle,
                                 int* exit_code,
-                                base::TimeDelta timeout) {
+                                TimeDelta timeout) {
+  ProcessHandle parent_pid = GetParentProcessId(handle);
+  ProcessHandle our_pid = GetCurrentProcessHandle();
+  if (parent_pid != our_pid) {
+#if defined(OS_MACOSX)
+    // On Mac we can wait on non child processes.
+    return WaitForSingleNonChildProcess(handle, timeout);
+#else
+    // Currently on Linux we can't handle non child processes.
+    NOTIMPLEMENTED();
+#endif  // OS_MACOSX
+  }
+
   int status;
   if (!WaitpidWithTimeout(handle, &status, timeout))
     return false;
@@ -246,138 +349,28 @@ bool WaitForExitCodeWithTimeout(ProcessHandle handle,
 }
 
 bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
-                            base::TimeDelta wait,
+                            TimeDelta wait,
                             const ProcessFilter* filter) {
   bool result = false;
 
   // TODO(port): This is inefficient, but works if there are multiple procs.
   // TODO(port): use waitpid to avoid leaving zombies around
 
-  base::TimeTicks end_time = base::TimeTicks::Now() + wait;
+  TimeTicks end_time = TimeTicks::Now() + wait;
   do {
     NamedProcessIterator iter(executable_name, filter);
     if (!iter.NextProcessEntry()) {
       result = true;
       break;
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  } while ((end_time - base::TimeTicks::Now()) > base::TimeDelta());
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+  } while ((end_time - TimeTicks::Now()) > TimeDelta());
 
   return result;
 }
 
-#if defined(OS_MACOSX)
-// Using kqueue on Mac so that we can wait on non-child processes.
-// We can't use kqueues on child processes because we need to reap
-// our own children using wait.
-static bool WaitForSingleNonChildProcess(ProcessHandle handle,
-                                         base::TimeDelta wait) {
-  DCHECK_GT(handle, 0);
-  DCHECK(wait.InMilliseconds() == base::kNoTimeout || wait > base::TimeDelta());
-
-  ScopedFD kq(kqueue());
-  if (!kq.is_valid()) {
-    DPLOG(ERROR) << "kqueue";
-    return false;
-  }
-
-  struct kevent change = {0};
-  EV_SET(&change, handle, EVFILT_PROC, EV_ADD, NOTE_EXIT, 0, NULL);
-  int result = HANDLE_EINTR(kevent(kq.get(), &change, 1, NULL, 0, NULL));
-  if (result == -1) {
-    if (errno == ESRCH) {
-      // If the process wasn't found, it must be dead.
-      return true;
-    }
-
-    DPLOG(ERROR) << "kevent (setup " << handle << ")";
-    return false;
-  }
-
-  // Keep track of the elapsed time to be able to restart kevent if it's
-  // interrupted.
-  bool wait_forever = wait.InMilliseconds() == base::kNoTimeout;
-  base::TimeDelta remaining_delta;
-  base::TimeTicks deadline;
-  if (!wait_forever) {
-    remaining_delta = wait;
-    deadline = base::TimeTicks::Now() + remaining_delta;
-  }
-
-  result = -1;
-  struct kevent event = {0};
-
-  while (wait_forever || remaining_delta > base::TimeDelta()) {
-    struct timespec remaining_timespec;
-    struct timespec* remaining_timespec_ptr;
-    if (wait_forever) {
-      remaining_timespec_ptr = NULL;
-    } else {
-      remaining_timespec = remaining_delta.ToTimeSpec();
-      remaining_timespec_ptr = &remaining_timespec;
-    }
-
-    result = kevent(kq.get(), NULL, 0, &event, 1, remaining_timespec_ptr);
-
-    if (result == -1 && errno == EINTR) {
-      if (!wait_forever) {
-        remaining_delta = deadline - base::TimeTicks::Now();
-      }
-      result = 0;
-    } else {
-      break;
-    }
-  }
-
-  if (result < 0) {
-    DPLOG(ERROR) << "kevent (wait " << handle << ")";
-    return false;
-  } else if (result > 1) {
-    DLOG(ERROR) << "kevent (wait " << handle << "): unexpected result "
-                << result;
-    return false;
-  } else if (result == 0) {
-    // Timed out.
-    return false;
-  }
-
-  DCHECK_EQ(result, 1);
-
-  if (event.filter != EVFILT_PROC ||
-      (event.fflags & NOTE_EXIT) == 0 ||
-      event.ident != static_cast<uintptr_t>(handle)) {
-    DLOG(ERROR) << "kevent (wait " << handle
-                << "): unexpected event: filter=" << event.filter
-                << ", fflags=" << event.fflags
-                << ", ident=" << event.ident;
-    return false;
-  }
-
-  return true;
-}
-#endif  // OS_MACOSX
-
-bool WaitForSingleProcess(ProcessHandle handle, base::TimeDelta wait) {
-  ProcessHandle parent_pid = GetParentProcessId(handle);
-  ProcessHandle our_pid = GetCurrentProcessHandle();
-  if (parent_pid != our_pid) {
-#if defined(OS_MACOSX)
-    // On Mac we can wait on non child processes.
-    return WaitForSingleNonChildProcess(handle, wait);
-#else
-    // Currently on Linux we can't handle non child processes.
-    NOTIMPLEMENTED();
-#endif  // OS_MACOSX
-  }
-
-  int status;
-  if (!WaitpidWithTimeout(handle, &status, wait))
-    return false;
-  return WIFEXITED(status);
-}
-
 bool CleanupProcesses(const FilePath::StringType& executable_name,
-                      base::TimeDelta wait,
+                      TimeDelta wait,
                       int exit_code,
                       const ProcessFilter* filter) {
   bool exited_cleanly = WaitForProcessesToExit(executable_name, wait, filter);

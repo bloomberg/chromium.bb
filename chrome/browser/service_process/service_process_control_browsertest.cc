@@ -80,9 +80,10 @@ class ServiceProcessControlBrowserTest
     ForceServiceProcessShutdown("", 0);
 #endif  // OS_MACOSX
     if (service_process_.IsValid()) {
-      EXPECT_TRUE(base::WaitForSingleProcess(
-          service_process_.Handle(),
-          TestTimeouts::action_max_timeout()));
+      int exit_code;
+      EXPECT_TRUE(service_process_.WaitForExitWithTimeout(
+          TestTimeouts::action_max_timeout(), &exit_code));
+      EXPECT_EQ(0, exit_code);
       service_process_.Close();
     }
   }

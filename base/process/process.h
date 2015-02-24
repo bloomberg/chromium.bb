@@ -98,6 +98,8 @@ class BASE_EXPORT Process {
 
   // Waits for the process to exit. Returns true on success.
   // On POSIX, if the process has been signaled then |exit_code| is set to -1.
+  // On Linux this must be a child process, however on Mac and Windows it can be
+  // any process.
   bool WaitForExit(int* exit_code);
 
   // Same as WaitForExit() but only waits for up to |timeout|.

@@ -125,16 +125,15 @@ bool LocalTestServer::Stop() {
     return true;
 
   // First check if the process has already terminated.
-  bool ret = base::WaitForSingleProcess(process_.Handle(), base::TimeDelta());
-  if (!ret) {
+  int exit_code;
+  bool ret = process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code);
+  if (!ret)
     ret = base::KillProcess(process_.Handle(), 1, true);
-  }
 
-  if (ret) {
+  if (ret)
     process_.Close();
-  } else {
+  else
     VLOG(1) << "Kill failed?";
-  }
 
   return ret;
 }

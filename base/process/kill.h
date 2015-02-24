@@ -119,12 +119,6 @@ BASE_EXPORT bool WaitForProcessesToExit(
     base::TimeDelta wait,
     const ProcessFilter* filter);
 
-// Wait for a single process to exit. Return true if it exited cleanly within
-// the given time limit. On Linux |handle| must be a child process, however
-// on Mac and Windows it can be any process.
-BASE_EXPORT bool WaitForSingleProcess(ProcessHandle handle,
-                                      base::TimeDelta wait);
-
 // Waits a certain amount of time (can be 0) for all the processes with a given
 // executable name to exit, then kills off any of them that are still around.
 // If filter is non-null, then only processes selected by the filter are waited

@@ -430,8 +430,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
     GetFirstHostedAppWindow()->window()->Close();
     // Wait for the window to be closed.
     listener.WaitUntilRemoved();
-    ASSERT_TRUE(
-        base::WaitForSingleProcess(shim_pid, TestTimeouts::action_timeout()));
+    base::Process shim_process(shim_pid);
+    int exit_code;
+    ASSERT_TRUE(shim_process.WaitForExitWithTimeout(
+                    TestTimeouts::action_timeout(), &exit_code));
 
     EXPECT_FALSE(GetFirstHostedAppWindow());
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
@@ -502,8 +504,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     pid_t shim_pid;
     EXPECT_EQ(noErr, GetProcessPID(&shim_psn, &shim_pid));
     GetFirstAppWindow()->GetBaseWindow()->Close();
-    ASSERT_TRUE(
-        base::WaitForSingleProcess(shim_pid, TestTimeouts::action_timeout()));
+    base::Process shim_process(shim_pid);
+    int exit_code;
+    ASSERT_TRUE(shim_process.WaitForExitWithTimeout(
+                    TestTimeouts::action_timeout(), &exit_code));
 
     EXPECT_FALSE(GetFirstAppWindow());
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));

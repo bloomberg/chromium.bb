@@ -142,8 +142,9 @@ bool IPCTestBase::StartClient() {
 bool IPCTestBase::WaitForClientShutdown() {
   DCHECK(client_process_.IsValid());
 
-  bool rv = base::WaitForSingleProcess(client_process_.Handle(),
-                                       base::TimeDelta::FromSeconds(5));
+  int exit_code;
+  bool rv = client_process_.WaitForExitWithTimeout(
+      base::TimeDelta::FromSeconds(5), &exit_code);
   client_process_.Close();
   return rv;
 }

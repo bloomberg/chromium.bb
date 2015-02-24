@@ -148,8 +148,9 @@ MULTIPROCESS_TEST_MAIN(MismatchedMallocChildProcess) {
 TEST_F(StackTraceTest, AsyncSignalUnsafeSignalHandlerHang) {
   Process child = SpawnChild("MismatchedMallocChildProcess");
   ASSERT_TRUE(child.IsValid());
-  ASSERT_TRUE(WaitForSingleProcess(child.Handle(),
-                                   TestTimeouts::action_timeout()));
+  int exit_code;
+  ASSERT_TRUE(child.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                           &exit_code));
 }
 #endif  // !defined(OS_IOS)
 

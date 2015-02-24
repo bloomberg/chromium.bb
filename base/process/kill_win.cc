@@ -189,7 +189,7 @@ bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
 
 bool WaitForExitCodeWithTimeout(ProcessHandle handle,
                                 int* exit_code,
-                                base::TimeDelta timeout) {
+                                TimeDelta timeout) {
   if (::WaitForSingleObject(
       handle, static_cast<DWORD>(timeout.InMilliseconds())) != WAIT_OBJECT_0)
     return false;
@@ -202,7 +202,7 @@ bool WaitForExitCodeWithTimeout(ProcessHandle handle,
 }
 
 bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
-                            base::TimeDelta wait,
+                            TimeDelta wait,
                             const ProcessFilter* filter) {
   bool result = true;
   DWORD start_time = GetTickCount();
@@ -224,13 +224,8 @@ bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
   return result;
 }
 
-bool WaitForSingleProcess(ProcessHandle handle, base::TimeDelta wait) {
-  int exit_code;
-  return WaitForExitCodeWithTimeout(handle, &exit_code, wait) && exit_code == 0;
-}
-
 bool CleanupProcesses(const FilePath::StringType& executable_name,
-                      base::TimeDelta wait,
+                      TimeDelta wait,
                       int exit_code,
                       const ProcessFilter* filter) {
   if (WaitForProcessesToExit(executable_name, wait, filter))
@@ -249,9 +244,9 @@ void EnsureProcessTerminated(Process process) {
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TimerExpiredTask::TimedOut,
-                 base::Owned(new TimerExpiredTask(process.Pass()))),
-      base::TimeDelta::FromMilliseconds(kWaitInterval));
+      Bind(&TimerExpiredTask::TimedOut,
+           Owned(new TimerExpiredTask(process.Pass()))),
+      TimeDelta::FromMilliseconds(kWaitInterval));
 }
 
 }  // namespace base

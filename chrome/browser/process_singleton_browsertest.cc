@@ -101,8 +101,8 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // We can wait on the handle here, we should get stuck on one and only
     // one process. The test below will take care of killing that process
     // to unstuck us once it confirms there is only one.
-    process_terminated_ = base::WaitForSingleProcess(process_.Handle(),
-                                                     timeout_);
+    int exit_code;
+    process_terminated_ = process_.WaitForExitWithTimeout(timeout_, &exit_code);
     // Let the test know we are done.
     done_event_.Signal();
   }
@@ -293,8 +293,8 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
           starters_done_events, pending_starters.size());
       size_t starter_index = pending_starters[done_index];
       // If the starter is done but has not marked itself as terminated,
-      // it is because it timed out of its WaitForSingleProcess(). Only the
-      // last one standing should be left waiting... So we failed...
+      // it is because it timed out of its WaitForExitCodeWithTimeout(). Only
+      // the last one standing should be left waiting... So we failed...
       EXPECT_TRUE(chrome_starters_[starter_index]->process_terminated_ ||
                   failed) << "There is more than one main process.";
       if (!chrome_starters_[starter_index]->process_terminated_) {
