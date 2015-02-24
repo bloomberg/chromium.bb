@@ -14,8 +14,10 @@
 
 var expected = [
   'csi',
+  'developerPrivate',
   'getVariableValue',
   'loadTimes',
+  'management',
   'runtime',
   'send',
   'test',

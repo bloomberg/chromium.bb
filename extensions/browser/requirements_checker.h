@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_service.h"
-
-class GPUFeatureChecker;
 
 namespace extensions {
 class Extension;
@@ -21,34 +17,20 @@ class Extension;
 // asynchronous process that involves several threads, but the public interface
 // of this class (including constructor and destructor) must only be used on
 // the UI thread.
-class RequirementsChecker : public base::SupportsWeakPtr<RequirementsChecker> {
+class RequirementsChecker {
  public:
-  RequirementsChecker();
-  ~RequirementsChecker();
+  virtual ~RequirementsChecker() {}
+
+  using RequirementsCheckedCallback =
+      base::Callback<void(const std::vector<std::string>& /* requirements */)>;
 
   // The vector passed to the callback are any localized errors describing
   // requirement violations. If this vector is non-empty, requirements checking
   // failed. This should only be called once. |callback| will always be invoked
   // asynchronously on the UI thread. |callback| will only be called once, and
   // will be reset after called.
-  void Check(scoped_refptr<const Extension> extension,
-      base::Callback<void(std::vector<std::string> requirement)> callback);
-
- private:
-  // Callbacks for the GPUFeatureChecker.
-  void SetWebGLAvailability(bool available);
-
-  void MaybeRunCallback();
-
-  std::vector<std::string> errors_;
-
-  // Every requirement that needs to be resolved asynchronously will add to
-  // this counter. When the counter is depleted, the callback will be run.
-  int pending_requirement_checks_;
-
-  scoped_refptr<GPUFeatureChecker> webgl_checker_;
-
-  base::Callback<void(std::vector<std::string> requirement_errorss)> callback_;
+  virtual void Check(const scoped_refptr<const Extension>& extension,
+                     const RequirementsCheckedCallback& callback) = 0;
 };
 
 }  // namespace extensions

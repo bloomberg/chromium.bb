@@ -707,6 +707,7 @@
       'browser/quota_service.h',
       'browser/renderer_startup_helper.cc',
       'browser/renderer_startup_helper.h',
+      'browser/requirements_checker.h',
       'browser/runtime_data.cc',
       'browser/runtime_data.h',
       'browser/sandboxed_unpacker.cc',

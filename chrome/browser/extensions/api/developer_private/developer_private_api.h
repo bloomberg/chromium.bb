@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
-#include "chrome/browser/extensions/requirements_checker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host.h"
@@ -35,6 +34,7 @@ class ExtensionError;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ManagementPolicy;
+class RequirementsChecker;
 
 namespace api {
 
@@ -300,8 +300,9 @@ class DeveloperPrivateEnableFunction
   ~DeveloperPrivateEnableFunction() override;
 
   // Callback for requirements checker.
-  void OnRequirementsChecked(const std::string& extension_id,
-                             std::vector<std::string> requirements_errors);
+  void OnRequirementsChecked(
+      const std::string& extension_id,
+      const std::vector<std::string>& requirements_errors);
   // ExtensionFunction:
   bool RunSync() override;
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/requirements_checker.h"
-
 #include <vector>
 
 #include "base/bind.h"
@@ -12,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,6 +26,9 @@ namespace extensions {
 
 class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
  public:
+  RequirementsCheckerBrowserTest()
+      : checker_(new ChromeRequirementsChecker()) {}
+
   scoped_refptr<const Extension> LoadExtensionFromDirName(
       const std::string& extension_dir_name) {
     base::FilePath extension_path;
@@ -40,10 +42,10 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
     return extension;
   }
 
-  void ValidateRequirementErrors(std::vector<std::string> expected_errors,
-                                 std::vector<std::string> actual_errors) {
+  void ValidateRequirementErrors(
+      const std::vector<std::string>& expected_errors,
+      const std::vector<std::string>& actual_errors) {
     ASSERT_EQ(expected_errors, actual_errors);
-    requirement_errors_.swap(actual_errors);
   }
 
   // This should only be called once per test instance. Calling more than once
@@ -73,15 +75,14 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
   }
 
  protected:
-  std::vector<std::string> requirement_errors_;
-  RequirementsChecker checker_;
+  scoped_ptr<RequirementsChecker> checker_;
 };
 
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckEmptyExtension) {
   scoped_refptr<const Extension> extension(
       LoadExtensionFromDirName("no_requirements"));
   ASSERT_TRUE(extension.get());
-  checker_.Check(extension, base::Bind(
+  checker_->Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), std::vector<std::string>()));
   content::RunAllBlockingPoolTasksUntilIdle();
@@ -98,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckNpapiExtension) {
       IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
 #endif
 
-  checker_.Check(extension, base::Bind(
+  checker_->Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
   content::RunAllBlockingPoolTasksUntilIdle();
@@ -116,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest,
       IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED));
 #endif  // !defined(USE_AURA)
 
-  checker_.Check(extension, base::Bind(
+  checker_->Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
   content::RunAllBlockingPoolTasksUntilIdle();
@@ -137,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
   expected_errors.push_back(l10n_util::GetStringUTF8(
       IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
 
-  checker_.Check(extension, base::Bind(
+  checker_->Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
   content::RunAllBlockingPoolTasksUntilIdle();
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
         IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
   }
 
-  checker_.Check(extension, base::Bind(
+  checker_->Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
   content::RunAllBlockingPoolTasksUntilIdle();

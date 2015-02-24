@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -205,6 +206,11 @@ ChromeManagementAPIDelegate::SetEnabledFunctionDelegate(
   return scoped_ptr<ManagementSetEnabledFunctionInstallPromptDelegate>(
       new ManagementSetEnabledFunctionInstallPromptDelegate(function,
                                                             extension));
+}
+
+scoped_ptr<extensions::RequirementsChecker>
+ChromeManagementAPIDelegate::CreateRequirementsChecker() const {
+  return make_scoped_ptr(new extensions::ChromeRequirementsChecker());
 }
 
 scoped_ptr<extensions::UninstallDialogDelegate>

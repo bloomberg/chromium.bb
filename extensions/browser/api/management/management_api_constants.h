@@ -23,6 +23,7 @@ extern const char kNotAnAppError[];
 extern const char kUserCantModifyError[];
 extern const char kUninstallCanceledError[];
 extern const char kUserDidNotReEnableError[];
+extern const char kMissingRequirementsError[];
 extern const char kGestureNeededForCreateAppShortcutError[];
 extern const char kNoBrowserToCreateShortcut[];
 extern const char kCreateOnlyPackagedAppShortcutMac[];

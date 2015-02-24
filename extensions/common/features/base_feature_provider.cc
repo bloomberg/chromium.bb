@@ -66,7 +66,20 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
         split.pop_back();
         if (root.HasKey(parent_name)) {
           const base::DictionaryValue* parent = nullptr;
-          CHECK(root.GetDictionaryWithoutPathExpansion(parent_name, &parent));
+          if (!root.GetDictionaryWithoutPathExpansion(parent_name, &parent)) {
+            // If the parent is a complex feature, find the parent with the
+            // 'default_parent' flag.
+            const base::ListValue* parent_list = nullptr;
+            CHECK(root.GetListWithoutPathExpansion(parent_name, &parent_list));
+            for (size_t i = 0; i < parent_list->GetSize(); ++i) {
+              CHECK(parent_list->GetDictionary(i, &parent));
+              if (parent->HasKey("default_parent"))
+                break;
+              parent = nullptr;
+            }
+            CHECK(parent) << parent_name << " must declare one of its features"
+                << " the default parent, with {\"default_parent\": true}.";
+          }
           parse_stack.push(std::make_pair(parent_name, parent));
           bool no_parent = false;
           parent->GetBoolean("noparent", &no_parent);

@@ -20,6 +20,7 @@ struct WebApplicationInfo;
 
 namespace extensions {
 class ExtensionRegistry;
+class RequirementsChecker;
 
 class ManagementFunction : public SyncExtensionFunction {
  protected:
@@ -104,7 +105,7 @@ class ManagementLaunchAppFunction : public ManagementFunction {
   bool RunSync() override;
 };
 
-class ManagementSetEnabledFunction : public AsyncManagementFunction {
+class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.setEnabled", MANAGEMENT_SETENABLED)
 
@@ -117,12 +118,16 @@ class ManagementSetEnabledFunction : public AsyncManagementFunction {
   ~ManagementSetEnabledFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
+  void OnRequirementsChecked(const std::vector<std::string>& requirements);
+
   std::string extension_id_;
 
   scoped_ptr<InstallPromptDelegate> install_prompt_;
+
+  scoped_ptr<RequirementsChecker> requirements_checker_;
 };
 
 class ManagementUninstallFunctionBase : public AsyncManagementFunction {

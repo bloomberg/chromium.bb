@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -693,9 +692,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsRepair",
       base::Bind(&ExtensionSettingsHandler::HandleRepairMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsEnable",
-      base::Bind(&ExtensionSettingsHandler::HandleEnableMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnableIncognito",
       base::Bind(&ExtensionSettingsHandler::HandleEnableIncognitoMessage,
                  AsWeakPtr()));
@@ -1063,50 +1059,6 @@ void ExtensionSettingsHandler::HandleRepairMessage(
       base::Bind(&ExtensionSettingsHandler::OnReinstallComplete,
                  AsWeakPtr())));
   reinstaller->BeginReinstall();
-}
-
-void ExtensionSettingsHandler::HandleEnableMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
-  std::string extension_id, enable_str;
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &enable_str));
-
-  const Extension* extension =
-      extension_service_->GetInstalledExtension(extension_id);
-  if (!extension)
-    return;
-
-  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
-    LOG(ERROR) << "An attempt was made to enable an extension that is "
-               << "non-usermanagable. Extension id: " << extension->id();
-    return;
-  }
-
-  if (enable_str == "true") {
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
-    if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      ShowExtensionDisabledDialog(
-          extension_service_, web_ui()->GetWebContents(), extension);
-    } else if ((prefs->GetDisableReasons(extension_id) &
-                   Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
-               !requirements_checker_.get()) {
-      // Recheck the requirements.
-      scoped_refptr<const Extension> extension =
-          extension_service_->GetExtensionById(extension_id,
-                                               true /* include disabled */);
-      requirements_checker_.reset(new RequirementsChecker);
-      requirements_checker_->Check(
-          extension,
-          base::Bind(&ExtensionSettingsHandler::OnRequirementsChecked,
-                     AsWeakPtr(), extension_id));
-    } else {
-      extension_service_->EnableExtension(extension_id);
-    }
-  } else {
-    extension_service_->DisableExtension(
-        extension_id, Extension::DISABLE_USER_ACTION);
-  }
 }
 
 void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
@@ -1519,19 +1471,6 @@ void ExtensionSettingsHandler::OnReinstallComplete(
     const std::string& error,
     webstore_install::Result result) {
   MaybeUpdateAfterNotification();
-}
-
-void ExtensionSettingsHandler::OnRequirementsChecked(
-    std::string extension_id,
-    std::vector<std::string> requirement_errors) {
-  if (requirement_errors.empty()) {
-    extension_service_->EnableExtension(extension_id);
-  } else {
-    ExtensionErrorReporter::GetInstance()->ReportError(
-        base::UTF8ToUTF16(JoinString(requirement_errors, ' ')),
-        true);  // Be noisy.
-  }
-  requirements_checker_.reset();
 }
 
 }  // namespace extensions

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/requirements_checker.h"
+#include "chrome/browser/extensions/chrome_requirements_checker.h"
 
 #include "base/bind.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
@@ -20,15 +20,16 @@
 
 namespace extensions {
 
-RequirementsChecker::RequirementsChecker()
-    : pending_requirement_checks_(0) {
+ChromeRequirementsChecker::ChromeRequirementsChecker()
+    : pending_requirement_checks_(0), weak_ptr_factory_(this) {
 }
 
-RequirementsChecker::~RequirementsChecker() {
+ChromeRequirementsChecker::~ChromeRequirementsChecker() {
 }
 
-void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
-    base::Callback<void(std::vector<std::string> errors)> callback) {
+void ChromeRequirementsChecker::Check(
+    const scoped_refptr<const Extension>& extension,
+    const RequirementsCheckedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   callback_ = callback;
@@ -58,9 +59,9 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
   if (requirements.webgl) {
     ++pending_requirement_checks_;
     webgl_checker_ = new GPUFeatureChecker(
-      gpu::GPU_FEATURE_TYPE_WEBGL,
-      base::Bind(&RequirementsChecker::SetWebGLAvailability,
-                 AsWeakPtr()));
+        gpu::GPU_FEATURE_TYPE_WEBGL,
+        base::Bind(&ChromeRequirementsChecker::SetWebGLAvailability,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (pending_requirement_checks_ == 0) {
@@ -76,7 +77,7 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
     webgl_checker_->CheckGPUFeatureAvailability();
 }
 
-void RequirementsChecker::SetWebGLAvailability(bool available) {
+void ChromeRequirementsChecker::SetWebGLAvailability(bool available) {
   if (!available) {
     errors_.push_back(
         l10n_util::GetStringUTF8(IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
@@ -84,7 +85,7 @@ void RequirementsChecker::SetWebGLAvailability(bool available) {
   MaybeRunCallback();
 }
 
-void RequirementsChecker::MaybeRunCallback() {
+void ChromeRequirementsChecker::MaybeRunCallback() {
   if (--pending_requirement_checks_ == 0) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(callback_, errors_));

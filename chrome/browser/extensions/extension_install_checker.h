@@ -84,7 +84,7 @@ class ExtensionInstallChecker {
 
   virtual void CheckRequirements();
   void OnRequirementsCheckDone(int sequence_number,
-                               std::vector<std::string> errors);
+                               const std::vector<std::string>& errors);
 
   virtual void CheckBlacklistState();
   void OnBlacklistStateCheckDone(int sequence_number, BlacklistState state);

@@ -25,6 +25,7 @@ class ManagementGenerateAppForLinkFunction;
 class ManagementGetPermissionWarningsByManifestFunction;
 class ManagementSetEnabledFunction;
 class ManagementUninstallFunctionBase;
+class RequirementsChecker;
 
 // Manages the lifetime of the install prompt.
 class InstallPromptDelegate {
@@ -75,6 +76,9 @@ class ManagementAPIDelegate {
   virtual scoped_ptr<InstallPromptDelegate> SetEnabledFunctionDelegate(
       ManagementSetEnabledFunction* function,
       const Extension* extension) const = 0;
+
+  // Returns a new RequirementsChecker.
+  virtual scoped_ptr<RequirementsChecker> CreateRequirementsChecker() const = 0;
 
   // Enables the extension identified by |extension_id|.
   virtual void EnableExtension(content::BrowserContext* context,

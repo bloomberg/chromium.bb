@@ -271,7 +271,8 @@ cr.define('options', function() {
       // The 'Enabled' checkbox.
       this.addListener_('change', node, '.enable-checkbox input', function(e) {
         var checked = e.target.checked;
-        chrome.send('extensionSettingsEnable', [extension.id, String(checked)]);
+        // TODO(devlin): What should we do if this fails?
+        chrome.management.setEnabled(extension.id, checked);
 
         // This may seem counter-intuitive (to not set/clear the checkmark)
         // but this page will be updated asynchronously if the extension

@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/requirements_checker.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/api/management.h"
 #include "extensions/common/constants.h"
@@ -419,7 +420,7 @@ ManagementSetEnabledFunction::ManagementSetEnabledFunction() {
 ManagementSetEnabledFunction::~ManagementSetEnabledFunction() {
 }
 
-bool ManagementSetEnabledFunction::RunAsync() {
+ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
   scoped_ptr<management::SetEnabled::Params> params(
       management::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -432,36 +433,41 @@ bool ManagementSetEnabledFunction::RunAsync() {
 
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (!extension || ShouldNotBeVisible(extension, browser_context())) {
-    error_ =
-        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, extension_id_);
-    return false;
-  }
+  if (!extension || ShouldNotBeVisible(extension, browser_context()))
+    return RespondNow(Error(keys::kNoExtensionError, extension_id_));
 
+  bool enabled = params->enabled;
   const ManagementPolicy* policy =
       ExtensionSystem::Get(browser_context())->management_policy();
-  if (!policy->UserMayModifySettings(extension, NULL) ||
-      (!params->enabled && policy->MustRemainEnabled(extension, NULL)) ||
-      (params->enabled && policy->MustRemainDisabled(extension, NULL, NULL))) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kUserCantModifyError,
-                                            extension_id_);
-    return false;
+  if (!policy->UserMayModifySettings(extension, nullptr) ||
+      (!enabled && policy->MustRemainEnabled(extension, nullptr)) ||
+      (enabled && policy->MustRemainDisabled(extension, nullptr, nullptr))) {
+    return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
   }
 
   bool currently_enabled =
       registry->enabled_extensions().Contains(extension_id_) ||
       registry->terminated_extensions().Contains(extension_id_);
 
-  if (!currently_enabled && params->enabled) {
+  if (!currently_enabled && enabled) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
     if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
-      if (!user_gesture()) {
-        SetError(keys::kGestureNeededForEscalationError);
-        return false;
-      }
+      if (!user_gesture())
+        return RespondNow(Error(keys::kGestureNeededForEscalationError));
+
       AddRef();  // Matched in InstallUIProceed/InstallUIAbort
       install_prompt_ = delegate->SetEnabledFunctionDelegate(this, extension);
-      return true;
+      return RespondLater();
+    }
+    if (prefs->GetDisableReasons(extension_id_) &
+            Extension::DISABLE_UNSUPPORTED_REQUIREMENT) {
+      // Recheck the requirements.
+      requirements_checker_ = delegate->CreateRequirementsChecker();
+      requirements_checker_->Check(
+          extension,
+          base::Bind(&ManagementSetEnabledFunction::OnRequirementsChecked,
+                     this));  // This bind creates a reference.
+      return RespondLater();
     }
     delegate->EnableExtension(browser_context(), extension_id_);
   } else if (currently_enabled && !params->enabled) {
@@ -469,11 +475,7 @@ bool ManagementSetEnabledFunction::RunAsync() {
                                Extension::DISABLE_USER_ACTION);
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ManagementSetEnabledFunction::SendResponse, this, true));
-
-  return true;
+  return RespondNow(NoArguments());
 }
 
 void ManagementSetEnabledFunction::InstallUIProceed() {
@@ -481,14 +483,26 @@ void ManagementSetEnabledFunction::InstallUIProceed() {
       ->Get(browser_context())
       ->GetDelegate()
       ->EnableExtension(browser_context(), extension_id_);
-  SendResponse(true);
+  Respond(OneArgument(new base::FundamentalValue(true)));
   Release();
 }
 
 void ManagementSetEnabledFunction::InstallUIAbort(bool user_initiated) {
-  error_ = keys::kUserDidNotReEnableError;
-  SendResponse(false);
+  Respond(Error(keys::kUserDidNotReEnableError));
   Release();
+}
+
+void ManagementSetEnabledFunction::OnRequirementsChecked(
+    const std::vector<std::string>& requirements_errors) {
+  if (requirements_errors.empty()) {
+    ManagementAPI::GetFactoryInstance()->Get(browser_context())->GetDelegate()->
+        EnableExtension(browser_context(), extension_id_);
+    Respond(NoArguments());
+  } else {
+    // TODO(devlin): Should we really be noisy here all the time?
+    Respond(Error(keys::kMissingRequirementsError,
+                  JoinString(requirements_errors, ' ')));
+  }
 }
 
 ManagementUninstallFunctionBase::ManagementUninstallFunctionBase() {

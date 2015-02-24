@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -802,7 +803,7 @@ bool DeveloperPrivateEnableFunction::RunSync() {
   scoped_ptr<Enable::Params> params(Enable::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string extension_id = params->item_id;
+  const std::string& extension_id = params->item_id;
 
   const Extension* extension =
       ExtensionRegistry::Get(GetProfile())->GetExtensionById(
@@ -814,11 +815,11 @@ bool DeveloperPrivateEnableFunction::RunSync() {
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
   ManagementPolicy* policy = system->management_policy();
   bool enable = params->enable;
-  if (!policy->UserMayModifySettings(extension, NULL) ||
-      (!enable && policy->MustRemainEnabled(extension, NULL)) ||
-      (enable && policy->MustRemainDisabled(extension, NULL, NULL))) {
+  if (!policy->UserMayModifySettings(extension, nullptr) ||
+      (!enable && policy->MustRemainEnabled(extension, nullptr)) ||
+      (enable && policy->MustRemainDisabled(extension, nullptr, nullptr))) {
     LOG(ERROR) << "Attempt to change enable state denied by management policy. "
-               << "Extension id: " << extension_id.c_str();
+               << "Extension id: " << extension_id;
     return false;
   }
 
@@ -826,37 +827,29 @@ bool DeveloperPrivateEnableFunction::RunSync() {
   if (enable) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
-      CHECK(registry);
-      AppWindow* app_window =
-          registry->GetAppWindowForRenderViewHost(render_view_host());
-      if (!app_window) {
+      // If the extension escalated permissions, we have to show a dialog.
+      content::WebContents* web_contents = render_view_host() ?
+          content::WebContents::FromRenderViewHost(render_view_host()) :
+          nullptr;
+      if (!web_contents)
         return false;
-      }
 
-      ShowExtensionDisabledDialog(
-          service, app_window->web_contents(), extension);
+      ShowExtensionDisabledDialog(service, web_contents, extension);
     } else if ((prefs->GetDisableReasons(extension_id) &
-                  Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
-               !requirements_checker_.get()) {
+                    Extension::DISABLE_UNSUPPORTED_REQUIREMENT)) {
       // Recheck the requirements.
-      scoped_refptr<const Extension> extension =
-          service->GetExtensionById(extension_id, true);
-      requirements_checker_.reset(new RequirementsChecker);
-      // Released by OnRequirementsChecked.
-      AddRef();
+      requirements_checker_.reset(new ChromeRequirementsChecker());
+      AddRef();  // Released in OnRequirementsChecked.
+      // TODO(devlin): Uh... asynchronous code in a sync extension function?
       requirements_checker_->Check(
-          extension,
+          make_scoped_refptr(extension),
           base::Bind(&DeveloperPrivateEnableFunction::OnRequirementsChecked,
                      this, extension_id));
     } else {
+      // Otherwise, we're good to re-enable the extension.
       service->EnableExtension(extension_id);
-
-      // Make sure any browser action contained within it is not hidden.
-      ExtensionActionAPI::SetBrowserActionVisibility(
-          prefs, extension->id(), true);
     }
-  } else {
+  } else {  // !enable (i.e., disable)
     service->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
   }
   return true;
@@ -864,7 +857,7 @@ bool DeveloperPrivateEnableFunction::RunSync() {
 
 void DeveloperPrivateEnableFunction::OnRequirementsChecked(
     const std::string& extension_id,
-    std::vector<std::string> requirements_errors) {
+    const std::vector<std::string>& requirements_errors) {
   if (requirements_errors.empty()) {
     GetExtensionService(GetProfile())->EnableExtension(extension_id);
   } else {

@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/blacklist.h"
-#include "chrome/browser/extensions/requirements_checker.h"
+#include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
@@ -90,7 +90,7 @@ void ExtensionInstallChecker::CheckRequirements() {
   DCHECK(extension_.get());
 
   if (!requirements_checker_.get())
-    requirements_checker_.reset(new RequirementsChecker());
+    requirements_checker_.reset(new ChromeRequirementsChecker());
   requirements_checker_->Check(
       extension_,
       base::Bind(&ExtensionInstallChecker::OnRequirementsCheckDone,
@@ -100,7 +100,7 @@ void ExtensionInstallChecker::CheckRequirements() {
 
 void ExtensionInstallChecker::OnRequirementsCheckDone(
     int sequence_number,
-    std::vector<std::string> errors) {
+    const std::vector<std::string>& errors) {
   // Some pending results may arrive after fail fast.
   if (sequence_number != current_sequence_number_)
     return;

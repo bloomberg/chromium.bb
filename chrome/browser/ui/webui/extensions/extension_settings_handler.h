@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -171,9 +170,6 @@ class ExtensionSettingsHandler
   // Callback for "repair" message.
   void HandleRepairMessage(const base::ListValue* args);
 
-  // Callback for "enable" message.
-  void HandleEnableMessage(const base::ListValue* args);
-
   // Callback for "enableIncognito" message.
   void HandleEnableIncognitoMessage(const base::ListValue* args);
 
@@ -240,10 +236,6 @@ class ExtensionSettingsHandler
                            const std::string& error,
                            webstore_install::Result result);
 
-  // Callback for RequirementsChecker.
-  void OnRequirementsChecked(std::string extension_id,
-                             std::vector<std::string> requirement_errors);
-
   // Handles the load retry notification sent from
   // ExtensionService::ReportExtensionLoadError. Attempts to retry loading
   // extension from |path| if retry is true, otherwise removes |path| from the
@@ -287,11 +279,6 @@ class ExtensionSettingsHandler
   bool registered_for_notifications_;
 
   content::NotificationRegistrar registrar_;
-
-  // This will not be empty when a requirements check is in progress. Doing
-  // another Check() before the previous one is complete will cause the first
-  // one to abort.
-  scoped_ptr<RequirementsChecker> requirements_checker_;
 
   // The UI for showing what permissions the extension has.
   scoped_ptr<ExtensionInstallPrompt> prompt_;
