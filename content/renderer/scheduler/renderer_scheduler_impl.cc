@@ -350,6 +350,11 @@ void RendererSchedulerImpl::SetTimeSourceForTesting(
   task_queue_manager_->SetTimeSourceForTesting(time_source);
 }
 
+void RendererSchedulerImpl::SetWorkBatchSizeForTesting(size_t work_batch_size) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_queue_manager_->SetWorkBatchSize(work_batch_size);
+}
+
 base::TimeTicks RendererSchedulerImpl::Now() const {
   return UNLIKELY(time_source_) ? time_source_->Now() : base::TimeTicks::Now();
 }
@@ -479,6 +484,20 @@ RendererSchedulerImpl::ComputeNewInputStreamState(
       break;
   }
   return INPUT_ACTIVE;
+}
+
+void RendererSchedulerImpl::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (task_queue_manager_)
+    task_queue_manager_->AddTaskObserver(task_observer);
+}
+
+void RendererSchedulerImpl::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (task_queue_manager_)
+    task_queue_manager_->RemoveTaskObserver(task_observer);
 }
 
 }  // namespace content

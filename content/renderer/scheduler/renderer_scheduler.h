@@ -70,6 +70,14 @@ class CONTENT_EXPORT RendererScheduler {
   // Must be called from the main thread.
   virtual bool ShouldYieldForHighPriorityWork() = 0;
 
+  // Adds or removes a task observer from the scheduler. The observer will be
+  // notified before and after every executed task. These functions can only be
+  // called on the main thread.
+  virtual void AddTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
+  virtual void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
+
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be
   // silently dropped.

@@ -419,6 +419,8 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
   if (!UpdateWorkQueues(&next_pending_delayed_task, BEFORE_WAKEUP_EVENT_TYPE))
     return;
 
+  base::PendingTask previous_task((tracked_objects::Location()),
+                                  (base::Closure()));
   for (int i = 0; i < work_batch_size_; i++) {
     // Interrupt the work batch if we should run the next delayed task.
     if (i > 0 && next_pending_delayed_task.ToInternalValue() != kMaxTimeTicks &&
@@ -431,7 +433,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     // Note that this function won't post another call to DoWork if one is
     // already pending, so it is safe to call it in a loop.
     MaybePostDoWorkOnMainRunner();
-    ProcessTaskFromWorkQueue(queue_index);
+    ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task);
 
     if (!UpdateWorkQueues(&next_pending_delayed_task, AFTER_WAKEUP_EVENT_TYPE))
       return;
@@ -451,7 +453,10 @@ void TaskQueueManager::DidQueueTask(base::PendingTask* pending_task) {
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", *pending_task);
 }
 
-void TaskQueueManager::ProcessTaskFromWorkQueue(size_t queue_index) {
+void TaskQueueManager::ProcessTaskFromWorkQueue(
+    size_t queue_index,
+    bool has_previous_task,
+    base::PendingTask* previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
   base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
@@ -461,8 +466,19 @@ void TaskQueueManager::ProcessTaskFromWorkQueue(size_t queue_index) {
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,
                                            pending_task.task);
   } else {
+    // Suppress "will" task observer notifications for the first and "did"
+    // notifications for the last task in the batch to avoid duplicate
+    // notifications.
+    if (has_previous_task) {
+      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                        DidProcessTask(*previous_task));
+      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                        WillProcessTask(pending_task));
+    }
     task_annotator_.RunTask("TaskQueueManager::PostTask",
                             "TaskQueueManager::RunTask", pending_task);
+    pending_task.task.Reset();
+    *previous_task = pending_task;
   }
 }
 
@@ -488,6 +504,20 @@ void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(work_batch_size, 1);
   work_batch_size_ = work_batch_size;
+}
+
+void TaskQueueManager::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  base::MessageLoop::current()->AddTaskObserver(task_observer);
+  task_observers_.AddObserver(task_observer);
+}
+
+void TaskQueueManager::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  base::MessageLoop::current()->RemoveTaskObserver(task_observer);
+  task_observers_.RemoveObserver(task_observer);
 }
 
 void TaskQueueManager::SetTimeSourceForTesting(

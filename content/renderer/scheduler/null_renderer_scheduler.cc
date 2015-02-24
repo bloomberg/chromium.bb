@@ -89,6 +89,16 @@ bool NullRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
+void NullRendererScheduler::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  base::MessageLoop::current()->AddTaskObserver(task_observer);
+}
+
+void NullRendererScheduler::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  base::MessageLoop::current()->RemoveTaskObserver(task_observer);
+}
+
 void NullRendererScheduler::Shutdown() {
 }
 

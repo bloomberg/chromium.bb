@@ -43,9 +43,13 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
+  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
 
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
+  void SetWorkBatchSizeForTesting(size_t work_batch_size);
 
  private:
   friend class RendererSchedulerImplTest;

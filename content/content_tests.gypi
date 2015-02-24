@@ -660,6 +660,7 @@
       'renderer/scheduler/renderer_task_queue_selector_unittest.cc',
       'renderer/scheduler/resource_dispatch_throttler_unittest.cc',
       'renderer/scheduler/task_queue_manager_unittest.cc',
+      'renderer/scheduler/webthread_impl_for_scheduler_unittest.cc',
       'renderer/screen_orientation/screen_orientation_dispatcher_unittest.cc',
       'renderer/skia_benchmarking_extension_unittest.cc',
       'test/fileapi_test_file_set.cc',

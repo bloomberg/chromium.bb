@@ -16,9 +16,6 @@
 
 namespace content {
 
-WebThreadBase::WebThreadBase() {}
-WebThreadBase::~WebThreadBase() {}
-
 class WebThreadBase::TaskObserverAdapter
     : public base::MessageLoop::TaskObserver {
  public:
@@ -37,13 +34,22 @@ private:
   WebThread::TaskObserver* observer_;
 };
 
+WebThreadBase::WebThreadBase() {
+}
+
+WebThreadBase::~WebThreadBase() {
+  for (auto& observer_entry : task_observer_map_) {
+    delete observer_entry.second;
+  }
+}
+
 void WebThreadBase::addTaskObserver(TaskObserver* observer) {
   CHECK(isCurrentThread());
   std::pair<TaskObserverMap::iterator, bool> result = task_observer_map_.insert(
       std::make_pair(observer, static_cast<TaskObserverAdapter*>(NULL)));
   if (result.second)
     result.first->second = new TaskObserverAdapter(observer);
-  base::MessageLoop::current()->AddTaskObserver(result.first->second);
+  AddTaskObserverInternal(result.first->second);
 }
 
 void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
@@ -51,14 +57,19 @@ void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
   TaskObserverMap::iterator iter = task_observer_map_.find(observer);
   if (iter == task_observer_map_.end())
     return;
-  base::MessageLoop::current()->RemoveTaskObserver(iter->second);
+  RemoveTaskObserverInternal(iter->second);
   delete iter->second;
   task_observer_map_.erase(iter);
 }
 
-WebThreadImpl::WebThreadImpl(const char* name)
-    : thread_(new base::Thread(name)) {
-  thread_->Start();
+void WebThreadBase::AddTaskObserverInternal(
+    base::MessageLoop::TaskObserver* observer) {
+  base::MessageLoop::current()->AddTaskObserver(observer);
+}
+
+void WebThreadBase::RemoveTaskObserverInternal(
+    base::MessageLoop::TaskObserver* observer) {
+  base::MessageLoop::current()->RemoveTaskObserver(observer);
 }
 
 // RunWebThreadTask takes the ownership of |task| from base::Closure and
@@ -84,59 +95,63 @@ WebThreadImpl::WebThreadImpl(const char* name)
 // are no reference counter modification like [A] (because task->run() is not
 // executed), so there are no race conditions.
 // See https://crbug.com/390851 for more details.
-static void RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task) {
-    task->run();
+//
+// static
+void WebThreadBase::RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task) {
+  task->run();
 }
 
-void WebThreadImpl::postTask(Task* task) {
-  postDelayedTask(task, 0);
-}
-
-void WebThreadImpl::postTask(const blink::WebTraceLocation& location,
+void WebThreadBase::postTask(const blink::WebTraceLocation& location,
                              Task* task) {
   postDelayedTask(location, task, 0);
 }
 
-void WebThreadImpl::postDelayedTask(Task* task, long long delay_ms) {
-  thread_->message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
-      base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-void WebThreadImpl::postDelayedTask(const blink::WebTraceLocation& web_location,
+void WebThreadBase::postDelayedTask(const blink::WebTraceLocation& web_location,
                                     Task* task,
                                     long long delay_ms) {
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  thread_->message_loop()->PostDelayedTask(
+  TaskRunner()->PostDelayedTask(
       location,
       base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
-void WebThreadImpl::enterRunLoop() {
+void WebThreadBase::enterRunLoop() {
   CHECK(isCurrentThread());
-  CHECK(!thread_->message_loop()->is_running());  // We don't support nesting.
-  thread_->message_loop()->Run();
+  CHECK(!MessageLoop()->is_running());  // We don't support nesting.
+  MessageLoop()->Run();
 }
 
-void WebThreadImpl::exitRunLoop() {
+void WebThreadBase::exitRunLoop() {
   CHECK(isCurrentThread());
-  CHECK(thread_->message_loop()->is_running());
-  thread_->message_loop()->Quit();
+  CHECK(MessageLoop()->is_running());
+  MessageLoop()->Quit();
 }
 
-bool WebThreadImpl::isCurrentThread() const {
-  return thread_->thread_id() == base::PlatformThread::CurrentId();
+bool WebThreadBase::isCurrentThread() const {
+  return TaskRunner()->BelongsToCurrentThread();
 }
 
 blink::PlatformThreadId WebThreadImpl::threadId() const {
   return thread_->thread_id();
 }
 
+WebThreadImpl::WebThreadImpl(const char* name)
+    : thread_(new base::Thread(name)) {
+  thread_->Start();
+}
+
 WebThreadImpl::~WebThreadImpl() {
   thread_->Stop();
+}
+
+base::MessageLoop* WebThreadImpl::MessageLoop() const {
+  return thread_->message_loop();
+}
+
+base::SingleThreadTaskRunner* WebThreadImpl::TaskRunner() const {
+  return thread_->message_loop_proxy().get();
 }
 
 WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
@@ -145,57 +160,20 @@ WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
       thread_id_(base::PlatformThread::CurrentId()) {
 }
 
-void WebThreadImplForMessageLoop::postTask(Task* task) {
-  postDelayedTask(task, 0);
-}
-
-void WebThreadImplForMessageLoop::postTask(
-    const blink::WebTraceLocation& location,
-    Task* task) {
-  postDelayedTask(location, task, 0);
-}
-
-void WebThreadImplForMessageLoop::postDelayedTask(Task* task,
-                                                  long long delay_ms) {
-  owning_thread_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
-      base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-void WebThreadImplForMessageLoop::postDelayedTask(
-    const blink::WebTraceLocation& web_location,
-    Task* task,
-    long long delay_ms) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
-  owning_thread_task_runner_->PostDelayedTask(
-      location,
-      base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
-      base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-void WebThreadImplForMessageLoop::enterRunLoop() {
-  CHECK(isCurrentThread());
-  // We don't support nesting.
-  CHECK(!base::MessageLoop::current()->is_running());
-  base::MessageLoop::current()->Run();
-}
-
-void WebThreadImplForMessageLoop::exitRunLoop() {
-  CHECK(isCurrentThread());
-  CHECK(base::MessageLoop::current()->is_running());
-  base::MessageLoop::current()->Quit();
-}
-
-bool WebThreadImplForMessageLoop::isCurrentThread() const {
-  return owning_thread_task_runner_->BelongsToCurrentThread();
-}
-
 blink::PlatformThreadId WebThreadImplForMessageLoop::threadId() const {
   return thread_id_;
 }
 
-WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {}
+WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {
+}
+
+base::MessageLoop* WebThreadImplForMessageLoop::MessageLoop() const {
+  DCHECK(isCurrentThread());
+  return base::MessageLoop::current();
+}
+
+base::SingleThreadTaskRunner* WebThreadImplForMessageLoop::TaskRunner() const {
+  return owning_thread_task_runner_.get();
+}
 
 }  // namespace content

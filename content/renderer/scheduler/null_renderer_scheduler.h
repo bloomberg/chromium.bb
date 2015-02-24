@@ -27,6 +27,9 @@ class NullRendererScheduler : public RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
+  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
 
  private:
