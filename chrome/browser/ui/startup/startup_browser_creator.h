@@ -43,10 +43,7 @@ class StartupBrowserCreator {
   bool Start(const base::CommandLine& cmd_line,
              const base::FilePath& cur_dir,
              Profile* last_used_profile,
-             const Profiles& last_opened_profiles) {
-    return ProcessCmdLineImpl(cmd_line, cur_dir, true, last_used_profile,
-                              last_opened_profiles, this);
-  }
+             const Profiles& last_opened_profiles);
 
   // This function performs command-line handling and is invoked only after
   // start up (for example when we get a start request for another process).

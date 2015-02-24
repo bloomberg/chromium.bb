@@ -37656,10 +37656,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Startup.StartupBrowserCreator_ProcessCmdLineImplTime"
     units="milliseconds">
+  <obsolete>
+    Deprecated 02/2015. Startup.StartupBrowserCreator_Start is more useful.
+  </obsolete>
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
     StartupBrowserCreator::ProcessCmdLineImpl.
+  </summary>
+</histogram>
+
+<histogram name="Startup.StartupBrowserCreator_Start" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during StartupBrowserCreator::Start().
   </summary>
 </histogram>
 

@@ -267,6 +267,16 @@ void StartupBrowserCreator::AddFirstRunTab(const GURL& url) {
   first_run_tabs_.push_back(url);
 }
 
+bool StartupBrowserCreator::Start(const base::CommandLine& cmd_line,
+                                  const base::FilePath& cur_dir,
+                                  Profile* last_used_profile,
+                                  const Profiles& last_opened_profiles) {
+  TRACE_EVENT0("startup", "StartupBrowserCreator::Start");
+  SCOPED_UMA_HISTOGRAM_TIMER("Startup.StartupBrowserCreator_Start");
+  return ProcessCmdLineImpl(cmd_line, cur_dir, true, last_used_profile,
+                            last_opened_profiles, this);
+}
+
 // static
 bool StartupBrowserCreator::InSynchronousProfileLaunch() {
   return in_synchronous_profile_launch_;
@@ -485,8 +495,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     const Profiles& last_opened_profiles,
     StartupBrowserCreator* browser_creator) {
   TRACE_EVENT0("startup", "StartupBrowserCreator::ProcessCmdLineImpl");
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Startup.StartupBrowserCreator_ProcessCmdLineImplTime");
 
   VLOG(2) << "ProcessCmdLineImpl : BEGIN";
   DCHECK(last_used_profile);
