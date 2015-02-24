@@ -7,8 +7,10 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
 #include "web/OpenedFrameTracker.h"
@@ -81,16 +83,16 @@ bool WebFrame::swap(WebFrame* frame)
     // increments of connected subframes.
     FrameOwner* owner = oldFrame->owner();
     oldFrame->disconnectOwnerElement();
-    if (Frame* newFrame = toCoreFrame(frame)) {
-        ASSERT(owner == newFrame->owner());
-        if (owner->isLocal()) {
+    if (frame->isWebLocalFrame()) {
+        LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
+        ASSERT(owner == localFrame.owner());
+        if (owner && owner->isLocal()) {
             HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
-            ownerElement->setContentFrame(*newFrame);
-            if (newFrame->isLocalFrame())
-                ownerElement->setWidget(toLocalFrame(newFrame)->view());
+            ownerElement->setContentFrame(localFrame);
+            ownerElement->setWidget(localFrame.view());
+        } else {
+            localFrame.page()->setMainFrame(&localFrame);
         }
-    } else if (frame->isWebLocalFrame()) {
-        toWebLocalFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name(), nullAtom);
     } else {
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
     }

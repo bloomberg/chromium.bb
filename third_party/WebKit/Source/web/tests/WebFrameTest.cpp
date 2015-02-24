@@ -6863,11 +6863,12 @@ private:
 
 TEST_F(WebFrameSwapTest, SwapMainFrame)
 {
-    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
     mainFrame()->swap(remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebFrame* localFrame = WebLocalFrame::create(&client);
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
     remoteFrame->swap(localFrame);
 
     // Finally, make sure an embedder triggered load in the local frame swapped
@@ -6895,11 +6896,12 @@ void swapAndVerifyFirstChildConsistency(const char* const message, WebFrame* par
 
 TEST_F(WebFrameSwapTest, SwapFirstChild)
 {
-    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
     swapAndVerifyFirstChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebFrame* localFrame = WebLocalFrame::create(&client);
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
     swapAndVerifyFirstChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -6932,11 +6934,12 @@ void swapAndVerifyMiddleChildConsistency(const char* const message, WebFrame* pa
 
 TEST_F(WebFrameSwapTest, SwapMiddleChild)
 {
-    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
     swapAndVerifyMiddleChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebFrame* localFrame = WebLocalFrame::create(&client);
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
     swapAndVerifyMiddleChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -6966,11 +6969,12 @@ void swapAndVerifyLastChildConsistency(const char* const message, WebFrame* pare
 
 TEST_F(WebFrameSwapTest, SwapLastChild)
 {
-    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
     swapAndVerifyLastChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebFrame* localFrame = WebLocalFrame::create(&client);
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
     swapAndVerifyLastChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7013,7 +7017,8 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
     remoteFrame->createRemoteChild("", WebSandboxFlags::None, &remoteFrameClient);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebFrame* localFrame = WebLocalFrame::create(&client);
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
     swapAndVerifySubframeConsistency("remote->local", targetFrame, localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
