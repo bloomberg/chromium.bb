@@ -20,4 +20,12 @@ const char kOverrideMetricsUploadUrl[] = "override-metrics-upload-url";
 // Disable features that require WiFi management.
 const char kNoWifi[] = "no-wifi";
 
+// Pass the app id information to the renderer process, to be used for logging.
+// last-launched-app should be the app that just launched and is spawning the
+// renderer.
+const char kLastLaunchedApp[] = "last-launched-app";
+// previous-app should be the app that was running when last-launched-app
+// started.
+const char kPreviousApp[] = "previous-app";
+
 }  // namespace switches

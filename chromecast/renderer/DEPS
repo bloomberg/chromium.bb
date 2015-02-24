@@ -1,5 +1,6 @@
 include_rules = [
   "+chromecast/common",
+  "+chromecast/crash",
   "+chromecast/media",
   "+components/cdm/renderer",
   "+components/network_hints/renderer",

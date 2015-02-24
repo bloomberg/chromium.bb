@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chromecast/common/chromecast_switches.h"
+#include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/renderer/cast_media_load_deferrer.h"
 #include "chromecast/renderer/cast_render_process_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
@@ -91,13 +92,13 @@ CastContentRendererClient::~CastContentRendererClient() {
 }
 
 void CastContentRendererClient::RenderThreadStarted() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 #if defined(USE_NSS)
   // Note: Copied from chrome_render_process_observer.cc to fix b/8676652.
   //
   // On platforms where the system NSS shared libraries are used,
   // initialize NSS now because it won't be able to load the .so's
   // after entering the sandbox.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
 #endif
@@ -111,6 +112,16 @@ void CastContentRendererClient::RenderThreadStarted() {
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
+
+  std::string last_launched_app =
+      command_line->GetSwitchValueNative(switches::kLastLaunchedApp);
+  if (!last_launched_app.empty())
+    base::debug::SetCrashKeyValue(crash_keys::kLastApp, last_launched_app);
+
+  std::string previous_app =
+      command_line->GetSwitchValueNative(switches::kPreviousApp);
+  if (!previous_app.empty())
+    base::debug::SetCrashKeyValue(crash_keys::kPreviousApp, previous_app);
 }
 
 void CastContentRendererClient::RenderViewCreated(

@@ -22,6 +22,10 @@ extern const char kOverrideMetricsUploadUrl[];
 // Network switches
 extern const char kNoWifi[];
 
+// Switches to communicate app state information
+extern const char kLastLaunchedApp[];
+extern const char kPreviousApp[];
+
 }  // namespace switches
 
 #endif  // CHROMECAST_COMMON_CHROMECAST_SWITCHES_H_
