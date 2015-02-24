@@ -9,6 +9,7 @@
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/jni_utils.h"
 #include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -72,6 +73,8 @@ jint CronetOnLoad(JavaVM* vm, void* reserved) {
 
   g_at_exit_manager = new base::AtExitManager();
 
+  base::android::InitReplacementClassLoader(env,
+                                            base::android::GetClassLoader(env));
   url::Initialize();
 
   return JNI_VERSION_1_6;
