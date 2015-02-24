@@ -46,6 +46,7 @@ public class ObserverList<E> implements Iterable<E> {
     public final List<E> mObservers = new ArrayList<E>();
     private int mIterationDepth = 0;
     private int mCount = 0;
+    private boolean mNeedsCompact = false;
 
     public ObserverList() {}
 
@@ -91,6 +92,7 @@ public class ObserverList<E> implements Iterable<E> {
             // No one is iterating over the list.
             mObservers.remove(index);
         } else {
+            mNeedsCompact = true;
             mObservers.set(index, null);
         }
         --mCount;
@@ -112,6 +114,7 @@ public class ObserverList<E> implements Iterable<E> {
         }
 
         int size = mObservers.size();
+        mNeedsCompact |= size != 0;
         for (int i = 0; i < size; i++) {
             mObservers.set(i, null);
         }
@@ -167,7 +170,10 @@ public class ObserverList<E> implements Iterable<E> {
     private void decrementIterationDepthAndCompactIfNeeded() {
         mIterationDepth--;
         assert mIterationDepth >= 0;
-        if (mIterationDepth == 0) compact();
+        if (mIterationDepth > 0) return;
+        if (!mNeedsCompact) return;
+        mNeedsCompact = false;
+        compact();
     }
 
     /**
