@@ -68,7 +68,7 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
 
   // Auto-create permanent folder for the type if the progress marker
   // changes from empty to non-empty.
-  if (!IsTypeWithServerGeneratedRoot(type_) &&
+  if (IsTypeWithClientGeneratedRoot(type_) &&
       dir_->HasEmptyDownloadProgress(type_) &&
       IsValidProgressMarker(progress_marker)) {
     CreateTypeRoot(&trans);

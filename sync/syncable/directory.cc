@@ -1226,14 +1226,18 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
     int64 base_version = e.GetBaseVersion();
     int64 server_version = e.GetServerVersion();
     bool using_unique_client_tag = !e.GetUniqueClientTag().empty();
-    bool is_type_root_folder =
-        parentid.IsRoot() &&
-        e.GetUniqueServerTag() == ModelTypeToRootTag(e.GetModelType());
     if (CHANGES_VERSION == base_version || 0 == base_version) {
+      ModelType model_type = e.GetModelType();
+      bool is_client_creatable_type_root_folder =
+          parentid.IsRoot() &&
+          IsTypeWithClientGeneratedRoot(model_type) &&
+          e.GetUniqueServerTag() == ModelTypeToRootTag(model_type);
       if (e.GetIsUnappliedUpdate()) {
         // Must be a new item, or a de-duplicated unique client tag
+        // that was created both locally and remotely, or a type root folder
         // that was created both locally and remotely.
-        if (!(using_unique_client_tag || is_type_root_folder)) {
+        if (!(using_unique_client_tag ||
+              is_client_creatable_type_root_folder)) {
           if (!SyncAssert(e.GetIsDel(), FROM_HERE,
                           "The entry should have been deleted.", trans))
             return false;
@@ -1252,8 +1256,8 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                           trans))
             return false;
         }
-        if (is_type_root_folder) {
-          // This must be a locally created type root folder
+        if (is_client_creatable_type_root_folder) {
+          // This must be a locally created type root folder.
           if (!SyncAssert(
                   !e.GetIsUnsynced(), FROM_HERE,
                   "Locally created type root folders should not be unsynced.",

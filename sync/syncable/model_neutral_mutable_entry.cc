@@ -48,7 +48,7 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
                                                    CreateNewTypeRoot,
                                                    ModelType type)
     : Entry(trans), base_write_transaction_(trans) {
-  DCHECK(!IsTypeWithServerGeneratedRoot(type));
+  DCHECK(IsTypeWithClientGeneratedRoot(type));
   Entry same_type_root(trans, GET_TYPE_ROOT, type);
   kernel_ = NULL;
   if (same_type_root.good()) {

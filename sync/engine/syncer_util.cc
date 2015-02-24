@@ -267,7 +267,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
       }
     } else {
       // new_parent is unset.
-      DCHECK(!IsTypeWithServerGeneratedRoot(type));
+      DCHECK(IsTypeWithClientGeneratedRoot(type));
     }
   } else if (entry->GetIsDir()) {
     Directory::Metahandles handles;

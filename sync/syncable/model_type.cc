@@ -1187,4 +1187,9 @@ bool IsTypeWithServerGeneratedRoot(ModelType model_type) {
   return model_type == BOOKMARKS || model_type == NIGORI;
 }
 
+bool IsTypeWithClientGeneratedRoot(ModelType model_type) {
+  return IsRealDataType(model_type) &&
+         !IsTypeWithServerGeneratedRoot(model_type);
+}
+
 }  // namespace syncer

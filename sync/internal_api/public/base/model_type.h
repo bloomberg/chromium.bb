@@ -331,6 +331,10 @@ SYNC_EXPORT bool IsActOnceDataType(ModelType model_type);
 // created on the server during initial sync.
 SYNC_EXPORT bool IsTypeWithServerGeneratedRoot(ModelType model_type);
 
+// Returns true if root folder for |model_type| is created on the client when
+// that type is initially synced.
+SYNC_EXPORT bool IsTypeWithClientGeneratedRoot(ModelType model_type);
+
 // Returns set of model types that should be backed up before first sync.
 SYNC_EXPORT ModelTypeSet BackupTypes();
 
