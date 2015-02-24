@@ -1875,3 +1875,7 @@ crbug.com/461042 [ Debug ] inspector/sources/debugger/live-edit-no-reveal.html [
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
+crbug.com/461128 fast/loader/resource-request-callbacks.html [ NeedsRebaseline ]
+crbug.com/461128 fast/text/unicode-variation-selector.html [ NeedsRebaseline ]
+crbug.com/461128 virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsRebaseline ]
+crbug.com/461128 virtual/slimmingpaint/fast/text/unicode-variation-selector.html [ NeedsRebaseline ]
