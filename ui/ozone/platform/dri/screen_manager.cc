@@ -54,7 +54,10 @@ void FillModesetBuffer(const scoped_refptr<DriWrapper>& dri,
     return;
 
   skia::RefPtr<SkImage> image = saved_buffer.image();
-  modeset_buffer.canvas()->drawImage(image.get(), 0, 0);
+  SkPaint paint;
+  // Copy the source buffer. Do not perform any blending.
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  modeset_buffer.canvas()->drawImage(image.get(), 0, 0, &paint);
 }
 
 }  // namespace
