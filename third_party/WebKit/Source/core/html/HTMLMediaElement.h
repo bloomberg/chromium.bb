@@ -230,6 +230,8 @@ public:
     void connectedToRemoteDevice();
     void disconnectedFromRemoteDevice();
 
+    // Returns the MediaControls, or null if they have not been added yet.
+    // Note that this can be non-null even if there is no controls attribute.
     MediaControls* mediaControls() const;
 
     void sourceWasRemoved(HTMLSourceElement*);
@@ -409,7 +411,6 @@ private:
     void invalidateCachedTime();
     void refreshCachedTime() const;
 
-    bool hasMediaControls() const;
     void ensureMediaControls();
     void configureMediaControls();
 

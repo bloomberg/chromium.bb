@@ -828,7 +828,7 @@ void HTMLMediaElement::prepareForLoad()
     // algorithm, but do it now because we won't start that until after the timer fires and the
     // event may have already fired by then.
     setShouldDelayLoadEvent(true);
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->reset();
 }
 
@@ -1144,7 +1144,7 @@ void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track)
         // The track readiness state might have changed as a result of the user
         // clicking the captions button. In this case, a check whether all the
         // resources have failed loading should be done in order to hide the CC button.
-        if (hasMediaControls() && track->readinessState() == TextTrack::FailedToLoad)
+        if (mediaControls() && track->readinessState() == TextTrack::FailedToLoad)
             mediaControls()->refreshClosedCaptionsButtonVisibility();
     }
 }
@@ -1368,7 +1368,7 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
         noneSupported();
 
     updateDisplayState();
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->reset();
 }
 
@@ -1521,7 +1521,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                 seek(m_mediaController->currentTime());
         }
 
-        if (hasMediaControls())
+        if (mediaControls())
             mediaControls()->reset();
         if (renderer())
             renderer()->updateFromElement();
@@ -1568,7 +1568,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
     if (shouldUpdateDisplayState) {
         updateDisplayState();
-        if (hasMediaControls())
+        if (mediaControls())
             mediaControls()->refreshClosedCaptionsButtonVisibility();
     }
 
@@ -2111,7 +2111,7 @@ void HTMLMediaElement::updateVolume()
     if (webMediaPlayer())
         webMediaPlayer()->setVolume(effectiveMediaVolume());
 
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->updateVolume();
 }
 
@@ -2163,7 +2163,7 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
     if (!effectivePlaybackRate())
         return;
 
-    if (!m_paused && hasMediaControls())
+    if (!m_paused && mediaControls())
         mediaControls()->playbackProgressed();
 
     cueTimeline().updateActiveCues(currentTime());
@@ -2363,7 +2363,7 @@ void HTMLMediaElement::mediaPlayerDidRemoveTextTrack(WebInbandTextTrack* webTrac
 
 void HTMLMediaElement::textTracksChanged()
 {
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->refreshClosedCaptionsButtonVisibility();
 }
 
@@ -2764,7 +2764,7 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
     m_duration = duration;
     scheduleEvent(EventTypeNames::durationchange);
 
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->reset();
     if (renderer())
         renderer()->updateFromElement();
@@ -2810,21 +2810,21 @@ void HTMLMediaElement::mediaPlayerRequestSeek(double time)
 void HTMLMediaElement::remoteRouteAvailabilityChanged(bool routesAvailable)
 {
     m_remoteRoutesAvailable = routesAvailable;
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->refreshCastButtonVisibility();
 }
 
 void HTMLMediaElement::connectedToRemoteDevice()
 {
     m_playingRemotely = true;
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->startedCasting();
 }
 
 void HTMLMediaElement::disconnectedFromRemoteDevice()
 {
     m_playingRemotely = false;
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->stoppedCasting();
 }
 
@@ -2961,7 +2961,7 @@ void HTMLMediaElement::updatePlayState()
             webMediaPlayer()->play();
         }
 
-        if (hasMediaControls())
+        if (mediaControls())
             mediaControls()->playbackStarted();
         startPlaybackProgressTimer();
         m_playing = true;
@@ -2980,7 +2980,7 @@ void HTMLMediaElement::updatePlayState()
         if (couldPlayIfEnoughData())
             prepareToPlay();
 
-        if (hasMediaControls())
+        if (mediaControls())
             mediaControls()->playbackStopped();
     }
 
@@ -3071,9 +3071,8 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     // We can't cast if we don't have a media player.
     m_remoteRoutesAvailable = false;
     m_playingRemotely = false;
-    if (hasMediaControls()) {
+    if (mediaControls())
         mediaControls()->refreshCastButtonVisibility();
-    }
 
     if (m_textTracks)
         configureTextTrackDisplay(AssumeNoVisibleChange);
@@ -3169,7 +3168,7 @@ void HTMLMediaElement::exitFullscreen()
 
 void HTMLMediaElement::didBecomeFullscreenElement()
 {
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->enteredFullscreen();
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
         document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
@@ -3177,7 +3176,7 @@ void HTMLMediaElement::didBecomeFullscreenElement()
 
 void HTMLMediaElement::willStopBeingFullscreenElement()
 {
-    if (hasMediaControls())
+    if (mediaControls())
         mediaControls()->exitedFullscreen();
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
         document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
@@ -3289,23 +3288,17 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
 
 MediaControls* HTMLMediaElement::mediaControls() const
 {
-    return toMediaControls(closedShadowRoot()->firstChild());
-}
-
-bool HTMLMediaElement::hasMediaControls() const
-{
-    if (ShadowRoot* userAgent = closedShadowRoot()) {
-        Node* node = userAgent->firstChild();
-        ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isMediaControls());
-        return node;
+    if (ShadowRoot* shadowRoot = closedShadowRoot()) {
+        // Note that |shadowRoot->firstChild()| may be null.
+        return toMediaControls(shadowRoot->firstChild());
     }
 
-    return false;
+    return nullptr;
 }
 
 void HTMLMediaElement::ensureMediaControls()
 {
-    if (hasMediaControls())
+    if (mediaControls())
         return;
 
     RefPtrWillBeRawPtr<MediaControls> mediaControls = MediaControls::create(*this);
@@ -3323,7 +3316,7 @@ void HTMLMediaElement::ensureMediaControls()
 void HTMLMediaElement::configureMediaControls()
 {
     if (!inDocument()) {
-        if (hasMediaControls())
+        if (mediaControls())
             mediaControls()->hide();
         return;
     }
@@ -3367,7 +3360,7 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
     m_haveVisibleTextTrack = haveVisibleTextTrack;
     m_closedCaptionsVisible = m_haveVisibleTextTrack;
 
-    if (!m_haveVisibleTextTrack && !hasMediaControls())
+    if (!m_haveVisibleTextTrack && !mediaControls())
         return;
 
     ensureMediaControls();
@@ -3566,7 +3559,7 @@ bool HTMLMediaElement::isInteractiveContent() const
 void HTMLMediaElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::focusin) {
-        if (hasMediaControls())
+        if (mediaControls())
             mediaControls()->mediaElementFocused();
     }
     HTMLElement::defaultEventHandler(event);
