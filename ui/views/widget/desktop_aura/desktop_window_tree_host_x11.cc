@@ -32,6 +32,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/path.h"
@@ -190,12 +191,12 @@ std::vector<aura::Window*> DesktopWindowTreeHostX11::GetAllOpenWindows() {
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowBounds() const {
-  return bounds_;
+  return bounds_in_pixels_;
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowOuterBounds() const {
-  gfx::Rect outer_bounds(bounds_);
-  outer_bounds.Inset(-native_window_frame_borders_);
+  gfx::Rect outer_bounds(bounds_in_pixels_);
+  outer_bounds.Inset(-native_window_frame_borders_in_pixels_);
   return outer_bounds;
 }
 
@@ -381,8 +382,9 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
 void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
   ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
-  // Enforce |restored_bounds_| since calling Maximize() could have reset it.
-  restored_bounds_ = restored_bounds;
+  // Enforce |restored_bounds_in_pixels_| since calling Maximize() could have
+  // reset it.
+  restored_bounds_in_pixels_ = ToPixelRect(restored_bounds);
 }
 
 bool DesktopWindowTreeHostX11::IsVisible() const {
@@ -390,12 +392,14 @@ bool DesktopWindowTreeHostX11::IsVisible() const {
 }
 
 void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
-  gfx::Size size = AdjustSize(requested_size);
-  bool size_changed = bounds_.size() != size;
-  XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
-  bounds_.set_size(size);
+  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(requested_size)).size();
+  size_in_pixels = AdjustSize(size_in_pixels);
+  bool size_changed = bounds_in_pixels_.size() != size_in_pixels;
+  XResizeWindow(xdisplay_, xwindow_, size_in_pixels.width(),
+                size_in_pixels.height());
+  bounds_in_pixels_.set_size(size_in_pixels);
   if (size_changed) {
-    OnHostResized(size);
+    OnHostResized(size_in_pixels);
     ResetWindowRegion();
   }
 }
@@ -405,7 +409,8 @@ void DesktopWindowTreeHostX11::StackAtTop() {
 }
 
 void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
-  gfx::Rect parent_bounds = GetWorkAreaBoundsInScreen();
+  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(size)).size();
+  gfx::Rect parent_bounds_in_pixels = GetWorkAreaBoundsInPixels();
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
   // use them instead.
@@ -414,20 +419,21 @@ void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
         wm::GetTransientParent(content_window_)->GetBoundsInScreen();
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width()) {
-      parent_bounds = transient_parent_rect;
+      parent_bounds_in_pixels = ToPixelRect(transient_parent_rect);
     }
   }
 
-  gfx::Rect window_bounds(
-      parent_bounds.x() + (parent_bounds.width() - size.width()) / 2,
-      parent_bounds.y() + (parent_bounds.height() - size.height()) / 2,
-      size.width(),
-      size.height());
+  gfx::Rect window_bounds_in_pixels(
+      parent_bounds_in_pixels.x() +
+          (parent_bounds_in_pixels.width() - size_in_pixels.width()) / 2,
+      parent_bounds_in_pixels.y() +
+          (parent_bounds_in_pixels.height() - size_in_pixels.height()) / 2,
+      size_in_pixels.width(), size_in_pixels.height());
   // Don't size the window bigger than the parent, otherwise the user may not be
   // able to close or move it.
-  window_bounds.AdjustToFit(parent_bounds);
+  window_bounds_in_pixels.AdjustToFit(parent_bounds_in_pixels);
 
-  SetBounds(window_bounds);
+  SetBounds(window_bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostX11::GetWindowPlacement(
@@ -449,19 +455,19 @@ void DesktopWindowTreeHostX11::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetWindowBoundsInScreen() const {
-  return bounds_;
+  return ToDIPRect(bounds_in_pixels_);
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetClientAreaBoundsInScreen() const {
-  // TODO(erg): The NativeWidgetAura version returns |bounds_|, claiming its
-  // needed for View::ConvertPointToScreen() to work
-  // correctly. DesktopWindowTreeHostWin::GetClientAreaBoundsInScreen() just
-  // asks windows what it thinks the client rect is.
+  // TODO(erg): The NativeWidgetAura version returns |bounds_in_pixels_|,
+  // claiming it's needed for View::ConvertPointToScreen() to work correctly.
+  // DesktopWindowTreeHostWin::GetClientAreaBoundsInScreen() just asks windows
+  // what it thinks the client rect is.
   //
   // Attempts to calculate the rect by asking the NonClientFrameView what it
   // thought its GetBoundsForClientView() were broke combobox drop down
   // placement.
-  return bounds_;
+  return GetWindowBoundsInScreen();
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
@@ -469,31 +475,14 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
   // the 90% case down. When *chrome* is the process that requests maximizing
   // or restoring bounds, we can record the current bounds before we request
   // maximization, and clear it when we detect a state change.
-  if (!restored_bounds_.IsEmpty())
-    return restored_bounds_;
+  if (!restored_bounds_in_pixels_.IsEmpty())
+    return ToDIPRect(restored_bounds_in_pixels_);
 
   return GetWindowBoundsInScreen();
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
-  std::vector<int> value;
-  if (ui::GetIntArrayProperty(x_root_window_, "_NET_WORKAREA", &value) &&
-      value.size() >= 4) {
-    return gfx::Rect(value[0], value[1], value[2], value[3]);
-  }
-
-  // Fetch the geometry of the root window.
-  Window root;
-  int x, y;
-  unsigned int width, height;
-  unsigned int border_width, depth;
-  if (!XGetGeometry(xdisplay_, x_root_window_, &root, &x, &y,
-                    &width, &height, &border_width, &depth)) {
-    NOTIMPLEMENTED();
-    return gfx::Rect(0, 0, 10, 10);
-  }
-
-  return gfx::Rect(x, y, width, height);
+  return ToDIPRect(GetWorkAreaBoundsInPixels());
 }
 
 void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
@@ -539,9 +528,10 @@ void DesktopWindowTreeHostX11::Maximize() {
     // Resize the window so that it does not have the same size as a monitor.
     // (Otherwise, some window managers immediately put the window back in
     // fullscreen mode).
-    gfx::Rect adjusted_bounds(bounds_.origin(), AdjustSize(bounds_.size()));
-    if (adjusted_bounds != bounds_)
-      SetBounds(adjusted_bounds);
+    gfx::Rect adjusted_bounds_in_pixels(bounds_in_pixels_.origin(),
+                                        AdjustSize(bounds_in_pixels_.size()));
+    if (adjusted_bounds_in_pixels != bounds_in_pixels_)
+      SetBounds(adjusted_bounds_in_pixels);
   }
 
   // Some WMs do not respect maximization hints on unmapped windows, so we
@@ -551,7 +541,7 @@ void DesktopWindowTreeHostX11::Maximize() {
   // When we are in the process of requesting to maximize a window, we can
   // accurately keep track of our restored bounds instead of relying on the
   // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
-  restored_bounds_ = bounds_;
+  restored_bounds_in_pixels_ = bounds_in_pixels_;
 
   SetWMSpecState(true,
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
@@ -737,15 +727,15 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   //   synchronously.
   // See https://crbug.com/361408
   if (fullscreen) {
-    restored_bounds_ = bounds_;
+    restored_bounds_in_pixels_ = bounds_in_pixels_;
     const gfx::Display display =
         gfx::Screen::GetScreenFor(NULL)->GetDisplayNearestWindow(window());
-    bounds_ = display.bounds();
+    bounds_in_pixels_ = ToPixelRect(display.bounds());
   } else {
-    bounds_ = restored_bounds_;
+    bounds_in_pixels_ = restored_bounds_in_pixels_;
   }
-  OnHostMoved(bounds_.origin());
-  OnHostResized(bounds_.size());
+  OnHostMoved(bounds_in_pixels_.origin());
+  OnHostResized(bounds_in_pixels_.size());
 
   if (HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN") == fullscreen) {
     Relayout();
@@ -862,6 +852,19 @@ void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 
+gfx::Transform DesktopWindowTreeHostX11::GetRootTransform() const {
+  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  if (window_mapped_) {
+    aura::Window* win = const_cast<aura::Window*>(window());
+    display = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(win);
+  }
+
+  float scale = display.device_scale_factor();
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  return transform;
+}
+
 ui::EventSource* DesktopWindowTreeHostX11::GetEventSource() {
   return this;
 }
@@ -884,40 +887,41 @@ void DesktopWindowTreeHostX11::Hide() {
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetBounds() const {
-  return bounds_;
+  return bounds_in_pixels_;
 }
 
-void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& requested_bounds) {
-  gfx::Rect bounds(requested_bounds.origin(),
-                   AdjustSize(requested_bounds.size()));
-  bool origin_changed = bounds_.origin() != bounds.origin();
-  bool size_changed = bounds_.size() != bounds.size();
+void DesktopWindowTreeHostX11::SetBounds(
+    const gfx::Rect& requested_bounds_in_pixel) {
+  gfx::Rect bounds_in_pixels(requested_bounds_in_pixel.origin(),
+                             AdjustSize(requested_bounds_in_pixel.size()));
+  bool origin_changed = bounds_in_pixels_.origin() != bounds_in_pixels.origin();
+  bool size_changed = bounds_in_pixels_.size() != bounds_in_pixels.size();
   XWindowChanges changes = {0};
   unsigned value_mask = 0;
 
   if (size_changed) {
-    if (bounds.width() < min_size_.width() ||
-        bounds.height() < min_size_.height() ||
-        (!max_size_.IsEmpty() &&
-         (bounds.width() > max_size_.width() ||
-          bounds.height() > max_size_.height()))) {
+    if (bounds_in_pixels.width() < min_size_in_pixels_.width() ||
+        bounds_in_pixels.height() < min_size_in_pixels_.height() ||
+        (!max_size_in_pixels_.IsEmpty() &&
+         (bounds_in_pixels.width() > max_size_in_pixels_.width() ||
+          bounds_in_pixels.height() > max_size_in_pixels_.height()))) {
       // Update the minimum and maximum sizes in case they have changed.
       UpdateMinAndMaxSize();
 
-      gfx::Size size = bounds.size();
-      size.SetToMin(max_size_);
-      size.SetToMax(min_size_);
-      bounds.set_size(size);
+      gfx::Size size_in_pixels = bounds_in_pixels.size();
+      size_in_pixels.SetToMin(max_size_in_pixels_);
+      size_in_pixels.SetToMax(min_size_in_pixels_);
+      bounds_in_pixels.set_size(size_in_pixels);
     }
 
-    changes.width = bounds.width();
-    changes.height = bounds.height();
+    changes.width = bounds_in_pixels.width();
+    changes.height = bounds_in_pixels.height();
     value_mask |= CWHeight | CWWidth;
   }
 
   if (origin_changed) {
-    changes.x = bounds.x();
-    changes.y = bounds.y();
+    changes.x = bounds_in_pixels.x();
+    changes.y = bounds_in_pixels.y();
     value_mask |= CWX | CWY;
   }
   if (value_mask)
@@ -927,19 +931,19 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& requested_bounds) {
   // case if we're running without a window manager.  If there's a window
   // manager, it can modify or ignore the request, but (per ICCCM) we'll get a
   // (possibly synthetic) ConfigureNotify about the actual size and correct
-  // |bounds_| later.
-  bounds_ = bounds;
+  // |bounds_in_pixels_| later.
+  bounds_in_pixels_ = bounds_in_pixels;
 
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed) {
-    OnHostResized(bounds.size());
+    OnHostResized(bounds_in_pixels.size());
     ResetWindowRegion();
   }
 }
 
 gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
-  return bounds_.origin();
+  return bounds_in_pixels_.origin();
 }
 
 void DesktopWindowTreeHostX11::SetCapture() {
@@ -982,7 +986,8 @@ void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
 
 void DesktopWindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
   XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
-               bounds_.x() + location.x(), bounds_.y() + location.y());
+               bounds_in_pixels_.x() + location.x(),
+               bounds_in_pixels_.y() + location.y());
 }
 
 void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
@@ -1058,18 +1063,13 @@ void DesktopWindowTreeHostX11::InitX11Window(
     }
   }
 
-  bounds_ = gfx::Rect(params.bounds.origin(),
-                      AdjustSize(params.bounds.size()));
-  xwindow_ = XCreateWindow(
-      xdisplay_, x_root_window_,
-      bounds_.x(), bounds_.y(),
-      bounds_.width(), bounds_.height(),
-      0,               // border width
-      depth,
-      InputOutput,
-      visual,
-      attribute_mask,
-      &swa);
+  bounds_in_pixels_ = ToPixelRect(params.bounds);
+  bounds_in_pixels_.set_size(AdjustSize(bounds_in_pixels_.size()));
+  xwindow_ = XCreateWindow(xdisplay_, x_root_window_, bounds_in_pixels_.x(),
+                           bounds_in_pixels_.y(), bounds_in_pixels_.width(),
+                           bounds_in_pixels_.height(),
+                           0,  // border width
+                           depth, InputOutput, visual, attribute_mask, &swa);
   if (ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   open_windows().push_back(xwindow_);
@@ -1208,22 +1208,22 @@ void DesktopWindowTreeHostX11::InitX11Window(
 }
 
 gfx::Size DesktopWindowTreeHostX11::AdjustSize(
-    const gfx::Size& requested_size) {
+    const gfx::Size& requested_size_in_pixels) {
   std::vector<gfx::Display> displays =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE)->GetAllDisplays();
   // Compare against all monitor sizes. The window manager can move the window
   // to whichever monitor it wants.
   for (size_t i = 0; i < displays.size(); ++i) {
-    if (requested_size == displays[i].size()) {
-      return gfx::Size(requested_size.width() - 1,
-                       requested_size.height() - 1);
+    if (requested_size_in_pixels == displays[i].GetSizeInPixel()) {
+      return gfx::Size(requested_size_in_pixels.width() - 1,
+                       requested_size_in_pixels.height() - 1);
     }
   }
 
   // Do not request a 0x0 window size. It causes an XError.
-  gfx::Size size = requested_size;
-  size.SetToMax(gfx::Size(1,1));
-  return size;
+  gfx::Size size_in_pixels = requested_size_in_pixels;
+  size_in_pixels.SetToMax(gfx::Size(1, 1));
+  return size_in_pixels;
 }
 
 void DesktopWindowTreeHostX11::OnWMStateUpdated() {
@@ -1261,20 +1261,20 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
     }
   }
 
-  if (restored_bounds_.IsEmpty()) {
+  if (restored_bounds_in_pixels_.IsEmpty()) {
     DCHECK(!IsFullscreen());
     if (IsMaximized()) {
       // The request that we become maximized originated from a different
-      // process. |bounds_| already contains our maximized bounds. Do a best
-      // effort attempt to get restored bounds by setting it to our previously
-      // set bounds (and if we get this wrong, we aren't any worse off since
-      // we'd otherwise be returning our maximized bounds).
-      restored_bounds_ = previous_bounds_;
+      // process. |bounds_in_pixels_| already contains our maximized bounds. Do
+      // a best effort attempt to get restored bounds by setting it to our
+      // previously set bounds (and if we get this wrong, we aren't any worse
+      // off since we'd otherwise be returning our maximized bounds).
+      restored_bounds_in_pixels_ = previous_bounds_in_pixels_;
     }
   } else if (!IsMaximized() && !IsFullscreen()) {
     // If we have restored bounds, but WM_STATE no longer claims to be
     // maximized or fullscreen, we should clear our restored bounds.
-    restored_bounds_ = gfx::Rect();
+    restored_bounds_in_pixels_ = gfx::Rect();
   }
 
   // Ignore requests by the window manager to enter or exit fullscreen (e.g. as
@@ -1296,13 +1296,10 @@ void DesktopWindowTreeHostX11::OnFrameExtentsUpdated() {
   if (ui::GetIntArrayProperty(xwindow_, "_NET_FRAME_EXTENTS", &insets) &&
       insets.size() == 4) {
     // |insets| are returned in the order: [left, right, top, bottom].
-    native_window_frame_borders_ = gfx::Insets(
-        insets[2],
-        insets[0],
-        insets[3],
-        insets[1]);
+    native_window_frame_borders_in_pixels_ =
+        gfx::Insets(insets[2], insets[0], insets[3], insets[1]);
   } else {
-    native_window_frame_borders_ = gfx::Insets();
+    native_window_frame_borders_in_pixels_ = gfx::Insets();
   }
 }
 
@@ -1310,32 +1307,35 @@ void DesktopWindowTreeHostX11::UpdateMinAndMaxSize() {
   if (!window_mapped_)
     return;
 
-  gfx::Size minimum = native_widget_delegate_->GetMinimumSize();
-  gfx::Size maximum = native_widget_delegate_->GetMaximumSize();
-  if (min_size_ == minimum && max_size_ == maximum)
+  gfx::Size minimum_in_pixels =
+      ToPixelRect(gfx::Rect(native_widget_delegate_->GetMinimumSize())).size();
+  gfx::Size maximum_in_pixels =
+      ToPixelRect(gfx::Rect(native_widget_delegate_->GetMaximumSize())).size();
+  if (min_size_in_pixels_ == minimum_in_pixels &&
+      max_size_in_pixels_ == maximum_in_pixels)
     return;
 
-  min_size_ = minimum;
-  max_size_ = maximum;
+  min_size_in_pixels_ = minimum_in_pixels;
+  max_size_in_pixels_ = maximum_in_pixels;
 
   XSizeHints hints;
   long supplied_return;
   XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
 
-  if (minimum.IsEmpty()) {
+  if (minimum_in_pixels.IsEmpty()) {
     hints.flags &= ~PMinSize;
   } else {
     hints.flags |= PMinSize;
-    hints.min_width = min_size_.width();
-    hints.min_height = min_size_.height();
+    hints.min_width = min_size_in_pixels_.width();
+    hints.min_height = min_size_in_pixels_.height();
   }
 
-  if (maximum.IsEmpty()) {
+  if (maximum_in_pixels.IsEmpty()) {
     hints.flags &= ~PMaxSize;
   } else {
     hints.flags |= PMaxSize;
-    hints.max_width = max_size_.width();
-    hints.max_height = max_size_.height();
+    hints.max_width = max_size_in_pixels_.width();
+    hints.max_height = max_size_in_pixels_.height();
   }
 
   XSetWMNormalHints(xdisplay_, xwindow_, &hints);
@@ -1365,8 +1365,8 @@ void DesktopWindowTreeHostX11::UpdateWMUserTime(
 }
 
 void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
-                                                ::Atom state1,
-                                                ::Atom state2) {
+                                              ::Atom state1,
+                                              ::Atom state2) {
   XEvent xclient;
   memset(&xclient, 0, sizeof(xclient));
   xclient.type = ClientMessage;
@@ -1481,7 +1481,8 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
     if (widget->non_client_view()) {
       // Some frame views define a custom (non-rectangular) window mask. If
       // so, use it to define the window shape. If not, fall through.
-      widget->non_client_view()->GetWindowMask(bounds_.size(), &window_mask);
+      widget->non_client_view()->GetWindowMask(bounds_in_pixels_.size(),
+                                               &window_mask);
       if (window_mask.countPoints() > 0) {
         window_shape_ = gfx::CreateRegionFromSkPath(window_mask);
         XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding,
@@ -1505,8 +1506,10 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
     // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
     // shape causes the hint to disable system borders to be ignored (resulting
     // in a double border).
-    XRectangle r = {0, 0, static_cast<unsigned short>(bounds_.width()),
-                    static_cast<unsigned short>(bounds_.height())};
+    XRectangle r = {0,
+                    0,
+                    static_cast<unsigned short>(bounds_in_pixels_.width()),
+                    static_cast<unsigned short>(bounds_in_pixels_.height())};
     XShapeCombineRectangles(
         xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1, ShapeSet, YXBanded);
   }
@@ -1581,8 +1584,8 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   // will ignore toplevel XMoveWindow commands.
   XSizeHints size_hints;
   size_hints.flags = PPosition;
-  size_hints.x = bounds_.x();
-  size_hints.y = bounds_.y();
+  size_hints.x = bounds_in_pixels_.x();
+  size_hints.y = bounds_in_pixels_.y();
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
   // If SHOW_STATE_INACTIVE, tell the window manager not to focus the window
@@ -1671,9 +1674,9 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case Expose: {
-      gfx::Rect damage_rect(xev->xexpose.x, xev->xexpose.y,
-                            xev->xexpose.width, xev->xexpose.height);
-      compositor()->ScheduleRedrawRect(damage_rect);
+      gfx::Rect damage_rect_in_pixels(xev->xexpose.x, xev->xexpose.y,
+                                      xev->xexpose.width, xev->xexpose.height);
+      compositor()->ScheduleRedrawRect(damage_rect_in_pixels);
       break;
     }
     case KeyPress: {
@@ -1733,28 +1736,29 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       // It's possible that the X window may be resized by some other means than
       // from within aura (e.g. the X window manager can change the size). Make
       // sure the root window size is maintained properly.
-      int translated_x = xev->xconfigure.x;
-      int translated_y = xev->xconfigure.y;
+      int translated_x_in_pixels = xev->xconfigure.x;
+      int translated_y_in_pixels = xev->xconfigure.y;
       if (!xev->xconfigure.send_event && !xev->xconfigure.override_redirect) {
         Window unused;
-        XTranslateCoordinates(xdisplay_, xwindow_, x_root_window_,
-            0, 0, &translated_x, &translated_y, &unused);
+        XTranslateCoordinates(xdisplay_, xwindow_, x_root_window_, 0, 0,
+                              &translated_x_in_pixels, &translated_y_in_pixels,
+                              &unused);
       }
-      gfx::Rect bounds(translated_x, translated_y,
-                       xev->xconfigure.width, xev->xconfigure.height);
-      bool size_changed = bounds_.size() != bounds.size();
-      bool origin_changed = bounds_.origin() != bounds.origin();
-      previous_bounds_ = bounds_;
-      bounds_ = bounds;
+      gfx::Rect bounds_in_pixels(translated_x_in_pixels, translated_y_in_pixels,
+                                 xev->xconfigure.width, xev->xconfigure.height);
+      bool size_changed = bounds_in_pixels_.size() != bounds_in_pixels.size();
+      bool origin_changed =
+          bounds_in_pixels_.origin() != bounds_in_pixels.origin();
+      previous_bounds_in_pixels_ = bounds_in_pixels_;
+      bounds_in_pixels_ = bounds_in_pixels;
 
       if (origin_changed)
-        OnHostMoved(bounds_.origin());
+        OnHostMoved(bounds_in_pixels_.origin());
 
       if (size_changed) {
         delayed_resize_task_.Reset(base::Bind(
             &DesktopWindowTreeHostX11::DelayedResize,
-            close_widget_factory_.GetWeakPtr(),
-            bounds.size()));
+            close_widget_factory_.GetWeakPtr(), bounds_in_pixels.size()));
         base::MessageLoop::current()->PostTask(
             FROM_HERE, delayed_resize_task_.callback());
       }
@@ -1924,10 +1928,45 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
-void DesktopWindowTreeHostX11::DelayedResize(const gfx::Size& size) {
-  OnHostResized(size);
+void DesktopWindowTreeHostX11::DelayedResize(const gfx::Size& size_in_pixels) {
+  OnHostResized(size_in_pixels);
   ResetWindowRegion();
   delayed_resize_task_.Cancel();
+}
+
+gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInPixels() const {
+  std::vector<int> value;
+  if (ui::GetIntArrayProperty(x_root_window_, "_NET_WORKAREA", &value) &&
+      value.size() >= 4) {
+    return gfx::Rect(value[0], value[1], value[2], value[3]);
+  }
+
+  // Fetch the geometry of the root window.
+  Window root;
+  int x, y;
+  unsigned int width, height;
+  unsigned int border_width, depth;
+  if (!XGetGeometry(xdisplay_, x_root_window_, &root, &x, &y, &width, &height,
+                    &border_width, &depth)) {
+    NOTIMPLEMENTED();
+    return gfx::Rect(0, 0, 10, 10);
+  }
+
+  return gfx::Rect(x, y, width, height);
+}
+
+gfx::Rect DesktopWindowTreeHostX11::ToDIPRect(
+    const gfx::Rect& rect_in_pixels) const {
+  gfx::RectF rect_in_dip = rect_in_pixels;
+  GetRootTransform().TransformRectReverse(&rect_in_dip);
+  return gfx::ToEnclosingRect(rect_in_dip);
+}
+
+gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
+    const gfx::Rect& rect_in_dip) const {
+  gfx::RectF rect_in_pixels = rect_in_dip;
+  GetRootTransform().TransformRect(&rect_in_pixels);
+  return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

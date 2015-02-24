@@ -147,12 +147,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void SizeConstraintsChanged() override;
 
   // Overridden from aura::WindowTreeHost:
+  gfx::Transform GetRootTransform() const override;
   ui::EventSource* GetEventSource() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
   void Show() override;
   void Hide() override;
   gfx::Rect GetBounds() const override;
-  void SetBounds(const gfx::Rect& requested_bounds) override;
+  void SetBounds(const gfx::Rect& requested_bounds_in_pixels) override;
   gfx::Point GetLocationOnNativeScreen() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
@@ -241,7 +242,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
-  void DelayedResize(const gfx::Size& size);
+  void DelayedResize(const gfx::Size& size_in_pixels);
+
+  gfx::Rect GetWorkAreaBoundsInPixels() const;
+  gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
+  gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
   // X11 things
   // The display and the native X window hosting the root window.
@@ -257,24 +262,25 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool window_mapped_;
 
   // The bounds of |xwindow_|.
-  gfx::Rect bounds_;
+  gfx::Rect bounds_in_pixels_;
 
   // Whenever the bounds are set, we keep the previous set of bounds around so
-  // we can have a better chance of getting the real |restored_bounds_|. Window
-  // managers tend to send a Configure message with the maximized bounds, and
-  // then set the window maximized property. (We don't rely on this for when we
-  // request that the window be maximized, only when we detect that some other
-  // process has requested that we become the maximized window.)
-  gfx::Rect previous_bounds_;
+  // we can have a better chance of getting the real
+  // |restored_bounds_in_pixels_|. Window managers tend to send a Configure
+  // message with the maximized bounds, and then set the window maximized
+  // property. (We don't rely on this for when we request that the window be
+  // maximized, only when we detect that some other process has requested that
+  // we become the maximized window.)
+  gfx::Rect previous_bounds_in_pixels_;
 
   // The bounds of our window before we were maximized.
-  gfx::Rect restored_bounds_;
+  gfx::Rect restored_bounds_in_pixels_;
 
   // |xwindow_|'s minimum size.
-  gfx::Size min_size_;
+  gfx::Size min_size_in_pixels_;
 
   // |xwindow_|'s maximum size.
-  gfx::Size max_size_;
+  gfx::Size max_size_in_pixels_;
 
   // The window manager state bits.
   std::set< ::Atom> window_properties_;
@@ -321,7 +327,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool custom_window_shape_;
 
   // The size of the window manager provided borders (if any).
-  gfx::Insets native_window_frame_borders_;
+  gfx::Insets native_window_frame_borders_in_pixels_;
 
   // The current DesktopWindowTreeHostX11 which has capture. Set synchronously
   // when capture is requested via SetCapture().
