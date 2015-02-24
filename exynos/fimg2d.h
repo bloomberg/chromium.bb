@@ -25,8 +25,6 @@
 #define G2D_MAX_CMD_LIST_NR	64
 #define G2D_PLANE_MAX_NR	2
 
-#define G2D_DOUBLE_TO_FIXED(d)		((unsigned int)((d) * 65536.0))
-
 enum e_g2d_color_mode {
 	/* COLOR FORMAT */
 	G2D_COLOR_FMT_XRGB8888,

@@ -41,6 +41,18 @@
 
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 
+static unsigned int g2d_get_scaling(unsigned int src, unsigned int dst)
+{
+	/*
+	 * The G2D hw scaling factor is a normalized inverse of the scaling factor.
+	 * For example: When source width is 100 and destination width is 200
+	 * (scaling of 2x), then the hw factor is NC * 100 / 200.
+	 * The normalization factor (NC) is 2^16 = 0x10000.
+	 */
+
+	return ((src << 16) / dst);
+}
+
 static unsigned int g2d_get_blend_op(enum e_g2d_op op)
 {
 	union g2d_blend_func_val val;
@@ -428,7 +440,7 @@ g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 	union g2d_rop4_val rop4;
 	union g2d_point_val pt;
 	unsigned int scale;
-	double scale_x = 0.0f, scale_y = 0.0f;
+	unsigned int scale_x, scale_y;
 
 	g2d_add_cmd(ctx, DST_SELECT_REG, G2D_SELECT_MODE_BGCOLOR);
 	g2d_add_cmd(ctx, DST_COLOR_MODE_REG, dst->color_mode);
@@ -454,8 +466,8 @@ g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 		scale = 0;
 	else {
 		scale = 1;
-		scale_x = (double)src_w / (double)dst_w;
-		scale_y = (double)src_h / (double)dst_h;
+		scale_x = g2d_get_scaling(src_w, dst_w);
+		scale_y = g2d_get_scaling(src_h, dst_h);
 	}
 
 	if (src_x + src_w > src->width)
@@ -487,8 +499,8 @@ g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 
 	if (scale) {
 		g2d_add_cmd(ctx, SRC_SCALE_CTRL_REG, G2D_SCALE_MODE_BILINEAR);
-		g2d_add_cmd(ctx, SRC_XSCALE_REG, G2D_DOUBLE_TO_FIXED(scale_x));
-		g2d_add_cmd(ctx, SRC_YSCALE_REG, G2D_DOUBLE_TO_FIXED(scale_y));
+		g2d_add_cmd(ctx, SRC_XSCALE_REG, scale_x);
+		g2d_add_cmd(ctx, SRC_YSCALE_REG, scale_y);
 	}
 
 	pt.val = 0;
