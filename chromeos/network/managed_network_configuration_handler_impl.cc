@@ -119,6 +119,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
     InvokeErrorCallback(service_path, error_callback, kPoliciesNotInitialized);
     return;
   }
+  NET_LOG_USER("GetManagedProperties", service_path);
   network_configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(
@@ -197,6 +198,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetProperties(
     const std::string& service_path,
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG_USER("GetProperties", service_path);
   network_configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(

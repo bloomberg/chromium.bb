@@ -78,7 +78,6 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   properties.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &hex_ssid);
 
   if (hex_ssid.empty()) {
-    // Note: use VLOG here to avoid spamming the event log.
     if (verbose_logging)
       NET_LOG(DEBUG) << "GetSSIDFromProperties: No HexSSID set: " << name;
     return std::string();
@@ -88,10 +87,8 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   std::vector<uint8> raw_ssid_bytes;
   if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
-    if (verbose_logging) {
-      NET_LOG(DEBUG) << "GetSSIDFromProperties: " << name
-                     << " HexSsid=" << hex_ssid << " SSID=" << ssid;
-    }
+    VLOG(2) << "GetSSIDFromProperties: " << name << " HexSsid=" << hex_ssid
+            << " SSID=" << ssid;
   } else {
     NET_LOG(ERROR) << "GetSSIDFromProperties: " << name
                    << " Error processing HexSsid: " << hex_ssid;
