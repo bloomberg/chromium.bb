@@ -11,6 +11,8 @@
                         "linux_chromium_asan_rel_ng": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
+                        "ios_rel_device_ninja": ["defaulttests"],
+                        "ios_dbg_simulator_ninja": ["defaulttests"],
                         "mac_chromium_gn_rel": ["defaulttests"]
                     },
                     "tryserver.chromium.win": {
@@ -45,7 +47,6 @@
                     "tryserver.chromium.linux": {
                     },
                     "tryserver.chromium.mac": {
-                        "ios_dbg_simulator": ["defaulttests"]
                     }
                 }
             }
