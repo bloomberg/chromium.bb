@@ -204,8 +204,8 @@ ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddFolder(JNIEnv* env,
     NOTREACHED();
     return ScopedJavaLocalRef<jobject>();
   }
-  ScopedJavaLocalRef<jobject> new_java_obj =
-      JavaBookmarkIdCreateBookmarkId(env, new_node->id(), new_node->type());
+  ScopedJavaLocalRef<jobject> new_java_obj = JavaBookmarkIdCreateBookmarkId(
+      env, new_node->id(), BookmarkType::BOOKMARK_TYPE_NORMAL);
   return new_java_obj;
 }
 
@@ -255,8 +255,8 @@ ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddBookmark(
     NOTREACHED();
     return ScopedJavaLocalRef<jobject>();
   }
-  ScopedJavaLocalRef<jobject> new_java_obj =
-      JavaBookmarkIdCreateBookmarkId(env, new_node->id(), new_node->type());
+  ScopedJavaLocalRef<jobject> new_java_obj = JavaBookmarkIdCreateBookmarkId(
+      env, new_node->id(), BookmarkType::BOOKMARK_TYPE_NORMAL);
   return new_java_obj;
 }
 
