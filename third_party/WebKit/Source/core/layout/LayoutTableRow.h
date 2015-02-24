@@ -32,7 +32,7 @@ namespace blink {
 static const unsigned unsetRowIndex = 0x7FFFFFFF;
 static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 
-class LayoutTableRow final : public RenderBox {
+class LayoutTableRow final : public LayoutBox {
 public:
     explicit LayoutTableRow(Element*);
 
@@ -50,7 +50,7 @@ public:
 
     static LayoutTableRow* createAnonymous(Document*);
     static LayoutTableRow* createAnonymousWithParentRenderer(const LayoutObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
+    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
@@ -100,7 +100,7 @@ private:
 
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableRow (anonymous)" : "LayoutTableRow"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutBox::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 

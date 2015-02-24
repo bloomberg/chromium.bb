@@ -40,7 +40,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutTableRow::LayoutTableRow(Element* element)
-    : RenderBox(element)
+    : LayoutBox(element)
     , m_rowIndex(unsetRowIndex)
 {
     // init LayoutObject attributes
@@ -49,7 +49,7 @@ LayoutTableRow::LayoutTableRow(Element* element)
 
 void LayoutTableRow::willBeRemovedFromTree()
 {
-    RenderBox::willBeRemovedFromTree();
+    LayoutBox::willBeRemovedFromTree();
 
     section()->setNeedsCellRecalc();
 }
@@ -66,7 +66,7 @@ void LayoutTableRow::styleDidChange(StyleDifference diff, const LayoutStyle* old
 {
     ASSERT(style()->display() == TABLE_ROW);
 
-    RenderBox::styleDidChange(diff, oldStyle);
+    LayoutBox::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
     if (section() && oldStyle && style()->logicalHeight() != oldStyle->logicalHeight())
@@ -82,7 +82,7 @@ void LayoutTableRow::styleDidChange(StyleDifference diff, const LayoutStyle* old
             // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
             // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
             // itself.
-            for (RenderBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
+            for (LayoutBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
                 if (!childBox->isTableCell())
                     continue;
                 childBox->setChildNeedsLayout();
@@ -149,7 +149,7 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild)
         section()->addCell(cell, this);
 
     ASSERT(!beforeChild || beforeChild->isTableCell());
-    RenderBox::addChild(cell, beforeChild);
+    LayoutBox::addChild(cell, beforeChild);
 
     if (beforeChild || nextRow())
         section()->setNeedsCellRecalc();

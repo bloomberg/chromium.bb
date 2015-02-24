@@ -37,24 +37,24 @@
 
 namespace blink {
 
-class RenderBox;
+class LayoutBox;
 
 class OrderIterator {
     WTF_MAKE_NONCOPYABLE(OrderIterator);
 public:
     friend class OrderIteratorPopulator;
 
-    OrderIterator(const RenderBox*);
+    OrderIterator(const LayoutBox*);
 
-    RenderBox* currentChild() const { return m_currentChild; }
-    RenderBox* first();
-    RenderBox* next();
+    LayoutBox* currentChild() const { return m_currentChild; }
+    LayoutBox* first();
+    LayoutBox* next();
     void reset();
 
 private:
-    const RenderBox* m_containerBox;
+    const LayoutBox* m_containerBox;
 
-    RenderBox* m_currentChild;
+    LayoutBox* m_currentChild;
 
     typedef std::set<int> OrderValues;
     OrderValues m_orderValues;
@@ -72,7 +72,7 @@ public:
 
     ~OrderIteratorPopulator();
 
-    void collectChild(const RenderBox*);
+    void collectChild(const LayoutBox*);
 
 private:
     OrderIterator& m_iterator;

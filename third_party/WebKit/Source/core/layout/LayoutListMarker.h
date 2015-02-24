@@ -23,7 +23,7 @@
 #ifndef LayoutListMarker_h
 #define LayoutListMarker_h
 
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
@@ -33,7 +33,7 @@ String listMarkerText(EListStyleType, int value);
 
 // Used to render the list item's marker.
 // The LayoutListMarker always has to be a child of a LayoutListItem.
-class LayoutListMarker final : public RenderBox {
+class LayoutListMarker final : public LayoutBox {
 public:
     static LayoutListMarker* createAnonymous(LayoutListItem*);
 
@@ -62,7 +62,7 @@ private:
     virtual const char* renderName() const override { return "LayoutListMarker"; }
     virtual void computePreferredLogicalWidths() override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || LayoutBox::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 

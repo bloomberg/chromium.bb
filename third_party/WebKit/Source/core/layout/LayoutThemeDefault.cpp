@@ -348,7 +348,7 @@ bool LayoutThemeDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, cons
 
     WebThemeEngine::ExtraParams extraParams;
     extraParams.menuList.arrowY = middle;
-    const RenderBox* box = toRenderBox(o);
+    const LayoutBox* box = toLayoutBox(o);
     // Match Chromium Win behaviour of showing all borders if any are shown.
     extraParams.menuList.hasBorder = box->borderRight() || box->borderLeft() || box->borderTop() || box->borderBottom();
     extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
@@ -399,7 +399,7 @@ bool LayoutThemeDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& i
     extraParams.menuList.fillContentArea = false;
 
     if (useMockTheme()) {
-        const RenderBox* box = toRenderBox(o);
+        const LayoutBox* box = toLayoutBox(o);
         // The size and position of the drop-down button is different between
         // the mock theme and the regular aura theme.
         int spacingTop = box->borderTop() + box->paddingTop();
@@ -620,18 +620,18 @@ bool LayoutThemeDefault::paintSearchFieldCancelButton(LayoutObject* cancelButton
     LayoutObject* baseRenderer = input ? input->renderer() : cancelButtonObject;
     if (!baseRenderer->isBox())
         return false;
-    RenderBox* inputRenderBox = toRenderBox(baseRenderer);
-    LayoutRect inputContentBox = inputRenderBox->contentBoxRect();
+    LayoutBox* inputLayoutBox = toLayoutBox(baseRenderer);
+    LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
 
     // Make sure the scaled button stays square and will fit in its parent's box.
     LayoutUnit cancelButtonSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
     // Calculate cancel button's coordinates relative to the input element.
     // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    LayoutRect cancelButtonRect(cancelButtonObject->offsetFromAncestorContainer(inputRenderBox).width(),
+    LayoutRect cancelButtonRect(cancelButtonObject->offsetFromAncestorContainer(inputLayoutBox).width(),
         inputContentBox.y() + (inputContentBox.height() - cancelButtonSize + 1) / 2,
         cancelButtonSize, cancelButtonSize);
-    IntRect paintingRect = convertToPaintingRect(inputRenderBox, cancelButtonObject, cancelButtonRect, r);
+    IntRect paintingRect = convertToPaintingRect(inputLayoutBox, cancelButtonObject, cancelButtonRect, r);
 
     DEFINE_STATIC_REF(Image, cancelImage, (Image::loadPlatformResource("searchCancel")));
     DEFINE_STATIC_REF(Image, cancelPressedImage, (Image::loadPlatformResource("searchCancelPressed")));
@@ -665,18 +665,18 @@ bool LayoutThemeDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifi
     LayoutObject* baseRenderer = input ? input->renderer() : magnifierObject;
     if (!baseRenderer->isBox())
         return false;
-    RenderBox* inputRenderBox = toRenderBox(baseRenderer);
-    LayoutRect inputContentBox = inputRenderBox->contentBoxRect();
+    LayoutBox* inputLayoutBox = toLayoutBox(baseRenderer);
+    LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
 
     // Make sure the scaled decoration stays square and will fit in its parent's box.
     LayoutUnit magnifierSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
     // Calculate decoration's coordinates relative to the input element.
     // Center the decoration vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    LayoutRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputRenderBox).width(),
+    LayoutRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputLayoutBox).width(),
         inputContentBox.y() + (inputContentBox.height() - magnifierSize + 1) / 2,
         magnifierSize, magnifierSize);
-    IntRect paintingRect = convertToPaintingRect(inputRenderBox, magnifierObject, magnifierRect, r);
+    IntRect paintingRect = convertToPaintingRect(inputLayoutBox, magnifierObject, magnifierRect, r);
 
     DEFINE_STATIC_REF(Image, magnifierImage, (Image::loadPlatformResource("searchMagnifier")));
     paintInfo.context->drawImage(magnifierImage, paintingRect);

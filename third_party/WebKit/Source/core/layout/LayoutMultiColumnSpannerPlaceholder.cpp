@@ -17,7 +17,7 @@ static void copyMarginProperties(LayoutStyle& placeholderStyle, const LayoutStyl
     placeholderStyle.setMarginBottom(spannerStyle.marginBottom());
 }
 
-LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const LayoutStyle& parentStyle, RenderBox& rendererInFlowThread)
+LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const LayoutStyle& parentStyle, LayoutBox& rendererInFlowThread)
 {
     LayoutMultiColumnSpannerPlaceholder* newSpanner = new LayoutMultiColumnSpannerPlaceholder(&rendererInFlowThread);
     Document& document = rendererInFlowThread.document();
@@ -28,8 +28,8 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::create
     return newSpanner;
 }
 
-LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(RenderBox* rendererInFlowThread)
-    : RenderBox(0)
+LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(LayoutBox* rendererInFlowThread)
+    : LayoutBox(0)
     , m_rendererInFlowThread(rendererInFlowThread)
 {
 }
@@ -45,7 +45,7 @@ void LayoutMultiColumnSpannerPlaceholder::willBeRemovedFromTree()
 {
     if (m_rendererInFlowThread)
         m_rendererInFlowThread->clearSpannerPlaceholder();
-    RenderBox::willBeRemovedFromTree();
+    LayoutBox::willBeRemovedFromTree();
 }
 
 bool LayoutMultiColumnSpannerPlaceholder::needsPreferredWidthsRecalculation() const
@@ -95,7 +95,7 @@ void LayoutMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInva
 {
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
     m_rendererInFlowThread->invalidateTreeIfNeeded(newPaintInvalidationState);
-    RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
+    LayoutBox::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 void LayoutMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

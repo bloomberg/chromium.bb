@@ -5,7 +5,7 @@
 <label id="label1">Label: <input type="date" id="date1"></label>
 <script>
 debug('Check if clicking a label focuses on a date input in it.');
-// Force layout because we can't focus on elements without RenderBox.
+// Force layout because we can't focus on elements without LayoutBox.
 document.body.offsetLeft; 
 shouldBeEqualToString('document.activeElement.id', 'body');
 debug('Clicking a label.');

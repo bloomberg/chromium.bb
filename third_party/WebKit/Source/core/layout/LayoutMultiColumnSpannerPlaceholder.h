@@ -13,15 +13,15 @@ namespace blink {
 // descendant of the flow thread, but due to its out-of-flow nature, we need something on the
 // outside to take care of its positioning and sizing. LayoutMultiColumnSpannerPlaceholder objects
 // are siblings of LayoutMultiColumnSet objects, i.e. direct children of the multicol container.
-class LayoutMultiColumnSpannerPlaceholder final : public RenderBox {
+class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
 public:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder || LayoutBox::isOfType(type); }
 
-    static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const LayoutStyle& parentStyle, RenderBox&);
+    static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const LayoutStyle& parentStyle, LayoutBox&);
 
     LayoutFlowThread* flowThread() const { return toRenderBlockFlow(parent())->multiColumnFlowThread(); }
 
-    RenderBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
+    LayoutBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
     void updateMarginProperties();
 
 protected:
@@ -37,9 +37,9 @@ protected:
     virtual const char* renderName() const override;
 
 private:
-    LayoutMultiColumnSpannerPlaceholder(RenderBox*);
+    LayoutMultiColumnSpannerPlaceholder(LayoutBox*);
 
-    RenderBox* m_rendererInFlowThread; // The actual column-span:all renderer inside the flow thread.
+    LayoutBox* m_rendererInFlowThread; // The actual column-span:all renderer inside the flow thread.
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSpannerPlaceholder, isLayoutMultiColumnSpannerPlaceholder());

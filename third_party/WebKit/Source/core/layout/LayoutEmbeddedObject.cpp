@@ -213,7 +213,7 @@ CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const
     return CompositingReasonNone;
 }
 
-RenderBox* LayoutEmbeddedObject::embeddedContentBox() const
+LayoutBox* LayoutEmbeddedObject::embeddedContentBox() const
 {
     if (!node() || !widget() || !widget()->isFrameView())
         return 0;

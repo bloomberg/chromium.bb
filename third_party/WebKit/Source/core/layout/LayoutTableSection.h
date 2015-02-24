@@ -63,7 +63,7 @@ private:
 class LayoutTableCell;
 class LayoutTableRow;
 
-class LayoutTableSection final : public RenderBox {
+class LayoutTableSection final : public LayoutBox {
 public:
     LayoutTableSection(Element*);
     virtual ~LayoutTableSection();
@@ -215,7 +215,7 @@ public:
     int distributeExtraLogicalHeightToRows(int extraLogicalHeight);
 
     static LayoutTableSection* createAnonymousWithParentRenderer(const LayoutObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
+    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
@@ -240,7 +240,7 @@ private:
 
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableSection (anonymous)" : "LayoutTableSection"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableSection || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableSection || LayoutBox::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 

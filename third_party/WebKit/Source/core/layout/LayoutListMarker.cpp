@@ -1048,7 +1048,7 @@ String listMarkerText(EListStyleType type, int value)
 }
 
 LayoutListMarker::LayoutListMarker(LayoutListItem* item)
-    : RenderBox(0)
+    : LayoutBox(0)
     , m_listItem(item)
 {
     // init LayoutObject attributes
@@ -1064,7 +1064,7 @@ void LayoutListMarker::destroy()
 {
     if (m_image)
         m_image->removeClient(this);
-    RenderBox::destroy();
+    LayoutBox::destroy();
 }
 
 LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item)
@@ -1080,12 +1080,12 @@ void LayoutListMarker::styleWillChange(StyleDifference diff, const LayoutStyle& 
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 
-    RenderBox::styleWillChange(diff, newStyle);
+    LayoutBox::styleWillChange(diff, newStyle);
 }
 
 void LayoutListMarker::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBox::styleDidChange(diff, oldStyle);
+    LayoutBox::styleDidChange(diff, oldStyle);
 
     if (m_image != style()->listStyleImage()) {
         if (m_image)
@@ -1098,7 +1098,7 @@ void LayoutListMarker::styleDidChange(StyleDifference diff, const LayoutStyle* o
 
 InlineBox* LayoutListMarker::createInlineBox()
 {
-    InlineBox* result = RenderBox::createInlineBox();
+    InlineBox* result = LayoutBox::createInlineBox();
     result->setIsText(isText());
     return result;
 }
@@ -1473,7 +1473,7 @@ LayoutUnit LayoutListMarker::lineHeight(bool firstLine, LineDirectionMode direct
 {
     if (!isImage())
         return m_listItem->lineHeight(firstLine, direction, PositionOfInteriorLineBoxes);
-    return RenderBox::lineHeight(firstLine, direction, linePositionMode);
+    return LayoutBox::lineHeight(firstLine, direction, linePositionMode);
 }
 
 int LayoutListMarker::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
@@ -1481,7 +1481,7 @@ int LayoutListMarker::baselinePosition(FontBaseline baselineType, bool firstLine
     ASSERT(linePositionMode == PositionOnContainingLine);
     if (!isImage())
         return m_listItem->baselinePosition(baselineType, firstLine, direction, PositionOfInteriorLineBoxes);
-    return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
+    return LayoutBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
 bool LayoutListMarker::isInside() const
@@ -1610,7 +1610,7 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
 void LayoutListMarker::setSelectionState(SelectionState state)
 {
     // The selection state for our containing block hierarchy is updated by the base class call.
-    RenderBox::setSelectionState(state);
+    LayoutBox::setSelectionState(state);
 
     if (inlineBoxWrapper() && canUpdateSelectionOnRootLineBoxes())
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);

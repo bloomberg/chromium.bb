@@ -36,7 +36,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutTableCol::LayoutTableCol(Element* element)
-    : RenderBox(element)
+    : LayoutBox(element)
     , m_span(1)
 {
     // init LayoutObject attributes
@@ -46,7 +46,7 @@ LayoutTableCol::LayoutTableCol(Element* element)
 
 void LayoutTableCol::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBox::styleDidChange(diff, oldStyle);
+    LayoutBox::styleDidChange(diff, oldStyle);
 
     // If border was changed, notify table.
     if (parent()) {
@@ -86,13 +86,13 @@ void LayoutTableCol::updateFromElement()
 
 void LayoutTableCol::insertedIntoTree()
 {
-    RenderBox::insertedIntoTree();
+    LayoutBox::insertedIntoTree();
     table()->addColumn(this);
 }
 
 void LayoutTableCol::willBeRemovedFromTree()
 {
-    RenderBox::willBeRemovedFromTree();
+    LayoutBox::willBeRemovedFromTree();
     table()->removeColumn(this);
 }
 

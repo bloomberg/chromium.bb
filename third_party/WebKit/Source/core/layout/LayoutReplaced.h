@@ -22,11 +22,11 @@
 #ifndef LayoutReplaced_h
 #define LayoutReplaced_h
 
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
-class LayoutReplaced : public RenderBox {
+class LayoutReplaced : public LayoutBox {
 public:
     LayoutReplaced(Element*);
     LayoutReplaced(Element*, const LayoutSize& intrinsicSize);
@@ -74,7 +74,7 @@ protected:
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
     virtual void intrinsicSizeChanged();
 
-    virtual RenderBox* embeddedContentBox() const { return 0; }
+    virtual LayoutBox* embeddedContentBox() const { return 0; }
 
 private:
     virtual void computePreferredLogicalWidths() override final;
@@ -86,7 +86,7 @@ private:
     virtual bool canBeSelectionLeaf() const override { return true; }
 
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override final;
-    void computeAspectRatioInformationForRenderBox(RenderBox*, FloatSize& constrainedSize, double& intrinsicRatio) const;
+    void computeAspectRatioInformationForLayoutBox(LayoutBox*, FloatSize& constrainedSize, double& intrinsicRatio) const;
 
     mutable LayoutSize m_intrinsicSize;
 };

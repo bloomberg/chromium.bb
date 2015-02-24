@@ -29,7 +29,7 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUn
 
 class GridItemsSorter {
 public:
-    bool operator()(const std::pair<RenderBox*, size_t>& firstChild, const std::pair<RenderBox*, size_t>& secondChild) const
+    bool operator()(const std::pair<LayoutBox*, size_t>& firstChild, const std::pair<LayoutBox*, size_t>& secondChild) const
     {
         if (firstChild.first->style()->order() != secondChild.first->style()->order())
             return firstChild.first->style()->order() < secondChild.first->style()->order();
@@ -49,11 +49,11 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
     GridSpan dirtiedColumns = dirtiedGridAreas(m_renderGrid.columnPositions(), localPaintInvalidationRect.x(), localPaintInvalidationRect.maxX());
     GridSpan dirtiedRows = dirtiedGridAreas(m_renderGrid.rowPositions(), localPaintInvalidationRect.y(), localPaintInvalidationRect.maxY());
 
-    Vector<std::pair<RenderBox*, size_t> > gridItemsToBePainted;
+    Vector<std::pair<LayoutBox*, size_t>> gridItemsToBePainted;
 
     for (GridSpan::iterator row = dirtiedRows.begin(); row != dirtiedRows.end(); ++row) {
         for (GridSpan::iterator column = dirtiedColumns.begin(); column != dirtiedColumns.end(); ++column) {
-            const Vector<RenderBox*, 1>& children = m_renderGrid.gridCell(row.toInt(), column.toInt());
+            const Vector<LayoutBox*, 1>& children = m_renderGrid.gridCell(row.toInt(), column.toInt());
             for (auto* child : children)
                 gridItemsToBePainted.append(std::make_pair(child, m_renderGrid.paintIndexForGridItem(child)));
         }
@@ -68,11 +68,11 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
     // See http://www.w3.org/TR/css-flexbox/#order-modified-document-order
     std::stable_sort(gridItemsToBePainted.begin(), gridItemsToBePainted.end(), GridItemsSorter());
 
-    RenderBox* previous = 0;
+    LayoutBox* previous = 0;
     for (const auto& gridItemAndPaintIndex : gridItemsToBePainted) {
         // We might have duplicates because of spanning children are included in all cells they span.
         // Skip them here to avoid painting items several times.
-        RenderBox* current = gridItemAndPaintIndex.first;
+        LayoutBox* current = gridItemAndPaintIndex.first;
         if (current == previous)
             continue;
 

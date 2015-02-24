@@ -75,7 +75,7 @@ class PlatformWheelEvent;
 class QualifiedName;
 class RadioNodeList;
 class RegisteredEventListener;
-class RenderBox;
+class LayoutBox;
 class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutStyle;
@@ -509,7 +509,7 @@ public:
     }
 
     // Use these two methods with caution.
-    RenderBox* renderBox() const;
+    LayoutBox* layoutBox() const;
     LayoutBoxModelObject* layoutBoxModelObject() const;
 
     struct AttachContext {

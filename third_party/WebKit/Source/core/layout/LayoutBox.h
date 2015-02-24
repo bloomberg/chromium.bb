@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderBox_h
-#define RenderBox_h
+#ifndef LayoutBox_h
+#define LayoutBox_h
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -47,10 +47,10 @@ enum ScrollOffsetClamping {
     ScrollOffsetClamped
 };
 
-struct RenderBoxRareData {
-    WTF_MAKE_NONCOPYABLE(RenderBoxRareData); WTF_MAKE_FAST_ALLOCATED;
+struct LayoutBoxRareData {
+    WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); WTF_MAKE_FAST_ALLOCATED;
 public:
-    RenderBoxRareData()
+    LayoutBoxRareData()
         : m_inlineBoxWrapper(0)
         , m_spannerPlaceholder(0)
         , m_overrideLogicalContentHeight(-1)
@@ -68,13 +68,13 @@ public:
     LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
 
-    // Set by RenderBox::updatePreviousBorderBoxSizeIfNeeded().
+    // Set by LayoutBox::updatePreviousBorderBoxSizeIfNeeded().
     LayoutSize m_previousBorderBoxSize;
 };
 
-class RenderBox : public LayoutBoxModelObject {
+class LayoutBox : public LayoutBoxModelObject {
 public:
-    explicit RenderBox(ContainerNode*);
+    explicit LayoutBox(ContainerNode*);
 
     virtual LayerType layerTypeRequired() const override;
 
@@ -83,8 +83,8 @@ public:
     virtual bool backgroundShouldAlwaysBeClipped() const { return false; }
 
     // Use this with caution! No type checking is done!
-    RenderBox* firstChildBox() const;
-    RenderBox* lastChildBox() const;
+    LayoutBox* firstChildBox() const;
+    LayoutBox* lastChildBox() const;
 
     int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
     int pixelSnappedHeight() const { return m_frameRect.pixelSnappedHeight(); }
@@ -179,16 +179,16 @@ public:
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
 
     // Use this with caution! No type checking is done!
-    RenderBox* previousSiblingBox() const;
-    RenderBox* previousInFlowSiblingBox() const;
-    RenderBox* nextSiblingBox() const;
-    RenderBox* nextInFlowSiblingBox() const;
-    RenderBox* parentBox() const;
+    LayoutBox* previousSiblingBox() const;
+    LayoutBox* previousInFlowSiblingBox() const;
+    LayoutBox* nextSiblingBox() const;
+    LayoutBox* nextInFlowSiblingBox() const;
+    LayoutBox* parentBox() const;
 
     // Return the previous sibling column set or spanner placeholder. Only to be used on multicol container children.
-    RenderBox* previousSiblingMultiColumnBox() const;
+    LayoutBox* previousSiblingMultiColumnBox() const;
     // Return the next sibling column set or spanner placeholder. Only to be used on multicol container children.
-    RenderBox* nextSiblingMultiColumnBox() const;
+    LayoutBox* nextSiblingMultiColumnBox() const;
 
     bool canResize() const;
 
@@ -217,8 +217,8 @@ public:
 
     void addVisualEffectOverflow();
     LayoutRectOutsets computeVisualEffectOverflowOutsets() const;
-    void addOverflowFromChild(RenderBox* child) { addOverflowFromChild(child, child->locationOffset()); }
-    void addOverflowFromChild(RenderBox* child, const LayoutSize& delta);
+    void addOverflowFromChild(LayoutBox* child) { addOverflowFromChild(child, child->locationOffset()); }
+    void addOverflowFromChild(LayoutBox* child, const LayoutSize& delta);
     void clearLayoutOverflow();
     void clearAllOverflows() { m_overflow.clear(); }
 
@@ -334,7 +334,7 @@ public:
     virtual LayoutUnit maxPreferredLogicalWidth() const override;
 
     // FIXME: We should rename these back to overrideLogicalHeight/Width and have them store
-    // the border-box height/width like the regular height/width accessors on RenderBox.
+    // the border-box height/width like the regular height/width accessors on LayoutBox.
     // Right now, these are different than contentHeight/contentWidth because they still
     // include the scrollbar height/width.
     LayoutUnit overrideLogicalContentWidth() const;
@@ -482,7 +482,7 @@ public:
     virtual void autoscroll(const IntPoint&);
     bool canAutoscroll() const;
     IntSize calculateAutoscrollDirection(const IntPoint& windowPoint) const;
-    static RenderBox* findAutoscrollable(LayoutObject*);
+    static LayoutBox* findAutoscrollable(LayoutObject*);
     virtual void stopAutoscroll() { }
     virtual void panScroll(const IntPoint&);
 
@@ -545,7 +545,7 @@ public:
     virtual LayoutUnit offsetLeft() const override;
     virtual LayoutUnit offsetTop() const override;
 
-    LayoutPoint flipForWritingModeForChild(const RenderBox* child, const LayoutPoint&) const;
+    LayoutPoint flipForWritingModeForChild(const LayoutBox* child, const LayoutPoint&) const;
     LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN
     {
         // The offset is in the block direction (y for horizontal writing modes, x for vertical writing modes).
@@ -631,13 +631,13 @@ public:
         return layoutOverflowRect.y() < noOverflowRect.y() || layoutOverflowRect.maxY() > noOverflowRect.maxY();
     }
 
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject*) const
+    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject*) const
     {
         ASSERT_NOT_REACHED();
         return 0;
     }
 
-    bool hasSameDirectionAs(const RenderBox* object) const { return style()->direction() == object->style()->direction(); }
+    bool hasSameDirectionAs(const LayoutBox* object) const { return style()->direction() == object->style()->direction(); }
 
     ShapeOutsideInfo* shapeOutsideInfo() const
     {
@@ -661,7 +661,7 @@ protected:
     virtual void updateFromStyle() override;
 
     // Returns false if it could not cheaply compute the extent (e.g. fixed background), in which case the returned rect may be incorrect.
-    // FIXME: make this a const method once the RenderBox reference in BoxPainter is const.
+    // FIXME: make this a const method once the LayoutBox reference in BoxPainter is const.
     bool getBackgroundPaintedExtent(LayoutRect&);
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
     virtual bool computeBackgroundIsKnownToBeObscured() override;
@@ -708,20 +708,20 @@ private:
     // Returns true if we queued up a paint invalidation.
     bool paintInvalidationLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
 
-    bool skipContainingBlockForPercentHeightCalculation(const RenderBox* containingBlock) const;
+    bool skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const;
 
     LayoutUnit containingBlockLogicalWidthForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
     LayoutUnit containingBlockLogicalHeightForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
 
     void computePositionedLogicalHeight(LogicalExtentComputedValues&) const;
     void computePositionedLogicalWidthUsing(Length logicalWidth, const LayoutBoxModelObject* containerBlock, TextDirection containerDirection,
-                                            LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
-                                            const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
-                                            const Length& marginLogicalRight, LogicalExtentComputedValues&) const;
+        LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
+        const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
+        const Length& marginLogicalRight, LogicalExtentComputedValues&) const;
     void computePositionedLogicalHeightUsing(Length logicalHeightLength, const LayoutBoxModelObject* containerBlock,
-                                             LayoutUnit containerLogicalHeight, LayoutUnit bordersPlusPadding, LayoutUnit logicalHeight,
-                                             const Length& logicalTop, const Length& logicalBottom, const Length& marginLogicalTop,
-                                             const Length& marginLogicalBottom, LogicalExtentComputedValues&) const;
+        LayoutUnit containerLogicalHeight, LayoutUnit bordersPlusPadding, LayoutUnit logicalHeight,
+        const Length& logicalTop, const Length& logicalBottom, const Length& marginLogicalTop,
+        const Length& marginLogicalBottom, LogicalExtentComputedValues&) const;
 
     void computePositionedLogicalHeightReplaced(LogicalExtentComputedValues&) const;
     void computePositionedLogicalWidthReplaced(LogicalExtentComputedValues&) const;
@@ -736,10 +736,10 @@ private:
     // These include tables, positioned objects, floats and flexible boxes.
     virtual void computePreferredLogicalWidths() { clearPreferredLogicalWidthsDirty(); }
 
-    RenderBoxRareData& ensureRareData()
+    LayoutBoxRareData& ensureRareData()
     {
         if (!m_rareData)
-            m_rareData = adoptPtr(new RenderBoxRareData());
+            m_rareData = adoptPtr(new LayoutBoxRareData());
         return *m_rareData.get();
     }
 
@@ -773,68 +773,68 @@ protected:
     OwnPtr<RenderOverflow> m_overflow;
 
 private:
-    OwnPtr<RenderBoxRareData> m_rareData;
+    OwnPtr<LayoutBoxRareData> m_rareData;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBox, isBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBox, isBox());
 
-inline RenderBox* RenderBox::previousSiblingBox() const
+inline LayoutBox* LayoutBox::previousSiblingBox() const
 {
-    return toRenderBox(previousSibling());
+    return toLayoutBox(previousSibling());
 }
 
-inline RenderBox* RenderBox::previousInFlowSiblingBox() const
+inline LayoutBox* LayoutBox::previousInFlowSiblingBox() const
 {
-    RenderBox* previous = previousSiblingBox();
+    LayoutBox* previous = previousSiblingBox();
     while (previous && previous->isOutOfFlowPositioned())
         previous = previous->previousSiblingBox();
     return previous;
 }
 
-inline RenderBox* RenderBox::nextSiblingBox() const
+inline LayoutBox* LayoutBox::nextSiblingBox() const
 {
-    return toRenderBox(nextSibling());
+    return toLayoutBox(nextSibling());
 }
 
-inline RenderBox* RenderBox::nextInFlowSiblingBox() const
+inline LayoutBox* LayoutBox::nextInFlowSiblingBox() const
 {
-    RenderBox* next = nextSiblingBox();
+    LayoutBox* next = nextSiblingBox();
     while (next && next->isOutOfFlowPositioned())
         next = next->nextSiblingBox();
     return next;
 }
 
-inline RenderBox* RenderBox::parentBox() const
+inline LayoutBox* LayoutBox::parentBox() const
 {
-    return toRenderBox(parent());
+    return toLayoutBox(parent());
 }
 
-inline RenderBox* RenderBox::firstChildBox() const
+inline LayoutBox* LayoutBox::firstChildBox() const
 {
-    return toRenderBox(slowFirstChild());
+    return toLayoutBox(slowFirstChild());
 }
 
-inline RenderBox* RenderBox::lastChildBox() const
+inline LayoutBox* LayoutBox::lastChildBox() const
 {
-    return toRenderBox(slowLastChild());
+    return toLayoutBox(slowLastChild());
 }
 
-inline RenderBox* RenderBox::previousSiblingMultiColumnBox() const
+inline LayoutBox* LayoutBox::previousSiblingMultiColumnBox() const
 {
     ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
-    RenderBox* previousBox = previousSiblingBox();
+    LayoutBox* previousBox = previousSiblingBox();
     if (previousBox->isLayoutFlowThread())
         return 0;
     return previousBox;
 }
 
-inline RenderBox* RenderBox::nextSiblingMultiColumnBox() const
+inline LayoutBox* LayoutBox::nextSiblingMultiColumnBox() const
 {
     ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
     return nextSiblingBox();
 }
 
-inline void RenderBox::setInlineBoxWrapper(InlineBox* boxWrapper)
+inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper)
 {
     if (boxWrapper) {
         ASSERT(!inlineBoxWrapper());
@@ -851,4 +851,4 @@ inline void RenderBox::setInlineBoxWrapper(InlineBox* boxWrapper)
 
 } // namespace blink
 
-#endif // RenderBox_h
+#endif // LayoutBox_h

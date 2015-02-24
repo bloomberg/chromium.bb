@@ -212,7 +212,7 @@ unsigned ImageInputType::height() const
 
     element->document().updateLayout();
 
-    RenderBox* box = element->renderBox();
+    LayoutBox* box = element->layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentHeight(), box) : 0;
 }
 
@@ -234,7 +234,7 @@ unsigned ImageInputType::width() const
 
     element->document().updateLayout();
 
-    RenderBox* box = element->renderBox();
+    LayoutBox* box = element->layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentWidth(), box) : 0;
 }
 

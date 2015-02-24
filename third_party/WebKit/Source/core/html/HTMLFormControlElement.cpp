@@ -35,10 +35,10 @@
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/ValidityState.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/text/BidiTextRun.h"
 #include "wtf/Vector.h"
 

@@ -34,11 +34,11 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
@@ -103,7 +103,7 @@ FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const Layou
     FloatRect normalizedRect = toNormalizedRect(inputRect, baseRenderer, baseContainer);
 
     // Go up across frames.
-    for (const RenderBox* renderer = baseContainer; renderer; ) {
+    for (const LayoutBox* renderer = baseContainer; renderer; ) {
 
         // Go up the render tree until we reach the root of the current frame (the RenderView).
         while (!renderer->isRenderView()) {

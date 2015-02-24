@@ -72,7 +72,7 @@ LayoutUnit LayoutTextControlMultiLine::computeControlLogicalHeight(LayoutUnit li
 
 int LayoutTextControlMultiLine::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
-    return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
+    return LayoutBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
 PassRefPtr<LayoutStyle> LayoutTextControlMultiLine::createInnerEditorStyle(const LayoutStyle& startStyle) const
@@ -93,7 +93,7 @@ LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(bool relayo
         return 0;
     if (!placeholderRenderer->isBox())
         return placeholderRenderer;
-    RenderBox* placeholderBox = toRenderBox(placeholderRenderer);
+    LayoutBox* placeholderBox = toLayoutBox(placeholderRenderer);
     placeholderBox->style()->setLogicalWidth(Length(contentLogicalWidth() - placeholderBox->borderAndPaddingLogicalWidth(), Fixed));
     placeholderBox->layoutIfNeeded();
     placeholderBox->setX(borderLeft() + paddingLeft());

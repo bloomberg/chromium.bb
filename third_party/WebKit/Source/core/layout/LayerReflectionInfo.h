@@ -57,7 +57,7 @@ class LayoutReplica;
 class LayerReflectionInfo {
     WTF_MAKE_NONCOPYABLE(LayerReflectionInfo);
 public:
-    explicit LayerReflectionInfo(RenderBox&);
+    explicit LayerReflectionInfo(LayoutBox&);
     void destroy();
 
     LayoutReplica* reflection() const { return m_reflection; }
@@ -70,10 +70,10 @@ public:
     void paint(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
 private:
-    RenderBox& box() { return *m_box; }
-    const RenderBox& box() const { return *m_box; }
+    LayoutBox& box() { return *m_box; }
+    const LayoutBox& box() const { return *m_box; }
 
-    RenderBox* m_box;
+    LayoutBox* m_box;
     LayoutReplica* m_reflection;
 
     // A state bit tracking if we are painting inside a replica.

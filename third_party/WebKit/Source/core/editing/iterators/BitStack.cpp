@@ -29,8 +29,8 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderBox.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ static inline bool fullyClipsContents(Node* node)
     LayoutObject* renderer = node->renderer();
     if (!renderer || !renderer->isBox() || !renderer->hasOverflowClip())
         return false;
-    return toRenderBox(renderer)->size().isEmpty();
+    return toLayoutBox(renderer)->size().isEmpty();
 }
 
 static inline bool ignoresContainerClip(Node* node)

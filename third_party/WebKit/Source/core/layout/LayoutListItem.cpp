@@ -233,7 +233,7 @@ static LayoutObject* getParentOfFirstLineBox(RenderBlockFlow* curr, LayoutObject
         if (currChild->isFloating() || currChild->isOutOfFlowPositioned())
             continue;
 
-        if (!currChild->isRenderBlockFlow() || (currChild->isBox() && toRenderBox(currChild)->isWritingModeRoot()))
+        if (!currChild->isRenderBlockFlow() || (currChild->isBox() && toLayoutBox(currChild)->isWritingModeRoot()))
             break;
 
         if (curr->isListItem() && inQuirksMode && currChild->node()
@@ -337,7 +337,7 @@ void LayoutListItem::positionListMarker()
         LayoutUnit markerOldLogicalLeft = m_marker->logicalLeft();
         LayoutUnit blockOffset = 0;
         LayoutUnit lineOffset = 0;
-        for (RenderBox* o = m_marker->parentBox(); o != this; o = o->parentBox()) {
+        for (LayoutBox* o = m_marker->parentBox(); o != this; o = o->parentBox()) {
             blockOffset += o->logicalTop();
             lineOffset += o->logicalLeft();
         }
@@ -402,7 +402,7 @@ void LayoutListItem::positionListMarker()
             LayoutRect markerRect(LayoutPoint(markerLogicalLeft + lineOffset, blockOffset), m_marker->size());
             if (!style()->isHorizontalWritingMode())
                 markerRect = markerRect.transposedRect();
-            RenderBox* o = m_marker;
+            LayoutBox* o = m_marker;
             bool propagateVisualOverflow = true;
             bool propagateLayoutOverflow = true;
             do {

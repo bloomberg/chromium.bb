@@ -55,7 +55,7 @@ class LocalFrame;
 class KURL;
 class Node;
 class Page;
-class RenderBox;
+class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutScrollbarPart;
@@ -281,7 +281,7 @@ public:
     virtual bool shouldSuspendScrollAnimations() const override;
     virtual void scrollbarStyleChanged() override;
 
-    RenderBox* embeddedContentBox() const;
+    LayoutBox* embeddedContentBox() const;
 
     void setTracksPaintInvalidations(bool);
     bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
@@ -301,9 +301,9 @@ public:
     // With CSS style "resize:" enabled, a little resizer handle will appear at the bottom
     // right of the object. We keep track of these resizer areas for checking if touches
     // (implemented using Scroll gesture) are targeting the resizer.
-    typedef HashSet<RenderBox*> ResizerAreaSet;
-    void addResizerArea(RenderBox&);
-    void removeResizerArea(RenderBox&);
+    typedef HashSet<LayoutBox*> ResizerAreaSet;
+    void addResizerArea(LayoutBox&);
+    void removeResizerArea(LayoutBox&);
     const ResizerAreaSet* resizerAreas() const { return m_resizerAreas.get(); }
 
     // This function exists for ports that need to handle wheel events manually.

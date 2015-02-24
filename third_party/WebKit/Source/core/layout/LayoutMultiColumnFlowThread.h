@@ -128,14 +128,14 @@ public:
     LayoutMultiColumnSet* lastMultiColumnSet() const;
 
     // Return the first column set or spanner placeholder.
-    RenderBox* firstMultiColumnBox() const
+    LayoutBox* firstMultiColumnBox() const
     {
         return nextSiblingBox();
     }
     // Return the last column set or spanner placeholder.
-    RenderBox* lastMultiColumnBox() const
+    LayoutBox* lastMultiColumnBox() const
     {
-        RenderBox* lastSiblingBox = multiColumnBlockFlow()->lastChildBox();
+        LayoutBox* lastSiblingBox = multiColumnBlockFlow()->lastChildBox();
         // The flow thread is the first child of the multicol container. If the flow thread is also
         // the last child, it means that there are no siblings; i.e. we have no column boxes.
         return lastSiblingBox != this ? lastSiblingBox : 0;
@@ -183,14 +183,14 @@ protected:
 
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
-    void createAndInsertMultiColumnSet(RenderBox* insertBefore = 0);
-    void createAndInsertSpannerPlaceholder(RenderBox* spanner, RenderBox* insertBefore = 0);
+    void createAndInsertMultiColumnSet(LayoutBox* insertBefore = 0);
+    void createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore = 0);
     virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
     virtual const char* renderName() const override;
     virtual void addRegionToThread(LayoutMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
-    virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) override;
+    virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;
     virtual void flowThreadDescendantWasInserted(LayoutObject*) override;
     virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) override;
     virtual void computePreferredLogicalWidths() override;

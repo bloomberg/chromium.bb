@@ -29,9 +29,9 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderText.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
@@ -217,7 +217,7 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
 
 static inline void appendZoomableSubtargets(Node* node, SubtargetGeometryList& subtargets)
 {
-    RenderBox* renderer = toRenderBox(node->renderer());
+    LayoutBox* renderer = toLayoutBox(node->renderer());
     ASSERT(renderer);
 
     Vector<FloatQuad> quads;

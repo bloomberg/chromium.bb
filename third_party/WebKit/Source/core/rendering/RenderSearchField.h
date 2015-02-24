@@ -35,7 +35,7 @@ public:
     virtual ~RenderSearchField();
 
 private:
-    virtual void centerContainerIfNeeded(RenderBox*) const override;
+    virtual void centerContainerIfNeeded(LayoutBox*) const override;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
     virtual LayoutUnit computeLogicalHeightLimit() const override;
 

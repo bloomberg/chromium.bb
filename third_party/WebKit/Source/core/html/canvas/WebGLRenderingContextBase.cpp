@@ -78,9 +78,9 @@
 #include "core/html/canvas/WebGLUniformLocation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/LayoutBox.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -851,11 +851,11 @@ void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
 
     drawingBuffer()->markContentsChanged();
 
-    RenderBox* renderBox = canvas()->renderBox();
-    if (renderBox && renderBox->hasAcceleratedCompositing()) {
+    LayoutBox* layoutBox = canvas()->layoutBox();
+    if (layoutBox && layoutBox->hasAcceleratedCompositing()) {
         m_markedCanvasDirty = true;
         canvas()->clearCopiedImage();
-        renderBox->contentChanged(changeType);
+        layoutBox->contentChanged(changeType);
     } else {
         if (!m_markedCanvasDirty) {
             m_markedCanvasDirty = true;

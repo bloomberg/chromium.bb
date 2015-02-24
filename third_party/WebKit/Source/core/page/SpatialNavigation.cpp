@@ -227,7 +227,7 @@ bool scrollInDirection(Node* container, WebFocusType type)
     if (container->isDocumentNode())
         return scrollInDirection(toDocument(container)->frame(), type);
 
-    if (!container->renderBox())
+    if (!container->layoutBox())
         return false;
 
     if (canScrollInDirection(container, type)) {
@@ -235,25 +235,25 @@ bool scrollInDirection(Node* container, WebFocusType type)
         LayoutUnit dy = 0;
         switch (type) {
         case WebFocusTypeLeft:
-            dx = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollLeft());
+            dx = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollLeft());
             break;
         case WebFocusTypeRight:
-            ASSERT(container->renderBox()->scrollWidth() > (container->renderBox()->scrollLeft() + container->renderBox()->clientWidth()));
-            dx = std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollWidth() - (container->renderBox()->scrollLeft() + container->renderBox()->clientWidth()));
+            ASSERT(container->layoutBox()->scrollWidth() > (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth()));
+            dx = std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollWidth() - (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth()));
             break;
         case WebFocusTypeUp:
-            dy = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollTop());
+            dy = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollTop());
             break;
         case WebFocusTypeDown:
-            ASSERT(container->renderBox()->scrollHeight() - (container->renderBox()->scrollTop() + container->renderBox()->clientHeight()));
-            dy = std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollHeight() - (container->renderBox()->scrollTop() + container->renderBox()->clientHeight()));
+            ASSERT(container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight()));
+            dy = std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight()));
             break;
         default:
             ASSERT_NOT_REACHED();
             return false;
         }
 
-        container->renderBox()->scrollByRecursively(IntSize(dx, dy));
+        container->layoutBox()->scrollByRecursively(IntSize(dx, dy));
         return true;
     }
 
@@ -283,7 +283,7 @@ bool isScrollableNode(const Node* node)
         return false;
 
     if (LayoutObject* renderer = node->renderer())
-        return renderer->isBox() && toRenderBox(renderer)->canBeScrolledAndHasScrollableArea() && node->hasChildren();
+        return renderer->isBox() && toLayoutBox(renderer)->canBeScrolledAndHasScrollableArea() && node->hasChildren();
 
     return false;
 }
@@ -314,13 +314,13 @@ bool canScrollInDirection(const Node* container, WebFocusType type)
 
     switch (type) {
     case WebFocusTypeLeft:
-        return (container->renderer()->style()->overflowX() != OHIDDEN && container->renderBox()->scrollLeft() > 0);
+        return (container->renderer()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() > 0);
     case WebFocusTypeUp:
-        return (container->renderer()->style()->overflowY() != OHIDDEN && container->renderBox()->scrollTop() > 0);
+        return (container->renderer()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() > 0);
     case WebFocusTypeRight:
-        return (container->renderer()->style()->overflowX() != OHIDDEN && container->renderBox()->scrollLeft() + container->renderBox()->clientWidth() < container->renderBox()->scrollWidth());
+        return (container->renderer()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth() < container->layoutBox()->scrollWidth());
     case WebFocusTypeDown:
-        return (container->renderer()->style()->overflowY() != OHIDDEN && container->renderBox()->scrollTop() + container->renderBox()->clientHeight() < container->renderBox()->scrollHeight());
+        return (container->renderer()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight() < container->layoutBox()->scrollHeight());
     default:
         ASSERT_NOT_REACHED();
         return false;

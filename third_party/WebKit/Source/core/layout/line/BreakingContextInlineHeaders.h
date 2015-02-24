@@ -92,7 +92,7 @@ public:
     void increment();
 
     void handleBR(EClear&);
-    void handleOutOfFlowPositioned(Vector<RenderBox*>& positionedObjects);
+    void handleOutOfFlowPositioned(Vector<LayoutBox*>& positionedObjects);
     void handleFloat();
     void handleEmptyInline();
     void handleReplaced();
@@ -198,7 +198,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
     return notJustWhitespace || isEmptyInline(it.object());
 }
 
-inline void setStaticPositions(RenderBlockFlow* block, RenderBox* child)
+inline void setStaticPositions(RenderBlockFlow* block, LayoutBox* child)
 {
     ASSERT(child->isOutOfFlowPositioned());
     // FIXME: The math here is actually not really right. It's a best-guess approximation that
@@ -231,9 +231,9 @@ inline void BreakingContext::skipTrailingWhitespace(InlineIterator& iterator, co
     while (!iterator.atEnd() && !requiresLineBox(iterator, lineInfo, TrailingWhitespace)) {
         LayoutObject* object = iterator.object();
         if (object->isOutOfFlowPositioned())
-            setStaticPositions(m_block, toRenderBox(object));
+            setStaticPositions(m_block, toLayoutBox(object));
         else if (object->isFloating())
-            m_block->insertFloatingObject(*toRenderBox(object));
+            m_block->insertFloatingObject(*toLayoutBox(object));
         iterator.increment();
     }
 }
@@ -335,11 +335,11 @@ inline LayoutUnit inlineLogicalWidth(LayoutObject* child, bool start = true, boo
     return extraWidth;
 }
 
-inline void BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& positionedObjects)
+inline void BreakingContext::handleOutOfFlowPositioned(Vector<LayoutBox*>& positionedObjects)
 {
     // If our original display wasn't an inline type, then we can
     // go ahead and determine our static inline position now.
-    RenderBox* box = toRenderBox(m_current.object());
+    LayoutBox* box = toLayoutBox(m_current.object());
     bool isInlineType = box->style()->isOriginalDisplayInlineType();
     if (!isInlineType) {
         m_block->setStaticInlinePositionForChild(*box, m_block->startOffsetForContent());
@@ -365,7 +365,7 @@ inline void BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& posit
 
 inline void BreakingContext::handleFloat()
 {
-    RenderBox* floatBox = toRenderBox(m_current.object());
+    LayoutBox* floatBox = toLayoutBox(m_current.object());
     FloatingObject* floatingObject = m_block->insertFloatingObject(*floatBox);
     // check if it fits in the current line.
     // If it does, position it now, otherwise, position
@@ -440,7 +440,7 @@ inline void BreakingContext::handleEmptyInline()
 
 inline void BreakingContext::handleReplaced()
 {
-    RenderBox* replacedBox = toRenderBox(m_current.object());
+    LayoutBox* replacedBox = toLayoutBox(m_current.object());
 
     if (m_atStart)
         m_width.updateAvailableWidth(replacedBox->logicalHeight());

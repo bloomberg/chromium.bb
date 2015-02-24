@@ -638,7 +638,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
         swallowEvent = handleMousePressEventSingleClick(event);
 
     m_mouseDownMayStartAutoscroll = m_mouseDownMayStartSelect
-        || (m_mousePressNode && m_mousePressNode->renderBox() && m_mousePressNode->renderBox()->canBeProgramaticallyScrolled());
+        || (m_mousePressNode && m_mousePressNode->layoutBox() && m_mousePressNode->layoutBox()->canBeProgramaticallyScrolled());
 
     return swallowEvent;
 }
@@ -842,7 +842,7 @@ void EventHandler::startPanScrolling(LayoutObject* renderer)
     AutoscrollController* controller = autoscrollController();
     if (!controller)
         return;
-    controller->startPanScrolling(toRenderBox(renderer), lastKnownMousePosition());
+    controller->startPanScrolling(toLayoutBox(renderer), lastKnownMousePosition());
     invalidateClick();
 }
 
@@ -923,7 +923,7 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
         return false;
 
     bool rootLayerScrolls = m_frame->settings() && m_frame->settings()->rootLayerScrolls();
-    RenderBox* curBox = node->renderer()->enclosingBox();
+    LayoutBox* curBox = node->renderer()->enclosingBox();
     while (curBox && (rootLayerScrolls || !curBox->isRenderView())) {
         ScrollDirection physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
@@ -2524,7 +2524,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         if (gestureEvent.preventPropagation())
             stopNode = m_previousGestureScrolledNode.get();
 
-        // First try to scroll the closest scrollable RenderBox ancestor of |node|.
+        // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
         ScrollGranularity granularity = ScrollByPixel;
         bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
         bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
@@ -3844,7 +3844,7 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
             }
 
             // If we've reached an ancestor that supports a touch action, search no further.
-            if (renderer->isBox() && toRenderBox(renderer)->scrollsOverflow())
+            if (renderer->isBox() && toLayoutBox(renderer)->scrollsOverflow())
                 break;
         }
     }

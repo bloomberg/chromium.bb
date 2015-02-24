@@ -1288,13 +1288,13 @@ static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
 }
 
 // Returns true if |r1| and |r2| are both non-null and are contained within the
-// same RenderBox.
-static bool isSameRenderBox(LayoutObject* r1, LayoutObject* r2)
+// same LayoutBox.
+static bool isSameLayoutBox(LayoutObject* r1, LayoutObject* r2)
 {
     if (!r1 || !r2)
         return false;
-    RenderBox* b1 = r1->enclosingBox();
-    RenderBox* b2 = r2->enclosingBox();
+    LayoutBox* b1 = r1->enclosingBox();
+    LayoutBox* b2 = r2->enclosingBox();
     return b1 && b2 && b1 == b2;
 }
 
@@ -1321,13 +1321,13 @@ String AXNodeObject::textUnderElement(TextUnderElementMode mode) const
             }
         }
 
-        // If we're going between two renderers that are in separate RenderBoxes, add
+        // If we're going between two renderers that are in separate LayoutBoxes, add
         // whitespace if it wasn't there already. Intuitively if you have
-        // <span>Hello</span><span>World</span>, those are part of the same RenderBox
+        // <span>Hello</span><span>World</span>, those are part of the same LayoutBox
         // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
         // strings are in separate boxes so we should return "Hello World".
         if (previous && builder.length() && !isHTMLSpace(builder[builder.length() - 1])) {
-            if (!isSameRenderBox(child->renderer(), previous->renderer()))
+            if (!isSameLayoutBox(child->renderer(), previous->renderer()))
                 builder.append(' ');
         }
 

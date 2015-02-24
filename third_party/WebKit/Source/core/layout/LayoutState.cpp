@@ -48,7 +48,7 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     view.pushLayoutState(*this);
 }
 
-LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo, bool containingBlockLogicalWidthChanged)
+LayoutState::LayoutState(LayoutBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo, bool containingBlockLogicalWidthChanged)
     : m_containingBlockLogicalWidthChanged(containingBlockLogicalWidthChanged)
     , m_columnInfo(columnInfo)
     , m_next(renderer.view()->layoutState())
@@ -139,14 +139,14 @@ void LayoutState::clearPaginationInformation()
     m_columnInfo = m_next->m_columnInfo;
 }
 
-LayoutUnit LayoutState::pageLogicalOffset(const RenderBox& child, const LayoutUnit& childLogicalOffset) const
+LayoutUnit LayoutState::pageLogicalOffset(const LayoutBox& child, const LayoutUnit& childLogicalOffset) const
 {
     if (child.isHorizontalWritingMode())
         return m_layoutOffset.height() + childLogicalOffset - m_pageOffset.height();
     return m_layoutOffset.width() + childLogicalOffset - m_pageOffset.width();
 }
 
-void LayoutState::addForcedColumnBreak(const RenderBox& child, const LayoutUnit& childLogicalOffset)
+void LayoutState::addForcedColumnBreak(const LayoutBox& child, const LayoutUnit& childLogicalOffset)
 {
     if (!m_columnInfo || m_columnInfo->columnHeight())
         return;

@@ -57,14 +57,14 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
                 FloatPoint fixedOffset = renderer.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
                 m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
             } else {
-                LayoutSize offset = renderer.isBox() && !renderer.isTableRow() ? toRenderBox(renderer).locationOffset() : LayoutSize();
+                LayoutSize offset = renderer.isBox() && !renderer.isTableRow() ? toLayoutBox(renderer).locationOffset() : LayoutSize();
                 m_paintOffset = next.m_paintOffset + offset;
             }
 
             if (renderer.isOutOfFlowPositioned() && !fixed) {
                 if (LayoutObject* container = renderer.container()) {
                     if (container->style()->hasInFlowPosition() && container->isRenderInline())
-                        m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(toRenderBox(renderer));
+                        m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(toLayoutBox(renderer));
                 }
             }
 
@@ -119,7 +119,7 @@ void PaintInvalidationState::applyClipIfNeeded(const LayoutObject& renderer)
     if (!renderer.hasOverflowClip())
         return;
 
-    const RenderBox& box = toRenderBox(renderer);
+    const LayoutBox& box = toLayoutBox(renderer);
 
     // Do not clip scroll layer contents because the compositor expects the whole layer
     // to be always invalidated in-time.

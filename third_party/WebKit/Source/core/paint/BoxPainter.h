@@ -14,12 +14,12 @@ class BackgroundImageGeometry;
 class FloatRoundedRect;
 class LayoutPoint;
 struct PaintInfo;
-class RenderBox;
+class LayoutBox;
 class LayoutObject;
 
 class BoxPainter {
 public:
-    BoxPainter(RenderBox& renderBox) : m_renderBox(renderBox) { }
+    BoxPainter(LayoutBox& layoutBox) : m_layoutBox(layoutBox) { }
     void paint(const PaintInfo&, const LayoutPoint&);
 
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
@@ -68,7 +68,7 @@ private:
     LayoutRect scrolledBackgroundRect();
 
     // FIXME: this should be const.
-    RenderBox& m_renderBox;
+    LayoutBox& m_layoutBox;
 };
 
 } // namespace blink

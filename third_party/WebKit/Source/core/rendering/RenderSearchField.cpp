@@ -58,13 +58,13 @@ inline Element* RenderSearchField::cancelButtonElement() const
 LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
     Element* searchDecoration = searchDecorationElement();
-    if (RenderBox* decorationRenderer = searchDecoration ? searchDecoration->renderBox() : 0) {
+    if (LayoutBox* decorationRenderer = searchDecoration ? searchDecoration->layoutBox() : 0) {
         decorationRenderer->updateLogicalHeight();
         nonContentHeight = max(nonContentHeight, decorationRenderer->borderAndPaddingLogicalHeight() + decorationRenderer->marginLogicalHeight());
         lineHeight = max(lineHeight, decorationRenderer->logicalHeight());
     }
     Element* cancelButton = cancelButtonElement();
-    if (RenderBox* cancelRenderer = cancelButton ? cancelButton->renderBox() : 0) {
+    if (LayoutBox* cancelRenderer = cancelButton ? cancelButton->layoutBox() : 0) {
         cancelRenderer->updateLogicalHeight();
         nonContentHeight = max(nonContentHeight, cancelRenderer->borderAndPaddingLogicalHeight() + cancelRenderer->marginLogicalHeight());
         lineHeight = max(lineHeight, cancelRenderer->logicalHeight());
@@ -78,7 +78,7 @@ LayoutUnit RenderSearchField::computeLogicalHeightLimit() const
     return logicalHeight();
 }
 
-void RenderSearchField::centerContainerIfNeeded(RenderBox* containerRenderer) const
+void RenderSearchField::centerContainerIfNeeded(LayoutBox* containerRenderer) const
 {
     if (!containerRenderer)
         return;

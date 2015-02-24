@@ -13,7 +13,7 @@ class LayoutPoint;
 class LayoutRect;
 class RenderFlexibleBox;
 class RenderBlock;
-class RenderBox;
+class LayoutBox;
 class LayoutObject;
 
 class BlockPainter {
@@ -23,8 +23,8 @@ public:
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintObject(const PaintInfo&, const LayoutPoint&);
     void paintChildren(const PaintInfo&, const LayoutPoint&);
-    void paintChild(RenderBox&, const PaintInfo&, const LayoutPoint&);
-    void paintChildAsInlineBlock(RenderBox&, const PaintInfo&, const LayoutPoint&);
+    void paintChild(LayoutBox&, const PaintInfo&, const LayoutPoint&);
+    void paintChildAsInlineBlock(LayoutBox&, const PaintInfo&, const LayoutPoint&);
     void paintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
 
     // inline-block elements paint all phases atomically. This function ensures that. Certain other elements

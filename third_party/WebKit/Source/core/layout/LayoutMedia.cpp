@@ -53,7 +53,7 @@ void LayoutMedia::layout()
 
     LayoutImage::layout();
 
-    RenderBox* controlsRenderer = toRenderBox(m_children.firstChild());
+    LayoutBox* controlsRenderer = toLayoutBox(m_children.firstChild());
     if (!controlsRenderer)
         return;
 

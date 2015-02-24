@@ -38,7 +38,7 @@ function runTest() {
     // We do the dragging/selection in two steps here, because if we move
     // the mouse beyond the input boundary right way, it won't start the autoscroll
     // timer. See early return in AutoscrollController::startAutoscrollForSelection
-    // after calling RenderBox::findAutoscrollable.
+    // after calling LayoutBox::findAutoscrollable.
     eventSender.mouseMoveTo(x + 48, y);
     eventSender.mouseMoveTo(x + 55, y);
     setTimeout(finishTest, 100);

@@ -206,7 +206,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         const LayoutTableCell& cell = toLayoutTableCell(o);
         r = LayoutRect(cell.location().x(), cell.location().y() + cell.intrinsicPaddingBefore(), cell.size().width(), cell.size().height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
     } else if (o.isBox()) {
-        r = toRenderBox(&o)->frameRect();
+        r = toLayoutBox(&o)->frameRect();
     }
 
     // FIXME: Temporary in order to ensure compatibility with existing layout test results.
@@ -559,10 +559,10 @@ static void write(TextStream& ts, Layer& layer,
             ts << " scrollX " << adjustedScrollOffset.x();
         if (adjustedScrollOffset.y())
             ts << " scrollY " << adjustedScrollOffset.y();
-        if (layer.renderBox() && layer.renderBox()->pixelSnappedClientWidth() != layer.renderBox()->pixelSnappedScrollWidth())
-            ts << " scrollWidth " << layer.renderBox()->pixelSnappedScrollWidth();
-        if (layer.renderBox() && layer.renderBox()->pixelSnappedClientHeight() != layer.renderBox()->pixelSnappedScrollHeight())
-            ts << " scrollHeight " << layer.renderBox()->pixelSnappedScrollHeight();
+        if (layer.layoutBox() && layer.layoutBox()->pixelSnappedClientWidth() != layer.layoutBox()->pixelSnappedScrollWidth())
+            ts << " scrollWidth " << layer.layoutBox()->pixelSnappedScrollWidth();
+        if (layer.layoutBox() && layer.layoutBox()->pixelSnappedClientHeight() != layer.layoutBox()->pixelSnappedScrollHeight())
+            ts << " scrollHeight " << layer.layoutBox()->pixelSnappedScrollHeight();
     }
 
     if (paintPhase == LayerPaintPhaseBackground)
@@ -703,7 +703,7 @@ static void writeSelection(TextStream& ts, const LayoutObject* o)
     }
 }
 
-static String externalRepresentation(RenderBox* renderer, LayoutAsTextBehavior behavior)
+static String externalRepresentation(LayoutBox* renderer, LayoutAsTextBehavior behavior)
 {
     TextStream ts;
     if (!renderer->hasLayer())
@@ -726,9 +726,9 @@ String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
 
     PrintContext printContext(frame);
     if (behavior & LayoutAsTextPrintingMode)
-        printContext.begin(toRenderBox(renderer)->size().width().toFloat());
+        printContext.begin(toLayoutBox(renderer)->size().width().toFloat());
 
-    return externalRepresentation(toRenderBox(renderer), behavior);
+    return externalRepresentation(toLayoutBox(renderer), behavior);
 }
 
 String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)
@@ -742,7 +742,7 @@ String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)
     if (!renderer || !renderer->isBox())
         return String();
 
-    return externalRepresentation(toRenderBox(renderer), behavior | LayoutAsTextShowAllLayers);
+    return externalRepresentation(toLayoutBox(renderer), behavior | LayoutAsTextShowAllLayers);
 }
 
 static void writeCounterValuesFromChildren(TextStream& stream, LayoutObject* parent, bool& isFirstCounter)

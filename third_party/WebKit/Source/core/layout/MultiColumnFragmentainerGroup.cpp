@@ -162,7 +162,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragme
     //
     // All other rectangles in this method are sized physically, and the inline direction coordinate
     // is physical too, but the block direction coordinate is "logical top". This is the same as
-    // e.g. RenderBox::frameRect(). These rectangles also pretend that there's only one long column,
+    // e.g. LayoutBox::frameRect(). These rectangles also pretend that there's only one long column,
     // i.e. they are for the flow thread.
 
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();

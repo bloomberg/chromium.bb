@@ -11,14 +11,14 @@
 
 namespace blink {
 
-class RenderBox;
+class LayoutBox;
 struct PaintInfo;
 
 enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class BoxClipper {
 public:
-    BoxClipper(RenderBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
+    BoxClipper(LayoutBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
     ~BoxClipper();
 
     bool pushedClip() { return m_pushedClip; }
@@ -26,7 +26,7 @@ private:
     bool m_pushedClip;
     LayoutPoint m_accumulatedOffset;
     const PaintInfo& m_paintInfo;
-    RenderBox& m_box;
+    LayoutBox& m_box;
     DisplayItem::Type m_clipType;
 };
 

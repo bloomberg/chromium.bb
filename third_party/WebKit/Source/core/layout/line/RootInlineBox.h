@@ -122,16 +122,16 @@ public:
     InlineBox* closestLeafChildForPoint(const LayoutPoint&, bool onlyEditableLeaves);
     InlineBox* closestLeafChildForLogicalLeftPosition(LayoutUnit, bool onlyEditableLeaves = false);
 
-    void appendFloat(RenderBox* floatingBox)
+    void appendFloat(LayoutBox* floatingBox)
     {
         ASSERT(!isDirty());
         if (m_floats)
             m_floats->append(floatingBox);
         else
-            m_floats= adoptPtr(new Vector<RenderBox*>(1, floatingBox));
+            m_floats= adoptPtr(new Vector<LayoutBox*>(1, floatingBox));
     }
 
-    Vector<RenderBox*>* floatsPtr() { ASSERT(!isDirty()); return m_floats.get(); }
+    Vector<LayoutBox*>* floatsPtr() { ASSERT(!isDirty()); return m_floats.get(); }
 
     virtual void extractLineBoxFromLayoutObject() override final;
     virtual void attachLineBoxToLayoutObject() override final;
@@ -192,7 +192,7 @@ private:
 
     // Floats hanging off the line are pushed into this vector during layout. It is only
     // good for as long as the line has not been marked dirty.
-    OwnPtr<Vector<RenderBox*>> m_floats;
+    OwnPtr<Vector<LayoutBox*>> m_floats;
 
     LayoutUnit m_lineTop;
     LayoutUnit m_lineBottom;

@@ -69,7 +69,7 @@ public:
     // containing block is the multicol container). If the spanner follows right after a column set
     // (as opposed to following another spanner), we may have to stretch the flow thread to ensure
     // completely filled columns in the preceding column set. Return this adjustment, if any.
-    virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) { return LayoutUnit(); }
+    virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) { return LayoutUnit(); }
 
     virtual void flowThreadDescendantWasInserted(LayoutObject*) { }
     virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) { }

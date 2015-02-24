@@ -40,7 +40,7 @@
 namespace blink {
 
 class RenderBlockFlow;
-class RenderBox;
+class LayoutBox;
 class FloatingObject;
 
 class ShapeOutsideDeltas final {
@@ -92,12 +92,12 @@ public:
     LayoutUnit shapeLogicalWidth() const { return computedShape().shapeMarginLogicalBoundingBox().width(); }
     LayoutUnit shapeLogicalHeight() const { return computedShape().shapeMarginLogicalBoundingBox().height(); }
 
-    static PassOwnPtr<ShapeOutsideInfo> createInfo(const RenderBox& renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
-    static bool isEnabledFor(const RenderBox&);
+    static PassOwnPtr<ShapeOutsideInfo> createInfo(const LayoutBox& renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
+    static bool isEnabledFor(const LayoutBox&);
 
     ShapeOutsideDeltas computeDeltasForContainingBlockLine(const RenderBlockFlow&, const FloatingObject&, LayoutUnit lineTop, LayoutUnit lineHeight);
 
-    static ShapeOutsideInfo& ensureInfo(const RenderBox& key)
+    static ShapeOutsideInfo& ensureInfo(const LayoutBox& key)
     {
         InfoMap& infoMap = ShapeOutsideInfo::infoMap();
         if (ShapeOutsideInfo* info = infoMap.get(&key))
@@ -105,8 +105,8 @@ public:
         InfoMap::AddResult result = infoMap.add(&key, ShapeOutsideInfo::createInfo(key));
         return *result.storedValue->value;
     }
-    static void removeInfo(const RenderBox& key) { infoMap().remove(&key); }
-    static ShapeOutsideInfo* info(const RenderBox& key) { return infoMap().get(&key); }
+    static void removeInfo(const LayoutBox& key) { infoMap().remove(&key); }
+    static ShapeOutsideInfo* info(const LayoutBox& key) { return infoMap().get(&key); }
 
     void markShapeAsDirty() { m_shape.clear(); }
     bool isShapeDirty() { return !m_shape.get(); }
@@ -119,7 +119,7 @@ public:
     const Shape& computedShape() const;
 
 protected:
-    ShapeOutsideInfo(const RenderBox& renderer)
+    ShapeOutsideInfo(const LayoutBox& renderer)
         : m_renderer(renderer)
         , m_isComputingShape(false)
     { }
@@ -130,14 +130,14 @@ private:
     LayoutUnit logicalTopOffset() const;
     LayoutUnit logicalLeftOffset() const;
 
-    typedef HashMap<const RenderBox*, OwnPtr<ShapeOutsideInfo> > InfoMap;
+    typedef HashMap<const LayoutBox*, OwnPtr<ShapeOutsideInfo>> InfoMap;
     static InfoMap& infoMap()
     {
         DEFINE_STATIC_LOCAL(InfoMap, staticInfoMap, ());
         return staticInfoMap;
     }
 
-    const RenderBox& m_renderer;
+    const LayoutBox& m_renderer;
     mutable OwnPtr<Shape> m_shape;
     LayoutSize m_referenceBoxLogicalSize;
     ShapeOutsideDeltas m_shapeOutsideDeltas;

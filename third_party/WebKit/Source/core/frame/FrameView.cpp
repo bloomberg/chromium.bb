@@ -775,7 +775,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     if (!ownerRenderer || !ownerRenderer->frame())
         return;
 
-    RenderBox* contentBox = embeddedContentBox();
+    LayoutBox* contentBox = embeddedContentBox();
     if (!contentBox)
         return;
 
@@ -999,8 +999,8 @@ void FrameView::layout()
             m_size = LayoutSize(layoutSize().width(), layoutSize().height());
 
             if (oldSize != m_size && !m_firstLayout) {
-                RenderBox* rootRenderer = document->documentElement() ? document->documentElement()->renderBox() : 0;
-                RenderBox* bodyRenderer = rootRenderer && document->body() ? document->body()->renderBox() : 0;
+                LayoutBox* rootRenderer = document->documentElement() ? document->documentElement()->layoutBox() : 0;
+                LayoutBox* bodyRenderer = rootRenderer && document->body() ? document->body()->layoutBox() : 0;
                 if (bodyRenderer && bodyRenderer->stretchesToViewport())
                     bodyRenderer->setChildNeedsLayout();
                 else if (rootRenderer && rootRenderer->stretchesToViewport())
@@ -1135,7 +1135,7 @@ void FrameView::gatherDebugLayoutRects(LayoutObject* layoutRoot)
     }
 }
 
-RenderBox* FrameView::embeddedContentBox() const
+LayoutBox* FrameView::embeddedContentBox() const
 {
     RenderView* renderView = this->renderView();
     if (!renderView)
@@ -1147,7 +1147,7 @@ RenderBox* FrameView::embeddedContentBox() const
 
     // Curently only embedded SVG documents participate in the size-negotiation logic.
     if (firstChild->isSVGRoot())
-        return toRenderBox(firstChild);
+        return toLayoutBox(firstChild);
 
     return nullptr;
 }
@@ -1913,7 +1913,7 @@ bool FrameView::needsLayout() const
 
 void FrameView::setNeedsLayout()
 {
-    RenderBox* box = embeddedContentBox();
+    LayoutBox* box = embeddedContentBox();
     // It's illegal to ask for layout changes during the layout compositing or paint invalidation step.
     // FIXME: the third conditional is a hack to support embedded SVG. See FrameView::forceLayoutParentViewIfNeeded and crbug.com/442939
     RELEASE_ASSERT(!m_frame->document() || m_frame->document()->lifecycle().stateAllowsLayoutInvalidation() || (box && box->isSVGRoot()));
@@ -2441,7 +2441,7 @@ void FrameView::updateAnnotatedRegions()
     if (!document->hasAnnotatedRegions())
         return;
     Vector<AnnotatedRegionValue> newRegions;
-    document->renderBox()->collectAnnotatedRegions(newRegions);
+    document->layoutBox()->collectAnnotatedRegions(newRegions);
     if (newRegions == document->annotatedRegions())
         return;
     document->setAnnotatedRegions(newRegions);
@@ -2900,14 +2900,14 @@ String FrameView::trackedPaintInvalidationRectsAsText() const
     return ts.release();
 }
 
-void FrameView::addResizerArea(RenderBox& resizerBox)
+void FrameView::addResizerArea(LayoutBox& resizerBox)
 {
     if (!m_resizerAreas)
         m_resizerAreas = adoptPtr(new ResizerAreaSet);
     m_resizerAreas->add(&resizerBox);
 }
 
-void FrameView::removeResizerArea(RenderBox& resizerBox)
+void FrameView::removeResizerArea(LayoutBox& resizerBox)
 {
     if (!m_resizerAreas)
         return;

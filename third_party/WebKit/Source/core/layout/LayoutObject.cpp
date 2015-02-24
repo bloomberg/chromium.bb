@@ -558,7 +558,7 @@ Layer* LayoutObject::enclosingLayer() const
 
 bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
-    RenderBox* enclosingBox = this->enclosingBox();
+    LayoutBox* enclosingBox = this->enclosingBox();
     if (!enclosingBox)
         return false;
 
@@ -566,12 +566,12 @@ bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlign
     return true;
 }
 
-RenderBox* LayoutObject::enclosingBox() const
+LayoutBox* LayoutObject::enclosingBox() const
 {
     LayoutObject* curr = const_cast<LayoutObject*>(this);
     while (curr) {
         if (curr->isBox())
-            return toRenderBox(curr);
+            return toLayoutBox(curr);
         curr = curr->parent();
     }
 
@@ -592,13 +592,13 @@ LayoutBoxModelObject* LayoutObject::enclosingBoxModelObject() const
     return 0;
 }
 
-RenderBox* LayoutObject::enclosingScrollableBox() const
+LayoutBox* LayoutObject::enclosingScrollableBox() const
 {
     for (LayoutObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
         if (!ancestor->isBox())
             continue;
 
-        RenderBox* ancestorBox = toRenderBox(ancestor);
+        LayoutBox* ancestorBox = toLayoutBox(ancestor);
         if (ancestorBox->canBeScrolledAndHasScrollableArea())
             return ancestorBox;
     }
@@ -1392,7 +1392,7 @@ void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
         }
 
         if (o->hasOverflowClip()) {
-            RenderBox* boxParent = toRenderBox(o);
+            LayoutBox* boxParent = toLayoutBox(o);
             boxParent->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
             if (rect.isEmpty())
                 return;
@@ -1713,11 +1713,11 @@ void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newS
         if (isFloating() && (m_style->floating() != newStyle.floating())) {
             // For changes in float styles, we need to conceivably remove ourselves
             // from the floating objects list.
-            toRenderBox(this)->removeFloatingOrPositionedChildFromBlockLists();
+            toLayoutBox(this)->removeFloatingOrPositionedChildFromBlockLists();
         } else if (isOutOfFlowPositioned() && (m_style->position() != newStyle.position())) {
             // For changes in positioning styles, we need to conceivably remove ourselves
             // from the positioned objects list.
-            toRenderBox(this)->removeFloatingOrPositionedChildFromBlockLists();
+            toLayoutBox(this)->removeFloatingOrPositionedChildFromBlockLists();
         }
 
         s_affectsParentBlock = isFloatingOrOutOfFlowPositioned()
@@ -1942,14 +1942,14 @@ void LayoutObject::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     LayoutPoint centerPoint = roundedLayoutPoint(transformState.mappedPoint());
     if (mode & ApplyContainerFlip && o->isBox()) {
         if (o->style()->isFlippedBlocksWritingMode())
-            transformState.move(toRenderBox(o)->flipForWritingModeIncludingColumns(roundedLayoutPoint(transformState.mappedPoint())) - centerPoint);
+            transformState.move(toLayoutBox(o)->flipForWritingModeIncludingColumns(roundedLayoutPoint(transformState.mappedPoint())) - centerPoint);
         mode &= ~ApplyContainerFlip;
     }
 
     transformState.move(o->columnOffset(roundedLayoutPoint(transformState.mappedPoint())));
 
     if (o->hasOverflowClip())
-        transformState.move(-toRenderBox(o)->scrolledContentOffset());
+        transformState.move(-toLayoutBox(o)->scrolledContentOffset());
 
     o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
@@ -1965,7 +1965,7 @@ const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObj
     // FIXME: this should call offsetFromContainer to share code, but I'm not sure it's ever called.
     LayoutSize offset;
     if (container->hasOverflowClip())
-        offset = -LayoutSize(toRenderBox(container)->scrolledContentOffset());
+        offset = -LayoutSize(toLayoutBox(container)->scrolledContentOffset());
 
     geometryMap.push(this, offset, hasColumns());
 
@@ -1978,7 +1978,7 @@ void LayoutObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformSt
     if (o) {
         o->mapAbsoluteToLocalPoint(mode, transformState);
         if (o->hasOverflowClip())
-            transformState.move(toRenderBox(o)->scrolledContentOffset());
+            transformState.move(toLayoutBox(o)->scrolledContentOffset());
     }
 }
 
@@ -2057,7 +2057,7 @@ LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o, const Layout
     LayoutSize offset = o->columnOffset(point);
 
     if (o->hasOverflowClip())
-        offset -= toRenderBox(o)->scrolledContentOffset();
+        offset -= toLayoutBox(o)->scrolledContentOffset();
 
     if (offsetDependsOnPoint)
         *offsetDependsOnPoint = hasColumns() || o->isLayoutFlowThread();
@@ -2112,7 +2112,7 @@ void LayoutObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
             // offset since we want the offset relative to the scrolling content, not the
             // element itself.
             if (currentLayer->renderer()->hasOverflowClip())
-                layerOffset.move(currentLayer->renderBox()->scrolledContentOffset());
+                layerOffset.move(currentLayer->layoutBox()->scrolledContentOffset());
         }
     }
 
@@ -2785,7 +2785,7 @@ void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     if (style()->getDraggableRegionMode() == DraggableRegionNone)
         return;
 
-    RenderBox* box = toRenderBox(this);
+    LayoutBox* box = toLayoutBox(this);
     FloatRect localBounds(FloatPoint(), FloatSize(box->size()));
     FloatRect absBounds = localToAbsoluteQuad(localBounds).boundingBox();
 

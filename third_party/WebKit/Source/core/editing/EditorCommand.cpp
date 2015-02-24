@@ -56,10 +56,10 @@
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/page/Chrome.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/KillRing.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/scroll/Scrollbar.h"
@@ -270,13 +270,13 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
     LayoutObject* renderer = focusedElement->renderer();
     if (!renderer || !renderer->isBox())
         return 0;
-    RenderBox& renderBox = toRenderBox(*renderer);
-    LayoutStyle* style = renderBox.style();
+    LayoutBox& layoutBox = toLayoutBox(*renderer);
+    LayoutStyle* style = layoutBox.style();
     if (!style)
         return 0;
     if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedElement->hasEditableStyle()))
         return 0;
-    int height = std::min<int>(renderBox.clientHeight(), frame.view()->visibleHeight());
+    int height = std::min<int>(layoutBox.clientHeight(), frame.view()->visibleHeight());
     return static_cast<unsigned>(max(max<int>(height * ScrollableArea::minFractionToStepWhenPaging(), height - ScrollableArea::maxOverlapBetweenPages()), 1));
 }
 

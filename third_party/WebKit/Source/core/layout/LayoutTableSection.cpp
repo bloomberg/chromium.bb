@@ -78,7 +78,7 @@ row, const LayoutTableCell* cell)
 }
 
 LayoutTableSection::LayoutTableSection(Element* element)
-    : RenderBox(element)
+    : LayoutBox(element)
     , m_cCol(0)
     , m_cRow(0)
     , m_outerBorderStart(0)
@@ -99,7 +99,7 @@ LayoutTableSection::~LayoutTableSection()
 
 void LayoutTableSection::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBox::styleDidChange(diff, oldStyle);
+    LayoutBox::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
     // If border was changed, notify table.
@@ -110,7 +110,7 @@ void LayoutTableSection::styleDidChange(StyleDifference diff, const LayoutStyle*
 
 void LayoutTableSection::willBeRemovedFromTree()
 {
-    RenderBox::willBeRemovedFromTree();
+    LayoutBox::willBeRemovedFromTree();
 
     // Preventively invalidate our cells as we may be re-inserted into
     // a new table which would require us to rebuild our structure.
@@ -174,7 +174,7 @@ void LayoutTableSection::addChild(LayoutObject* child, LayoutObject* beforeChild
         beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
 
     ASSERT(!beforeChild || beforeChild->isTableRow());
-    RenderBox::addChild(child, beforeChild);
+    LayoutBox::addChild(child, beforeChild);
 }
 
 void LayoutTableSection::ensureRows(unsigned numRows)
@@ -917,7 +917,7 @@ int LayoutTableSection::distributeExtraLogicalHeightToRows(int extraLogicalHeigh
 
 static bool shouldFlexCellChild(LayoutObject* cellDescendant)
 {
-    return cellDescendant->isReplaced() || (cellDescendant->isBox() && toRenderBox(cellDescendant)->scrollsOverflow());
+    return cellDescendant->isReplaced() || (cellDescendant->isBox() && toLayoutBox(cellDescendant)->scrollsOverflow());
 }
 
 void LayoutTableSection::layoutRows()

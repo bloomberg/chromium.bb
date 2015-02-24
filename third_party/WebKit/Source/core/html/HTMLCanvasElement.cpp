@@ -294,7 +294,7 @@ void HTMLCanvasElement::didFinalizeFrame()
     // before restarting with a blank dirty rect.
     FloatRect srcRect(0, 0, size().width(), size().height());
     m_dirtyRect.intersect(srcRect);
-    if (RenderBox* ro = renderBox()) {
+    if (LayoutBox* ro = layoutBox()) {
         FloatRect mappedDirtyRect = mapRect(m_dirtyRect, srcRect, ro->contentBoxRect());
         // For querying Layer::compositingState()
         // FIXME: is this invalidation using the correct compositing state?
@@ -379,8 +379,8 @@ void HTMLCanvasElement::reset()
         if (renderer->isCanvas()) {
             if (oldSize != size()) {
                 toLayoutHTMLCanvas(renderer)->canvasSizeChanged();
-                if (renderBox() && renderBox()->hasAcceleratedCompositing())
-                    renderBox()->contentChanged(CanvasChanged);
+                if (layoutBox() && layoutBox()->hasAcceleratedCompositing())
+                    layoutBox()->contentChanged(CanvasChanged);
             }
             if (hadImageBuffer)
                 renderer->setShouldDoFullPaintInvalidation();
@@ -398,7 +398,7 @@ bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
     if (!m_context->isAccelerated())
         return true;
 
-    if (renderBox() && renderBox()->hasAcceleratedCompositing())
+    if (layoutBox() && layoutBox()->hasAcceleratedCompositing())
         return false;
 
     return true;

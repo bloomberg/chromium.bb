@@ -32,9 +32,9 @@
 
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/FloatingObjects.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutImage.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
 
@@ -99,10 +99,10 @@ static bool checkShapeImageOrigin(Document& document, const StyleImage& styleIma
     return false;
 }
 
-static LayoutRect getShapeImageMarginRect(const RenderBox& renderBox, const LayoutSize& referenceBoxLogicalSize)
+static LayoutRect getShapeImageMarginRect(const LayoutBox& layoutBox, const LayoutSize& referenceBoxLogicalSize)
 {
-    LayoutPoint marginBoxOrigin(-renderBox.marginLogicalLeft() - renderBox.borderAndPaddingLogicalLeft(), -renderBox.marginBefore() - renderBox.borderBefore() - renderBox.paddingBefore());
-    LayoutSize marginBoxSizeDelta(renderBox.marginLogicalWidth() + renderBox.borderAndPaddingLogicalWidth(), renderBox.marginLogicalHeight() + renderBox.borderAndPaddingLogicalHeight());
+    LayoutPoint marginBoxOrigin(-layoutBox.marginLogicalLeft() - layoutBox.borderAndPaddingLogicalLeft(), -layoutBox.marginBefore() - layoutBox.borderBefore() - layoutBox.paddingBefore());
+    LayoutSize marginBoxSizeDelta(layoutBox.marginLogicalWidth() + layoutBox.borderAndPaddingLogicalWidth(), layoutBox.marginLogicalHeight() + layoutBox.borderAndPaddingLogicalHeight());
     LayoutSize marginRectSize(referenceBoxLogicalSize + marginBoxSizeDelta);
     marginRectSize.clampNegativeToZero();
     return LayoutRect(marginBoxOrigin, marginRectSize);
@@ -134,7 +134,7 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
     }
 
     ASSERT(!styleImage->isPendingImage());
-    RefPtr<Image> image = styleImage->image(const_cast<RenderBox*>(&m_renderer), imageSize);
+    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_renderer), imageSize);
 
     return Shape::createRasterShape(image.get(), shapeImageThreshold, imageRect, marginRect, writingMode, margin);
 }
@@ -178,7 +178,7 @@ const Shape& ShapeOutsideInfo::computedShape() const
     return *m_shape;
 }
 
-inline LayoutUnit borderBeforeInWritingMode(const RenderBox& renderer, WritingMode writingMode)
+inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& renderer, WritingMode writingMode)
 {
     switch (writingMode) {
     case TopToBottomWritingMode: return renderer.borderTop();
@@ -191,7 +191,7 @@ inline LayoutUnit borderBeforeInWritingMode(const RenderBox& renderer, WritingMo
     return renderer.borderBefore();
 }
 
-inline LayoutUnit borderAndPaddingBeforeInWritingMode(const RenderBox& renderer, WritingMode writingMode)
+inline LayoutUnit borderAndPaddingBeforeInWritingMode(const LayoutBox& renderer, WritingMode writingMode)
 {
     switch (writingMode) {
     case TopToBottomWritingMode: return renderer.borderTop() + renderer.paddingTop();
@@ -218,7 +218,7 @@ LayoutUnit ShapeOutsideInfo::logicalTopOffset() const
     return LayoutUnit();
 }
 
-inline LayoutUnit borderStartWithStyleForWritingMode(const RenderBox& renderer, const LayoutStyle* style)
+inline LayoutUnit borderStartWithStyleForWritingMode(const LayoutBox& renderer, const LayoutStyle* style)
 {
     if (style->isHorizontalWritingMode()) {
         if (style->isLeftToRightDirection())
@@ -232,7 +232,7 @@ inline LayoutUnit borderStartWithStyleForWritingMode(const RenderBox& renderer, 
     return renderer.borderBottom();
 }
 
-inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const RenderBox& renderer, const LayoutStyle* style)
+inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const LayoutBox& renderer, const LayoutStyle* style)
 {
     if (style->isHorizontalWritingMode()) {
         if (style->isLeftToRightDirection())
@@ -261,7 +261,7 @@ LayoutUnit ShapeOutsideInfo::logicalLeftOffset() const
 }
 
 
-bool ShapeOutsideInfo::isEnabledFor(const RenderBox& box)
+bool ShapeOutsideInfo::isEnabledFor(const LayoutBox& box)
 {
     ShapeValue* shapeValue = box.style()->shapeOutside();
     if (!box.isFloating() || !shapeValue)

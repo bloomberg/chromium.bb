@@ -9,7 +9,7 @@ namespace blink {
 
 class LayoutPoint;
 struct PaintInfo;
-class RenderBox;
+class LayoutBox;
 class RenderView;
 
 class ViewPainter {
@@ -20,7 +20,7 @@ public:
     void paintBoxDecorationBackground(const PaintInfo&);
 
 private:
-    bool rootFillsViewportBackground(RenderBox* rootBox) const;
+    bool rootFillsViewportBackground(LayoutBox* rootBox) const;
 
     RenderView& m_renderView;
 };

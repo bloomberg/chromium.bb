@@ -36,7 +36,7 @@ namespace blink {
 
 class FrameView;
 class Page;
-class RenderBox;
+class LayoutBox;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
@@ -49,7 +49,7 @@ public:
 
     static bool isInSVGImage(const Node*);
 
-    RenderBox* embeddedContentBox() const;
+    LayoutBox* embeddedContentBox() const;
 
     virtual bool isSVGImage() const override { return true; }
     virtual IntSize size() const override { return m_intrinsicSize; }

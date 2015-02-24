@@ -84,7 +84,7 @@ void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
         // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
         setIntrinsicContentLogicalHeight(trackHeight);
 
-        RenderBox::computeLogicalHeight(trackHeight, logicalTop, computedValues);
+        LayoutBox::computeLogicalHeight(trackHeight, logicalTop, computedValues);
         return;
     }
     if (isVertical)
@@ -93,7 +93,7 @@ void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
     // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
     setIntrinsicContentLogicalHeight(logicalHeight);
 
-    RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
+    LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 
 void LayoutSliderContainer::layout()
@@ -111,8 +111,8 @@ void LayoutSliderContainer::layout()
 
     Element* thumbElement = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
     Element* trackElement = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
-    RenderBox* thumb = thumbElement ? thumbElement->renderBox() : 0;
-    RenderBox* track = trackElement ? trackElement->renderBox() : 0;
+    LayoutBox* thumb = thumbElement ? thumbElement->layoutBox() : 0;
+    LayoutBox* track = trackElement ? trackElement->layoutBox() : 0;
 
     SubtreeLayoutScope layoutScope(*this);
     // Force a layout to reset the position of the thumb so the code below doesn't move the thumb to the wrong place.

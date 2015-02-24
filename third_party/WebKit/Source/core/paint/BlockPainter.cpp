@@ -99,11 +99,11 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
 
 void BlockPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (RenderBox* child = m_renderBlock.firstChildBox(); child; child = child->nextSiblingBox())
+    for (LayoutBox* child = m_renderBlock.firstChildBox(); child; child = child->nextSiblingBox())
         paintChild(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChild(RenderBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChild(LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(&child, paintOffset);
     if (!child.hasSelfPaintingLayer() && !child.isFloating() && !child.isColumnSpanAll())
@@ -112,11 +112,11 @@ void BlockPainter::paintChild(RenderBox& child, const PaintInfo& paintInfo, cons
 
 void BlockPainter::paintChildrenOfFlexibleBox(RenderFlexibleBox& renderFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (RenderBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
+    for (LayoutBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
         BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChildAsInlineBlock(RenderBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildAsInlineBlock(LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(&child, paintOffset);
     if (!child.hasSelfPaintingLayer() && !child.isFloating())
@@ -130,7 +130,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintIn
 
     LayoutPoint childPoint = paintOffset;
     if (inlineBox.parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = inlineBox.renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(inlineBox.renderer()), childPoint);
+        childPoint = inlineBox.renderer().containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.renderer()), childPoint);
 
     paintAsInlineBlock(inlineBox.renderer(), paintInfo, childPoint);
 }

@@ -585,7 +585,7 @@ void RenderInline::generateCulledLineBoxRects(GeneratorContext& yield, const Ren
         // We want to get the margin box in the inline direction, and then use our font ascent/descent in the block
         // direction (aligned to the root box's baseline).
         if (curr->isBox()) {
-            RenderBox* currBox = toRenderBox(curr);
+            LayoutBox* currBox = toLayoutBox(curr);
             if (currBox->inlineBoxWrapper()) {
                 RootInlineBox& rootBox = currBox->inlineBoxWrapper()->root();
                 int logicalTop = rootBox.logicalTop() + (rootBox.renderer().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
@@ -660,7 +660,7 @@ void RenderInline::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accu
 
     if (continuation()) {
         if (continuation()->isBox()) {
-            RenderBox* box = toRenderBox(continuation());
+            LayoutBox* box = toLayoutBox(continuation());
             continuation()->absoluteRects(rects, toLayoutPoint(accumulatedOffset - containingBlock()->location() + box->locationOffset()));
         } else
             continuation()->absoluteRects(rects, toLayoutPoint(accumulatedOffset - containingBlock()->location()));
@@ -845,7 +845,7 @@ PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
     LayoutPoint parentBlockPoint = cb->location() + point;
     LayoutBoxModelObject* c = continuation();
     while (c) {
-        RenderBox* contBlock = c->isInline() ? c->containingBlock() : toRenderBlock(c);
+        LayoutBox* contBlock = c->isInline() ? c->containingBlock() : toRenderBlock(c);
         if (c->isInline() || c->slowFirstChild())
             return c->positionForPoint(parentBlockPoint - contBlock->locationOffset());
         c = toRenderBlock(c)->inlineElementContinuation();
@@ -917,7 +917,7 @@ InlineBox* RenderInline::culledInlineFirstLineBox() const
         // We want to get the margin box in the inline direction, and then use our font ascent/descent in the block
         // direction (aligned to the root box's baseline).
         if (curr->isBox())
-            return toRenderBox(curr)->inlineBoxWrapper();
+            return toLayoutBox(curr)->inlineBoxWrapper();
         if (curr->isRenderInline()) {
             RenderInline* currInline = toRenderInline(curr);
             InlineBox* result = currInline->firstLineBoxIncludingCulling();
@@ -941,7 +941,7 @@ InlineBox* RenderInline::culledInlineLastLineBox() const
         // We want to get the margin box in the inline direction, and then use our font ascent/descent in the block
         // direction (aligned to the root box's baseline).
         if (curr->isBox())
-            return toRenderBox(curr)->inlineBoxWrapper();
+            return toLayoutBox(curr)->inlineBoxWrapper();
         if (curr->isRenderInline()) {
             RenderInline* currInline = toRenderInline(curr);
             InlineBox* result = currInline->lastLineBoxIncludingCulling();
@@ -969,7 +969,7 @@ LayoutRect RenderInline::culledInlineVisualOverflowBoundingBox() const
 
         // For overflow we just have to propagate by hand and recompute it all.
         if (curr->isBox()) {
-            RenderBox* currBox = toRenderBox(curr);
+            LayoutBox* currBox = toLayoutBox(curr);
             if (!currBox->hasSelfPaintingLayer() && currBox->inlineBoxWrapper()) {
                 LayoutRect logicalRect = currBox->logicalVisualOverflowRectForPropagation(styleRef());
                 if (isHorizontal) {
@@ -1135,7 +1135,7 @@ void RenderInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     rect.setLocation(topLeft);
     if (o->hasOverflowClip()) {
-        RenderBox* containerBox = toRenderBox(o);
+        LayoutBox* containerBox = toLayoutBox(o);
         containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
         if (rect.isEmpty())
             return;
@@ -1162,7 +1162,7 @@ LayoutSize RenderInline::offsetFromContainer(const LayoutObject* container, cons
     offset += container->columnOffset(point);
 
     if (container->hasOverflowClip())
-        offset -= toRenderBox(container)->scrolledContentOffset();
+        offset -= toLayoutBox(container)->scrolledContentOffset();
 
     if (offsetDependsOnPoint) {
         *offsetDependsOnPoint = container->hasColumns()
@@ -1194,7 +1194,7 @@ void RenderInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     if (mode & ApplyContainerFlip && o->isBox()) {
         if (o->style()->isFlippedBlocksWritingMode()) {
             IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
-            transformState.move(toRenderBox(o)->flipForWritingModeIncludingColumns(centerPoint) - centerPoint);
+            transformState.move(toLayoutBox(o)->flipForWritingModeIncludingColumns(centerPoint) - centerPoint);
         }
         mode &= ~ApplyContainerFlip;
     }
@@ -1252,7 +1252,7 @@ void RenderInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
             RenderBlock* firstBlock = n->renderer()->containingBlock();
 
             // Get our containing block.
-            RenderBox* block = containingBlock();
+            LayoutBox* block = containingBlock();
             localPoint.moveBy(block->location() - firstBlock->locationOffset());
         }
 
@@ -1276,7 +1276,7 @@ void RenderInline::dirtyLineBoxes(bool fullLayout)
             if (curr->isFloatingOrOutOfFlowPositioned())
                 continue;
             if (curr->isBox() && !curr->needsLayout()) {
-                RenderBox* currBox = toRenderBox(curr);
+                LayoutBox* currBox = toLayoutBox(curr);
                 if (currBox->inlineBoxWrapper())
                     currBox->inlineBoxWrapper()->root().markDirty();
             } else if (!curr->selfNeedsLayout()) {
@@ -1326,7 +1326,7 @@ int RenderInline::baselinePosition(FontBaseline baselineType, bool firstLine, Li
     return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
 }
 
-LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox& child) const
+LayoutSize RenderInline::offsetForInFlowPositionedInline(const LayoutBox& child) const
 {
     // FIXME: This function isn't right with mixed writing modes.
 
@@ -1417,7 +1417,7 @@ void RenderInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoin
         if (continuation()->isInline())
             continuation()->addFocusRingRects(rects, additionalOffset + (continuation()->containingBlock()->location() - containingBlock()->location()));
         else
-            continuation()->addFocusRingRects(rects, additionalOffset + (toRenderBox(continuation())->location() - containingBlock()->location()));
+            continuation()->addFocusRingRects(rects, additionalOffset + (toLayoutBox(continuation())->location() - containingBlock()->location()));
     }
 }
 

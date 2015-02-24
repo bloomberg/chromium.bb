@@ -89,10 +89,10 @@ DEFINE_TRACE(LayoutScrollbar)
     Scrollbar::trace(visitor);
 }
 
-RenderBox* LayoutScrollbar::owningRenderer() const
+LayoutBox* LayoutScrollbar::owningRenderer() const
 {
     if (m_owningFrame) {
-        RenderBox* currentRenderer = m_owningFrame->ownerRenderer();
+        LayoutBox* currentRenderer = m_owningFrame->ownerRenderer();
         return currentRenderer;
     }
     return m_owner && m_owner->renderer() ? m_owner->renderer()->enclosingBox() : 0;
@@ -102,7 +102,7 @@ void LayoutScrollbar::setParent(Widget* parent)
 {
     Scrollbar::setParent(parent);
     if (!parent) {
-        // Destroy all of the scrollbar's RenderBoxes.
+        // Destroy all of the scrollbar's LayoutBoxes.
         updateScrollbarParts(true);
     }
 }
@@ -190,7 +190,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy)
 
     if (newThickness != oldThickness) {
         setFrameRect(IntRect(location(), IntSize(isHorizontal ? width() : newThickness, isHorizontal ? newThickness : height())));
-        if (RenderBox* box = owningRenderer()) {
+        if (LayoutBox* box = owningRenderer()) {
             if (box->isRenderBlock())
                 toRenderBlock(box)->notifyScrollbarThicknessChanged();
             box->setChildNeedsLayout();

@@ -35,7 +35,7 @@ namespace blink {
 
 class LocalFrame;
 class Node;
-class RenderBox;
+class LayoutBox;
 class LayoutScrollbarPart;
 class LayoutStyle;
 
@@ -44,7 +44,7 @@ public:
     static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
     virtual ~LayoutScrollbar();
 
-    RenderBox* owningRenderer() const;
+    LayoutBox* owningRenderer() const;
 
     IntRect buttonRect(ScrollbarPart);
     IntRect trackRect(int startLength, int endLength);

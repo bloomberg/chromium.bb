@@ -33,7 +33,7 @@
 namespace blink {
 
 class RenderBlockFlow;
-class RenderBox;
+class LayoutBox;
 
 // FIXME this should be removed once RenderBlockFlow::nextFloatLogicalBottomBelow doesn't need it anymore. (Bug 123931)
 enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
@@ -49,14 +49,14 @@ public:
     // Note that Type uses bits so you can use FloatLeftRight as a mask to query for both left and right.
     enum Type { FloatLeft = 1, FloatRight = 2, FloatLeftRight = 3 };
 
-    static PassOwnPtr<FloatingObject> create(RenderBox*);
+    static PassOwnPtr<FloatingObject> create(LayoutBox*);
 
     PassOwnPtr<FloatingObject> copyToNewContainer(LayoutSize, bool shouldPaint = false, bool isDescendant = false) const;
 
     PassOwnPtr<FloatingObject> unsafeClone() const;
 
     Type type() const { return static_cast<Type>(m_type); }
-    RenderBox* renderer() const { return m_renderer; }
+    LayoutBox* renderer() const { return m_renderer; }
 
     bool isPlaced() const { return m_isPlaced; }
     void setIsPlaced(bool placed = true) { m_isPlaced = placed; }
@@ -93,10 +93,10 @@ public:
     void setOriginatingLine(RootInlineBox* line) { m_originatingLine = line; }
 
 private:
-    explicit FloatingObject(RenderBox*);
-    FloatingObject(RenderBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant);
+    explicit FloatingObject(LayoutBox*);
+    FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant);
 
-    RenderBox* m_renderer;
+    LayoutBox* m_renderer;
     RootInlineBox* m_originatingLine;
     LayoutRect m_frameRect;
     int m_paginationStrut; // FIXME: Is this class size-sensitive? Does this need 32-bits?
@@ -111,7 +111,7 @@ private:
 };
 
 struct FloatingObjectHashFunctions {
-    static unsigned hash(FloatingObject* key) { return DefaultHash<RenderBox*>::Hash::hash(key->renderer()); }
+    static unsigned hash(FloatingObject* key) { return DefaultHash<LayoutBox*>::Hash::hash(key->renderer()); }
     static unsigned hash(const OwnPtr<FloatingObject>& key) { return hash(key.get()); }
     static unsigned hash(const PassOwnPtr<FloatingObject>& key) { return hash(key.get()); }
     static bool equal(OwnPtr<FloatingObject>& a, FloatingObject* b) { return a->renderer() == b->renderer(); }
@@ -121,16 +121,16 @@ struct FloatingObjectHashFunctions {
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 struct FloatingObjectHashTranslator {
-    static unsigned hash(RenderBox* key) { return DefaultHash<RenderBox*>::Hash::hash(key); }
-    static bool equal(FloatingObject* a, RenderBox* b) { return a->renderer() == b; }
-    static bool equal(const OwnPtr<FloatingObject>& a, RenderBox* b) { return a->renderer() == b; }
+    static unsigned hash(LayoutBox* key) { return DefaultHash<LayoutBox*>::Hash::hash(key); }
+    static bool equal(FloatingObject* a, LayoutBox* b) { return a->renderer() == b; }
+    static bool equal(const OwnPtr<FloatingObject>& a, LayoutBox* b) { return a->renderer() == b; }
 };
 typedef ListHashSet<OwnPtr<FloatingObject>, 4, FloatingObjectHashFunctions> FloatingObjectSet;
 typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;
 typedef PODInterval<int, FloatingObject*> FloatingObjectInterval;
 typedef PODIntervalTree<int, FloatingObject*> FloatingObjectTree;
 typedef PODFreeListArena<PODRedBlackTree<FloatingObjectInterval>::Node> IntervalArena;
-typedef HashMap<RenderBox*, OwnPtr<FloatingObject>> RendererToFloatInfoMap;
+typedef HashMap<LayoutBox*, OwnPtr<FloatingObject>> RendererToFloatInfoMap;
 
 class FloatingObjects {
     WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;

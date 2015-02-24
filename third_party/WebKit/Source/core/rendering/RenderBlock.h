@@ -26,9 +26,9 @@
 #include "core/layout/ColumnInfo.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/style/ShapeValue.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLineBoxList.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
@@ -42,18 +42,18 @@ struct PaintInfo;
 class RenderInline;
 class WordMeasurement;
 
-typedef WTF::ListHashSet<RenderBox*, 16> TrackedRendererListHashSet;
-typedef WTF::HashMap<const RenderBlock*, OwnPtr<TrackedRendererListHashSet> > TrackedDescendantsMap;
-typedef WTF::HashMap<const RenderBox*, OwnPtr<HashSet<RenderBlock*> > > TrackedContainerMap;
+typedef WTF::ListHashSet<LayoutBox*, 16> TrackedRendererListHashSet;
+typedef WTF::HashMap<const RenderBlock*, OwnPtr<TrackedRendererListHashSet>> TrackedDescendantsMap;
+typedef WTF::HashMap<const LayoutBox*, OwnPtr<HashSet<RenderBlock*>>> TrackedContainerMap;
 typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
-typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<RenderInline*> > > ContinuationOutlineTableMap;
+typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<RenderInline*>>> ContinuationOutlineTableMap;
 
 ContinuationOutlineTableMap* continuationOutlineTable();
 
-class RenderBlock : public RenderBox {
+class RenderBlock : public LayoutBox {
 public:
     friend class LineLayoutState;
 
@@ -98,8 +98,8 @@ public:
 
     virtual void layoutBlock(bool relayoutChildren);
 
-    void insertPositionedObject(RenderBox*);
-    static void removePositionedObject(RenderBox*);
+    void insertPositionedObject(LayoutBox*);
+    static void removePositionedObject(LayoutBox*);
     void removePositionedObjects(RenderBlock*, ContainingBlockState = SameContainingBlock);
 
     TrackedRendererListHashSet* positionedObjects() const;
@@ -109,12 +109,12 @@ public:
         return objects && !objects->isEmpty();
     }
 
-    void addPercentHeightDescendant(RenderBox*);
-    static void removePercentHeightDescendant(RenderBox*);
+    void addPercentHeightDescendant(LayoutBox*);
+    static void removePercentHeightDescendant(LayoutBox*);
     static bool hasPercentHeightContainerMap();
-    static bool hasPercentHeightDescendant(RenderBox*);
-    static void clearPercentHeightDescendantsFrom(RenderBox*);
-    static void removePercentHeightDescendantIfNeeded(RenderBox*);
+    static bool hasPercentHeightDescendant(LayoutBox*);
+    static void clearPercentHeightDescendantsFrom(LayoutBox*);
+    static void removePercentHeightDescendantIfNeeded(LayoutBox*);
 
     TrackedRendererListHashSet* percentHeightDescendants() const;
     bool hasPercentHeightDescendants() const
@@ -134,12 +134,12 @@ public:
     bool hasMarginBeforeQuirk() const { return m_hasMarginBeforeQuirk; }
     bool hasMarginAfterQuirk() const { return m_hasMarginAfterQuirk; }
 
-    bool hasMarginBeforeQuirk(const RenderBox* child) const;
-    bool hasMarginAfterQuirk(const RenderBox* child) const;
+    bool hasMarginBeforeQuirk(const LayoutBox* child) const;
+    bool hasMarginAfterQuirk(const LayoutBox* child) const;
 
     void markPositionedObjectsForLayout();
     // FIXME: Do we really need this to be virtual? It's just so we can call this on
-    // RenderBoxes without needed to check whether they're RenderBlocks first.
+    // LayoutBoxes without needed to check whether they're RenderBlocks first.
     virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&) override final;
 
     LayoutUnit textIndentOffset() const;
@@ -188,7 +188,7 @@ public:
     RenderBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
     RenderBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
 
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
+    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
     ColumnInfo* columnInfo() const;
     int columnGap() const;
@@ -203,20 +203,20 @@ public:
     void setPageLogicalOffset(LayoutUnit offset) { m_pageLogicalOffset = offset; }
 
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
-    LayoutUnit logicalWidthForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size().width() : child.size().height(); }
-    LayoutUnit logicalHeightForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size().height() : child.size().width(); }
-    LayoutSize logicalSizeForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size() : child.size().transposedSize(); }
-    LayoutUnit logicalTopForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.location().y() : child.location().x(); }
+    LayoutUnit logicalWidthForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().width() : child.size().height(); }
+    LayoutUnit logicalHeightForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().height() : child.size().width(); }
+    LayoutSize logicalSizeForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size() : child.size().transposedSize(); }
+    LayoutUnit logicalTopForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.location().y() : child.location().x(); }
     LayoutUnit marginBeforeForChild(const LayoutBoxModelObject& child) const { return child.marginBefore(style()); }
     LayoutUnit marginAfterForChild(const LayoutBoxModelObject& child) const { return child.marginAfter(style()); }
     LayoutUnit marginStartForChild(const LayoutBoxModelObject& child) const { return child.marginStart(style()); }
     LayoutUnit marginEndForChild(const LayoutBoxModelObject& child) const { return child.marginEnd(style()); }
-    void setMarginStartForChild(RenderBox& child, LayoutUnit value) const { child.setMarginStart(value, style()); }
-    void setMarginEndForChild(RenderBox& child, LayoutUnit value) const { child.setMarginEnd(value, style()); }
-    void setMarginBeforeForChild(RenderBox& child, LayoutUnit value) const { child.setMarginBefore(value, style()); }
-    void setMarginAfterForChild(RenderBox& child, LayoutUnit value) const { child.setMarginAfter(value, style()); }
-    LayoutUnit collapsedMarginBeforeForChild(const RenderBox& child) const;
-    LayoutUnit collapsedMarginAfterForChild(const RenderBox& child) const;
+    void setMarginStartForChild(LayoutBox& child, LayoutUnit value) const { child.setMarginStart(value, style()); }
+    void setMarginEndForChild(LayoutBox& child, LayoutUnit value) const { child.setMarginEnd(value, style()); }
+    void setMarginBeforeForChild(LayoutBox& child, LayoutUnit value) const { child.setMarginBefore(value, style()); }
+    void setMarginAfterForChild(LayoutBox& child, LayoutUnit value) const { child.setMarginAfter(value, style()); }
+    LayoutUnit collapsedMarginBeforeForChild(const LayoutBox& child) const;
+    LayoutUnit collapsedMarginAfterForChild(const LayoutBox& child) const;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
@@ -259,7 +259,7 @@ protected:
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
     void markFixedPositionObjectForLayoutIfNeeded(LayoutObject* child, SubtreeLayoutScope&);
 
-    LayoutUnit marginIntrinsicLogicalWidthForChild(RenderBox& child) const;
+    LayoutUnit marginIntrinsicLogicalWidthForChild(LayoutBox& child) const;
 
     int beforeMarginInLineDirection(LineDirectionMode) const;
 
@@ -317,7 +317,7 @@ protected:
 
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
-    void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox&);
+    void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox&);
 
     virtual bool isInlineBlockOrInlineTable() const override final { return isInline() && isReplaced(); }
 
@@ -348,8 +348,8 @@ private:
 
     void removeAnonymousWrappersIfRequired();
 
-    void insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
-    static void removeFromTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
+    void insertIntoTrackedRendererMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
+    static void removeFromTrackedRendererMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
 
     Node* nodeForHitTest() const;
 

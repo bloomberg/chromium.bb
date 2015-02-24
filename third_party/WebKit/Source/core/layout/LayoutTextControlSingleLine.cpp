@@ -105,15 +105,15 @@ void LayoutTextControlSingleLine::layout()
     // and type=search if the text height is taller than the contentHeight()
     // because of compability.
 
-    RenderBox* innerEditorRenderer = innerEditorElement()->renderBox();
-    RenderBox* viewPortRenderer = editingViewPortElement() ? editingViewPortElement()->renderBox() : 0;
+    LayoutBox* innerEditorRenderer = innerEditorElement()->layoutBox();
+    LayoutBox* viewPortRenderer = editingViewPortElement() ? editingViewPortElement()->layoutBox() : 0;
 
     // To ensure consistency between layouts, we need to reset any conditionally overriden height.
     if (innerEditorRenderer && !innerEditorRenderer->style()->logicalHeight().isAuto()) {
         innerEditorRenderer->style()->setLogicalHeight(Length(Auto));
         layoutScope.setNeedsLayout(innerEditorRenderer);
         HTMLElement* placeholderElement = inputElement()->placeholderElement();
-        if (RenderBox* placeholderBox = placeholderElement ? placeholderElement->renderBox() : 0)
+        if (LayoutBox* placeholderBox = placeholderElement ? placeholderElement->layoutBox() : 0)
             layoutScope.setNeedsLayout(placeholderBox);
     }
     if (viewPortRenderer && !viewPortRenderer->style()->logicalHeight().isAuto()) {
@@ -124,7 +124,7 @@ void LayoutTextControlSingleLine::layout()
     RenderBlockFlow::layoutBlock(false);
 
     Element* container = containerElement();
-    RenderBox* containerRenderer = container ? container->renderBox() : 0;
+    LayoutBox* containerRenderer = container ? container->layoutBox() : 0;
 
     // Set the text block height
     LayoutUnit desiredLogicalHeight = textBlockLogicalHeight();
@@ -170,7 +170,7 @@ void LayoutTextControlSingleLine::layout()
     }
 
     HTMLElement* placeholderElement = inputElement()->placeholderElement();
-    if (RenderBox* placeholderBox = placeholderElement ? placeholderElement->renderBox() : 0) {
+    if (LayoutBox* placeholderBox = placeholderElement ? placeholderElement->layoutBox() : 0) {
         LayoutSize innerEditorSize;
 
         if (innerEditorRenderer)
@@ -182,8 +182,8 @@ void LayoutTextControlSingleLine::layout()
         LayoutPoint textOffset;
         if (innerEditorRenderer)
             textOffset = innerEditorRenderer->location();
-        if (editingViewPortElement() && editingViewPortElement()->renderBox())
-            textOffset += toLayoutSize(editingViewPortElement()->renderBox()->location());
+        if (editingViewPortElement() && editingViewPortElement()->layoutBox())
+            textOffset += toLayoutSize(editingViewPortElement()->layoutBox()->location());
         if (containerRenderer)
             textOffset += toLayoutSize(containerRenderer->location());
         placeholderBox->setLocation(textOffset);
@@ -208,10 +208,10 @@ bool LayoutTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, Hit
     if (result.innerNode()->isDescendantOf(innerEditorElement()) || result.innerNode() == node() || (container && container == result.innerNode())) {
         LayoutPoint pointInParent = locationInContainer.point();
         if (container && editingViewPortElement()) {
-            if (editingViewPortElement()->renderBox())
-                pointInParent -= toLayoutSize(editingViewPortElement()->renderBox()->location());
-            if (container->renderBox())
-                pointInParent -= toLayoutSize(container->renderBox()->location());
+            if (editingViewPortElement()->layoutBox())
+                pointInParent -= toLayoutSize(editingViewPortElement()->layoutBox()->location());
+            if (container->layoutBox())
+                pointInParent -= toLayoutSize(container->layoutBox()->location());
         }
         hitInnerEditorElement(result, pointInParent, accumulatedOffset);
     }
@@ -274,8 +274,8 @@ LayoutRect LayoutTextControlSingleLine::controlClipRect(const LayoutPoint& addit
 {
     ASSERT(hasControlClip());
     LayoutRect clipRect = contentBoxRect();
-    if (containerElement()->renderBox())
-        clipRect = unionRect(clipRect, containerElement()->renderBox()->frameRect());
+    if (containerElement()->layoutBox())
+        clipRect = unionRect(clipRect, containerElement()->layoutBox()->frameRect());
     clipRect.moveBy(additionalOffset);
     return clipRect;
 }
@@ -318,7 +318,7 @@ LayoutUnit LayoutTextControlSingleLine::preferredContentLogicalWidth(float charW
 
     if (includesDecoration) {
         HTMLElement* spinButton = innerSpinButtonElement();
-        if (RenderBox* spinRenderer = spinButton ? spinButton->renderBox() : 0) {
+        if (LayoutBox* spinRenderer = spinButton ? spinButton->layoutBox() : 0) {
             result += spinRenderer->borderAndPaddingLogicalWidth();
             // Since the width of spinRenderer is not calculated yet, spinRenderer->logicalWidth() returns 0.
             // So computedStyle()->logicalWidth() is used instead.
@@ -368,7 +368,7 @@ bool LayoutTextControlSingleLine::textShouldBeTruncated() const
 
 void LayoutTextControlSingleLine::autoscroll(const IntPoint& position)
 {
-    RenderBox* renderer = innerEditorElement()->renderBox();
+    LayoutBox* renderer = innerEditorElement()->layoutBox();
     if (!renderer)
         return;
 
@@ -377,7 +377,7 @@ void LayoutTextControlSingleLine::autoscroll(const IntPoint& position)
 
 LayoutUnit LayoutTextControlSingleLine::scrollWidth() const
 {
-    if (RenderBox* inner = innerEditorElement() ? innerEditorElement()->renderBox() : 0) {
+    if (LayoutBox* inner = innerEditorElement() ? innerEditorElement()->layoutBox() : 0) {
         // Adjust scrollWidth to inculde input element horizontal paddings and
         // decoration width
         LayoutUnit adjustment = clientWidth() - inner->clientWidth();
@@ -388,7 +388,7 @@ LayoutUnit LayoutTextControlSingleLine::scrollWidth() const
 
 LayoutUnit LayoutTextControlSingleLine::scrollHeight() const
 {
-    if (RenderBox* inner = innerEditorElement() ? innerEditorElement()->renderBox() : 0) {
+    if (LayoutBox* inner = innerEditorElement() ? innerEditorElement()->layoutBox() : 0) {
         // Adjust scrollHeight to include input element vertical paddings and
         // decoration height
         LayoutUnit adjustment = clientHeight() - inner->clientHeight();

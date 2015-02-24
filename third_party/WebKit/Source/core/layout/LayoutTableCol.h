@@ -26,14 +26,14 @@
 #ifndef LayoutTableCol_h
 #define LayoutTableCol_h
 
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
 class LayoutTable;
 class LayoutTableCell;
 
-class LayoutTableCol final : public RenderBox {
+class LayoutTableCol final : public LayoutBox {
 public:
     explicit LayoutTableCol(Element*);
 
@@ -83,7 +83,7 @@ private:
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "LayoutTableCol"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutTableCol || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutTableCol || LayoutBox::isOfType(type); }
     virtual void updateFromElement() override;
     virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 

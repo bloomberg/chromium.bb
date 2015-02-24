@@ -183,14 +183,14 @@ public:
     void moveLayers(Layer* oldParent, Layer* newParent);
     Layer* findNextLayer(Layer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
 
-    // Scrolling is a RenderBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
+    // Scrolling is a LayoutBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
     bool scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX = ScrollAlignment::alignCenterIfNeeded, const ScrollAlignment& alignY = ScrollAlignment::alignCenterIfNeeded);
 
     // Convenience function for getting to the nearest enclosing box of a LayoutObject.
-    RenderBox* enclosingBox() const;
+    LayoutBox* enclosingBox() const;
     LayoutBoxModelObject* enclosingBoxModelObject() const;
 
-    RenderBox* enclosingScrollableBox() const;
+    LayoutBox* enclosingScrollableBox() const;
 
     // Function to return our enclosing flow thread if we are contained inside one. This
     // function follows the containing block chain.
@@ -389,7 +389,7 @@ public:
     virtual bool isLayoutPart() const { return false; }
 
     bool isDocumentElement() const { return document().documentElement() == m_node; }
-    // isBody is called from RenderBox::styleWillChange and is thus quite hot.
+    // isBody is called from LayoutBox::styleWillChange and is thus quite hot.
     bool isBody() const { return node() && node()->hasTagName(HTMLNames::bodyTag); }
     bool isHR() const;
     bool isLegend() const;

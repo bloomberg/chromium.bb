@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/layout/style/GridResolvedPosition.h"
 
+#include "core/layout/LayoutBox.h"
 #include "core/layout/style/GridCoordinate.h"
-#include "core/rendering/RenderBox.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ static GridPositionSide calculateFinalPositionSide(GridTrackSizingDirection dire
     return (direction == ForColumns) ? ColumnEndSide : RowEndSide;
 }
 
-void GridResolvedPosition::initialAndFinalPositionsFromStyle(const LayoutStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction, GridPosition& initialPosition, GridPosition& finalPosition)
+void GridResolvedPosition::initialAndFinalPositionsFromStyle(const LayoutStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, GridPosition& initialPosition, GridPosition& finalPosition)
 {
     initialPosition = (direction == ForColumns) ? gridItem.style()->gridColumnStart() : gridItem.style()->gridRowStart();
     finalPosition = (direction == ForColumns) ? gridItem.style()->gridColumnEnd() : gridItem.style()->gridRowEnd();
@@ -64,7 +64,7 @@ void GridResolvedPosition::initialAndFinalPositionsFromStyle(const LayoutStyle& 
         initialPosition.setSpanPosition(1, String());
 }
 
-GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const LayoutStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction, const GridResolvedPosition& resolvedInitialPosition)
+GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const LayoutStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, const GridResolvedPosition& resolvedInitialPosition)
 {
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
@@ -84,7 +84,7 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(con
     return GridSpan(resolvedInitialPosition, resolvedFinalPosition);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const LayoutStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction)
+PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const LayoutStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction)
 {
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);

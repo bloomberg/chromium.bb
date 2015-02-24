@@ -165,7 +165,7 @@ TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv)
 
     LayoutObject* renderer = scrollableElement->renderer();
     ASSERT_TRUE(renderer->isBox());
-    RenderBox* box = toRenderBox(renderer);
+    LayoutBox* box = toLayoutBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
     CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
@@ -357,7 +357,7 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling)
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
-    RenderBox* box = toRenderBox(renderer);
+    LayoutBox* box = toLayoutBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
     ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
@@ -397,7 +397,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
-    RenderBox* box = toRenderBox(renderer);
+    LayoutBox* box = toLayoutBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
     ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
@@ -420,7 +420,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
-    box = toRenderBox(renderer);
+    box = toLayoutBox(renderer);
     ASSERT_TRUE(box->scrollableArea()->usesCompositedScrolling());
     ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
@@ -543,7 +543,7 @@ TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLaye
 
     LayoutObject* renderer = scrollableElement->renderer();
     ASSERT_TRUE(renderer->isBox());
-    RenderBox* box = toRenderBox(renderer);
+    LayoutBox* box = toLayoutBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
     CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
     GraphicsLayer* scrollbarGraphicsLayer = compositedLayerMapping->layerForVerticalScrollbar();

@@ -43,13 +43,13 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/ContentData.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/style/PathStyleMotionPath.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"
 #include "platform/LengthFunctions.h"
 
@@ -164,8 +164,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const LayoutStyle
 
     if (offset.isPercent() && renderer && renderer->isBox()) {
         LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
-            toRenderBox(renderer)->containingBlockLogicalWidthForContent() :
-            toRenderBox(renderer)->containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
+            toLayoutBox(renderer)->containingBlockLogicalWidthForContent() :
+            toLayoutBox(renderer)->containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
         return zoomAdjustedPixelValue(valueForLength(offset, containingBlockSize), style);
     }
     if (offset.isAuto()) {
@@ -635,7 +635,7 @@ static LayoutRect sizingBox(const LayoutObject* renderer)
     if (!renderer->isBox())
         return LayoutRect();
 
-    const RenderBox* box = toRenderBox(renderer);
+    const LayoutBox* box = toLayoutBox(renderer);
     return box->style()->boxSizing() == BORDER_BOX ? box->borderBoxRect() : box->computedCSSContentBoxRect();
 }
 
@@ -927,7 +927,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* re
 
     IntRect box;
     if (renderer->isBox())
-        box = pixelSnappedIntRect(toRenderBox(renderer)->borderBoxRect());
+        box = pixelSnappedIntRect(toLayoutBox(renderer)->borderBoxRect());
 
     TransformationMatrix transform;
     style.applyTransform(transform, LayoutSize(box.size()), LayoutStyle::ExcludeTransformOrigin, LayoutStyle::ExcludeMotionPath);
@@ -1696,7 +1696,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         Length marginTop = style.marginTop();
         if (marginTop.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(marginTop, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->marginTop(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->marginTop(), style);
     }
     case CSSPropertyMarginRight: {
         Length marginRight = style.marginRight();
@@ -1704,12 +1704,12 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
             return zoomAdjustedPixelValueForLength(marginRight, style);
         float value;
         if (marginRight.isPercent()) {
-            // RenderBox gives a marginRight() that is the distance between the right-edge of the child box
+            // LayoutBox gives a marginRight() that is the distance between the right-edge of the child box
             // and the right-edge of the containing box, when display == BLOCK. Let's calculate the absolute
-            // value of the specified margin-right % instead of relying on RenderBox's marginRight() value.
-            value = minimumValueForLength(marginRight, toRenderBox(renderer)->containingBlockLogicalWidthForContent()).toFloat();
+            // value of the specified margin-right % instead of relying on LayoutBox's marginRight() value.
+            value = minimumValueForLength(marginRight, toLayoutBox(renderer)->containingBlockLogicalWidthForContent()).toFloat();
         } else {
-            value = toRenderBox(renderer)->marginRight().toFloat();
+            value = toLayoutBox(renderer)->marginRight().toFloat();
         }
         return zoomAdjustedPixelValue(value, style);
     }
@@ -1717,13 +1717,13 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         Length marginBottom = style.marginBottom();
         if (marginBottom.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(marginBottom, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->marginBottom(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->marginBottom(), style);
     }
     case CSSPropertyMarginLeft: {
         Length marginLeft = style.marginLeft();
         if (marginLeft.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(marginLeft, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->marginLeft(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->marginLeft(), style);
     }
     case CSSPropertyWebkitUserModify:
         return cssValuePool().createValue(style.userModify());
@@ -1785,25 +1785,25 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         Length paddingTop = style.paddingTop();
         if (paddingTop.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(paddingTop, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->computedCSSPaddingTop(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingTop(), style);
     }
     case CSSPropertyPaddingRight: {
         Length paddingRight = style.paddingRight();
         if (paddingRight.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(paddingRight, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->computedCSSPaddingRight(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingRight(), style);
     }
     case CSSPropertyPaddingBottom: {
         Length paddingBottom = style.paddingBottom();
         if (paddingBottom.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(paddingBottom, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->computedCSSPaddingBottom(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingBottom(), style);
     }
     case CSSPropertyPaddingLeft: {
         Length paddingLeft = style.paddingLeft();
         if (paddingLeft.isFixed() || !renderer || !renderer->isBox())
             return zoomAdjustedPixelValueForLength(paddingLeft, style);
-        return zoomAdjustedPixelValue(toRenderBox(renderer)->computedCSSPaddingLeft(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingLeft(), style);
     }
     case CSSPropertyPageBreakAfter:
         return cssValuePool().createValue(style.pageBreakAfter());
@@ -2160,7 +2160,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         if (renderer) {
             LayoutRect box;
             if (renderer->isBox())
-                box = toRenderBox(renderer)->borderBoxRect();
+                box = toLayoutBox(renderer)->borderBoxRect();
 
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.perspectiveOriginX(), box.width()), style));
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.perspectiveOriginY(), box.height()), style));
@@ -2207,7 +2207,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         if (renderer) {
             LayoutRect box;
             if (renderer->isBox())
-                box = toRenderBox(renderer)->borderBoxRect();
+                box = toLayoutBox(renderer)->borderBoxRect();
 
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.transformOriginX(), box.width()), style));
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.transformOriginY(), box.height()), style));

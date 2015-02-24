@@ -107,7 +107,7 @@ int LayoutTextControl::textBlockLogicalWidth() const
 
     LayoutUnit unitWidth = logicalWidth() - borderAndPaddingLogicalWidth();
     if (innerEditor->renderer())
-        unitWidth -= innerEditor->renderBox()->paddingStart() + innerEditor->renderBox()->paddingEnd();
+        unitWidth -= innerEditor->layoutBox()->paddingStart() + innerEditor->layoutBox()->paddingEnd();
 
     return unitWidth;
 }
@@ -129,7 +129,7 @@ void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
 {
     HTMLElement* innerEditor = innerEditorElement();
     ASSERT(innerEditor);
-    if (RenderBox* innerEditorBox = innerEditor->renderBox()) {
+    if (LayoutBox* innerEditorBox = innerEditor->layoutBox()) {
         LayoutUnit nonContentHeight = innerEditorBox->borderAndPaddingHeight() + innerEditorBox->marginHeight();
         logicalHeight = computeControlLogicalHeight(innerEditorBox->lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes), nonContentHeight);
 
@@ -145,7 +145,7 @@ void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
         logicalHeight += borderAndPaddingHeight();
     }
 
-    RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
+    LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 
 void LayoutTextControl::hitInnerEditorElement(HitTestResult& result, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset)
@@ -155,7 +155,7 @@ void LayoutTextControl::hitInnerEditorElement(HitTestResult& result, const Layou
         return;
 
     LayoutPoint adjustedLocation = accumulatedOffset + location();
-    LayoutPoint localPoint = pointInContainer - toLayoutSize(adjustedLocation + innerEditor->renderBox()->location());
+    LayoutPoint localPoint = pointInContainer - toLayoutSize(adjustedLocation + innerEditor->layoutBox()->location());
     if (hasOverflowClip())
         localPoint += scrolledContentOffset();
     result.setInnerNode(innerEditor);
@@ -246,8 +246,8 @@ void LayoutTextControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     // Use average character width. Matches IE.
     AtomicString family = style()->font().fontDescription().family().family();
     maxLogicalWidth = preferredContentLogicalWidth(const_cast<LayoutTextControl*>(this)->getAvgCharWidth(family));
-    if (RenderBox* innerEditorRenderBox = innerEditorElement()->renderBox())
-        maxLogicalWidth += innerEditorRenderBox->paddingStart() + innerEditorRenderBox->paddingEnd();
+    if (LayoutBox* innerEditorLayoutBox = innerEditorElement()->layoutBox())
+        maxLogicalWidth += innerEditorLayoutBox->paddingStart() + innerEditorLayoutBox->paddingEnd();
     if (!style()->logicalWidth().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }

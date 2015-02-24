@@ -201,7 +201,7 @@ void RenderView::layout()
             if (child->isSVGRoot())
                 continue;
 
-            if ((child->isBox() && toRenderBox(child)->hasRelativeLogicalHeight())
+            if ((child->isBox() && toLayoutBox(child)->hasRelativeLogicalHeight())
                     || child->style()->logicalHeight().isPercent()
                     || child->style()->logicalMinHeight().isPercent()
                     || child->style()->logicalMaxHeight().isPercent())
@@ -251,7 +251,7 @@ void RenderView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
         if (LayoutObject* parentDocRenderer = frame()->ownerRenderer()) {
             transformState.move(-frame()->view()->scrollOffset());
             if (parentDocRenderer->isBox())
-                transformState.move(toRenderBox(parentDocRenderer)->contentBoxOffset());
+                transformState.move(toLayoutBox(parentDocRenderer)->contentBoxOffset());
             parentDocRenderer->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
             return;
         }
@@ -395,7 +395,7 @@ void RenderView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* p
     if (!owner)
         return;
 
-    if (RenderBox* obj = owner->renderBox()) {
+    if (LayoutBox* obj = owner->layoutBox()) {
         // Intersect the viewport with the paint invalidation rect.
         LayoutRect viewRectangle = viewRect();
         rect.intersect(viewRectangle);
@@ -854,7 +854,7 @@ LayoutObject* RenderView::backgroundRenderer() const
     return 0;
 }
 
-LayoutRect RenderView::backgroundRect(RenderBox* backgroundRenderer) const
+LayoutRect RenderView::backgroundRect(LayoutBox* backgroundRenderer) const
 {
     if (!hasColumns())
         return unscaledDocumentRect();

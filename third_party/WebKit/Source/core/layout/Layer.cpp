@@ -332,7 +332,7 @@ void Layer::updateLayerPositionsAfterScrollRecursive()
 void Layer::updateTransformationMatrix()
 {
     if (m_transform) {
-        RenderBox* box = renderBox();
+        LayoutBox* box = layoutBox();
         ASSERT(box);
         m_transform->makeIdentity();
         box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), LayoutStyle::IncludeTransformOrigin);
@@ -396,7 +396,7 @@ TransformationMatrix Layer::currentTransform(LayoutStyle::ApplyTransformOrigin a
 
     // m_transform includes transform-origin, so we need to recompute the transform here.
     if (applyOrigin == LayoutStyle::ExcludeTransformOrigin) {
-        RenderBox* box = renderBox();
+        LayoutBox* box = layoutBox();
         TransformationMatrix currTransform;
         box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(currTransform, compositor()->hasAcceleratedCompositing());
@@ -420,7 +420,7 @@ TransformationMatrix Layer::renderableTransform(PaintBehavior paintBehavior) con
     return *m_transform;
 }
 
-static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, RenderBox* ancestorColumnsRenderer)
+static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, LayoutBox* ancestorColumnsRenderer)
 {
     RenderView* view = renderer->view();
     LayoutBoxModelObject* prevBlock = renderer;
@@ -550,7 +550,7 @@ void Layer::updatePagination()
     LayerStackingNode* ancestorStackingContextNode = m_stackingNode->ancestorStackingContextNode();
     for (Layer* curr = parent(); curr; curr = curr->parent()) {
         if (curr->renderer()->hasColumns()) {
-            m_isPaginated = checkContainingBlockChainForPagination(renderer(), curr->renderBox());
+            m_isPaginated = checkContainingBlockChainForPagination(renderer(), curr->layoutBox());
             return;
         }
         if (curr->stackingNode() == ancestorStackingContextNode)
@@ -815,7 +815,7 @@ bool Layer::updateLayerPosition()
         m_size = lineBox.size();
         inlineBoundingBoxOffset = lineBox.location();
         localPoint.moveBy(inlineBoundingBoxOffset);
-    } else if (RenderBox* box = renderBox()) {
+    } else if (LayoutBox* box = layoutBox()) {
         m_size = pixelSnappedIntSize(box->size(), box->location());
         localPoint.moveBy(box->topLeftLocation());
     }
@@ -828,13 +828,13 @@ bool Layer::updateLayerPosition()
             if (curr->isBox() && !curr->isTableRow()) {
                 // Rows and cells share the same coordinate space (that of the section).
                 // Omit them when computing our xpos/ypos.
-                localPoint.moveBy(toRenderBox(curr)->topLeftLocation());
+                localPoint.moveBy(toLayoutBox(curr)->topLeftLocation());
             }
             curr = curr->parent();
         }
         if (curr->isBox() && curr->isTableRow()) {
             // Put ourselves into the row coordinate space.
-            localPoint.moveBy(-toRenderBox(curr)->topLeftLocation());
+            localPoint.moveBy(-toLayoutBox(curr)->topLeftLocation());
         }
     }
 
@@ -844,12 +844,12 @@ bool Layer::updateLayerPosition()
 
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
         if (positionedParent->renderer()->hasOverflowClip()) {
-            IntSize offset = positionedParent->renderBox()->scrolledContentOffset();
+            IntSize offset = positionedParent->layoutBox()->scrolledContentOffset();
             localPoint -= offset;
         }
 
         if (positionedParent->renderer()->isRelPositioned() && positionedParent->renderer()->isRenderInline()) {
-            LayoutSize offset = toRenderInline(positionedParent->renderer())->offsetForInFlowPositionedInline(*toRenderBox(renderer()));
+            LayoutSize offset = toRenderInline(positionedParent->renderer())->offsetForInFlowPositionedInline(*toLayoutBox(renderer()));
             localPoint += offset;
         }
     } else if (parent()) {
@@ -867,7 +867,7 @@ bool Layer::updateLayerPosition()
         }
 
         if (parent()->renderer()->hasOverflowClip()) {
-            IntSize scrollOffset = parent()->renderBox()->scrolledContentOffset();
+            IntSize scrollOffset = parent()->layoutBox()->scrolledContentOffset();
             localPoint -= scrollOffset;
         }
     }
@@ -905,7 +905,7 @@ TransformationMatrix Layer::perspectiveTransform() const
         return TransformationMatrix();
 
     // Maybe fetch the perspective from the backing?
-    const IntRect borderBox = toRenderBox(renderer())->pixelSnappedBorderBoxRect();
+    const IntRect borderBox = toLayoutBox(renderer())->pixelSnappedBorderBoxRect();
     const float boxWidth = borderBox.width();
     const float boxHeight = borderBox.height();
 
@@ -930,7 +930,7 @@ FloatPoint Layer::perspectiveOrigin() const
     if (!renderer()->hasTransformRelatedProperty())
         return FloatPoint();
 
-    const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
+    const LayoutRect borderBox = toLayoutBox(renderer())->borderBoxRect();
     const LayoutStyle& style = renderer()->styleRef();
 
     return FloatPoint(floatValueForLength(style.perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style.perspectiveOriginY(), borderBox.height().toFloat()));
@@ -1135,7 +1135,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
         LayoutPoint delta;
         layer->convertToLayerCoords(rootLayer, delta);
         clipRect.move(-delta.x(), -delta.y());
-        clipRect.unite(layer->renderBox()->reflectedRect(clipRect));
+        clipRect.unite(layer->layoutBox()->reflectedRect(clipRect));
         clipRect.moveBy(delta);
     }
 }
@@ -1523,7 +1523,7 @@ void Layer::updateReflectionInfo(const LayoutStyle* oldStyle)
     ASSERT(!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle));
     if (renderer()->hasReflection()) {
         if (!m_reflectionInfo)
-            m_reflectionInfo = adoptPtr(new LayerReflectionInfo(*renderBox()));
+            m_reflectionInfo = adoptPtr(new LayerReflectionInfo(*layoutBox()));
         m_reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_reflectionInfo) {
         m_reflectionInfo->destroy();
@@ -2041,7 +2041,7 @@ bool Layer::hitTestContents(const HitTestRequest& request, HitTestResult& result
 {
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
-    if (!renderer()->hitTest(request, result, hitTestLocation, toLayoutPoint(layerBounds.location() - renderBoxLocation()), hitTestFilter)) {
+    if (!renderer()->hitTest(request, result, hitTestLocation, toLayoutPoint(layerBounds.location() - layoutBoxLocation()), hitTestFilter)) {
         // It's wrong to set innerNode, but then claim that you didn't hit anything, unless it is
         // a rect-based test.
         ASSERT(!result.innerNode() || (request.listBased() && result.listBasedTestResult().size()));
@@ -2109,7 +2109,7 @@ Layer* Layer::hitTestPaginatedChildLayer(Layer* childLayer, Layer* rootLayer, co
     Vector<Layer*> columnLayers;
     LayerStackingNode* ancestorNode = m_stackingNode->isNormalFlowOnly() ? parent()->stackingNode() : m_stackingNode->ancestorStackingContextNode();
     for (Layer* curr = childLayer->parent(); curr; curr = curr->parent()) {
-        if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(childLayer->renderer(), curr->renderBox()))
+        if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(childLayer->renderer(), curr->layoutBox()))
             columnLayers.append(curr);
         if (curr->stackingNode() == ancestorNode)
             break;
@@ -2255,13 +2255,13 @@ void Layer::invalidatePaintForBlockSelectionGaps()
 
     LayoutRect rect = m_blockSelectionGapsBounds;
     if (renderer()->hasOverflowClip()) {
-        RenderBox* box = renderBox();
+        LayoutBox* box = layoutBox();
         rect.move(-box->scrolledContentOffset());
         if (!scrollableArea()->usesCompositedScrolling())
             rect.intersect(box->overflowClipRect(LayoutPoint()));
     }
     if (renderer()->hasClip())
-        rect.intersect(toRenderBox(renderer())->clipRect(LayoutPoint()));
+        rect.intersect(toLayoutBox(renderer())->clipRect(LayoutPoint()));
     if (!rect.isEmpty()) {
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
@@ -2332,15 +2332,15 @@ LayoutRect Layer::logicalBoundingBox() const
         // Our bounding box is just the union of all of our cells' border/overflow rects.
         for (LayoutObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
             if (child->isTableCell()) {
-                LayoutRect bbox = toRenderBox(child)->borderBoxRect();
+                LayoutRect bbox = toLayoutBox(child)->borderBoxRect();
                 result.unite(bbox);
-                LayoutRect overflowRect = renderBox()->visualOverflowRect();
+                LayoutRect overflowRect = layoutBox()->visualOverflowRect();
                 if (bbox != overflowRect)
                     result.unite(overflowRect);
             }
         }
     } else {
-        RenderBox* box = renderBox();
+        LayoutBox* box = layoutBox();
         ASSERT(box);
         result = box->borderBoxRect();
         result.unite(box->visualOverflowRect());
@@ -2354,7 +2354,7 @@ static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, Layou
 {
     LayoutRect result = boundingBox;
     if (renderer->isBox())
-        toRenderBox(renderer)->flipForWritingMode(result);
+        toLayoutBox(renderer)->flipForWritingMode(result);
     else
         renderer->containingBlock()->flipForWritingMode(result);
     return result;
@@ -2687,7 +2687,7 @@ bool Layer::hasNonEmptyChildRenderers() const
             if (child->isRenderInline() || !child->isBox())
                 return true;
 
-            if (toRenderBox(child)->size().width() > 0 || toRenderBox(child)->size().height() > 0)
+            if (toLayoutBox(child)->size().width() > 0 || toLayoutBox(child)->size().height() > 0)
                 return true;
         }
     }
@@ -2895,7 +2895,7 @@ void Layer::computeSelfHitTestRects(LayerHitTestRects& rects) const
     if (!size().isEmpty()) {
         Vector<LayoutRect> rect;
 
-        if (renderBox() && renderBox()->scrollsOverflow()) {
+        if (layoutBox() && layoutBox()->scrollsOverflow()) {
             // For scrolling layers, rects are taken to be in the space of the contents.
             // We need to include the bounding box of the layer in the space of its parent
             // (eg. for border / scroll bars) and if it's composited then the entire contents

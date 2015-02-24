@@ -326,12 +326,12 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     startAnimation();
 }
 
-RenderBox* SVGImage::embeddedContentBox() const
+LayoutBox* SVGImage::embeddedContentBox() const
 {
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement)
         return 0;
-    return toRenderBox(rootElement->renderer());
+    return toLayoutBox(rootElement->renderer());
 }
 
 FrameView* SVGImage::frameView() const

@@ -69,7 +69,7 @@ void LayoutSlider::layout()
 {
     // FIXME: Find a way to cascade appearance.
     // http://webkit.org/b/62535
-    RenderBox* thumbBox = sliderThumbElement()->renderBox();
+    LayoutBox* thumbBox = sliderThumbElement()->layoutBox();
     if (thumbBox && thumbBox->isSliderThumb())
         toLayoutSliderThumb(thumbBox)->updateAppearance(styleRef());
 

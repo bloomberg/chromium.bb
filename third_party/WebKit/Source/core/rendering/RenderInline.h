@@ -82,7 +82,7 @@ public:
 
     virtual void updateDragState(bool dragOn) override final;
 
-    LayoutSize offsetForInFlowPositionedInline(const RenderBox& child) const;
+    LayoutSize offsetForInFlowPositionedInline(const LayoutBox& child) const;
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 

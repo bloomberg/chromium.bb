@@ -172,7 +172,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
         if (beforeChild && beforeChild->parent() != this)
             beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
 
-        RenderBox::addChild(child, beforeChild);
+        LayoutBox::addChild(child, beforeChild);
         return;
     }
 
@@ -461,7 +461,7 @@ void LayoutTable::layout()
 
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if (!child->needsLayout() && child->isBox())
-                toRenderBox(child)->markForPaginationRelayoutIfNeeded(layouter);
+                toLayoutBox(child)->markForPaginationRelayoutIfNeeded(layouter);
             if (child->isTableSection()) {
                 LayoutTableSection* section = toLayoutTableSection(child);
                 if (m_columnLogicalWidthChanged)
@@ -1252,7 +1252,7 @@ int LayoutTable::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
         return baseline;
     }
 
-    return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
+    return LayoutBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
 int LayoutTable::inlineBlockBaseline(LineDirectionMode) const
@@ -1314,8 +1314,8 @@ bool LayoutTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     // Check kids first.
     if (!hasOverflowClip() || locationInContainer.intersects(overflowClipRect(adjustedLocation))) {
         for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
-            if (child->isBox() && !toRenderBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
-                LayoutPoint childPoint = flipForWritingModeForChild(toRenderBox(child), adjustedLocation);
+            if (child->isBox() && !toLayoutBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
+                LayoutPoint childPoint = flipForWritingModeForChild(toLayoutBox(child), adjustedLocation);
                 if (child->nodeAtPoint(request, result, locationInContainer, childPoint, action)) {
                     updateHitTestResult(result, toLayoutPoint(locationInContainer.point() - childPoint));
                     return true;

@@ -52,7 +52,7 @@
 #include "core/layout/LayerScrollableArea.h"
 #include "core/layout/LayerStackingNode.h"
 #include "core/layout/LayerStackingNodeIterator.h"
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "public/platform/WebBlendMode.h"
 #include "wtf/OwnPtr.h"
@@ -94,7 +94,7 @@ public:
     String debugName() const;
 
     LayoutBoxModelObject* renderer() const { return m_renderer; }
-    RenderBox* renderBox() const { return m_renderer && m_renderer->isBox() ? toRenderBox(m_renderer) : 0; }
+    LayoutBox* layoutBox() const { return m_renderer && m_renderer->isBox() ? toLayoutBox(m_renderer) : 0; }
     Layer* parent() const { return m_parent; }
     Layer* previousSibling() const { return m_previous; }
     Layer* nextSibling() const { return m_next; }
@@ -509,7 +509,7 @@ public:
         ShouldRespectOverflowClip = RespectOverflowClip, const LayoutPoint* offsetFromRoot = 0,
         const LayoutSize& subPixelAccumulation = LayoutSize(), const LayoutRect* layerBoundingBox = 0);
 
-    LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
+    LayoutPoint layoutBoxLocation() const { return renderer()->isBox() ? toLayoutBox(renderer())->location() : LayoutPoint(); }
 
     enum TransparencyClipBoxBehavior {
         PaintingTransparencyClipBox,
@@ -583,8 +583,8 @@ private:
     void updateReflectionInfo(const LayoutStyle*);
 
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
-    // but for now, we are always allocating it for RenderBox as it's safer.
-    bool requiresScrollableArea() const { return renderBox(); }
+    // but for now, we are always allocating it for LayoutBox as it's safer.
+    bool requiresScrollableArea() const { return layoutBox(); }
     void updateScrollableArea();
 
     void dirtyAncestorChainVisibleDescendantStatus();

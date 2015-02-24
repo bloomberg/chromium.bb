@@ -230,7 +230,7 @@ void TextFieldInputType::forwardEvent(Event* event)
     if (element().renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
         LayoutTextControlSingleLine* renderTextControl = toLayoutTextControlSingleLine(element().renderer());
         if (event->type() == EventTypeNames::blur) {
-            if (RenderBox* innerEditorRenderer = element().innerEditorElement()->renderBox()) {
+            if (LayoutBox* innerEditorRenderer = element().innerEditorElement()->layoutBox()) {
                 // FIXME: This class has no need to know about Layer!
                 if (Layer* innerLayer = innerEditorRenderer->layer()) {
                     if (LayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {

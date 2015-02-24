@@ -1238,8 +1238,8 @@ void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d)
 void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 {
     LayoutObject* renderer = canvas()->renderer();
-    RenderBox* renderBox = canvas()->renderBox();
-    if (!renderer || !renderBox || !state().m_invertibleCTM || path.isEmpty())
+    LayoutBox* layoutBox = canvas()->layoutBox();
+    if (!renderer || !layoutBox || !state().m_invertibleCTM || path.isEmpty())
         return;
 
     canvas()->document().updateLayoutIgnorePendingStylesheets();
@@ -1251,7 +1251,7 @@ void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 
     // Offset by the canvas rect
     LayoutRect pathRect(boundingRect);
-    IntRect canvasRect = renderBox->absoluteContentBox();
+    IntRect canvasRect = layoutBox->absoluteContentBox();
     pathRect.move(canvasRect.x(), canvasRect.y());
 
     renderer->scrollRectToVisible(

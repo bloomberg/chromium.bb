@@ -34,7 +34,7 @@
 namespace blink {
 
 class ForceHorriblySlowRectMapping;
-class RenderBox;
+class LayoutBox;
 class LayoutFlowThread;
 class LayoutObject;
 class RenderView;
@@ -47,7 +47,7 @@ public:
     // Constructor for sub-tree layout
     explicit LayoutState(LayoutObject& root);
 
-    LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
+    LayoutState(LayoutBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
 
     ~LayoutState();
 
@@ -57,9 +57,9 @@ public:
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
-    LayoutUnit pageLogicalOffset(const RenderBox&, const LayoutUnit& childLogicalOffset) const;
+    LayoutUnit pageLogicalOffset(const LayoutBox&, const LayoutUnit& childLogicalOffset) const;
 
-    void addForcedColumnBreak(const RenderBox&, const LayoutUnit& childLogicalOffset);
+    void addForcedColumnBreak(const LayoutBox&, const LayoutUnit& childLogicalOffset);
 
     void setColumnInfo(ColumnInfo* columnInfo) { m_columnInfo = columnInfo; }
 

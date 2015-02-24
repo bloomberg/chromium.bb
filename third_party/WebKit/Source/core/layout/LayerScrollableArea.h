@@ -44,10 +44,8 @@
 #ifndef LayerScrollableArea_h
 #define LayerScrollableArea_h
 
-
 #include "core/layout/LayerFragment.h"
-#include "core/rendering/RenderBox.h"
-
+#include "core/layout/LayoutBox.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
@@ -58,7 +56,7 @@ enum ResizerHitTestType {
 };
 
 class PlatformEvent;
-class RenderBox;
+class LayoutBox;
 class Layer;
 class LayoutScrollbarPart;
 
@@ -66,7 +64,7 @@ class LayerScrollableArea final : public ScrollableArea {
     friend class Internals;
 
 public:
-    // FIXME: We should pass in the RenderBox but this opens a window
+    // FIXME: We should pass in the LayoutBox but this opens a window
     // for crashers during Layer setup (see crbug.com/368062).
     LayerScrollableArea(Layer&);
     virtual ~LayerScrollableArea();
@@ -207,7 +205,7 @@ public:
 
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
-    RenderBox& box() const;
+    LayoutBox& box() const;
     Layer* layer() const;
 
     LayoutScrollbarPart* resizer() { return m_resizer; }

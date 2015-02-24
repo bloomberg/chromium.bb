@@ -118,7 +118,7 @@ LayoutUnit LayoutListBox::itemHeight() const
         return defaultItemHeight();
     if (!baseItemRenderer || !baseItemRenderer->isBox())
         return defaultItemHeight();
-    return toRenderBox(baseItemRenderer)->size().height();
+    return toLayoutBox(baseItemRenderer)->size().height();
 }
 
 void LayoutListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
@@ -129,7 +129,7 @@ void LayoutListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, Logi
 
     height += borderAndPaddingHeight();
 
-    RenderBox::computeLogicalHeight(height, logicalTop, computedValues);
+    LayoutBox::computeLogicalHeight(height, logicalTop, computedValues);
 }
 
 void LayoutListBox::stopAutoscroll()

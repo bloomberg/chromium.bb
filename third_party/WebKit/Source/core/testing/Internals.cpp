@@ -1519,8 +1519,8 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
         return false;
     }
 
-    Layer* layer1 = toRenderBox(renderer1)->layer();
-    Layer* layer2 = toRenderBox(renderer2)->layer();
+    Layer* layer1 = toLayoutBox(renderer1)->layer();
+    Layer* layer2 = toLayoutBox(renderer2)->layer();
     if (!layer1 || !layer2) {
         exceptionState.throwDOMException(InvalidAccessError, String::format("No render layer can be obtained from the %s provided element.", layer1 ? "second" : "first"));
         return false;
@@ -1553,7 +1553,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
         return String();
     }
 
-    Layer* layer = toRenderBox(renderer)->layer();
+    Layer* layer = toLayoutBox(renderer)->layer();
     if (!layer
         || !layer->hasCompositedLayerMapping()
         || !layer->compositedLayerMapping()->mainGraphicsLayer()) {

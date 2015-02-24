@@ -527,7 +527,7 @@ void RootInlineBox::setLineBreakInfo(LayoutObject* obj, unsigned breakPos, const
     // This has security implications because if the LayoutObject does not
     // point to at least one line box, then that RenderInline can be deleted
     // later without resetting the lineBreakObj, leading to use-after-free.
-    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj->isText() || !(obj->isRenderInline() && obj->isBox() && !toRenderBox(obj)->inlineBoxWrapper()));
+    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj->isText() || !(obj->isRenderInline() && obj->isBox() && !toLayoutBox(obj)->inlineBoxWrapper()));
 
     m_lineBreakObj = obj;
     m_lineBreakPos = breakPos;

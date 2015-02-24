@@ -1488,7 +1488,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             }
         }
     } else if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton && renderer()) {
-        if (document().page() && document().page()->autoscrollController().autoscrollInProgress(toRenderBox(renderer())))
+        if (document().page() && document().page()->autoscrollController().autoscrollInProgress(toLayoutBox(renderer())))
             document().page()->autoscrollController().stopAutoscroll();
         else
             handleMouseRelease();

@@ -33,7 +33,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
     while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
         LayoutObject* object = resolver.position().object();
         if (object->isOutOfFlowPositioned()) {
-            RenderBox* box = toRenderBox(object);
+            LayoutBox* box = toLayoutBox(object);
             setStaticPositions(m_block, box);
             bool originallyInline = box->style()->isOriginalDisplayInlineType();
             box->markStaticPositionedBoxForLayout(box->style()->isHorizontalWritingMode(), originallyInline);
@@ -42,7 +42,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
         } else if (object->isFloating()) {
-            m_block->positionNewFloatOnLine(m_block->insertFloatingObject(*toRenderBox(object)), lastFloatFromPreviousLine, lineInfo, width);
+            m_block->positionNewFloatOnLine(m_block->insertFloatingObject(*toLayoutBox(object)), lastFloatFromPreviousLine, lineInfo, width);
         }
         resolver.position().increment(&resolver);
     }

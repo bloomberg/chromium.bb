@@ -78,7 +78,7 @@ void RenderFileUploadControl::updateFromElement()
 
 int RenderFileUploadControl::maxFilenameWidth() const
 {
-    int uploadButtonWidth = (uploadButton() && uploadButton()->renderBox()) ? uploadButton()->renderBox()->pixelSnappedWidth() : 0;
+    int uploadButtonWidth = (uploadButton() && uploadButton()->layoutBox()) ? uploadButton()->layoutBox()->pixelSnappedWidth() : 0;
     return std::max(0, contentBoxRect().pixelSnappedWidth() - uploadButtonWidth - afterButtonSpacing);
 }
 

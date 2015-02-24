@@ -168,7 +168,7 @@ void LayoutTableCell::addLayerHitTestRects(LayerHitTestRects& layerRects, const 
     // we need to subtract that again here (as for LayoutTableCell::offsetFromContainer.
     if (parent())
         adjustedLayerOffset -= parentBox()->locationOffset();
-    RenderBox::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
+    LayoutBox::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
 }
 
 void LayoutTableCell::computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope& layouter)

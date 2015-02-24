@@ -41,6 +41,7 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/layout/style/LayoutStyleConstants.h"
@@ -49,7 +50,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderInline.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
@@ -258,23 +258,23 @@ static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad
     LayoutRect marginBox;
 
     if (renderer->isBox()) {
-        RenderBox* renderBox = toRenderBox(renderer);
+        LayoutBox* layoutBox = toLayoutBox(renderer);
 
-        // RenderBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
-        const int verticalScrollbarWidth = renderBox->verticalScrollbarWidth();
-        const int horizontalScrollbarHeight = renderBox->horizontalScrollbarHeight();
-        contentBox = renderBox->contentBoxRect();
+        // LayoutBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
+        const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
+        const int horizontalScrollbarHeight = layoutBox->horizontalScrollbarHeight();
+        contentBox = layoutBox->contentBoxRect();
         contentBox.setWidth(contentBox.width() + verticalScrollbarWidth);
         contentBox.setHeight(contentBox.height() + horizontalScrollbarHeight);
 
-        paddingBox = renderBox->paddingBoxRect();
+        paddingBox = layoutBox->paddingBoxRect();
         paddingBox.setWidth(paddingBox.width() + verticalScrollbarWidth);
         paddingBox.setHeight(paddingBox.height() + horizontalScrollbarHeight);
 
-        borderBox = renderBox->borderBoxRect();
+        borderBox = layoutBox->borderBoxRect();
 
-        marginBox = LayoutRect(borderBox.x() - renderBox->marginLeft(), borderBox.y() - renderBox->marginTop(),
-            borderBox.width() + renderBox->marginWidth(), borderBox.height() + renderBox->marginHeight());
+        marginBox = LayoutRect(borderBox.x() - layoutBox->marginLeft(), borderBox.y() - layoutBox->marginTop(),
+            borderBox.width() + layoutBox->marginWidth(), borderBox.height() + layoutBox->marginHeight());
     } else {
         RenderInline* renderInline = toRenderInline(renderer);
 
@@ -593,17 +593,17 @@ static RefPtr<TypeBuilder::Array<double> > buildArrayForQuad(const FloatQuad& qu
 static const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths* paths, FloatQuad* bounds)
 {
     LayoutObject* renderer = node->renderer();
-    if (!renderer || !renderer->isBox() || !toRenderBox(renderer)->shapeOutsideInfo())
+    if (!renderer || !renderer->isBox() || !toLayoutBox(renderer)->shapeOutsideInfo())
         return nullptr;
 
     FrameView* containingView = node->document().view();
-    RenderBox* renderBox = toRenderBox(renderer);
-    const ShapeOutsideInfo* shapeOutsideInfo = renderBox->shapeOutsideInfo();
+    LayoutBox* layoutBox = toLayoutBox(renderer);
+    const ShapeOutsideInfo* shapeOutsideInfo = layoutBox->shapeOutsideInfo();
 
     shapeOutsideInfo->computedShape().buildDisplayPaths(*paths);
 
     LayoutRect shapeBounds = shapeOutsideInfo->computedShapePhysicalBoundingBox();
-    *bounds = renderBox->localToAbsoluteQuad(FloatRect(shapeBounds));
+    *bounds = layoutBox->localToAbsoluteQuad(FloatRect(shapeBounds));
     contentsQuadToRootFrame(containingView, *bounds);
 
     return shapeOutsideInfo;

@@ -564,7 +564,7 @@ int Element::clientLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (RenderBox* renderer = renderBox())
+    if (LayoutBox* renderer = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(roundToInt(renderer->clientLeft()), *renderer);
     return 0;
 }
@@ -573,7 +573,7 @@ int Element::clientTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (RenderBox* renderer = renderBox())
+    if (LayoutBox* renderer = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(roundToInt(renderer->clientTop()), *renderer);
     return 0;
 }
@@ -593,7 +593,7 @@ int Element::clientWidth()
         }
     }
 
-    if (RenderBox* renderer = renderBox())
+    if (LayoutBox* renderer = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), *renderer).round();
     return 0;
 }
@@ -614,7 +614,7 @@ int Element::clientHeight()
         }
     }
 
-    if (RenderBox* renderer = renderBox())
+    if (LayoutBox* renderer = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), *renderer).round();
     return 0;
 }
@@ -624,8 +624,8 @@ double Element::scrollLeft()
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
-        if (RenderBox* rend = renderBox())
-            return adjustScrollForAbsoluteZoom(rend->scrollLeft(), *rend);
+        if (LayoutBox* box = layoutBox())
+            return adjustScrollForAbsoluteZoom(box->scrollLeft(), *box);
         return 0;
     }
 
@@ -645,8 +645,8 @@ double Element::scrollTop()
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
-        if (RenderBox* rend = renderBox())
-            return adjustScrollForAbsoluteZoom(rend->scrollTop(), *rend);
+        if (LayoutBox* box = layoutBox())
+            return adjustScrollForAbsoluteZoom(box->scrollTop(), *box);
         return 0;
     }
 
@@ -669,9 +669,9 @@ void Element::setScrollLeft(double newLeft)
         return;
 
     if (document().documentElement() != this) {
-        RenderBox* rend = renderBox();
-        if (rend)
-            rend->setScrollLeft(LayoutUnit::fromFloatRound(newLeft * rend->style()->effectiveZoom()));
+        LayoutBox* box = layoutBox();
+        if (box)
+            box->setScrollLeft(LayoutUnit::fromFloatRound(newLeft * box->style()->effectiveZoom()));
         return;
     }
 
@@ -692,9 +692,9 @@ void Element::setScrollTop(double newTop)
         return;
 
     if (document().documentElement() != this) {
-        RenderBox* rend = renderBox();
-        if (rend)
-            rend->setScrollTop(LayoutUnit::fromFloatRound(newTop * rend->style()->effectiveZoom()));
+        LayoutBox* box = layoutBox();
+        if (box)
+            box->setScrollTop(LayoutUnit::fromFloatRound(newTop * box->style()->effectiveZoom()));
         return;
     }
 
@@ -710,16 +710,16 @@ void Element::setScrollTop(double newTop)
 int Element::scrollWidth()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderBox* rend = renderBox())
-        return adjustLayoutUnitForAbsoluteZoom(rend->scrollWidth(), *rend).toDouble();
+    if (LayoutBox* box = layoutBox())
+        return adjustLayoutUnitForAbsoluteZoom(box->scrollWidth(), *box).toDouble();
     return 0;
 }
 
 int Element::scrollHeight()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderBox* rend = renderBox())
-        return adjustLayoutUnitForAbsoluteZoom(rend->scrollHeight(), *rend).toDouble();
+    if (LayoutBox* box = layoutBox())
+        return adjustLayoutUnitForAbsoluteZoom(box->scrollHeight(), *box).toDouble();
     return 0;
 }
 
@@ -738,7 +738,7 @@ void Element::scrollBy(const ScrollToOptions& scrollToOptions)
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
-        scrollRenderBoxBy(scrollToOptions);
+        scrollLayoutBoxBy(scrollToOptions);
         return;
     }
 
@@ -764,7 +764,7 @@ void Element::scrollTo(const ScrollToOptions& scrollToOptions)
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
-        scrollRenderBoxTo(scrollToOptions);
+        scrollLayoutBoxTo(scrollToOptions);
         return;
     }
 
@@ -775,7 +775,7 @@ void Element::scrollTo(const ScrollToOptions& scrollToOptions)
     }
 }
 
-void Element::scrollRenderBoxBy(const ScrollToOptions& scrollToOptions)
+void Element::scrollLayoutBoxBy(const ScrollToOptions& scrollToOptions)
 {
     double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
     double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
@@ -784,17 +784,17 @@ void Element::scrollRenderBoxBy(const ScrollToOptions& scrollToOptions)
 
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
-    RenderBox* rend = renderBox();
-    if (rend) {
-        double currentScaledLeft = rend->scrollLeft();
-        double currentScaledTop = rend->scrollTop();
-        double newScaledLeft = left * rend->style()->effectiveZoom() + currentScaledLeft;
-        double newScaledTop = top * rend->style()->effectiveZoom() + currentScaledTop;
-        rend->scrollToOffset(DoubleSize(newScaledLeft, newScaledTop), scrollBehavior);
+    LayoutBox* box = layoutBox();
+    if (box) {
+        double currentScaledLeft = box->scrollLeft();
+        double currentScaledTop = box->scrollTop();
+        double newScaledLeft = left * box->style()->effectiveZoom() + currentScaledLeft;
+        double newScaledTop = top * box->style()->effectiveZoom() + currentScaledTop;
+        box->scrollToOffset(DoubleSize(newScaledLeft, newScaledTop), scrollBehavior);
     }
 }
 
-void Element::scrollRenderBoxTo(const ScrollToOptions& scrollToOptions)
+void Element::scrollLayoutBoxTo(const ScrollToOptions& scrollToOptions)
 {
     if ((scrollToOptions.hasLeft() && std::isnan(scrollToOptions.left()))
         || (scrollToOptions.hasTop() && std::isnan(scrollToOptions.top())))
@@ -803,15 +803,15 @@ void Element::scrollRenderBoxTo(const ScrollToOptions& scrollToOptions)
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
 
-    RenderBox* rend = renderBox();
-    if (rend) {
-        double scaledLeft = rend->scrollLeft();
-        double scaledTop = rend->scrollTop();
+    LayoutBox* box = layoutBox();
+    if (box) {
+        double scaledLeft = box->scrollLeft();
+        double scaledTop = box->scrollTop();
         if (scrollToOptions.hasLeft())
-            scaledLeft = scrollToOptions.left() * rend->style()->effectiveZoom();
+            scaledLeft = scrollToOptions.left() * box->style()->effectiveZoom();
         if (scrollToOptions.hasTop())
-            scaledTop = scrollToOptions.top() * rend->style()->effectiveZoom();
-        rend->scrollToOffset(DoubleSize(scaledLeft, scaledTop), scrollBehavior);
+            scaledTop = scrollToOptions.top() * box->style()->effectiveZoom();
+        box->scrollToOffset(DoubleSize(scaledLeft, scaledTop), scrollBehavior);
     }
 }
 

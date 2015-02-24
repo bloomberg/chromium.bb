@@ -69,7 +69,7 @@ public:
 
 protected:
     virtual bool needsPreferredWidthsRecalculation() const override final;
-    virtual RenderBox* embeddedContentBox() const override final;
+    virtual LayoutBox* embeddedContentBox() const override final;
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override final;
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;

@@ -29,11 +29,11 @@
 #ifndef LayoutReplica_h
 #define LayoutReplica_h
 
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
-class LayoutReplica final : public RenderBox {
+class LayoutReplica final : public LayoutBox {
 public:
     static LayoutReplica* createAnonymous(Document*);
 
@@ -50,7 +50,7 @@ public:
 private:
     LayoutReplica();
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectReplica || RenderBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectReplica || LayoutBox::isOfType(type); }
     virtual void computePreferredLogicalWidths() override;
 
 };

@@ -25,7 +25,7 @@
 
 namespace blink
 {
-// RenderOverflow is a class for tracking content that spills out of a box.  This class is used by RenderBox and
+// RenderOverflow is a class for tracking content that spills out of a box.  This class is used by LayoutBox and
 // InlineFlowBox.
 //
 // There are two types of overflow: layout overflow (which is expected to be reachable via scrolling mechanisms) and

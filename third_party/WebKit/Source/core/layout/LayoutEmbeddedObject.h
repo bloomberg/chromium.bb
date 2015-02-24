@@ -52,7 +52,7 @@ private:
 
     virtual const char* renderName() const override { return "LayoutEmbeddedObject"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
-    virtual RenderBox* embeddedContentBox() const override final;
+    virtual LayoutBox* embeddedContentBox() const override final;
 
     virtual LayerType layerTypeRequired() const override final;
 

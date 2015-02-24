@@ -31,24 +31,24 @@
 #include "config.h"
 #include "core/layout/OrderIterator.h"
 
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
-OrderIterator::OrderIterator(const RenderBox* containerBox)
+OrderIterator::OrderIterator(const LayoutBox* containerBox)
     : m_containerBox(containerBox)
     , m_currentChild(0)
     , m_isReset(false)
 {
 }
 
-RenderBox* OrderIterator::first()
+LayoutBox* OrderIterator::first()
 {
     reset();
     return next();
 }
 
-RenderBox* OrderIterator::next()
+LayoutBox* OrderIterator::next()
 {
     do {
         if (!m_currentChild) {
@@ -84,7 +84,7 @@ OrderIteratorPopulator::~OrderIteratorPopulator()
     m_iterator.reset();
 }
 
-void OrderIteratorPopulator::collectChild(const RenderBox* child)
+void OrderIteratorPopulator::collectChild(const LayoutBox* child)
 {
     m_iterator.m_orderValues.insert(child->style()->order());
 }

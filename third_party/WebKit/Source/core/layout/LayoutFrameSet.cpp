@@ -40,7 +40,7 @@
 namespace blink {
 
 LayoutFrameSet::LayoutFrameSet(HTMLFrameSetElement* frameSet)
-    : RenderBox(frameSet)
+    : LayoutBox(frameSet)
     , m_isResizing(false)
     , m_isChildResizing(false)
 {
@@ -380,7 +380,7 @@ void LayoutFrameSet::layout()
 
     positionFrames();
 
-    RenderBox::layout();
+    LayoutBox::layout();
 
     computeEdgeInfo();
 
@@ -389,7 +389,7 @@ void LayoutFrameSet::layout()
     clearNeedsLayout();
 }
 
-static void clearNeedsLayoutOnHiddenFrames(RenderBox* frame)
+static void clearNeedsLayoutOnHiddenFrames(LayoutBox* frame)
 {
     for (; frame; frame = frame->nextSiblingBox()) {
         frame->setWidth(0);
@@ -401,7 +401,7 @@ static void clearNeedsLayoutOnHiddenFrames(RenderBox* frame)
 
 void LayoutFrameSet::positionFrames()
 {
-    RenderBox* child = firstChildBox();
+    LayoutBox* child = firstChildBox();
     if (!child)
         return;
 
@@ -571,7 +571,7 @@ CursorDirective LayoutFrameSet::getCursor(const LayoutPoint& point, Cursor& curs
         cursor = columnResizeCursor();
         return SetCursor;
     }
-    return RenderBox::getCursor(point, cursor);
+    return LayoutBox::getCursor(point, cursor);
 }
 
 } // namespace blink

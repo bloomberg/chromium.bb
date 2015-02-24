@@ -37,7 +37,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
@@ -225,7 +225,7 @@ double HTMLBodyElement::scrollLeft()
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        RenderBox* render = renderBox();
+        LayoutBox* render = layoutBox();
         if (!render)
             return 0;
         if (render->hasOverflowClip())
@@ -248,7 +248,7 @@ void HTMLBodyElement::setScrollLeft(double scrollLeft)
         return;
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        RenderBox* render = renderBox();
+        LayoutBox* render = layoutBox();
         if (!render)
             return;
         if (render->hasOverflowClip()) {
@@ -270,7 +270,7 @@ double HTMLBodyElement::scrollTop()
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        RenderBox* render = renderBox();
+        LayoutBox* render = layoutBox();
         if (!render)
             return 0;
         if (render->hasOverflowClip())
@@ -293,7 +293,7 @@ void HTMLBodyElement::setScrollTop(double scrollTop)
         return;
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        RenderBox* render = renderBox();
+        LayoutBox* render = layoutBox();
         if (!render)
             return;
         if (render->hasOverflowClip()) {
@@ -336,11 +336,11 @@ void HTMLBodyElement::scrollBy(const ScrollToOptions& scrollToOptions)
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        RenderBox* render = renderBox();
+        LayoutBox* render = layoutBox();
         if (!render)
             return;
         if (render->hasOverflowClip()) {
-            scrollRenderBoxBy(scrollToOptions);
+            scrollLayoutBoxBy(scrollToOptions);
             return;
         }
         if (!document.inQuirksMode())
@@ -359,11 +359,11 @@ void HTMLBodyElement::scrollTo(const ScrollToOptions& scrollToOptions)
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        RenderBox* render = renderBox();
+        LayoutBox* render = layoutBox();
         if (!render)
             return;
         if (render->hasOverflowClip()) {
-            scrollRenderBoxTo(scrollToOptions);
+            scrollLayoutBoxTo(scrollToOptions);
             return;
         }
         if (!document.inQuirksMode())

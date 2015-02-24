@@ -46,12 +46,12 @@ public:
     bool isStretchingChildren() const { return m_stretchingChildren; }
     virtual bool canCollapseAnonymousBlockChild() const override { return false; }
 
-    void placeChild(RenderBox* child, const LayoutPoint& location);
+    void placeChild(LayoutBox* child, const LayoutPoint& location);
 
 private:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
-    LayoutUnit allowedChildFlex(RenderBox* child, bool expanding, unsigned group);
+    LayoutUnit allowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
 
     bool hasMultipleLines() const { return style()->boxLines() == MULTIPLE; }
     bool isVertical() const { return style()->boxOrient() == VERTICAL; }

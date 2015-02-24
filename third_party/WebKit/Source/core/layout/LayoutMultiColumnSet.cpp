@@ -100,7 +100,7 @@ bool LayoutMultiColumnSet::heightIsAuto() const
     if (!flowThread->isLayoutPagedFlowThread()) {
         if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
             return true;
-        if (RenderBox* next = nextSiblingBox()) {
+        if (LayoutBox* next = nextSiblingBox()) {
             if (next->isLayoutMultiColumnSpannerPlaceholder()) {
                 // If we're followed by a spanner, we need to balance.
                 return true;

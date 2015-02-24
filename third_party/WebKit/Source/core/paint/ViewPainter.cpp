@@ -6,11 +6,11 @@
 #include "core/paint/ViewPainter.h"
 
 #include "core/frame/FrameView.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     BlockPainter(m_renderView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }
 
-static inline bool rendererObscuresBackground(RenderBox* rootBox)
+static inline bool rendererObscuresBackground(LayoutBox* rootBox)
 {
     ASSERT(rootBox);
     const LayoutStyle& style = rootBox->styleRef();
@@ -69,7 +69,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 
     bool shouldPaintBackground = true;
     Node* documentElement = m_renderView.document().documentElement();
-    if (RenderBox* rootBox = documentElement ? toRenderBox(documentElement->renderer()) : 0)
+    if (LayoutBox* rootBox = documentElement ? toLayoutBox(documentElement->renderer()) : 0)
         shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !rendererObscuresBackground(rootBox);
 
     // If painting will entirely fill the view, no need to fill the background.
@@ -100,7 +100,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     }
 }
 
-bool ViewPainter::rootFillsViewportBackground(RenderBox* rootBox) const
+bool ViewPainter::rootFillsViewportBackground(LayoutBox* rootBox) const
 {
     ASSERT(rootBox);
     // CSS Boxes always fill the viewport background (see paintRootBoxFillLayers)

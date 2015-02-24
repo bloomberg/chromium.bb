@@ -8,7 +8,7 @@
 #include "core/layout/ClipRects.h"
 
 #if ENABLE(ASSERT)
-#include "core/rendering/RenderBox.h" // For OverlayScrollbarSizeRelevancy.
+#include "core/layout/LayoutBox.h" // For OverlayScrollbarSizeRelevancy.
 #endif
 
 namespace blink {

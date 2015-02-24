@@ -546,8 +546,8 @@ protected:
 
     virtual void parserDidSetAttributes() { };
 
-    void scrollRenderBoxBy(const ScrollToOptions&);
-    void scrollRenderBoxTo(const ScrollToOptions&);
+    void scrollLayoutBoxBy(const ScrollToOptions&);
+    void scrollLayoutBoxTo(const ScrollToOptions&);
     void scrollFrameBy(const ScrollToOptions&);
     void scrollFrameTo(const ScrollToOptions&);
 

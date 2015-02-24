@@ -247,7 +247,7 @@ ScrollableArea* AXRenderObject::getScrollableAreaIfScrollable() const
     if (!m_renderer || !m_renderer->isBox())
         return 0;
 
-    RenderBox* box = toRenderBox(m_renderer);
+    LayoutBox* box = toLayoutBox(m_renderer);
     if (!box->canBeScrolledAndHasScrollableArea())
         return 0;
 
@@ -1267,7 +1267,7 @@ void AXRenderObject::checkCachedElementRect() const
         return;
 
     bool dirty = false;
-    RenderBox* box = toRenderBox(m_renderer);
+    LayoutBox* box = toLayoutBox(m_renderer);
     if (box->frameRect() != m_cachedFrameRect)
         dirty = true;
 
@@ -1292,7 +1292,7 @@ void AXRenderObject::updateCachedElementRect() const
     if (!m_renderer->isBox())
         return;
 
-    RenderBox* box = toRenderBox(m_renderer);
+    LayoutBox* box = toLayoutBox(m_renderer);
     m_cachedFrameRect = box->frameRect();
 
     if (box->canBeScrolledAndHasScrollableArea()) {
@@ -1339,7 +1339,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     if (!m_renderer || !m_renderer->hasLayer())
         return 0;
 
-    Layer* layer = toRenderBox(m_renderer)->layer();
+    Layer* layer = toLayoutBox(m_renderer)->layer();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult hitTestResult = HitTestResult(point);
@@ -1721,7 +1721,7 @@ void AXRenderObject::scrollTo(const IntPoint& point) const
     if (!m_renderer || !m_renderer->isBox())
         return;
 
-    RenderBox* box = toRenderBox(m_renderer);
+    LayoutBox* box = toLayoutBox(m_renderer);
     if (!box->canBeScrolledAndHasScrollableArea())
         return;
 

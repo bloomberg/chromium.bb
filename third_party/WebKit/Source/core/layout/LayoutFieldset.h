@@ -33,7 +33,7 @@ public:
     explicit LayoutFieldset(Element*);
 
     enum FindLegendOption { IgnoreFloatingOrOutOfFlow, IncludeFloatingOrOutOfFlow };
-    RenderBox* findLegend(FindLegendOption = IgnoreFloatingOrOutOfFlow) const;
+    LayoutBox* findLegend(FindLegendOption = IgnoreFloatingOrOutOfFlow) const;
 
 private:
     virtual const char* renderName() const override { return "LayoutFieldset"; }

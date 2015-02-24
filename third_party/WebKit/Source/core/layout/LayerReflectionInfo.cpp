@@ -56,7 +56,7 @@
 
 namespace blink {
 
-LayerReflectionInfo::LayerReflectionInfo(RenderBox& renderer)
+LayerReflectionInfo::LayerReflectionInfo(LayoutBox& renderer)
     : m_box(&renderer)
     , m_isPaintingInsideReflection(false)
 {

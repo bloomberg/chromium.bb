@@ -6601,8 +6601,8 @@ TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
 
     Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
     RenderBlock* container = toRenderBlock(document->getElementById("container")->renderer());
-    RenderBox* percentHeightInAnonymous = toRenderBox(document->getElementById("percent-height-in-anonymous")->renderer());
-    RenderBox* percentHeightDirectChild = toRenderBox(document->getElementById("percent-height-direct-child")->renderer());
+    LayoutBox* percentHeightInAnonymous = toLayoutBox(document->getElementById("percent-height-in-anonymous")->renderer());
+    LayoutBox* percentHeightDirectChild = toLayoutBox(document->getElementById("percent-height-direct-child")->renderer());
 
     EXPECT_TRUE(RenderBlock::hasPercentHeightDescendant(percentHeightInAnonymous));
     EXPECT_TRUE(RenderBlock::hasPercentHeightDescendant(percentHeightDirectChild));

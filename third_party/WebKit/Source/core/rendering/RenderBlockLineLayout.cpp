@@ -61,7 +61,7 @@ static inline InlineBox* createInlineBoxForRenderer(LayoutObject* obj, bool isRo
         return toRenderBlockFlow(obj)->createAndAppendRootInlineBox();
 
     if (obj->isBox())
-        return toRenderBox(obj)->createInlineBox();
+        return toLayoutBox(obj)->createInlineBox();
 
     return toRenderInline(obj)->createAndAppendInlineFlowBox();
 }
@@ -563,8 +563,8 @@ void RenderBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     bool needsWordSpacing;
 
     if (firstRun && firstRun->m_object->isReplaced()) {
-        RenderBox* renderBox = toRenderBox(firstRun->m_object);
-        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, renderBox->logicalHeight());
+        LayoutBox* layoutBox = toLayoutBox(firstRun->m_object);
+        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, layoutBox->logicalHeight());
     }
 
     computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth, firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
@@ -616,11 +616,11 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
         } else {
             isAfterExpansion = false;
             if (!r->m_object->isRenderInline()) {
-                RenderBox* renderBox = toRenderBox(r->m_object);
-                if (renderBox->isRubyRun())
-                    setMarginsForRubyRun(r, toLayoutRubyRun(renderBox), previousObject, lineInfo);
-                r->m_box->setLogicalWidth(logicalWidthForChild(*renderBox).toFloat());
-                totalLogicalWidth += marginStartForChild(*renderBox) + marginEndForChild(*renderBox);
+                LayoutBox* layoutBox = toLayoutBox(r->m_object);
+                if (layoutBox->isRubyRun())
+                    setMarginsForRubyRun(r, toLayoutRubyRun(layoutBox), previousObject, lineInfo);
+                r->m_box->setLogicalWidth(logicalWidthForChild(*layoutBox).toFloat());
+                totalLogicalWidth += marginStartForChild(*layoutBox) + marginEndForChild(*layoutBox);
                 needsWordSpacing = true;
             }
         }
@@ -662,7 +662,7 @@ void RenderBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
         if (r->m_object->isText())
             toRenderText(r->m_object)->positionLineBox(r->m_box);
         else if (r->m_object->isBox())
-            toRenderBox(r->m_object)->positionLineBox(r->m_box);
+            toLayoutBox(r->m_object)->positionLineBox(r->m_box);
     }
 }
 
@@ -1005,9 +1005,9 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                     layoutState.updatePaintInvalidationRangeFromBox(line, delta);
                     line->adjustBlockDirectionPosition(delta.toFloat());
                 }
-                if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
-                    Vector<RenderBox*>::iterator end = cleanLineFloats->end();
-                    for (Vector<RenderBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
+                if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
+                    Vector<LayoutBox*>::iterator end = cleanLineFloats->end();
+                    for (Vector<LayoutBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
                         FloatingObject* floatingObject = insertFloatingObject(**f);
                         ASSERT(!floatingObject->originatingLine());
                         floatingObject->setOriginatingLine(line);
@@ -1070,7 +1070,7 @@ void RenderBlockFlow::markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>&
     // painted.
     for (size_t i = 0; i < floatCount; ++i) {
         if (!floats[i].everHadLayout) {
-            RenderBox* f = floats[i].object;
+            LayoutBox* f = floats[i].object;
             if (!f->location().x() && !f->location().y())
                 f->setShouldDoFullPaintInvalidation();
         }
@@ -1316,7 +1316,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 // minwidth is concerned.
                 LayoutUnit childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth;
                 if (child->isBox() && child->isHorizontalWritingMode() != isHorizontalWritingMode()) {
-                    RenderBox* childBox = toRenderBox(child);
+                    LayoutBox* childBox = toLayoutBox(child);
                     LogicalExtentComputedValues computedValues;
                     childBox->computeLogicalHeight(childBox->borderAndPaddingLogicalHeight(), 0, computedValues);
                     childMinPreferredLogicalWidth = childMaxPreferredLogicalWidth = computedValues.m_extent;
@@ -1551,7 +1551,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         // the replaced elements later. In partial layout mode, line boxes are not
         // deleted and only dirtied. In that case, we can layout the replaced
         // elements at the same time.
-        Vector<RenderBox*> replacedChildren;
+        Vector<LayoutBox*> replacedChildren;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
             LayoutObject* o = walker.current();
 
@@ -1559,7 +1559,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                 layoutState.setHasInlineChild(true);
 
             if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
-                RenderBox* box = toRenderBox(o);
+                LayoutBox* box = toLayoutBox(o);
 
                 updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, *box);
 
@@ -1618,13 +1618,13 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
 
 void RenderBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWithRect>& floats, size_t& floatIndex, bool& encounteredNewFloat, bool& dirtiedByFloat)
 {
-    Vector<RenderBox*>* cleanLineFloats = line->floatsPtr();
+    Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr();
     if (!cleanLineFloats)
         return;
 
-    Vector<RenderBox*>::iterator end = cleanLineFloats->end();
-    for (Vector<RenderBox*>::iterator it = cleanLineFloats->begin(); it != end; ++it) {
-        RenderBox* floatingBox = *it;
+    Vector<LayoutBox*>::iterator end = cleanLineFloats->end();
+    for (Vector<LayoutBox*>::iterator it = cleanLineFloats->begin(); it != end; ++it) {
+        LayoutBox* floatingBox = *it;
         floatingBox->layoutIfNeeded();
         LayoutSize newSize = floatingBox->size() +
             LayoutSize(floatingBox->marginWidth(), floatingBox->marginHeight());
@@ -1733,9 +1733,9 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         // Restore floats from clean lines.
         RootInlineBox* line = firstRootBox();
         while (line != curr) {
-            if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
-                Vector<RenderBox*>::iterator end = cleanLineFloats->end();
-                for (Vector<RenderBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
+            if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
+                Vector<LayoutBox*>::iterator end = cleanLineFloats->end();
+                for (Vector<LayoutBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
                     FloatingObject* floatingObject = insertFloatingObject(**f);
                     ASSERT(!floatingObject->originatingLine());
                     floatingObject->setOriginatingLine(line);
@@ -2015,7 +2015,7 @@ bool RenderBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
             break;
         if (logicalTopForFloat(floatingObject) == logicalHeight() + lineInfo.floatPaginationStrut()) {
             floatingObject->setPaginationStrut(paginationStrut + floatingObject->paginationStrut());
-            RenderBox* floatBox = floatingObject->renderer();
+            LayoutBox* floatBox = floatingObject->renderer();
             setLogicalTopForChild(*floatBox, logicalTopForChild(*floatBox) + marginBeforeForChild(*floatBox) + paginationStrut);
             if (floatBox->isRenderBlock())
                 floatBox->forceChildLayout();

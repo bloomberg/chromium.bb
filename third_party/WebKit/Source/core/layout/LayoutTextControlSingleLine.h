@@ -40,7 +40,7 @@ public:
     void capsLockStateMayHaveChanged();
 
 protected:
-    virtual void centerContainerIfNeeded(RenderBox*) const { }
+    virtual void centerContainerIfNeeded(LayoutBox*) const { }
     virtual LayoutUnit computeLogicalHeightLimit() const;
     Element* containerElement() const;
     Element* editingViewPortElement() const;

@@ -82,10 +82,10 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderBox.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Partitions.h"
@@ -596,10 +596,10 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
     return false;
 }
 
-RenderBox* Node::renderBox() const
+LayoutBox* Node::layoutBox() const
 {
     LayoutObject* renderer = this->renderer();
-    return renderer && renderer->isBox() ? toRenderBox(renderer) : nullptr;
+    return renderer && renderer->isBox() ? toLayoutBox(renderer) : nullptr;
 }
 
 LayoutBoxModelObject* Node::layoutBoxModelObject() const
@@ -2143,7 +2143,7 @@ void Node::defaultEventHandler(Event* event)
             // LayoutTextControlSingleLine::scrollHeight
             document().updateLayoutIgnorePendingStylesheets();
             LayoutObject* renderer = this->renderer();
-            while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()))
+            while (renderer && (!renderer->isBox() || !toLayoutBox(renderer)->canBeScrolledAndHasScrollableArea()))
                 renderer = renderer->parent();
 
             if (renderer) {

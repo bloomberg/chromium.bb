@@ -492,7 +492,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
                 // of its scroll offset since we want the offset relative to the scrolling content, not
                 // the element itself.
                 if (compositedLayer->renderer()->hasOverflowClip())
-                    rect.move(compositedLayer->renderBox()->scrolledContentOffset());
+                    rect.move(compositedLayer->layoutBox()->scrolledContentOffset());
             }
             Layer::mapRectToPaintBackingCoordinates(compositedLayer->renderer(), rect);
             glRects->append(rect);
@@ -762,7 +762,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     // main thread if they are targeting the resizer area. (Resizing is done in EventHandler.cpp
     // on main thread).
     if (const FrameView::ResizerAreaSet* resizerAreas = frameView->resizerAreas()) {
-        for (const RenderBox* box : *resizerAreas) {
+        for (const LayoutBox* box : *resizerAreas) {
             IntRect bounds = box->absoluteBoundingBoxRect();
             IntRect corner = box->layer()->scrollableArea()->touchResizerCornerRect(bounds);
             corner.moveBy(offset);

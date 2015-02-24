@@ -32,10 +32,10 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutBox.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
@@ -74,7 +74,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
         return;
     }
 
-    RenderBox* box = renderBox();
+    LayoutBox* box = layoutBox();
     if (!box) {
         if (!event->defaultHandled())
             HTMLDivElement::defaultEventHandler(event);
@@ -144,7 +144,7 @@ void SpinButtonElement::willOpenPopup()
 
 void SpinButtonElement::forwardEvent(Event* event)
 {
-    if (!renderBox())
+    if (!layoutBox())
         return;
 
     if (!event->hasInterface(EventNames::WheelEvent))
@@ -162,7 +162,7 @@ void SpinButtonElement::forwardEvent(Event* event)
 
 bool SpinButtonElement::willRespondToMouseMoveEvents()
 {
-    if (renderBox() && shouldRespondToMouseEvents())
+    if (layoutBox() && shouldRespondToMouseEvents())
         return true;
 
     return HTMLDivElement::willRespondToMouseMoveEvents();
@@ -170,7 +170,7 @@ bool SpinButtonElement::willRespondToMouseMoveEvents()
 
 bool SpinButtonElement::willRespondToMouseClickEvents()
 {
-    if (renderBox() && shouldRespondToMouseEvents())
+    if (layoutBox() && shouldRespondToMouseEvents())
         return true;
 
     return HTMLDivElement::willRespondToMouseClickEvents();

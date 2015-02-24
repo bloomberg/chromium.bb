@@ -54,9 +54,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLSpanElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderBox.h"
 
 namespace blink {
 
@@ -1241,10 +1241,10 @@ void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
     LayoutUnit width = rect.width();
     LayoutUnit height = rect.height();
     if (renderer && renderer->isBox()) {
-        RenderBox* renderBox = toRenderBox(renderer);
+        LayoutBox* layoutBox = toLayoutBox(renderer);
 
-        x -= renderBox->marginLeft();
-        y -= renderBox->marginTop();
+        x -= layoutBox->marginLeft();
+        y -= layoutBox->marginTop();
 
         m_mutableStyle->setProperty(CSSPropertyBoxSizing, CSSValueBorderBox);
     }

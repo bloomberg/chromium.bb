@@ -287,7 +287,7 @@ void LayoutBoxModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, con
             continue;
         }
 
-        RenderBox* box = toRenderBox(current);
+        LayoutBox* box = toLayoutBox(current);
         if (!box->hasLayer()) {
             box->addFocusRingRects(rects, additionalOffset + box->locationOffset());
             continue;
@@ -352,14 +352,14 @@ RenderBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
     while (cb->isAnonymous())
         cb = cb->containingBlock();
 
-    // Matching RenderBox::percentageLogicalHeightIsResolvableFromBlock() by
+    // Matching LayoutBox::percentageLogicalHeightIsResolvableFromBlock() by
     // ignoring table cell's attribute value, where it says that table cells violate
     // what the CSS spec says to do with heights. Basically we
     // don't care if the cell specified a height or not.
     if (cb->isTableCell())
         return 0;
 
-    // Match RenderBox::availableLogicalHeightUsing by special casing
+    // Match LayoutBox::availableLogicalHeightUsing by special casing
     // the render view. The available height is taken from the frame.
     if (cb->isRenderView())
         return 0;
@@ -444,7 +444,7 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
 
     if (const LayoutBoxModelObject* offsetParent = element->layoutBoxModelObject()) {
         if (offsetParent->isBox() && !offsetParent->isBody())
-            referencePoint.move(-toRenderBox(offsetParent)->borderLeft(), -toRenderBox(offsetParent)->borderTop());
+            referencePoint.move(-toLayoutBox(offsetParent)->borderLeft(), -toLayoutBox(offsetParent)->borderTop());
         if (!isOutOfFlowPositioned() || flowThreadContainingBlock()) {
             if (isRelPositioned())
                 referencePoint.move(relativePositionOffset());
@@ -454,13 +454,13 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
                 // FIXME: What are we supposed to do inside SVG content?
                 if (!isOutOfFlowPositioned()) {
                     if (current->isBox() && !current->isTableRow())
-                        referencePoint.moveBy(toRenderBox(current)->topLeftLocation());
+                        referencePoint.moveBy(toLayoutBox(current)->topLeftLocation());
                     referencePoint.move(current->parent()->columnOffset(referencePoint));
                 }
             }
 
             if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
-                referencePoint.moveBy(toRenderBox(offsetParent)->topLeftLocation());
+                referencePoint.moveBy(toLayoutBox(offsetParent)->topLeftLocation());
         }
     }
 
@@ -474,14 +474,14 @@ LayoutSize LayoutBoxModelObject::offsetForInFlowPosition() const
 
 LayoutUnit LayoutBoxModelObject::offsetLeft() const
 {
-    // Note that RenderInline and RenderBox override this to pass a different
+    // Note that RenderInline and LayoutBox override this to pass a different
     // startPoint to adjustedPositionRelativeToOffsetParent.
     return adjustedPositionRelativeToOffsetParent(LayoutPoint()).x();
 }
 
 LayoutUnit LayoutBoxModelObject::offsetTop() const
 {
-    // Note that RenderInline and RenderBox override this to pass a different
+    // Note that RenderInline and LayoutBox override this to pass a different
     // startPoint to adjustedPositionRelativeToOffsetParent.
     return adjustedPositionRelativeToOffsetParent(LayoutPoint()).y();
 }

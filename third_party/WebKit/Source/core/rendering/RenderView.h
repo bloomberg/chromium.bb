@@ -139,7 +139,7 @@ public:
     bool usesCompositing() const;
 
     IntRect unscaledDocumentRect() const;
-    LayoutRect backgroundRect(RenderBox* backgroundRenderer) const;
+    LayoutRect backgroundRect(LayoutBox* backgroundRenderer) const;
 
     IntRect documentRect() const;
 

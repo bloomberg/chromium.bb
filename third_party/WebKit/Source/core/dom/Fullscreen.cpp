@@ -426,13 +426,13 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     m_fullScreenElement = element;
 
     // Create a placeholder block for a the full-screen element, to keep the page from reflowing
-    // when the element is removed from the normal flow. Only do this for a RenderBox, as only
+    // when the element is removed from the normal flow. Only do this for a LayoutBox, as only
     // a box will have a frameRect. The placeholder will be created in setFullScreenRenderer()
     // during layout.
     LayoutObject* renderer = m_fullScreenElement->renderer();
     bool shouldCreatePlaceholder = renderer && renderer->isBox();
     if (shouldCreatePlaceholder) {
-        m_savedPlaceholderFrameRect = toRenderBox(renderer)->frameRect();
+        m_savedPlaceholderFrameRect = toLayoutBox(renderer)->frameRect();
         m_savedPlaceholderLayoutStyle = LayoutStyle::clone(renderer->styleRef());
     }
 

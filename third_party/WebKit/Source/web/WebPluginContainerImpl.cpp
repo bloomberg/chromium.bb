@@ -51,6 +51,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -60,7 +61,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginOcclusionSupport.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"
@@ -136,7 +136,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     if (!parent())
         return;
 
-    RenderBox* renderer = toRenderBox(m_element->renderer());
+    LayoutBox* renderer = toLayoutBox(m_element->renderer());
     if (!renderer)
         return;
 

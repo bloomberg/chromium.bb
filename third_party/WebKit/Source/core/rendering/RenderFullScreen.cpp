@@ -172,7 +172,7 @@ void RenderFullScreen::unwrapRenderer()
             // may have set one on the child, and we don't want to leave that
             // lying around on the child.
             if (child->isBox())
-                toRenderBox(child)->clearOverrideSize();
+                toLayoutBox(child)->clearOverrideSize();
             child->remove();
             parent()->addChild(child, this);
             parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();

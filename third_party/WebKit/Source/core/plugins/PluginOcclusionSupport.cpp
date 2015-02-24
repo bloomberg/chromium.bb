@@ -37,8 +37,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/Widget.h"
 #include "wtf/HashSet.h"
 
@@ -119,7 +119,7 @@ static bool intersectsRect(const LayoutObject* renderer, const IntRect& rect)
         && (!renderer->style() || renderer->style()->visibility() == VISIBLE);
 }
 
-static void addToOcclusions(const RenderBox* renderer, Vector<IntRect>& occlusions)
+static void addToOcclusions(const LayoutBox* renderer, Vector<IntRect>& occlusions)
 {
     occlusions.append(IntRect(
         roundedIntPoint(renderer->localToAbsolute()),
@@ -131,7 +131,7 @@ static void addTreeToOcclusions(const LayoutObject* renderer, const IntRect& fra
     if (!renderer)
         return;
     if (renderer->isBox() && intersectsRect(renderer, frameRect))
-        addToOcclusions(toRenderBox(renderer), occlusions);
+        addToOcclusions(toLayoutBox(renderer), occlusions);
     for (LayoutObject* child = renderer->slowFirstChild(); child; child = child->nextSibling())
         addTreeToOcclusions(child, frameRect, occlusions);
 }
@@ -183,7 +183,7 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
         if (isHTMLIFrameElement(*element) && intersectsRect(iframeRenderer, frameRect)) {
             getObjectStack(iframeRenderer, &iframeZstack);
             if (iframeIsAbovePlugin(iframeZstack, pluginZstack))
-                addToOcclusions(toRenderBox(iframeRenderer), occlusions);
+                addToOcclusions(toLayoutBox(iframeRenderer), occlusions);
         }
     }
 

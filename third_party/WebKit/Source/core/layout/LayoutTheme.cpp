@@ -532,7 +532,7 @@ int LayoutTheme::baselinePosition(const LayoutObject* o) const
     if (!o->isBox())
         return 0;
 
-    const RenderBox* box = toRenderBox(o);
+    const LayoutBox* box = toLayoutBox(o);
 
 #if USE(NEW_THEME)
     return box->size().height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();

@@ -44,7 +44,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         if (!button)
             return;
 
-        int buttonWidth = (button && button->renderBox()) ? button->renderBox()->pixelSnappedWidth() : 0;
+        int buttonWidth = (button && button->layoutBox()) ? button->layoutBox()->pixelSnappedWidth() : 0;
         LayoutUnit buttonAndSpacingWidth = buttonWidth + RenderFileUploadControl::afterButtonSpacing;
         float textWidth = font.width(textRun);
         LayoutUnit textX;

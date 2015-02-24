@@ -146,9 +146,9 @@ void RenderLineBoxList::dirtyLineBoxes()
 
 bool RenderLineBoxList::rangeIntersectsRect(LayoutBoxModelObject* renderer, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
 {
-    RenderBox* block;
+    LayoutBox* block;
     if (renderer->isBox())
-        block = toRenderBox(renderer);
+        block = toLayoutBox(renderer);
     else
         block = renderer->containingBlock();
     LayoutUnit physicalStart = block->flipForWritingMode(logicalTop);
@@ -261,7 +261,7 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, Layo
             continue;
 
         if (curr->isReplaced()) {
-            InlineBox* wrapper = toRenderBox(curr)->inlineBoxWrapper();
+            InlineBox* wrapper = toLayoutBox(curr)->inlineBoxWrapper();
             if (wrapper)
                 box = &wrapper->root();
         } else if (curr->isText()) {

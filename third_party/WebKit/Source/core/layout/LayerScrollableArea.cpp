@@ -557,9 +557,9 @@ int LayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
     return max(pageStep, 1);
 }
 
-RenderBox& LayerScrollableArea::box() const
+LayoutBox& LayerScrollableArea::box() const
 {
-    return *m_layer.renderBox();
+    return *m_layer.layoutBox();
 }
 
 Layer* LayerScrollableArea::layer() const
@@ -758,7 +758,7 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
 // FIXME: we should use the same scrolling machinery for both the viewport and
 // overflow. Currently, we need to avoid producing scrollbars here if they'll be
 // handled externally in the RLC.
-static bool canHaveOverflowScrollbars(const RenderBox& box)
+static bool canHaveOverflowScrollbars(const LayoutBox& box)
 {
     bool rootLayerScrolls = box.document().settings() && box.document().settings()->rootLayerScrolls();
     return (rootLayerScrolls || !box.isRenderView()) && box.document().viewportDefiningElement() != box.node();

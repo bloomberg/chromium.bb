@@ -58,7 +58,7 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     ASSERT(this == owner->virtualChildren());
 
     if (oldChild->isFloatingOrOutOfFlowPositioned())
-        toRenderBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
+        toLayoutBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
 
     {
         // So that we'll get the appropriate dirty bit set (either that a normal flow child got yanked or
@@ -72,7 +72,7 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
 
     // If we have a line box wrapper, delete it.
     if (oldChild->isBox())
-        toRenderBox(oldChild)->deleteLineBoxWrapper();
+        toLayoutBox(oldChild)->deleteLineBoxWrapper();
 
     // If oldChild is the start or end of the selection, then clear the selection to
     // avoid problems of invalid pointers.

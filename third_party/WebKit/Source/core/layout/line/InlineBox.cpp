@@ -125,7 +125,7 @@ FloatWillBeLayoutUnit InlineBox::logicalHeight() const
     if (renderer().isText())
         return m_bitfields.isText() ? FloatWillBeLayoutUnit(renderer().style(isFirstLineStyle())->fontMetrics().height()) : FloatWillBeLayoutUnit();
     if (renderer().isBox() && parent())
-        return isHorizontal() ? toRenderBox(renderer()).size().height() : toRenderBox(renderer()).size().width();
+        return isHorizontal() ? toLayoutBox(renderer()).size().height() : toLayoutBox(renderer()).size().width();
 
     ASSERT(isInlineFlowBox());
     LayoutBoxModelObject* flowObject = boxModelObject();
@@ -166,7 +166,7 @@ void InlineBox::dirtyLineBoxes()
 void InlineBox::deleteLine()
 {
     if (!m_bitfields.extracted() && renderer().isBox())
-        toRenderBox(renderer()).setInlineBoxWrapper(0);
+        toLayoutBox(renderer()).setInlineBoxWrapper(0);
     destroy();
 }
 
@@ -174,14 +174,14 @@ void InlineBox::extractLine()
 {
     m_bitfields.setExtracted(true);
     if (renderer().isBox())
-        toRenderBox(renderer()).setInlineBoxWrapper(0);
+        toLayoutBox(renderer()).setInlineBoxWrapper(0);
 }
 
 void InlineBox::attachLine()
 {
     m_bitfields.setExtracted(false);
     if (renderer().isBox())
-        toRenderBox(renderer()).setInlineBoxWrapper(this);
+        toLayoutBox(renderer()).setInlineBoxWrapper(this);
 }
 
 void InlineBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy)
@@ -189,7 +189,7 @@ void InlineBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit d
     m_topLeft.move(dx, dy);
 
     if (renderer().isReplaced())
-        toRenderBox(renderer()).move(dx, dy);
+        toLayoutBox(renderer()).move(dx, dy);
 }
 
 void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
@@ -206,7 +206,7 @@ bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     // specification.)
     LayoutPoint childPoint = accumulatedOffset;
     if (parent()->renderer().hasFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(renderer()), childPoint);
+        childPoint = renderer().containingBlock()->flipForWritingModeForChild(&toLayoutBox(renderer()), childPoint);
 
     return renderer().hitTest(request, result, locationInContainer, childPoint);
 }

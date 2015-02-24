@@ -42,8 +42,8 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     info.updatePaintingRootForChildren(&m_layoutTable);
 
     for (LayoutObject* child = m_layoutTable.firstChild(); child; child = child->nextSibling()) {
-        if (child->isBox() && !toRenderBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
-            LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(toRenderBox(child), paintOffset);
+        if (child->isBox() && !toLayoutBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
+            LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(toLayoutBox(child), paintOffset);
             child->paint(info, childPoint);
         }
     }

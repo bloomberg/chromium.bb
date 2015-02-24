@@ -338,7 +338,7 @@ void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
     if (intrinsicSize.isEmpty() && (m_imageResource->imageHasRelativeWidth() || m_imageResource->imageHasRelativeHeight())) {
         LayoutObject* containingBlock = isOutOfFlowPositioned() ? container() : this->containingBlock();
         if (containingBlock->isBox()) {
-            RenderBox* box = toRenderBox(containingBlock);
+            LayoutBox* box = toLayoutBox(containingBlock);
             intrinsicSize.setWidth(box->availableLogicalWidth().toFloat());
             intrinsicSize.setHeight(box->availableLogicalHeight(IncludeMarginBorderPadding).toFloat());
         }
@@ -358,7 +358,7 @@ bool LayoutImage::needsPreferredWidthsRecalculation() const
     return embeddedContentBox();
 }
 
-RenderBox* LayoutImage::embeddedContentBox() const
+LayoutBox* LayoutImage::embeddedContentBox() const
 {
     if (!m_imageResource)
         return 0;

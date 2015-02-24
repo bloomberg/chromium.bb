@@ -293,7 +293,7 @@ void LayoutSVGRoot::willBeRemovedFromTree()
     LayoutReplaced::willBeRemovedFromTree();
 }
 
-// RenderBox methods will expect coordinates w/o any transforms in coordinates
+// LayoutBox methods will expect coordinates w/o any transforms in coordinates
 // relative to our borderBox origin.  This method gives us exactly that.
 void LayoutSVGRoot::buildLocalToBorderBoxTransform()
 {

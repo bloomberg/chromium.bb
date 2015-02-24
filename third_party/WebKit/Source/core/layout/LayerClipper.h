@@ -46,7 +46,7 @@
 #define LayerClipper_h
 
 #include "core/layout/ClipRectsCache.h"
-#include "core/rendering/RenderBox.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
@@ -139,7 +139,7 @@ private:
         return *m_cache;
     }
 
-    // FIXME: Could this be a RenderBox?
+    // FIXME: Could this be a LayoutBox?
     LayoutBoxModelObject& m_renderer;
     mutable OwnPtr<ClipRectsCache> m_cache;
 };

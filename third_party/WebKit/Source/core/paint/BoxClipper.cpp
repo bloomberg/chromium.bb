@@ -6,8 +6,8 @@
 #include "core/paint/BoxClipper.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/PaintInfo.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
@@ -15,7 +15,7 @@
 
 namespace blink {
 
-BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
+BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
     : m_pushedClip(false)
     , m_accumulatedOffset(accumulatedOffset)
     , m_paintInfo(paintInfo)

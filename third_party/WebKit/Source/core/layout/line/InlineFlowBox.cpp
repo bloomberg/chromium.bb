@@ -162,7 +162,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
             if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.textEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
         } else if (child->renderer().isReplaced()) {
-            RenderBox& box = toRenderBox(child->renderer());
+            LayoutBox& box = toLayoutBox(child->renderer());
             if (box.hasRenderOverflow() || box.hasSelfPaintingLayer())
                 child->clearKnownToHaveNoOverflow();
         } else if (!child->renderer().isBR() && (child->renderer().style(isFirstLineStyle())->boxShadow() || child->boxModelObject()->hasSelfPaintingLayer()
@@ -661,7 +661,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             }
             newLogicalTopIncludingMargins = newLogicalTop;
         } else if (!curr->renderer().isBR()) {
-            RenderBox& box = toRenderBox(curr->renderer());
+            LayoutBox& box = toLayoutBox(curr->renderer());
             newLogicalTopIncludingMargins = newLogicalTop;
             LayoutUnit overSideMargin = curr->isHorizontal() ? box.marginTop() : box.marginRight();
             LayoutUnit underSideMargin = curr->isHorizontal() ? box.marginBottom() : box.marginLeft();
@@ -894,7 +894,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
 inline void InlineFlowBox::addReplacedChildOverflow(const InlineBox* inlineBox, LayoutRect& logicalLayoutOverflow, LayoutRect& logicalVisualOverflow)
 {
-    RenderBox& box = toRenderBox(inlineBox->renderer());
+    LayoutBox& box = toLayoutBox(inlineBox->renderer());
 
     // Visual overflow only propagates if the box doesn't have a self-painting layer.  This rectangle does not include
     // transforms or relative positioning (since those objects always have self-painting layers), but it does need to be adjusted

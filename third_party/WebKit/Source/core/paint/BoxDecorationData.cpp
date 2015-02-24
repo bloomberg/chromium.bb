@@ -5,35 +5,35 @@
 #include "config.h"
 #include "core/paint/BoxDecorationData.h"
 
+#include "core/layout/LayoutBox.h"
 #include "core/layout/style/BorderEdge.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderBox.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
-BoxDecorationData::BoxDecorationData(const RenderBox& renderBox, GraphicsContext* context)
+BoxDecorationData::BoxDecorationData(const LayoutBox& layoutBox, GraphicsContext* context)
 {
-    backgroundColor = renderBox.style()->visitedDependentColor(CSSPropertyBackgroundColor);
-    hasBackground = backgroundColor.alpha() || renderBox.style()->hasBackgroundImage();
-    ASSERT(hasBackground == renderBox.style()->hasBackground());
-    hasBorder = renderBox.style()->hasBorder();
-    hasAppearance = renderBox.style()->hasAppearance();
+    backgroundColor = layoutBox.style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    hasBackground = backgroundColor.alpha() || layoutBox.style()->hasBackgroundImage();
+    ASSERT(hasBackground == layoutBox.style()->hasBackground());
+    hasBorder = layoutBox.style()->hasBorder();
+    hasAppearance = layoutBox.style()->hasAppearance();
 
-    m_bleedAvoidance = determineBackgroundBleedAvoidance(renderBox, context);
+    m_bleedAvoidance = determineBackgroundBleedAvoidance(layoutBox, context);
 }
 
-BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const RenderBox& renderBox, GraphicsContext* context)
+BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const LayoutBox& layoutBox, GraphicsContext* context)
 {
-    if (renderBox.isDocumentElement())
+    if (layoutBox.isDocumentElement())
         return BackgroundBleedNone;
 
     if (!hasBackground)
         return BackgroundBleedNone;
 
-    if (!hasBorder || !renderBox.style()->hasBorderRadius() || renderBox.canRenderBorderImage()) {
-        if (renderBox.backgroundShouldAlwaysBeClipped())
+    if (!hasBorder || !layoutBox.style()->hasBorderRadius() || layoutBox.canRenderBorderImage()) {
+        if (layoutBox.backgroundShouldAlwaysBeClipped())
             return BackgroundBleedClipBackground;
         return BackgroundBleedNone;
     }
@@ -64,9 +64,9 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     if (contextScaling.height() > 1)
         contextScaling.setHeight(1);
 
-    if (borderObscuresBackgroundEdge(*renderBox.style(), contextScaling))
+    if (borderObscuresBackgroundEdge(*layoutBox.style(), contextScaling))
         return BackgroundBleedShrinkBackground;
-    if (!hasAppearance && renderBox.style()->borderObscuresBackground() && renderBox.backgroundHasOpaqueTopLayer())
+    if (!hasAppearance && layoutBox.style()->borderObscuresBackground() && layoutBox.backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
     return BackgroundBleedClipBackground;

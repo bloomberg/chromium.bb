@@ -59,7 +59,7 @@ static Node* nextRenderedEditable(Node* node)
             continue;
         if (!node->hasEditableStyle())
             continue;
-        if ((renderer->isBox() && toRenderBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
+        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
             return node;
     }
     return 0;
@@ -73,7 +73,7 @@ static Node* previousRenderedEditable(Node* node)
             continue;
         if (!node->hasEditableStyle())
             continue;
-        if ((renderer->isBox() && toRenderBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
+        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
             return node;
     }
     return 0;
@@ -504,7 +504,7 @@ static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
         return true;
 
     // There is a VisiblePosition inside an empty inline-block container.
-    return node->renderer()->isReplaced() && canHaveChildrenForEditing(node) && toRenderBox(node->renderer())->size().height() != 0 && !node->hasChildren();
+    return node->renderer()->isReplaced() && canHaveChildrenForEditing(node) && toLayoutBox(node->renderer())->size().height() != 0 && !node->hasChildren();
 }
 
 static Node* enclosingVisualBoundary(Node* node)
@@ -785,7 +785,7 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* render
     for (LayoutObject *o = renderer->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
         if (o->nonPseudoNode()) {
             if ((o->isText() && boundingBoxLogicalHeight(o, toRenderText(o)->linesBoundingBox()))
-                || (o->isBox() && toRenderBox(o)->pixelSnappedLogicalHeight())
+                || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
                 || (o->isRenderInline() && isEmptyInline(o) && boundingBoxLogicalHeight(o, toRenderInline(o)->linesBoundingBox())))
                 return true;
         }
@@ -1088,7 +1088,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
             return;
         }
         if (renderer->isBox()) {
-            inlineBox = toRenderBox(renderer)->inlineBoxWrapper();
+            inlineBox = toLayoutBox(renderer)->inlineBoxWrapper();
             if (!inlineBox || (caretOffset > inlineBox->caretMinOffset() && caretOffset < inlineBox->caretMaxOffset()))
                 return;
         }

@@ -68,7 +68,7 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
         hideValidationMessage(anchor);
         return;
     }
-    if (!anchor.renderBox())
+    if (!anchor.layoutBox())
         return;
     if (m_currentAnchor)
         hideValidationMessage(*m_currentAnchor);

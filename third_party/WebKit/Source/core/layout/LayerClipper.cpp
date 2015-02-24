@@ -76,7 +76,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& render
         offset -= view->frameView()->scrollOffsetForViewportConstrainedObjects();
 
     if (renderer.hasOverflowClip()) {
-        ClipRect newOverflowClip = toRenderBox(renderer).overflowClipRect(offset, context.scrollbarRelevancy);
+        ClipRect newOverflowClip = toLayoutBox(renderer).overflowClipRect(offset, context.scrollbarRelevancy);
         newOverflowClip.setHasRadius(renderer.style()->hasBorderRadius());
         clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
         if (renderer.isPositioned())
@@ -84,7 +84,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& render
     }
 
     if (renderer.hasClip()) {
-        LayoutRect newClip = toRenderBox(renderer).clipRect(offset);
+        LayoutRect newClip = toLayoutBox(renderer).clipRect(offset);
         clipRects.setPosClipRect(intersection(newClip, clipRects.posClipRect()));
         clipRects.setOverflowClipRect(intersection(newClip, clipRects.overflowClipRect()));
         clipRects.setFixedClipRect(intersection(newClip, clipRects.fixedClipRect()));
@@ -235,7 +235,7 @@ void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutR
     if (m_renderer.hasOverflowClip()) {
         // This layer establishes a clip of some kind.
         if (!isClippingRoot || context.respectOverflowClip == RespectOverflowClip) {
-            foregroundRect.intersect(toRenderBox(m_renderer).overflowClipRect(offset, context.scrollbarRelevancy));
+            foregroundRect.intersect(toLayoutBox(m_renderer).overflowClipRect(offset, context.scrollbarRelevancy));
             if (m_renderer.style()->hasBorderRadius())
                 foregroundRect.setHasRadius(true);
         }
@@ -243,18 +243,18 @@ void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutR
         // If we establish an overflow clip at all, then go ahead and make sure our background
         // rect is intersected with our layer's bounds including our visual overflow,
         // since any visual overflow like box-shadow or border-outset is not clipped by overflow:auto/hidden.
-        if (toRenderBox(m_renderer).hasVisualOverflow()) {
+        if (toLayoutBox(m_renderer).hasVisualOverflow()) {
             // FIXME: Perhaps we should be propagating the borderbox as the clip rect for children, even though
             //        we may need to inflate our clip specifically for shadows or outsets.
             // FIXME: Does not do the right thing with CSS regions yet, since we don't yet factor in the
             // individual region boxes as overflow.
-            LayoutRect layerBoundsWithVisualOverflow = toRenderBox(m_renderer).visualOverflowRect();
-            toRenderBox(m_renderer).flipForWritingMode(layerBoundsWithVisualOverflow); // Layers are in physical coordinates, so the overflow has to be flipped.
+            LayoutRect layerBoundsWithVisualOverflow = toLayoutBox(m_renderer).visualOverflowRect();
+            toLayoutBox(m_renderer).flipForWritingMode(layerBoundsWithVisualOverflow); // Layers are in physical coordinates, so the overflow has to be flipped.
             layerBoundsWithVisualOverflow.moveBy(offset);
             if (!isClippingRoot || context.respectOverflowClip == RespectOverflowClip)
                 backgroundRect.intersect(layerBoundsWithVisualOverflow);
         } else {
-            LayoutRect bounds = toRenderBox(m_renderer).borderBoxRect();
+            LayoutRect bounds = toLayoutBox(m_renderer).borderBoxRect();
             bounds.moveBy(offset);
             if (!isClippingRoot || context.respectOverflowClip == RespectOverflowClip)
                 backgroundRect.intersect(bounds);
@@ -264,7 +264,7 @@ void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutR
     // CSS clip (different than clipping due to overflow) can clip to any box, even if it falls outside of the border box.
     if (m_renderer.hasClip()) {
         // Clip applies to *us* as well, so go ahead and update the damageRect.
-        LayoutRect newPosClip = toRenderBox(m_renderer).clipRect(offset);
+        LayoutRect newPosClip = toLayoutBox(m_renderer).clipRect(offset);
         backgroundRect.intersect(newPosClip);
         foregroundRect.intersect(newPosClip);
         outlineRect.intersect(newPosClip);

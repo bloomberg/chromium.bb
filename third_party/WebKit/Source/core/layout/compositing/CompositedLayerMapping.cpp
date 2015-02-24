@@ -70,7 +70,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static IntRect clipBox(RenderBox* renderer);
+static IntRect clipBox(LayoutBox* renderer);
 
 static IntRect contentsRect(const LayoutObject* renderer)
 {
@@ -79,7 +79,7 @@ static IntRect contentsRect(const LayoutObject* renderer)
 
     return renderer->isVideo() ?
         toLayoutVideo(renderer)->videoBox() :
-        pixelSnappedIntRect(toRenderBox(renderer)->contentBoxRect());
+        pixelSnappedIntRect(toLayoutBox(renderer)->contentBoxRect());
 }
 
 static IntRect backgroundRect(const LayoutObject* renderer)
@@ -88,7 +88,7 @@ static IntRect backgroundRect(const LayoutObject* renderer)
         return IntRect();
 
     LayoutRect rect;
-    const RenderBox* box = toRenderBox(renderer);
+    const LayoutBox* box = toLayoutBox(renderer);
     EFillBox clip = box->style()->backgroundClip();
     switch (clip) {
     case BorderFillBox:
@@ -271,7 +271,7 @@ void CompositedLayerMapping::updateTransform(const LayoutStyle& style)
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style.applyTransform(t, LayoutSize(toRenderBox(renderer())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
+        style.applyTransform(t, LayoutSize(toLayoutBox(renderer())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 
@@ -545,7 +545,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     return layerConfigChanged;
 }
 
-static IntRect clipBox(RenderBox* renderer)
+static IntRect clipBox(LayoutBox* renderer)
 {
     LayoutRect result = LayoutRect::infiniteIntRect();
     if (renderer->hasOverflowClip())
@@ -702,7 +702,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
     if (m_childContainmentLayer)
-        clippingBox = clipBox(toRenderBox(renderer()));
+        clippingBox = clipBox(toLayoutBox(renderer()));
 
     updateChildContainmentLayerGeometry(clippingBox, localCompositingBounds);
     updateChildTransformLayerGeometry();
@@ -768,7 +768,7 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(const Layer* com
     if (compositingContainer && compositingContainer->compositedLayerMapping()->hasClippingLayer()) {
         // If the compositing ancestor has a layer to clip children, we parent in that, and therefore
         // position relative to it.
-        IntRect clippingBox = clipBox(toRenderBox(compositingContainer->renderer()));
+        IntRect clippingBox = clipBox(toLayoutBox(compositingContainer->renderer()));
         graphicsLayerParentLocation = clippingBox.location() + roundedIntSize(compositingContainer->subpixelAccumulation());
     } else if (compositingContainer && compositingContainer->compositedLayerMapping()->childTransformLayer()) {
         // Similarly, if the compositing ancestor has a child transform layer, we parent in that, and therefore
@@ -781,9 +781,9 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(const Layer* com
     }
 
     if (compositingContainer && compositingContainer->needsCompositedScrolling()) {
-        RenderBox* renderBox = toRenderBox(compositingContainer->renderer());
-        IntSize scrollOffset = renderBox->scrolledContentOffset();
-        IntPoint scrollOrigin(renderBox->borderLeft(), renderBox->borderTop());
+        LayoutBox* layoutBox = toLayoutBox(compositingContainer->renderer());
+        IntSize scrollOffset = layoutBox->scrolledContentOffset();
+        IntPoint scrollOrigin(layoutBox->borderLeft(), layoutBox->borderTop());
         graphicsLayerParentLocation = scrollOrigin - scrollOffset;
     }
 }
@@ -853,7 +853,7 @@ void CompositedLayerMapping::updateChildTransformLayerGeometry()
 {
     if (!m_childTransformLayer)
         return;
-    const IntRect borderBox = toRenderBox(m_owningLayer.renderer())->pixelSnappedBorderBoxRect();
+    const IntRect borderBox = toLayoutBox(m_owningLayer.renderer())->pixelSnappedBorderBoxRect();
     m_childTransformLayer->setSize(borderBox.size());
     m_childTransformLayer->setPosition(FloatPoint(contentOffsetInCompositingLayer()));
 }
@@ -874,7 +874,7 @@ void CompositedLayerMapping::updateMaskLayerGeometry()
 void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds)
 {
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
+        const LayoutRect borderBox = toLayoutBox(renderer())->borderBoxRect();
 
         // Get layout bounds in the coords of compositingContainer to match relativeCompositingBounds.
         IntRect layerBounds = pixelSnappedIntRect(toLayoutPoint(m_owningLayer.subpixelAccumulation()), borderBox.size());
@@ -914,8 +914,8 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
         return;
 
     ASSERT(m_scrollingContentsLayer);
-    RenderBox* renderBox = toRenderBox(renderer());
-    IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
+    LayoutBox* layoutBox = toLayoutBox(renderer());
+    IntRect clientBox = enclosingIntRect(layoutBox->clientBoxRect());
     DoubleSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
     m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
     m_scrollingLayer->setSize(clientBox.size());
@@ -931,7 +931,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
 
     bool clientBoxOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromRenderer();
 
-    IntSize scrollSize(renderBox->scrollWidth(), renderBox->scrollHeight());
+    IntSize scrollSize(layoutBox->scrollWidth(), layoutBox->scrollHeight());
     if (scrollSize != m_scrollingContentsLayer->size() || clientBoxOffsetChanged)
         m_scrollingContentsLayer->setNeedsDisplay();
 
@@ -961,8 +961,8 @@ void CompositedLayerMapping::updateChildClippingMaskLayerGeometry()
 {
     if (!m_childClippingMaskLayer || !renderer()->style()->clipPath())
         return;
-    RenderBox* renderBox = toRenderBox(renderer());
-    IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
+    LayoutBox* layoutBox = toLayoutBox(renderer());
+    IntRect clientBox = enclosingIntRect(layoutBox->clientBoxRect());
 
     m_childClippingMaskLayer->setPosition(m_graphicsLayer->position());
     m_childClippingMaskLayer->setSize(m_graphicsLayer->size());

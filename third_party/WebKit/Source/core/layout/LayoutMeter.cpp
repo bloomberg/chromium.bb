@@ -51,7 +51,7 @@ HTMLMeterElement* LayoutMeter::meterElement() const
 
 void LayoutMeter::updateLogicalWidth()
 {
-    RenderBox::updateLogicalWidth();
+    LayoutBox::updateLogicalWidth();
 
     IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frameRect()));
     setLogicalWidth(isHorizontalWritingMode() ? frameSize.width() : frameSize.height());
@@ -59,7 +59,7 @@ void LayoutMeter::updateLogicalWidth()
 
 void LayoutMeter::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
-    RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
+    LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 
     LayoutRect frame = frameRect();
     if (isHorizontalWritingMode())

@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/layout/FloatingObjects.h"
 
+#include "core/layout/LayoutBox.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 
 using namespace WTF;
@@ -41,7 +41,7 @@ struct SameSizeAsFloatingObject {
 
 static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject), "FloatingObject should stay small");
 
-FloatingObject::FloatingObject(RenderBox* renderer)
+FloatingObject::FloatingObject(LayoutBox* renderer)
     : m_renderer(renderer)
     , m_originatingLine(0)
     , m_paginationStrut(0)
@@ -60,7 +60,7 @@ FloatingObject::FloatingObject(RenderBox* renderer)
         m_type = FloatRight;
 }
 
-FloatingObject::FloatingObject(RenderBox* renderer, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant)
+FloatingObject::FloatingObject(LayoutBox* renderer, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant)
     : m_renderer(renderer)
     , m_originatingLine(0)
     , m_frameRect(frameRect)
@@ -75,7 +75,7 @@ FloatingObject::FloatingObject(RenderBox* renderer, Type type, const LayoutRect&
 {
 }
 
-PassOwnPtr<FloatingObject> FloatingObject::create(RenderBox* renderer)
+PassOwnPtr<FloatingObject> FloatingObject::create(LayoutBox* renderer)
 {
     OwnPtr<FloatingObject> newObj = adoptPtr(new FloatingObject(renderer));
     newObj->setShouldPaint(!renderer->hasSelfPaintingLayer()); // If a layer exists, the float will paint itself. Otherwise someone else will.
@@ -273,7 +273,7 @@ void FloatingObjects::moveAllToFloatInfoMap(RendererToFloatInfoMap& map)
 {
     while (!m_set.isEmpty()) {
         OwnPtr<FloatingObject> floatingObject = m_set.takeFirst();
-        RenderBox* renderer = floatingObject->renderer();
+        LayoutBox* renderer = floatingObject->renderer();
         map.add(renderer, floatingObject.release());
     }
     clear();

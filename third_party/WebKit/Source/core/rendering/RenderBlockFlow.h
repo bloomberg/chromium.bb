@@ -103,11 +103,11 @@ public:
 
     RootInlineBox* createAndAppendRootInlineBox();
 
-    void markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove = 0, bool inLayout = true);
-    void markSiblingsWithFloatsForLayout(RenderBox* floatToRemove = 0);
+    void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = 0, bool inLayout = true);
+    void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = 0);
 
     bool containsFloats() const { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
-    bool containsFloat(RenderBox*) const;
+    bool containsFloat(LayoutBox*) const;
 
     void removeFloatingObjects();
 
@@ -161,8 +161,8 @@ public:
 
     LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText);
 
-    void setStaticInlinePositionForChild(RenderBox&, LayoutUnit inlinePosition);
-    void updateStaticInlinePositionForChild(RenderBox&, LayoutUnit logicalTop);
+    void setStaticInlinePositionForChild(LayoutBox&, LayoutUnit inlinePosition);
+    void updateStaticInlinePositionForChild(LayoutBox&, LayoutUnit logicalTop);
 
     static bool shouldSkipCreatingRunsForObject(LayoutObject* obj)
     {
@@ -247,7 +247,7 @@ protected:
     virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
-    void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox&);
+    void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox&);
 
     void addOverflowFromFloats();
 
@@ -263,32 +263,32 @@ protected:
     virtual LayoutObject* layoutSpecialExcludedChild(bool /*relayoutChildren*/, SubtreeLayoutScope&);
     virtual bool updateLogicalWidthAndColumnWidth() override;
 
-    void setLogicalLeftForChild(RenderBox& child, LayoutUnit logicalLeft);
-    void setLogicalTopForChild(RenderBox& child, LayoutUnit logicalTop);
-    void determineLogicalLeftPositionForChild(RenderBox& child);
+    void setLogicalLeftForChild(LayoutBox& child, LayoutUnit logicalLeft);
+    void setLogicalTopForChild(LayoutBox& child, LayoutUnit logicalTop);
+    void determineLogicalLeftPositionForChild(LayoutBox& child);
 
 private:
     bool layoutBlockFlow(bool relayoutChildren, LayoutUnit& pageLogicalHeight, SubtreeLayoutScope&);
     void layoutBlockChildren(bool relayoutChildren, SubtreeLayoutScope&, LayoutUnit beforeEdge, LayoutUnit afterEdge);
 
-    void layoutBlockChild(RenderBox& child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom);
-    void adjustPositionedBlock(RenderBox& child, const MarginInfo&);
+    void layoutBlockChild(LayoutBox& child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom);
+    void adjustPositionedBlock(LayoutBox& child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
 
     LayoutPoint computeLogicalLocationForFloat(const FloatingObject*, LayoutUnit logicalTopOffset) const;
 
-    FloatingObject* insertFloatingObject(RenderBox&);
-    void removeFloatingObject(RenderBox*);
+    FloatingObject* insertFloatingObject(LayoutBox&);
+    void removeFloatingObject(LayoutBox*);
     void removeFloatingObjectsBelow(FloatingObject*, int logicalOffset);
 
     // Called from lineWidth, to position the floats added in the last line.
     // Returns true if and only if it has positioned any floats.
     bool positionNewFloats(LineWidth* = 0);
 
-    LayoutUnit getClearDelta(RenderBox* child, LayoutUnit yPos);
+    LayoutUnit getClearDelta(LayoutBox* child, LayoutUnit yPos);
 
     bool hasOverhangingFloats() { return parent() && !hasColumns() && containsFloats() && lowestFloatLogicalBottom() > logicalHeight(); }
-    bool hasOverhangingFloat(RenderBox*);
+    bool hasOverhangingFloat(LayoutBox*);
     void addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit xoffset, LayoutUnit yoffset);
     void addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats);
 
@@ -343,7 +343,7 @@ private:
 
 public:
     struct FloatWithRect {
-        FloatWithRect(RenderBox* f)
+        FloatWithRect(LayoutBox* f)
             : object(f)
             , rect(f->frameRect())
             , everHadLayout(f->everHadLayout())
@@ -351,7 +351,7 @@ public:
             rect.expand(f->marginBoxOutsets());
         }
 
-        RenderBox* object;
+        LayoutBox* object;
         LayoutRect rect;
         bool everHadLayout;
     };
@@ -381,7 +381,7 @@ public:
         LayoutUnit m_positiveMarginAfter;
         LayoutUnit m_negativeMarginAfter;
     };
-    MarginValues marginValuesForChild(RenderBox& child) const;
+    MarginValues marginValuesForChild(LayoutBox& child) const;
 
     // Allocated only when some of these fields have non-default values
     struct RenderBlockFlowRareData {
@@ -445,11 +445,11 @@ protected:
     bool mustDiscardMarginBefore() const;
     bool mustDiscardMarginAfter() const;
 
-    bool mustDiscardMarginBeforeForChild(const RenderBox&) const;
-    bool mustDiscardMarginAfterForChild(const RenderBox&) const;
+    bool mustDiscardMarginBeforeForChild(const LayoutBox&) const;
+    bool mustDiscardMarginAfterForChild(const LayoutBox&) const;
 
-    bool mustSeparateMarginBeforeForChild(const RenderBox&) const;
-    bool mustSeparateMarginAfterForChild(const RenderBox&) const;
+    bool mustSeparateMarginBeforeForChild(const LayoutBox&) const;
+    bool mustSeparateMarginAfterForChild(const LayoutBox&) const;
 
     void initMaxMarginValues()
     {
@@ -467,21 +467,21 @@ private:
     virtual LayoutUnit collapsedMarginBefore() const override final { return maxPositiveMarginBefore() - maxNegativeMarginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const override final { return maxPositiveMarginAfter() - maxNegativeMarginAfter(); }
 
-    LayoutUnit collapseMargins(RenderBox& child, MarginInfo&, bool childIsSelfCollapsing);
-    LayoutUnit clearFloatsIfNeeded(RenderBox& child, MarginInfo&, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing);
-    LayoutUnit estimateLogicalTopPosition(RenderBox& child, const MarginInfo&, LayoutUnit& estimateWithoutPagination);
-    void marginBeforeEstimateForChild(RenderBox&, LayoutUnit&, LayoutUnit&, bool&) const;
-    void handleAfterSideOfBlock(RenderBox* lastChild, LayoutUnit top, LayoutUnit bottom, MarginInfo&);
+    LayoutUnit collapseMargins(LayoutBox& child, MarginInfo&, bool childIsSelfCollapsing);
+    LayoutUnit clearFloatsIfNeeded(LayoutBox& child, MarginInfo&, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing);
+    LayoutUnit estimateLogicalTopPosition(LayoutBox& child, const MarginInfo&, LayoutUnit& estimateWithoutPagination);
+    void marginBeforeEstimateForChild(LayoutBox&, LayoutUnit&, LayoutUnit&, bool&) const;
+    void handleAfterSideOfBlock(LayoutBox* lastChild, LayoutUnit top, LayoutUnit bottom, MarginInfo&);
     void setCollapsedBottomMargin(const MarginInfo&);
 
-    LayoutUnit applyBeforeBreak(RenderBox& child, LayoutUnit logicalOffset); // If the child has a before break, then return a new yPos that shifts to the top of the next page/column.
-    LayoutUnit applyAfterBreak(RenderBox& child, LayoutUnit logicalOffset, MarginInfo&); // If the child has an after break, then return a new offset that shifts to the top of the next page/column.
+    LayoutUnit applyBeforeBreak(LayoutBox& child, LayoutUnit logicalOffset); // If the child has a before break, then return a new yPos that shifts to the top of the next page/column.
+    LayoutUnit applyAfterBreak(LayoutBox& child, LayoutUnit logicalOffset, MarginInfo&); // If the child has an after break, then return a new offset that shifts to the top of the next page/column.
 
-    LayoutUnit adjustBlockChildForPagination(LayoutUnit logicalTopAfterClear, LayoutUnit estimateWithoutPagination, RenderBox& child, bool atBeforeSideOfBlock);
+    LayoutUnit adjustBlockChildForPagination(LayoutUnit logicalTopAfterClear, LayoutUnit estimateWithoutPagination, LayoutBox& child, bool atBeforeSideOfBlock);
     // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
     void adjustLinePositionForPagination(RootInlineBox&, LayoutUnit& deltaOffset, LayoutFlowThread*);
     // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.
-    LayoutUnit adjustForUnsplittableChild(RenderBox&, LayoutUnit logicalOffset, bool includeMargins = false);
+    LayoutUnit adjustForUnsplittableChild(LayoutBox&, LayoutUnit logicalOffset, bool includeMargins = false);
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;
