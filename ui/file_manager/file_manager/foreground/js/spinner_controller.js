@@ -7,6 +7,7 @@
  * @param {!HTMLElement} element
  * @param {!DirectoryModel} directoryModel
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function SpinnerController(element, directoryModel) {
   /**
@@ -32,6 +33,8 @@ function SpinnerController(element, directoryModel) {
   this.timeoutId_ = 0;
 }
 
+SpinnerController.prototype.__proto__ = cr.EventTarget.prototype;
+
 /**
  * Shows the spinner.
  */
@@ -41,6 +44,8 @@ SpinnerController.prototype.show = function() {
   this.element_.hidden = false;
   clearTimeout(this.timeoutId_);
   this.timeoutId_ = 0;
+  var spinnerShownEvent = new Event('spinner-shown');
+  this.dispatchEvent(spinnerShownEvent);
 };
 
 /**

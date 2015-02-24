@@ -104,6 +104,9 @@ function ScanController(
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
   this.onPreferencesChanged_();
+
+  this.spinnerController_.addEventListener(
+      'spinner-shown', this.onSpinnerShown_.bind(this));
 }
 
 /**
@@ -247,4 +250,15 @@ ScanController.prototype.onPreferencesChanged_ = function() {
     }
     this.lastHostedFilesDisabled_ = prefs.hostedFilesDisabled;
   }.bind(this));
+};
+
+/**
+ * When a spinner is shown, updates the UI to remove items in the previous
+ * directory.
+ */
+ScanController.prototype.onSpinnerShown_ = function() {
+  if (this.scanInProgress_) {
+    this.listContainer_.endBatchUpdates();
+    this.listContainer_.startBatchUpdates();
+  }
 };
