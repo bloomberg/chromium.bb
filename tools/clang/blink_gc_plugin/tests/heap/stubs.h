@@ -212,9 +212,15 @@ public:
 };
 
 class Visitor : public VisitorHelper<Visitor> {
- public:
+public:
     template<typename T, void (T::*method)(Visitor*)>
     void registerWeakMembers(const T* obj);
+};
+
+class InlinedGlobalMarkingVisitor
+    : public VisitorHelper<InlinedGlobalMarkingVisitor> {
+public:
+     InlinedGlobalMarkingVisitor* operator->() { return this; }
 };
 
 class GarbageCollectedMixin {
