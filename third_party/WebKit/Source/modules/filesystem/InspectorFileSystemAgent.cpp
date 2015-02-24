@@ -731,7 +731,7 @@ ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(Erro
     return 0;
 }
 
-void InspectorFileSystemAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorFileSystemAgent)
 {
     visitor->trace(m_page);
     InspectorBaseAgent::trace(visitor);

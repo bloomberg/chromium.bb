@@ -53,7 +53,7 @@ public:
         return m_length;
     }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     FileWriterBase();

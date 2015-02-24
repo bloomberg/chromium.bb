@@ -73,7 +73,7 @@ void Entry::getParent(EntryCallback* successCallback, ErrorCallback* errorCallba
     m_fileSystem->getParent(this, successCallback, errorCallback);
 }
 
-void Entry::trace(Visitor* visitor)
+DEFINE_TRACE(Entry)
 {
     EntryBase::trace(visitor);
 }

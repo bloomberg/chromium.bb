@@ -53,7 +53,7 @@ public:
 
     virtual bool isFile() const override { return true; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     FileEntry(DOMFileSystemBase*, const String& fullPath);

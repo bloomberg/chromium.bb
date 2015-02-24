@@ -40,7 +40,7 @@ class Metadata;
 class MetadataCallback : public GarbageCollectedFinalized<MetadataCallback> {
 public:
     virtual ~MetadataCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(Metadata*) = 0;
 };
 

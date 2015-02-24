@@ -107,7 +107,7 @@ public:
         scheduleCallback(executionContext(), callback, callbackArg);
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DOMFileSystem(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);

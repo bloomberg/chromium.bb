@@ -72,7 +72,7 @@ void DirectoryEntrySync::removeRecursively(ExceptionState& exceptionState)
     helper->getResult(exceptionState);
 }
 
-void DirectoryEntrySync::trace(Visitor* visitor)
+DEFINE_TRACE(DirectoryEntrySync)
 {
     EntrySync::trace(visitor);
 }

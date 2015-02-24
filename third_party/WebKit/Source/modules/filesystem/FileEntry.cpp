@@ -54,7 +54,7 @@ void FileEntry::file(FileCallback* successCallback, ErrorCallback* errorCallback
     filesystem()->createFile(this, successCallback, errorCallback);
 }
 
-void FileEntry::trace(Visitor* visitor)
+DEFINE_TRACE(FileEntry)
 {
     Entry::trace(visitor);
 }

@@ -65,7 +65,7 @@ void DirectoryEntry::removeRecursively(VoidCallback* successCallback, ErrorCallb
     m_fileSystem->removeRecursively(this, successCallback, errorCallback);
 }
 
-void DirectoryEntry::trace(Visitor* visitor)
+DEFINE_TRACE(DirectoryEntry)
 {
     Entry::trace(visitor);
 }

@@ -69,7 +69,7 @@ public:
         return m_callbacks.release();
     }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     OwnPtr<AsyncFileSystemCallbacks> m_callbacks;

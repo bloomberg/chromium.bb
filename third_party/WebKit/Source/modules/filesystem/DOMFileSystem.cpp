@@ -127,7 +127,7 @@ public:
         return new ConvertToFileWriterCallback(callback);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_callback);
         FileWriterBaseCallback::trace(visitor);
@@ -173,7 +173,7 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry, FileCallback* success
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback, m_context));
 }
 
-void DOMFileSystem::trace(Visitor* visitor)
+DEFINE_TRACE(DOMFileSystem)
 {
     DOMFileSystemBase::trace(visitor);
     ActiveDOMObject::trace(visitor);

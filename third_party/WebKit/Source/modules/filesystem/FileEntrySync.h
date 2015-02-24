@@ -54,7 +54,7 @@ public:
     File* file(ExceptionState&);
     FileWriterSync* createWriter(ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     FileEntrySync(DOMFileSystemBase*, const String& fullPath);

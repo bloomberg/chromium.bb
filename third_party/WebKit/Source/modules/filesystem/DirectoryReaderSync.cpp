@@ -58,7 +58,7 @@ public:
         m_reader->addEntries(syncEntries);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_reader);
         EntriesCallback::trace(visitor);
@@ -80,7 +80,7 @@ public:
         m_reader->setError(error->code());
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_reader);
         ErrorCallback::trace(visitor);
@@ -120,7 +120,7 @@ EntrySyncHeapVector DirectoryReaderSync::readEntries(ExceptionState& exceptionSt
     return result;
 }
 
-void DirectoryReaderSync::trace(Visitor* visitor)
+DEFINE_TRACE(DirectoryReaderSync)
 {
     visitor->trace(m_entries);
     DirectoryReaderBase::trace(visitor);

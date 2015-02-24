@@ -40,7 +40,7 @@ class Entry;
 class EntryCallback : public GarbageCollectedFinalized<EntryCallback> {
 public:
     virtual ~EntryCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(Entry*) = 0;
 };
 

@@ -90,7 +90,7 @@ EntrySync::EntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
 {
 }
 
-void EntrySync::trace(Visitor* visitor)
+DEFINE_TRACE(EntrySync)
 {
     EntryBase::trace(visitor);
 }

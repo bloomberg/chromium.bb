@@ -70,7 +70,7 @@ DraggedIsolatedFileSystem::DraggedIsolatedFileSystem(DataObject& host, const Str
     host.setFilesystemId(filesystemId);
 }
 
-void DraggedIsolatedFileSystem::trace(Visitor* visitor)
+DEFINE_TRACE(DraggedIsolatedFileSystem)
 {
     visitor->trace(m_filesystem);
     WillBeHeapSupplement<DataObject>::trace(visitor);

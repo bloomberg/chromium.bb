@@ -54,7 +54,7 @@ public:
 
     String toURL() const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     EntryBase(DOMFileSystemBase*, const String& fullPath);

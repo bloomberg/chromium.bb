@@ -38,7 +38,7 @@ class FileWriterBase;
 class FileWriterBaseCallback : public GarbageCollectedFinalized<FileWriterBaseCallback> {
 public:
     virtual ~FileWriterBaseCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(FileWriterBase*) = 0;
 };
 

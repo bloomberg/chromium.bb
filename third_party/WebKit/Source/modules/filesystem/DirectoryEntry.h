@@ -58,7 +58,7 @@ public:
     void getDirectory(const String& path, const FileSystemFlags&, EntryCallback* = nullptr, ErrorCallback* = nullptr);
     void removeRecursively(VoidCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DirectoryEntry(DOMFileSystemBase*, const String& fullPath);

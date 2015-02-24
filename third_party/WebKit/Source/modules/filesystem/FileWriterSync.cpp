@@ -139,7 +139,7 @@ FileWriterSync::~FileWriterSync()
 {
 }
 
-void FileWriterSync::trace(Visitor* visitor)
+DEFINE_TRACE(FileWriterSync)
 {
     FileWriterBase::trace(visitor);
 }

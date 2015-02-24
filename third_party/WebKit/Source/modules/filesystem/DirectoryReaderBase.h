@@ -44,7 +44,7 @@ public:
 
     virtual ~DirectoryReaderBase() { }
 
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_fileSystem);
     }

@@ -40,7 +40,7 @@ class DOMFileSystem;
 class FileSystemCallback : public GarbageCollectedFinalized<FileSystemCallback> {
 public:
     virtual ~FileSystemCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(DOMFileSystem*) = 0;
 };
 

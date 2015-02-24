@@ -40,7 +40,7 @@ class FileWriter;
 class FileWriterCallback : public GarbageCollectedFinalized<FileWriterCallback> {
 public:
     virtual ~FileWriterCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(FileWriter*) = 0;
 };
 

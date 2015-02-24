@@ -54,7 +54,7 @@ public:
     double modificationTime() const { return m_platformMetadata.modificationTime; }
     unsigned long long size() const { return static_cast<unsigned long long>(m_platformMetadata.length); }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit Metadata(const FileMetadata& platformMetadata)

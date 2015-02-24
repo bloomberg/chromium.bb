@@ -55,7 +55,7 @@ public:
     DirectoryEntrySync* getDirectory(const String& path, const FileSystemFlags&, ExceptionState&);
     void removeRecursively(ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DirectoryEntrySync(DOMFileSystemBase*, const String& fullPath);

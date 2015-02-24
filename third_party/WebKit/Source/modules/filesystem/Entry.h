@@ -55,7 +55,7 @@ public:
     void remove(VoidCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
     void getParent(EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     Entry(DOMFileSystemBase*, const String& fullPath);

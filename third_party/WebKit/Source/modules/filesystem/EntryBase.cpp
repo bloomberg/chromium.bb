@@ -61,7 +61,7 @@ String EntryBase::toURL() const
     return m_cachedURL;
 }
 
-void EntryBase::trace(Visitor* visitor)
+DEFINE_TRACE(EntryBase)
 {
     visitor->trace(m_fileSystem);
 }

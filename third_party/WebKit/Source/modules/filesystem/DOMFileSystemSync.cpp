@@ -89,7 +89,7 @@ public:
         int m_code;
         Member<File> m_file;
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_file);
         }

@@ -55,7 +55,7 @@ public:
     static const char* supplementName();
     static DraggedIsolatedFileSystem* from(DataObject*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DraggedIsolatedFileSystem(DataObject& host, const String& filesystemId);

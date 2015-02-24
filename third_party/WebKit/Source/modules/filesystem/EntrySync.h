@@ -56,7 +56,7 @@ public:
     void remove(ExceptionState&) const;
     EntrySync* getParent() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     EntrySync(DOMFileSystemBase*, const String& fullPath);

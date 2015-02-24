@@ -59,7 +59,7 @@ public:
         return new FileWriterSync();
     }
     virtual ~FileWriterSync();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // FileWriterBase
     void write(Blob*, ExceptionState&);

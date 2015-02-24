@@ -52,7 +52,7 @@ FileWriterSync* FileEntrySync::createWriter(ExceptionState& exceptionState)
     return filesystem()->createWriter(this, exceptionState);
 }
 
-void FileEntrySync::trace(Visitor* visitor)
+DEFINE_TRACE(FileEntrySync)
 {
     EntrySync::trace(visitor);
 }

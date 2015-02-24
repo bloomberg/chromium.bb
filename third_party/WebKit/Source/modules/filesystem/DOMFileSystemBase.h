@@ -116,7 +116,7 @@ public:
     int readDirectory(DirectoryReaderBase*, const String& path, EntriesCallback*, ErrorCallback*, SynchronousType = Asynchronous);
     bool waitForAdditionalResult(int callbacksId);
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     DOMFileSystemBase(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);

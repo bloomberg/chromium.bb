@@ -50,7 +50,7 @@ public:
         m_reader->addEntries(entries);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_reader);
         EntriesCallback::trace(visitor);
@@ -73,7 +73,7 @@ public:
         m_reader->onError(error);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_reader);
         ErrorCallback::trace(visitor);
@@ -143,7 +143,7 @@ void DirectoryReader::onError(FileError* error)
     }
 }
 
-void DirectoryReader::trace(Visitor* visitor)
+DEFINE_TRACE(DirectoryReader)
 {
     visitor->trace(m_entries);
     visitor->trace(m_error);

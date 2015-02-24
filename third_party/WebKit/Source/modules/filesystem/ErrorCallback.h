@@ -40,7 +40,7 @@ class FileError;
 class ErrorCallback : public GarbageCollectedFinalized<ErrorCallback> {
 public:
     virtual ~ErrorCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(FileError*) = 0;
 };
 

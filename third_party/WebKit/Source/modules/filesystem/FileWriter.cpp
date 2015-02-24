@@ -323,7 +323,7 @@ void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionState& except
     m_error = FileError::create(errorCode);
 }
 
-void FileWriter::trace(Visitor* visitor)
+DEFINE_TRACE(FileWriter)
 {
     visitor->trace(m_error);
     visitor->trace(m_blobBeingWritten);
