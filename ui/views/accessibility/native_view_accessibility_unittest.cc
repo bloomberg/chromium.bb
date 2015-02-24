@@ -55,12 +55,12 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
 };
 
 TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {
-  EXPECT_EQ(ui::AX_ROLE_BUTTON, button_accessibility_->GetData()->role);
-  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, label_accessibility_->GetData()->role);
+  EXPECT_EQ(ui::AX_ROLE_BUTTON, button_accessibility_->GetData().role);
+  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, label_accessibility_->GetData().role);
 }
 
 TEST_F(NativeViewAccessibilityTest, BoundsShouldMatch) {
-  gfx::Rect bounds = button_accessibility_->GetData()->location;
+  gfx::Rect bounds = button_accessibility_->GetData().location;
   bounds.Offset(button_accessibility_->GetGlobalCoordinateOffset());
   EXPECT_EQ(button_->GetBoundsInScreen(), bounds);
 }

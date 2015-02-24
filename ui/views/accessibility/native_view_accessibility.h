@@ -10,45 +10,60 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 
 class View;
+class Widget;
 
-class VIEWS_EXPORT NativeViewAccessibility : public ui::AXPlatformNodeDelegate {
+class VIEWS_EXPORT NativeViewAccessibility
+    : public ui::AXPlatformNodeDelegate,
+      public WidgetObserver {
  public:
   static NativeViewAccessibility* Create(View* view);
 
-  virtual gfx::NativeViewAccessible GetNativeObject();
+  gfx::NativeViewAccessible GetNativeObject();
 
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
   virtual void Destroy();
 
-  // WebViews need to be registered because they implement their own
-  // tree of accessibility objects, and we need to check them when
-  // mapping a child id to a NativeViewAccessible.
-  static void RegisterWebView(View* web_view);
-  static void UnregisterWebView(View* web_view);
+  void NotifyAccessibilityEvent(ui::AXEvent event_type);
 
   // ui::AXPlatformNodeDelegate
-  ui::AXNodeData* GetData() override;
+  const ui::AXNodeData& GetData() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible GetParent() override;
   gfx::Vector2d GetGlobalCoordinateOffset() override;
-  void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
+  gfx::NativeViewAccessible HitTestSync(int x, int y) override;
+  gfx::NativeViewAccessible GetFocus() override;
+  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  void DoDefaultAction() override;
+  bool SetStringValue(const base::string16& new_value) override;
+
+  // WidgetObserver
+  void OnWidgetDestroying(Widget* widget) override;
+
+  Widget* parent_widget() const { return parent_widget_; }
+  void SetParentWidget(Widget* parent_widget);
 
  protected:
-  NativeViewAccessibility();
-  virtual ~NativeViewAccessibility();
+  NativeViewAccessibility(View* view);
+  ~NativeViewAccessibility() override;
 
-  void set_view(views::View* view) { view_ = view; }
-  const View* view() const { return view_; }
+  // Weak. Owns this.
+  View* view_;
 
-  View* view_;  // Weak. Owns this.
+  // Weak. Uses WidgetObserver to clear. This is set on the root view for
+  // a widget that's owned by another widget, so we can walk back up the
+  // tree.
+  Widget* parent_widget_;
 
  private:
+  void PopulateChildWidgetVector(std::vector<Widget*>* result_child_widgets);
+
   // We own this, but it is reference-counted on some platforms so we can't use
   // a scoped_ptr. It is dereferenced in the destructor.
   ui::AXPlatformNode* ax_node_;
