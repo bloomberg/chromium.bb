@@ -40,8 +40,10 @@ void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, Pas
 
 void CustomElementMicrotaskRunQueue::dispatchIfAlive(WeakPtr<CustomElementMicrotaskRunQueue> self)
 {
-    if (self.get())
+    if (self.get()) {
+        RefPtrWillBeRawPtr<CustomElementMicrotaskRunQueue> protect(self.get());
         self->dispatch();
+    }
 }
 
 void CustomElementMicrotaskRunQueue::requestDispatchIfNeeded()

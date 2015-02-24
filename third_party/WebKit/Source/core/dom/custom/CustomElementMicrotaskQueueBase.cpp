@@ -11,7 +11,7 @@ namespace blink {
 
 void CustomElementMicrotaskQueueBase::dispatch()
 {
-    ASSERT(!m_inDispatch);
+    RELEASE_ASSERT(!m_inDispatch);
     m_inDispatch = true;
     doDispatch();
     m_inDispatch = false;
