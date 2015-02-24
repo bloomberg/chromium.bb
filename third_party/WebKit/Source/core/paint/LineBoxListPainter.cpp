@@ -8,9 +8,9 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
+#include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
-#include "core/rendering/RenderLineBoxList.h"
 
 namespace blink {
 
@@ -25,10 +25,10 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
     ASSERT(renderer->isRenderBlock() || (renderer->isRenderInline() && renderer->hasLayer())); // The only way an inline could paint like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
-    if (!m_renderLineBoxList.firstLineBox())
+    if (!m_lineBoxList.firstLineBox())
         return;
 
-    if (!m_renderLineBoxList.anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset))
+    if (!m_lineBoxList.anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset))
         return;
 
     PaintInfo info(paintInfo);
@@ -38,8 +38,8 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
     // See if our root lines intersect with the dirty rect. If so, then we paint
     // them. Note that boxes can easily overlap, so we can't make any assumptions
     // based off positions of our first line box or our last line box.
-    for (InlineFlowBox* curr = m_renderLineBoxList.firstLineBox(); curr; curr = curr->nextLineBox()) {
-        if (m_renderLineBoxList.lineIntersectsDirtyRect(renderer, curr, info, paintOffset)) {
+    for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox()) {
+        if (m_lineBoxList.lineIntersectsDirtyRect(renderer, curr, info, paintOffset)) {
             RootInlineBox& root = curr->root();
             curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
         }

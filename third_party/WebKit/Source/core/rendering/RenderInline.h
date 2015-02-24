@@ -26,7 +26,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/line/InlineFlowBox.h"
-#include "core/rendering/RenderLineBoxList.h"
+#include "core/layout/line/LineBoxList.h"
 
 namespace blink {
 
@@ -69,8 +69,8 @@ public:
 
     void dirtyLineBoxes(bool fullLayout);
 
-    RenderLineBoxList* lineBoxes() { return &m_lineBoxes; }
-    const RenderLineBoxList* lineBoxes() const { return &m_lineBoxes; }
+    LineBoxList* lineBoxes() { return &m_lineBoxes; }
+    const LineBoxList* lineBoxes() const { return &m_lineBoxes; }
 
     InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
     InlineFlowBox* lastLineBox() const { return m_lineBoxes.lastLineBox(); }
@@ -189,7 +189,7 @@ private:
     LayoutBoxModelObject* continuationBefore(LayoutObject* beforeChild);
 
     LayoutObjectChildList m_children;
-    RenderLineBoxList m_lineBoxes;   // All of the line boxes created for this inline flow.  For example, <i>Hello<br>world.</i> will have two <i> line boxes.
+    LineBoxList m_lineBoxes; // All of the line boxes created for this inline flow.  For example, <i>Hello<br>world.</i> will have two <i> line boxes.
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderInline, isRenderInline());

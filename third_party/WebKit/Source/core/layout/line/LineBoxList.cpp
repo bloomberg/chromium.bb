@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderLineBoxList.h"
+#include "core/layout/line/LineBoxList.h"
 
 #include "core/layout/HitTestResult.h"
 #include "core/layout/PaintInfo.h"
@@ -40,20 +40,20 @@
 namespace blink {
 
 #if ENABLE(ASSERT)
-RenderLineBoxList::~RenderLineBoxList()
+LineBoxList::~LineBoxList()
 {
     ASSERT(!m_firstLineBox);
     ASSERT(!m_lastLineBox);
 }
 #endif
 
-void RenderLineBoxList::appendLineBox(InlineFlowBox* box)
+void LineBoxList::appendLineBox(InlineFlowBox* box)
 {
     checkConsistency();
 
-    if (!m_firstLineBox)
+    if (!m_firstLineBox) {
         m_firstLineBox = m_lastLineBox = box;
-    else {
+    } else {
         m_lastLineBox->setNextLineBox(box);
         box->setPreviousLineBox(m_lastLineBox);
         m_lastLineBox = box;
@@ -62,7 +62,7 @@ void RenderLineBoxList::appendLineBox(InlineFlowBox* box)
     checkConsistency();
 }
 
-void RenderLineBoxList::deleteLineBoxTree()
+void LineBoxList::deleteLineBoxTree()
 {
     InlineFlowBox* line = m_firstLineBox;
     InlineFlowBox* nextLine;
@@ -74,7 +74,7 @@ void RenderLineBoxList::deleteLineBoxTree()
     m_firstLineBox = m_lastLineBox = 0;
 }
 
-void RenderLineBoxList::extractLineBox(InlineFlowBox* box)
+void LineBoxList::extractLineBox(InlineFlowBox* box)
 {
     checkConsistency();
 
@@ -90,15 +90,16 @@ void RenderLineBoxList::extractLineBox(InlineFlowBox* box)
     checkConsistency();
 }
 
-void RenderLineBoxList::attachLineBox(InlineFlowBox* box)
+void LineBoxList::attachLineBox(InlineFlowBox* box)
 {
     checkConsistency();
 
     if (m_lastLineBox) {
         m_lastLineBox->setNextLineBox(box);
         box->setPreviousLineBox(m_lastLineBox);
-    } else
+    } else {
         m_firstLineBox = box;
+    }
     InlineFlowBox* last = box;
     for (InlineFlowBox* curr = box; curr; curr = curr->nextLineBox()) {
         curr->setExtracted(false);
@@ -109,7 +110,7 @@ void RenderLineBoxList::attachLineBox(InlineFlowBox* box)
     checkConsistency();
 }
 
-void RenderLineBoxList::removeLineBox(InlineFlowBox* box)
+void LineBoxList::removeLineBox(InlineFlowBox* box)
 {
     checkConsistency();
 
@@ -125,7 +126,7 @@ void RenderLineBoxList::removeLineBox(InlineFlowBox* box)
     checkConsistency();
 }
 
-void RenderLineBoxList::deleteLineBoxes()
+void LineBoxList::deleteLineBoxes()
 {
     if (m_firstLineBox) {
         InlineFlowBox* next;
@@ -138,13 +139,13 @@ void RenderLineBoxList::deleteLineBoxes()
     }
 }
 
-void RenderLineBoxList::dirtyLineBoxes()
+void LineBoxList::dirtyLineBoxes()
 {
     for (InlineFlowBox* curr = firstLineBox(); curr; curr = curr->nextLineBox())
         curr->dirtyLineBoxes();
 }
 
-bool RenderLineBoxList::rangeIntersectsRect(LayoutBoxModelObject* renderer, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
+bool LineBoxList::rangeIntersectsRect(LayoutBoxModelObject* renderer, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
 {
     LayoutBox* block;
     if (renderer->isBox())
@@ -169,7 +170,7 @@ bool RenderLineBoxList::rangeIntersectsRect(LayoutBoxModelObject* renderer, Layo
     return true;
 }
 
-bool RenderLineBoxList::anyLineIntersectsRect(LayoutBoxModelObject* renderer, const LayoutRect& rect, const LayoutPoint& offset) const
+bool LineBoxList::anyLineIntersectsRect(LayoutBoxModelObject* renderer, const LayoutRect& rect, const LayoutPoint& offset) const
 {
     // We can check the first box and last box and avoid painting/hit testing if we don't
     // intersect.  This is a quick short-circuit that we can take to avoid walking any lines.
@@ -183,7 +184,7 @@ bool RenderLineBoxList::anyLineIntersectsRect(LayoutBoxModelObject* renderer, co
     return rangeIntersectsRect(renderer, firstLineTop, lastLineBottom, rect, offset);
 }
 
-bool RenderLineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* renderer, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
+bool LineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* renderer, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
 {
     RootInlineBox& root = box->root();
     LayoutUnit logicalTop = std::min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
@@ -192,7 +193,7 @@ bool RenderLineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* renderer, 
     return rangeIntersectsRect(renderer, logicalTop, logicalBottom, paintInfo.rect, offset);
 }
 
-bool RenderLineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
+bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
 {
     if (hitTestAction != HitTestForeground)
         return false;
@@ -228,7 +229,7 @@ bool RenderLineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestReq
     return false;
 }
 
-void RenderLineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObject* child)
+void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObject* child)
 {
     if (!container->parent() || (container->isRenderBlock() && (container->selfNeedsLayout() || !container->isRenderBlockFlow())))
         return;
@@ -318,7 +319,7 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, Layo
 
 #if ENABLE(ASSERT)
 
-void RenderLineBoxList::checkConsistency() const
+void LineBoxList::checkConsistency() const
 {
 #ifdef CHECK_CONSISTENCY
     const InlineFlowBox* prev = 0;

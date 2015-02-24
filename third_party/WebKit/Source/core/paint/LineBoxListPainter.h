@@ -12,16 +12,16 @@ namespace blink {
 class LayoutPoint;
 struct PaintInfo;
 class LayoutBoxModelObject;
-class RenderLineBoxList;
+class LineBoxList;
 
 class LineBoxListPainter {
 public:
-    LineBoxListPainter(RenderLineBoxList& renderLineBoxList) : m_renderLineBoxList(renderLineBoxList) { }
+    LineBoxListPainter(LineBoxList& lineBoxList) : m_lineBoxList(lineBoxList) { }
 
     void paint(LayoutBoxModelObject*, const PaintInfo&, const LayoutPoint&) const;
 
 private:
-    RenderLineBoxList& m_renderLineBoxList;
+    LineBoxList& m_lineBoxList;
 };
 
 } // namespace blink

@@ -27,24 +27,24 @@
  */
 
 
-#ifndef RenderLineBoxList_h
-#define RenderLineBoxList_h
+#ifndef LineBoxList_h
+#define LineBoxList_h
 
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
 
 class InlineFlowBox;
-class RenderLineBoxList {
+class LineBoxList {
 public:
-    RenderLineBoxList()
+    LineBoxList()
         : m_firstLineBox(0)
         , m_lastLineBox(0)
     {
     }
 
 #if ENABLE(ASSERT)
-    ~RenderLineBoxList();
+    ~LineBoxList();
 #endif
 
     InlineFlowBox* firstLineBox() const { return m_firstLineBox; }
@@ -80,11 +80,11 @@ private:
 
 
 #if !ENABLE(ASSERT)
-inline void RenderLineBoxList::checkConsistency() const
+inline void LineBoxList::checkConsistency() const
 {
 }
 #endif
 
 } // namespace blink
 
-#endif // RenderFlow_h
+#endif // LineBoxList_h

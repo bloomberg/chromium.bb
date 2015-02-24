@@ -78,7 +78,7 @@ void RootInlineBox::detachEllipsisBox()
     }
 }
 
-RenderLineBoxList* RootInlineBox::rendererLineBoxes() const
+LineBoxList* RootInlineBox::lineBoxes() const
 {
     return block().lineBoxes();
 }

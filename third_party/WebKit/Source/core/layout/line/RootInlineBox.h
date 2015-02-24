@@ -77,7 +77,7 @@ public:
         m_selectionBottom = selectionBottom == LayoutUnit::min() ? bottom : selectionBottom;
     }
 
-    virtual RenderLineBoxList* rendererLineBoxes() const override final;
+    virtual LineBoxList* lineBoxes() const override final;
 
     LayoutObject* lineBreakObj() const { return m_lineBreakObj; }
     BidiStatus lineBreakBidiStatus() const;

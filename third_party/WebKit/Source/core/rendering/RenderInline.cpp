@@ -49,7 +49,7 @@ namespace blink {
 struct SameSizeAsRenderInline : public LayoutBoxModelObject {
     virtual ~SameSizeAsRenderInline() { }
     LayoutObjectChildList m_children;
-    RenderLineBoxList m_lineBoxes;
+    LineBoxList m_lineBoxes;
 };
 
 static_assert(sizeof(RenderInline) == sizeof(SameSizeAsRenderInline), "RenderInline should stay small");

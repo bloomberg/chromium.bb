@@ -27,9 +27,9 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/style/ShapeValue.h"
-#include "core/rendering/RenderLineBoxList.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "wtf/ListHashSet.h"
@@ -80,7 +80,7 @@ public:
 
     LayoutUnit minLineHeightForReplacedRenderer(bool isFirstLine, LayoutUnit replacedHeight) const;
 
-    RenderLineBoxList* lineBoxes() { return &m_lineBoxes; }
+    LineBoxList* lineBoxes() { return &m_lineBoxes; }
 
 protected:
     InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
@@ -452,7 +452,7 @@ public:
 
 protected:
     LayoutObjectChildList m_children;
-    RenderLineBoxList m_lineBoxes;   // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
+    LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
     LayoutUnit m_pageLogicalOffset;
 

@@ -79,7 +79,7 @@ using namespace HTMLNames;
 
 struct SameSizeAsRenderBlock : public LayoutBox {
     LayoutObjectChildList children;
-    RenderLineBoxList lineBoxes;
+    LineBoxList lineBoxes;
     int pageLogicalOffset;
     uint32_t bitfields;
 };

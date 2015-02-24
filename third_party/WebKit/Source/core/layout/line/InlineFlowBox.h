@@ -32,7 +32,7 @@ namespace blink {
 class HitTestRequest;
 class HitTestResult;
 class InlineTextBox;
-class RenderLineBoxList;
+class LineBoxList;
 class SimpleFontData;
 class VerticalPositionCache;
 
@@ -122,7 +122,7 @@ public:
 
     bool boxShadowCanBeAppliedToBackground(const FillLayer&) const;
 
-    virtual RenderLineBoxList* rendererLineBoxes() const;
+    virtual LineBoxList* lineBoxes() const;
 
     // logicalLeft = left in a horizontal line and top in a vertical line.
     LayoutUnit marginBorderPaddingLogicalLeft() const { return marginLogicalLeft() + borderLogicalLeft() + paddingLogicalLeft(); }

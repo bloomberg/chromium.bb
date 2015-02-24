@@ -226,7 +226,7 @@ void InlineFlowBox::deleteLine()
 
 void InlineFlowBox::removeLineBoxFromLayoutObject()
 {
-    rendererLineBoxes()->removeLineBox(this);
+    lineBoxes()->removeLineBox(this);
 }
 
 void InlineFlowBox::extractLine()
@@ -239,7 +239,7 @@ void InlineFlowBox::extractLine()
 
 void InlineFlowBox::extractLineBoxFromLayoutObject()
 {
-    rendererLineBoxes()->extractLineBox(this);
+    lineBoxes()->extractLineBox(this);
 }
 
 void InlineFlowBox::attachLine()
@@ -252,7 +252,7 @@ void InlineFlowBox::attachLine()
 
 void InlineFlowBox::attachLineBoxToLayoutObject()
 {
-    rendererLineBoxes()->attachLineBox(this);
+    lineBoxes()->attachLineBox(this);
 }
 
 void InlineFlowBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy)
@@ -264,7 +264,7 @@ void InlineFlowBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUn
         m_overflow->move(dx, dy); // FIXME: Rounding error here since overflow was pixel snapped, but nobody other than list markers passes non-integral values here.
 }
 
-RenderLineBoxList* InlineFlowBox::rendererLineBoxes() const
+LineBoxList* InlineFlowBox::lineBoxes() const
 {
     return toRenderInline(renderer()).lineBoxes();
 }
@@ -316,7 +316,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
 
         // Check to see if all initial lines are unconstructed.  If so, then
         // we know the inline began on this line (unless we are a continuation).
-        RenderLineBoxList* lineBoxList = rendererLineBoxes();
+        LineBoxList* lineBoxList = lineBoxes();
         if (!lineBoxList->firstLineBox()->isConstructed() && !renderer().isInlineElementContinuation()) {
             if (renderer().style()->boxDecorationBreak() == DCLONE)
                 includeLeftEdge = includeRightEdge = true;
