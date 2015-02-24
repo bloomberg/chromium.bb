@@ -2364,6 +2364,10 @@
     # contains the destination location for each of the files.  When a crx
     # is added or removed from the list, the chrome/browser/resources/
     # default_apps/external_extensions.json file must also be updated.
+    #
+    # README: GN version of these is in the target //chrome:default_apps
+    # (there's no global variable like in GYP). Be sure to update that target
+    # if you change these lists!
     'default_apps_list': [
       'browser/resources/default_apps/external_extensions.json',
       'browser/resources/default_apps/gmail.crx',

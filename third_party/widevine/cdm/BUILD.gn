@@ -79,14 +79,16 @@ source_set("adapter") {
 
       #'<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',  TODO(GYP)
     ]
-  }
 
-  if (is_linux) {
-    libs = [ rebase_path("$root_out_dir/libwidevinecdm.so", root_build_dir) ]
-  } else if (is_win) {
-    libs = [ rebase_path("$root_out_dir/widevinecdm.dll.lib", root_build_dir) ]
-  } else if (is_mac) {
-    libs = [ rebase_path("$root_out_dir/libwidevinecdm.dylib", root_build_dir) ]
+    if (is_linux) {
+      libs = [ rebase_path("$root_out_dir/libwidevinecdm.so", root_build_dir) ]
+    } else if (is_win) {
+      libs =
+          [ rebase_path("$root_out_dir/widevinecdm.dll.lib", root_build_dir) ]
+    } else if (is_mac) {
+      libs =
+          [ rebase_path("$root_out_dir/libwidevinecdm.dylib", root_build_dir) ]
+    }
   }
 }
 

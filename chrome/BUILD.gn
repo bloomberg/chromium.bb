@@ -138,15 +138,11 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         ":packed_resources",
         "//components/startup_metric_utils",
 
-        # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
-        # file decide what to do on a per-OS basis; on Mac, internal plugins
-        # go inside the framework, so this dependency is in chrome_dll.gypi.
-        #'../third_party/adobe/flash/flash_player.gyp:flapper_binaries',  TODO(GYP)
-
-        # Copy CDM files to PRODUCT_DIR if applicable. Let the .gyp
-        # file decide what to do on a per-OS basis; on Mac, internal plugins
-        # go inside the framework, so this dependency is in chrome_dll.gypi.
-        #'../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',  TODO(GYP)
+        # Precompiled plugins that need to get copied to the output directory.
+        # On Mac, internal plugins go inside the framework, so these
+        # dependencies are on chrome.dll.
+        "//third_party/adobe/flash:flapper_binaries",
+        "//third_party/widevine/cdm:adapter",
       ]
       # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
     }
@@ -413,6 +409,23 @@ group("extra_resources") {
   }
 }
 
+if (is_chrome_branded) {
+  copy("default_apps") {
+    visibility = [ ":packed_resources" ]
+    sources = [
+      "browser/resources/default_apps/external_extensions.json",
+      "browser/resources/default_apps/gmail.crx",
+      "browser/resources/default_apps/search.crx",
+      "browser/resources/default_apps/youtube.crx",
+      "browser/resources/default_apps/drive.crx",
+      "browser/resources/default_apps/docs.crx",
+    ]
+    outputs = [
+      "$root_out_dir/default_apps/{{source_file_part}}",
+    ]
+  }
+}
+
 group("packed_resources") {
   deps = [
     ":repack_locales_pack",
@@ -420,8 +433,9 @@ group("packed_resources") {
     ":repack_chrome_100_percent",
   ]
 
-  # TODO(GYP) if (is_chrome_branded) {
-  # ... copy default_apps from default_apps_list
+  if (is_chrome_branded) {
+    deps += [ ":default_apps" ]
+  }
 
   if (enable_hidpi) {
     deps += [ ":repack_chrome_200_percent" ]
