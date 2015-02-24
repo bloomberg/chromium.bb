@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.enhanced_bookmarks;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.LruCache;
 import android.util.Pair;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ObserverList;
@@ -15,22 +18,24 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Access gate to C++ side enhanced bookmarks functionalities.
  */
 @JNINamespace("enhanced_bookmarks::android")
 public final class EnhancedBookmarksBridge {
+    private static WeakReference<LruCache<String, Pair<String, Bitmap>>> sLruCache;
+    private static final int SALIENT_IMAGE_MAX_CACHE_SIZE = 32 * 1024 * 1024; // 32MB
+
     private long mNativeEnhancedBookmarksBridge;
     private final ObserverList<FiltersObserver> mFilterObservers =
             new ObserverList<FiltersObserver>();
     private final ObserverList<SearchServiceObserver> mSearchObservers =
             new ObserverList<SearchServiceObserver>();
-
     private LruCache<String, Pair<String, Bitmap>> mSalientImageCache;
 
     /**
@@ -68,21 +73,12 @@ public final class EnhancedBookmarksBridge {
         void onSearchResultsReturned();
     }
 
-    public EnhancedBookmarksBridge(Profile profile, int maxCacheSize) {
-        this(profile);
-        // Do not initialize LruCache if cache size is set to 0.
-        if (maxCacheSize != 0) {
-            mSalientImageCache = new LruCache<String, Pair<String, Bitmap>>(maxCacheSize) {
-                @Override
-                protected int sizeOf(String key, Pair<String, Bitmap> urlImage) {
-                    return urlImage.first.length() + urlImage.second.getByteCount();
-                }
-            };
-        }
-    }
-
+    /**
+     * Creates a new enhanced bridge using the given profile.
+     */
     public EnhancedBookmarksBridge(Profile profile) {
         mNativeEnhancedBookmarksBridge = nativeInit(profile);
+        mSalientImageCache = getImageCache();
     }
 
     public void destroy() {
@@ -90,13 +86,7 @@ public final class EnhancedBookmarksBridge {
         nativeDestroy(mNativeEnhancedBookmarksBridge);
         mNativeEnhancedBookmarksBridge = 0;
 
-        if (mSalientImageCache != null) {
-            for (Map.Entry<String, Pair<String, Bitmap>> entry :
-                    mSalientImageCache.snapshot().entrySet()) {
-                entry.getValue().second.recycle();
-            }
-            mSalientImageCache.evictAll();
-        }
+        mSalientImageCache = null;
     }
 
     /**
@@ -273,6 +263,28 @@ public final class EnhancedBookmarksBridge {
         List<String> list =
                 Arrays.asList(nativeGetFilters(mNativeEnhancedBookmarksBridge));
         return list;
+    }
+
+    /**
+     * @return Return the cache if it is stored in the static weak reference, or create a new empty
+     *         one if the reference is empty.
+     */
+    private static LruCache<String, Pair<String, Bitmap>> getImageCache() {
+        ActivityManager activityManager = ((ActivityManager) ApplicationStatus
+                .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
+        int maxSize = Math.min(activityManager.getMemoryClass() / 4 * 1024 * 1024,
+                SALIENT_IMAGE_MAX_CACHE_SIZE);
+        LruCache<String, Pair<String, Bitmap>> cache = sLruCache == null ? null : sLruCache.get();
+        if (cache == null) {
+            cache = new LruCache<String, Pair<String, Bitmap>>(maxSize) {
+                @Override
+                protected int sizeOf(String key, Pair<String, Bitmap> urlImage) {
+                    return urlImage.first.length() + urlImage.second.getByteCount();
+                }
+            };
+            sLruCache = new WeakReference<LruCache<String, Pair<String, Bitmap>>>(cache);
+        }
+        return cache;
     }
 
     @CalledByNative

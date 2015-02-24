@@ -51,21 +51,16 @@ public class EnhancedBookmarksModel {
     /**
      * Initialize enhanced bookmark model for last used non-incognito profile with a java-side image
      * cache that has the given size.
-     * @param salientImageCacheSize Maximum cache size in bytes.
-     */
-    public EnhancedBookmarksModel(int salientImageCacheSize) {
-        Profile originalProfile = Profile.getLastUsedProfile().getOriginalProfile();
-        mBookmarksBridge = new BookmarksBridge(originalProfile);
-        mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(originalProfile,
-                salientImageCacheSize);
-    }
-
-    /**
-     * Initialize enhanced bookmark model with no cache for salient images. This constructor uses
-     * the last non-incognito profile.
      */
     public EnhancedBookmarksModel() {
-        this(0);
+        Profile originalProfile = Profile.getLastUsedProfile().getOriginalProfile();
+        mBookmarksBridge = new BookmarksBridge(originalProfile);
+        mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(originalProfile);
+    }
+
+    // TODO(ianwen): remove this constructor.
+    public EnhancedBookmarksModel(int cacheSize) {
+        this();
     }
 
     /**
