@@ -61524,6 +61524,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ES_Other"/>
   <suffix name="KillProcess"/>
   <suffix name="LastWindowClose"/>
+  <suffix name="ProcessSingletonIsShuttingDown"/>
   <suffix name="SessionEnding"/>
   <suffix name="TraybarEndSession"/>
   <suffix name="TraybarExit"/>

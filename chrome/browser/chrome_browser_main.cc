@@ -176,6 +176,7 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "components/browser_watcher/exit_funnel_win.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/win/dpi.h"
@@ -465,8 +466,15 @@ bool ProcessSingletonNotificationCallback(
     const base::CommandLine& command_line,
     const base::FilePath& current_directory) {
   // Drop the request if the browser process is already in shutdown path.
-  if (!g_browser_process || g_browser_process->IsShuttingDown())
+  if (!g_browser_process || g_browser_process->IsShuttingDown()) {
+#if defined(OS_WIN)
+    browser_watcher::ExitFunnel::RecordSingleEvent(
+        chrome::kBrowserExitCodesRegistryPath,
+        L"ProcessSingletonIsShuttingDown");
+#endif
+
     return false;
+  }
 
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
     std::string start_time_string =
