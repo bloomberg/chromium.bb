@@ -47,6 +47,9 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Allows tests to reset the params being used for configuration.
   void ResetParamFlagsForTest(int flags);
 
+  // Allows tests to reset the params being used for configuration.
+  void ResetParamsForTest(scoped_ptr<TestDataReductionProxyParams> params);
+
   // Retrieves the test params being used for the configuration.
   TestDataReductionProxyParams* test_params();
 
@@ -83,6 +86,8 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                void(bool enabled, bool restricted, bool at_startup));
   MOCK_METHOD3(SetProxyPrefs,
                void(bool enabled, bool alternative_enabled, bool at_startup));
+  MOCK_METHOD1(ContainsDataReductionProxy,
+               bool(const net::ProxyConfig::ProxyRules& proxy_rules));
 
   // UpdateConfigurator should always call LogProxyState exactly once.
   void UpdateConfigurator(bool enabled,

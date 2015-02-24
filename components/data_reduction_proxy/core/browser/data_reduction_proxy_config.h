@@ -13,13 +13,18 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_retry_info.h"
 
 namespace base {
 class SingleThreadTaskRunner;
+class TimeDelta;
 }
 
 namespace net {
+class HostPortPair;
 class NetLog;
+class URLRequest;
 class URLRequestStatus;
 }
 
@@ -29,6 +34,7 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyParams;
 class DataReductionProxyService;
+struct DataReductionProxyTypeInfo;
 
 // Values of the UMA DataReductionProxy.ProbeURL histogram.
 // This enum must remain synchronized with
@@ -82,11 +88,65 @@ class DataReductionProxyConfig
   void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
-  // This method expects to run on the UI thread. It permits the data reduction
-  // proxy configuration to change based on changes initiated by the user.
+  // This method expects to run on the UI thread. It permits the Data Reduction
+  // Proxy configuration to change based on changes initiated by the user.
   virtual void SetProxyPrefs(bool enabled,
                              bool alternative_enabled,
                              bool at_startup);
+
+  // Returns true if a Data Reduction Proxy was used for the given |request|.
+  // If true, |proxy_info.proxy_servers.first| will contain the name of the
+  // proxy that was used. |proxy_info.proxy_servers.second| will contain the
+  // name of the data reduction proxy server that would be used if
+  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
+  // |proxy_info| will note if the proxy used was a fallback, an alternative,
+  // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
+  // NULL if the caller isn't interested in its values.
+  virtual bool WasDataReductionProxyUsed(
+      const net::URLRequest* request,
+      DataReductionProxyTypeInfo* proxy_info) const;
+
+  // Returns true if the specified |host_port_pair| matches a Data Reduction
+  // Proxy. If true, |proxy_info.proxy_servers.first| will contain the name of
+  // the proxy that matches. |proxy_info.proxy_servers.second| will contain the
+  // name of the data reduction proxy server that would be used if
+  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
+  // |proxy_info| will note if the proxy was a fallback, an alternative, or a
+  // proxy for ssl; these are not mutually exclusive. |proxy_info| can be NULL
+  // if the caller isn't interested in its values. Virtual for testing.
+  virtual bool IsDataReductionProxy(
+      const net::HostPortPair& host_port_pair,
+      DataReductionProxyTypeInfo* proxy_info) const;
+
+  // Returns true if this request would be bypassed by the Data Reduction Proxy
+  // based on applying the |data_reduction_proxy_config| param rules to the
+  // request URL.
+  bool IsBypassedByDataReductionProxyLocalRules(
+      const net::URLRequest& request,
+      const net::ProxyConfig& data_reduction_proxy_config) const;
+
+  // Checks if all configured data reduction proxies are in the retry map.
+  // Returns true if the request is bypassed by all configured data reduction
+  // proxies that apply to the request scheme. If all possible data reduction
+  // proxies are bypassed, returns the minimum retry delay of the bypassed data
+  // reduction proxies in min_retry_delay (if not NULL). If there are no
+  // bypassed data reduction proxies for the request scheme, returns false and
+  // does not assign min_retry_delay.
+  bool AreDataReductionProxiesBypassed(
+      const net::URLRequest& request,
+      const net::ProxyConfig& data_reduction_proxy_config,
+      base::TimeDelta* min_retry_delay) const;
+
+  // Returns true if the proxy is on the retry map and the retry delay is not
+  // expired. If proxy is bypassed, retry_delay (if not NULL) returns the delay
+  // of proxy_server. If proxy is not bypassed, retry_delay is not assigned.
+  bool IsProxyBypassed(const net::ProxyRetryInfoMap& retry_map,
+                       const net::ProxyServer& proxy_server,
+                       base::TimeDelta* retry_delay) const;
+
+  // Check whether the |proxy_rules| contain any of the data reduction proxies.
+  virtual bool ContainsDataReductionProxy(
+      const net::ProxyConfig::ProxyRules& proxy_rules);
 
  protected:
   // Sets the proxy configs, enabling or disabling the proxy according to

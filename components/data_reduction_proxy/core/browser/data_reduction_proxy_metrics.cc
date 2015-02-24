@@ -8,10 +8,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -299,7 +299,7 @@ class DailyDataSavingUpdate {
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config,
-    const DataReductionProxyParams& params) {
+    const DataReductionProxyConfig& config) {
   if (request.url().SchemeIs(url::kHttpsScheme))
     return HTTPS;
   if (!request.url().SchemeIs(url::kHttpScheme)) {
@@ -317,8 +317,8 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   }
 
   base::TimeDelta bypass_delay;
-  if (params.AreDataReductionProxiesBypassed(
-          request, data_reduction_proxy_config, &bypass_delay)) {
+  if (config.AreDataReductionProxiesBypassed(
+      request, data_reduction_proxy_config, &bypass_delay)) {
     if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
       return LONG_BYPASS;
     return SHORT_BYPASS;
@@ -330,8 +330,8 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   // to local bypass rules.
   if ((request.load_flags() & net::LOAD_BYPASS_PROXY) ||
       (!request.proxy_server().IsEmpty() &&
-       !params.IsDataReductionProxy(request.proxy_server(), NULL)) ||
-      params.IsBypassedByDataReductionProxyLocalRules(
+       !config.IsDataReductionProxy(request.proxy_server(), NULL)) ||
+      config.IsBypassedByDataReductionProxyLocalRules(
           request, data_reduction_proxy_config)) {
     return SHORT_BYPASS;
   }

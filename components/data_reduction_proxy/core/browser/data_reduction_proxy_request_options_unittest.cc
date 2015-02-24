@@ -7,11 +7,11 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/auth.h"
@@ -83,10 +83,10 @@ class TestDataReductionProxyRequestOptions
   TestDataReductionProxyRequestOptions(
       Client client,
       const std::string& version,
-      DataReductionProxyParams* params,
-      base::MessageLoopProxy* loop_proxy)
+      DataReductionProxyConfig* config,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : DataReductionProxyRequestOptions(
-            client, version, params, loop_proxy) {}
+            client, version, config, task_runner) {}
 
   std::string GetDefaultKey() const override {
     return kTestKey;
@@ -158,29 +158,27 @@ void SetHeaderExpectations(const std::string& session,
 class DataReductionProxyRequestOptionsTest : public testing::Test {
  public:
   DataReductionProxyRequestOptionsTest() {
-    params_.reset(
-        new TestDataReductionProxyParams(
+    test_context_.reset(
+        new DataReductionProxyTestContext(
             DataReductionProxyParams::kAllowed |
-            DataReductionProxyParams::kFallbackAllowed |
-            DataReductionProxyParams::kPromoAllowed,
+                DataReductionProxyParams::kFallbackAllowed |
+                DataReductionProxyParams::kPromoAllowed,
             TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+                ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
   }
 
   void CreateRequestOptions(const std::string& version) {
     request_options_.reset(
         new TestDataReductionProxyRequestOptions(
-            kClient, version, params(), loop_proxy()));
+            kClient, version, test_context_->config(),
+            test_context_->task_runner()));
     request_options_->Init();
   }
 
   TestDataReductionProxyParams* params() {
-    return params_.get();
-  }
-
-  base::MessageLoopProxy* loop_proxy() {
-    return base::MessageLoopProxy::current().get();
+    return test_context_->config()->test_params();
   }
 
   TestDataReductionProxyRequestOptions* request_options() {
@@ -189,7 +187,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
 
   void VerifyExpectedHeader(const std::string& proxy_uri,
                             const std::string& expected_header) {
-    base::RunLoop().RunUntilIdle();
+    test_context_->RunUntilIdle();
     net::HttpRequestHeaders headers;
     request_options_->MaybeAddRequestHeader(
         NULL,
@@ -206,11 +204,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     EXPECT_EQ(expected_header, header_value);
   }
 
- private:
-  // Required for MessageLoopProxy::current().
-  base::MessageLoopForUI loop_;
-  scoped_ptr<TestDataReductionProxyParams> params_;
   scoped_ptr<TestDataReductionProxyRequestOptions> request_options_;
+  scoped_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
@@ -235,7 +230,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
                         std::vector<std::string>(), &expected_header2);
 
   CreateRequestOptions(kVersion);
-  base::RunLoop().RunUntilIdle();
+  test_context_->RunUntilIdle();
 
   // Now set a key.
   request_options()->SetKeyOnIO(kTestKey2);

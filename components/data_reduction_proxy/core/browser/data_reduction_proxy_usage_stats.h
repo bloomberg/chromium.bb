@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
@@ -24,6 +23,7 @@ class ProxyServer;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfig;
 class DataReductionProxyService;
 
 // TODO(bengr): Rename as DataReductionProxyBypassStats.
@@ -48,9 +48,9 @@ class DataReductionProxyUsageStats
 
   // |params| outlives this class instance. |service| provides a hook to inform
   // the user that the Data Reduction Proxy is unreachable, which occurs on the
-  // UI thread, hence the |ui_task_runner|. |params| must not be null.
+  // UI thread, hence the |ui_task_runner|. |config| must not be null.
   DataReductionProxyUsageStats(
-      DataReductionProxyParams* params,
+      DataReductionProxyConfig* config,
       base::WeakPtr<DataReductionProxyService> service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
@@ -135,7 +135,7 @@ class DataReductionProxyUsageStats
       BypassedBytesType bypassed_bytes_type,
       int64 content_length);
 
-  DataReductionProxyParams* data_reduction_proxy_params_;
+  DataReductionProxyConfig* data_reduction_proxy_config_;
 
   base::WeakPtr<DataReductionProxyService> service_;
 

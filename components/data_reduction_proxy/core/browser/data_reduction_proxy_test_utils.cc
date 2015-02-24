@@ -8,6 +8,8 @@
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -34,6 +36,8 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
     scoped_ptr<DataReductionProxyConfigurator> configurator)
     : DataReductionProxyIOData() {
+  io_task_runner_ = task_runner;
+  ui_task_runner_ = task_runner;
   config_ = config.Pass();
   event_store_ = event_store.Pass();
   request_options_ = request_options.Pass();
@@ -79,7 +83,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
   }
   scoped_ptr<DataReductionProxyRequestOptions> request_options =
       make_scoped_ptr(new DataReductionProxyRequestOptions(
-          Client::UNKNOWN, config->params(), task_runner_));
+          Client::UNKNOWN, config.get(), task_runner_));
   settings_.reset(new DataReductionProxySettings());
 
   io_data_.reset(new TestDataReductionProxyIOData(

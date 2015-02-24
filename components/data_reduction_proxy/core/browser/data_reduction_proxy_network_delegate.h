@@ -39,9 +39,9 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyIOData;
-class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
 class DataReductionProxyUsageStats;
 
@@ -55,13 +55,13 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   typedef base::Callback<const net::ProxyConfig&()> ProxyConfigGetter;
 
   // Constructs a DataReductionProxyNetworkdelegate object with the given
-  // |network_delegate|, |params|, |handler|, and |getter|. Takes ownership of
+  // |network_delegate|, |config|, |handler|, and |getter|. Takes ownership of
   // and wraps the |network_delegate|, calling an internal implementation for
   // each delegate method. For example, the implementation of
   // OnHeadersReceived() calls OnHeadersReceivedInternal().
   DataReductionProxyNetworkDelegate(
       scoped_ptr<net::NetworkDelegate> network_delegate,
-      DataReductionProxyParams* params,
+      DataReductionProxyConfig* config,
       DataReductionProxyRequestOptions* handler,
       const DataReductionProxyConfigurator* configurator);
   ~DataReductionProxyNetworkDelegate() override;
@@ -143,7 +143,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   BooleanPrefMember* data_reduction_proxy_enabled_;
 
   // All raw Data Reduction Proxy pointers must outlive |this|.
-  DataReductionProxyParams* data_reduction_proxy_params_;
+  DataReductionProxyConfig* data_reduction_proxy_config_;
 
   DataReductionProxyUsageStats* data_reduction_proxy_usage_stats_;
 
@@ -166,7 +166,7 @@ void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
-                           const DataReductionProxyParams* params,
+                           const DataReductionProxyConfig* config,
                            net::ProxyInfo* result);
 
 }  // namespace data_reduction_proxy

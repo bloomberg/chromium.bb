@@ -176,6 +176,12 @@ class DataReductionProxySettings {
   }
 
  protected:
+  // Returns the |DataReductionProxyConfig| being used. May be null if
+  // InitDataReductionProxySettings has not been called.
+  DataReductionProxyConfig* Config() const {
+    return config_;
+  }
+
   void InitPrefMembers();
 
   void UpdateConfigValues();

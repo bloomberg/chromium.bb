@@ -8,18 +8,14 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_list.h"
-#include "net/proxy/proxy_service.h"
 
 namespace data_reduction_proxy {
 
 DataReductionProxyConfigurator::DataReductionProxyConfigurator(
     scoped_refptr<base::SequencedTaskRunner> network_task_runner,
     net::NetLog* net_log,
-    data_reduction_proxy::DataReductionProxyEventStore* event_store)
+    DataReductionProxyEventStore* event_store)
     : network_task_runner_(network_task_runner),
       net_log_(net_log),
       data_reduction_proxy_event_store_(event_store) {
@@ -109,36 +105,6 @@ void DataReductionProxyConfigurator::AddURLPatternToBypass(
     host_pattern = pattern;
 
   AddHostPatternToBypass(host_pattern);
-}
-
-// static
-bool DataReductionProxyConfigurator::ContainsDataReductionProxy(
-    const net::ProxyConfig::ProxyRules& proxy_rules) {
-  data_reduction_proxy::DataReductionProxyParams params(
-      data_reduction_proxy::DataReductionProxyParams::
-          kAllowAllProxyConfigurations);
-  if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
-    return false;
-
-  const net::ProxyList* https_proxy_list =
-      proxy_rules.MapUrlSchemeToProxyList("https");
-  if (https_proxy_list && !https_proxy_list->IsEmpty() &&
-      // Sufficient to check only the first proxy.
-      params.IsDataReductionProxy(https_proxy_list->Get().host_port_pair(),
-                                  NULL)) {
-    return true;
-  }
-
-  const net::ProxyList* http_proxy_list =
-      proxy_rules.MapUrlSchemeToProxyList("http");
-  if (http_proxy_list && !http_proxy_list->IsEmpty() &&
-      // Sufficient to check only the first proxy.
-      params.IsDataReductionProxy(http_proxy_list->Get().host_port_pair(),
-                                  NULL)) {
-    return true;
-  }
-
-  return false;
 }
 
 void DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread(

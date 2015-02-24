@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "components/data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/proxy/proxy_config.h"
@@ -36,9 +36,9 @@ class TestDataReductionProxyDebugResourceThrottle
       net::URLRequest* request,
       content::ResourceType resource_type,
       DataReductionProxyDebugUIService* ui_service,
-      const DataReductionProxyParams* params)
+      const DataReductionProxyConfig* config)
       : DataReductionProxyDebugResourceThrottle(
-            request, resource_type, ui_service, params) {
+            request, resource_type, ui_service, config) {
   }
 
   ~TestDataReductionProxyDebugResourceThrottle() override {
@@ -65,6 +65,10 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
 
     context_.set_job_factory(&test_job_factory_);
 
+    test_context_.reset(new DataReductionProxyTestContext(
+        DataReductionProxyParams::kAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING,
+        DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
     request_ = context_.CreateRequest(GURL("http://www.google.com/"), net::IDLE,
                                       &delegate_, NULL);
     ui_service_.reset(new ContentDataReductionProxyDebugUIService(
@@ -72,15 +76,12 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
             &DataReductionProxyDebugResourceThrottleTest::
                 data_reduction_proxy_config,
             base::Unretained(this)),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::UI),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO),
+        test_context_->task_runner(),
+        test_context_->task_runner(),
         "en-US"));
-    params_.reset(new TestDataReductionProxyParams(0, 0));
     resource_throttle_.reset(new TestDataReductionProxyDebugResourceThrottle(
         request_.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-        ui_service_.get(), params_.get()));
+        ui_service_.get(), test_context_->config()));
   }
 
   const net::ProxyConfig& data_reduction_proxy_config() const {
@@ -88,9 +89,19 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
   }
 
  protected:
-  // Required for base::MessageLoopProxy::current().
-  base::MessageLoopForIO loop_;
+  TestDataReductionProxyParams* params() const {
+    return test_context_->config()->test_params();
+  }
 
+  TestDataReductionProxyDebugResourceThrottle* throttle() const {
+    return resource_throttle_.get();
+  }
+
+  net::URLRequest* request() const {
+    return request_.get();
+  }
+
+ private:
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   // |test_job_interceptor_| is owned by |test_job_factory_|.
@@ -100,8 +111,8 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
   net::ProxyConfig proxy_config_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<ContentDataReductionProxyDebugUIService> ui_service_;
-  scoped_ptr<TestDataReductionProxyParams> params_;
   scoped_ptr<TestDataReductionProxyDebugResourceThrottle> resource_throttle_;
+  scoped_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 // Expect to show the interstitial (defer == true), when the data reduction
@@ -109,21 +120,21 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
 // on the client (even when the proxy has already been bypassed by the server).
 TEST_F(DataReductionProxyDebugResourceThrottleTest, WillStartUsingNetwork) {
   bool defer = false;
-  params_->MockAreDataReductionProxiesBypassed(false);
-  resource_throttle_->WillStartUsingNetwork(&defer);
+  params()->MockAreDataReductionProxiesBypassed(false);
+  throttle()->WillStartUsingNetwork(&defer);
   EXPECT_FALSE(defer);
 
-  params_->MockAreDataReductionProxiesBypassed(true);
-  params_->MockIsBypassedByDataReductionProxyLocalRules(false);
-  resource_throttle_->WillStartUsingNetwork(&defer);
+  params()->MockAreDataReductionProxiesBypassed(true);
+  params()->MockIsBypassedByDataReductionProxyLocalRules(false);
+  throttle()->WillStartUsingNetwork(&defer);
   EXPECT_TRUE(defer);
 
   // Must be tested last because this sets |state_| of |resource_throttle_|
   // to LOCAL_BYPASS.
   defer = false;
-  params_->MockAreDataReductionProxiesBypassed(true);
-  params_->MockIsBypassedByDataReductionProxyLocalRules(true);
-  resource_throttle_->WillStartUsingNetwork(&defer);
+  params()->MockAreDataReductionProxiesBypassed(true);
+  params()->MockIsBypassedByDataReductionProxyLocalRules(true);
+  throttle()->WillStartUsingNetwork(&defer);
   EXPECT_FALSE(defer);
 }
 
@@ -131,11 +142,11 @@ TEST_F(DataReductionProxyDebugResourceThrottleTest, WillStartUsingNetwork) {
 // flag is not set, but not when it is.
 TEST_F(DataReductionProxyDebugResourceThrottleTest, WillRedirectRequest) {
   bool defer = false;
-  resource_throttle_->WillRedirectRequest(net::RedirectInfo(), &defer);
+  throttle()->WillRedirectRequest(net::RedirectInfo(), &defer);
   EXPECT_FALSE(defer);
 
-  request_->SetLoadFlags(net::LOAD_BYPASS_PROXY);
-  resource_throttle_->WillRedirectRequest(net::RedirectInfo(), &defer);
+  request()->SetLoadFlags(net::LOAD_BYPASS_PROXY);
+  throttle()->WillRedirectRequest(net::RedirectInfo(), &defer);
   EXPECT_TRUE(defer);
 }
 

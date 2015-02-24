@@ -30,10 +30,6 @@ class DataReductionProxyEventStore;
 
 class DataReductionProxyConfigurator {
  public:
-  // Check whether the |proxy_rules| contain any of the data reduction proxies.
-  static bool ContainsDataReductionProxy(
-      const net::ProxyConfig::ProxyRules& proxy_rules);
-
   // Constructs a configurator. |network_task_runner| should be the task runner
   // for running network operations, |net_log| and |event_store| are used to
   // track network and Data Reduction Proxy events respectively, must not be
@@ -41,7 +37,7 @@ class DataReductionProxyConfigurator {
   DataReductionProxyConfigurator(
       scoped_refptr<base::SequencedTaskRunner> network_task_runner,
       net::NetLog* net_log,
-      data_reduction_proxy::DataReductionProxyEventStore* event_store);
+      DataReductionProxyEventStore* event_store);
 
   virtual ~DataReductionProxyConfigurator();
 
@@ -98,8 +94,7 @@ class DataReductionProxyConfigurator {
 
   // Used for logging of network- and Data Reduction Proxy-related events.
   net::NetLog* net_log_;
-  data_reduction_proxy::DataReductionProxyEventStore*
-      data_reduction_proxy_event_store_;
+  DataReductionProxyEventStore* data_reduction_proxy_event_store_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfigurator);
 };

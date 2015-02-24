@@ -8,14 +8,15 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "net/base/load_flags.h"
@@ -30,8 +31,6 @@
 using net::MockRead;
 
 namespace {
-
-const size_t kNumDaysInHistory = 60;
 
 int64 GetListPrefInt64Value(
     const base::ListValue& list_update, size_t index) {
@@ -673,14 +672,15 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardTwoDays) {
 
 TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
        GetDataReductionProxyRequestType) {
-  base::MessageLoopForIO loop;
-  const TestDataReductionProxyParams kParams(
-      DataReductionProxyParams::kAllowed,
-      TestDataReductionProxyParams::HAS_ORIGIN);
+  scoped_ptr<DataReductionProxyTestContext> test_context =
+      make_scoped_ptr(new DataReductionProxyTestContext(
+          DataReductionProxyParams::kAllowed,
+          TestDataReductionProxyParams::HAS_ORIGIN, 0));
+  TestDataReductionProxyParams* params = test_context->config()->test_params();
 
   net::ProxyConfig data_reduction_proxy_config;
   data_reduction_proxy_config.proxy_rules().ParseFromString(
-      "http=" + kParams.origin().host_port_pair().ToString() + ",direct://");
+      "http=" + params->origin().host_port_pair().ToString() + ",direct://");
   data_reduction_proxy_config.proxy_rules().bypass_rules.ParseFromString(
       "localbypass.com");
 
@@ -694,7 +694,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
   };
   const TestCase test_cases[] = {
     { GURL("http://foo.com"),
-      kParams.origin(),
+      params->origin(),
       base::TimeDelta(),
       net::LOAD_NORMAL,
       "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
@@ -788,7 +788,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
         context.CreateRequest(test_case.url, net::IDLE, &delegate, nullptr);
     request->SetLoadFlags(test_case.load_flags);
     request->Start();
-    base::MessageLoop::current()->RunUntilIdle();
+    test_context->RunUntilIdle();
 
     // Mark the Data Reduction Proxy as bad if the test specifies to.
     if (test_case.bypass_duration > base::TimeDelta()) {
@@ -802,7 +802,8 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
 
     EXPECT_EQ(test_case.expected_request_type,
               GetDataReductionProxyRequestType(
-                  *request, data_reduction_proxy_config, kParams));
+                  *request, data_reduction_proxy_config,
+                  *test_context->config()));
   }
 }
 

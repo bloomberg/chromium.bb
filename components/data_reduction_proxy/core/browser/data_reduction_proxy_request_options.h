@@ -59,17 +59,17 @@ typedef enum {
 } Client;
 #undef CLIENT_ENUM
 
-class DataReductionProxyParams;
+class DataReductionProxyConfig;
 
 class DataReductionProxyRequestOptions {
  public:
   static bool IsKeySetOnCommandLine();
 
   // Constructs a DataReductionProxyRequestOptions object with the given
-  // client type, params, and network task runner.
+  // client type, config, and network task runner.
   DataReductionProxyRequestOptions(
       Client client,
-      DataReductionProxyParams* params,
+      DataReductionProxyConfig* config,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
   virtual ~DataReductionProxyRequestOptions();
@@ -123,7 +123,7 @@ class DataReductionProxyRequestOptions {
   DataReductionProxyRequestOptions(
       Client client,
       const std::string& version,
-      DataReductionProxyParams* params,
+      DataReductionProxyConfig* config,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
  private:
@@ -190,7 +190,7 @@ class DataReductionProxyRequestOptions {
   // never used for more than twenty-four hours.
   base::Time last_credentials_update_time_;
 
-  DataReductionProxyParams* data_reduction_proxy_params_;
+  DataReductionProxyConfig* data_reduction_proxy_config_;
 
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 

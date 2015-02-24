@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -70,10 +71,10 @@ bool DataReductionProxyRequestOptions::IsKeySetOnCommandLine() {
 
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     Client client,
-    DataReductionProxyParams* params,
+    DataReductionProxyConfig* config,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : client_(GetString(client)),
-      data_reduction_proxy_params_(params),
+      data_reduction_proxy_config_(config),
       network_task_runner_(network_task_runner) {
   GetChromiumBuildAndPatch(ChromiumVersion(), &build_, &patch_);
 }
@@ -81,10 +82,10 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
-    DataReductionProxyParams* params,
+    DataReductionProxyConfig* config,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : client_(GetString(client)),
-      data_reduction_proxy_params_(params),
+      data_reduction_proxy_config_(config),
       network_task_runner_(network_task_runner) {
   GetChromiumBuildAndPatch(version, &build_, &patch_);
 }
@@ -278,11 +279,11 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
     net::HttpRequestHeaders* request_headers) {
   if (proxy_server.IsEmpty())
     return;
-  if (data_reduction_proxy_params_ &&
-      data_reduction_proxy_params_->IsDataReductionProxy(proxy_server, NULL) &&
-      ((data_reduction_proxy_params_->ssl_origin().is_valid() &&
-          data_reduction_proxy_params_->ssl_origin().host_port_pair().Equals(
-              proxy_server)) == expect_ssl))    {
+  if (data_reduction_proxy_config_ &&
+      data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
+      ((data_reduction_proxy_config_->params()->ssl_origin().is_valid() &&
+          data_reduction_proxy_config_->params()->ssl_origin().host_port_pair()
+              .Equals(proxy_server)) == expect_ssl))    {
     SetHeader(request_headers);
   }
 }

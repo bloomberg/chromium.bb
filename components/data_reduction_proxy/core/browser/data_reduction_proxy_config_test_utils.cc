@@ -50,6 +50,11 @@ void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
                 .Pass();
 }
 
+void TestDataReductionProxyConfig::ResetParamsForTest(
+    scoped_ptr<TestDataReductionProxyParams> params) {
+  params_ = params.Pass();
+}
+
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {
   return static_cast<TestDataReductionProxyParams*>(params_.get());
 }

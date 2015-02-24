@@ -11,12 +11,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -76,7 +78,7 @@ namespace data_reduction_proxy {
 
 DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> network_delegate,
-    DataReductionProxyParams* params,
+    DataReductionProxyConfig* config,
     DataReductionProxyRequestOptions* request_options,
     const DataReductionProxyConfigurator* configurator)
     : LayeredNetworkDelegate(network_delegate.Pass()),
@@ -84,11 +86,11 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       received_content_length_(0),
       original_content_length_(0),
       data_reduction_proxy_enabled_(NULL),
-      data_reduction_proxy_params_(params),
+      data_reduction_proxy_config_(config),
       data_reduction_proxy_usage_stats_(NULL),
       data_reduction_proxy_request_options_(request_options),
       configurator_(configurator) {
-  DCHECK(data_reduction_proxy_params_);
+  DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
 }
 
@@ -146,7 +148,7 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
   if (configurator_) {
     OnResolveProxyHandler(
         url, load_flags, configurator_->GetProxyConfigOnIOThread(),
-        proxy_service.proxy_retry_info(), data_reduction_proxy_params_, result);
+        proxy_service.proxy_retry_info(), data_reduction_proxy_config_, result);
   }
 }
 
@@ -201,7 +203,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         GetDataReductionProxyRequestType(
             *request,
             configurator_->GetProxyConfigOnIOThread(),
-            *data_reduction_proxy_params_);
+            *data_reduction_proxy_config_);
 
     int64 adjusted_original_content_length =
         GetAdjustedOriginalContentLength(request_type,
@@ -284,11 +286,11 @@ void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
-                           const DataReductionProxyParams* params,
+                           const DataReductionProxyConfig* config,
                            net::ProxyInfo* result) {
-  DCHECK(params);
+  DCHECK(config);
   DCHECK(result->is_empty() || result->is_direct() ||
-         !params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
+         !config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                        NULL));
   if (data_reduction_proxy_config.is_valid() &&
       result->proxy_server().is_direct() &&
@@ -304,9 +306,8 @@ void OnResolveProxyHandler(const GURL& url,
 
   if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
       DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial()) {
-    if (!result->is_empty() &&
-        !result->is_direct() &&
-        params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
+    if (!result->is_empty() && !result->is_direct() &&
+        config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                      NULL)) {
       result->RemoveProxiesWithoutScheme(net::ProxyServer::SCHEME_DIRECT);
     }

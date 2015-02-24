@@ -41,18 +41,18 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   scoped_ptr<DataReductionProxyParams> params(
       new DataReductionProxyParams(param_flags));
   params->EnableQuic(enable_quic);
-  request_options_.reset(new DataReductionProxyRequestOptions(
-      client_, params.get(), io_task_runner_));
-  request_options_->Init();
   event_store_.reset(new DataReductionProxyEventStore(ui_task_runner));
   configurator_.reset(new DataReductionProxyConfigurator(
       io_task_runner, net_log, event_store_.get()));
-  proxy_delegate_.reset(
-      new DataReductionProxyDelegate(request_options_.get(), params.get()));
   config_.reset(new DataReductionProxyConfig(
       io_task_runner_, ui_task_runner_, net_log, params.Pass(),
       configurator_.get(), event_store_.get()));
-}
+  request_options_.reset(new DataReductionProxyRequestOptions(
+      client_, config_.get(), io_task_runner_));
+  request_options_->Init();
+  proxy_delegate_.reset(
+      new DataReductionProxyDelegate(request_options_.get(), config_.get()));
+ }
 
 DataReductionProxyIOData::DataReductionProxyIOData() : shutdown_on_ui_(false) {
 }
@@ -91,7 +91,7 @@ scoped_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return make_scoped_ptr(new DataReductionProxyInterceptor(
-      config_->params(), usage_stats_.get(), event_store_.get()));
+      config_.get(), usage_stats_.get(), event_store_.get()));
 }
 
 scoped_ptr<DataReductionProxyNetworkDelegate>
@@ -101,11 +101,11 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
-          wrapped_network_delegate.Pass(), config_->params(),
+          wrapped_network_delegate.Pass(), config_.get(),
           request_options_.get(), configurator_.get()));
   if (track_proxy_bypass_statistics && !usage_stats_) {
-    usage_stats_.reset(new data_reduction_proxy::DataReductionProxyUsageStats(
-        config_->params(), service_, ui_task_runner_));
+    usage_stats_.reset(new DataReductionProxyUsageStats(
+        config_.get(), service_, ui_task_runner_));
     network_delegate->InitIODataAndUMA(ui_task_runner_, this, &enabled_,
                                        usage_stats_.get());
   }

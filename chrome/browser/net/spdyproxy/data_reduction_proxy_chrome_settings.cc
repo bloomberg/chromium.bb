@@ -16,17 +16,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/url_request/url_request_context_getter.h"
-
-using data_reduction_proxy::Client;
-using data_reduction_proxy::DataReductionProxyParams;
-using data_reduction_proxy::DataReductionProxySettings;
 
 // The Data Reduction Proxy has been turned into a "best effort" proxy,
 // meaning it is used only if the effective proxy configuration resolves to
@@ -62,15 +58,14 @@ void DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefs(
     return;
   net::ProxyConfig::ProxyRules proxy_rules;
   proxy_rules.ParseFromString(proxy_server);
-  if (!data_reduction_proxy::DataReductionProxyConfigurator::
-          ContainsDataReductionProxy(proxy_rules)) {
+  if (!Config()->ContainsDataReductionProxy(proxy_rules)) {
     return;
   }
   prefs->ClearPref(prefs::kProxy);
 }
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
-    : DataReductionProxySettings() {
+    : data_reduction_proxy::DataReductionProxySettings() {
 }
 
 DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
@@ -104,16 +99,19 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       service = make_scoped_ptr(
           new data_reduction_proxy::DataReductionProxyService(
               statistics_prefs.Pass(), this, request_context_getter));
-  DataReductionProxySettings::InitDataReductionProxySettings(
-      profile_prefs, io_data, service.Pass());
+  data_reduction_proxy::DataReductionProxySettings::
+      InitDataReductionProxySettings(profile_prefs, io_data, service.Pass());
   io_data->SetDataReductionProxyService(
       data_reduction_proxy_service()->GetWeakPtr());
 
-  DataReductionProxySettings::SetOnDataReductionEnabledCallback(
-      base::Bind(&DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
-                 base::Unretained(this)));
+  data_reduction_proxy::DataReductionProxySettings::
+      SetOnDataReductionEnabledCallback(
+          base::Bind(
+              &DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
+              base::Unretained(this)));
   SetDataReductionProxyAlternativeEnabled(
-      DataReductionProxyParams::IsIncludedInAlternativeFieldTrial());
+      data_reduction_proxy::DataReductionProxyParams::
+          IsIncludedInAlternativeFieldTrial());
   // TODO(bengr): Remove after M46. See http://crbug.com/445599.
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
 }
@@ -126,28 +124,28 @@ void DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial(
 }
 
 // static
-Client DataReductionProxyChromeSettings::GetClient() {
+data_reduction_proxy::Client DataReductionProxyChromeSettings::GetClient() {
 #if defined(OS_ANDROID)
-  return Client::CHROME_ANDROID;
+  return data_reduction_proxy::Client::CHROME_ANDROID;
 #elif defined(OS_IOS)
-  return Client::CHROME_IOS;
+  return data_reduction_proxy::Client::CHROME_IOS;
 #elif defined(OS_MACOSX)
-  return Client::CHROME_MAC;
+  return data_reduction_proxy::Client::CHROME_MAC;
 #elif defined(OS_CHROMEOS)
-  return Client::CHROME_CHROMEOS;
+  return data_reduction_proxy::Client::CHROME_CHROMEOS;
 #elif defined(OS_LINUX)
-  return Client::CHROME_LINUX;
+  return data_reduction_proxy::Client::CHROME_LINUX;
 #elif defined(OS_WIN)
-  return Client::CHROME_WINDOWS;
+  return data_reduction_proxy::Client::CHROME_WINDOWS;
 #elif defined(OS_FREEBSD)
-  return Client::CHROME_FREEBSD;
+  return data_reduction_proxy::Client::CHROME_FREEBSD;
 #elif defined(OS_OPENBSD)
-  return Client::CHROME_OPENBSD;
+  return data_reduction_proxy::Client::CHROME_OPENBSD;
 #elif defined(OS_SOLARIS)
-  return Client::CHROME_SOLARIS;
+  return data_reduction_proxy::Client::CHROME_SOLARIS;
 #elif defined(OS_QNX)
-  return Client::CHROME_QNX;
+  return data_reduction_proxy::Client::CHROME_QNX;
 #else
-  return Client::UNKNOWN;
+  return data_reduction_proxy::Client::UNKNOWN;
 #endif
 }

@@ -15,7 +15,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/base/completion_callback.h"
@@ -118,12 +117,12 @@ class DataReductionProxyProtocolTest : public testing::Test {
     // to requests.
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
     usage_stats_.reset(new DataReductionProxyUsageStats(
-        test_context_->config()->params(),
+        test_context_->config(),
         test_context_->data_reduction_proxy_service()->GetWeakPtr(),
         test_context_->task_runner()));
 
     DataReductionProxyInterceptor* interceptor =
-        new DataReductionProxyInterceptor(test_context_->config()->params(),
+        new DataReductionProxyInterceptor(test_context_->config(),
                                           usage_stats_.get(),
                                           test_context_->event_store());
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(

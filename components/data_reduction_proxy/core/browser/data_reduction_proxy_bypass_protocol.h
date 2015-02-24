@@ -17,8 +17,8 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfig;
 class DataReductionProxyEventStore;
-class DataReductionProxyParams;
 
 // Class responsible for determining when a response should or should not cause
 // the data reduction proxy to be bypassed, and to what degree. Owned by the
@@ -26,9 +26,9 @@ class DataReductionProxyParams;
 class DataReductionProxyBypassProtocol
     : public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  // Constructs a DataReductionProxyBypassProtocol object. |params| and
+  // Constructs a DataReductionProxyBypassProtocol object. |config| and
   // |event_store| must be non-NULL and outlive |this|.
-  DataReductionProxyBypassProtocol(DataReductionProxyParams* params,
+  DataReductionProxyBypassProtocol(DataReductionProxyConfig* config,
                                    DataReductionProxyEventStore* event_store);
 
   ~DataReductionProxyBypassProtocol() override;
@@ -51,7 +51,7 @@ class DataReductionProxyBypassProtocol
   void OnIPAddressChanged() override;
 
   // Must outlive |this|.
-  DataReductionProxyParams* params_;
+  DataReductionProxyConfig* config_;
 
   // Must outlive |this|.
   DataReductionProxyEventStore* event_store_;

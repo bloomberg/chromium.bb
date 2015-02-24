@@ -134,9 +134,6 @@ class DataReductionProxyParams {
   // fallback proxy for HTTP traffic, and an SSL proxy.
   explicit DataReductionProxyParams(int flags);
 
-  // Creates a copy of the configuration parameters.
-  scoped_ptr<DataReductionProxyParams> Clone();
-
   virtual ~DataReductionProxyParams();
 
   // Returns true if a data reduction proxy was used for the given |request|.
@@ -286,8 +283,6 @@ class DataReductionProxyParams {
   DataReductionProxyParams(int flags,
                            bool should_call_init);
 
-  DataReductionProxyParams(const DataReductionProxyParams& params);
-
   // Initialize the values of the proxies, and probe URL, from command
   // line flags and preprocessor constants, and check that there are
   // corresponding definitions for the allowed configurations.
@@ -327,9 +322,6 @@ class DataReductionProxyParams {
                                      const net::ProxyServer& fallback,
                                      base::TimeDelta* min_retry_delay) const;
 
-
-  DataReductionProxyParams& operator=(const DataReductionProxyParams& params);
-
   net::ProxyServer ssl_origin_;
   net::ProxyServer alt_origin_;
   net::ProxyServer alt_fallback_origin_;
@@ -346,6 +338,8 @@ class DataReductionProxyParams {
   std::string override_quic_origin_;
 
   bool configured_on_command_line_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
 };
 
 }  // namespace data_reduction_proxy

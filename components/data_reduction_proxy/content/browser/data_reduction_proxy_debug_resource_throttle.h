@@ -18,9 +18,9 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyIOData;
-class DataReductionProxyParams;
+class DataReductionProxyConfig;
 class DataReductionProxyDebugUIService;
+class DataReductionProxyIOData;
 
 // Gets notified at various points during the process of loading a resource.
 // Defers the resource load when the Data Reduction Proxy is not going to be
@@ -61,12 +61,12 @@ class DataReductionProxyDebugResourceThrottle
       const DataReductionProxyDebugUIManager::BypassResource& resource);
 
   // Constructs a DataReductionProxyDebugResourceThrottle object with the given
-  // request, resource type, ui service, and params.
+  // request, resource type, ui service, and config.
   DataReductionProxyDebugResourceThrottle(
       const net::URLRequest* request,
       content::ResourceType resource_type,
       const DataReductionProxyDebugUIService* ui_service,
-      const DataReductionProxyParams* params);
+      const DataReductionProxyConfig* config);
 
   ~DataReductionProxyDebugResourceThrottle() override;
 
@@ -103,7 +103,7 @@ class DataReductionProxyDebugResourceThrottle
   const DataReductionProxyDebugUIService* ui_service_;
 
   // Must outlive |this|.
-  const DataReductionProxyParams* params_;
+  const DataReductionProxyConfig* config_;
 
   const bool is_subresource_;
 

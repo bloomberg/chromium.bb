@@ -36,7 +36,7 @@ DataReductionProxyDebugResourceThrottle::MaybeCreate(
     return scoped_ptr<DataReductionProxyDebugResourceThrottle>(
         new DataReductionProxyDebugResourceThrottle(
             request, resource_type, io_data->debug_ui_service(),
-            io_data->config()->params()));
+            io_data->config()));
   }
   return nullptr;
 }
@@ -54,15 +54,15 @@ DataReductionProxyDebugResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
     const DataReductionProxyDebugUIService* ui_service,
-    const DataReductionProxyParams* params)
+    const DataReductionProxyConfig* config)
     : state_(NOT_BYPASSED),
       request_(request),
       ui_service_(ui_service),
-      params_(params),
+      config_(config),
       is_subresource_(resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
   DCHECK(request);
   DCHECK(ui_service);
-  DCHECK(params);
+  DCHECK(config);
 }
 
 DataReductionProxyDebugResourceThrottle::
@@ -74,7 +74,7 @@ DataReductionProxyDebugResourceThrottle::
 void DataReductionProxyDebugResourceThrottle::WillStartUsingNetwork(
     bool* defer) {
   DCHECK_EQ(NOT_BYPASSED, state_);
-  if (!params_->AreDataReductionProxiesBypassed(
+  if (!config_->AreDataReductionProxiesBypassed(
           *request_, ui_service_->data_reduction_proxy_config(), NULL)) {
     return;
   }
@@ -84,7 +84,7 @@ void DataReductionProxyDebugResourceThrottle::WillStartUsingNetwork(
     return;
   }
   // Do not display the interstitial if bypassed by local rules.
-  if (params_->IsBypassedByDataReductionProxyLocalRules(
+  if (config_->IsBypassedByDataReductionProxyLocalRules(
           *request_, ui_service_->data_reduction_proxy_config())) {
     state_ = LOCAL_BYPASS;
     return;

@@ -10,6 +10,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
@@ -104,10 +105,10 @@ void DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
 }
 
 DataReductionProxyUsageStats::DataReductionProxyUsageStats(
-    DataReductionProxyParams* params,
+    DataReductionProxyConfig* config,
     base::WeakPtr<DataReductionProxyService> service,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-    : data_reduction_proxy_params_(params),
+    : data_reduction_proxy_config_(config),
       service_(service),
       last_bypass_type_(BYPASS_EVENT_TYPE_MAX),
       triggering_request_(true),
@@ -115,7 +116,7 @@ DataReductionProxyUsageStats::DataReductionProxyUsageStats(
       successful_requests_through_proxy_count_(0),
       proxy_net_errors_count_(0),
       unavailable_(false) {
-  DCHECK(params);
+  DCHECK(config);
   NetworkChangeNotifier::AddNetworkChangeObserver(this);
 };
 
@@ -132,7 +133,7 @@ void DataReductionProxyUsageStats::OnUrlRequestCompleted(
   // LOAD_BYPASS_PROXY is necessary because the proxy_server() in the |request|
   // might still be set to the data reduction proxy if |request| was retried
   // over direct and a network error occurred while retrying it.
-  if (data_reduction_proxy_params_->WasDataReductionProxyUsed(request,
+  if (data_reduction_proxy_config_->WasDataReductionProxyUsed(request,
                                                               &proxy_info) &&
       (request->load_flags() & net::LOAD_BYPASS_PROXY) == 0) {
     if (request->status().status() == net::URLRequestStatus::SUCCESS) {
@@ -189,7 +190,7 @@ void DataReductionProxyUsageStats::OnProxyFallback(
     int net_error) {
   DataReductionProxyTypeInfo data_reduction_proxy_info;
   if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
-      data_reduction_proxy_params_->IsDataReductionProxy(
+      data_reduction_proxy_config_->IsDataReductionProxy(
       bypassed_proxy.host_port_pair(), &data_reduction_proxy_info)) {
     if (data_reduction_proxy_info.is_ssl)
       return;
@@ -224,7 +225,7 @@ void DataReductionProxyUsageStats::OnProxyFallback(
 void DataReductionProxyUsageStats::OnConnectComplete(
     const net::HostPortPair& proxy_server,
     int net_error) {
-  if (data_reduction_proxy_params_->IsDataReductionProxy(proxy_server, NULL)) {
+  if (data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL)) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
       "DataReductionProxy.HTTPConnectCompleted",
       std::abs(net_error));
@@ -247,8 +248,8 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
 
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
-  if (data_reduction_proxy_params_->WasDataReductionProxyUsed(
-      &request, &data_reduction_proxy_type_info)) {
+  if (data_reduction_proxy_config_->WasDataReductionProxyUsed(
+          &request, &data_reduction_proxy_type_info)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NOT_BYPASSED,
                         content_length);
@@ -282,7 +283,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_params_->IsBypassedByDataReductionProxyLocalRules(
+  if (data_reduction_proxy_config_->IsBypassedByDataReductionProxyLocalRules(
           request, data_reduction_proxy_config)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::LOCAL_BYPASS_RULES,
@@ -324,7 +325,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_params_->AreDataReductionProxiesBypassed(
+  if (data_reduction_proxy_config_->AreDataReductionProxiesBypassed(
       request, data_reduction_proxy_config, NULL)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NETWORK_ERROR,
@@ -338,7 +339,7 @@ void DataReductionProxyUsageStats::RecordMissingViaHeaderBytes(
   // already.
   DCHECK(!request.was_cached());
 
-  if (!data_reduction_proxy_params_->WasDataReductionProxyUsed(&request,
+  if (!data_reduction_proxy_config_->WasDataReductionProxyUsed(&request,
                                                                NULL) ||
       HasDataReductionProxyViaHeader(request.response_headers(), NULL)) {
     // Only track requests that used the data reduction proxy and had responses

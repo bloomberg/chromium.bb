@@ -7,7 +7,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -18,12 +17,12 @@
 namespace data_reduction_proxy {
 
 DataReductionProxyInterceptor::DataReductionProxyInterceptor(
-    DataReductionProxyParams* params,
+    DataReductionProxyConfig* config,
     DataReductionProxyUsageStats* stats,
     DataReductionProxyEventStore* event_store)
     : usage_stats_(stats),
       bypass_protocol_(
-          new DataReductionProxyBypassProtocol(params, event_store)) {
+          new DataReductionProxyBypassProtocol(config, event_store)) {
 }
 
 DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {

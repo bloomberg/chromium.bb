@@ -91,6 +91,67 @@ void DataReductionProxyConfig::SetProxyPrefs(bool enabled,
                             alternative_enabled, at_startup));
 }
 
+bool DataReductionProxyConfig::WasDataReductionProxyUsed(
+    const net::URLRequest* request,
+    DataReductionProxyTypeInfo* proxy_info) const {
+  return params_->WasDataReductionProxyUsed(request, proxy_info);
+}
+
+bool DataReductionProxyConfig::IsDataReductionProxy(
+    const net::HostPortPair& host_port_pair,
+    DataReductionProxyTypeInfo* proxy_info) const {
+  return params_->IsDataReductionProxy(host_port_pair, proxy_info);
+}
+
+bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
+    const net::URLRequest& request,
+    const net::ProxyConfig& data_reduction_proxy_config) const {
+  return params_->IsBypassedByDataReductionProxyLocalRules(
+      request, data_reduction_proxy_config);
+}
+
+bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
+    const net::URLRequest& request,
+    const net::ProxyConfig& data_reduction_proxy_config,
+    base::TimeDelta* min_retry_delay) const {
+  return params_->AreDataReductionProxiesBypassed(
+      request, data_reduction_proxy_config, min_retry_delay);
+}
+
+bool DataReductionProxyConfig::IsProxyBypassed(
+    const net::ProxyRetryInfoMap& retry_map,
+    const net::ProxyServer& proxy_server,
+    base::TimeDelta* retry_delay) const {
+  return params_->IsProxyBypassed(retry_map, proxy_server, retry_delay);
+}
+
+bool DataReductionProxyConfig::ContainsDataReductionProxy(
+    const net::ProxyConfig::ProxyRules& proxy_rules) {
+  // Data Reduction Proxy configurations are always TYPE_PROXY_PER_SCHEME.
+  if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
+    return false;
+
+  const net::ProxyList* https_proxy_list =
+      proxy_rules.MapUrlSchemeToProxyList("https");
+  if (https_proxy_list && !https_proxy_list->IsEmpty() &&
+      // Sufficient to check only the first proxy.
+      params_->IsDataReductionProxy(https_proxy_list->Get().host_port_pair(),
+                                    NULL)) {
+    return true;
+  }
+
+  const net::ProxyList* http_proxy_list =
+      proxy_rules.MapUrlSchemeToProxyList("http");
+  if (http_proxy_list && !http_proxy_list->IsEmpty() &&
+      // Sufficient to check only the first proxy.
+      params_->IsDataReductionProxy(http_proxy_list->Get().host_port_pair(),
+                                    NULL)) {
+    return true;
+  }
+
+  return false;
+}
+
 void DataReductionProxyConfig::SetProxyConfigOnIOThread(
     bool enabled, bool alternative_enabled, bool at_startup) {
   enabled_by_user_ = enabled;
@@ -215,12 +276,12 @@ void DataReductionProxyConfig::HandleProbeResponseOnIOThread(
 void DataReductionProxyConfig::OnIPAddressChanged() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (enabled_by_user_) {
-    DCHECK(params()->allowed());
+    DCHECK(params_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
     if (DisableIfVPN())
       return;
     if (alternative_enabled_by_user_ &&
-        !params()->alternative_fallback_allowed()) {
+        !params_->alternative_fallback_allowed()) {
       return;
     }
 

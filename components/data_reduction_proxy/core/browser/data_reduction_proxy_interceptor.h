@@ -9,9 +9,9 @@
 #include "net/url_request/url_request_interceptor.h"
 
 namespace data_reduction_proxy {
-class DataReductionProxyEventStore;
-class DataReductionProxyParams;
 class DataReductionProxyBypassProtocol;
+class DataReductionProxyConfig;
+class DataReductionProxyEventStore;
 class DataReductionProxyUsageStats;
 
 // Used to intercept responses that contain explicit and implicit signals
@@ -20,9 +20,9 @@ class DataReductionProxyUsageStats;
 // without use of the proxy.
 class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
  public:
-  // Constructs the interceptor. |params|, |stats|, and |event_store| must
+  // Constructs the interceptor. |config|, |stats|, and |event_store| must
   // outlive |this|. |stats| may be NULL.
-  DataReductionProxyInterceptor(DataReductionProxyParams* params,
+  DataReductionProxyInterceptor(DataReductionProxyConfig* config,
                                 DataReductionProxyUsageStats* stats,
                                 DataReductionProxyEventStore* event_store);
 
