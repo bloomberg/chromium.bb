@@ -34,7 +34,7 @@
       # Required for base/stack_trace_win.cc to symbolize correctly.
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/dbghelp.dll',
+          '../build/win/dbghelp_xp/dbghelp.dll',
         ],
       },
     }],
