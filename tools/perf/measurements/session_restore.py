@@ -42,12 +42,8 @@ class SessionRestore(startup.Startup):
                  60)
     return browser.foreground_tab
 
-  def CanRunForPage(self, page):
-    # No matter how many pages in the pageset, just perform one test iteration.
-    return page.page_set.pages.index(page) == 0
-
   def RunNavigateSteps(self, page, tab):
-    # Overriden so that no page navigation occurs.
+    # Overridden so that no page navigation occurs.
     pass
 
   def ValidatePageSet(self, page_set):

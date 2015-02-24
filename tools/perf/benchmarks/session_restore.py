@@ -12,7 +12,17 @@ from telemetry import benchmark
 from telemetry.page import profile_generator
 
 
-class _SessionRestoreTest(benchmark.Benchmark):
+class _SessionRestoreTypical25(benchmark.Benchmark):
+  """Base Benchmark class for session restore benchmarks.
+
+  A cold start means none of the Chromium files are in the disk cache.
+  A warm start assumes the OS has already cached much of Chromium's content.
+  For warm tests, you should repeat the page set to ensure it's cached.
+
+  Use Typical25PageSet to match what the SmallProfileCreator uses.
+  TODO(slamm): Make SmallProfileCreator and this use the same page_set ref.
+  """
+  page_set = page_sets.Typical25PageSet
 
   @classmethod
   def Name(cls):
@@ -20,7 +30,7 @@ class _SessionRestoreTest(benchmark.Benchmark):
 
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
-    super(_SessionRestoreTest, cls).ProcessCommandLineArgs(parser, args)
+    super(_SessionRestoreTypical25, cls).ProcessCommandLineArgs(parser, args)
     profile_type = 'small_profile'
     if not args.browser_options.profile_dir:
       output_dir = os.path.join(tempfile.gettempdir(), profile_type)
@@ -38,6 +48,18 @@ class _SessionRestoreTest(benchmark.Benchmark):
             small_profile_creator.SmallProfileCreator, profile_type, new_args)
       args.browser_options.profile_dir = profile_dir
 
+  def CreateUserStorySet(self, _):
+    """Return a user story set that only has the first user story.
+
+    The session restore measurement skips the navigation step and
+    only tests session restore by having the browser start-up.
+    The first user story is used to get WPR set up and hold results.
+    """
+    user_story_set = self.page_set()
+    for user_story in user_story_set.user_stories[1:]:
+      user_story_set.RemoveUserStory(user_story)
+    return user_story_set
+
   def CreatePageTest(self, options):
     is_cold = (self.tag == 'cold')
     return session_restore.SessionRestore(cold=is_cold)
@@ -47,7 +69,8 @@ class _SessionRestoreTest(benchmark.Benchmark):
 
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')
-class SessionRestoreColdTypical25(_SessionRestoreTest):
+class SessionRestoreColdTypical25(_SessionRestoreTypical25):
+  """Test by clearing system cache and profile before repeats."""
   tag = 'cold'
   options = {'pageset_repeat': 5}
 
@@ -58,7 +81,11 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
 
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')
-class SessionRestoreWarmTypical25(_SessionRestoreTest):
+class SessionRestoreWarmTypical25(_SessionRestoreTypical25):
+  """Test without clearing system cache or profile before repeats.
+
+  The first result is discarded.
+  """
   tag = 'warm'
   options = {'pageset_repeat': 20}
 
