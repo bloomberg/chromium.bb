@@ -329,8 +329,9 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         break;
 
     case ContextTypeShouldBeBlockable:
-        allowed = true;
-        client->didDisplayInsecureContent();
+        allowed = !strictMode;
+        if (allowed)
+            client->didDisplayInsecureContent();
         break;
     };
 
@@ -349,14 +350,14 @@ bool MixedContentChecker::shouldBlockConnection(LocalFrame* frame, const KURL& u
     UseCounter::count(mixedFrame, UseCounter::MixedContentPresent);
     UseCounter::count(mixedFrame, UseCounter::MixedContentWebSocket);
 
-    // If we're in strict mode, we'll automagically fail everything, and intentionally skip
-    // the client checks in order to prevent degrading the site's security UI.
-    bool strictMode = mixedFrame->document()->shouldEnforceStrictMixedContentChecking();
-
     Settings* settings = mixedFrame->settings();
     FrameLoaderClient* client = mixedFrame->loader().client();
     SecurityOrigin* securityOrigin = mixedFrame->document()->securityOrigin();
-    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket());
+
+    // If we're in strict mode, we'll automagically fail everything, and intentionally skip
+    // the client checks in order to prevent degrading the site's security UI.
+    bool strictMode = mixedFrame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
+    bool allowedPerSettings = !strictMode && settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket());
     bool allowed = !strictMode && client->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
 
     if (reportingStatus == SendReport) {
