@@ -25,7 +25,7 @@ public:
 
     virtual void apply(StyleResolverState&) const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&);
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> fromInterpolableValue(const InterpolableValue&, InterpolationRange);

@@ -81,7 +81,7 @@ void ActiveAnimations::restartAnimationOnCompositor()
         entry.key->restartAnimationOnCompositor();
 }
 
-void ActiveAnimations::trace(Visitor* visitor)
+DEFINE_TRACE(ActiveAnimations)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_cssAnimations);

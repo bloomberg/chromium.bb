@@ -50,7 +50,7 @@ public:
 
     const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& values() const { return m_values; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     AnimatableRepeatable()

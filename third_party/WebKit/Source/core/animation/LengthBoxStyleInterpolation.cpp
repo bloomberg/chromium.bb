@@ -136,7 +136,7 @@ void LengthBoxStyleInterpolation::apply(StyleResolverState& state) const
     }
 }
 
-void LengthBoxStyleInterpolation::trace(Visitor* visitor)
+DEFINE_TRACE(LengthBoxStyleInterpolation)
 {
     StyleInterpolation::trace(visitor);
     visitor->trace(m_startCSSValue);

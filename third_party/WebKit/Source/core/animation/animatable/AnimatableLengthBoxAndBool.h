@@ -45,7 +45,7 @@ public:
     const AnimatableValue* box() const { return m_box.get(); }
     bool flag() const { return m_flag; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;

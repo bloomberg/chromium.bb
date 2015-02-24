@@ -22,7 +22,7 @@ public:
         StyleBuilder::applyProperty(m_id, state, m_value.get());
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         StyleInterpolation::trace(visitor);
         visitor->trace(m_value);

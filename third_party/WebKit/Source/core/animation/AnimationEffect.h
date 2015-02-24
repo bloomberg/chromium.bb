@@ -57,7 +57,7 @@ public:
     virtual bool affects(CSSPropertyID) const { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

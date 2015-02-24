@@ -76,7 +76,7 @@ void DoubleStyleInterpolation::apply(StyleResolverState& state) const
     StyleBuilder::applyProperty(m_id, state, interpolableValueToMotionRotation(m_cachedValue.get(), m_flag).get());
 }
 
-void DoubleStyleInterpolation::trace(Visitor* visitor)
+DEFINE_TRACE(DoubleStyleInterpolation)
 {
     StyleInterpolation::trace(visitor);
 }

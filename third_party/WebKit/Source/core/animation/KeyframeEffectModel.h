@@ -60,7 +60,7 @@ public:
         void appendKeyframe(PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe>);
         const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         void removeRedundantKeyframes();
@@ -99,7 +99,7 @@ public:
         return m_hasSyntheticKeyframes;
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
     // This should be removed once StringKeyframes no longer uses InterpolableAnimatableValues.

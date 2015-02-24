@@ -91,7 +91,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpola
     return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(interpolatedValues));
 }
 
-void AnimatableStrokeDasharrayList::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableStrokeDasharrayList)
 {
     AnimatableRepeatable::trace(visitor);
 }

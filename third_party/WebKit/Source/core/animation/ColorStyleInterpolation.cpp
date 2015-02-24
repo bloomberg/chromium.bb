@@ -74,7 +74,7 @@ void ColorStyleInterpolation::apply(StyleResolverState& state) const
     StyleBuilder::applyProperty(m_id, state, interpolableValueToColor(*m_cachedValue).get());
 }
 
-void ColorStyleInterpolation::trace(Visitor* visitor)
+DEFINE_TRACE(ColorStyleInterpolation)
 {
     StyleInterpolation::trace(visitor);
 }

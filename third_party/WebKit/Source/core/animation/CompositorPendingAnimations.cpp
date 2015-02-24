@@ -143,7 +143,7 @@ void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monoto
 
 }
 
-void CompositorPendingAnimations::trace(Visitor* visitor)
+DEFINE_TRACE(CompositorPendingAnimations)
 {
     visitor->trace(m_pending);
     visitor->trace(m_waitingForCompositorAnimationStart);

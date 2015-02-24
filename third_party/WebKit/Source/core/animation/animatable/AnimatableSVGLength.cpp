@@ -61,7 +61,7 @@ bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
     return *m_length == *toAnimatableSVGLength(value)->m_length;
 }
 
-void AnimatableSVGLength::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableSVGLength)
 {
     visitor->trace(m_length);
     AnimatableValue::trace(visitor);

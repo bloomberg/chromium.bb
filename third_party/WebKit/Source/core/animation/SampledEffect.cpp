@@ -55,7 +55,7 @@ void SampledEffect::removeReplacedInterpolationsIfNeeded(const BitArray<numCSSPr
     m_interpolations->shrink(dest);
 }
 
-void SampledEffect::trace(Visitor* visitor)
+DEFINE_TRACE(SampledEffect)
 {
     visitor->trace(m_animation);
 #if ENABLE(OILPAN)

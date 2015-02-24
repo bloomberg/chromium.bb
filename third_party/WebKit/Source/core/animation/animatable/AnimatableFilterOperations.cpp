@@ -68,7 +68,7 @@ bool AnimatableFilterOperations::equalTo(const AnimatableValue* value) const
     return operations() == toAnimatableFilterOperations(value)->operations();
 }
 
-void AnimatableFilterOperations::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableFilterOperations)
 {
     visitor->trace(m_operations);
     AnimatableValue::trace(visitor);

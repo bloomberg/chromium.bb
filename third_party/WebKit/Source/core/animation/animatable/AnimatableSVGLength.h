@@ -50,7 +50,7 @@ public:
         return m_length.get();
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;

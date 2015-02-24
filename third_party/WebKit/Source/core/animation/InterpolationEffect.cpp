@@ -73,12 +73,12 @@ void InterpolationEffect::addInterpolationsFromKeyframes(CSSPropertyID property,
     }
 }
 
-void InterpolationEffect::InterpolationRecord::trace(Visitor* visitor)
+DEFINE_TRACE(InterpolationEffect::InterpolationRecord)
 {
     visitor->trace(m_interpolation);
 }
 
-void InterpolationEffect::trace(Visitor* visitor)
+DEFINE_TRACE(InterpolationEffect)
 {
     visitor->trace(m_interpolations);
 }

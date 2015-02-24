@@ -18,7 +18,7 @@ public:
     static bool usesDefaultInterpolation(const CSSValue&, const CSSValue&);
 
     virtual void apply(StyleResolverState&) const override;
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     LengthBoxStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> startInterpolation, PassOwnPtrWillBeRawPtr<InterpolableValue> endInterpolation, CSSPropertyID id, bool fill, CSSValue* startCSS, CSSValue* endCSS)

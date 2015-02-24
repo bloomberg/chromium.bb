@@ -28,7 +28,7 @@ public:
     }
     virtual PropertySet properties() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
@@ -40,7 +40,7 @@ public:
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
         virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*) const override final;
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue>);

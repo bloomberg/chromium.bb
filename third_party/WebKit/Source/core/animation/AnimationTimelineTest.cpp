@@ -78,7 +78,7 @@ public:
         EXPECT_CALL(*this, wakeAfter(when)).InSequence(sequence);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         AnimationTimeline::PlatformTiming::trace(visitor);
     }

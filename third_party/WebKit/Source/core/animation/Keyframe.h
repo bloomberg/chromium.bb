@@ -48,7 +48,7 @@ public:
     virtual bool isAnimatableValueKeyframe() const { return false; }
     virtual bool isStringKeyframe() const { return false; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     class PropertySpecificKeyframe : public NoBaseWillBeGarbageCollectedFinalized<PropertySpecificKeyframe> {
     public:
@@ -66,7 +66,7 @@ public:
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
         virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*) const = 0;
 
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     protected:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, AnimationEffect::CompositeOperation);

@@ -321,7 +321,7 @@ void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)
         CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target, compositorAnimationId, pauseTime);
 }
 
-void Animation::trace(Visitor* visitor)
+DEFINE_TRACE(Animation)
 {
     visitor->trace(m_target);
     visitor->trace(m_effect);

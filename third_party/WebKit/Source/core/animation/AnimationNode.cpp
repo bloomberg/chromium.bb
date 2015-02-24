@@ -226,7 +226,7 @@ PassRefPtrWillBeRawPtr<AnimationNodeTiming> AnimationNode::timing()
     return AnimationNodeTiming::create(this);
 }
 
-void AnimationNode::trace(Visitor* visitor)
+DEFINE_TRACE(AnimationNode)
 {
     visitor->trace(m_parent);
     visitor->trace(m_player);

@@ -37,7 +37,7 @@ public:
             callback(*record->m_interpolation);
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     InterpolationEffect()
@@ -58,7 +58,7 @@ private:
             return adoptPtrWillBeNoop(new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
         }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         InterpolationRecord(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)

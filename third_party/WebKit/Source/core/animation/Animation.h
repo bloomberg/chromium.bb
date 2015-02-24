@@ -87,7 +87,7 @@ public:
 
     void setCompositorAnimationIdsForTesting(const Vector<int>& compositorAnimationIds) { m_compositorAnimationIds = compositorAnimationIds; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void downgradeToNormalAnimation() { m_priority = DefaultPriority; }
 

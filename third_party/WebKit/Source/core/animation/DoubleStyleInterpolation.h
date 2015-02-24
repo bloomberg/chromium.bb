@@ -23,7 +23,7 @@ public:
 
     virtual void apply(StyleResolverState&) const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DoubleStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, bool isNumber, InterpolationRange clamp, bool flag)

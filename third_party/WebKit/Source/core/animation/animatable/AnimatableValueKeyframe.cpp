@@ -36,7 +36,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyfra
     return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property), composite()));
 }
 
-void AnimatableValueKeyframe::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableValueKeyframe)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_propertyValues);
@@ -73,7 +73,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyfra
     return adoptPtrWillBeNoop(new AnimatableValueKeyframe::PropertySpecificKeyframe(offset, easing, AnimatableValue::neutralValue(), AnimationEffect::CompositeAdd));
 }
 
-void AnimatableValueKeyframe::PropertySpecificKeyframe::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableValueKeyframe::PropertySpecificKeyframe)
 {
     visitor->trace(m_value);
     Keyframe::PropertySpecificKeyframe::trace(visitor);

@@ -58,7 +58,7 @@ public:
         virtual void cancelWake() = 0;
         virtual void serviceOnNextFrame() = 0;
         virtual ~PlatformTiming() { }
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
     static PassRefPtrWillBeRawPtr<AnimationTimeline> create(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming> = nullptr);
@@ -103,7 +103,7 @@ public:
 #endif
     void wake();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 protected:
     AnimationTimeline(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming>);
@@ -140,7 +140,7 @@ private:
 
         void timerFired(Timer<AnimationTimelineTiming>*) { m_timeline->wake(); }
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         RawPtrWillBeMember<AnimationTimeline> m_timeline;

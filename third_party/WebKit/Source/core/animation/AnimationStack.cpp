@@ -130,7 +130,7 @@ void AnimationStack::simplifyEffects()
     m_effects.shrink(dest);
 }
 
-void AnimationStack::trace(Visitor* visitor)
+DEFINE_TRACE(AnimationStack)
 {
     visitor->trace(m_effects);
 }

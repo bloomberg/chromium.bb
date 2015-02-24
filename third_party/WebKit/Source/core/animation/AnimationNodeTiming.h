@@ -38,7 +38,7 @@ public:
     void setDirection(String);
     void setEasing(String);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RefPtrWillBeMember<AnimationNode> m_parent;

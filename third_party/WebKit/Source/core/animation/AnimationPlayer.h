@@ -170,7 +170,7 @@ public:
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     AnimationPlayer(ExecutionContext*, AnimationTimeline&, AnimationNode*);

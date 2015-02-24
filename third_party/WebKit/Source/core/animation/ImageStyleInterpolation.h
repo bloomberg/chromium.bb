@@ -16,7 +16,7 @@ public:
         return adoptRefWillBeNoop(new ImageStyleInterpolation(&start, &end, id));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     static bool canCreateFrom(const CSSValue&);
     virtual void apply(StyleResolverState&) const override;

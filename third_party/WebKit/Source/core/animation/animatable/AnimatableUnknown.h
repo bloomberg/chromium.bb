@@ -53,7 +53,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const { return m_value; }
     CSSValueID toCSSValueID() const { return toCSSPrimitiveValue(m_value.get())->getValueID(); }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_value);
         AnimatableValue::trace(visitor);

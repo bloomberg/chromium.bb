@@ -79,7 +79,7 @@ public:
     void notifyAnimationDestroyed(Animation* animation) { m_animations.remove(m_animations.find(animation)); }
 #endif
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     bool isAnimationStyleChange() const { return m_animationStyleChange; }

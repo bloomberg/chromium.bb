@@ -24,7 +24,7 @@ public:
     virtual bool isStyleInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     const OwnPtrWillBeMember<InterpolableValue> m_start;

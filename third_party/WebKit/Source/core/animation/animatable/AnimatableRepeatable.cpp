@@ -91,7 +91,7 @@ bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const
     return true;
 }
 
-void AnimatableRepeatable::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableRepeatable)
 {
     visitor->trace(m_values);
     AnimatableValue::trace(visitor);

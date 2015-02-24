@@ -65,7 +65,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::creat
     return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property), composite()));
 }
 
-void StringKeyframe::trace(Visitor* visitor)
+DEFINE_TRACE(StringKeyframe)
 {
     visitor->trace(m_propertySet);
     Keyframe::trace(visitor);
@@ -402,7 +402,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::Prope
     return adoptPtrWillBeNoop(theClone);
 }
 
-void StringKeyframe::PropertySpecificKeyframe::trace(Visitor* visitor)
+DEFINE_TRACE(StringKeyframe::PropertySpecificKeyframe)
 {
     visitor->trace(m_value);
     visitor->trace(m_animatableValueCache);

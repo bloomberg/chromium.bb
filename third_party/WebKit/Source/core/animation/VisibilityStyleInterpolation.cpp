@@ -44,7 +44,7 @@ void VisibilityStyleInterpolation::apply(StyleResolverState& state) const
     StyleBuilder::applyProperty(m_id, state, interpolableValueToVisibility(m_cachedValue.get(), m_notVisible).get());
 }
 
-void VisibilityStyleInterpolation::trace(Visitor* visitor)
+DEFINE_TRACE(VisibilityStyleInterpolation)
 {
     StyleInterpolation::trace(visitor);
 }

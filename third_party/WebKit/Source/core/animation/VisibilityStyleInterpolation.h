@@ -26,7 +26,7 @@ public:
     static bool isVisible(const CSSValue&);
 
     virtual void apply(StyleResolverState&) const override;
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     VisibilityStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)

@@ -699,7 +699,7 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode
     m_previousIteration = currentIteration;
 }
 
-void CSSAnimations::AnimationEventDelegate::trace(Visitor* visitor)
+DEFINE_TRACE(CSSAnimations::AnimationEventDelegate)
 {
     visitor->trace(m_animationTarget);
     AnimationNode::EventDelegate::trace(visitor);
@@ -727,7 +727,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNod
     m_previousPhase = currentPhase;
 }
 
-void CSSAnimations::TransitionEventDelegate::trace(Visitor* visitor)
+DEFINE_TRACE(CSSAnimations::TransitionEventDelegate)
 {
     visitor->trace(m_transitionTarget);
     AnimationNode::EventDelegate::trace(visitor);
@@ -788,7 +788,7 @@ bool CSSAnimations::isAllowedAnimation(CSSPropertyID property)
     }
 }
 
-void CSSAnimations::trace(Visitor* visitor)
+DEFINE_TRACE(CSSAnimations)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_transitions);
@@ -798,7 +798,7 @@ void CSSAnimations::trace(Visitor* visitor)
 #endif
 }
 
-void CSSAnimationUpdate::trace(Visitor* visitor)
+DEFINE_TRACE(CSSAnimationUpdate)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_newTransitions);

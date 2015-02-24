@@ -44,7 +44,7 @@ public:
     AnimationEffect* effect() const { return m_effect.get(); }
     bool paused() const { return m_paused; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual void updateChildrenAndEffects() const override { }

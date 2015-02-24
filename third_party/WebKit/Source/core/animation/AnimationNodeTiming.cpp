@@ -135,7 +135,7 @@ void AnimationNodeTiming::setEasing(String easing)
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationNodeTiming::trace(Visitor* visitor)
+DEFINE_TRACE(AnimationNodeTiming)
 {
     visitor->trace(m_parent);
 }

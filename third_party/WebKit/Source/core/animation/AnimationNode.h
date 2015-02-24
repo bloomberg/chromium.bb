@@ -77,7 +77,7 @@ public:
         virtual ~EventDelegate() { }
         virtual bool requiresIterationEvents(const AnimationNode&) = 0;
         virtual void onEventCondition(const AnimationNode&) = 0;
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
     virtual ~AnimationNode() { }
@@ -110,7 +110,7 @@ public:
     void setName(const String& name) { m_name = name; }
     const String& name() const { return m_name; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit AnimationNode(const Timing&, PassOwnPtrWillBeRawPtr<EventDelegate> = nullptr);

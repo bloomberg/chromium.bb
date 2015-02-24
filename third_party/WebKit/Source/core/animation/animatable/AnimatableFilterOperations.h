@@ -44,7 +44,7 @@ public:
     }
 
     virtual ~AnimatableFilterOperations() { }
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     const FilterOperations& operations() const { return m_operations; }
 

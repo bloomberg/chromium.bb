@@ -61,7 +61,7 @@ public:
     const String& uri() const { return m_uri; };
     const String& visitedLinkURI() const { return m_visitedLinkURI; };
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_color);
         AnimatableValue::trace(visitor);

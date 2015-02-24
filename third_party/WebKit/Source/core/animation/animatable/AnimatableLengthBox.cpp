@@ -52,7 +52,7 @@ bool AnimatableLengthBox::equalTo(const AnimatableValue* value) const
         && bottom()->equals(lengthBox->bottom());
 }
 
-void AnimatableLengthBox::trace(Visitor* visitor)
+DEFINE_TRACE(AnimatableLengthBox)
 {
     visitor->trace(m_left);
     visitor->trace(m_right);

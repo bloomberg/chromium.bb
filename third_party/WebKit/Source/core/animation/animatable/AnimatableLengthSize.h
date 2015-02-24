@@ -45,7 +45,7 @@ public:
     const AnimatableValue* width() const { return m_width.get(); }
     const AnimatableValue* height() const { return m_height.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;

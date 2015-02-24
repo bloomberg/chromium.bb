@@ -38,7 +38,7 @@ public:
 
     CSSPropertyID id() const { return m_id; }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         Interpolation::trace(visitor);
     }

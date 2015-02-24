@@ -46,7 +46,7 @@ public:
 
     EVisibility visibility() const { return m_visibility; }
 
-    virtual void trace(Visitor* visitor) override { AnimatableValue::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;

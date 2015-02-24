@@ -925,7 +925,7 @@ void AnimationPlayer::pauseForTesting(double pauseTime)
     pause();
 }
 
-void AnimationPlayer::trace(Visitor* visitor)
+DEFINE_TRACE(AnimationPlayer)
 {
     visitor->trace(m_content);
     visitor->trace(m_timeline);

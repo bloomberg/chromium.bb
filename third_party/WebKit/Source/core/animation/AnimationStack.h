@@ -55,7 +55,7 @@ public:
     static WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >* suppressedAnimationPlayers, Animation::Priority, double timelineCurrentTime);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     void simplifyEffects();

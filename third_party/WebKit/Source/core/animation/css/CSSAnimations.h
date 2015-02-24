@@ -67,7 +67,7 @@ public:
     bool isEmpty() const { return m_animations.isEmpty() && m_transitions.isEmpty() && !m_pendingUpdate; }
     void cancel();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     class RunningAnimation final : public RefCountedWillBeGarbageCollectedFinalized<RunningAnimation> {
@@ -87,7 +87,7 @@ private:
             specifiedTiming = update.specifiedTiming;
         }
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(player);
             visitor->trace(styleRule);
@@ -102,7 +102,7 @@ private:
     struct RunningTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(player);
             visitor->trace(from);
@@ -142,7 +142,7 @@ private:
         }
         virtual bool requiresIterationEvents(const AnimationNode&) override;
         virtual void onEventCondition(const AnimationNode&) override;
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         const Element& animationTarget() const { return *m_animationTarget; }
@@ -166,7 +166,7 @@ private:
         }
         virtual bool requiresIterationEvents(const AnimationNode&) override { return false; }
         virtual void onEventCondition(const AnimationNode&) override;
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         const Element& transitionTarget() const { return *m_transitionTarget; }

@@ -17,7 +17,7 @@ public:
 
     virtual void apply(StyleResolverState&) const override;
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         StyleInterpolation::trace(visitor);
     }

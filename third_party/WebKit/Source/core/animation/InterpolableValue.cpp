@@ -98,7 +98,7 @@ void InterpolableList::multiply(double scalar, InterpolableValue& result) const
     }
 }
 
-void InterpolableList::trace(Visitor* visitor)
+DEFINE_TRACE(InterpolableList)
 {
     visitor->trace(m_values);
     InterpolableValue::trace(visitor);
@@ -115,7 +115,7 @@ void InterpolableAnimatableValue::interpolate(const InterpolableValue& to, const
     resultValue.m_value = AnimatableValue::interpolate(m_value.get(), toValue.m_value.get(), progress);
 }
 
-void InterpolableAnimatableValue::trace(Visitor* visitor)
+DEFINE_TRACE(InterpolableAnimatableValue)
 {
     visitor->trace(m_value);
     InterpolableValue::trace(visitor);

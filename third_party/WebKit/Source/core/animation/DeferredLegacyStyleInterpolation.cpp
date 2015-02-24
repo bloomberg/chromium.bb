@@ -151,7 +151,7 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
     return false;
 }
 
-void DeferredLegacyStyleInterpolation::trace(Visitor* visitor)
+DEFINE_TRACE(DeferredLegacyStyleInterpolation)
 {
     visitor->trace(m_startCSSValue);
     visitor->trace(m_endCSSValue);

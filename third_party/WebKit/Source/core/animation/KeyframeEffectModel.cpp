@@ -208,7 +208,7 @@ bool KeyframeEffectModelBase::isReplaceOnly()
     return true;
 }
 
-void KeyframeEffectModelBase::trace(Visitor* visitor)
+DEFINE_TRACE(KeyframeEffectModelBase)
 {
     visitor->trace(m_keyframes);
 #if ENABLE(OILPAN)
@@ -268,7 +268,7 @@ bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyfram
     return addedSyntheticKeyframe;
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::trace(Visitor* visitor)
+DEFINE_TRACE(KeyframeEffectModelBase::PropertySpecificKeyframeGroup)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_keyframes);

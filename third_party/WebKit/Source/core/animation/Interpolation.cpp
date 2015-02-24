@@ -55,7 +55,7 @@ void Interpolation::interpolate(int iteration, double fraction) const
     }
 }
 
-void Interpolation::trace(Visitor* visitor)
+DEFINE_TRACE(Interpolation)
 {
     visitor->trace(m_start);
     visitor->trace(m_end);

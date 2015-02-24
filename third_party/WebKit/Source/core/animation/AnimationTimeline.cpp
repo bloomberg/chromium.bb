@@ -175,7 +175,7 @@ void AnimationTimeline::AnimationTimelineTiming::serviceOnNextFrame()
         m_timeline->m_document->view()->scheduleAnimation();
 }
 
-void AnimationTimeline::AnimationTimelineTiming::trace(Visitor* visitor)
+DEFINE_TRACE(AnimationTimeline::AnimationTimelineTiming)
 {
     visitor->trace(m_timeline);
     AnimationTimeline::PlatformTiming::trace(visitor);
@@ -308,7 +308,7 @@ void AnimationTimeline::detachFromDocument()
 }
 #endif
 
-void AnimationTimeline::trace(Visitor* visitor)
+DEFINE_TRACE(AnimationTimeline)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
