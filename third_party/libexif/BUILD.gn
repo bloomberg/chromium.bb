@@ -4,10 +4,19 @@
 
 # Linux should use system libexif
 if (!is_linux || is_chromeos) {
-
   # TODO(thestig): Properly support building on Linux.
   config("libexif_config") {
     include_dirs = [ "sources" ]
+    if (is_clang) {
+      cflags = [
+        "-Wno-enum-conversion",
+        "-Wno-switch",
+        "-Wno-format",
+
+        # libexif uses fabs(int) to cast to float.
+        "-Wno-absolute-value",
+      ]
+    }
   }
 
   static_library("libexif") {
@@ -51,9 +60,7 @@ if (!is_linux || is_chromeos) {
 
       ldflags = [ "/DEF:" + rebase_path("libexif.def") ]
 
-      cflags = [
-        "/wd4018",  # size/unsigned mismatch
-      ]
+      cflags = [ "/wd4018" ]  # size/unsigned mismatch
 
       # TODO(GYP): Handle /analyze switch, when it will be used in GN.
     } else if (is_linux) {
