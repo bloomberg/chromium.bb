@@ -82,10 +82,14 @@ void CredentialManagerDispatcher::PendingRequestTask::OnGetPasswordStoreResults(
         found_zero_clickable_credential = true;
       }
       form = nullptr;
-    } else if (federations_.count(form->origin.spec())) {
-      federated_results.push_back(form);
-      form = nullptr;
     }
+
+    // TODO(mkwst): We're debating whether or not federations ought to be
+    // available at this point, as it's not clear that the user experience
+    // is at all reasonable. Until that's resolved, we'll drop the forms that
+    // match |federations_| on the floor rather than pushing them into
+    // 'federated_results'. Since we don't touch the reference in |results|,
+    // they will be safely deleted after this task executes.
   }
 
   if ((local_results.empty() && federated_results.empty()) ||
