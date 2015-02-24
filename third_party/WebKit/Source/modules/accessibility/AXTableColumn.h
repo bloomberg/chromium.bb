@@ -66,7 +66,6 @@ private:
     LayoutRect m_columnRect;
 
     virtual bool isTableCol() const override { return true; }
-    AXObject* headerObjectForSection(LayoutTableSection*, bool thTagRequired);
     virtual bool computeAccessibilityIsIgnored() const override;
 };
 

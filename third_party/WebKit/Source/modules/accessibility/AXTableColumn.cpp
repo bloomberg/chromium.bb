@@ -95,19 +95,17 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
     LayoutTable* table = toLayoutTable(renderer);
     LayoutTableSection* tableSection = table->topSection();
     for (; tableSection; tableSection = table->sectionBelow(tableSection, SkipEmptySections)) {
+        unsigned numCols = tableSection->numColumns();
+        if (m_columnIndex >= numCols)
+            continue;
         unsigned numRows = tableSection->numRows();
         for (unsigned r = 0; r < numRows; r++) {
             LayoutTableCell* layoutCell = tableSection->primaryCellAt(r, m_columnIndex);
             if (!layoutCell)
                 continue;
 
-            // Whenever cell's effective col is less then current column index, we've found the cell with colspan.
-            // We do not need to add this cell, it's already been added.
-            if (layoutCell->table()->colToEffCol(layoutCell->col()) < m_columnIndex)
-                continue;
-
             AXObject* cell = axObjectCache()->getOrCreate(layoutCell->node());
-            if (!cell || !cell->isTableCell())
+            if (!cell || !cell->isTableCell() || headers.contains(cell))
                 continue;
 
             if (toAXTableCell(cell)->scanToDecideHeaderRole() == ColumnHeaderRole)
@@ -118,86 +116,12 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
 
 AXObject* AXTableColumn::headerObject()
 {
-    if (!m_parent)
+    AccessibilityChildrenVector headers;
+    headerObjectsForColumn(headers);
+    if (!headers.size())
         return 0;
 
-    LayoutObject* renderer = m_parent->renderer();
-    if (!renderer)
-        return 0;
-
-    if (!m_parent->isAXTable())
-        return 0;
-
-    AXTable* parentTable = toAXTable(m_parent);
-    if (parentTable->isAriaTable()) {
-        AccessibilityChildrenVector rowChildren = children();
-        unsigned childrenCount = rowChildren.size();
-        for (unsigned i = 0; i < childrenCount; ++i) {
-            AXObject* cell = rowChildren[i].get();
-            if (cell->ariaRoleAttribute() == ColumnHeaderRole)
-                return cell;
-        }
-
-        return 0;
-    }
-
-    if (!renderer->isTable())
-        return 0;
-
-    LayoutTable* table = toLayoutTable(renderer);
-
-    AXObject* headerObject = 0;
-
-    // try the <thead> section first. this doesn't require th tags
-    headerObject = headerObjectForSection(table->header(), false);
-
-    if (headerObject)
-        return headerObject;
-
-    // now try for <th> tags in the first body
-    headerObject = headerObjectForSection(table->firstBody(), true);
-
-    return headerObject;
-}
-
-AXObject* AXTableColumn::headerObjectForSection(LayoutTableSection* section, bool thTagRequired)
-{
-    if (!section)
-        return 0;
-
-    unsigned numCols = section->numColumns();
-    if (m_columnIndex >= numCols)
-        return 0;
-
-    if (!section->numRows())
-        return 0;
-
-    LayoutTableCell* cell = 0;
-    // also account for cells that have a span
-    for (int testCol = m_columnIndex; testCol >= 0; --testCol) {
-        LayoutTableCell* testCell = section->primaryCellAt(0, testCol);
-        if (!testCell)
-            continue;
-
-        // we've reached a cell that doesn't even overlap our column
-        // it can't be our header
-        if (testCell->table()->colToEffCol(testCell->col() + (testCell->colSpan()-1)) < m_columnIndex)
-            break;
-
-        Node* node = testCell->node();
-        if (!node)
-            continue;
-
-        if (thTagRequired && !node->hasTagName(thTag))
-            continue;
-
-        cell = testCell;
-    }
-
-    if (!cell)
-        return 0;
-
-    return axObjectCache()->getOrCreate(cell);
+    return headers[0].get();
 }
 
 bool AXTableColumn::computeAccessibilityIsIgnored() const

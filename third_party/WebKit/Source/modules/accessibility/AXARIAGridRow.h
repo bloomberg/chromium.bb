@@ -44,7 +44,6 @@ public:
     static PassRefPtr<AXARIAGridRow> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXARIAGridRow();
 
-    virtual AXObject* headerObject() override;
     virtual void headerObjectsForRow(AccessibilityChildrenVector&) override;
 
 private:

@@ -103,27 +103,12 @@ AXObject* AXTableRow::parentTable() const
 
 AXObject* AXTableRow::headerObject()
 {
-    if (!m_renderer || !m_renderer->isTableRow())
+    AccessibilityChildrenVector headers;
+    headerObjectsForRow(headers);
+    if (!headers.size())
         return 0;
 
-    AccessibilityChildrenVector rowChildren = children();
-    if (!rowChildren.size())
-        return 0;
-
-    // check the first element in the row to see if it is a TH element
-    AXObject* cell = rowChildren[0].get();
-    if (!cell->isTableCell())
-        return 0;
-
-    LayoutObject* cellRenderer = toAXTableCell(cell)->renderer();
-    if (!cellRenderer)
-        return 0;
-
-    Node* cellNode = cellRenderer->node();
-    if (!cellNode || !cellNode->hasTagName(thTag))
-        return 0;
-
-    return cell;
+    return headers[0].get();
 }
 
 void AXTableRow::headerObjectsForRow(AccessibilityChildrenVector& headers)

@@ -58,19 +58,6 @@ bool AXARIAGridRow::isARIATreeGridRow() const
     return parent->ariaRoleAttribute() == TreeGridRole;
 }
 
-AXObject* AXARIAGridRow::headerObject()
-{
-    AccessibilityChildrenVector rowChildren = children();
-    unsigned childrenCount = rowChildren.size();
-    for (unsigned i = 0; i < childrenCount; ++i) {
-        AXObject* cell = rowChildren[i].get();
-        if (cell->ariaRoleAttribute() == RowHeaderRole)
-            return cell;
-    }
-
-    return 0;
-}
-
 void AXARIAGridRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
 {
     AccessibilityChildrenVector rowChildren = children();
