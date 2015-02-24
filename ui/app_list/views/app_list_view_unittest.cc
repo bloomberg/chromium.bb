@@ -111,6 +111,9 @@ class AppListViewTestContext {
   // Tests displaying of the search results.
   void RunSearchResultsTest();
 
+  // Tests displaying the app list overlay.
+  void RunAppListOverlayTest();
+
   // A standard set of checks on a view, e.g., ensuring it is drawn and visible.
   static void CheckView(views::View* subview);
 
@@ -666,6 +669,25 @@ void AppListViewTestContext::RunSearchResultsTest() {
   Close();
 }
 
+void AppListViewTestContext::RunAppListOverlayTest() {
+  Show();
+
+  AppListMainView* main_view = view_->app_list_main_view();
+  SearchBoxView* search_box_view = main_view->search_box_view();
+
+  // The search box should not be enabled when the app list overlay is shown.
+  view_->SetAppListOverlayVisible(true);
+  EXPECT_FALSE(search_box_view->enabled());
+
+  // The search box should be refocused when the app list overlay is hidden.
+  view_->SetAppListOverlayVisible(false);
+  EXPECT_TRUE(search_box_view->enabled());
+  EXPECT_EQ(search_box_view->search_box(),
+            view_->GetWidget()->GetFocusManager()->GetFocusedView());
+
+  Close();
+}
+
 class AppListViewTestAura : public views::ViewsTestBase,
                             public ::testing::WithParamInterface<int> {
  public:
@@ -823,6 +845,15 @@ TEST_P(AppListViewTestAura, BackTest) {
 
 TEST_P(AppListViewTestDesktop, BackTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunBackTest());
+}
+
+// Tests that the correct views are displayed for showing search results.
+TEST_P(AppListViewTestAura, AppListOverlayTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunAppListOverlayTest());
+}
+
+TEST_P(AppListViewTestDesktop, AppListOverlayTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunAppListOverlayTest());
 }
 
 #if defined(USE_AURA)

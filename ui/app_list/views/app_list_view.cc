@@ -309,6 +309,8 @@ void AppListView::SetAppListOverlayVisible(bool visible) {
     search_box_widget_->GetLayer()->SetOpacity(visible ? kSearchBoxWidgetOpacity
                                                        : 1.0f);
     search_box_view_->SetEnabled(!visible);
+    if (!visible)
+      search_box_view_->search_box()->RequestFocus();
   }
 }
 
