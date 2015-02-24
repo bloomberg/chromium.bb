@@ -19,27 +19,27 @@ layer at (0,0) size 800x1771
         RenderText {#text} at (0,0) size 496x16
           text run at (0,0) width 496: "In table cell C (third cell in the first row), which is empty:"
       RenderBlock {UL} at (0,176.78) size 784x129
-        RenderListItem {LI} at (40,0) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,0) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 728x32
             text run at (0,0) width 728: "Four sets of horizontal double violet stripes surrounded by aqua should run just inside the"
             text run at (0,16) width 128: "top border edge."
-        RenderListItem {LI} at (40,32) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,32) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 704x32
             text run at (0,0) width 704: "One set of aqua-backed double violet stripes should run just inside the left, right, and"
             text run at (0,16) width 160: "bottom border edges."
-        RenderListItem {LI} at (40,64) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,64) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 744x32
             text run at (0,0) width 744: "The third set along the top should turn down at the right edge and go under the fourth set to"
             text run at (0,16) width 192: "form the right-edge set."
-        RenderListItem {LI} at (40,96) size 744x16
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,96) size 744x16
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 560x16
             text run at (0,0) width 560: "The fourth set should turn down at the left edge to form the left set."
-        RenderListItem {LI} at (40,112) size 744x17
-          RenderListMarker at (-16,1) size 6x16: bullet
+        LayoutListItem {LI} at (40,112) size 744x17
+          LayoutListMarker at (-16,1) size 6x16: bullet
           RenderText {#text} at (0,1) size 416x16
             text run at (0,1) width 416: "The bottom stripe should be straight and cut across "
           RenderInline {EM} at (0,0) size 32x17
@@ -51,17 +51,17 @@ layer at (0,0) size 800x1771
         RenderText {#text} at (0,0) size 376x16
           text run at (0,0) width 376: "In table cell A, (first cell in the first row):"
       RenderBlock {UL} at (0,347.78) size 784x80
-        RenderListItem {LI} at (40,0) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,0) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 712x32
             text run at (0,0) width 712: "Three sets of horizontal aqua-backed double violet stripes should run just inside the top"
             text run at (0,16) width 96: "border edge."
-        RenderListItem {LI} at (40,32) size 744x16
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,32) size 744x16
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 256x16
             text run at (0,0) width 256: "The first set should run across."
-        RenderListItem {LI} at (40,48) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,48) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 720x32
             text run at (0,0) width 720: "The second set should turn down at the left edge, going over the third set to form another"
             text run at (0,16) width 376: "set that runs just inside the left border edge."
@@ -69,13 +69,13 @@ layer at (0,0) size 800x1771
         RenderText {#text} at (0,0) size 368x16
           text run at (0,0) width 368: "In table cell D, (last cell in the first row):"
       RenderBlock {UL} at (0,469.78) size 784x64
-        RenderListItem {LI} at (40,0) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,0) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 744x32
             text run at (0,0) width 744: "Two sets of horizontal aqua-backed double violet strips should run just inside the top border"
             text run at (0,16) width 40: "edge."
-        RenderListItem {LI} at (40,32) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,32) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 720x32
             text run at (0,0) width 720: "The first set should turn down at the right edge, going under the second horizontal set to"
             text run at (0,16) width 392: "run vertically just inside the right border edge."
@@ -83,18 +83,18 @@ layer at (0,0) size 800x1771
         RenderText {#text} at (0,0) size 384x16
           text run at (0,0) width 384: "In table cell G, (third cell in the second row):"
       RenderBlock {UL} at (0,575.78) size 784x96
-        RenderListItem {LI} at (40,0) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,0) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 696x32
             text run at (0,0) width 696: "Two sets of horizontal aqua-backed double violet stripes should run just inside the top"
             text run at (0,16) width 96: "border edge."
-        RenderListItem {LI} at (40,32) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,32) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 736x32
             text run at (0,0) width 736: "A set of vertical stripes should run down just inside the left border edge, going under both"
             text run at (0,16) width 152: "horizontal stripes."
-        RenderListItem {LI} at (40,64) size 744x32
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,64) size 744x32
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 744x32
             text run at (0,0) width 744: "Another set of vertical stripes should run down just inside the right border edge, also going"
             text run at (0,16) width 240: "under both horizontal stripes."

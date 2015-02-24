@@ -20,24 +20,24 @@
  *
  */
 
-#ifndef RenderListMarker_h
-#define RenderListMarker_h
+#ifndef LayoutListMarker_h
+#define LayoutListMarker_h
 
 #include "core/rendering/RenderBox.h"
 
 namespace blink {
 
-class RenderListItem;
+class LayoutListItem;
 
 String listMarkerText(EListStyleType, int value);
 
 // Used to render the list item's marker.
-// The RenderListMarker always has to be a child of a RenderListItem.
-class RenderListMarker final : public RenderBox {
+// The LayoutListMarker always has to be a child of a LayoutListItem.
+class LayoutListMarker final : public RenderBox {
 public:
-    static RenderListMarker* createAnonymous(RenderListItem*);
+    static LayoutListMarker* createAnonymous(LayoutListItem*);
 
-    virtual ~RenderListMarker();
+    virtual ~LayoutListMarker();
     virtual void destroy() override;
 
     const String& text() const { return m_text; }
@@ -50,16 +50,16 @@ public:
     LayoutRect localSelectionRect();
     virtual bool isImage() const override;
     const StyleImage* image() { return m_image.get(); }
-    const RenderListItem* listItem() { return m_listItem; }
+    const LayoutListItem* listItem() { return m_listItem; }
 
     static UChar listMarkerSuffix(EListStyleType, int value);
 
     void listItemStyleDidChange();
 
 private:
-    RenderListMarker(RenderListItem*);
+    LayoutListMarker(LayoutListItem*);
 
-    virtual const char* renderName() const override { return "RenderListMarker"; }
+    virtual const char* renderName() const override { return "LayoutListMarker"; }
     virtual void computePreferredLogicalWidths() override;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || RenderBox::isOfType(type); }
@@ -89,11 +89,11 @@ private:
 
     String m_text;
     RefPtr<StyleImage> m_image;
-    RenderListItem* m_listItem;
+    LayoutListItem* m_listItem;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderListMarker, isListMarker());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListMarker, isListMarker());
 
 } // namespace blink
 
-#endif // RenderListMarker_h
+#endif // LayoutListMarker_h

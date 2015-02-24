@@ -20,7 +20,7 @@ layer at (0,0) size 800x173
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,64) size 48x101 clip at (9,65) size 35x99
-  RenderListBox {SELECT} at (0,13.69) size 47.70x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,13.69) size 47.70x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.70x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"
@@ -40,7 +40,7 @@ layer at (8,64) size 48x101 clip at (9,65) size 35x99
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Seven"
 layer at (60,64) size 62x101 clip at (61,65) size 49x99
-  RenderListBox {SELECT} at (51.70,13.69) size 62.30x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (51.70,13.69) size 62.30x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 49.30x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"
@@ -64,7 +64,7 @@ layer at (60,64) size 62x101 clip at (61,65) size 49x99
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Seven"
 layer at (126,64) size 62x101 clip at (127,65) size 49x99
-  RenderListBox {SELECT} at (118,13.69) size 62.30x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (118,13.69) size 62.30x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 49.30x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"
@@ -88,7 +88,7 @@ layer at (126,64) size 62x101 clip at (127,65) size 49x99
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Seven"
 layer at (192,50) size 48x115 clip at (193,51) size 35x113
-  RenderListBox {SELECT} at (184.30,-0.50) size 47.70x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (184.30,-0.50) size 47.70x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.70x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"
@@ -102,7 +102,7 @@ layer at (192,50) size 48x115 clip at (193,51) size 35x113
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Seven"
 layer at (244,50) size 48x115 clip at (245,51) size 35x113
-  RenderListBox {SELECT} at (236,-0.50) size 47.70x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (236,-0.50) size 47.70x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.70x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"
@@ -116,7 +116,7 @@ layer at (244,50) size 48x115 clip at (245,51) size 35x113
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Seven"
 layer at (296,50) size 59x115 clip at (297,51) size 46x113
-  RenderListBox {SELECT} at (287.70,-0.50) size 59.30x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (287.70,-0.50) size 59.30x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 46.30x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"

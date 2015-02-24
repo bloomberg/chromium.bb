@@ -69,9 +69,9 @@
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSpanElement.h"
+#include "core/layout/LayoutListItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderText.h"
 
 namespace blink {
@@ -878,7 +878,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderI
     // append the placeholder to make sure it follows
     // any unrendered blocks
     RenderBlockFlow* block = toRenderBlockFlow(renderer);
-    if (block->size().height() == 0 || (block->isListItem() && toRenderListItem(block)->isEmpty()))
+    if (block->size().height() == 0 || (block->isListItem() && toLayoutListItem(block)->isEmpty()))
         return appendBlockPlaceholder(container);
 
     return nullptr;

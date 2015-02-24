@@ -20,26 +20,32 @@
  *
  */
 
-#ifndef RenderListItem_h
-#define RenderListItem_h
+#ifndef LayoutListItem_h
+#define LayoutListItem_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
 class HTMLOListElement;
-class RenderListMarker;
+class LayoutListMarker;
 
-class RenderListItem final : public RenderBlockFlow {
+class LayoutListItem final : public RenderBlockFlow {
 public:
-    explicit RenderListItem(Element*);
+    explicit LayoutListItem(Element*);
 
-    int value() const { if (!m_isValueUpToDate) updateValueNow(); return m_value; }
+    int value() const
+    {
+        if (!m_isValueUpToDate) {
+            updateValueNow();
+        }
+        return m_value;
+    }
     void updateValue();
 
     bool hasExplicitValue() const { return m_hasExplicitValue; }
     int explicitValue() const { return m_explicitValue; }
-    void setExplicitValue(int value);
+    void setExplicitValue(int);
     void clearExplicitValue();
 
     void setNotInList(bool);
@@ -55,7 +61,7 @@ public:
     bool isEmpty() const;
 
 private:
-    virtual const char* renderName() const override { return "RenderListItem"; }
+    virtual const char* renderName() const override { return "LayoutListItem"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListItem || RenderBlockFlow::isOfType(type); }
 
@@ -83,7 +89,7 @@ private:
     void explicitValueChanged();
 
     int m_explicitValue;
-    RenderListMarker* m_marker;
+    LayoutListMarker* m_marker;
     mutable int m_value;
 
     bool m_hasExplicitValue : 1;
@@ -91,8 +97,8 @@ private:
     bool m_notInList : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderListItem, isListItem());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListItem, isListItem());
 
 } // namespace blink
 
-#endif // RenderListItem_h
+#endif // LayoutListItem_h

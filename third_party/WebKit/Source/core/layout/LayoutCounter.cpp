@@ -27,9 +27,9 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/CounterNode.h"
+#include "core/layout/LayoutListItem.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
 
@@ -136,8 +136,8 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
 
     if (identifier == "list-item") {
         if (object.isListItem()) {
-            if (toRenderListItem(object).hasExplicitValue()) {
-                value = toRenderListItem(object).explicitValue();
+            if (toLayoutListItem(object).hasExplicitValue()) {
+                value = toLayoutListItem(object).explicitValue();
                 isReset = true;
                 return true;
             }

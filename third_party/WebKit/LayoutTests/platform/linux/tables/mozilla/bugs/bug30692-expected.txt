@@ -7,13 +7,13 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 458x19
           text run at (0,0) width 458: "BUG: Inside a cell, \"height:x%\" is ignored. It looks like 'auto' is used instead."
         LayoutBR {BR} at (458,15) size 0x0
-      RenderListItem {LI} at (0,20) size 784x20
-        RenderListMarker at (-1,0) size 7x19: bullet
+      LayoutListItem {LI} at (0,20) size 784x20
+        LayoutListMarker at (-1,0) size 7x19: bullet
         RenderText {#text} at (15,0) size 249x19
           text run at (15,0) width 249: "Absolute units work correctly (eg. 50px)."
-      RenderListItem {LI} at (0,40) size 784x492
+      LayoutListItem {LI} at (0,40) size 784x492
         RenderBlock (anonymous) at (0,0) size 784x20
-          RenderListMarker at (-1,0) size 7x19: bullet
+          LayoutListMarker at (-1,0) size 7x19: bullet
           RenderText {#text} at (15,0) size 169x19
             text run at (15,0) width 169: "\"width:x%\" works correctly."
         RenderBlock {HR} at (0,28) size 784x2 [border: (1px inset #EEEEEE)]

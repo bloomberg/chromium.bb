@@ -51,12 +51,12 @@
 #include "core/html/forms/FormController.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderView.h"
 #include "platform/PlatformMouseEvent.h"
@@ -382,7 +382,7 @@ LayoutObject* HTMLSelectElement::createRenderer(const LayoutStyle&)
 {
     if (usesMenuList())
         return new RenderMenuList(this);
-    return new RenderListBox(this);
+    return new LayoutListBox(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
@@ -583,7 +583,7 @@ int HTMLSelectElement::nextSelectableListIndexPageAway(int startIndex, SkipDirec
     // Can't use m_size because renderer forces a minimum size.
     int pageSize = 0;
     if (renderer()->isListBox())
-        pageSize = toRenderListBox(renderer())->size() - 1; // -1 so we still show context.
+        pageSize = toLayoutListBox(renderer())->size() - 1; // -1 so we still show context.
 
     // One page away, but not outside valid bounds.
     // If there is a valid option item one page away, the index is chosen.
@@ -897,7 +897,7 @@ void HTMLSelectElement::scrollToIndex(int listIndex)
     if (!renderer() || !renderer()->isListBox())
         return;
     LayoutRect bounds = items[listIndex]->boundingBox();
-    toRenderListBox(renderer())->scrollToRect(bounds);
+    toLayoutListBox(renderer())->scrollToRect(bounds);
 }
 
 void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, bool optionIsSelected)

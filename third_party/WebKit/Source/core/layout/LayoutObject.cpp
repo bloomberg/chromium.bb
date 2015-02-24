@@ -55,6 +55,7 @@
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutImageResourceStyleImage.h"
+#include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutPart.h"
@@ -76,7 +77,6 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
@@ -185,7 +185,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
     case INLINE_BLOCK:
         return new RenderBlockFlow(element);
     case LIST_ITEM:
-        return new RenderListItem(element);
+        return new LayoutListItem(element);
     case TABLE:
     case INLINE_TABLE:
         return new LayoutTable(element);

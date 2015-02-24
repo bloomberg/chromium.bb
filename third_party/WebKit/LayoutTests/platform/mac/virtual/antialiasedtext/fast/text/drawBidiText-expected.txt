@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 286x18
           text run at (0,0) width 286: "This tests GraphicsContext::drawBidiText()."
 layer at (8,42) size 345x205 clip at (9,43) size 332x203 scrollHeight 205
-  RenderListBox {SELECT} at (0,34) size 345.36x205.34 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,34) size 345.36x205.34 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 332.36x22.59
       RenderText {#text} at (2,0) size 225x21
         text run at (2,0) width 44: "First "
@@ -50,7 +50,7 @@ layer at (8,42) size 345x205 clip at (9,43) size 332x203 scrollHeight 205
         text run at (196,0) width 25 RTL: "\x{202B}\x{5D9}\x{5E9} "
         text run at (220,0) width 111: "\x{202C}\x{201D} and ran off"
 layer at (8,247) size 390x18 clip at (9,248) size 377x16
-  RenderListBox {SELECT} at (0,239.34) size 390.30x18 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,239.34) size 390.30x18 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 377.30x16
       RenderText {#text} at (2,0) size 374x15
         text run at (2,0) width 374: "There are two ways to measure text: my way and the wrong way"

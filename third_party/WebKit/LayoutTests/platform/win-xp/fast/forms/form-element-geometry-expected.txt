@@ -242,7 +242,7 @@ layer at (15,257) size 89x16
     RenderText {#text} at (0,0) size 49x16
       text run at (0,0) width 49: "text field"
 layer at (114,254) size 38x70 clip at (115,255) size 21x68 scrollHeight 85
-  RenderListBox {SELECT} at (2,2) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (2,2) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 21x17
       RenderText {#text} at (2,0) size 17x16
         text run at (2,0) width 17: "list"

@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderListBox.h"
+#include "core/layout/LayoutListBox.h"
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
@@ -70,7 +70,7 @@ const int defaultSize = 4;
 
 const int defaultPaddingBottom = 1;
 
-RenderListBox::RenderListBox(Element* element)
+LayoutListBox::LayoutListBox(Element* element)
     : RenderBlockFlow(element)
 {
     ASSERT(element);
@@ -78,16 +78,16 @@ RenderListBox::RenderListBox(Element* element)
     ASSERT(isHTMLSelectElement(element));
 }
 
-RenderListBox::~RenderListBox()
+LayoutListBox::~LayoutListBox()
 {
 }
 
-inline HTMLSelectElement* RenderListBox::selectElement() const
+inline HTMLSelectElement* LayoutListBox::selectElement() const
 {
     return toHTMLSelectElement(node());
 }
 
-int RenderListBox::size() const
+int LayoutListBox::size() const
 {
     int specifiedSize = selectElement()->size();
     if (specifiedSize >= 1)
@@ -96,12 +96,12 @@ int RenderListBox::size() const
     return defaultSize;
 }
 
-LayoutUnit RenderListBox::defaultItemHeight() const
+LayoutUnit LayoutListBox::defaultItemHeight() const
 {
     return style()->fontMetrics().height() + defaultPaddingBottom;
 }
 
-LayoutUnit RenderListBox::itemHeight() const
+LayoutUnit LayoutListBox::itemHeight() const
 {
     HTMLSelectElement* select = selectElement();
     if (!select)
@@ -121,7 +121,7 @@ LayoutUnit RenderListBox::itemHeight() const
     return toRenderBox(baseItemRenderer)->size().height();
 }
 
-void RenderListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     LayoutUnit height = itemHeight() * size();
     // FIXME: The item height should have been added before updateLogicalHeight was called to avoid this hack.
@@ -132,7 +132,7 @@ void RenderListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, Logi
     RenderBox::computeLogicalHeight(height, logicalTop, computedValues);
 }
 
-void RenderListBox::stopAutoscroll()
+void LayoutListBox::stopAutoscroll()
 {
     HTMLSelectElement* select = selectElement();
     if (select->isDisabledFormControl())
@@ -140,14 +140,14 @@ void RenderListBox::stopAutoscroll()
     select->handleMouseRelease();
 }
 
-void RenderListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+void LayoutListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     RenderBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
     if (style()->width().isPercent())
         minLogicalWidth = 0;
 }
 
-void RenderListBox::scrollToRect(const LayoutRect& rect)
+void LayoutListBox::scrollToRect(const LayoutRect& rect)
 {
     if (hasOverflowClip()) {
         ASSERT(layer());

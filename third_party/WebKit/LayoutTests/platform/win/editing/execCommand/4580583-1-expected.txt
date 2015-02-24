@@ -11,24 +11,24 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,52) size 784x122
         RenderBlock {BLOCKQUOTE} at (2,0) size 742x36 [color=#0000FF] [border: none (2px solid #0000FF)]
           RenderBlock {OL} at (2,0) size 740x36
-            RenderListItem {LI} at (40,0) size 700x18
-              RenderListMarker at (-20,0) size 16x17: "1"
+            LayoutListItem {LI} at (40,0) size 700x18
+              LayoutListMarker at (-20,0) size 16x17: "1"
               RenderText {#text} at (0,0) size 27x17
                 text run at (0,0) width 27: "One"
-            RenderListItem {LI} at (40,18) size 700x18
-              RenderListMarker at (-20,0) size 16x17: "2"
+            LayoutListItem {LI} at (40,18) size 700x18
+              LayoutListMarker at (-20,0) size 16x17: "2"
               RenderText {#text} at (0,0) size 30x17
                 text run at (0,0) width 30: "Two"
         RenderBlock (anonymous) at (0,52) size 784x18
           LayoutBR {BR} at (0,0) size 0x17
         RenderBlock {BLOCKQUOTE} at (2,86) size 742x36 [color=#0000FF] [border: none (2px solid #0000FF)]
           RenderBlock {OL} at (2,0) size 740x36
-            RenderListItem {LI} at (40,0) size 700x18
-              RenderListMarker at (-20,0) size 16x17: "3"
+            LayoutListItem {LI} at (40,0) size 700x18
+              LayoutListMarker at (-20,0) size 16x17: "3"
               RenderText {#text} at (0,0) size 38x17
                 text run at (0,0) width 38: "Three"
-            RenderListItem {LI} at (40,18) size 700x18
-              RenderListMarker at (-20,0) size 16x17: "4"
+            LayoutListItem {LI} at (40,18) size 700x18
+              LayoutListMarker at (-20,0) size 16x17: "4"
               RenderText {#text} at (0,0) size 31x17
                 text run at (0,0) width 31: "Four"
 caret: position 0 of child 2 {BR} of child 3 {DIV} of body

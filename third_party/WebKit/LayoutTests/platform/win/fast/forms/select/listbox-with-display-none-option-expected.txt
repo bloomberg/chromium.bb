@@ -20,7 +20,7 @@ layer at (0,0) size 800x197
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,67) size 56x121 clip at (9,68) size 39x119
-  RenderListBox {SELECT} at (0,17) size 56x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (0,17) size 56x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 39x17
       RenderText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
@@ -40,7 +40,7 @@ layer at (8,67) size 56x121 clip at (9,68) size 39x119
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
 layer at (68,67) size 65x121 clip at (69,68) size 48x119
-  RenderListBox {SELECT} at (60,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (60,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 48x17
       RenderText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
@@ -64,7 +64,7 @@ layer at (68,67) size 65x121 clip at (69,68) size 48x119
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
 layer at (137,67) size 65x121 clip at (138,68) size 48x119
-  RenderListBox {SELECT} at (129,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (129,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 48x17
       RenderText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
@@ -88,7 +88,7 @@ layer at (137,67) size 65x121 clip at (138,68) size 48x119
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
 layer at (206,50) size 56x138 clip at (207,51) size 39x136
-  RenderListBox {SELECT} at (198,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (198,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 39x17
       RenderText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
@@ -102,7 +102,7 @@ layer at (206,50) size 56x138 clip at (207,51) size 39x136
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
 layer at (266,50) size 56x138 clip at (267,51) size 39x136
-  RenderListBox {SELECT} at (258,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (258,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 39x17
       RenderText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"
@@ -116,7 +116,7 @@ layer at (266,50) size 56x138 clip at (267,51) size 39x136
       RenderText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
 layer at (326,50) size 63x138 clip at (327,51) size 46x136
-  RenderListBox {SELECT} at (318,0) size 63x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (318,0) size 63x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 46x17
       RenderText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "One"

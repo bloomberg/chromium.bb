@@ -40,6 +40,8 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutListBox.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
@@ -55,8 +57,6 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderListBox.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1928,7 +1928,7 @@ static float getMaxWidthListMarker(const RenderBox* renderer)
             // Make sure to compute the autosized width.
             if (itemMarker->needsLayout())
                 itemMarker->layout();
-            maxWidth = std::max<float>(maxWidth, toRenderListMarker(itemMarker)->logicalWidth().toFloat());
+            maxWidth = std::max<float>(maxWidth, toLayoutListMarker(itemMarker)->logicalWidth().toFloat());
             break;
         }
     }

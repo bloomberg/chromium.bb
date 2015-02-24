@@ -37,6 +37,8 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutDetailsMarker.h"
+#include "core/layout/LayoutListItem.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -52,8 +54,6 @@
 #include "core/page/PrintContext.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/HexNumber.h"
 #include "wtf/Vector.h"
@@ -326,7 +326,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
     }
 
     if (o.isListMarker()) {
-        String text = toRenderListMarker(o).text();
+        String text = toLayoutListMarker(o).text();
         if (!text.isEmpty()) {
             if (text.length() != 1) {
                 text = quoteAndEscapeNonPrintables(text);
@@ -783,7 +783,7 @@ String markerTextForListItem(Element* element)
     if (!renderer || !renderer->isListItem())
         return String();
 
-    return toRenderListItem(renderer)->markerText();
+    return toLayoutListItem(renderer)->markerText();
 }
 
 } // namespace blink

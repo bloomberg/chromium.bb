@@ -22,13 +22,13 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderListItem.h"
+#include "core/layout/LayoutListItem.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOListElement.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -37,7 +37,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderListItem::RenderListItem(Element* element)
+LayoutListItem::LayoutListItem(Element* element)
     : RenderBlockFlow(element)
     , m_marker(nullptr)
     , m_hasExplicitValue(false)
@@ -47,14 +47,14 @@ RenderListItem::RenderListItem(Element* element)
     setInline(false);
 }
 
-void RenderListItem::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutListItem::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);
 
     if (style()->listStyleType() != NoneListStyle
         || (style()->listStyleImage() && !style()->listStyleImage()->errorOccurred())) {
         if (!m_marker)
-            m_marker = RenderListMarker::createAnonymous(this);
+            m_marker = LayoutListMarker::createAnonymous(this);
         m_marker->listItemStyleDidChange();
     } else if (m_marker) {
         m_marker->destroy();
@@ -62,7 +62,7 @@ void RenderListItem::styleDidChange(StyleDifference diff, const LayoutStyle* old
     }
 }
 
-void RenderListItem::willBeDestroyed()
+void LayoutListItem::willBeDestroyed()
 {
     if (m_marker) {
         m_marker->destroy();
@@ -71,14 +71,14 @@ void RenderListItem::willBeDestroyed()
     RenderBlockFlow::willBeDestroyed();
 }
 
-void RenderListItem::insertedIntoTree()
+void LayoutListItem::insertedIntoTree()
 {
     RenderBlockFlow::insertedIntoTree();
 
     updateListMarkerNumbers();
 }
 
-void RenderListItem::willBeRemovedFromTree()
+void LayoutListItem::willBeRemovedFromTree()
 {
     RenderBlockFlow::willBeRemovedFromTree();
 
@@ -91,7 +91,7 @@ static bool isList(const Node& node)
 }
 
 // Returns the enclosing list with respect to the DOM order.
-static Node* enclosingList(const RenderListItem* listItem)
+static Node* enclosingList(const LayoutListItem* listItem)
 {
     Node* listItemNode = listItem->node();
     if (!listItemNode)
@@ -112,7 +112,7 @@ static Node* enclosingList(const RenderListItem* listItem)
 }
 
 // Returns the next list item with respect to the DOM order.
-static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* item = 0)
+static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* item = 0)
 {
     if (!listNode)
         return 0;
@@ -131,7 +131,7 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
 
         LayoutObject* renderer = current->renderer();
         if (renderer && renderer->isListItem())
-            return toRenderListItem(renderer);
+            return toLayoutListItem(renderer);
 
         // FIXME: Can this be optimized to skip the children of the elements without a renderer?
         current = NodeRenderingTraversal::next(*current, listNode);
@@ -141,7 +141,7 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
 }
 
 // Returns the previous list item with respect to the DOM order.
-static RenderListItem* previousListItem(const Node* listNode, const RenderListItem* item)
+static LayoutListItem* previousListItem(const Node* listNode, const LayoutListItem* item)
 {
     Node* current = item->node();
     ASSERT(current);
@@ -150,10 +150,10 @@ static RenderListItem* previousListItem(const Node* listNode, const RenderListIt
         LayoutObject* renderer = current->renderer();
         if (!renderer || (renderer && !renderer->isListItem()))
             continue;
-        Node* otherList = enclosingList(toRenderListItem(renderer));
+        Node* otherList = enclosingList(toLayoutListItem(renderer));
         // This item is part of our current list, so it's what we're looking for.
         if (listNode == otherList)
-            return toRenderListItem(renderer);
+            return toLayoutListItem(renderer);
         // We found ourself inside another list; lets skip the rest of it.
         // Use nextIncludingPseudo() here because the other list itself may actually
         // be a list item itself. We need to examine it, so we do this to counteract
@@ -164,26 +164,26 @@ static RenderListItem* previousListItem(const Node* listNode, const RenderListIt
     return 0;
 }
 
-void RenderListItem::updateItemValuesForOrderedList(const HTMLOListElement* listNode)
+void LayoutListItem::updateItemValuesForOrderedList(const HTMLOListElement* listNode)
 {
     ASSERT(listNode);
 
-    for (RenderListItem* listItem = nextListItem(listNode); listItem; listItem = nextListItem(listNode, listItem))
+    for (LayoutListItem* listItem = nextListItem(listNode); listItem; listItem = nextListItem(listNode, listItem))
         listItem->updateValue();
 }
 
-unsigned RenderListItem::itemCountForOrderedList(const HTMLOListElement* listNode)
+unsigned LayoutListItem::itemCountForOrderedList(const HTMLOListElement* listNode)
 {
     ASSERT(listNode);
 
     unsigned itemCount = 0;
-    for (RenderListItem* listItem = nextListItem(listNode); listItem; listItem = nextListItem(listNode, listItem))
+    for (LayoutListItem* listItem = nextListItem(listNode); listItem; listItem = nextListItem(listNode, listItem))
         itemCount++;
 
     return itemCount;
 }
 
-inline int RenderListItem::calcValue() const
+inline int LayoutListItem::calcValue() const
 {
     if (m_hasExplicitValue)
         return m_explicitValue;
@@ -196,7 +196,7 @@ inline int RenderListItem::calcValue() const
 
     // FIXME: This recurses to a possible depth of the length of the list.
     // That's not good -- we need to change this to an iterative algorithm.
-    if (RenderListItem* previousItem = previousListItem(list, this))
+    if (LayoutListItem* previousItem = previousListItem(list, this))
         return previousItem->value() + valueStep;
 
     if (oListElement)
@@ -205,13 +205,13 @@ inline int RenderListItem::calcValue() const
     return 1;
 }
 
-void RenderListItem::updateValueNow() const
+void LayoutListItem::updateValueNow() const
 {
     m_value = calcValue();
     m_isValueUpToDate = true;
 }
 
-bool RenderListItem::isEmpty() const
+bool LayoutListItem::isEmpty() const
 {
     return lastChild() == m_marker;
 }
@@ -236,8 +236,8 @@ static LayoutObject* getParentOfFirstLineBox(RenderBlockFlow* curr, LayoutObject
         if (!currChild->isRenderBlockFlow() || (currChild->isBox() && toRenderBox(currChild)->isWritingModeRoot()))
             break;
 
-        if (curr->isListItem() && inQuirksMode && currChild->node() &&
-            (isHTMLUListElement(*currChild->node()) || isHTMLOListElement(*currChild->node())))
+        if (curr->isListItem() && inQuirksMode && currChild->node()
+            && (isHTMLUListElement(*currChild->node()) || isHTMLOListElement(*currChild->node())))
             break;
 
         LayoutObject* lineBox = getParentOfFirstLineBox(toRenderBlockFlow(currChild), marker);
@@ -248,7 +248,7 @@ static LayoutObject* getParentOfFirstLineBox(RenderBlockFlow* curr, LayoutObject
     return 0;
 }
 
-void RenderListItem::updateValue()
+void LayoutListItem::updateValue()
 {
     if (!m_hasExplicitValue) {
         m_isValueUpToDate = false;
@@ -265,7 +265,7 @@ static LayoutObject* firstNonMarkerChild(LayoutObject* parent)
     return result;
 }
 
-void RenderListItem::updateMarkerLocationAndInvalidateWidth()
+void LayoutListItem::updateMarkerLocationAndInvalidateWidth()
 {
     ASSERT(m_marker);
 
@@ -280,7 +280,7 @@ void RenderListItem::updateMarkerLocationAndInvalidateWidth()
     }
 }
 
-bool RenderListItem::updateMarkerLocation()
+bool LayoutListItem::updateMarkerLocation()
 {
     ASSERT(m_marker);
     LayoutObject* markerParent = m_marker->parent();
@@ -308,7 +308,7 @@ bool RenderListItem::updateMarkerLocation()
     return false;
 }
 
-void RenderListItem::layout()
+void LayoutListItem::layout()
 {
     ASSERT(needsLayout());
 
@@ -325,13 +325,13 @@ void RenderListItem::layout()
     RenderBlockFlow::layout();
 }
 
-void RenderListItem::addOverflowFromChildren()
+void LayoutListItem::addOverflowFromChildren()
 {
     RenderBlockFlow::addOverflowFromChildren();
     positionListMarker();
 }
 
-void RenderListItem::positionListMarker()
+void LayoutListItem::positionListMarker()
 {
     if (m_marker && m_marker->parent()->isBox() && !m_marker->isInside() && m_marker->inlineBoxWrapper()) {
         LayoutUnit markerOldLogicalLeft = m_marker->logicalLeft();
@@ -425,7 +425,7 @@ void RenderListItem::positionListMarker()
     }
 }
 
-void RenderListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!logicalHeight() && hasOverflowClip())
         return;
@@ -433,23 +433,23 @@ void RenderListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     RenderBlockFlow::paint(paintInfo, paintOffset);
 }
 
-const String& RenderListItem::markerText() const
+const String& LayoutListItem::markerText() const
 {
     if (m_marker)
         return m_marker->text();
     return nullAtom.string();
 }
 
-void RenderListItem::explicitValueChanged()
+void LayoutListItem::explicitValueChanged()
 {
     if (m_marker)
         m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     Node* listNode = enclosingList(this);
-    for (RenderListItem* item = this; item; item = nextListItem(listNode, item))
+    for (LayoutListItem* item = this; item; item = nextListItem(listNode, item))
         item->updateValue();
 }
 
-void RenderListItem::setExplicitValue(int value)
+void LayoutListItem::setExplicitValue(int value)
 {
     ASSERT(node());
 
@@ -461,7 +461,7 @@ void RenderListItem::setExplicitValue(int value)
     explicitValueChanged();
 }
 
-void RenderListItem::clearExplicitValue()
+void LayoutListItem::clearExplicitValue()
 {
     ASSERT(node());
 
@@ -472,19 +472,19 @@ void RenderListItem::clearExplicitValue()
     explicitValueChanged();
 }
 
-void RenderListItem::setNotInList(bool notInList)
+void LayoutListItem::setNotInList(bool notInList)
 {
     m_notInList = notInList;
     if (m_marker)
         updateMarkerLocation();
 }
 
-static RenderListItem* previousOrNextItem(bool isListReversed, Node* list, RenderListItem* item)
+static LayoutListItem* previousOrNextItem(bool isListReversed, Node* list, LayoutListItem* item)
 {
     return isListReversed ? previousListItem(list, item) : nextListItem(list, item);
 }
 
-void RenderListItem::updateListMarkerNumbers()
+void LayoutListItem::updateListMarkerNumbers()
 {
     // If distribution recalc is needed, updateListMarkerNumber will be re-invoked
     // after distribution is calculated.
@@ -508,7 +508,7 @@ void RenderListItem::updateListMarkerNumbers()
     if (listNode->needsAttach())
         return;
 
-    for (RenderListItem* item = previousOrNextItem(isListReversed, listNode, this); item; item = previousOrNextItem(isListReversed, listNode, item)) {
+    for (LayoutListItem* item = previousOrNextItem(isListReversed, listNode, this); item; item = previousOrNextItem(isListReversed, listNode, item)) {
         if (!item->m_isValueUpToDate) {
             // If an item has been marked for update before, we can safely
             // assume that all the following ones have too.

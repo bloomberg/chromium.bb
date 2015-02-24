@@ -51,12 +51,12 @@ layer at (12,12) size 117x13
 layer at (12,31) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
 layer at (9,208) size 48x45 clip at (10,209) size 35x43 scrollHeight 42
-  RenderListBox {SELECT} at (1,200.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,200.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.80x14.19
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
 layer at (9,251) size 48x45 clip at (10,252) size 35x43 scrollHeight 42
-  RenderListBox {SELECT} at (1,243.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,243.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.80x14.19
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"

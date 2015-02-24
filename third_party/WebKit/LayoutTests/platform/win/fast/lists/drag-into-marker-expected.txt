@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,16) size 784x568
       RenderBlock {UL} at (16,0) size 752x57 [border: (1px solid #000000)]
-        RenderListItem {LI} at (41,1) size 710x55
-          RenderListMarker at (-36,1) size 16x53: black square
+        LayoutListItem {LI} at (41,1) size 710x55
+          LayoutListMarker at (-36,1) size 16x53: black square
           RenderText {#text} at (0,1) size 220x53
             text run at (0,1) width 220: "world hello"
       RenderBlock {P} at (0,73) size 784x72

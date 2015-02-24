@@ -52,13 +52,13 @@
 #include "core/layout/LayoutFieldset.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
@@ -949,7 +949,7 @@ String AXRenderObject::stringValue() const
     }
 
     if (m_renderer->isListMarker())
-        return toRenderListMarker(m_renderer)->text();
+        return toLayoutListMarker(m_renderer)->text();
 
     if (isWebArea()) {
         // FIXME: Why would a renderer exist when the Document isn't attached to a frame?

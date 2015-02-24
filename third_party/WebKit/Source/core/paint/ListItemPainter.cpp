@@ -5,19 +5,19 @@
 #include "config.h"
 #include "core/paint/ListItemPainter.h"
 
+#include "core/layout/LayoutListItem.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/RenderListItem.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
 
 void ListItemPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!m_renderListItem.logicalHeight() && m_renderListItem.hasOverflowClip())
+    if (!m_layoutListItem.logicalHeight() && m_layoutListItem.hasOverflowClip())
         return;
 
-    BlockPainter(m_renderListItem).paint(paintInfo, paintOffset);
+    BlockPainter(m_layoutListItem).paint(paintInfo, paintOffset);
 }
 
 } // namespace blink

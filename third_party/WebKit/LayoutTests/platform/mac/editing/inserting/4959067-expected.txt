@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 613: "This tests to make sure that insertion over a fully selected special element doesn't do expansion."
       RenderBlock {DIV} at (0,34) size 784x18
         RenderBlock {UL} at (0,0) size 784x18
-          RenderListItem {LI} at (40,0) size 744x18
-            RenderListMarker at (-17,0) size 7x18: bullet
+          LayoutListItem {LI} at (40,0) size 744x18
+            LayoutListMarker at (-17,0) size 7x18: bullet
             RenderInline {A} at (0,0) size 22x18 [color=#0000EE]
               RenderText {#text} at (0,0) size 22x18
                 text run at (0,0) width 22: "foo"

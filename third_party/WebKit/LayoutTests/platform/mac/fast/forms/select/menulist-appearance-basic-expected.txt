@@ -115,7 +115,7 @@ layer at (0,0) size 800x410
       LayoutBR {BR} at (212,343) size 0x18
       RenderText {#text} at (0,0) size 0x0
 layer at (12,241) size 200x25 clip at (13,242) size 187x23 scrollHeight 42
-  RenderListBox {SELECT} at (4,233) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (4,233) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 1"
@@ -126,7 +126,7 @@ layer at (12,241) size 200x25 clip at (13,242) size 187x23 scrollHeight 42
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 3"
 layer at (12,274) size 200x25 clip at (13,275) size 187x23 scrollY 5.00 scrollHeight 42
-  RenderListBox {SELECT} at (4,266) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (4,266) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 1"
@@ -137,7 +137,7 @@ layer at (12,274) size 200x25 clip at (13,275) size 187x23 scrollY 5.00 scrollHe
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 3"
 layer at (12,307) size 200x25 clip at (13,308) size 187x23 scrollY 5.00 scrollHeight 42
-  RenderListBox {SELECT} at (4,299) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (4,299) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 1"
@@ -148,7 +148,7 @@ layer at (12,307) size 200x25 clip at (13,308) size 187x23 scrollY 5.00 scrollHe
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 3"
 layer at (12,340) size 200x25 clip at (13,341) size 187x23 scrollHeight 312
-  RenderListBox {SELECT} at (4,332) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (4,332) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19 [bgcolor=#D4D4D4]
       RenderText {#text} at (2,0) size 45x13
         text run at (2,0) width 45: "Item 0.1"
@@ -266,7 +266,7 @@ layer at (12,340) size 200x25 clip at (13,341) size 187x23 scrollHeight 312
       RenderText {#text} at (2,0) size 45x13
         text run at (2,0) width 45: "Item 0.2"
 layer at (12,373) size 200x25 clip at (13,374) size 187x23 scrollHeight 17507
-  RenderListBox {SELECT} at (4,365) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (4,365) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19 [bgcolor=#D4D4D4]
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 1"

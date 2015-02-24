@@ -13,7 +13,7 @@ layer at (0,0) size 800x379
               text run at (4,1) width 32: "Three"
         RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 80x342 clip at (9,9) size 63x340
-  RenderListBox {SELECT} at (0,0) size 80x342 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (0,0) size 80x342 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTGROUP} at (1,1) size 63x85 [color=#008000]
       RenderBlock {DIV} at (0,0) size 63x17
         RenderText {#text} at (2,0) size 52x16

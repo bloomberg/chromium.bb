@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
           text run at (612,0) width 4: " "
         LayoutBR {BR} at (616,15) size 0x0
       RenderBlock {UL} at (0,36) size 784x20
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderInline {<pseudo:before>} at (0,0) size 28x19
             RenderTextFragment at (0,0) size 28x19
               text run at (0,0) width 28: "hello"

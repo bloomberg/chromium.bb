@@ -9,7 +9,7 @@ layer at (0,0) size 800x88
           text run at (341,0) width 99: "should be green."
       RenderText {#text} at (0,0) size 0x0
     RenderBlock {ul} at (0,52) size 800x20 [color=#FF0000]
-      RenderListItem {li} at (40,0) size 760x20 [color=#00FF00]
-        RenderListMarker at (-18,0) size 7x19: bullet
+      LayoutListItem {li} at (40,0) size 760x20 [color=#00FF00]
+        LayoutListMarker at (-18,0) size 7x19: bullet
         RenderText {#text} at (0,0) size 157x19
           text run at (0,0) width 157: "This item should be green."

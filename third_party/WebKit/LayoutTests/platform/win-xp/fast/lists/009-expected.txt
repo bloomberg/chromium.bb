@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               text run at (0,0) width 147: "DT text is rendered here"
           RenderBlock {DD} at (0,36) size 784x20
             RenderBlock {UL} at (0,0) size 784x20
-              RenderListItem {LI} at (0,0) size 784x20
-                RenderListMarker at (0,6) size 12x9
+              LayoutListItem {LI} at (0,0) size 784x20
+                LayoutListMarker at (0,6) size 12x9
                 RenderText {#text} at (19,0) size 107x19
                   text run at (19,0) width 107: "LI text is here too"

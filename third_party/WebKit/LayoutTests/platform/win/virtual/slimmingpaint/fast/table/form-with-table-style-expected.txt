@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 91x17
             text run at (0,0) width 91: "display: block"
       RenderBlock {DIV} at (0,120) size 784x18
-        RenderListItem {FORM} at (0,0) size 784x18
-          RenderListMarker at (-17,0) size 7x17: bullet
+        LayoutListItem {FORM} at (0,0) size 784x18
+          LayoutListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (0,0) size 108x17
             text run at (0,0) width 108: "display: list-item"
       RenderBlock {DIV} at (0,154) size 784x18

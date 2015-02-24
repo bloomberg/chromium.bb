@@ -26,7 +26,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/rendering/RenderListItem.h"
+#include "core/layout/LayoutListItem.h"
 
 namespace blink {
 
@@ -99,12 +99,12 @@ void HTMLOListElement::updateItemValues()
     if (!renderer())
         return;
     document().updateDistributionForNodeIfNeeded(this);
-    RenderListItem::updateItemValuesForOrderedList(this);
+    LayoutListItem::updateItemValuesForOrderedList(this);
 }
 
 void HTMLOListElement::recalculateItemCount()
 {
-    m_itemCount = RenderListItem::itemCountForOrderedList(this);
+    m_itemCount = LayoutListItem::itemCountForOrderedList(this);
     m_shouldRecalculateItemCount = false;
 }
 

@@ -52,20 +52,20 @@ layer at (0,0) size 785x1822 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 221x19
           text run at (0,0) width 221: "This element also has a class of zero."
       RenderBlock {UL} at (0,768.25) size 769x105 [bgcolor=#00FFFF]
-        RenderListItem {LI} at (40,0) size 729x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,0) size 729x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 402x19
             text run at (0,0) width 402: "This list has a margin-bottom of 25px, and a light blue background."
-        RenderListItem {LI} at (40,20) size 729x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,20) size 729x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 249x19
             text run at (0,0) width 249: "Therefore, it ought to have such a margin."
-        RenderListItem {LI} at (40,40) size 729x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,40) size 729x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 558x19
             text run at (0,0) width 558: "This list item has a bottom margin of 25px, which should cause it to be offset in some fashion."
-        RenderListItem {LI} at (40,85) size 729x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,85) size 729x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 278x19
             text run at (0,0) width 278: "This list item has no special styles applied to it."
       RenderBlock {P} at (0,898.25) size 769x60 [bgcolor=#00FFFF]
@@ -119,20 +119,20 @@ layer at (0,0) size 785x1822 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 RenderText {#text} at (0,0) size 221x19
                   text run at (0,0) width 221: "This element also has a class of zero."
               RenderBlock {UL} at (4,563.75) size 747x105 [bgcolor=#00FFFF]
-                RenderListItem {LI} at (40,0) size 707x20
-                  RenderListMarker at (-18,0) size 7x19: bullet
+                LayoutListItem {LI} at (40,0) size 707x20
+                  LayoutListMarker at (-18,0) size 7x19: bullet
                   RenderText {#text} at (0,0) size 402x19
                     text run at (0,0) width 402: "This list has a margin-bottom of 25px, and a light blue background."
-                RenderListItem {LI} at (40,20) size 707x20
-                  RenderListMarker at (-18,0) size 7x19: bullet
+                LayoutListItem {LI} at (40,20) size 707x20
+                  LayoutListMarker at (-18,0) size 7x19: bullet
                   RenderText {#text} at (0,0) size 249x19
                     text run at (0,0) width 249: "Therefore, it ought to have such a margin."
-                RenderListItem {LI} at (40,40) size 707x20
-                  RenderListMarker at (-18,0) size 7x19: bullet
+                LayoutListItem {LI} at (40,40) size 707x20
+                  LayoutListMarker at (-18,0) size 7x19: bullet
                   RenderText {#text} at (0,0) size 558x19
                     text run at (0,0) width 558: "This list item has a bottom margin of 25px, which should cause it to be offset in some fashion."
-                RenderListItem {LI} at (40,85) size 707x20
-                  RenderListMarker at (-18,0) size 7x19: bullet
+                LayoutListItem {LI} at (40,85) size 707x20
+                  LayoutListMarker at (-18,0) size 7x19: bullet
                   RenderText {#text} at (0,0) size 278x19
                     text run at (0,0) width 278: "This list item has no special styles applied to it."
               RenderBlock {P} at (4,693.75) size 747x60 [bgcolor=#00FFFF]

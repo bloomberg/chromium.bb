@@ -11,7 +11,7 @@ layer at (0,0) size 800x121
       RenderBlock {DIV} at (0,18) size 784x87
         RenderText {#text} at (0,0) size 0x0
 layer at (592,26) size 200x87 clip at (604,27) size 187x85
-  RenderListBox {SELECT} at (584,-0.13) size 200x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (584,-0.13) size 200x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 187x14.19
       RenderText {#text} at (151,0) size 34x13
         text run at (151,0) width 34: "Test 1"

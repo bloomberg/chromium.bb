@@ -38,12 +38,12 @@
 #include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/layout/LayoutListItem.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
@@ -372,7 +372,7 @@ void TextAutosizer::beginLayout(RenderBlock* block)
         inflate(block);
 }
 
-void TextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* listItemMarker)
+void TextAutosizer::inflateListItem(LayoutListItem* listItem, LayoutListMarker* listItemMarker)
 {
     if (!shouldHandleLayout())
         return;
@@ -943,7 +943,7 @@ const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBloc
 const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size_t& depth, TextLeafSearch firstOrLast) const
 {
     // List items are treated as text due to the marker.
-    // The actual renderer for the marker (RenderListMarker) may not be in the tree yet since it is added during layout.
+    // The actual renderer for the marker (LayoutListMarker) may not be in the tree yet since it is added during layout.
     if (parent->isListItem())
         return parent;
 

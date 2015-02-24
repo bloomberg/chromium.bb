@@ -7,7 +7,7 @@ layer at (8,8) size 784x129 clip at (8,8) size 769x114 scrollHeight 115
   RenderBlock {DIV} at (0,0) size 784x129
     RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 48x115 backgroundClip at (8,8) size 48x114 clip at (9,9) size 35x102 outlineClip at (8,8) size 769x114 scrollHeight 141
-  RenderListBox {SELECT} at (0,-0.50) size 47.70x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,-0.50) size 47.70x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.70x14.19
       RenderText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"

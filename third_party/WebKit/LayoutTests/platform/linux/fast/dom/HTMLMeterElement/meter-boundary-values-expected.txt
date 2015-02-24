@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 360x36
           text run at (0,0) width 360: "Meters with border values"
       RenderBlock {UL} at (0,58.44) size 784x300
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 152x19
             text run at (0,0) width 152: "min,low,optimal,high,max"
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,20) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderInline {B} at (0,0) size 8x19
             RenderText {#text} at (0,0) size 8x19
               text run at (0,0) width 8: "9"
@@ -22,8 +22,8 @@ layer at (0,0) size 800x600
             LayoutMeter {DIV} at (0,0) size 80x16
               RenderBlock {DIV} at (0,0) size 80x16
                 RenderBlock {DIV} at (0,0) size 0x16
-        RenderListItem {LI} at (40,40) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,40) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderInline {B} at (0,0) size 16x19
             RenderText {#text} at (0,0) size 16x19
               text run at (0,0) width 16: "10"
@@ -33,8 +33,8 @@ layer at (0,0) size 800x600
             LayoutMeter {DIV} at (0,0) size 80x16
               RenderBlock {DIV} at (0,0) size 80x16
                 RenderBlock {DIV} at (0,0) size 0x16
-        RenderListItem {LI} at (40,60) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,60) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "10,"
           RenderInline {B} at (0,0) size 16x19
@@ -48,8 +48,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 20x16
           RenderText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
-        RenderListItem {LI} at (40,80) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,80) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,20,"
           RenderInline {B} at (0,0) size 16x19
@@ -63,8 +63,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 40x16
           RenderText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
-        RenderListItem {LI} at (40,100) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,100) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 60x19
             text run at (0,0) width 60: "10,20,30,"
           RenderInline {B} at (0,0) size 16x19
@@ -78,8 +78,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 60x16
           RenderText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
-        RenderListItem {LI} at (40,120) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,120) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 80x19
             text run at (0,0) width 80: "10,20,30,40,"
           RenderInline {B} at (0,0) size 16x19
@@ -93,8 +93,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 80x16
           RenderText {#text} at (183,0) size 111x19
             text run at (183,0) width 111: "(should be yellow)"
-        RenderListItem {LI} at (40,140) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,140) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 99x19
             text run at (0,0) width 99: "10,20,30,40,50|"
           RenderInline {B} at (0,0) size 16x19
@@ -108,8 +108,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 80x16
           RenderText {#text} at (202,0) size 111x19
             text run at (202,0) width 111: "(should be yellow)"
-        RenderListItem {LI} at (40,160) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,160) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "10,"
           RenderInline {B} at (0,0) size 16x19
@@ -121,8 +121,8 @@ layer at (0,0) size 800x600
             LayoutMeter {DIV} at (0,0) size 80x16
               RenderBlock {DIV} at (0,0) size 80x16
                 RenderBlock {DIV} at (0,0) size 0x16
-        RenderListItem {LI} at (40,180) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,180) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 60x19
             text run at (0,0) width 60: "10,20,30,"
           RenderInline {B} at (0,0) size 16x19
@@ -136,8 +136,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 80x16
           RenderText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
-        RenderListItem {LI} at (40,200) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,200) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderInline {B} at (0,0) size 8x19
             RenderText {#text} at (0,0) size 8x19
               text run at (0,0) width 8: "9"
@@ -147,8 +147,8 @@ layer at (0,0) size 800x600
             LayoutMeter {DIV} at (0,0) size 80x16
               RenderBlock {DIV} at (0,0) size 80x16
                 RenderBlock {DIV} at (0,0) size 0x16
-        RenderListItem {LI} at (40,220) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,220) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,10,"
           RenderInline {B} at (0,0) size 16x19
@@ -160,8 +160,8 @@ layer at (0,0) size 800x600
             LayoutMeter {DIV} at (0,0) size 80x16
               RenderBlock {DIV} at (0,0) size 80x16
                 RenderBlock {DIV} at (0,0) size 0x16
-        RenderListItem {LI} at (40,240) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,240) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,20,"
           RenderInline {B} at (0,0) size 16x19
@@ -175,8 +175,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 80x16
           RenderText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
-        RenderListItem {LI} at (40,260) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,260) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 99x19
             text run at (0,0) width 99: "10,20,30,30,30|"
           RenderInline {B} at (0,0) size 16x19
@@ -190,8 +190,8 @@ layer at (0,0) size 800x600
                 RenderBlock {DIV} at (0,0) size 80x16
           RenderText {#text} at (202,0) size 105x19
             text run at (202,0) width 105: "(should be green)"
-        RenderListItem {LI} at (40,280) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,280) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,20,"
           RenderInline {B} at (0,0) size 16x19

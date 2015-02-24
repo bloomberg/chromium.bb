@@ -169,8 +169,8 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (209,0) width 530: "CSS is case-insensitive, unless required to be case sensitive due to interaction with"
           text run at (0,18) width 278: "other standards (e.g., font names or URLs.)"
       RenderBlock {OL} at (0,1451) size 769x18
-        RenderListItem {LI} at (40,0) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "1"
+        LayoutListItem {LI} at (40,0) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "1"
           RenderText {#text} at (0,0) size 636x18
             text run at (0,0) width 636: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
       RenderBlock {P} at (0,1485) size 769x36
@@ -178,8 +178,8 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 766: "This paragraph should be black, because, in CSS1, :first-child is an invalid pseudo-class, and in CSS2, this paragraph is"
           text run at (0,18) width 114: "not the first child."
       RenderBlock {UL} at (0,1537) size 769x36
-        RenderListItem {LI} at (40,0) size 729x36
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {LI} at (40,0) size 729x36
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 704x36
             text run at (0,0) width 704: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
             text run at (0,18) width 233: "CSS2, the selector should not apply."
@@ -391,8 +391,8 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (209,0) width 530: "CSS is case-insensitive, unless required to be case sensitive due to interaction with"
                   text run at (0,18) width 278: "other standards (e.g., font names or URLs.)"
               RenderBlock {OL} at (4,598) size 747x18
-                RenderListItem {LI} at (40,0) size 707x18
-                  RenderListMarker at (-20,0) size 16x18: "1"
+                LayoutListItem {LI} at (40,0) size 707x18
+                  LayoutListMarker at (-20,0) size 16x18: "1"
                   RenderText {#text} at (0,0) size 636x18
                     text run at (0,0) width 636: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
               RenderBlock {P} at (4,632) size 747x36
@@ -400,8 +400,8 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 684: "This paragraph should be black, because, in CSS1, :first-child is an invalid pseudo-class, and in CSS2, this"
                   text run at (0,18) width 197: "paragraph is not the first child."
               RenderBlock {UL} at (4,684) size 747x36
-                RenderListItem {LI} at (40,0) size 707x36
-                  RenderListMarker at (-17,0) size 7x18: bullet
+                LayoutListItem {LI} at (40,0) size 707x36
+                  LayoutListMarker at (-17,0) size 7x18: bullet
                   RenderText {#text} at (0,0) size 704x36
                     text run at (0,0) width 704: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
                     text run at (0,18) width 233: "CSS2, the selector should not apply."

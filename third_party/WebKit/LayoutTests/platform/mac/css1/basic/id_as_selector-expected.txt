@@ -47,8 +47,8 @@ layer at (0,0) size 785x627 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 461: "This sentence should be black, not purple [PRE ID=\"three\"]."
           text run at (460,0) width 1: " "
       RenderBlock {UL} at (0,346) size 769x18
-        RenderListItem {LI} at (40,0) size 729x18
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {LI} at (40,0) size 729x18
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 240x18
             text run at (0,0) width 240: "This sentence should NOT be purple."
       LayoutTable {TABLE} at (0,380) size 413x231 [border: (1px outset #808080)]
@@ -86,7 +86,7 @@ layer at (0,0) size 785x627 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,0) width 352: "This sentence should be black [PRE ID=\"six\"]."
                   text run at (351,0) width 1: " "
               RenderBlock {UL} at (4,165) size 391x18
-                RenderListItem {LI} at (40,0) size 351x18
-                  RenderListMarker at (-17,0) size 7x18: bullet
+                LayoutListItem {LI} at (40,0) size 351x18
+                  LayoutListMarker at (-17,0) size 7x18: bullet
                   RenderText {#text} at (0,0) size 240x18
                     text run at (0,0) width 240: "This sentence should NOT be purple."

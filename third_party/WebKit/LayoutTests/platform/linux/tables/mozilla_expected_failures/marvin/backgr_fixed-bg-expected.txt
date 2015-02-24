@@ -13,14 +13,14 @@ layer at (0,0) size 800x1700 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 153x17
           text run at (0,0) width 153: "Fixed Backgrounds"
       RenderBlock {UL} at (0,118.78) size 784x64
-        RenderListItem {LI} at (40,0) size 744x48
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,0) size 744x48
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 736x48
             text run at (0,0) width 704: "If you scroll the table over the top left corner of the viewport, the first, second, and"
             text run at (0,16) width 736: "fourth rows as well as cell L should reveal a purple and aqua band forming a 90-degree angle"
             text run at (0,32) width 184: "in the top left corner."
-        RenderListItem {LI} at (40,48) size 744x16
-          RenderListMarker at (-16,0) size 6x16: bullet
+        LayoutListItem {LI} at (40,48) size 744x16
+          LayoutListMarker at (-16,0) size 6x16: bullet
           RenderText {#text} at (0,0) size 664x16
             text run at (0,0) width 664: "Cells A and P should have a rainbow background that seems attached to the viewport."
       RenderBlock {DL} at (0,195.78) size 784x64

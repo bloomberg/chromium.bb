@@ -28,9 +28,9 @@ layer at (0,0) size 800x600
         RenderText {#text} at (568,0) size 4x19
           text run at (568,0) width 4: "."
       RenderBlock {UL} at (0,203) size 784x40
-        RenderListItem {LI} at (40,0) size 744x40
+        LayoutListItem {LI} at (40,0) size 744x40
           RenderBlock (anonymous) at (0,0) size 744x20
-            RenderListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker at (-18,0) size 7x19: bullet
             RenderInline {EM} at (0,0) size 38x19 [color=#008000]
               RenderText {#text} at (0,0) size 38x19
                 text run at (0,0) width 38: "Hello."
@@ -38,8 +38,8 @@ layer at (0,0) size 800x600
               text run at (38,0) width 4: " "
               text run at (42,0) width 372: "The first \"hello\" should be green, but this part should be black."
           RenderBlock {UL} at (0,20) size 744x20
-            RenderListItem {LI} at (40,0) size 704x20 [color=#008000]
-              RenderListMarker at (-18,0) size 7x19: white bullet
+            LayoutListItem {LI} at (40,0) size 704x20 [color=#008000]
+              LayoutListMarker at (-18,0) size 7x19: white bullet
               RenderText {#text} at (0,0) size 128x19
                 text run at (0,0) width 128: "This should be green."
       LayoutTable {TABLE} at (0,259) size 699x165 [border: (1px outset #808080)]
@@ -66,9 +66,9 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (644,1) size 4x18
                   text run at (644,1) width 4: "."
               RenderBlock {UL} at (4,75) size 677x40
-                RenderListItem {LI} at (40,0) size 637x40
+                LayoutListItem {LI} at (40,0) size 637x40
                   RenderBlock (anonymous) at (0,0) size 637x20
-                    RenderListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker at (-18,0) size 7x19: bullet
                     RenderInline {EM} at (0,0) size 38x19 [color=#008000]
                       RenderText {#text} at (0,0) size 38x19
                         text run at (0,0) width 38: "Hello."
@@ -76,7 +76,7 @@ layer at (0,0) size 800x600
                       text run at (38,0) width 4: " "
                       text run at (42,0) width 372: "The first \"hello\" should be green, but this part should be black."
                   RenderBlock {UL} at (0,20) size 637x20
-                    RenderListItem {LI} at (40,0) size 597x20 [color=#008000]
-                      RenderListMarker at (-18,0) size 7x19: white bullet
+                    LayoutListItem {LI} at (40,0) size 597x20 [color=#008000]
+                      LayoutListMarker at (-18,0) size 7x19: white bullet
                       RenderText {#text} at (0,0) size 128x19
                         text run at (0,0) width 128: "This should be green."

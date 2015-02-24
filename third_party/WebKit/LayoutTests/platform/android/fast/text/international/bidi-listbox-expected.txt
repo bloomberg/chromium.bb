@@ -41,19 +41,19 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,426) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
 layer at (8,84) size 84x70 clip at (24,85) size 67x68
-  RenderListBox {SELECT} at (0,20) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (0,20) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (16,1) size 67x17
       RenderText {#text} at (2,0) size 63x16
         text run at (2,0) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         text run at (44,0) width 21: "abc"
 layer at (8,214) size 84x70 clip at (9,215) size 67x68
-  RenderListBox {SELECT} at (0,40) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (0,40) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 67x17
       RenderText {#text} at (2,0) size 63x16
         text run at (2,0) width 21: "abc"
         text run at (23,0) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
 layer at (8,344) size 84x70 clip at (9,345) size 67x68
-  RenderListBox {SELECT} at (0,40) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (0,40) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 67x17
       RenderText {#text} at (2,0) size 63x16
         text run at (2,0) width 21: "abc"

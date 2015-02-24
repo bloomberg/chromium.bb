@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,34) size 784x250
         RenderText {#text} at (0,0) size 0x0
 layer at (8,42) size 59x250 clip at (9,43) size 46x248
-  RenderListBox {SELECT} at (0,0) size 58.83x250 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,0) size 58.83x250 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 45.83x14.19
       RenderText {#text} at (2,0) size 20x13
         text run at (2,0) width 20: "one"

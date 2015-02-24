@@ -39,12 +39,12 @@ layer at (0,0) size 800x600
               text run at (4,1) width 55: "Five Tabs"
         RenderText {#text} at (0,0) size 0x0
 layer at (80,42) size 76x70 clip at (81,43) size 59x68
-  RenderListBox {SELECT} at (71.98,0) size 76x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (71.98,0) size 76x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 59x17
       RenderText {#text} at (2,0) size 55x16
         text run at (2,0) width 55: "Five Tabs"
 layer at (93,131) size 76x70 clip at (94,132) size 59x68
-  RenderListBox {SELECT} at (85.31,89) size 76x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (85.31,89) size 76x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 59x17
       RenderText {#text} at (2,0) size 55x16
         text run at (2,0) width 55: "Five Tabs"

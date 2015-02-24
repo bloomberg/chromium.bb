@@ -7,20 +7,20 @@ layer at (0,0) size 800x496
         RenderText {#text} at (0,0) size 92x22
           text run at (0,0) width 92: "It passes if:"
       RenderBlock {UL} at (0,41.72) size 784x80
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 374x19
             text run at (0,0) width 374: "the 10px gray background is visible around the canvas content"
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,20) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 148x19
             text run at (0,0) width 148: "has 5px solid red border"
-        RenderListItem {LI} at (40,40) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,40) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 305x19
             text run at (0,0) width 305: "all the corners for border and padding are rounded"
-        RenderListItem {LI} at (40,60) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,60) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 351x19
             text run at (0,0) width 351: "the bottom right corner of canvas content is NOT rounded"
       RenderBlock (anonymous) at (0,137.72) size 784x332

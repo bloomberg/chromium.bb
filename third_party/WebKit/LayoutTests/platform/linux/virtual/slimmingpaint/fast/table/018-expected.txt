@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 417x19
           text run at (0,0) width 417: "This is a test for bug 3166276. Set the following preferences to see it:"
       RenderBlock {UL} at (0,36) size 784x40
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 212x19
             text run at (0,0) width 212: "Proportional font -- Times 15 point"
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,20) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 223x19
             text run at (0,0) width 223: "Fixed width font -- Monaco 11 point"
       RenderBlock {P} at (0,92) size 784x70

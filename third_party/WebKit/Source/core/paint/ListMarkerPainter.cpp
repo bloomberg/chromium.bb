@@ -5,13 +5,13 @@
 #include "config.h"
 #include "core/paint/ListMarkerPainter.h"
 
+#include "core/layout/LayoutListItem.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderListMarker.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -20,56 +20,56 @@ namespace blink {
 
 void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderListMarker);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutListMarker);
 
     if (paintInfo.phase != PaintPhaseForeground)
         return;
 
-    if (m_renderListMarker.style()->visibility() != VISIBLE)
+    if (m_layoutListMarker.style()->visibility() != VISIBLE)
         return;
 
-    LayoutPoint boxOrigin(paintOffset + m_renderListMarker.location());
-    LayoutRect overflowRect(m_renderListMarker.visualOverflowRect());
+    LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
+    LayoutRect overflowRect(m_layoutListMarker.visualOverflowRect());
     overflowRect.moveBy(boxOrigin);
 
     IntRect pixelSnappedOverflowRect = pixelSnappedIntRect(overflowRect);
     if (!paintInfo.rect.intersects(pixelSnappedOverflowRect))
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, m_renderListMarker, paintInfo.phase, pixelSnappedOverflowRect);
+    RenderDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
     if (recorder.canUseCachedDrawing())
         return;
 
-    LayoutRect box(boxOrigin, m_renderListMarker.size());
+    LayoutRect box(boxOrigin, m_layoutListMarker.size());
 
-    IntRect marker = m_renderListMarker.getRelativeMarkerRect();
+    IntRect marker = m_layoutListMarker.getRelativeMarkerRect();
     marker.moveBy(roundedIntPoint(boxOrigin));
 
     GraphicsContext* context = paintInfo.context;
 
-    if (m_renderListMarker.isImage()) {
-        context->drawImage(m_renderListMarker.image()->image(&m_renderListMarker, marker.size()).get(), marker);
-        if (m_renderListMarker.selectionState() != LayoutObject::SelectionNone) {
-            LayoutRect selRect = m_renderListMarker.localSelectionRect();
+    if (m_layoutListMarker.isImage()) {
+        context->drawImage(m_layoutListMarker.image()->image(&m_layoutListMarker, marker.size()).get(), marker);
+        if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone) {
+            LayoutRect selRect = m_layoutListMarker.localSelectionRect();
             selRect.moveBy(boxOrigin);
-            context->fillRect(pixelSnappedIntRect(selRect), m_renderListMarker.selectionBackgroundColor());
+            context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.selectionBackgroundColor());
         }
         return;
     }
 
-    if (m_renderListMarker.selectionState() != LayoutObject::SelectionNone) {
-        LayoutRect selRect = m_renderListMarker.localSelectionRect();
+    if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone) {
+        LayoutRect selRect = m_layoutListMarker.localSelectionRect();
         selRect.moveBy(boxOrigin);
-        context->fillRect(pixelSnappedIntRect(selRect), m_renderListMarker.selectionBackgroundColor());
+        context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.selectionBackgroundColor());
     }
 
-    const Color color(m_renderListMarker.resolveColor(CSSPropertyColor));
+    const Color color(m_layoutListMarker.resolveColor(CSSPropertyColor));
     context->setStrokeColor(color);
     context->setStrokeStyle(SolidStroke);
     context->setStrokeThickness(1.0f);
     context->setFillColor(color);
 
-    EListStyleType type = m_renderListMarker.style()->listStyleType();
+    EListStyleType type = m_layoutListMarker.style()->listStyleType();
     switch (type) {
     case Disc:
         context->fillEllipse(marker);
@@ -161,17 +161,17 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     case Footnotes:
         break;
     }
-    if (m_renderListMarker.text().isEmpty())
+    if (m_layoutListMarker.text().isEmpty())
         return;
 
-    const Font& font = m_renderListMarker.style()->font();
-    TextRun textRun = constructTextRun(&m_renderListMarker, font, m_renderListMarker.text(), m_renderListMarker.styleRef());
+    const Font& font = m_layoutListMarker.style()->font();
+    TextRun textRun = constructTextRun(&m_layoutListMarker, font, m_layoutListMarker.text(), m_layoutListMarker.styleRef());
 
     GraphicsContextStateSaver stateSaver(*context, false);
-    if (!m_renderListMarker.style()->isHorizontalWritingMode()) {
+    if (!m_layoutListMarker.style()->isHorizontalWritingMode()) {
         marker.moveBy(roundedIntPoint(-boxOrigin));
         marker = marker.transposedRect();
-        marker.moveBy(IntPoint(roundToInt(box.x()), roundToInt(box.y() - m_renderListMarker.logicalHeight())));
+        marker.moveBy(IntPoint(roundToInt(box.x()), roundToInt(box.y() - m_layoutListMarker.logicalHeight())));
         stateSaver.save();
         context->translate(marker.x(), marker.maxY());
         context->rotate(static_cast<float>(deg2rad(90.)));
@@ -180,34 +180,34 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = marker;
-    IntPoint textOrigin = IntPoint(marker.x(), marker.y() + m_renderListMarker.style()->fontMetrics().ascent());
+    IntPoint textOrigin = IntPoint(marker.x(), marker.y() + m_layoutListMarker.style()->fontMetrics().ascent());
 
     if (type == Asterisks || type == Footnotes) {
         context->drawText(font, textRunPaintInfo, textOrigin);
     } else {
         // Text is not arbitrary. We can judge whether it's RTL from the first character,
         // and we only need to handle the direction RightToLeft for now.
-        bool textNeedsReversing = WTF::Unicode::direction(m_renderListMarker.text()[0]) == WTF::Unicode::RightToLeft;
+        bool textNeedsReversing = WTF::Unicode::direction(m_layoutListMarker.text()[0]) == WTF::Unicode::RightToLeft;
         StringBuilder reversedText;
         if (textNeedsReversing) {
-            unsigned length = m_renderListMarker.text().length();
+            unsigned length = m_layoutListMarker.text().length();
             reversedText.reserveCapacity(length);
             for (int i = length - 1; i >= 0; --i)
-                reversedText.append(m_renderListMarker.text()[i]);
+                reversedText.append(m_layoutListMarker.text()[i]);
             ASSERT(reversedText.length() == length);
             textRun.setText(reversedText.toString());
         }
 
-        const UChar suffix = m_renderListMarker.listMarkerSuffix(type, m_renderListMarker.listItem()->value());
+        const UChar suffix = m_layoutListMarker.listMarkerSuffix(type, m_layoutListMarker.listItem()->value());
         UChar suffixStr[2] = {
-            m_renderListMarker.style()->isLeftToRightDirection() ? suffix : ' ',
-            m_renderListMarker.style()->isLeftToRightDirection() ? ' ' : suffix
+            m_layoutListMarker.style()->isLeftToRightDirection() ? suffix : ' ',
+            m_layoutListMarker.style()->isLeftToRightDirection() ? ' ' : suffix
         };
-        TextRun suffixRun = constructTextRun(&m_renderListMarker, font, suffixStr, 2, m_renderListMarker.styleRef(), m_renderListMarker.style()->direction());
+        TextRun suffixRun = constructTextRun(&m_layoutListMarker, font, suffixStr, 2, m_layoutListMarker.styleRef(), m_layoutListMarker.style()->direction());
         TextRunPaintInfo suffixRunInfo(suffixRun);
         suffixRunInfo.bounds = marker;
 
-        if (m_renderListMarker.style()->isLeftToRightDirection()) {
+        if (m_layoutListMarker.style()->isLeftToRightDirection()) {
             context->drawText(font, textRunPaintInfo, textOrigin);
             context->drawText(font, suffixRunInfo, textOrigin + IntSize(font.width(textRun), 0));
         } else {

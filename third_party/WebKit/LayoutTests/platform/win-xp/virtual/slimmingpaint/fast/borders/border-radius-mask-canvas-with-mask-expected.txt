@@ -7,12 +7,12 @@ layer at (0,0) size 800x454
         RenderText {#text} at (0,0) size 87x20
           text run at (0,0) width 87: "It passes if:"
       RenderBlock {UL} at (0,39.72) size 784x40
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 284x19
             text run at (0,0) width 284: "the canvas element has a gradient mask applied"
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
+        LayoutListItem {LI} at (40,20) size 744x20
+          LayoutListMarker at (-18,0) size 7x19: bullet
           RenderText {#text} at (0,0) size 238x19
             text run at (0,0) width 238: "the canvas content has rounded corners"
       RenderBlock (anonymous) at (0,95.72) size 784x332

@@ -7,12 +7,12 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 132x18
           text run at (0,0) width 132: "1. Basic inheritance:"
       RenderBlock {OL} at (0,34) size 769x36
-        RenderListItem {LI} at (40,0) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "3"
+        LayoutListItem {LI} at (40,0) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "3"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 3"
-        RenderListItem {LI} at (40,18) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "4"
+        LayoutListItem {LI} at (40,18) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "4"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 4"
       RenderBlock {HR} at (0,86) size 769x2 [border: (1px inset #EEEEEE)]
@@ -20,13 +20,13 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 298x18
           text run at (0,0) width 298: "2. Test that the inner start value gets inherited:"
       RenderBlock {OL} at (0,130) size 769x36
-        RenderListItem {LI} at (40,0) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "5"
+        LayoutListItem {LI} at (40,0) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "5"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 5"
         RenderBlock {OL} at (40,18) size 729x18
-          RenderListItem {LI} at (40,0) size 689x18
-            RenderListMarker at (-20,0) size 16x18: "3"
+          LayoutListItem {LI} at (40,0) size 689x18
+            LayoutListMarker at (-20,0) size 16x18: "3"
             RenderText {#text} at (0,0) size 77x18
               text run at (0,0) width 77: "Should be 3"
       RenderBlock {HR} at (0,182) size 769x2 [border: (1px inset #EEEEEE)]
@@ -37,8 +37,8 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderBlock {P} at (40,0) size 729x18
           RenderText {#text} at (0,0) size 30x18
             text run at (0,0) width 30: "Text"
-        RenderListItem {LI} at (40,34) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "3"
+        LayoutListItem {LI} at (40,34) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "3"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 3"
       RenderBlock {HR} at (0,294) size 769x2 [border: (1px inset #EEEEEE)]
@@ -49,8 +49,8 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderBlock (anonymous) at (40,0) size 729x0
           RenderInline {B} at (0,0) size 0x0
         RenderBlock (anonymous) at (40,0) size 729x18
-          RenderListItem {LI} at (0,0) size 729x18
-            RenderListMarker at (-20,0) size 16x18: "3"
+          LayoutListItem {LI} at (0,0) size 729x18
+            LayoutListMarker at (-20,0) size 16x18: "3"
             RenderText {#text} at (0,0) size 155x18
               text run at (0,0) width 155: "Should be 3 (and bold)"
         RenderBlock (anonymous) at (40,18) size 729x0
@@ -64,19 +64,19 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderBlock (anonymous) at (40,0) size 729x0
           RenderInline {B} at (0,0) size 0x0
         RenderBlock (anonymous) at (40,0) size 729x18
-          RenderListItem {LI} at (0,0) size 729x18
-            RenderListMarker at (-20,0) size 16x18: "3"
+          LayoutListItem {LI} at (0,0) size 729x18
+            LayoutListMarker at (-20,0) size 16x18: "3"
             RenderText {#text} at (0,0) size 155x18
               text run at (0,0) width 155: "Should be 3 (and bold)"
         RenderBlock (anonymous) at (40,18) size 729x0
           RenderInline {B} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
-        RenderListItem {LI} at (40,18) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "4"
+        LayoutListItem {LI} at (40,18) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "4"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 4"
-        RenderListItem {LI} at (40,36) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "5"
+        LayoutListItem {LI} at (40,36) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "5"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 5"
       RenderBlock {HR} at (0,486) size 769x2 [border: (1px inset #EEEEEE)]
@@ -84,15 +84,15 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 462x18
           text run at (0,0) width 462: "6. Test for properly chaining from the previous li when current is nested"
       RenderBlock {OL} at (0,530) size 769x36
-        RenderListItem {LI} at (40,0) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "1"
+        LayoutListItem {LI} at (40,0) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "1"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 1"
         RenderBlock (anonymous) at (40,18) size 729x0
           RenderInline {B} at (0,0) size 0x0
         RenderBlock (anonymous) at (40,18) size 729x18
-          RenderListItem {LI} at (0,0) size 729x18
-            RenderListMarker at (-20,0) size 16x18: "2"
+          LayoutListItem {LI} at (0,0) size 729x18
+            LayoutListMarker at (-20,0) size 16x18: "2"
             RenderText {#text} at (0,0) size 155x18
               text run at (0,0) width 155: "Should be 2 (and bold)"
         RenderBlock (anonymous) at (40,36) size 729x0
@@ -106,8 +106,8 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderBlock (anonymous) at (40,0) size 729x0
           RenderInline {I} at (0,0) size 0x0
         RenderBlock (anonymous) at (40,0) size 729x18
-          RenderListItem {LI} at (0,0) size 729x18
-            RenderListMarker at (-20,0) size 16x18: "2"
+          LayoutListItem {LI} at (0,0) size 729x18
+            LayoutListMarker at (-20,0) size 16x18: "2"
             RenderText {#text} at (0,0) size 152x18
               text run at (0,0) width 152: "Should be 2 (and italic)"
         RenderBlock (anonymous) at (40,18) size 729x0
@@ -115,8 +115,8 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           RenderText {#text} at (0,0) size 0x0
           RenderInline {B} at (0,0) size 0x0
         RenderBlock (anonymous) at (40,18) size 729x18
-          RenderListItem {LI} at (0,0) size 729x18
-            RenderListMarker at (-20,0) size 16x18: "3"
+          LayoutListItem {LI} at (0,0) size 729x18
+            LayoutListMarker at (-20,0) size 16x18: "3"
             RenderText {#text} at (0,0) size 155x18
               text run at (0,0) width 155: "Should be 3 (and bold)"
         RenderBlock (anonymous) at (40,36) size 729x0
@@ -128,11 +128,11 @@ layer at (0,0) size 785x782 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 362: "8. Test for not inheriting improperly from an another list"
       RenderBlock {OL} at (0,722) size 769x36
         RenderBlock {OL} at (40,0) size 729x18
-          RenderListItem {LI} at (40,0) size 689x18
-            RenderListMarker at (-20,0) size 16x18: "2"
+          LayoutListItem {LI} at (40,0) size 689x18
+            LayoutListMarker at (-20,0) size 16x18: "2"
             RenderText {#text} at (0,0) size 77x18
               text run at (0,0) width 77: "Should be 2"
-        RenderListItem {LI} at (40,18) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "5"
+        LayoutListItem {LI} at (40,18) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "5"
           RenderText {#text} at (0,0) size 77x18
             text run at (0,0) width 77: "Should be 5"

@@ -39,6 +39,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTable.h"
@@ -49,7 +50,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXARIAGrid.h"
@@ -284,7 +284,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* rendere
     if (renderer->isBoxModelObject()) {
         LayoutBoxModelObject* cssBox = toLayoutBoxModelObject(renderer);
         if (cssBox->isListBox())
-            return AXListBox::create(toRenderListBox(cssBox), this);
+            return AXListBox::create(toLayoutListBox(cssBox), this);
         if (cssBox->isMenuList())
             return AXMenuList::create(toRenderMenuList(cssBox), this);
 

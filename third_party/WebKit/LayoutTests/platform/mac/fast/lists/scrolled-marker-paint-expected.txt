@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
           text run at (618,0) width 5: "."
 layer at (8,-4) size 410x18 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {UL} at (8,-4) size 410.16x18
-    RenderListItem {LI} at (40,0) size 370.16x18
-      RenderListMarker at (-17,0) size 7x18: bullet
+    LayoutListItem {LI} at (40,0) size 370.16x18
+      LayoutListMarker at (-17,0) size 7x18: bullet
       RenderText {#text} at (0,0) size 371x18
         text run at (0,0) width 119: "This is a list item. "
         text run at (118,0) width 253: "You should see a list marker to the left."

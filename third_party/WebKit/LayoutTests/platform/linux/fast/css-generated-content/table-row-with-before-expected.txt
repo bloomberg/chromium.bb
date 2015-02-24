@@ -11,9 +11,9 @@ layer at (0,0) size 800x600
           text run at (212,0) width 4: " "
         LayoutBR {BR} at (216,15) size 0x0
       RenderBlock {UL} at (0,36) size 784x60
-        RenderListItem {LI} at (40,0) size 744x60
+        LayoutListItem {LI} at (40,0) size 744x60
           RenderBlock (anonymous) at (0,0) size 744x20
-            RenderListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker at (-18,0) size 7x19: bullet
           LayoutTable at (0,20) size 28x20
             LayoutTableSection (anonymous) at (0,0) size 28x20
               LayoutTableRow (anonymous) {<pseudo:before>} at (0,0) size 28x20

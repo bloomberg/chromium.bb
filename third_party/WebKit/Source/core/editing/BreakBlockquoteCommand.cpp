@@ -34,7 +34,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLQuoteElement.h"
-#include "core/rendering/RenderListItem.h"
+#include "core/layout/LayoutListItem.h"
 
 namespace blink {
 
@@ -153,7 +153,7 @@ void BreakBlockquoteCommand::doApply()
             while (listChildNode && !isHTMLLIElement(*listChildNode))
                 listChildNode = listChildNode->nextSibling();
             if (isListItem(listChildNode))
-                setNodeAttribute(clonedChild, startAttr, AtomicString::number(toRenderListItem(listChildNode->renderer())->value()));
+                setNodeAttribute(clonedChild, startAttr, AtomicString::number(toLayoutListItem(listChildNode->renderer())->value()));
         }
 
         appendNode(clonedChild.get(), clonedAncestor.get());

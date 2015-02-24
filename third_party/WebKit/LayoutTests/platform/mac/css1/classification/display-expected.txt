@@ -39,8 +39,8 @@ layer at (0,0) size 785x816 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           RenderText {#text} at (434,36) size 112x18
             text run at (434,36) width 112: " is being ignored."
         RenderText {#text} at (0,0) size 0x0
-      RenderListItem {P} at (48,244) size 721x54
-        RenderListMarker at (-17,0) size 7x18: black square
+      LayoutListItem {P} at (48,244) size 721x54
+        LayoutListMarker at (-17,0) size 7x18: black square
         RenderText {#text} at (0,0) size 694x36
           text run at (0,0) width 694: "This sentence should be treated as a list-item, and therefore be rendered however this user agent displays list"
           text run at (0,18) width 58: "items (if "
@@ -100,8 +100,8 @@ layer at (0,0) size 785x816 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   RenderText {#text} at (448,36) size 113x18
                     text run at (448,36) width 113: " is being ignored."
                 RenderText {#text} at (0,0) size 0x0
-              RenderListItem {P} at (52,108) size 699x54
-                RenderListMarker at (-17,0) size 7x18: black square
+              LayoutListItem {P} at (52,108) size 699x54
+                LayoutListMarker at (-17,0) size 7x18: black square
                 RenderText {#text} at (0,0) size 694x36
                   text run at (0,0) width 694: "This sentence should be treated as a list-item, and therefore be rendered however this user agent displays list"
                   text run at (0,18) width 58: "items (if "

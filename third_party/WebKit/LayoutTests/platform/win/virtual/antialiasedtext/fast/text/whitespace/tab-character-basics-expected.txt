@@ -13,32 +13,32 @@ layer at (0,0) size 800x418
         RenderText {#text} at (0,18) size 78x17
           text run at (0,18) width 78: "X\x{9}XX\x{9}XXX"
       RenderBlock {OL} at (3,105) size 640x54
-        RenderListItem {LI} at (40,0) size 600x18
-          RenderListMarker at (-20,0) size 16x17: "1"
+        LayoutListItem {LI} at (40,0) size 600x18
+          LayoutListMarker at (-20,0) size 16x17: "1"
           RenderText {#text} at (0,0) size 23x17
             text run at (0,0) width 23: "a\x{9}X"
-        RenderListItem {LI} at (40,18) size 600x18
-          RenderListMarker at (-20,0) size 16x17: "2"
+        LayoutListItem {LI} at (40,18) size 600x18
+          LayoutListMarker at (-20,0) size 16x17: "2"
           RenderText {#text} at (0,0) size 32x17
             text run at (0,0) width 32: "bb\x{9}X"
-        RenderListItem {LI} at (40,36) size 600x18
-          RenderListMarker at (-20,0) size 16x17: "3"
+        LayoutListItem {LI} at (40,36) size 600x18
+          LayoutListMarker at (-20,0) size 16x17: "3"
           RenderText {#text} at (0,0) size 37x17
             text run at (0,0) width 37: "ccc\x{9}X"
       RenderBlock {P} at (3,175) size 640x18 [color=#0000FF]
         RenderText {#text} at (0,0) size 324x17
           text run at (0,0) width 324: "-- Following text and list are whitespace:PRE only"
       RenderBlock {OL} at (3,209) size 640x54
-        RenderListItem {LI} at (40,0) size 600x18
-          RenderListMarker at (-20,0) size 16x17: "1"
+        LayoutListItem {LI} at (40,0) size 600x18
+          LayoutListMarker at (-20,0) size 16x17: "1"
           RenderText {#text} at (0,0) size 76x17
             text run at (0,0) width 76: "a\x{9}\x{9}X"
-        RenderListItem {LI} at (40,18) size 600x18
-          RenderListMarker at (-20,0) size 16x17: "2"
+        LayoutListItem {LI} at (40,18) size 600x18
+          LayoutListMarker at (-20,0) size 16x17: "2"
           RenderText {#text} at (0,0) size 44x17
             text run at (0,0) width 44: "bb\x{9}X"
-        RenderListItem {LI} at (40,36) size 600x18
-          RenderListMarker at (-20,0) size 16x17: "3"
+        LayoutListItem {LI} at (40,36) size 600x18
+          LayoutListMarker at (-20,0) size 16x17: "3"
           RenderText {#text} at (0,0) size 44x17
             text run at (0,0) width 44: "ccc\x{9}X"
       RenderBlock {P} at (3,279) size 640x36

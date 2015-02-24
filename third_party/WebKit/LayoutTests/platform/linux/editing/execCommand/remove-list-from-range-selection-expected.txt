@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
             text run at (0,60) width 45: "in a list."
           LayoutBR {BR} at (45,75) size 0x0
         RenderBlock {OL} at (0,96) size 784x20
-          RenderListItem {LI} at (40,0) size 744x20
-            RenderListMarker at (-21,0) size 16x19: "1"
+          LayoutListItem {LI} at (40,0) size 744x20
+            LayoutListMarker at (-21,0) size 16x19: "1"
             RenderText {#text} at (0,0) size 300x19
               text run at (0,0) width 300: "This should be in a list and should not be selected."
 selection start: position 2 of child 0 {#text} of child 2 {DIV} of body

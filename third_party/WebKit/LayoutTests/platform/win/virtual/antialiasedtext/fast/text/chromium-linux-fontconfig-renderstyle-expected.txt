@@ -19,17 +19,17 @@ layer at (0,0) size 800x600
           text run at (759,0) width 13: "in"
           text run at (0,18) width 123: "the following tests."
       RenderBlock {OL} at (0,52) size 784x446
-        RenderListItem {LI} at (40,0) size 744x52
+        LayoutListItem {LI} at (40,0) size 744x52
           RenderBlock {P} at (0,0) size 744x18
-            RenderListMarker at (-20,0) size 16x17: "1"
+            LayoutListMarker at (-20,0) size 16x17: "1"
             RenderText {#text} at (0,0) size 352x17
               text run at (0,0) width 352: "The following text should render without anti-aliasing:"
           RenderBlock {P} at (0,34) size 744x18
             RenderText {#text} at (0,0) size 141x17
               text run at (0,0) width 141: "Non anti-aliased sans."
-        RenderListItem {LI} at (40,68) size 744x70
+        LayoutListItem {LI} at (40,68) size 744x70
           RenderBlock {P} at (0,0) size 744x36
-            RenderListMarker at (-20,0) size 16x17: "2"
+            LayoutListMarker at (-20,0) size 16x17: "2"
             RenderText {#text} at (0,0) size 717x35
               text run at (0,0) width 346: "The following text should be slightly-hinted Georgia. "
               text run at (345,0) width 61: "The dots "
@@ -39,9 +39,9 @@ layer at (0,0) size 800x600
           RenderBlock {P} at (0,52) size 744x18
             RenderText {#text} at (0,0) size 209x17
               text run at (0,0) width 209: "government ................................"
-        RenderListItem {LI} at (40,154) size 744x70
+        LayoutListItem {LI} at (40,154) size 744x70
           RenderBlock {P} at (0,0) size 744x36
-            RenderListMarker at (-20,0) size 16x17: "3"
+            LayoutListMarker at (-20,0) size 16x17: "3"
             RenderText {#text} at (0,0) size 734x35
               text run at (0,0) width 411: "The following text should be unhinted Verdana. The fontconfig "
               text run at (410,0) width 324: "configuration for this is contradictory, setting both"
@@ -51,9 +51,9 @@ layer at (0,0) size 800x600
             RenderText {#text} at (0,0) size 505x17
               text run at (0,0) width 354: "Here is Tigger doing what tiggers do best \x{2026} operating "
               text run at (353,0) width 152: "hydraulic exoskeletons."
-        RenderListItem {LI} at (40,240) size 744x52
+        LayoutListItem {LI} at (40,240) size 744x52
           RenderBlock {P} at (0,0) size 744x18
-            RenderListMarker at (-20,0) size 16x17: "4"
+            LayoutListMarker at (-20,0) size 16x17: "4"
             RenderText {#text} at (0,0) size 647x17
               text run at (0,0) width 406: "The following text should show a difference caused by forcing "
               text run at (405,0) width 242: "autohinting. Note: the effect is subtle."
@@ -71,9 +71,9 @@ layer at (0,0) size 800x600
             RenderInline {SPAN} at (0,0) size 59x11
               RenderText {#text} at (63,5) size 59x11
                 text run at (63,5) width 59: "not-autohinted"
-        RenderListItem {LI} at (40,308) size 744x70
+        LayoutListItem {LI} at (40,308) size 744x70
           RenderBlock {P} at (0,0) size 744x36
-            RenderListMarker at (-20,0) size 16x17: "5"
+            LayoutListMarker at (-20,0) size 16x17: "5"
             RenderText {#text} at (0,0) size 557x17
               text run at (0,0) width 557: "The following text should be the same. It verifies that, given the contradictory settings "
             RenderInline {TT} at (0,0) size 65x16
@@ -101,9 +101,9 @@ layer at (0,0) size 800x600
             RenderInline {SPAN} at (0,0) size 83x11
               RenderText {#text} at (63,5) size 83x11
                 text run at (63,5) width 83: "hopefully autohinted"
-        RenderListItem {LI} at (40,394) size 744x52
+        LayoutListItem {LI} at (40,394) size 744x52
           RenderBlock {P} at (0,0) size 744x18
-            RenderListMarker at (-20,0) size 16x17: "6"
+            LayoutListMarker at (-20,0) size 16x17: "6"
             RenderText {#text} at (0,0) size 638x17
               text run at (0,0) width 448: "The following text should show that fontconfig can be used to enable "
               text run at (447,0) width 191: "or disable subpixel rendering."

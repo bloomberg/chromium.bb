@@ -1372,7 +1372,7 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
         applyTextTransform(style(), m_text, previousCharacter());
 
         // We use the same characters here as for list markers.
-        // See the listMarkerText function in RenderListMarker.cpp.
+        // See the listMarkerText function in LayoutListMarker.cpp.
         switch (style()->textSecurity()) {
         case TSNONE:
             break;

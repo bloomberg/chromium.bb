@@ -14,9 +14,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,276) width 730: "when the list marker is autosized (causing the"
           text run at (0,322) width 304: "autosizer to crash)."
       RenderBlock (floating) {UL} at (0,384) size 800x225
-        RenderListItem {LI} at (40,0) size 760x225
+        LayoutListItem {LI} at (40,0) size 760x225
           RenderBlock {DIV} at (0,0) size 760x225
-            RenderListMarker at (-31,0) size 14x45: bullet
+            LayoutListMarker at (-31,0) size 14x45: bullet
             RenderText {#text} at (0,0) size 733x225
               text run at (0,0) width 725: "List item list item list item list item list item list"
               text run at (0,45) width 733: "item list item list item list item list item list item"

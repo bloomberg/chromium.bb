@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutRubyBase.h"
 #include "core/layout/LayoutRubyRun.h"
@@ -35,7 +36,6 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -166,7 +166,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
             if (box.hasRenderOverflow() || box.hasSelfPaintingLayer())
                 child->clearKnownToHaveNoOverflow();
         } else if (!child->renderer().isBR() && (child->renderer().style(isFirstLineStyle())->boxShadow() || child->boxModelObject()->hasSelfPaintingLayer()
-            || (child->renderer().isListMarker() && !toRenderListMarker(child->renderer()).isInside())
+            || (child->renderer().isListMarker() && !toLayoutListMarker(child->renderer()).isInside())
             || child->renderer().style(isFirstLineStyle())->hasBorderImageOutsets()
             || child->renderer().style(isFirstLineStyle())->hasOutline())) {
             child->clearKnownToHaveNoOverflow();
@@ -424,7 +424,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* f
                 if (knownToHaveNoOverflow())
                     maxLogicalRight = std::max(logicalLeft, maxLogicalRight);
                 logicalLeft += flow->marginLogicalRight();
-            } else if (!curr->renderer().isListMarker() || toRenderListMarker(curr->renderer()).isInside()) {
+            } else if (!curr->renderer().isListMarker() || toLayoutListMarker(curr->renderer()).isInside()) {
                 // The box can have a different writing-mode than the overall line, so this is a bit complicated.
                 // Just get all the physical margin and overflow values by hand based off |isVertical|.
                 LayoutUnit logicalLeftMargin = isHorizontal() ? curr->boxModelObject()->marginLeft() : curr->boxModelObject()->marginTop();

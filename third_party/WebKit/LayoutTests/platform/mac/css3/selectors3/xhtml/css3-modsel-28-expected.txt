@@ -4,53 +4,53 @@ layer at (0,0) size 800x496
   RenderBlock {html} at (0,0) size 800x496
     RenderBody {body} at (8,16) size 784x472
       RenderBlock {ul} at (0,0) size 784x108
-        RenderListItem {li} at (40,0) size 744x18 [bgcolor=#00FF00]
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {li} at (40,0) size 744x18 [bgcolor=#00FF00]
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 326x18
             text run at (0,0) width 326: "This first list item should have a green background"
-        RenderListItem {li} at (40,18) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {li} at (40,18) size 744x18
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 104x18
             text run at (0,0) width 104: "Second list item"
-        RenderListItem {li} at (40,36) size 744x18 [bgcolor=#00FF00]
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {li} at (40,36) size 744x18 [bgcolor=#00FF00]
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 330x18
             text run at (0,0) width 330: "This third list item should have a green background"
-        RenderListItem {li} at (40,54) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {li} at (40,54) size 744x18
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 99x18
             text run at (0,0) width 99: "Fourth list item"
-        RenderListItem {li} at (40,72) size 744x18 [bgcolor=#00FF00]
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {li} at (40,72) size 744x18 [bgcolor=#00FF00]
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 328x18
             text run at (0,0) width 328: "This fifth list item should have a green background"
-        RenderListItem {li} at (40,90) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
+        LayoutListItem {li} at (40,90) size 744x18
+          LayoutListMarker at (-17,0) size 7x18: bullet
           RenderText {#text} at (0,0) size 90x18
             text run at (0,0) width 90: "Sixth list item"
       RenderBlock {ol} at (0,124) size 784x108
-        RenderListItem {li} at (40,0) size 744x18
-          RenderListMarker at (-20,0) size 16x18: "1"
+        LayoutListItem {li} at (40,0) size 744x18
+          LayoutListMarker at (-20,0) size 16x18: "1"
           RenderText {#text} at (0,0) size 86x18
             text run at (0,0) width 86: "First list item"
-        RenderListItem {li} at (40,18) size 744x18 [bgcolor=#00FF00]
-          RenderListMarker at (-20,0) size 16x18: "2"
+        LayoutListItem {li} at (40,18) size 744x18 [bgcolor=#00FF00]
+          LayoutListMarker at (-20,0) size 16x18: "2"
           RenderText {#text} at (0,0) size 344x18
             text run at (0,0) width 344: "This second list item should have a green background"
-        RenderListItem {li} at (40,36) size 744x18
-          RenderListMarker at (-20,0) size 16x18: "3"
+        LayoutListItem {li} at (40,36) size 744x18
+          LayoutListMarker at (-20,0) size 16x18: "3"
           RenderText {#text} at (0,0) size 92x18
             text run at (0,0) width 92: "Third list item"
-        RenderListItem {li} at (40,54) size 744x18 [bgcolor=#00FF00]
-          RenderListMarker at (-20,0) size 16x18: "4"
+        LayoutListItem {li} at (40,54) size 744x18 [bgcolor=#00FF00]
+          LayoutListMarker at (-20,0) size 16x18: "4"
           RenderText {#text} at (0,0) size 339x18
             text run at (0,0) width 339: "This fourth list item should have a green background"
-        RenderListItem {li} at (40,72) size 744x18
-          RenderListMarker at (-20,0) size 16x18: "5"
+        LayoutListItem {li} at (40,72) size 744x18
+          LayoutListMarker at (-20,0) size 16x18: "5"
           RenderText {#text} at (0,0) size 88x18
             text run at (0,0) width 88: "Fifth list item"
-        RenderListItem {li} at (40,90) size 744x18 [bgcolor=#00FF00]
-          RenderListMarker at (-20,0) size 16x18: "6"
+        LayoutListItem {li} at (40,90) size 744x18 [bgcolor=#00FF00]
+          LayoutListMarker at (-20,0) size 16x18: "6"
           RenderText {#text} at (0,0) size 331x18
             text run at (0,0) width 331: "This sixth list item should have a green background"
       RenderBlock {div} at (0,248) size 784x224

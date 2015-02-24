@@ -396,7 +396,7 @@ static const int optionRowHeightForTouch = 28;
 
 void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowIndex)
 {
-    // This code is based largely on RenderListBox::paint* methods.
+    // This code is based largely on LayoutListBox::paint* methods.
 
     IntRect rowRect = getRowBounds(rowIndex);
     if (!rowRect.intersects(rect))

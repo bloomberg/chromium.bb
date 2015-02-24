@@ -54,13 +54,13 @@ layer at (0,0) size 785x1177 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (97,36) width 480: "The text has been right-aligned in order to make the right padding easier to"
           text run at (552,54) width 25: "see."
       RenderBlock {UL} at (0,493) size 769x72 [bgcolor=#808080]
-        RenderListItem {LI} at (40,0) size 704x36
-          RenderListMarker at (-17,0) size 7x17: bullet
+        LayoutListItem {LI} at (40,0) size 704x36
+          LayoutListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (8,0) size 696x35
             text run at (8,0) width 696: "The right padding on this unordered list has been set to 25 pixels, which will require some extra text in order"
             text run at (661,18) width 43: "to test."
-        RenderListItem {LI} at (40,36) size 704x36 [bgcolor=#FFFFFF]
-          RenderListMarker at (-17,0) size 7x17: bullet
+        LayoutListItem {LI} at (40,36) size 704x36 [bgcolor=#FFFFFF]
+          LayoutListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (5,0) size 674x35
             text run at (5,0) width 674: "This list item has a right padding of 25 pixels, which will appear to the left of the gray padding of the UL"
             text run at (624,18) width 55: "element."
@@ -116,13 +116,13 @@ layer at (0,0) size 785x1177 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (138,36) width 423: "The text has been right-aligned in order to make the right padding"
                   text run at (478,54) width 83: "easier to see."
               RenderBlock {UL} at (4,336) size 747x72 [bgcolor=#808080]
-                RenderListItem {LI} at (40,0) size 682x36
-                  RenderListMarker at (-17,0) size 7x17: bullet
+                LayoutListItem {LI} at (40,0) size 682x36
+                  LayoutListMarker at (-17,0) size 7x17: bullet
                   RenderText {#text} at (24,0) size 658x35
                     text run at (24,0) width 658: "The right padding on this unordered list has been set to 25 pixels, which will require some extra text in"
                     text run at (601,18) width 81: "order to test."
-                RenderListItem {LI} at (40,36) size 682x36 [bgcolor=#FFFFFF]
-                  RenderListMarker at (-17,0) size 7x17: bullet
+                LayoutListItem {LI} at (40,36) size 682x36 [bgcolor=#FFFFFF]
+                  LayoutListMarker at (-17,0) size 7x17: bullet
                   RenderText {#text} at (9,0) size 648x35
                     text run at (9,0) width 648: "This list item has a right padding of 25 pixels, which will appear to the left of the gray padding of the"
                     text run at (577,18) width 80: "UL element."

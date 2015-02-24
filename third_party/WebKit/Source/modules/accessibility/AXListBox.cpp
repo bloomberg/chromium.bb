@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/accessibility/AXListBox.h"
 
-#include "core/rendering/RenderListBox.h"
+#include "core/layout/LayoutListBox.h"
 #include "modules/accessibility/AXListBoxOption.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 

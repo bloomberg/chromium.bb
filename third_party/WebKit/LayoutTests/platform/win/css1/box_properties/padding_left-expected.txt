@@ -46,12 +46,12 @@ layer at (0,0) size 785x1015 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (376,18) width 392: "Both the content background and the padding should be aqua"
           text run at (192,36) width 76: "(light blue)."
       RenderBlock {UL} at (0,421) size 769x72 [bgcolor=#808080]
-        RenderListItem {LI} at (25,0) size 744x18
-          RenderListMarker at (-17,0) size 7x17: bullet
+        LayoutListItem {LI} at (25,0) size 744x18
+          LayoutListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (0,0) size 732x17
             text run at (0,0) width 732: "The left padding on this unordered list has been set to 25 pixels, which will require some extra test in order to test."
-        RenderListItem {LI} at (25,18) size 744x54 [bgcolor=#FFFFFF]
-          RenderListMarker at (-17,0) size 7x17: bullet
+        LayoutListItem {LI} at (25,18) size 744x54 [bgcolor=#FFFFFF]
+          LayoutListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (25,0) size 714x53
             text run at (25,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
             text run at (25,18) width 61: "checked. "
@@ -99,13 +99,13 @@ layer at (0,0) size 785x1015 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (370,18) width 358: "Both the content background and the padding should be"
                   text run at (186,36) width 111: "aqua (light blue)."
               RenderBlock {UL} at (4,264) size 747x90 [bgcolor=#808080]
-                RenderListItem {LI} at (25,0) size 722x36
-                  RenderListMarker at (-17,0) size 7x17: bullet
+                LayoutListItem {LI} at (25,0) size 722x36
+                  LayoutListMarker at (-17,0) size 7x17: bullet
                   RenderText {#text} at (0,0) size 702x35
                     text run at (0,0) width 702: "The left padding on this unordered list has been set to 25 pixels, which will require some extra test in order to"
                     text run at (0,18) width 27: "test."
-                RenderListItem {LI} at (25,36) size 722x54 [bgcolor=#FFFFFF]
-                  RenderListMarker at (-17,0) size 7x17: bullet
+                LayoutListItem {LI} at (25,36) size 722x54 [bgcolor=#FFFFFF]
+                  LayoutListMarker at (-17,0) size 7x17: bullet
                   RenderText {#text} at (25,0) size 670x53
                     text run at (25,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
                     text run at (25,18) width 61: "checked. "

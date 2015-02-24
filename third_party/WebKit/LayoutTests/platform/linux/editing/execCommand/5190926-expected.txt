@@ -4,18 +4,18 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
       RenderBlock {OL} at (0,0) size 784x60
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-21,0) size 16x19: "1"
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker at (-21,0) size 16x19: "1"
           RenderInline {U} at (0,0) size 468x19
             RenderText {#text} at (0,0) size 468x19
               text run at (0,0) width 468: "This tests for a crash when making and removing lists from underlined content."
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-21,0) size 16x19: "2"
+        LayoutListItem {LI} at (40,20) size 744x20
+          LayoutListMarker at (-21,0) size 16x19: "2"
           RenderInline {U} at (0,0) size 257x19
             RenderText {#text} at (0,0) size 257x19
               text run at (0,0) width 257: "All three paragraphs should be in list items."
-        RenderListItem {LI} at (40,40) size 744x20
-          RenderListMarker at (-21,0) size 16x19: "3"
+        LayoutListItem {LI} at (40,40) size 744x20
+          LayoutListMarker at (-21,0) size 16x19: "3"
           RenderInline {U} at (0,0) size 209x19
             RenderText {#text} at (0,0) size 209x19
               text run at (0,0) width 209: "And all three should be underlined."

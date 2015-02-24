@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,63) size 60x68 clip at (11,66) size 39x62 scrollHeight 74
-  RenderListBox {SELECT} at (0,-0.75) size 60x67.75 [bgcolor=#FFFFFF] [border: (3px solid #0000FF)]
+  LayoutListBox {SELECT} at (0,-0.75) size 60x67.75 [bgcolor=#FFFFFF] [border: (3px solid #0000FF)]
     RenderBlock {OPTION} at (6,6) size 33x17
       RenderText {#text} at (2,0) size 21x16
         text run at (2,0) width 21: "one"

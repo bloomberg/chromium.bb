@@ -25,6 +25,7 @@
 #define BreakingContextInlineHeaders_h
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/TextRunConstructor.h"
@@ -39,7 +40,6 @@
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderListMarker.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
@@ -469,7 +469,7 @@ inline void BreakingContext::handleReplaced()
             m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = true;
             m_ignoringSpaces = true;
         }
-        if (toRenderListMarker(m_current.object())->isInside())
+        if (toLayoutListMarker(m_current.object())->isInside())
             m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     } else {
         m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
@@ -876,7 +876,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 
     if (!m_current.object()->isFloatingOrOutOfFlowPositioned()) {
         m_lastObject = m_current.object();
-        if (m_lastObject->isReplaced() && m_autoWrap && (!m_lastObject->isImage() || m_allowImagesToBreak) && (!m_lastObject->isListMarker() || toRenderListMarker(m_lastObject)->isInside())) {
+        if (m_lastObject->isReplaced() && m_autoWrap && (!m_lastObject->isImage() || m_allowImagesToBreak) && (!m_lastObject->isListMarker() || toLayoutListMarker(m_lastObject)->isInside())) {
             m_width.commit();
             m_lineBreak.moveToStartOf(m_nextObject);
         }

@@ -65,8 +65,8 @@ layer at (0,0) size 785x1309 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 122: "Test Instructions:"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {OL} at (0,310.88) size 769x210
-        RenderListItem {LI} at (40,0) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "1"
+        LayoutListItem {LI} at (40,0) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "1"
           RenderText {#text} at (0,0) size 511x18
             text run at (0,0) width 511: "Verify that the sample text displays as stated in each of the following test cases:"
         RenderBlock {P} at (40,34) size 729x70
@@ -93,8 +93,8 @@ layer at (0,0) size 785x1309 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       RenderText {#text} at (7,7) size 597x18
                         text run at (7,7) width 597: "Tables displaying Header & Data \"LEFT|CENTER|RIGHT\" horizontal row alignment"
         RenderBlock {P} at (40,120) size 729x0
-        RenderListItem {LI} at (40,120) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "2"
+        LayoutListItem {LI} at (40,120) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "2"
           RenderText {#text} at (0,0) size 289x18
             text run at (0,0) width 289: "Verify that the table is maintained when you "
           RenderInline {B} at (0,0) size 135x18
@@ -102,8 +102,8 @@ layer at (0,0) size 785x1309 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (288,0) width 135: "minimize/maximize"
           RenderText {#text} at (422,0) size 73x18
             text run at (422,0) width 73: " the screen."
-        RenderListItem {LI} at (40,138) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "3"
+        LayoutListItem {LI} at (40,138) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "3"
           RenderText {#text} at (0,0) size 289x18
             text run at (0,0) width 289: "Verify that the table is maintained when you "
           RenderInline {B} at (0,0) size 127x18
@@ -111,8 +111,8 @@ layer at (0,0) size 785x1309 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (288,0) width 127: "re-size left & right"
           RenderText {#text} at (414,0) size 73x18
             text run at (414,0) width 73: " the screen."
-        RenderListItem {LI} at (40,156) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "4"
+        LayoutListItem {LI} at (40,156) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "4"
           RenderText {#text} at (0,0) size 289x18
             text run at (0,0) width 289: "Verify that the table is maintained when you "
           RenderInline {B} at (0,0) size 142x18
@@ -120,12 +120,12 @@ layer at (0,0) size 785x1309 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (288,0) width 142: "re-size top & bottom"
           RenderText {#text} at (429,0) size 74x18
             text run at (429,0) width 74: " the screen."
-        RenderListItem {LI} at (40,174) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "5"
+        LayoutListItem {LI} at (40,174) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "5"
           RenderText {#text} at (0,0) size 418x18
             text run at (0,0) width 418: "Verify re-draw takes place correctly after maximizing the screen."
-        RenderListItem {LI} at (40,192) size 729x18
-          RenderListMarker at (-20,0) size 16x18: "6"
+        LayoutListItem {LI} at (40,192) size 729x18
+          LayoutListMarker at (-20,0) size 16x18: "6"
           RenderText {#text} at (0,0) size 133x18
             text run at (0,0) width 133: "Verify reload works."
       RenderBlock {HR} at (0,536.88) size 769x2 [border: (1px inset #EEEEEE)]

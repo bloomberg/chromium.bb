@@ -43,9 +43,9 @@
 namespace blink {
 
 class Document;
+class LayoutListItem;
+class LayoutListMarker;
 class RenderBlock;
-class RenderListItem;
-class RenderListMarker;
 
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/TextAutosizer
@@ -63,7 +63,7 @@ public:
     void updatePageInfo();
     void record(const RenderBlock*);
     void destroy(const RenderBlock*);
-    void inflateListItem(RenderListItem*, RenderListMarker*);
+    void inflateListItem(LayoutListItem*, LayoutListMarker*);
 
     DECLARE_TRACE();
 

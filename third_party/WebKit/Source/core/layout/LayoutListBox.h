@@ -28,8 +28,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderListBox_h
-#define RenderListBox_h
+#ifndef LayoutListBox_h
+#define LayoutListBox_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
@@ -37,10 +37,10 @@ namespace blink {
 
 class HTMLSelectElement;
 
-class RenderListBox final : public RenderBlockFlow {
+class LayoutListBox final : public RenderBlockFlow {
 public:
-    explicit RenderListBox(Element*);
-    virtual ~RenderListBox();
+    explicit LayoutListBox(Element*);
+    virtual ~LayoutListBox();
 
     int size() const;
 
@@ -50,7 +50,7 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
-    virtual const char* renderName() const override { return "RenderListBox"; }
+    virtual const char* renderName() const override { return "LayoutListBox"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListBox || RenderBlockFlow::isOfType(type); }
 
@@ -63,8 +63,8 @@ private:
     LayoutUnit itemHeight() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderListBox, isListBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListBox, isListBox());
 
 } // namepace blink
 
-#endif // RenderListBox_h
+#endif // LayoutListBox_h

@@ -32,11 +32,11 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutListBox.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderListBox.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -74,7 +74,7 @@ void AutoscrollController::startAutoscrollForSelection(LayoutObject* renderer)
         return;
     RenderBox* scrollable = RenderBox::findAutoscrollable(renderer);
     if (!scrollable)
-        scrollable = renderer->isListBox() ? toRenderListBox(renderer) : nullptr;
+        scrollable = renderer->isListBox() ? toLayoutListBox(renderer) : nullptr;
     if (!scrollable)
         return;
     m_autoscrollType = AutoscrollForSelection;

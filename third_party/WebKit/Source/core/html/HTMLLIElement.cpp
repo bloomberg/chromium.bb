@@ -27,7 +27,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/dom/NodeRenderingTraversal.h"
-#include "core/rendering/RenderListItem.h"
+#include "core/layout/LayoutListItem.h"
 
 namespace blink {
 
@@ -80,7 +80,7 @@ void HTMLLIElement::attach(const AttachContext& context)
     HTMLElement::attach(context);
 
     if (renderer() && renderer()->isListItem()) {
-        RenderListItem* listItemRenderer = toRenderListItem(renderer());
+        LayoutListItem* listItemLayoutObject = toLayoutListItem(renderer());
 
         ASSERT(!document().childNeedsDistributionRecalc());
 
@@ -98,7 +98,7 @@ void HTMLLIElement::attach(const AttachContext& context)
         // If we are not in a list, tell the renderer so it can position us inside.
         // We don't want to change our style to say "inside" since that would affect nested nodes.
         if (!listNode)
-            listItemRenderer->setNotInList(true);
+            listItemLayoutObject->setNotInList(true);
 
         parseValue(fastGetAttribute(valueAttr));
     }
@@ -111,9 +111,9 @@ inline void HTMLLIElement::parseValue(const AtomicString& value)
     bool valueOK;
     int requestedValue = value.toInt(&valueOK);
     if (valueOK)
-        toRenderListItem(renderer())->setExplicitValue(requestedValue);
+        toLayoutListItem(renderer())->setExplicitValue(requestedValue);
     else
-        toRenderListItem(renderer())->clearExplicitValue();
+        toLayoutListItem(renderer())->clearExplicitValue();
 }
 
 }

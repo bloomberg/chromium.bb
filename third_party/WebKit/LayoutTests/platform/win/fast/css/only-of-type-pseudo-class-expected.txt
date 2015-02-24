@@ -23,11 +23,11 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (620,0) width 6: "."
       RenderBlock {DIV} at (0,34) size 769x0 [bgcolor=#009900]
       RenderBlock {OL} at (0,34) size 769x1418
-        RenderListItem {LI} at (40,0) size 615.19x216 [bgcolor=#AAAAAA]
+        LayoutListItem {LI} at (40,0) size 615.19x216 [bgcolor=#AAAAAA]
           RenderBlock {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             RenderBlock {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           RenderBlock {PRE} at (16,53) size 583.19x79 [bgcolor=#FFFFFF]
-            RenderListMarker at (-37.78,6.50) size 17.78x17: "1"
+            LayoutListMarker at (-37.78,6.50) size 17.78x17: "1"
             RenderText {#text} at (6,8) size 281x65
               text run at (6,8) width 145: "div:only-of-type {"
               text run at (150,8) width 1: " "
@@ -39,12 +39,12 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText {#text} at (0,0) size 555x35
               text run at (0,0) width 555: "The CSS selector should match the marked div element, because it is the only"
               text run at (0,18) width 139: "element of this type"
-        RenderListItem {LI} at (40,264) size 615.19x232 [bgcolor=#AAAAAA]
+        LayoutListItem {LI} at (40,264) size 615.19x232 [bgcolor=#AAAAAA]
           RenderBlock {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             RenderBlock {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
             RenderBlock {BLOCKQUOTE} at (0,24) size 583.19x0 [bgcolor=#009900]
           RenderBlock {PRE} at (16,53) size 583.19x95 [bgcolor=#FFFFFF]
-            RenderListMarker at (-37.78,6.50) size 17.78x17: "2"
+            LayoutListMarker at (-37.78,6.50) size 17.78x17: "2"
             RenderText {#text} at (6,8) size 281x81
               text run at (6,8) width 145: "div:only-of-type {"
               text run at (150,8) width 1: " "
@@ -58,13 +58,13 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText {#text} at (0,0) size 555x35
               text run at (0,0) width 555: "The CSS selector should match the marked div element, because it is the only"
               text run at (0,18) width 139: "element of this type"
-        RenderListItem {LI} at (40,544) size 615.19x264 [bgcolor=#AAAAAA]
+        LayoutListItem {LI} at (40,544) size 615.19x264 [bgcolor=#AAAAAA]
           RenderBlock {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             RenderBlock {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
             RenderBlock {BLOCKQUOTE} at (0,24) size 583.19x0 [bgcolor=#009900]
               RenderBlock {DIV} at (0,0) size 583.19x0
           RenderBlock {PRE} at (16,53) size 583.19x127 [bgcolor=#FFFFFF]
-            RenderListMarker at (-37.78,6.50) size 17.78x17: "3"
+            LayoutListMarker at (-37.78,6.50) size 17.78x17: "3"
             RenderText {#text} at (6,8) size 281x113
               text run at (6,8) width 145: "div:only-of-type {"
               text run at (150,8) width 1: " "
@@ -82,12 +82,12 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText {#text} at (0,0) size 555x35
               text run at (0,0) width 555: "The CSS selector should match the marked div element, because it is the only"
               text run at (0,18) width 233: "element of this type in this scope"
-        RenderListItem {LI} at (40,856) size 615.19x232 [bgcolor=#AAAAAA]
+        LayoutListItem {LI} at (40,856) size 615.19x232 [bgcolor=#AAAAAA]
           RenderBlock {DIV} at (16,16) size 583.19x24 [bgcolor=#009900]
             RenderBlock {DIV} at (0,0) size 583.19x24
             RenderBlock {DIV} at (0,24) size 583.19x0
           RenderBlock {PRE} at (16,53) size 583.19x95 [bgcolor=#FFFFFF]
-            RenderListMarker at (-37.78,6.50) size 17.78x17: "4"
+            LayoutListMarker at (-37.78,6.50) size 17.78x17: "4"
             RenderText {#text} at (6,8) size 281x81
               text run at (6,8) width 145: "div:only-of-type {"
               text run at (150,8) width 1: " "
@@ -101,12 +101,12 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText {#text} at (0,0) size 574x35
               text run at (0,0) width 574: "The CSS selector should not match the marked div element, because it is not the"
               text run at (0,18) width 173: "only element of this type"
-        RenderListItem {LI} at (40,1136) size 615.19x282 [bgcolor=#AAAAAA]
+        LayoutListItem {LI} at (40,1136) size 615.19x282 [bgcolor=#AAAAAA]
           RenderBlock {DIV} at (16,16) size 583.19x24 [bgcolor=#009900]
             RenderBlock {DIV} at (0,0) size 583.19x24
             RenderBlock {DIV} at (0,24) size 583.19x0
           RenderBlock {PRE} at (16,53) size 583.19x127 [bgcolor=#FFFFFF]
-            RenderListMarker at (-37.78,6.50) size 17.78x17: "5"
+            LayoutListMarker at (-37.78,6.50) size 17.78x17: "5"
             RenderText {#text} at (6,8) size 481x113
               text run at (6,8) width 145: "div:only-of-type {"
               text run at (150,8) width 1: " "
