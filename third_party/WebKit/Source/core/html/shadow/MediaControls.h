@@ -101,8 +101,6 @@ private:
     void tryShowOverlayCastButton();
 
     void createTextTrackDisplay();
-    void showTextTrackDisplay();
-    void hideTextTrackDisplay();
 
     // Node
     virtual bool isMediaControls() const override { return true; }

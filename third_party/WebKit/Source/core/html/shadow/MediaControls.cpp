@@ -528,20 +528,6 @@ void MediaControls::createTextTrackDisplay()
     m_overlayEnclosure->insertBefore(textDisplayContainer.release(), m_overlayEnclosure->firstChild());
 }
 
-void MediaControls::showTextTrackDisplay()
-{
-    if (!m_textDisplayContainer)
-        createTextTrackDisplay();
-    m_textDisplayContainer->show();
-}
-
-void MediaControls::hideTextTrackDisplay()
-{
-    if (!m_textDisplayContainer)
-        createTextTrackDisplay();
-    m_textDisplayContainer->hide();
-}
-
 void MediaControls::updateTextTrackDisplay()
 {
     if (!m_textDisplayContainer)
