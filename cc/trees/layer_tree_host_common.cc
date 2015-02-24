@@ -31,7 +31,7 @@ ScrollAndScaleSet::ScrollAndScaleSet()
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
 
-static void SortLayers(LayerList::iterator forst,
+static void SortLayers(LayerList::iterator first,
                        LayerList::iterator end,
                        void* layer_sorter) {
   NOTREACHED();
