@@ -84,12 +84,11 @@ bool GpuSurfacelessBrowserCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   if (!GpuBrowserCompositorOutputSurface::BindToClient(client))
     return false;
-  GLHelper* helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-  if (!helper)
-    return false;
-  output_surface_.reset(new BufferQueue(context_provider_, internalformat_,
-                                        helper, gpu_memory_buffer_manager_,
-                                        surface_id_));
+  gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
+                                context_provider_->ContextSupport()));
+  output_surface_.reset(
+      new BufferQueue(context_provider_, internalformat_, gl_helper_.get(),
+                      gpu_memory_buffer_manager_, surface_id_));
   return output_surface_->Initialize();
 }
 
