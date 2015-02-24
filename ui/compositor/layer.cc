@@ -540,6 +540,9 @@ void Layer::SetTextureMailbox(
     new_layer->SetFlipped(true);
     SwitchToLayer(new_layer);
     texture_layer_ = new_layer;
+    // Reset the frame_size_in_dip_ so that SetTextureSize() will not early out,
+    // the frame_size_in_dip_ was for a previous (different) |texture_layer_|.
+    frame_size_in_dip_ = gfx::Size();
   }
   if (mailbox_release_callback_)
     mailbox_release_callback_->Run(0, false);

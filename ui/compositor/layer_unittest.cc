@@ -671,21 +671,22 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   l1->SetFillsBoundsOpaquely(true);
   l1->SetForceRenderSurface(true);
   l1->SetVisible(false);
+  l1->SetBounds(gfx::Rect(4, 5));
 
   EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
   EXPECT_TRUE(l1->cc_layer()->DrawsContent());
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
   EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
 
   cc::Layer* before_layer = l1->cc_layer();
 
   bool callback1_run = false;
   cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), 0, 0);
-  l1->SetTextureMailbox(mailbox,
-                        cc::SingleReleaseCallback::Create(
-                            base::Bind(ReturnMailbox, &callback1_run)),
-                        gfx::Size(1, 1));
+  l1->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
+                                     base::Bind(ReturnMailbox, &callback1_run)),
+                        gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer());
 
@@ -694,24 +695,48 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
   EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
   EXPECT_FALSE(callback1_run);
 
   bool callback2_run = false;
   mailbox = cc::TextureMailbox(gpu::Mailbox::Generate(), 0, 0);
-  l1->SetTextureMailbox(mailbox,
-                        cc::SingleReleaseCallback::Create(
-                            base::Bind(ReturnMailbox, &callback2_run)),
-                        gfx::Size(1, 1));
+  l1->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
+                                     base::Bind(ReturnMailbox, &callback2_run)),
+                        gfx::Size(10, 10));
   EXPECT_TRUE(callback1_run);
   EXPECT_FALSE(callback2_run);
 
+  // Show solid color instead.
   l1->SetShowSolidColorContent();
   EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
   EXPECT_TRUE(l1->cc_layer()->DrawsContent());
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
   EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
   EXPECT_TRUE(callback2_run);
+
+  before_layer = l1->cc_layer();
+
+  // Back to a texture, without changing the bounds of the layer or the texture.
+  bool callback3_run = false;
+  mailbox = cc::TextureMailbox(gpu::Mailbox::Generate(), 0, 0);
+  l1->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
+                                     base::Bind(ReturnMailbox, &callback3_run)),
+                        gfx::Size(10, 10));
+
+  EXPECT_NE(before_layer, l1->cc_layer());
+
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
+  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
+  EXPECT_FALSE(callback3_run);
+
+  // Release the on |l1| mailbox to clean up the test.
+  l1->SetShowSolidColorContent();
 }
 
 // Various visibile/drawn assertions.
