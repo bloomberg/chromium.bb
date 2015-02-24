@@ -42,13 +42,19 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
 
+  // Sends a 'dragend' message to the guest that started the drag.
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
 
-  void DragEnteredGuest(BrowserPluginGuest* guest);
+  // Indicates that a drag operation has entered into the bounds of a given
+  // |guest|. Returns whether the |guest| also started the operation.
+  bool DragEnteredGuest(BrowserPluginGuest* guest);
 
+  // Indicates that a drag operation has left the bounds of a given |guest|.
   void DragLeftGuest(BrowserPluginGuest* guest);
 
+  // Called by WebContentsViewGuest when a drag operation is started within
+  // |guest|. This |guest| will be signaled at the end of the drag operation.
   void StartDrag(BrowserPluginGuest* guest);
 
   // Sends EndSystemDrag message to the guest that initiated the last drag/drop

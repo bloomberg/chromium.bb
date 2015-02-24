@@ -445,10 +445,10 @@ void BrowserPluginGuest::EndSystemDragIfApplicable() {
     RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
         GetWebContents()->GetRenderViewHost());
     guest_rvh->DragSourceSystemDragEnded();
-
     last_drag_status_ = blink::WebDragStatusUnknown;
     seen_embedder_system_drag_ended_ = false;
     seen_embedder_drag_source_ended_at_ = false;
+    dragged_url_ = GURL();
   }
 }
 
@@ -674,21 +674,28 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
                                             blink::WebDragOperationsMask mask,
                                             const gfx::Point& location) {
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();
+  auto embedder = owner_web_contents_->GetBrowserPluginEmbedder();
   switch (drag_status) {
     case blink::WebDragStatusEnter:
-      owner_web_contents_->GetBrowserPluginEmbedder()->DragEnteredGuest(
-          this);
+      // Only track the URL being dragged over the guest if the link isn't
+      // coming from the guest.
+      if (!embedder->DragEnteredGuest(this))
+        dragged_url_ = drop_data.url;
       host->DragTargetDragEnter(drop_data, location, location, mask, 0);
       break;
     case blink::WebDragStatusOver:
       host->DragTargetDragOver(location, location, mask, 0);
       break;
     case blink::WebDragStatusLeave:
-      owner_web_contents_->GetBrowserPluginEmbedder()->DragLeftGuest(this);
+      embedder->DragLeftGuest(this);
       host->DragTargetDragLeave();
       break;
     case blink::WebDragStatusDrop:
       host->DragTargetDrop(location, location, 0);
+      if (dragged_url_.is_valid()) {
+        delegate_->DidDropLink(dragged_url_);
+        dragged_url_ = GURL();
+      }
       break;
     case blink::WebDragStatusUnknown:
       NOTREACHED();

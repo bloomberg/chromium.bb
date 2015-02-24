@@ -26,6 +26,7 @@ const char kEventConsoleMessage[] = "webViewInternal.onConsoleMessage";
 const char kEventContentLoad[] = "webViewInternal.onContentLoad";
 const char kEventContextMenu[] = "chromeWebViewInternal.contextmenu";
 const char kEventDialog[] = "webViewInternal.onDialog";
+const char kEventDropLink[] = "webViewInternal.onDropLink";
 const char kEventExit[] = "webViewInternal.onExit";
 const char kEventFindReply[] = "webViewInternal.onFindReply";
 const char kEventFrameNameChanged[] = "webViewInternal.onFrameNameChanged";

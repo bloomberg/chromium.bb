@@ -91,7 +91,7 @@ cr.define('cr.login', function() {
     this.reloadUrl_ = null;
     this.trusted_ = true;
 
-    this.webview_.addEventListener('drop', this.onDrop_.bind(this));
+    this.webview_.addEventListener('droplink', this.onDropLink_.bind(this));
     this.webview_.addEventListener(
         'newwindow', this.onNewWindow_.bind(this));
     this.webview_.addEventListener(
@@ -335,13 +335,11 @@ cr.define('cr.login', function() {
   };
 
   /**
-   * Invoked at the drop phase of a drag-and-drop operation on the webview.
+   * Invoked when a link is dropped on the webview.
    * @private
    */
-  Authenticator.prototype.onDrop_ = function(e) {
-    var url = e.dataTransfer.getData('url');
-    if (url)
-      this.dispatchEvent(new CustomEvent('dropLink', {detail: url}));
+  Authenticator.prototype.onDropLink_ = function(e) {
+    this.dispatchEvent(new CustomEvent('dropLink', {detail: e.url}));
   };
 
   /**

@@ -30,6 +30,7 @@ extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
 extern const char kEventContextMenu[];
 extern const char kEventDialog[];
+extern const char kEventDropLink[];
 extern const char kEventExit[];
 extern const char kEventFindReply[];
 extern const char kEventFrameNameChanged[];

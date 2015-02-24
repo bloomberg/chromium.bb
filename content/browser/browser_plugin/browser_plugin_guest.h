@@ -396,6 +396,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   // Whether or not our embedder has seen a DragSourceEndedAt() call.
   bool seen_embedder_drag_source_ended_at_;
 
+  // Indicates the URL dragged into the guest if any.
+  GURL dragged_url_;
+
   // Guests generate frames and send a CompositorFrameSwapped (CFS) message
   // indicating the next frame is ready to be positioned and composited.
   // Subsequent frames are not generated until the IPC is ACKed. We would like

@@ -274,6 +274,13 @@ void WebViewGuest::DidAttachToEmbedder() {
   ApplyAttributes(*attach_params());
 }
 
+void WebViewGuest::DidDropLink(const GURL& url) {
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetString(guestview::kUrl, url.spec());
+  DispatchEventToView(
+      new GuestViewBase::Event(webview::kEventDropLink, args.Pass()));
+}
+
 void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   script_executor_.reset(
       new ScriptExecutor(web_contents(), &script_observers_));

@@ -51,6 +51,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Notification that the guest has detached from its container.
   virtual void DidDetach() {}
 
+  // Notification that a valid |url| was dropped over the guest.
+  virtual void DidDropLink(const GURL& url) {}
+
   // Notification that the BrowserPlugin has resized.
   virtual void ElementSizeChanged(const gfx::Size& size) {}
 

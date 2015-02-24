@@ -33,8 +33,9 @@ BrowserPluginEmbedder* BrowserPluginEmbedder::Create(
   return new BrowserPluginEmbedder(web_contents);
 }
 
-void BrowserPluginEmbedder::DragEnteredGuest(BrowserPluginGuest* guest) {
+bool BrowserPluginEmbedder::DragEnteredGuest(BrowserPluginGuest* guest) {
   guest_dragging_over_ = guest->AsWeakPtr();
+  return guest_started_drag_.get() == guest;
 }
 
 void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
@@ -125,7 +126,7 @@ void BrowserPluginEmbedder::SystemDragEnded() {
 }
 
 void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
-  *handled = (guest_dragging_over_.get() != NULL);
+  *handled = !!guest_dragging_over_;
 }
 
 void BrowserPluginEmbedder::OnAttach(

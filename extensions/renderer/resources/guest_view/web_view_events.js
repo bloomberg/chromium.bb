@@ -58,6 +58,10 @@ var WEB_VIEW_EVENTS = {
     evt: CreateEvent('webViewInternal.onDialog'),
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
   },
+  'droplink': {
+    evt: CreateEvent('webViewInternal.onDropLink'),
+    fields: ['url']
+  },
   'exit': {
     evt: CreateEvent('webViewInternal.onExit'),
     fields: ['processId', 'reason']

@@ -95,6 +95,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
+  void DidDropLink(const GURL& url) override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidStopLoading() override;
   void EmbedderWillBeDestroyed() override;
