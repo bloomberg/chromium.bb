@@ -105,6 +105,7 @@ class PolicyWatcherTest : public testing::Test {
         policy::key::kRemoteAccessHostDomain, std::string());
     unknown_policies_.SetString("UnknownPolicyOne", std::string());
     unknown_policies_.SetString("UnknownPolicyTwo", std::string());
+    unknown_policies_.SetBoolean("RemoteAccessHostUnknownPolicyThree", true);
 
     const char kOverrideNatTraversalToFalse[] =
         "{ \"RemoteAccessHostFirewallTraversal\": false }";
@@ -129,6 +130,22 @@ class PolicyWatcherTest : public testing::Test {
                                kPortRange);
     port_range_empty_.SetString(policy::key::kRemoteAccessHostUdpPortRange,
                                 std::string());
+    curtain_true_.SetBoolean(policy::key::kRemoteAccessHostRequireCurtain,
+                             true);
+    curtain_false_.SetBoolean(policy::key::kRemoteAccessHostRequireCurtain,
+                              false);
+    username_true_.SetBoolean(policy::key::kRemoteAccessHostMatchUsername,
+                              true);
+    username_false_.SetBoolean(policy::key::kRemoteAccessHostMatchUsername,
+                               false);
+    talk_gadget_blah_.SetString(policy::key::kRemoteAccessHostTalkGadgetPrefix,
+                                "blah");
+    token_url_https_.SetString(policy::key::kRemoteAccessHostTalkGadgetPrefix,
+                               "https://example.com");
+    token_validation_url_https_.SetString(
+        policy::key::kRemoteAccessHostTalkGadgetPrefix, "https://example.com");
+    token_certificate_blah_.SetString(
+        policy::key::kRemoteAccessHostTokenValidationCertificateIssuer, "blah");
 
 #if !defined(NDEBUG)
     SetDefaults(nat_false_overridden_others_default_);
@@ -219,6 +236,14 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue relay_false_;
   base::DictionaryValue port_range_full_;
   base::DictionaryValue port_range_empty_;
+  base::DictionaryValue curtain_true_;
+  base::DictionaryValue curtain_false_;
+  base::DictionaryValue username_true_;
+  base::DictionaryValue username_false_;
+  base::DictionaryValue talk_gadget_blah_;
+  base::DictionaryValue token_url_https_;
+  base::DictionaryValue token_validation_url_https_;
+  base::DictionaryValue token_certificate_blah_;
 
  private:
   void SetDefaults(base::DictionaryValue& dict) {
@@ -447,6 +472,89 @@ TEST_F(PolicyWatcherTest, Relay) {
   StartWatching();
   SetPolicies(relay_false_);
   SetPolicies(relay_true_);
+}
+
+TEST_F(PolicyWatcherTest, Curtain) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&curtain_true_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&curtain_false_)));
+
+  SetPolicies(empty_);
+  StartWatching();
+  SetPolicies(curtain_true_);
+  SetPolicies(curtain_false_);
+}
+
+TEST_F(PolicyWatcherTest, MatchUsername) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+#if !defined(OS_WIN)
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&username_true_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&username_false_)));
+#else
+// On Windows the MatchUsername policy is ignored and therefore the 2
+// SetPolicies calls won't result in any calls to OnPolicyUpdate.
+#endif
+
+  SetPolicies(empty_);
+  StartWatching();
+  SetPolicies(username_true_);
+  SetPolicies(username_false_);
+}
+
+TEST_F(PolicyWatcherTest, TalkGadgetPrefix) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&talk_gadget_blah_)));
+
+  SetPolicies(empty_);
+  StartWatching();
+  SetPolicies(talk_gadget_blah_);
+}
+
+TEST_F(PolicyWatcherTest, TokenUrl) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&token_url_https_)));
+
+  SetPolicies(empty_);
+  StartWatching();
+  SetPolicies(token_url_https_);
+}
+
+TEST_F(PolicyWatcherTest, TokenValidationUrl) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&token_validation_url_https_)));
+
+  SetPolicies(empty_);
+  StartWatching();
+  SetPolicies(token_validation_url_https_);
+}
+
+TEST_F(PolicyWatcherTest, TokenValidationCertificateIssuer) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&token_certificate_blah_)));
+
+  SetPolicies(empty_);
+  StartWatching();
+  SetPolicies(token_certificate_blah_);
 }
 
 TEST_F(PolicyWatcherTest, UdpPortRange) {
