@@ -61,7 +61,8 @@ public:
     {% endif %}
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);
-    static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable)
+    template<typename VisitorDispatcher>
+    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
         {% if gc_type == 'GarbageCollectedObject' %}
         visitor->trace(scriptWrappable->toImpl<{{cpp_class}}>());

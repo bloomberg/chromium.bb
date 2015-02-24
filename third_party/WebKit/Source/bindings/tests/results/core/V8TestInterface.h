@@ -39,7 +39,8 @@ public:
     static WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);
-    static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable)
+    template<typename VisitorDispatcher>
+    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
     }
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);

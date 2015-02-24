@@ -36,7 +36,8 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);
-    static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable)
+    template<typename VisitorDispatcher>
+    static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
     }
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
