@@ -1,62 +1,43 @@
-<html><head></head><body>
-
-<p>Test bug 12914 : Trying to access XMLHttpRequest.responseText or
-responseXML when they are not available should raise an exception </p>
-<p>Should see "PASS" four times:</p>
-<div id="ans"></div>
-
+<!doctype html>
+<script src="/js-test-resources/js-test.js"></script>
 <script type="text/javascript">
-function log(message) {
-    document.getElementById("ans").appendChild(document.createTextNode(message));
-    document.getElementById("ans").appendChild(document.createElement("br"));
-}
-
-function test(num)
-{
+window.jsTestIsAsync = true;
+description('XMLHttpRequest.responseText should not throw even when not (loading or done).');
+function test(readyState) {
     var xhr;
-
-    if (window.XMLHttpRequest) {
+    return new Promise(function(resolve, reject) {
         xhr = new XMLHttpRequest();
-    } else {
-        try {
-            xhr = new ActiveXObject("Msxml2.XMLHTTP");
-        } catch (ex) {
-            xhr = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-    }
-
-    xhr.onreadystatechange = function () {
-        if (this.readyState == num) {
-            ++finishedTests;
+        xhr.onreadystatechange = function() {
             try {
-                // force the evaluation for Opera
-                var response = this.responseText;
-                log("PASS");
-            } catch (e) {
-                log("FAILED");
+                if (this.readyState === readyState) {
+                    // We evaluate responseText because we want to make sure
+                    // doing that doesn't throw.
+                    var response = xhr.responseText;
+                    resolve(response);
+                }
+            } catch(e) {
+                reject(e);
             }
         }
-        
-        if (finishedTests == 4 && window.testRunner)
-            testRunner.notifyDone();
-    }
-
-    xhr.open("GET", "resources/1251.html", true);
-    if (num != 1)
-        xhr.send(null);
+        xhr.onerror = reject;
+        xhr.open('GET', 'resources/1251.html');
+        if (readyState !== 1) {
+            xhr.send();
+        }
+    }).then(function() {
+        testPassed('readyState = ' + readyState);
+        xhr.abort();
+    }, function(e) {
+        testFailed('readyState = ' + readyState, + ', ' + e);
+    });
 }
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
+var promise = Promise.resolve();
+for (var readyState = 1; readyState <= 4; ++readyState) {
+    promise = promise.then(test.bind(undefined, readyState));
 }
-
-var finishedTests = 0;
-
-for (i = 1; i < 5; i++) {
-    test(i);
-}
-
+promise.then(finishJSTest, function(e) {
+    testFailed(e);
+    finishJSTest();
+});
 </script>
-
-</body></html>

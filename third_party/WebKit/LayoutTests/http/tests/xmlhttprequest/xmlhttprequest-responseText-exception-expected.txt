@@ -1,9 +1,13 @@
-Test bug 12914 : Trying to access XMLHttpRequest.responseText or responseXML when they are not available should raise an exception
+XMLHttpRequest.responseText should not throw even when not (loading or done).
 
-Should see "PASS" four times:
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS
-PASS
-PASS
-PASS
+
+PASS readyState = 1
+PASS readyState = 2
+PASS readyState = 3
+PASS readyState = 4
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
