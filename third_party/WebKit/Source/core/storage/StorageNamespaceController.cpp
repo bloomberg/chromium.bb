@@ -6,6 +6,7 @@
 #include "core/storage/StorageNamespaceController.h"
 
 #include "core/page/StorageClient.h"
+#include "core/storage/InspectorDOMStorageAgent.h"
 #include "core/storage/StorageNamespace.h"
 
 namespace blink {
@@ -15,13 +16,20 @@ const char* StorageNamespaceController::supplementName()
     return "StorageNamespaceController";
 }
 
-StorageNamespaceController::StorageNamespaceController(StorageClient* client)
+StorageNamespaceController::StorageNamespaceController(StorageClient* client, InspectorDOMStorageAgent* agent)
     : m_client(client)
+    , m_inspectorAgent(agent)
 {
 }
 
 StorageNamespaceController::~StorageNamespaceController()
 {
+}
+
+DEFINE_TRACE(StorageNamespaceController)
+{
+    WillBeHeapSupplement<Page>::trace(visitor);
+    visitor->trace(m_inspectorAgent);
 }
 
 StorageNamespace* StorageNamespaceController::sessionStorage(bool optionalCreate)
@@ -31,9 +39,9 @@ StorageNamespace* StorageNamespaceController::sessionStorage(bool optionalCreate
     return m_sessionStorage.get();
 }
 
-void StorageNamespaceController::provideStorageNamespaceTo(Page& page, StorageClient* client)
+void StorageNamespaceController::provideStorageNamespaceTo(Page& page, StorageClient* client, InspectorDOMStorageAgent* agent)
 {
-    StorageNamespaceController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new StorageNamespaceController(client)));
+    StorageNamespaceController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new StorageNamespaceController(client, agent)));
 }
 
 } // namespace blink

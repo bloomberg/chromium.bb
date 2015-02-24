@@ -32,51 +32,52 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/storage/StorageArea.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class LocalFrame;
-class InspectorPageAgent;
 class JSONObject;
+class Page;
 class StorageArea;
 
 typedef String ErrorString;
 
 class InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(Page* page)
     {
-        return adoptPtrWillBeNoop(new InspectorDOMStorageAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorDOMStorageAgent(page));
     }
+
     virtual ~InspectorDOMStorageAgent();
     DECLARE_VIRTUAL_TRACE();
 
+    void didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
+
+private:
+    explicit InspectorDOMStorageAgent(Page*);
+
+    // InspectorBaseAgent overrides.
     virtual void setFrontend(InspectorFrontend*) override;
     virtual void clearFrontend() override;
     virtual void restore() override;
 
-    // Called from the front-end.
-    virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
-    virtual void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items) override;
-    virtual void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) override;
-    virtual void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) override;
+    // InspectorBackendDispatcher::DOMStorageCommandHandler overrides.
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
+    void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items) override;
+    void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) override;
+    void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) override;
 
-    // Called from InspectorInstrumentation
-    void didDispatchDOMStorageEvent(LocalFrame*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
-
-private:
-
-    explicit InspectorDOMStorageAgent(InspectorPageAgent*);
-
-    bool isEnabled() const;
     PassOwnPtrWillBeRawPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, LocalFrame*&);
     PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<Page> m_page;
     InspectorFrontend::DOMStorage* m_frontend;
+    bool m_isEnabled;
 };
 
 } // namespace blink

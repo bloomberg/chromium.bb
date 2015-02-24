@@ -28,18 +28,18 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorDOMStorageAgent.h"
+#include "core/storage/InspectorDOMStorageAgent.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/InspectorFrontend.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorState.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorState.h"
+#include "core/page/Page.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageNamespace.h"
 #include "core/storage/StorageNamespaceController.h"
@@ -67,10 +67,11 @@ static bool hadException(ExceptionState& exceptionState, ErrorString* errorStrin
     }
 }
 
-InspectorDOMStorageAgent::InspectorDOMStorageAgent(InspectorPageAgent* pageAgent)
+InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
     : InspectorBaseAgent<InspectorDOMStorageAgent>("DOMStorage")
-    , m_pageAgent(pageAgent)
+    , m_page(page)
     , m_frontend(0)
+    , m_isEnabled(false)
 {
 }
 
@@ -80,7 +81,7 @@ InspectorDOMStorageAgent::~InspectorDOMStorageAgent()
 
 DEFINE_TRACE(InspectorDOMStorageAgent)
 {
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_page);
     InspectorBaseAgent::trace(visitor);
 }
 
@@ -97,35 +98,30 @@ void InspectorDOMStorageAgent::clearFrontend()
 
 void InspectorDOMStorageAgent::restore()
 {
-    if (isEnabled())
+    if (m_state->getBoolean(DOMStorageAgentState::domStorageAgentEnabled))
         enable(0);
-}
-
-bool InspectorDOMStorageAgent::isEnabled() const
-{
-    return m_state->getBoolean(DOMStorageAgentState::domStorageAgentEnabled);
 }
 
 void InspectorDOMStorageAgent::enable(ErrorString*)
 {
+    m_isEnabled = true;
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, true);
-    m_instrumentingAgents->setInspectorDOMStorageAgent(this);
 }
 
 void InspectorDOMStorageAgent::disable(ErrorString*)
 {
-    m_instrumentingAgents->setInspectorDOMStorageAgent(nullptr);
+    m_isEnabled = false;
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, false);
 }
 
-void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items)
+void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items)
 {
     LocalFrame* frame;
     OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > > storageItems = TypeBuilder::Array<TypeBuilder::Array<String> >::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>> storageItems = TypeBuilder::Array<TypeBuilder::Array<String>>::create();
 
     TrackExceptionState exceptionState;
     for (unsigned i = 0; i < storageArea->length(exceptionState, frame); ++i) {
@@ -135,7 +131,7 @@ void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, cons
         String value(storageArea->getItem(name, exceptionState, frame));
         if (hadException(exceptionState, errorString))
             return;
-        RefPtr<TypeBuilder::Array<String> > entry = TypeBuilder::Array<String>::create();
+        RefPtr<TypeBuilder::Array<String>> entry = TypeBuilder::Array<String>::create();
         entry->addItem(name);
         entry->addItem(value);
         storageItems->addItem(entry);
@@ -185,9 +181,9 @@ PassRefPtr<TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storage
         .setIsLocalStorage(isLocalStorage).release();
 }
 
-void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(LocalFrame* frame, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
+void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
 {
-    if (!m_frontend || !isEnabled() || frame != m_pageAgent->inspectedFrame())
+    if (!m_frontend || !m_isEnabled)
         return;
 
     RefPtr<TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
@@ -200,6 +196,18 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(LocalFrame* frame, con
         m_frontend->domStorageItemAdded(id, key, newValue);
     else
         m_frontend->domStorageItemUpdated(id, key, oldValue, newValue);
+}
+
+static LocalFrame* findFrameWithSecurityOrigin(LocalFrame* inspectedFrame, const String& originRawString)
+{
+    for (Frame* frame = inspectedFrame; frame; frame = frame->tree().traverseNext(inspectedFrame)) {
+        if (!frame->isLocalFrame())
+            continue;
+        RefPtr<SecurityOrigin> documentOrigin = toLocalFrame(frame)->document()->securityOrigin();
+        if (documentOrigin->toRawString() == originRawString)
+            return toLocalFrame(frame);
+    }
+    return nullptr;
 }
 
 PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
@@ -215,7 +223,10 @@ PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(Er
         return nullptr;
     }
 
-    LocalFrame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
+    if (!m_page->mainFrame()->isLocalFrame())
+        return nullptr;
+
+    LocalFrame* frame = findFrameWithSecurityOrigin(m_page->deprecatedLocalMainFrame(), securityOrigin);
     if (!frame) {
         if (errorString)
             *errorString = "LocalFrame not found for the given security origin";
@@ -225,7 +236,7 @@ PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(Er
 
     if (isLocalStorage)
         return StorageNamespace::localStorageArea(frame->document()->securityOrigin());
-    return StorageNamespaceController::from(frame->page())->sessionStorage()->storageArea(frame->document()->securityOrigin());
+    return StorageNamespaceController::from(m_page)->sessionStorage()->storageArea(frame->document()->securityOrigin());
 }
 
 } // namespace blink

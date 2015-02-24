@@ -87,6 +87,7 @@
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
 #include "core/rendering/RenderView.h"
+#include "core/storage/InspectorDOMStorageAgent.h"
 #include "core/storage/StorageNamespaceController.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -437,11 +438,14 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(m_page.get()));
     m_page->inspectorController().registerModuleAgent(InspectorIndexedDBAgent::create(m_page.get()));
     m_page->inspectorController().registerModuleAgent(InspectorAccessibilityAgent::create(m_page.get()));
+    OwnPtrWillBeRawPtr<InspectorDOMStorageAgent> domStorageAgent = InspectorDOMStorageAgent::create(m_page.get());
+    InspectorDOMStorageAgent* domStorageAgentPointer = domStorageAgent.get();
+    m_page->inspectorController().registerModuleAgent(domStorageAgent.release());
 
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
     provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());
-    StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl);
+    StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl, domStorageAgentPointer);
 
     m_page->makeOrdinary();
 

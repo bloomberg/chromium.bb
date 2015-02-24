@@ -353,9 +353,6 @@ interface InspectorInstrumentation {
     [AsyncCallTracker, Inline=FastReturn]
     void didFireAnimationFrame(const InspectorInstrumentationCookie&);
 
-    [DOMStorage, Inline=FastReturn]
-    void didDispatchDOMStorageEvent([Keep] LocalFrame*, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin);
-
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, const KURL& url);
 

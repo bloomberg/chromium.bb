@@ -46,7 +46,6 @@
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
-#include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInputAgent.h"
@@ -185,8 +184,6 @@ void InspectorController::initializeDeferredAgents()
     OwnPtrWillBeRawPtr<InspectorAnimationAgent> animationAgentPtr(InspectorAnimationAgent::create(m_domAgent));
     m_animationAgent = animationAgentPtr.get();
     m_agents.append(animationAgentPtr.release());
-
-    m_agents.append(InspectorDOMStorageAgent::create(m_pageAgent));
 
     m_agents.append(InspectorMemoryAgent::create());
 

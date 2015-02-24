@@ -32,10 +32,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/page/StorageClient.h"
 #include "core/storage/DOMWindowStorage.h"
+#include "core/storage/InspectorDOMStorageAgent.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
 #include "core/storage/StorageNamespace.h"
@@ -174,8 +174,8 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             Storage* storage = DOMWindowStorage::from(*localWindow).optionalLocalStorage();
             if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
-            InspectorInstrumentation::didDispatchDOMStorageEvent(localFrame, key, oldValue, newValue, LocalStorage, securityOrigin);
         }
+        StorageNamespaceController::from(page)->inspectorAgent()->didDispatchDOMStorageEvent(key, oldValue, newValue, LocalStorage, securityOrigin);
     }
 }
 
@@ -207,8 +207,8 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
         Storage* storage = DOMWindowStorage::from(*localWindow).optionalSessionStorage();
         if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
             localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
-        InspectorInstrumentation::didDispatchDOMStorageEvent(localFrame, key, oldValue, newValue, SessionStorage, securityOrigin);
     }
+    StorageNamespaceController::from(page)->inspectorAgent()->didDispatchDOMStorageEvent(key, oldValue, newValue, SessionStorage, securityOrigin);
 }
 
 bool StorageArea::isEventSource(Storage* storage, WebStorageArea* sourceAreaInstance)
