@@ -392,6 +392,7 @@ if (enable_webrtc) {
       "source/talk/app/webrtc/sctputils.h",
       "source/talk/app/webrtc/statscollector.cc",
       "source/talk/app/webrtc/statscollector.h",
+      "source/talk/app/webrtc/statstypes.cc",
       "source/talk/app/webrtc/statstypes.h",
       "source/talk/app/webrtc/streamcollection.h",
       "source/talk/app/webrtc/umametrics.h",
@@ -488,6 +489,9 @@ if (enable_webrtc) {
       "source/talk/session/media/voicechannel.h",
     ]
 
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
     configs += [ ":jingle_unexported_configs" ]
     public_configs = [ ":jingle_direct_dependent_configs" ]
 
@@ -506,10 +510,6 @@ if (enable_webrtc) {
       ]
       defines = [ "HAVE_SCTP" ]
       deps += [ "//third_party/usrsctp" ]
-    }
-
-    if (is_clang) {
-      cflags = [ "-Wno-unused-private-field" ]
     }
   }
 
@@ -531,6 +531,8 @@ if (enable_webrtc) {
 
     configs += [ ":jingle_unexported_configs" ]
     public_configs = [ ":jingle_direct_dependent_configs" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
     deps = [
       ":libjingle_webrtc_common",
@@ -540,38 +542,41 @@ if (enable_webrtc) {
     ]
   }
 
-  source_set("libjingle_peerconnection_so") {
-    sources = [
-      "source/talk/app/webrtc/java/jni/peerconnection_jni.cc",
-    ]
-    deps = [
-      "libjingle_webrtc",
-      "libpeerconnection",
-    ]
-  }
+  if (is_android) {
+    import("//build/config/android/rules.gni")
+    source_set("libjingle_peerconnection_so") {
+      sources = [
+        "source/talk/app/webrtc/java/jni/peerconnection_jni.cc",
+      ]
+      deps = [
+        ":libjingle_webrtc",
+        ":libpeerconnection",
+      ]
+    }
 
-  android_library("libjingle_peerconnection_java") {
-    java_files = [
-      "source/talk/app/webrtc/java/src/org/webrtc/AudioSource.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/AudioTrack.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/DataChannel.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/IceCandidate.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/Logging.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/MediaConstraints.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/MediaSource.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/MediaStream.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/MediaStreamTrack.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/PeerConnectionFactory.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/PeerConnection.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/SdpObserver.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/StatsObserver.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/StatsReport.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/SessionDescription.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/VideoCapturer.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/VideoRenderer.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/VideoSource.java",
-      "source/talk/app/webrtc/java/src/org/webrtc/VideoTrack.java",
-    ]
+    android_library("libjingle_peerconnection_java") {
+      java_files = [
+        "source/talk/app/webrtc/java/src/org/webrtc/AudioSource.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/AudioTrack.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/DataChannel.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/IceCandidate.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/Logging.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/MediaConstraints.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/MediaSource.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/MediaStream.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/MediaStreamTrack.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/PeerConnectionFactory.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/PeerConnection.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/SdpObserver.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/StatsObserver.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/StatsReport.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/SessionDescription.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/VideoCapturer.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/VideoRenderer.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/VideoSource.java",
+        "source/talk/app/webrtc/java/src/org/webrtc/VideoTrack.java",
+      ]
+    }
   }
 }  # enable_webrtc
 # TODO(GYP): Port libjingle.gyp's enable_webrtc condition block.

@@ -82,12 +82,11 @@ static_library("test_support") {
     }
 
     if (enable_webrtc) {
-      # TODO(GYP) remove this when libjingle is converted.
-      configs += [ "//third_party/libjingle:jingle_direct_dependent_configs" ]
-
       sources += [
         "../renderer/media/mock_media_stream_dispatcher.cc",
         "../renderer/media/mock_media_stream_dispatcher.h",
+        "../renderer/media/mock_data_channel_impl.cc",
+        "../renderer/media/mock_data_channel_impl.h",
         "../renderer/media/mock_peer_connection_impl.cc",
         "../renderer/media/mock_peer_connection_impl.h",
         "../renderer/media/mock_web_rtc_peer_connection_handler_client.cc",
@@ -97,8 +96,8 @@ static_library("test_support") {
       ]
 
       deps += [
-        #"//third_party/libjingle:webrtc",  TODO(GYP)
-        #"//third_party/libjingle:peerconnection",  TODO(GYP)
+        "//third_party/libjingle:libjingle_webrtc",
+        "//third_party/libjingle:libpeerconnection",
         "//third_party/webrtc/modules/video_capture",
       ]
     }
@@ -528,8 +527,7 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {  # TODO(GYP) enable on Mac
       }
 
       if (is_chromeos) {
-        sources +=
-            [ "browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
+        sources += [ "../browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
       }
     } else {
       if (enable_plugins) {

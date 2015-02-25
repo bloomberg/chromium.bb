@@ -33,9 +33,8 @@ declare_args() {
   debug_devtools = false
 
   # Enables WebRTC.
-  #enable_webrtc = !is_ios  TODO(GYP) use this condition when WebRTC works in
-  #                         the GN build.
-  enable_webrtc = false
+  # TODO(GYP) make mac and android work.
+  enable_webrtc = !is_ios && !is_mac && !is_android
 
   # Enables proprietary codecs and demuxers; e.g. H264, MOV, AAC, and MP3.
   proprietary_codecs = false
