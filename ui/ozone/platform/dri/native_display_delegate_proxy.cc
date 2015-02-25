@@ -24,8 +24,6 @@ namespace ui {
 
 namespace {
 
-const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
-
 typedef base::Callback<void(const base::FilePath&, base::File)>
     OnOpenDeviceReplyCallback;
 
@@ -71,10 +69,12 @@ class DriDisplaySnapshotProxy : public DisplaySnapshotProxy {
 NativeDisplayDelegateProxy::NativeDisplayDelegateProxy(
     DriGpuPlatformSupportHost* proxy,
     DeviceManager* device_manager,
-    DisplayManager* display_manager)
+    DisplayManager* display_manager,
+    const base::FilePath& primary_graphics_card_path)
     : proxy_(proxy),
       device_manager_(device_manager),
       display_manager_(display_manager),
+      primary_graphics_card_path_(primary_graphics_card_path),
       has_dummy_display_(false),
       weak_ptr_factory_(this) {
   proxy_->RegisterHandler(this);
@@ -226,9 +226,9 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
       // the GPU process in order to initialize EGL. If it is opened here as
       // well, it will cause a race with opening it in the GPU process and the
       // GPU process may fail initialization.
-      // TODO(dnicoara) Remove this when EGL_DEFAULT_DISPLAY is the only native
-      // display we return in GbmSurfaceFactory.
-      if (event.path().value() == kDefaultGraphicsCardPath)
+      // TODO(dnicoara) Remove this when the media stack does not require super
+      // early initialization.
+      if (event.path() == primary_graphics_card_path_)
         return;
 
       base::WorkerPool::PostTask(
@@ -246,7 +246,9 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
     case DeviceEvent::REMOVE:
       VLOG(1) << "Got display removed event for " << event.path().value();
       // It shouldn't be possible to remove this device.
-      DCHECK_NE(kDefaultGraphicsCardPath, event.path().value());
+      DCHECK(primary_graphics_card_path_ != event.path())
+          << "Got event to remove primary graphics card "
+          << event.path().value();
       proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(event.path()));
       break;
   }

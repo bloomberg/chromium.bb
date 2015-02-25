@@ -52,7 +52,7 @@ bool MapDumbBuffer(int fd,
 void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
                                          ScreenManager* screen_manager);
 
-base::FilePath GetFirstDisplayCardPath();
+base::FilePath GetPrimaryDisplayCardPath();
 
 }  // namespace ui
 

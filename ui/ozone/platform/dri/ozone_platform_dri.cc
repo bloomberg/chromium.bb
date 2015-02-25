@@ -49,7 +49,7 @@ namespace {
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : dri_(new DriWrapper(GetFirstDisplayCardPath())),
+      : dri_(new DriWrapper(GetPrimaryDisplayCardPath())),
         buffer_generator_(new DriBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
         device_manager_(CreateDeviceManager()),
@@ -88,7 +88,7 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get()));
+        display_manager_.get(), dri_->device_path()));
   }
   void InitializeUI() override {
     if (!dri_->Initialize())

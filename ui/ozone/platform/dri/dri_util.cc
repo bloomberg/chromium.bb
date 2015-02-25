@@ -165,7 +165,7 @@ void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
   }
 }
 
-base::FilePath GetFirstDisplayCardPath() {
+base::FilePath GetPrimaryDisplayCardPath() {
   struct drm_mode_card_res res;
   for (int i = 0; /* end on first card# that does not exist */; i++) {
     std::string card_path = base::StringPrintf(kDefaultGraphicsCardPattern, i);

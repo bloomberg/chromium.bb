@@ -144,9 +144,10 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get()));
+        display_manager_.get(), primary_graphics_card_path_));
   }
   void InitializeUI() override {
+    primary_graphics_card_path_ = GetPrimaryDisplayCardPath();
     display_manager_.reset(new DisplayManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
@@ -174,7 +175,7 @@ class OzonePlatformGbm : public OzonePlatform {
   void InitializeGPU() override {
     gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
-    gbm_ = new GbmWrapper(GetFirstDisplayCardPath());
+    gbm_ = new GbmWrapper(GetPrimaryDisplayCardPath());
     if (!gbm_->Initialize())
       LOG(FATAL) << "Failed to initialize primary DRM device";
 
@@ -201,6 +202,7 @@ class OzonePlatformGbm : public OzonePlatform {
 
  private:
   bool use_surfaceless_;
+  base::FilePath primary_graphics_card_path_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
   scoped_refptr<GbmWrapper> gbm_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;

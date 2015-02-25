@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -29,7 +30,8 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
  public:
   NativeDisplayDelegateProxy(DriGpuPlatformSupportHost* proxy,
                              DeviceManager* device_manager,
-                             DisplayManager* display_manager);
+                             DisplayManager* display_manager,
+                             const base::FilePath& primary_graphics_card_path);
   ~NativeDisplayDelegateProxy() override;
 
   // NativeDisplayDelegate overrides:
@@ -80,6 +82,11 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
   DriGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
   DisplayManager* display_manager_;   // Not owned.
+
+  // File path for the primary graphics card which is opened by default in the
+  // GPU process. We'll avoid opening this in hotplug events since it will race
+  // with the GPU process trying to open it and aquire DRM master.
+  const base::FilePath primary_graphics_card_path_;
 
   // Keeps track if there is a dummy display. This happens on initialization
   // when there is no connection to the GPU to update the displays.
