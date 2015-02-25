@@ -30,6 +30,9 @@ class InstalledLoader {
   // extension that is already installed.
   int GetCreationFlags(const ExtensionInfo* info);
 
+  // Record metrics related to the loaded extensions.
+  void RecordExtensionsMetrics();
+
   ExtensionService* extension_service_;
   ExtensionRegistry* extension_registry_;
 

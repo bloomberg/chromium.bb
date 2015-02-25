@@ -133,14 +133,13 @@ ComponentLoader::~ComponentLoader() {
 
 void ComponentLoader::LoadAll() {
   TRACE_EVENT0("browser,startup", "ComponentLoader::LoadAll");
-  const base::TimeTicks start_time = base::TimeTicks::Now();
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.LoadAllComponentTime");
+
   for (RegisteredComponentExtensions::iterator it =
           component_extensions_.begin();
       it != component_extensions_.end(); ++it) {
     Load(*it);
   }
-  UMA_HISTOGRAM_TIMES("Extensions.LoadAllComponentTime",
-                      base::TimeTicks::Now() - start_time);
 }
 
 base::DictionaryValue* ComponentLoader::ParseManifest(

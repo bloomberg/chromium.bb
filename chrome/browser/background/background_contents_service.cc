@@ -342,15 +342,15 @@ void BackgroundContentsService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  TRACE_EVENT0("browser,startup", "BackgroundContentsService::Observe");
   switch (type) {
     case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
-      const base::TimeTicks start_time = base::TimeTicks::Now();
+      SCOPED_UMA_HISTOGRAM_TIMER(
+          "Extensions.BackgroundContentsServiceStartupTime");
       Profile* profile = content::Source<Profile>(source).ptr();
       LoadBackgroundContentsFromManifests(profile);
       LoadBackgroundContentsFromPrefs(profile);
       SendChangeNotification(profile);
-      UMA_HISTOGRAM_TIMES("Extensions.BackgroundContentsServiceStartupTime",
-                          base::TimeTicks::Now() - start_time);
       break;
     }
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:

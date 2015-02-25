@@ -386,7 +386,7 @@ const Extension* ExtensionService::GetExtensionById(
 void ExtensionService::Init() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::Init");
-  base::Time begin_time = base::Time::Now();
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ExtensionServiceInitTime");
 
   DCHECK(!is_ready());  // Can't redo init.
   DCHECK_EQ(registry_->enabled_extensions().size(), 0u);
@@ -403,64 +403,67 @@ void ExtensionService::Init() {
     component_loader_->LoadAll();
     extensions::InstalledLoader(this).LoadAllExtensions();
 
-    // Attempt to re-enable extensions whose only disable reason is reloading.
-    std::vector<std::string> extensions_to_enable;
-    const ExtensionSet& disabled_extensions = registry_->disabled_extensions();
-    for (ExtensionSet::const_iterator iter = disabled_extensions.begin();
-        iter != disabled_extensions.end(); ++iter) {
-      const Extension* e = iter->get();
-      if (extension_prefs_->GetDisableReasons(e->id()) ==
-          Extension::DISABLE_RELOAD) {
-        extensions_to_enable.push_back(e->id());
-      }
-    }
-    for (std::vector<std::string>::iterator it = extensions_to_enable.begin();
-         it != extensions_to_enable.end(); ++it) {
-      EnableExtension(*it);
-    }
-
-    // Finish install (if possible) of extensions that were still delayed while
-    // the browser was shut down.
-    scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info(
-        extension_prefs_->GetAllDelayedInstallInfo());
-    for (size_t i = 0; i < delayed_info->size(); ++i) {
-      ExtensionInfo* info = delayed_info->at(i).get();
-      scoped_refptr<const Extension> extension(NULL);
-      if (info->extension_manifest) {
-        std::string error;
-        extension = Extension::Create(
-            info->extension_path,
-            info->extension_location,
-            *info->extension_manifest,
-            extension_prefs_->GetDelayedInstallCreationFlags(
-                info->extension_id),
-            info->extension_id,
-            &error);
-        if (extension.get())
-          delayed_installs_.Insert(extension);
-      }
-    }
-    MaybeFinishDelayedInstallations();
-
-    scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info2(
-        extension_prefs_->GetAllDelayedInstallInfo());
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateOnLoad",
-                             delayed_info2->size() - delayed_info->size());
-
+    EnabledReloadableExtensions();
+    MaybeFinishShutdownDelayed();
     SetReadyAndNotifyListeners();
 
-    // TODO(erikkay) this should probably be deferred to a future point
+    // TODO(erikkay): this should probably be deferred to a future point
     // rather than running immediately at startup.
     CheckForExternalUpdates();
 
     LoadGreylistFromPrefs();
   }
+}
 
-  UMA_HISTOGRAM_TIMES("Extensions.ExtensionServiceInitTime",
-                      base::Time::Now() - begin_time);
+void ExtensionService::EnabledReloadableExtensions() {
+  TRACE_EVENT0("browser,startup",
+               "ExtensionService::EnabledReloadableExtensions");
+
+  std::vector<std::string> extensions_to_enable;
+  const ExtensionSet& disabled_extensions = registry_->disabled_extensions();
+  for (ExtensionSet::const_iterator iter = disabled_extensions.begin();
+       iter != disabled_extensions.end(); ++iter) {
+    const Extension* e = iter->get();
+    if (extension_prefs_->GetDisableReasons(e->id()) ==
+        Extension::DISABLE_RELOAD) {
+      extensions_to_enable.push_back(e->id());
+    }
+  }
+  for (const std::string& extension : extensions_to_enable) {
+    EnableExtension(extension);
+  }
+}
+
+void ExtensionService::MaybeFinishShutdownDelayed() {
+  TRACE_EVENT0("browser,startup",
+               "ExtensionService::MaybeFinishShutdownDelayed");
+
+  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info(
+      extension_prefs_->GetAllDelayedInstallInfo());
+  for (size_t i = 0; i < delayed_info->size(); ++i) {
+    ExtensionInfo* info = delayed_info->at(i).get();
+    scoped_refptr<const Extension> extension(NULL);
+    if (info->extension_manifest) {
+      std::string error;
+      extension = Extension::Create(
+          info->extension_path, info->extension_location,
+          *info->extension_manifest,
+          extension_prefs_->GetDelayedInstallCreationFlags(info->extension_id),
+          info->extension_id, &error);
+      if (extension.get())
+        delayed_installs_.Insert(extension);
+    }
+  }
+  MaybeFinishDelayedInstallations();
+  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info2(
+      extension_prefs_->GetAllDelayedInstallInfo());
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateOnLoad",
+                           delayed_info2->size() - delayed_info->size());
 }
 
 void ExtensionService::LoadGreylistFromPrefs() {
+  TRACE_EVENT0("browser,startup", "ExtensionService::LoadGreylistFromPrefs");
+
   scoped_ptr<ExtensionSet> all_extensions =
       registry_->GenerateInstalledExtensionsSet();
 
@@ -1261,15 +1264,17 @@ void ExtensionService::CheckForUpdatesSoon() {
 }
 
 // Some extensions will autoupdate themselves externally from Chrome.  These
-// are typically part of some larger client application package.  To support
-// these, the extension will register its location in the the preferences file
+// are typically part of some larger client application package. To support
+// these, the extension will register its location in the preferences file
 // (and also, on Windows, in the registry) and this code will periodically
 // check that location for a .crx file, which it will then install locally if
 // a new version is available.
-// Errors are reported through ExtensionErrorReporter. Succcess is not
+// Errors are reported through ExtensionErrorReporter. Success is not
 // reported.
 void ExtensionService::CheckForExternalUpdates() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT0("browser,startup", "ExtensionService::CheckForExternalUpdates");
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.CheckForExternalUpdatesTime");
 
   // Note that this installation is intentionally silent (since it didn't
   // go through the front-end).  Extensions that are registered in this
@@ -1415,14 +1420,16 @@ void ExtensionService::ReloadExtensionsForTest() {
 }
 
 void ExtensionService::SetReadyAndNotifyListeners() {
-  const base::TimeTicks start_time = base::TimeTicks::Now();
+  TRACE_EVENT0("browser,startup",
+               "ExtensionService::SetReadyAndNotifyListeners");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Extensions.ExtensionServiceNotifyReadyListenersTime");
+
   ready_->Signal();
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
-  UMA_HISTOGRAM_TIMES("Extensions.ExtensionServiceNotifyReadyListenersTime",
-                      base::TimeTicks::Now() - start_time);
 }
 
 void ExtensionService::OnLoadedInstalledExtensions() {

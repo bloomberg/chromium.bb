@@ -229,9 +229,9 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
 }
 
 void InstalledLoader::LoadAllExtensions() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT0("browser,startup", "InstalledLoader::LoadAllExtensions");
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.LoadAllTime2");
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   Profile* profile = extension_service_->profile();
@@ -305,8 +305,14 @@ void InstalledLoader::LoadAllExtensions() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.Disabled",
                            extension_registry_->disabled_extensions().size());
 
+  // TODO(rkaplow): Obsolete this when verified similar to LoadAllTime2.
   UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
                       base::TimeTicks::Now() - start_time);
+  RecordExtensionsMetrics();
+}
+
+void InstalledLoader::RecordExtensionsMetrics() {
+  Profile* profile = extension_service_->profile();
 
   int app_user_count = 0;
   int app_external_count = 0;

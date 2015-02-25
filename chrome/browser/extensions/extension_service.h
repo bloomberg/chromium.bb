@@ -500,6 +500,14 @@ class ExtensionService
   // externally managed extension.  If so, uninstall it.
   void CheckExternalUninstall(const std::string& id);
 
+  // Attempt to enable all disabled extensions which the only disabled reason is
+  // reloading.
+  void EnabledReloadableExtensions();
+
+  // Finish install (if possible) of extensions that were still delayed while
+  // the browser was shut down.
+  void MaybeFinishShutdownDelayed();
+
   // Populates greylist_.
   void LoadGreylistFromPrefs();
 

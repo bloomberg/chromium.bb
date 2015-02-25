@@ -8358,6 +8358,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.CheckForExternalUpdatesTime">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    ExtensionService::CheckForExternalUpdates.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CorruptExtensionBecameDisabled">
   <owner>asargent@chromium.org</owner>
   <summary>
@@ -8949,6 +8957,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Time taken to load all non-component extensions at browser startup. This
     happens as part of the total initialization time of ExtensionService,
     measured in Extensions.ExtensionServiceInitTime.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadAllTime2" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Time taken to load all non-component extensions at browser startup and
+    record metrics. This happens as part of the total initialization time of
+    ExtensionService, measured in Extensions.ExtensionServiceInitTime.
   </summary>
 </histogram>
 

@@ -753,14 +753,13 @@ void ProcessManager::SetEventPageSuspendingTimeForTesting(
 void ProcessManager::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
+  TRACE_EVENT0("browser,startup", "ProcessManager::Observe");
   switch (type) {
     case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
       // TODO(jamescook): Convert this to use ExtensionSystem::ready() instead
       // of a notification.
-      const base::TimeTicks start_time = base::TimeTicks::Now();
+      SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ProcessManagerStartupHostsTime");
       MaybeCreateStartupBackgroundHosts();
-      UMA_HISTOGRAM_TIMES("Extensions.ProcessManagerStartupHostsTime",
-                          base::TimeTicks::Now() - start_time);
       break;
     }
 
