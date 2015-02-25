@@ -160,15 +160,6 @@ component("shared_impl") {
     "PPAPI_THUNK_IMPLEMENTATION",
   ]
 
-  # TODO(GYP) support chrome_multiple_dll
-  #if (chrome_multiple_dll) {
-  #  public_deps = [ "//third_party/WebKit/public:blink_minimal" ]
-  #} else {
-  public_deps = [
-    "//third_party/WebKit/public:blink",
-  ]
-
-  #}
   deps = [
     "//base",
     "//base:i18n",

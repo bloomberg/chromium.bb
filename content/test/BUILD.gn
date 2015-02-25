@@ -311,6 +311,8 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {
       "//ui/snapshot",
     ]
 
+    data_deps = []
+
     if (!is_chromeos) {
       sources -=
           [ "../browser/web_contents/touch_editable_impl_aura_browsertest.cc" ]
@@ -391,6 +393,10 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {
           [ "../browser/compositor/image_transport_factory_browsertest.cc" ]
     }
 
+    if (use_aura && !is_win) {
+      sources -= [ "../browser/plugin_browsertest.cc" ]
+    }
+
     if (!is_android && !is_ios && !is_linux) {
       # Npapi test plugin doesn't build on Android or iOS.
       #data_deps += [ 'copy_npapi_test_plugin' ]  TODO(GYP)
@@ -409,7 +415,7 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {
               content_tests_gypi_values.content_browsertests_plugins_sources,
               ".",
               "//content")
-      #deps += [ "//ppapi:ppapi_tests" ]  # TODO(GYP)
+      data_deps += [ "//ppapi:ppapi_tests" ]
     }
 
     if (enable_web_speech) {

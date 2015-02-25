@@ -3,17 +3,16 @@
 # found in the LICENSE file.
 
 import("//ppapi/ppapi_sources.gni")
-# TODO(brettw) argument list is too long. Need to add response files.
-#shared_library("ppapi_tests") {
-#  sources = ppapi_sources.test_common_source_files +
-#            ppapi_sources.test_trusted_source_files
-#
-#  defines = [ "GL_GLEXT_PROTOTYPES" ]
-#  include_dirs = [ "lib/gl/include" ]
-#
-#  deps = [
-#    "//ppapi/cpp",
-#    "//ppapi/shared_impl",
-#  ]
-#}
+shared_library("ppapi_tests") {
+  sources = ppapi_sources.test_common_source_files +
+            ppapi_sources.test_trusted_source_files
+
+  defines = [ "GL_GLEXT_PROTOTYPES" ]
+  include_dirs = [ "lib/gl/include" ]
+
+  deps = [
+    "//ppapi/cpp",
+    "//ppapi/shared_impl",
+  ]
+}
 # TODO(GYP) other targets from ppapi_tests.gyp

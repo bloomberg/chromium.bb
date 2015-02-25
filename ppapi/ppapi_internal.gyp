@@ -69,21 +69,6 @@
             ],
           },
         }],
-        ['chrome_multiple_dll==1', {
-          'dependencies': [
-            '../third_party/WebKit/public/blink.gyp:blink_minimal',
-          ],
-          'export_dependent_settings': [
-            '../third_party/WebKit/public/blink.gyp:blink_minimal',
-          ],
-        }, {
-          'dependencies': [
-            '../third_party/WebKit/public/blink.gyp:blink',
-          ],
-          'export_dependent_settings': [
-            '../third_party/WebKit/public/blink.gyp:blink',
-          ],
-        }],
       ],
     },
   ],
