@@ -323,8 +323,6 @@
               'thunk/ppb_broker_thunk.cc',
               'thunk/ppb_browser_font_trusted_thunk.cc',
               'thunk/ppb_buffer_thunk.cc',
-              'thunk/ppb_camera_capabilities_private_thunk.cc',
-              'thunk/ppb_camera_device_private_thunk.cc',
               'thunk/ppb_char_set_thunk.cc',
               'thunk/ppb_content_decryptor_private_thunk.cc',
               'thunk/ppb_flash_clipboard_thunk.cc',

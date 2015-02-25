@@ -62,6 +62,20 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
 }
 #endif  // defined(ENABLE_WEBRTC)
 
+static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
+                                  PP_Instance instance) {
+  blink::WebPluginContainer* container =
+      host->GetContainerForInstance(instance);
+  if (!container)
+    return false;
+
+  GURL document_url = container->element().document().url();
+  ContentRendererClient* content_renderer_client =
+      GetContentClient()->renderer();
+  return content_renderer_client->IsPluginAllowedToUseCameraDeviceAPI(
+      document_url);
+}
+
 bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
   blink::WebPluginContainer* container =
       host->GetContainerForInstance(instance);
@@ -205,15 +219,15 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     }
   }
 
-  // Private interfaces.
-  if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
-    switch (message.type()) {
-      case PpapiHostMsg_CameraDevice_Create::ID: {
-        scoped_ptr<PepperCameraDeviceHost> host(
-            new PepperCameraDeviceHost(host_, instance, resource));
-        return host->Init() ? host.Pass() : nullptr;
-      }
-    }
+  // Permissions of the following interfaces are available for whitelisted apps
+  // which may not have access to the other private interfaces.
+  if (message.type() == PpapiHostMsg_CameraDevice_Create::ID) {
+    if (!GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE) &&
+        !CanUseCameraDeviceAPI(host_, instance))
+      return nullptr;
+    scoped_ptr<PepperCameraDeviceHost> host(
+        new PepperCameraDeviceHost(host_, instance, resource));
+    return host->Init() ? host.Pass() : nullptr;
   }
 
   return scoped_ptr<ResourceHost>();

@@ -10,6 +10,11 @@
 // These interfaces don't require private permissions. However, they only work
 // for whitelisted origins.
 
+PROXIED_IFACE(PPB_CAMERACAPABILITIES_PRIVATE_INTERFACE_0_1,
+              PPB_CameraCapabilities_Private_0_1)
+PROXIED_IFACE(PPB_CAMERADEVICE_PRIVATE_INTERFACE_0_1,
+              PPB_CameraDevice_Private_0_1)
+
 PROXIED_IFACE(PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
               PPB_HostResolver_Private_0_1)
 PROXIED_IFACE(PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_1,

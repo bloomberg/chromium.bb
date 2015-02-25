@@ -272,8 +272,6 @@
               'proxy/audio_input_resource.cc',
               'proxy/broker_dispatcher.cc',
               'proxy/browser_font_singleton_resource.cc',
-              'proxy/camera_capabilities_resource.cc',
-              'proxy/camera_device_resource.cc',
               'proxy/device_enumeration_resource_helper.cc',
               'proxy/flash_clipboard_resource.cc',
               'proxy/flash_drm_resource.cc',

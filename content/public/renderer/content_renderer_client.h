@@ -285,6 +285,9 @@ class CONTENT_EXPORT ContentRendererClient {
       CreateWorkerPermissionClientProxy(RenderFrame* render_frame,
                                         blink::WebFrame* frame);
 
+  // Returns true if the page at |url| can use Pepper CameraDevice APIs.
+  virtual bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url);
+
   // Returns true if the page at |url| can use Pepper Compositor APIs.
   virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url);
 

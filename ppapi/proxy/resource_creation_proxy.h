@@ -106,6 +106,7 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) override;
+  virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) override;
   virtual PP_Resource CreateCompositor(PP_Instance instance) override;
   virtual PP_Resource CreateFileChooser(PP_Instance instance,
                                         PP_FileChooserMode_Dev mode,
@@ -169,7 +170,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_BrowserFont_Trusted_Description* description) override;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) override;
-  virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) override;
   virtual PP_Resource CreateFlashDRM(PP_Instance instance) override;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,

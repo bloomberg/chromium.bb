@@ -196,6 +196,11 @@ ContentRendererClient::CreateWorkerPermissionClientProxy(
   return nullptr;
 }
 
+bool ContentRendererClient::IsPluginAllowedToUseCameraDeviceAPI(
+    const GURL& url) {
+  return false;
+}
+
 bool ContentRendererClient::IsPluginAllowedToUseCompositorAPI(const GURL& url) {
   return false;
 }

@@ -124,6 +124,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) = 0;
+  virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateCompositor(PP_Instance instance) = 0;
   virtual PP_Resource CreateFileChooser(PP_Instance instance,
                                         PP_FileChooserMode_Dev mode,
@@ -182,7 +183,6 @@ class ResourceCreationAPI {
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
-  virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashDRM(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,

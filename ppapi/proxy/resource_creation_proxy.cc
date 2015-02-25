@@ -222,6 +222,11 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
       OBJECT_IS_PROXY, instance, sample_rate, sample_frame_count);
 }
 
+PP_Resource ResourceCreationProxy::CreateCameraDevicePrivate(
+    PP_Instance instance) {
+  return (new CameraDeviceResource(GetConnection(), instance))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateCompositor(PP_Instance instance) {
   return (new CompositorResource(GetConnection(), instance))->GetReference();
 }
@@ -430,11 +435,6 @@ PP_Resource ResourceCreationProxy::CreateBrowserFont(
 PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
                                                 uint32_t size) {
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
-}
-
-PP_Resource ResourceCreationProxy::CreateCameraDevicePrivate(
-    PP_Instance instance) {
-  return (new CameraDeviceResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashDRM(PP_Instance instance) {

@@ -145,6 +145,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   bool AllowPepperMediaStreamAPI(const GURL& url) override;
   void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
+  bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url) override;
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
@@ -240,6 +241,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<ChromePDFPrintClient> pdf_print_client_;
 #endif
 #if defined(ENABLE_PLUGINS)
+  std::set<std::string> allowed_camera_device_origins_;
   std::set<std::string> allowed_compositor_origins_;
 #endif
 };

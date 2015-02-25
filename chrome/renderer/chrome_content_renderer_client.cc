@@ -180,10 +180,16 @@ namespace {
 
 ChromeContentRendererClient* g_current_client;
 
+// Whitelist PPAPI for Android Runtime for Chromium. (See crbug.com/383937)
 #if defined(ENABLE_PLUGINS)
+const char* const kPredefinedAllowedCameraDeviceOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"
+};
+
 const char* const kPredefinedAllowedCompositorOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/383937
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/383937
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"
 };
 #endif
 
@@ -334,6 +340,9 @@ ChromeContentRendererClient::ChromeContentRendererClient() {
       ChromeExtensionsRendererClient::GetInstance());
 #endif
 #if defined(ENABLE_PLUGINS)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedCameraDeviceOrigins); ++i)
+    allowed_camera_device_origins_.insert(
+        kPredefinedAllowedCameraDeviceOrigins[i]);
   for (size_t i = 0; i < arraysize(kPredefinedAllowedCompositorOrigins); ++i)
     allowed_compositor_origins_.insert(kPredefinedAllowedCompositorOrigins[i]);
 #endif
@@ -1590,6 +1599,20 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 #else
   return false;
 #endif
+}
+
+bool ChromeContentRendererClient::IsPluginAllowedToUseCameraDeviceAPI(
+    const GURL& url) {
+#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting))
+    return true;
+
+  if (IsExtensionOrSharedModuleWhitelisted(url, allowed_camera_device_origins_))
+    return true;
+#endif
+
+  return false;
 }
 
 bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
