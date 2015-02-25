@@ -38,6 +38,7 @@ class GLES2Util;
 class ImageManager;
 class Logger;
 class QueryManager;
+class Texture;
 class VertexArrayManager;
 class ValuebufferManager;
 struct ContextState;
@@ -212,8 +213,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Clears a level of a texture
   // Returns false if a GL error should be generated.
   virtual bool ClearLevel(
-      unsigned service_id,
-      unsigned bind_target,
+      Texture* texture,
       unsigned target,
       int level,
       unsigned internal_format,

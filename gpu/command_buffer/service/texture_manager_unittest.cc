@@ -1510,7 +1510,7 @@ TEST_F(TextureTest, SafeUnsafe) {
 }
 
 TEST_F(TextureTest, ClearTexture) {
-  EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _, _))
+  EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Return(true));
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   manager_->SetLevelInfo(texture_ref_.get(),
@@ -2072,7 +2072,7 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeClearRectangle) {
   // See if we can clear the previously uncleared level now.
   EXPECT_EQ(level0,
             GetLevelInfo(restored_texture.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
-  EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _, _))
+  EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Return(true));
   EXPECT_TRUE(manager_->ClearTextureLevel(
       decoder_.get(), restored_texture.get(), GL_TEXTURE_RECTANGLE_ARB, 0));

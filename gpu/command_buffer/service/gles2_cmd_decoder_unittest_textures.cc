@@ -2174,13 +2174,7 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
 
   // Bind image to texture.
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
-  bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
   EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
   // Image should now be set.
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
@@ -2207,20 +2201,113 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
 TEST_P(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
   scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
-  DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 
-  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
-  bind_tex_image_2d_cmd.Init(GL_TEXTURE_CUBE_MAP, 1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
 
-  DoTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
   TextureRef* texture_ref =
       group().texture_manager()->GetTexture(client_texture_id_);
   ASSERT_TRUE(texture_ref != NULL);
   Texture* texture = texture_ref->texture();
+
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == image.get());
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+}
+
+TEST_P(GLES2DecoderTest, GLImageAttachedAfterSubTexImage2D) {
+  // Specifically tests that TexSubImage2D is not optimized to TexImage2D
+  // in the presence of image attachments.
+  ASSERT_FALSE(
+      feature_info()->workarounds().texsubimage2d_faster_than_teximage2d);
+
+  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  GetImageManager()->AddImage(image.get(), 1);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  GLenum target = GL_TEXTURE_2D;
+  GLint level = 0;
+  GLint xoffset = 0;
+  GLint yoffset = 0;
+  GLsizei width = 1;
+  GLsizei height = 1;
+  GLint border = 0;
+  GLenum format = GL_RGBA;
+  GLenum type = GL_UNSIGNED_BYTE;
+  uint32_t pixels_shm_id = kSharedMemoryId;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset;
+  GLboolean internal = 0;
+
+  // Define texture first.
+  DoTexImage2D(target, level, format, width, height, border, format, type,
+               pixels_shm_id, pixels_shm_offset);
+
+  // Bind texture to GLImage.
+  DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
+
+  // Check binding.
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != NULL);
+  Texture* texture = texture_ref->texture();
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == image.get());
+
+  // TexSubImage2D should not unbind GLImage.
+  EXPECT_CALL(*gl_, TexSubImage2D(target, level, xoffset, yoffset, width,
+                                  height, format, type, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmds::TexSubImage2D tex_sub_image_2d_cmd;
+  tex_sub_image_2d_cmd.Init(target, level, xoffset, yoffset, width, height,
+                            format, type, pixels_shm_id, pixels_shm_offset,
+                            internal);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_sub_image_2d_cmd));
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == image.get());
+}
+
+TEST_P(GLES2DecoderTest, GLImageAttachedAfterClearLevel) {
+  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  GetImageManager()->AddImage(image.get(), 1);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  GLenum target = GL_TEXTURE_2D;
+  GLint level = 0;
+  GLint xoffset = 0;
+  GLint yoffset = 0;
+  GLsizei width = 1;
+  GLsizei height = 1;
+  GLint border = 0;
+  GLenum format = GL_RGBA;
+  GLenum type = GL_UNSIGNED_BYTE;
+  uint32_t pixels_shm_id = kSharedMemoryId;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset;
+
+  // Define texture first.
+  DoTexImage2D(target, level, format, width, height, border, format, type,
+               pixels_shm_id, pixels_shm_offset);
+
+  // Bind texture to GLImage.
+  DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
+
+  // Check binding.
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != NULL);
+  Texture* texture = texture_ref->texture();
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == image.get());
+
+  // ClearLevel should use glTexSubImage2D to avoid unbinding GLImage.
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
+      .Times(2)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexSubImage2D(target, level, xoffset, yoffset, width,
+                                  height, format, type, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  GetDecoder()->ClearLevel(texture, target, level, format, format, type, width,
+                           height, false);
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == image.get());
 }
 
 TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
@@ -2252,13 +2339,7 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
 
   // Bind image to texture.
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
-  bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
   EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
   // Image should now be set.
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
@@ -2334,13 +2415,7 @@ TEST_P(GLES2DecoderWithShaderTest, UseTexImage) {
       .WillOnce(Return(gfx::Size(1, 1)))
       .RetiresOnSaturation();
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
-  bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, kImageId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId);
 
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();

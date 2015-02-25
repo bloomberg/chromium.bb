@@ -164,6 +164,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return group_->pending_valuebuffer_state();
   }
 
+  FeatureInfo* feature_info() {
+    return group_->feature_info();
+  }
+
   ImageManager* GetImageManager() { return decoder_->GetImageManager(); }
 
   void DoCreateProgram(GLuint client_id, GLuint service_id);
@@ -279,6 +283,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
       GLenum target, GLint level, GLenum format,
       GLsizei width, GLsizei height, GLint border,
       GLsizei size, uint32 bucket_id);
+  void DoBindTexImage2DCHROMIUM(GLenum target, GLint image_id);
   void DoTexImage2D(
       GLenum target, GLint level, GLenum internal_format,
       GLsizei width, GLsizei height, GLint border,

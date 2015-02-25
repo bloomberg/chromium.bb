@@ -944,8 +944,8 @@ bool Texture::ClearLevel(
   // but only the decoder knows all the state (like unpack_alignment_) that's
   // needed to be able to call GL correctly.
   bool cleared = decoder->ClearLevel(
-      service_id_, target_, info.target, info.level, info.internal_format,
-      info.format, info.type, info.width, info.height, immutable_);
+      this, info.target, info.level, info.internal_format, info.format,
+      info.type, info.width, info.height, immutable_);
   UpdateMipCleared(&info, cleared);
   return info.cleared;
 }
