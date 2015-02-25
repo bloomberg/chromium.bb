@@ -181,7 +181,7 @@ void InspectorController::initializeDeferredAgents()
     m_cssAgent = cssAgentPtr.get();
     m_agents.append(cssAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorAnimationAgent> animationAgentPtr(InspectorAnimationAgent::create(m_domAgent));
+    OwnPtrWillBeRawPtr<InspectorAnimationAgent> animationAgentPtr(InspectorAnimationAgent::create(m_pageAgent, m_domAgent));
     m_animationAgent = animationAgentPtr.get();
     m_agents.append(animationAgentPtr.release());
 

@@ -125,9 +125,6 @@ public:
     void stopScreencast(ErrorString*) override;
     void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
     void setOverlayMessage(ErrorString*, const String*) override;
-    void getAnimationsPlaybackRate(ErrorString*, double* playbackRate) override;
-    void setAnimationsPlaybackRate(ErrorString*, double playbackRate) override;
-    void setCurrentTime(ErrorString*, double currentTime) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);

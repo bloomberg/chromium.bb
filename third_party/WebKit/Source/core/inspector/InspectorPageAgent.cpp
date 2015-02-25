@@ -1475,24 +1475,6 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
     m_overlay->setPausedInDebuggerMessage(message);
 }
 
-void InspectorPageAgent::getAnimationsPlaybackRate(ErrorString*, double* playbackRate)
-{
-    *playbackRate = inspectedFrame()->document()->timeline().playbackRate();
-}
-
-void InspectorPageAgent::setAnimationsPlaybackRate(ErrorString*, double playbackRate)
-{
-    for (Frame* frame = inspectedFrame(); frame; frame = frame->tree().traverseNext(inspectedFrame())) {
-        if (frame->isLocalFrame())
-            toLocalFrame(frame)->document()->timeline().setPlaybackRate(playbackRate);
-    }
-}
-
-void InspectorPageAgent::setCurrentTime(ErrorString*, double currentTime)
-{
-    inspectedFrame()->document()->timeline().setCurrentTime(currentTime);
-}
-
 void InspectorPageAgent::clearEditedResourcesContent()
 {
     m_editedResourceContent.clear();

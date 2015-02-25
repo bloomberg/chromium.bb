@@ -19,6 +19,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
@@ -30,8 +31,9 @@ static const char animationAgentEnabled[] = "animationAgentEnabled";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectorDOMAgent* domAgent)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
     : InspectorBaseAgent<InspectorAnimationAgent>("Animation")
+    , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
     , m_frontend(nullptr)
 {
@@ -233,6 +235,24 @@ void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorStrin
     else
         players = element->ownerDocument()->timeline().getAnimationPlayers();
     animationPlayersArray = buildArrayForAnimationPlayers(*element, players);
+}
+
+void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate)
+{
+    *playbackRate = m_pageAgent->inspectedFrame()->document()->timeline().playbackRate();
+}
+
+void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
+{
+    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->document()->timeline().setPlaybackRate(playbackRate);
+    }
+}
+
+void InspectorAnimationAgent::setCurrentTime(ErrorString*, double currentTime)
+{
+    m_pageAgent->inspectedFrame()->document()->timeline().setCurrentTime(currentTime);
 }
 
 void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
