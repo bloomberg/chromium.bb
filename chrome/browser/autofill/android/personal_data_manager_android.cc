@@ -190,7 +190,7 @@ PersonalDataManagerAndroid::~PersonalDataManagerAndroid() {
 
 jint PersonalDataManagerAndroid::GetProfileCount(JNIEnv* unused_env,
                                                  jobject unused_obj) {
-  return personal_data_manager_->GetProfiles().size();
+  return personal_data_manager_->web_profiles().size();
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
@@ -198,7 +198,7 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
     jobject unused_obj,
     jint index) {
   const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager_->GetProfiles();
+      personal_data_manager_->web_profiles();
   size_t index_size_t = static_cast<size_t>(index);
   DCHECK_LT(index_size_t, profiles.size());
   return CreateJavaProfileFromNative(env, *profiles[index_size_t]);
@@ -235,6 +235,21 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
   }
 
   return ConvertUTF8ToJavaString(env, profile.guid());
+}
+
+ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
+    JNIEnv* env,
+    jobject unused_obj) {
+  std::vector<base::string16> labels;
+  AutofillProfile::CreateInferredLabels(
+      personal_data_manager_->web_profiles(),
+      NULL,
+      NAME_FULL,
+      2,
+      g_browser_process->GetApplicationLocale(),
+      &labels);
+
+  return base::android::ToJavaArrayOfStrings(env, labels);
 }
 
 jint PersonalDataManagerAndroid::GetCreditCardCount(JNIEnv* unused_env,
@@ -283,21 +298,6 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     personal_data_manager_->UpdateCreditCard(card);
   }
   return ConvertUTF8ToJavaString(env, card.guid());
-}
-
-ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
-    JNIEnv* env,
-    jobject unused_obj) {
-  std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(
-      personal_data_manager_->GetProfiles(),
-      NULL,
-      NAME_FULL,
-      2,
-      g_browser_process->GetApplicationLocale(),
-      &labels);
-
-  return base::android::ToJavaArrayOfStrings(env, labels);
 }
 
 void PersonalDataManagerAndroid::RemoveByGUID(JNIEnv* env,
