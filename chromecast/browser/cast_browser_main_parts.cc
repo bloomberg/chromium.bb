@@ -44,6 +44,7 @@
 
 namespace {
 
+#if !defined(OS_ANDROID)
 int kSignalsToRunClosure[] = { SIGTERM, SIGINT, };
 
 // Closure to run on SIGTERM and SIGINT.
@@ -82,6 +83,7 @@ void RegisterClosureOnSignal(const base::Closure& closure) {
   // Get the first signal to exit when the parent process dies.
   prctl(PR_SET_PDEATHSIG, kSignalsToRunClosure[0]);
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -245,11 +247,16 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->metrics_service_client()
       ->Initialize(cast_browser_process_->cast_service());
   url_request_context_factory_->InitializeNetworkDelegates();
+
+  cast_browser_process_->cast_service()->Start();
 }
 
 bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  cast_browser_process_->cast_service()->Start();
-
+#if defined(OS_ANDROID)
+  // Android does not use native main MessageLoop.
+  NOTREACHED();
+  return true;
+#else
   base::RunLoop run_loop;
   base::Closure quit_closure(run_loop.QuitClosure());
   RegisterClosureOnSignal(quit_closure);
@@ -265,12 +272,18 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   cast_browser_process_->cast_service()->Stop();
   return true;
+#endif
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
+#if defined(OS_ANDROID)
+  // Android does not use native main MessageLoop.
+  NOTREACHED();
+#else
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->metrics_service_client()->Finalize();
   cast_browser_process_.reset();
+#endif
 }
 
 }  // namespace shell
