@@ -30,6 +30,11 @@ public:
     // for an arbitrarily long time if no idle time is available.
     void postIdleTask(const WebTraceLocation&, PassOwnPtr<IdleTask>);
 
+    // Like postIdleTask but does not run the idle task until after some other
+    // task has run. This enables posting of a task which won't stop the Blink
+    // main thread from sleeping, but will start running after it wakes up.
+    void postIdleTaskAfterWakeup(const WebTraceLocation&, PassOwnPtr<IdleTask>);
+
     // For tasks related to loading, e.g. HTML parsing.  Loading tasks usually have default priority
     // but they may be deprioritized when the user is interacting with the device.
     // Takes ownership of |WebThread::Task|.

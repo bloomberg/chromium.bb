@@ -65,6 +65,12 @@ void Scheduler::postIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTa
         m_webScheduler->postIdleTask(location, new IdleTaskRunner(idleTask));
 }
 
+void Scheduler::postIdleTaskAfterWakeup(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
+{
+    if (m_webScheduler)
+        m_webScheduler->postIdleTaskAfterWakeup(location, new IdleTaskRunner(idleTask));
+}
+
 void Scheduler::postLoadingTask(const WebTraceLocation& location, WebThread::Task* task)
 {
     if (m_webScheduler)

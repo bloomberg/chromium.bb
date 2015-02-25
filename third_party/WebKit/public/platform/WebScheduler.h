@@ -41,6 +41,12 @@ public:
     // Takes ownership of |IdleTask|. Can be called from any thread.
     virtual void postIdleTask(const WebTraceLocation&, IdleTask*) { }
 
+    // Like postIdleTask but does not run the idle task until after some other
+    // task has run. This enables posting of a task which won't stop the Blink
+    // main thread from sleeping, but will start running after it wakes up.
+    // Takes ownership of |IdleTask|. Can be called from any thread.
+    virtual void postIdleTaskAfterWakeup(const WebTraceLocation&, IdleTask*) { }
+
     // Schedule a loading task to be run on the Blink main thread. Loading
     // tasks usually have the default priority, but may be deprioritised
     // when the user is interacting with the device.
