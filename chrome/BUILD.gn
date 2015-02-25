@@ -294,7 +294,10 @@ if (is_win) {
     # TODO(brettW) this should have more reduced visibility, but chrome/browser
     # currently depends on this.
     #visibility = [ ":*" ]
-    source = "version.h.in"
+
+    # This one just uses the custom template and no separate sources.
+    sources = []
+    template_file = "version.h.in"
 
     # TODO(brettw) this should move to $target_gen_dir/version.h and
     # source files including it should reference it via "chrome/version.h"
@@ -302,39 +305,31 @@ if (is_win) {
   }
 
   process_version("chrome_exe_version") {
-    source = "//chrome/app/chrome_version.rc.version"
-    output = "$target_gen_dir/chrome_exe_version.rc"
-    extra_args = [
-      "-f",
-      rebase_path("app/chrome_exe.ver", root_build_dir),
+    sources = [
+      "app/chrome_exe.ver",
     ]
+    output = "$target_gen_dir/chrome_exe_version.rc"
   }
 
   process_version("chrome_dll_version") {
-    source = "//chrome/app/chrome_version.rc.version"
-    output = "$target_gen_dir/chrome_dll_version.rc"
-    extra_args = [
-      "-f",
-      rebase_path("app/chrome_dll.ver", root_build_dir),
+    sources = [
+      "app/chrome_dll.ver",
     ]
+    output = "$target_gen_dir/chrome_dll_version.rc"
   }
 
   process_version("nacl64_exe_version") {
-    source = "//chrome/app/chrome_version.rc.version"
-    output = "$target_gen_dir/nacl64_exe_version.rc"
-    extra_args = [
-      "-f",
-      rebase_path("app/nacl64_exe.ver", root_build_dir),
+    sources = [
+      "app/nacl64_exe.ver",
     ]
+    output = "$target_gen_dir/nacl64_exe_version.rc"
   }
 
   process_version("other_version") {
-    source = "//chrome/app/chrome_version.rc.version"
-    output = "$target_gen_dir/other_version.rc"
-    extra_args = [
-      "-f",
-      rebase_path("app/other.ver", root_build_dir),
+    sources = [
+      "app/other.ver",
     ]
+    output = "$target_gen_dir/other_version.rc"
   }
 
   group("chrome_version_resources") {

@@ -15,12 +15,10 @@ source_set("client") {
 }
 
 process_version("chrome_watcher_resources") {
-  source = "//chrome/app/chrome_version.rc.version"
-  output = "$target_gen_dir/chrome_watcher_version.rc"
-  extra_args = [
-    "-f",
-    rebase_path("chrome_watcher.ver", root_build_dir),
+  sources = [
+    "chrome_watcher.ver",
   ]
+  output = "$target_gen_dir/chrome_watcher_version.rc"
 }
 
 shared_library("chrome_watcher") {

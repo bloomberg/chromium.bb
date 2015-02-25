@@ -98,6 +98,7 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
+          # GN version: //media/cdm/ppapi:clearkeycdmadapter_resources
           'target_name': 'clearkeycdmadapter_resources',
           'type': 'none',
           'conditions': [

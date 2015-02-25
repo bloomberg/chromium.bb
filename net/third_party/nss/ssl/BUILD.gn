@@ -96,6 +96,10 @@ component("libssl") {
   if (is_clang) {
     # SSL triggers some of these Clang warnings.
     configs -= [ "//build/config/clang:extra_warnings" ]
+
+    # There is a broken header guard in /usr/include/nss/secmod.h:
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
+    cflags = [ "-Wno-header-guard" ]
   }
 
   if (is_posix) {

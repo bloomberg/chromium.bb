@@ -1,0 +1,129 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This template defines a CDM adapter target. Just use this as you would a
+# normal target and everything should work correctly. If GYP, you would instead
+# depend on media/media_cdm_adapter.gyp:cdmadapter which would in turn modify
+# your target with direct_dependent_settings.
+template("cdm_adapter") {
+  # TODO(GYP) On Mac/Linux this should be a loadable_module.
+  shared_library(target_name) {
+    # Don't filter sources list again.
+    set_sources_assignment_filter([])
+
+    sources = [
+      "//media/cdm/ppapi/api/content_decryption_module.h",
+      "//media/cdm/ppapi/cdm_adapter.cc",
+      "//media/cdm/ppapi/cdm_adapter.h",
+      "//media/cdm/ppapi/cdm_file_io_impl.cc",
+      "//media/cdm/ppapi/cdm_file_io_impl.h",
+      "//media/cdm/ppapi/cdm_helpers.cc",
+      "//media/cdm/ppapi/cdm_helpers.h",
+      "//media/cdm/ppapi/cdm_logging.cc",
+      "//media/cdm/ppapi/cdm_logging.h",
+      "//media/cdm/ppapi/cdm_wrapper.h",
+      "//media/cdm/ppapi/linked_ptr.h",
+      "//media/cdm/ppapi/supported_cdm_versions.h",
+    ]
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
+    }
+
+    if (is_mac) {
+      ldflags = [
+        # Not to strip important symbols by -Wl,-dead_strip.
+        "-Wl,-exported_symbol,_PPP_GetInterface",
+        "-Wl,-exported_symbol,_PPP_InitializeModule",
+        "-Wl,-exported_symbol,_PPP_ShutdownModule",
+      ]
+      #TODO(GYP) Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+    } else if (is_posix && !is_mac) {
+      cflags = [ "-fvisibility=hidden" ]
+      # Note GYP sets rpath but this is set by default on shared libraries in
+      # the GN build.
+    }
+
+    # TODO(jschuh) crbug.com/167187
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+    if (defined(invoker.all_dependent_configs)) {
+      all_dependent_configs = invoker.all_dependent_configs
+    }
+    if (defined(invoker.allow_circular_includes_from)) {
+      allow_circular_includes_from = invoker.allow_circular_includes_from
+    }
+    if (defined(invoker.cflags)) {
+      cflags = invoker.cflags
+    }
+    if (defined(invoker.cflags_c)) {
+      cflags_c = invoker.cflags_c
+    }
+    if (defined(invoker.cflags_cc)) {
+      cflags_cc = invoker.cflags_cc
+    }
+    if (defined(invoker.cflags_objc)) {
+      cflags_objc = invoker.cflags_objc
+    }
+    if (defined(invoker.cflags_objcc)) {
+      cflags_objcc = invoker.cflags_objcc
+    }
+    if (defined(invoker.check_includes)) {
+      check_includes = invoker.check_includes
+    }
+    if (defined(invoker.data)) {
+      data = invoker.data
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
+    }
+    if (defined(invoker.defines)) {
+      defines = invoker.defines
+    }
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.direct_dependent_configs)) {
+      direct_dependent_configs = invoker.direct_dependent_configs
+    }
+    if (defined(invoker.forward_dependent_configs_from)) {
+      forward_dependent_configs_from = invoker.forward_dependent_configs_from
+    }
+    if (defined(invoker.include_dirs)) {
+      include_dirs = invoker.include_dirs
+    }
+    if (defined(invoker.ldflags)) {
+      ldflags = invoker.ldflags
+    }
+    if (defined(invoker.lib_dirs)) {
+      lib_dirs = invoker.lib_dirs
+    }
+    if (defined(invoker.libs)) {
+      libs = invoker.libs
+    }
+    if (defined(invoker.output_extension)) {
+      output_extension = invoker.output_extension
+    }
+    if (defined(invoker.output_name)) {
+      output_name = invoker.output_name
+    }
+    if (defined(invoker.public)) {
+      public = invoker.public
+    }
+    if (defined(invoker.public_configs)) {
+      public_configs = invoker.public_configs
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
+    }
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+  }
+}

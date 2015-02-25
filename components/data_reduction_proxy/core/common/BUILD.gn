@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//components/data_reduction_proxy/core/common/version.gni")
+import("//chrome/version.gni")
 
 static_library("common") {
   sources = [
@@ -69,6 +69,6 @@ source_set("unit_tests") {
 }
 
 process_version("version_header") {
-  source = "version.h.in"
+  template_file = "version.h.in"
   output = "$target_gen_dir/version.h"
 }

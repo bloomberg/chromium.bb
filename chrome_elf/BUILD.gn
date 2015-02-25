@@ -6,12 +6,10 @@ import("//chrome/version.gni")
 import("//testing/test.gni")
 
 process_version("chrome_elf_resources") {
-  source = "//chrome/app/chrome_version.rc.version"
-  output = "$target_gen_dir/chrome_elf_version.rc"
-  extra_args = [
-    "-f",
-    rebase_path("chrome_elf.ver"),
+  sources = [
+    "chrome_elf.ver",
   ]
+  output = "$target_gen_dir/chrome_elf_version.rc"
 }
 
 shared_library("chrome_elf") {

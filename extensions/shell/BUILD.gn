@@ -183,6 +183,6 @@ test("app_shell_unittests") {
 }
 
 process_version("version_header") {
-  source = "common/version.h.in"
+  template_file = "common/version.h.in"
   output = "$target_gen_dir/common/version.h"
 }

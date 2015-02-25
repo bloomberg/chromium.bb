@@ -959,7 +959,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       # Runtime dependencies.
       data_deps += [
         "//media/cdm/ppapi:clearkeycdmadapter",
-        #'../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',  TODO(GYP)
+        "//third_party/widevine/cdm:adapter",
       ]
     }
     if (!enable_print_preview) {
@@ -1150,14 +1150,12 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       "//third_party/widevine/cdm:version_h",
     ]
 
-    # TODO(GYP) CDM adapter stuff.
-    #if (enable_pepper_cdms) {
-    #  deps += [
-    #    "//media/cdm/ppapi:clearkeycdmadapter",
-    #    "//ppapi/cpp",
-    #    "//third_party/widevine/cdm:adapter",
-    #  ]
-    #}
+    if (enable_pepper_cdms) {
+      data_deps = [
+        "//media/cdm/ppapi:clearkeycdmadapter",
+        "//third_party/widevine/cdm:adapter",
+      ]
+    }
   }
 
   unit_gypi_values = exec_script("//build/gypi_to_gn.py",

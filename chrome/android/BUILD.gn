@@ -477,7 +477,7 @@ uiautomator_test("uiautomator_tests") {
 chrome_version_java_dir = "$root_gen_dir/templates/chrome_version_java"
 chrome_version_java_file = "$chrome_version_java_dir/org/chromium/chrome/browser/ChromeVersionConstants.java"
 process_version("chrome_version_java") {
-  source = "java/ChromeVersionConstants.java.version"
+  template_file = "java/ChromeVersionConstants.java.version"
   output = chrome_version_java_file
   extra_args = [
     "-e",

@@ -16,8 +16,8 @@
     ['enable_pepper_cdms==1', {
       'targets': [
         {
-          # For GN, we may want a template that defines a target of the right
-          # type with the right dependencies.
+          # GN version: Use the template cdm_adapter in
+          # //media/cdm/ppapi/cdm_adapter.gni.
           'target_name': 'cdmadapter',
           'type': 'none',
           'direct_dependent_settings': {

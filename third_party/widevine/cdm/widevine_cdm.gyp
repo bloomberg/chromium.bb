@@ -54,6 +54,7 @@
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
     {
+      # GN version: //third_party/widevine/cdm:adapter_resources
       'target_name': 'widevinecdmadapter_resources',
       'type': 'none',
       'conditions': [

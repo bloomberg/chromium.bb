@@ -240,12 +240,12 @@ static_library("common") {
 import("//chrome/version.gni")
 process_version("version") {
   visibility = [ ":common" ]
-  source = "chrome_version_info_values.h.version"
+  template_file = "chrome_version_info_values.h.version"
   output = "$target_gen_dir/chrome_version_info_values.h"
 }
 
 process_version("make_chrome_version") {
-  source = "chrome_version.cc.version"
+  template_file = "chrome_version.cc.version"
   output = "$target_gen_dir/chrome_version.cc"
 }
 

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
+import("//chrome/version.gni")  # TODO layering violation
+import("//media/cdm/ppapi/cdm_adapter.gni")
+
 widevine_arch = current_cpu
 if (widevine_arch == "x86") {
   widevine_arch = "ia32"
@@ -70,25 +74,45 @@ if (widevine_cdm_binary_files == []) {
   }
 }
 
-source_set("adapter") {
-  if (is_chrome_branded) {
-    deps = [
-      ":version_h",
-      ":binaries",
-      "//ppapi/cpp",
+if (is_chrome_branded && enable_pepper_cdms) {
+  adapter_resource_file = "$target_gen_dir/widevinecdmadapter_version.rc"
 
-      #'<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',  TODO(GYP)
+  # Produce the .rc file.
+  process_version("adapter_resources") {
+    visibility = [ ":*" ]
+    sources = [
+      "BRANDING",
+      "widevinecdmadapter.ver",
+    ]
+    output = adapter_resource_file
+  }
+
+  cdm_adapter("adapter") {
+    sources = [
+      adapter_resource_file,
+    ]
+    deps = [
+      ":adapter_resources",
+      ":binaries",
+      ":version_h",
+      "//ppapi/cpp",
     ]
 
     if (is_linux) {
-      libs = [ rebase_path("$root_out_dir/libwidevinecdm.so", root_build_dir) ]
+      ldflags =
+          [ rebase_path("$root_out_dir/libwidevinecdm.so", root_build_dir) ]
+      libs = [ "rt" ]
     } else if (is_win) {
-      libs =
+      ldflags =
           [ rebase_path("$root_out_dir/widevinecdm.dll.lib", root_build_dir) ]
     } else if (is_mac) {
-      libs =
+      ldflags =
           [ rebase_path("$root_out_dir/libwidevinecdm.dylib", root_build_dir) ]
     }
+  }
+} else {
+  # Placeholder when we're not compiling the adapter.
+  group("adapter") {
   }
 }
 

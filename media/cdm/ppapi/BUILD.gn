@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//chrome/version.gni")  # TODO layering violation!
+import("//media/cdm/ppapi/cdm_adapter.gni")
 
 # Android doesn't use ffmpeg.
 use_ffmpeg = !is_android
@@ -47,14 +49,34 @@ shared_library("clearkeycdm") {
   # TODO(GYP) on Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
 }
 
-# TODO(GYP): clearkeycdmadapter_resources
+clearkeycdmadapter_rc_file = "$target_gen_dir/clearkeycdmadapter_version.rc"
 
-group("clearkeycdmadapter") {
+process_version("clearkeycdmadapter_resources") {
+  visibility = [ ":*" ]
+  sources = [
+    "external_clear_key/BRANDING",
+    "//media/clearkeycdmadapter.ver",
+  ]
+  output = clearkeycdmadapter_rc_file
+}
+
+cdm_adapter("clearkeycdmadapter") {
+  sources = [
+    clearkeycdmadapter_rc_file,
+  ]
+
+  # Check whether the plugin's origin URL is valid.
+  defines = [ "CHECK_DOCUMENT_URL" ]
   deps = [
-    #":cdmadapter",  TODO(GYP)
     ":clearkeycdm",
-
-    #":clearkeycdmadapter_resources",  TODO(GYP)
+    ":clearkeycdmadapter_resources",
     "//ppapi/cpp",
   ]
+
+  if (is_posix && !is_mac && enable_pepper_cdms) {
+    # Because clearkeycdm has type 'loadable_module', we must explicitly
+    # specify this dependency.
+    ldflags = [ rebase_path("$root_out_dir/libclearkeycdm.so", root_build_dir) ]
+    libs = [ "rt" ]
+  }
 }
