@@ -1,13 +1,14 @@
 {
     "experimental_tryjobs": {
         "10 percent experiment": {
-            "percentage": 0.1,
+            "percentage": 0.10,
             "trybots": {
                 "launched": {
                     "tryserver.chromium.linux": {
                         "cast_shell": ["defaulttests"],
                         "cast_shell_apk": ["defaulttests"],
                         "linux_android_rel_ng": ["defaulttests"],
+                        "linux_arm_compile": ["defaulttests"],
                         "linux_chromium_asan_rel_ng": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
