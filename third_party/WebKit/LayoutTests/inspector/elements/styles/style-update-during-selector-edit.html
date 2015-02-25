@@ -31,7 +31,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_rebuildUpdate", rebuildUpdate);
+        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
         InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, attributeChanged, this);
         // Click "Add new rule".
         document.getElementById("add-style-button-test-id").click();

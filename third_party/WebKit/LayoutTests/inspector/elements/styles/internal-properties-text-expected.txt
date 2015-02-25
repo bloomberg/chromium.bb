@@ -1,9 +1,0 @@
-Tests that querying -internal-* presentation attribute from the inspector works as expected.
-
-Inspect Me
-=== Rules for <marquee> ===
-[expanded] 
-element.style  { ()
-
-
-

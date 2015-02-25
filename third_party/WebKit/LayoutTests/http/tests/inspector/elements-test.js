@@ -190,7 +190,6 @@ InspectorTest.waitForStyleApplied = function(callback)
 
 InspectorTest.selectNodeAndWaitForStyles = function(idValue, callback)
 {
-
     callback = InspectorTest.safeWrap(callback);
 
     var targetNode;
