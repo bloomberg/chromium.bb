@@ -5,11 +5,20 @@
 #ifndef PPAPI_PROXY_VIDEO_ENCODER_RESOURCE_H_
 #define PPAPI_PROXY_VIDEO_ENCODER_RESOURCE_H_
 
+#include <deque>
+
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/shared_impl/media_stream_buffer_manager.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_video_encoder_api.h"
+
+namespace base {
+class SharedMemory;
+}
 
 namespace ppapi {
 
@@ -17,9 +26,13 @@ class TrackedCallback;
 
 namespace proxy {
 
+class SerializedHandle;
+class VideoFrameResource;
+
 class PPAPI_PROXY_EXPORT VideoEncoderResource
     : public PluginResource,
-      public thunk::PPB_VideoEncoder_API {
+      public thunk::PPB_VideoEncoder_API,
+      public ppapi::MediaStreamBufferManager::Delegate {
  public:
   VideoEncoderResource(Connection connection, PP_Instance instance);
   ~VideoEncoderResource() override;
@@ -27,6 +40,26 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
   thunk::PPB_VideoEncoder_API* AsPPB_VideoEncoder_API() override;
 
  private:
+  struct ShmBuffer {
+    ShmBuffer(uint32_t id, scoped_ptr<base::SharedMemory> shm);
+    ~ShmBuffer();
+
+    // Index of the buffer in the ScopedVector. Buffers have the same id in
+    // the plugin and the host.
+    uint32_t id;
+    scoped_ptr<base::SharedMemory> shm;
+  };
+
+  struct BitstreamBuffer {
+    BitstreamBuffer(uint32_t id, uint32_t size, bool key_frame);
+    ~BitstreamBuffer();
+
+    // Index of the buffer in the ScopedVector. Same as ShmBuffer::id.
+    uint32_t id;
+    uint32_t size;
+    bool key_frame;
+  };
+
   // PPB_VideoEncoder_API implementation.
   int32_t GetSupportedProfiles(
       const PP_ArrayOutput& output,
@@ -52,6 +85,72 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Close() override;
+
+  // PluginResource implementation.
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
+
+  // Reply message handlers for operations that are done in the host.
+  void OnPluginMsgGetSupportedProfilesReply(
+      const PP_ArrayOutput& output,
+      const ResourceMessageReplyParams& params,
+      const std::vector<PP_VideoProfileDescription>& profiles);
+  void OnPluginMsgInitializeReply(const ResourceMessageReplyParams& params,
+                                  uint32_t input_frame_count,
+                                  const PP_Size& input_coded_size);
+  void OnPluginMsgGetVideoFramesReply(const ResourceMessageReplyParams& params,
+                                      uint32_t frame_count,
+                                      uint32_t frame_length,
+                                      const PP_Size& frame_size);
+  void OnPluginMsgEncodeReply(PP_Resource video_frame,
+                              const ResourceMessageReplyParams& params,
+                              uint32_t frame_id);
+
+  // Unsolicited reply message handlers.
+  void OnPluginMsgBitstreamBuffers(const ResourceMessageReplyParams& params,
+                                   uint32_t buffer_length);
+  void OnPluginMsgBitstreamBufferReady(const ResourceMessageReplyParams& params,
+                                       uint32_t buffer_id,
+                                       uint32_t buffer_size,
+                                       bool key_frame);
+  void OnPluginMsgNotifyError(const ResourceMessageReplyParams& params,
+                              int32_t error);
+
+  // Internal utility functions.
+  void NotifyError(int32_t error);
+  void TryWriteVideoFrame();
+  void WriteBitstreamBuffer(const BitstreamBuffer& buffer);
+  void ReleaseFrames();
+
+  bool initialized_;
+  bool closed_;
+  int32_t encoder_last_error_;
+
+  int32_t input_frame_count_;
+  PP_Size input_coded_size_;
+
+  MediaStreamBufferManager buffer_manager_;
+
+  typedef std::map<PP_Resource, scoped_refptr<VideoFrameResource> >
+      VideoFrameMap;
+  VideoFrameMap video_frames_;
+
+  ScopedVector<ShmBuffer> shm_buffers_;
+
+  std::deque<BitstreamBuffer> available_bitstream_buffers_;
+  typedef std::map<void*, uint32_t> BitstreamBufferMap;
+  BitstreamBufferMap bitstream_buffer_map_;
+
+  scoped_refptr<TrackedCallback> get_supported_profiles_callback_;
+  scoped_refptr<TrackedCallback> initialize_callback_;
+  scoped_refptr<TrackedCallback> get_video_frame_callback_;
+  PP_Resource* get_video_frame_data_;
+
+  typedef std::map<PP_Resource, scoped_refptr<TrackedCallback> > EncodeMap;
+  EncodeMap encode_callbacks_;
+
+  scoped_refptr<TrackedCallback> get_bitstream_buffer_callback_;
+  PP_BitstreamBuffer* get_bitstream_buffer_data_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderResource);
 };

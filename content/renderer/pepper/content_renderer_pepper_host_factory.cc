@@ -22,6 +22,7 @@
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
 #include "content/renderer/pepper/pepper_video_destination_host.h"
+#include "content/renderer/pepper/pepper_video_encoder_host.h"
 #include "content/renderer/pepper/pepper_video_source_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
@@ -159,6 +160,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_VideoDecoder_Create::ID:
       return scoped_ptr<ResourceHost>(
           new PepperVideoDecoderHost(host_, instance, resource));
+    case PpapiHostMsg_VideoEncoder_Create::ID:
+      return scoped_ptr<ResourceHost>(
+          new PepperVideoEncoderHost(host_, instance, resource));
     case PpapiHostMsg_WebSocket_Create::ID:
       return scoped_ptr<ResourceHost>(
           new PepperWebSocketHost(host_, instance, resource));

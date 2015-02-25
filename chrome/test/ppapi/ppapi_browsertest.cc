@@ -1239,6 +1239,8 @@ TEST_PPAPI_NACL(TrueTypeFont)
 
 TEST_PPAPI_NACL(VideoDecoder)
 
+TEST_PPAPI_NACL(VideoEncoder)
+
 // VideoDestination doesn't work in content_browsertests.
 TEST_PPAPI_OUT_OF_PROCESS(VideoDestination)
 TEST_PPAPI_NACL(VideoDestination)

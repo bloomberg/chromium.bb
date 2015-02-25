@@ -175,6 +175,7 @@
         'proxy/serialized_var_unittest.cc',
         'proxy/talk_resource_unittest.cc',
         'proxy/video_decoder_resource_unittest.cc',
+        'proxy/video_encoder_resource_unittest.cc',
         'proxy/websocket_resource_unittest.cc',
         'shared_impl/media_stream_audio_track_shared_unittest.cc',
         'shared_impl/media_stream_buffer_manager_unittest.cc',

@@ -162,5 +162,7 @@ TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 TEST_PPAPI_IN_PROCESS(VideoDecoderDev)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoderDev)
 
+TEST_PPAPI_OUT_OF_PROCESS(VideoEncoder)
+
 }  // namespace
 }  // namespace content

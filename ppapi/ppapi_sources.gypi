@@ -513,6 +513,8 @@
       'tests/test_video_decoder.h',
       'tests/test_video_destination.cc',
       'tests/test_video_destination.h',
+      'tests/test_video_encoder.cc',
+      'tests/test_video_encoder.h',
       'tests/test_video_source.cc',
       'tests/test_video_source.h',
       'tests/test_view.cc',
