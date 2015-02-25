@@ -30,6 +30,7 @@ Running: testRemoveChild2
 //*[@id="childTest"]
 
 Running: testSetTextContent
+//*[@id="textTest"]
 //*[@id="textTest"]/text() "Text"
 
 Running: testSetTextNodeTextContent
@@ -39,10 +40,10 @@ Running: testRemoveInlineTextNode
 //*[@id="textTest"]
 
 Running: testSetTextContentWithEmptyText
+//*[@id="textTest"]
 //*[@id="textTest"]/text() "Text"
 
 Running: testClearTextNodeTextContent
-//*[@id="textTest"]
 //*[@id="textTest"]/text() ""
 
 Running: testAppendChildWhenHidden

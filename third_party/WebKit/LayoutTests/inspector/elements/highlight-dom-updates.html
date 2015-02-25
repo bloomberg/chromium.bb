@@ -135,13 +135,7 @@ function test()
         function testAppendChildWhenHidden(next)
         {
             WebInspector.ConsolePanel.show();
-            InspectorTest.evaluateInPage("appendChild('childTest', 'child1')", callback);
-
-            function callback()
-            {
-                dumpHighlights(childTestNode, next);
-                WebInspector.ElementsPanel.show();
-            }
+            runAndDumpHighlights("appendChild('childTest', 'child1')", childTestNode, next);
         }
     ]);
 
