@@ -49,12 +49,13 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 {##############################################################################}
 {% block indexed_property_setter %}
+{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
 {% if indexed_property_setter and not indexed_property_setter.is_custom %}
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    {{setter.v8_value_to_local_cpp_value}};
+    {{v8_value_to_local_cpp_value(setter) | indent}}
     {% if setter.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
@@ -210,6 +211,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 
 {##############################################################################}
 {% block named_property_setter %}
+{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
 {% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
 static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -230,8 +232,10 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     {% endif %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {# v8_value_to_local_cpp_value('DOMString', 'nameString', 'propertyName') #}
-    TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
-    {{setter.v8_value_to_local_cpp_value}};
+    V8StringResource<> propertyName(nameString);
+    if (!propertyName.prepare())
+        return;
+    {{v8_value_to_local_cpp_value(setter) | indent}}
     {% if setter.has_type_checking_interface %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
@@ -531,7 +535,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    TOSTRING_VOID(V8StringResource<>, type, info[0]);
+    V8StringResource<> type(info[0]);
+    if (!type.prepare())
+        return;
     {% for attribute in any_type_attributes %}
     v8::Local<v8::Value> {{attribute.name}};
     {% endfor %}

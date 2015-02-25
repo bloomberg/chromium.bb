@@ -89,7 +89,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8StringResource<> str;
     {
-        TOSTRING_VOID_INTERNAL(str, info[0]);
+        str = info[0];
+        if (!str.prepare())
+            return;
     }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::create(str);
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -122,7 +124,9 @@ static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::F
     }
     V8StringResource<> str;
     {
-        TOSTRING_VOID_INTERNAL(str, info[0]);
+        str = info[0];
+        if (!str.prepare())
+            return;
     }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::createForJSConstructor(str);
     v8::Local<v8::Object> wrapper = info.Holder();

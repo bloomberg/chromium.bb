@@ -9,6 +9,7 @@
       'callback_interface.cpp',
       'callback_interface.h',
       'constants.cpp',
+      'conversions.cpp',
       'dictionary_impl.cpp',
       'dictionary_impl.h',
       'dictionary_v8.cpp',

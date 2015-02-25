@@ -1,17 +1,23 @@
+{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+
+
 {##############################################################################}
 {% macro generate_method(method, world_suffix) %}
 {% filter conditional(method.conditional_string) %}
+{% if method.returns_promise and method.has_exception_state %}
+static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}Promise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
+{% else %}
 static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
+{% endif %}
 {
     {# Local variables #}
-    {% if method.has_exception_state %}
+    {% if method.has_exception_state and not method.returns_promise %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {# Overloaded methods have length checked during overload resolution #}
     {% if method.number_of_required_arguments and not method.overload_index %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
         {{throw_minimum_arity_type_error(method, method.number_of_required_arguments) | indent(8)}}
-        return;
     }
     {% endif %}
     {% if not method.is_static %}
@@ -24,23 +30,20 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.is_check_security_for_window %}
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            {{throw_from_exception_state(method)}};
-            return;
+            {{propagate_error_with_exception_state(method) | indent(12)}}
         }
         if (!window->document())
             return;
     }
     {% elif method.is_check_security_for_frame %}
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
-        {{throw_from_exception_state(method)}};
-        return;
+        {{propagate_error_with_exception_state(method) | indent(8)}}
     }
     {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
-        {{throw_from_exception_state(method)}};
-        return;
+        {{propagate_error_with_exception_state(method) | indent(8)}}
     }
     {% endif %}
     {# Call method #}
@@ -53,6 +56,16 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
     {% endif %}
 }
+{% if method.returns_promise and method.has_exception_state %}
+
+static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {{method.name}}{{method.overload_index}}Method{{world_suffix}}Promise(info, exceptionState);
+    if (exceptionState.hadException())
+        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+}
+{% endif %}
 {% endfilter %}
 {% endmacro %}
 
@@ -126,7 +139,6 @@ if (!isUndefinedOrNull(info[{{argument.index}}])) {
         {{throw_type_error(method,
               '"The callback provided as parameter %s is not a function."' %
                   (argument.index + 1)) | indent(8)}}
-        return;
     }
     {{argument.name}} = V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 } else {
@@ -136,8 +148,7 @@ if (!isUndefinedOrNull(info[{{argument.index}}])) {
 if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {
     {{throw_type_error(method,
           '"The callback provided as parameter %s is not a function."' %
-              (argument.index + 1)) | indent }}
-    return;
+              (argument.index + 1)) | indent}}
 }
 {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
@@ -146,16 +157,14 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
 if (!info[{{argument.index}}]->IsFunction(){% if argument.is_nullable %} && !info[{{argument.index}}]->IsNull(){% endif %}) {
     {{throw_type_error(method,
           '"The callback provided as parameter %s is not a function."' %
-              (argument.index + 1)) | indent(8)}}
-    return;
+              (argument.index + 1)) | indent}}
 }
-{{argument.v8_value_to_local_cpp_value}};
+{{v8_value_to_local_cpp_value(argument)}}
 {% elif argument.is_variadic_wrapper_type %}
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate())) {
         {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
                                    (argument.index + 1, argument.idl_type)) | indent(8)}}
-        return;
     }
     {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Local<v8::Object>::Cast(info[i])));
 }
@@ -166,12 +175,11 @@ http://heycam.github.io/webidl/#es-dictionary #}
 if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
     {{throw_type_error(method, '"parameter %s (\'%s\') is not an object."' %
                                (argument.index + 1, argument.name)) | indent}}
-    return;
 }
 {% endif %}{# not argument.use_permissive_dictionary_conversion #}
-{{argument.v8_value_to_local_cpp_value}};
+{{v8_value_to_local_cpp_value(argument)}}
 {% else %}{# argument.is_nullable #}
-{{argument.v8_value_to_local_cpp_value}};
+{{v8_value_to_local_cpp_value(argument)}}
 {% endif %}{# argument.is_nullable #}
 {# Type checking, possibly throw a TypeError, per:
    http://www.w3.org/TR/WebIDL/#es-type-mapping #}
@@ -183,7 +191,6 @@ if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
     {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
                                (argument.index + 1, argument.idl_type)) | indent}}
-    return;
 }
 {% elif argument.enum_validation_expression %}
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
@@ -192,7 +199,6 @@ if (!({{argument.enum_validation_expression}})) {
     {{throw_type_error(method,
           '"parameter %s (\'" + string + "\') is not a valid enum value."' %
               (argument.index + 1)) | indent}}
-    return;
 }
 {% elif argument.idl_type == 'Promise' %}
 {# We require this for our implementation of promises, though not in spec:
@@ -200,7 +206,6 @@ http://heycam.github.io/webidl/#es-promise #}
 if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
     {{throw_type_error(method, '"parameter %s (\'%s\') is not an object."' %
                                (argument.index + 1, argument.name)) | indent}}
-    return;
 }
 {% endif %}
 {% endmacro %}
@@ -245,8 +250,7 @@ if (!{{method.cpp_value}})
 {# Post-call #}
 {% if method.is_raises_exception %}
 if (exceptionState.hadException()) {
-    {{throw_from_exception_state(method)}};
-    return;
+    {{propagate_error_with_exception_state(method) | indent}}
 }
 {% endif %}
 {# Set return value #}
@@ -280,11 +284,13 @@ if (info.Length() >= {{argument_index}} + 1 && listener && !impl->toNode())
 {% macro throw_type_error(method, error_message) %}
 {% if method.has_exception_state %}
 exceptionState.throwTypeError({{error_message}});
-{{throw_from_exception_state(method)}};
+{{propagate_error_with_exception_state(method)}}
 {% elif method.idl_type == 'Promise' %}
 v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}})));
+return;
 {% else %}
 V8ThrowException::throwTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}});
+return;
 {% endif %}{# method.has_exception_state #}
 {% endmacro %}
 
@@ -300,12 +306,13 @@ ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{er
 
 
 {######################################}
-{% macro throw_from_exception_state(method_or_overloads) %}
-{% if method_or_overloads.idl_type == 'Promise' or method_or_overloads.returns_promise_all %}
-v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value())
-{%- else %}
-exceptionState.throwIfNeeded()
-{%- endif %}
+{% macro propagate_error_with_exception_state(method_or_overloads) %}
+{% if method_or_overloads.returns_promise_all %}
+v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+{% elif not method_or_overloads.returns_promise %}
+exceptionState.throwIfNeeded();
+{% endif %}
+return;
 {%- endmacro %}
 
 
@@ -313,11 +320,13 @@ exceptionState.throwIfNeeded()
 {% macro throw_minimum_arity_type_error(method, number_of_required_arguments) %}
 {% if method.has_exception_state %}
 setMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length());
-{{throw_from_exception_state(method)}};
+{{propagate_error_with_exception_state(method)}}
 {%- elif method.idl_type == 'Promise' %}
 v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}));
+return;
 {%- else %}
 V8ThrowException::throwException({{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}, info.GetIsolate());
+return;
 {%- endif %}
 {%- endmacro %}
 
@@ -399,8 +408,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {% if overloads.valid_arities %}
         if (info.Length() >= {{overloads.minarg}}) {
             setArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
-            {{throw_from_exception_state(overloads)}};
-            return;
+            {{propagate_error_with_exception_state(overloads) | indent(12)}}
         }
         {% endif %}
         break;
@@ -414,13 +422,12 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     if (info.Length() < {{overloads.length}}) {
         {# Otherwise just report "not enough arguments" #}
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.length}}, info.Length()));
-        {{throw_from_exception_state(overloads)}};
-        return;
+        {{propagate_error_with_exception_state(overloads) | indent(8)}}
     }
     {% endif %}
     {# No match, throw error #}
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    {{throw_from_exception_state(overloads)}};
+    {{propagate_error_with_exception_state(overloads) | indent}}
     {% endif %}
 }
 {% endmacro %}
@@ -543,7 +550,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     if (v8Value.IsEmpty())
         return false;
     {% if method.idl_type != 'void' %}
-    {{method.private_script_v8_value_to_local_cpp_value}};
+    {{v8_value_to_local_cpp_value(method.private_script_v8_value_to_local_cpp_value) | indent}}
     *result = cppValue;
     {% endif %}
     RELEASE_ASSERT(!exceptionState.hadException());
@@ -577,7 +584,6 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% if constructor.number_of_required_arguments and not constructor.overload_index %}
     if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
         {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments) | indent(8)}}
-        return;
     }
     {% endif %}
     {% if constructor.arguments %}

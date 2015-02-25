@@ -49,7 +49,9 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Property
 {
     v8::Local<v8::Object> holder = info.Holder();
     SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(SVGNames::typeAttr, cppValue);
 }

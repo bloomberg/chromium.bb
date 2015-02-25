@@ -7,6 +7,7 @@
 #include "config.h"
 #include "{{header_filename}}"
 
+{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
 {% macro assign_and_return_if_hasinstance(member) %}
 if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
     {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Local<v8::Object>::Cast(v8Value));
@@ -94,10 +95,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {# FIXME: This should also check "object but not Date or RegExp". Add checks
        when we implement conversions for Date and RegExp. #}
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-        {% if container.dictionary_type.type_name != 'Dictionary' %}
-        {{container.dictionary_type.cpp_local_type}} cppValue;
-        {% endif %}
-        {{container.dictionary_type.v8_value_to_local_cpp_value}};
+        {{v8_value_to_local_cpp_value(container.dictionary_type) | indent(8)}}
         impl.set{{container.dictionary_type.type_name}}(cppValue);
         return;
     }
@@ -109,7 +107,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
        when we implement conversions for Date and RegExp. #}
     {# FIXME: Should check for sequences too, not just Array instances. #}
     if (v8Value->IsArray()) {
-        {{container.array_or_sequence_type.v8_value_to_local_cpp_value}};
+        {{v8_value_to_local_cpp_value(container.array_or_sequence_type) | indent(8)}}
         impl.set{{container.array_or_sequence_type.type_name}}(cppValue);
         return;
     }
@@ -128,7 +126,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {% if container.numeric_type %}
     {# 15. Number #}
     if (v8Value->IsNumber()) {
-        {{container.numeric_type.v8_value_to_local_cpp_value}};
+        {{v8_value_to_local_cpp_value(container.numeric_type) | indent(8)}}
         impl.set{{container.numeric_type.type_name}}(cppValue);
         return;
     }
@@ -137,7 +135,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {% if container.string_type %}
     {# 16. String #}
     {
-        {{container.string_type.v8_value_to_local_cpp_value}};
+        {{v8_value_to_local_cpp_value(container.string_type) | indent(8)}}
         {% if container.string_type.enum_validation_expression %}
         String string = cppValue;
         if (!({{container.string_type.enum_validation_expression}})) {
@@ -152,7 +150,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {# 17. Number (fallback) #}
     {% elif container.numeric_type %}
     {
-        {{container.numeric_type.v8_value_to_local_cpp_value}};
+        {{v8_value_to_local_cpp_value(container.numeric_type) | indent(8)}}
         impl.set{{container.numeric_type.type_name}}(cppValue);
         return;
     }
@@ -160,7 +158,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {# 18. Boolean (fallback) #}
     {% elif container.boolean_type %}
     {
-        impl.setBoolean(v8Value->ToBoolean()->Value());
+        impl.setBoolean(v8Value->BooleanValue());
         return;
     }
 

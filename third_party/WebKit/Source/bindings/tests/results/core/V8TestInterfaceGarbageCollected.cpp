@@ -158,7 +158,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         if (!info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-                exceptionState.throwIfNeeded();
+            exceptionState.throwIfNeeded();
             return;
         }
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
@@ -190,7 +190,9 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     bool result = impl->hasForBinding(scriptState, value, exceptionState);
@@ -219,7 +221,9 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     RawPtr<TestInterfaceGarbageCollected> result = impl->addForBinding(scriptState, value, exceptionState);
@@ -267,7 +271,9 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     bool result = impl->deleteForBinding(scriptState, value, exceptionState);
@@ -313,7 +319,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8StringResource<> str;
     {
-        TOSTRING_VOID_INTERNAL(str, info[0]);
+        str = info[0];
+        if (!str.prepare())
+            return;
     }
     RawPtr<TestInterfaceGarbageCollected> impl = TestInterfaceGarbageCollected::create(str);
     v8::Local<v8::Object> wrapper = info.Holder();

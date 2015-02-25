@@ -56,13 +56,17 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> type;
     TestInterfaceEventInit testInterfaceEventInit;
     {
-        TOSTRING_VOID_INTERNAL(type, info[0]);
+        type = info[0];
+        if (!type.prepare())
+            return;
         if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
             exceptionState.throwTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestInterfaceEventInit::toImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState), exceptionState);
+        V8TestInterfaceEventInit::toImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     RefPtrWillBeRawPtr<TestInterfaceEventInitConstructor> impl = TestInterfaceEventInitConstructor::create(type, testInterfaceEventInit);
     v8::Local<v8::Object> wrapper = info.Holder();

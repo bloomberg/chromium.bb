@@ -13,8 +13,7 @@
 
 namespace blink {
 
-{% macro convert_and_set_member(member) %}
-{% endmacro %}
+{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
 void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{cpp_class}}& impl, ExceptionState& exceptionState)
 {
     if (isUndefinedOrNull(v8Value))
@@ -22,10 +21,11 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     if (!v8Value->IsObject()) {
         {% if use_permissive_dictionary_conversion %}
         // Do nothing.
+        return;
         {% else %}
         exceptionState.throwTypeError("cannot convert to dictionary.");
-        {% endif %}
         return;
+        {% endif %}
     }
 
     {% if parent_v8_class %}
@@ -55,10 +55,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
         {% if member.deprecate_as %}
         UseCounter::countDeprecationIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::{{member.deprecate_as}});
         {% endif %}
-        {% if member.use_output_parameter_for_result %}
-        {{member.cpp_type}} {{member.name}};
-        {% endif %}
-        {{member.v8_value_to_local_cpp_value}};
+        {{v8_value_to_local_cpp_value(member) | indent(8)}}
         {% if member.is_interface_type %}
         if (!{{member.name}} && !{{member.name}}Value->IsNull()) {
             exceptionState.throwTypeError("member {{member.name}} is not of type {{member.idl_type}}.");

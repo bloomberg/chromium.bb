@@ -83,12 +83,20 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     V8StringResource<> defaultNullStringOptionalstringArg;
     V8StringResource<> optionalStringArg;
     {
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        stringArg = info[0];
+        if (!stringArg.prepare())
+            return;
         defaultUndefinedOptionalBooleanArg = info[1]->BooleanValue();
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
-        TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[3]);
+        defaultUndefinedOptionalLongArg = toInt32(info[2], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        defaultUndefinedOptionalStringArg = info[3];
+        if (!defaultUndefinedOptionalStringArg.prepare())
+            return;
         if (!info[4]->IsUndefined()) {
-            TOSTRING_VOID_INTERNAL(defaultNullStringOptionalstringArg, info[4]);
+            defaultNullStringOptionalstringArg = info[4];
+            if (!defaultNullStringOptionalstringArg.prepare())
+                return;
         } else {
             defaultNullStringOptionalstringArg = nullptr;
         }
@@ -104,7 +112,9 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
             v8SetReturnValue(info, wrapper);
             return;
         }
-        TOSTRING_VOID_INTERNAL(optionalStringArg, info[5]);
+        optionalStringArg = info[5];
+        if (!optionalStringArg.prepare())
+            return;
     }
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);

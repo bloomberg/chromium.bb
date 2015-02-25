@@ -681,7 +681,7 @@ def overloads_context(interface, overloads):
 
     # Check and fail if overloads disagree about whether the return type
     # is a Promise or not.
-    promise_overload_count = sum(1 for method in overloads if method.get('idl_type') == 'Promise')
+    promise_overload_count = sum(1 for method in overloads if method.get('returns_promise'))
     if promise_overload_count not in (0, len(overloads)):
         raise ValueError('Overloads of %s have conflicting Promise/non-Promise types'
                          % (name))
@@ -1290,7 +1290,7 @@ def property_setter(setter, interface):
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'propertyValue', restricted_float),
+            extended_attributes, 'v8Value', 'propertyValue', restricted_float=restricted_float),
     }
 
 

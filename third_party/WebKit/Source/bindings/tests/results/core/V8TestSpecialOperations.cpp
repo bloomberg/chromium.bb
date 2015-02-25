@@ -45,7 +45,9 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     V8StringResource<> name;
     {
-        TOSTRING_VOID_INTERNAL(name, info[0]);
+        name = info[0];
+        if (!name.prepare())
+            return;
     }
     NodeOrNodeList result;
     impl->getItem(name, result);
@@ -86,7 +88,9 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
         return;
     auto nameString = name.As<v8::String>();
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
+    V8StringResource<> propertyName(nameString);
+    if (!propertyName.prepare())
+        return;
     Node* propertyValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!propertyValue && !isUndefinedOrNull(v8Value)) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");

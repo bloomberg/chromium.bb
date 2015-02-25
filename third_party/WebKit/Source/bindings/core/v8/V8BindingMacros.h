@@ -37,26 +37,15 @@ namespace blink {
 // TO*_RETURNTYPE[_ARGTYPE]...
 // ...using _DEFAULT instead of _ANY..._ANY when returing a default value.
 
-#define TONATIVE_EXCEPTION(type, var, value) \
-    type var;                                \
-    {                                        \
-        v8::TryCatch block;                  \
-        var = (value);                       \
-        if (UNLIKELY(block.HasCaught()))     \
-            return block.ReThrow();          \
-    }
-
-#define TONATIVE_VOID_INTERNAL(var, value) \
-    var = (value);                         \
-    if (UNLIKELY(block.HasCaught()))       \
-        return;
-
 #define TONATIVE_VOID(type, var, value)        \
     type var;                                  \
     {                                          \
         v8::TryCatch block;                    \
-        V8RethrowTryCatchScope rethrow(block); \
-        TONATIVE_VOID_INTERNAL(var, value);    \
+        var = (value);                         \
+        if (UNLIKELY(block.HasCaught())) {     \
+            block.ReThrow();                   \
+            return;                            \
+        }                                      \
     }
 
 #define TONATIVE_DEFAULT(type, var, value, retVal) \
@@ -70,57 +59,10 @@ namespace blink {
         }                                          \
     }
 
-// We need to cancel the exception propergation when we return a rejected
-// Promise.
-#define TONATIVE_VOID_PROMISE_INTERNAL(var, value, info)                                        \
-    var = (value);                                                                              \
-    if (UNLIKELY(block.HasCaught())) {                                                          \
-        v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), block.Exception())); \
-        block.Reset();                                                                          \
-        return;                                                                                 \
-    }
-
-#define TONATIVE_VOID_PROMISE(type, var, value, info)     \
-    type var;                                             \
-    {                                                     \
-        v8::TryCatch block;                               \
-        TONATIVE_VOID_PROMISE_INTERNAL(var, value, info); \
-    }
-
-
-#define TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(var, value, exceptionState) \
-    var = (value);                                                        \
-    if (UNLIKELY(exceptionState.throwIfNeeded()))                         \
-        return;                                                           \
-
 #define TONATIVE_VOID_EXCEPTIONSTATE(type, var, value, exceptionState)  \
-    type var;                                                           \
-    var = (value);                                                      \
+    type var(value);                                                    \
     if (UNLIKELY(exceptionState.throwIfNeeded()))                       \
         return;
-
-#define TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(value, exceptionState) \
-    (value);                                                            \
-    if (UNLIKELY(exceptionState.throwIfNeeded()))                       \
-        return;
-
-#define TONATIVE_DEFAULT_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
-    type var = (value);                                                           \
-    if (UNLIKELY(exceptionState.throwIfNeeded()))                                 \
-        return retVal;
-
-// We need to cancel the exception propergation when we return a rejected
-// Promise.
-#define TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState) \
-    var = (value);                                                                                   \
-    if (UNLIKELY(exceptionState.hadException())) {                                                   \
-        v8SetReturnValue(info, exceptionState.reject(scriptState).v8Value());                        \
-        return;                                                                                      \
-    }
-
-#define TONATIVE_VOID_EXCEPTIONSTATE_PROMISE(type, var, value, exceptionState, info, scriptState)     \
-    type var;                                                                                         \
-    TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState);
 
 // type is an instance of class template V8StringResource<>,
 // but Mode argument varies; using type (not Mode) for consistency
@@ -130,29 +72,10 @@ namespace blink {
     if (UNLIKELY(!var.prepare()))       \
         return;
 
-#define TOSTRING_VOID_INTERNAL(var, value) \
-    var = (value);                         \
-    if (UNLIKELY(!var.prepare()))          \
-        return;
-
-#define TOSTRING_VOID_EXCEPTIONSTATE(type, var, value, exceptionState) \
-    type var(value);                                                   \
-    if (UNLIKELY(!var.prepare(exceptionState)))                        \
-        return;
-
 #define TOSTRING_DEFAULT(type, var, value, retVal) \
     type var(value);                               \
     if (UNLIKELY(!var.prepare()))                  \
         return retVal;
-
-// We need to cancel the exception propagation when we return a rejected
-// Promise.
-#define TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState) \
-    var = (value);                                                                                   \
-    if (UNLIKELY(!var.prepare(exceptionState)))  {                                                   \
-        v8SetReturnValue(info, exceptionState.reject(scriptState).v8Value());                        \
-        return;                                                                                      \
-    }
 
 } // namespace blink
 

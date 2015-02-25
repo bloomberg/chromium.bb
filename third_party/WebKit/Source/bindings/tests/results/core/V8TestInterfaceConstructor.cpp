@@ -61,23 +61,35 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary optionalDictionaryArg;
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
-        TOSTRING_VOID_INTERNAL(stringArg, info[1]);
+        doubleArg = toDouble(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        stringArg = info[1];
+        if (!stringArg.prepare())
+            return;
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
         if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate(), exceptionState), exceptionState);
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(sequenceStringArg, toImplArray<String>(info[4], 5, info.GetIsolate(), exceptionState), exceptionState);
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(sequenceDictionaryArg, toImplArray<Dictionary>(info[5], 6, info.GetIsolate(), exceptionState), exceptionState);
+        dictionaryArg = Dictionary(info[3], info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        sequenceStringArg = toImplArray<String>(info[4], 5, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        sequenceDictionaryArg = toImplArray<Dictionary>(info[5], 6, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
         if (!isUndefinedOrNull(info[6]) && !info[6]->IsObject()) {
             exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate(), exceptionState), exceptionState);
+        optionalDictionaryArg = Dictionary(info[6], info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
         optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]);
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
@@ -99,7 +111,9 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> arg;
     V8StringResource<> optArg;
     {
-        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        arg = info[0];
+        if (!arg.prepare())
+            return;
         if (UNLIKELY(info.Length() <= 1)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -114,7 +128,9 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
             v8SetReturnValue(info, wrapper);
             return;
         }
-        TOSTRING_VOID_INTERNAL(optArg, info[1]);
+        optArg = info[1];
+        if (!optArg.prepare())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -136,9 +152,15 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> arg2;
     V8StringResource<> arg3;
     {
-        TOSTRING_VOID_INTERNAL(arg, info[0]);
-        TOSTRING_VOID_INTERNAL(arg2, info[1]);
-        TOSTRING_VOID_INTERNAL(arg3, info[2]);
+        arg = info[0];
+        if (!arg.prepare())
+            return;
+        arg2 = info[1];
+        if (!arg2.prepare())
+            return;
+        arg3 = info[2];
+        if (!arg3.prepare())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -236,7 +258,9 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     V8StringResource<> arg;
     V8StringResource<> optArg;
     {
-        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        arg = info[0];
+        if (!arg.prepare())
+            return;
         if (UNLIKELY(info.Length() <= 1)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -251,7 +275,9 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
             v8SetReturnValue(info, wrapper);
             return;
         }
-        TOSTRING_VOID_INTERNAL(optArg, info[1]);
+        optArg = info[1];
+        if (!optArg.prepare())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());

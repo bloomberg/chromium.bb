@@ -1,3 +1,6 @@
+{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+
+
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
@@ -217,9 +220,6 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
-    {% if attribute.use_output_parameter_for_result %}
-    {{attribute.cpp_type}} cppValue;
-    {% endif %}
     {# impl #}
     {% if attribute.put_forwards %}
     {{cpp_class}}* proxyImpl = {{v8_class}}::toImpl(holder);
@@ -235,7 +235,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {# Convert JS value to C++ value #}
     {% if attribute.idl_type != 'EventHandler' %}
-    {{attribute.v8_value_to_local_cpp_value}};
+    {{v8_value_to_local_cpp_value(attribute) | indent}}
     {% elif not is_node %}{# EventHandler hack #}
     moveEventListenerToNewWrapper(info.GetIsolate(), holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex);
     {% endif %}
@@ -349,7 +349,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder);
     if (v8Value.IsEmpty())
         return false;
-    {{attribute.private_script_v8_value_to_local_cpp_value}};
+    {{v8_value_to_local_cpp_value(attribute.private_script_v8_value_to_local_cpp_value) | indent}}
     RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;

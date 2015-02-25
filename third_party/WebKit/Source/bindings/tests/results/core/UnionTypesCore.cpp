@@ -114,7 +114,9 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
     }
 
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(Dictionary, cppValue, Dictionary(v8Value, isolate, exceptionState), exceptionState);
+        Dictionary cppValue = Dictionary(v8Value, isolate, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setDictionary(cppValue);
         return;
     }
@@ -222,13 +224,17 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Loc
     }
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        double cppValue = toDouble(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setUnrestrictedDouble(cppValue);
         return;
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }
@@ -310,13 +316,17 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
+        double cppValue = toRestrictedDouble(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setDouble(cppValue);
         return;
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }
@@ -521,7 +531,9 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Lo
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }
@@ -603,13 +615,17 @@ void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
+        double cppValue = toRestrictedDouble(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setDouble(cppValue);
         return;
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }
@@ -689,13 +705,17 @@ void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
         return;
 
     if (v8Value->IsArray()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(Vector<String>, cppValue, toImplArray<String>(v8Value, 0, isolate, exceptionState), exceptionState);
+        Vector<String> cppValue = toImplArray<String>(v8Value, 0, isolate, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setStringSequence(cppValue);
         return;
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }
@@ -780,13 +800,17 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
+        double cppValue = toRestrictedDouble(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setDouble(cppValue);
         return;
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         String string = cppValue;
         if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
             exceptionState.throwTypeError("'" + string + "' is not a valid enum value.");
@@ -969,7 +993,9 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::L
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }
@@ -1055,13 +1081,17 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     }
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+        int cppValue = toInt32(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setLong(cppValue);
         return;
     }
 
     {
-        TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+        int cppValue = toInt32(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setLong(cppValue);
         return;
     }
@@ -1241,7 +1271,9 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
 
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
         TestDictionary cppValue;
-        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState), exceptionState);
+        V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setTestDictionary(cppValue);
         return;
     }
@@ -1322,13 +1354,17 @@ void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        double cppValue = toDouble(v8Value, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setUnrestrictedDouble(cppValue);
         return;
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }

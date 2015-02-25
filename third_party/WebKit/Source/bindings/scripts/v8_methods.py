@@ -175,8 +175,9 @@ def method_context(interface, method, is_visible=True):
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', used_in_private_script=True),
+            extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', bailout_return_value='false'),
         'property_attributes': property_attributes(interface, method),
+        'returns_promise': method.returns_promise,
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
@@ -242,7 +243,7 @@ def argument_context(interface, method, argument, index):
         'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in extended_attributes,
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=method.returns_promise, restricted_float=restricted_float),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(method, argument, index, restricted_float=restricted_float),
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 
@@ -347,37 +348,34 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
-def v8_value_to_local_cpp_variadic_value(argument, index, return_promise):
+def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise):
     assert argument.is_variadic
     idl_type = argument.idl_type
+    this_cpp_type = idl_type.cpp_type
 
-    suffix = ''
+    if method.returns_promise:
+        check_expression = 'exceptionState.hadException()'
+    else:
+        check_expression = 'exceptionState.throwIfNeeded()'
 
-    macro = 'TONATIVE_VOID_EXCEPTIONSTATE'
-    macro_args = [
-        argument.name,
-        'toImplArguments<%s>(info, %s, exceptionState)' % (idl_type.cpp_type, index),
-        'exceptionState',
-    ]
-
-    if return_promise:
-        suffix += '_PROMISE'
-        macro_args.extend(['info', 'ScriptState::current(info.GetIsolate())'])
-
-    suffix += '_INTERNAL'
-
-    return '%s%s(%s)' % (macro, suffix, ', '.join(macro_args))
+    return {
+        'assign_expression': 'toImplArguments<%s>(info, %s, exceptionState)' % (this_cpp_type, index),
+        'check_expression': check_expression,
+        'cpp_type': this_cpp_type,
+        'cpp_name': argument.name,
+        'declare_variable': False,
+    }
 
 
-def v8_value_to_local_cpp_value(argument, index, return_promise=False, restricted_float=False):
+def v8_value_to_local_cpp_value(method, argument, index, return_promise=False, restricted_float=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        return v8_value_to_local_cpp_variadic_value(argument, index, return_promise)
+        return v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise)
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
                                                 name, index=index, declare_variable=False,
-                                                return_promise=return_promise,
+                                                use_exception_state=method.returns_promise,
                                                 restricted_float=restricted_float)
 
 

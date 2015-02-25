@@ -35,7 +35,9 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
     if (derivedStringMemberValue.IsEmpty() || derivedStringMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        TOSTRING_VOID(V8StringResource<>, derivedStringMember, derivedStringMemberValue);
+        V8StringResource<> derivedStringMember = derivedStringMemberValue;
+        if (!derivedStringMember.prepare(exceptionState))
+            return;
         impl.setDerivedStringMember(derivedStringMember);
     }
 
@@ -47,7 +49,9 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
     if (derivedStringMemberWithDefaultValue.IsEmpty() || derivedStringMemberWithDefaultValue->IsUndefined()) {
         // Do nothing.
     } else {
-        TOSTRING_VOID(V8StringResource<>, derivedStringMemberWithDefault, derivedStringMemberWithDefaultValue);
+        V8StringResource<> derivedStringMemberWithDefault = derivedStringMemberWithDefaultValue;
+        if (!derivedStringMemberWithDefault.prepare(exceptionState))
+            return;
         impl.setDerivedStringMemberWithDefault(derivedStringMemberWithDefault);
     }
 

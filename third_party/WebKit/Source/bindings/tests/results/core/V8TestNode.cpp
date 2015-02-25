@@ -48,7 +48,9 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Property
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     impl->setHref(cppValue);
 }
 
@@ -78,7 +80,9 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Pr
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefThrows", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     impl->setHrefThrows(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -108,7 +112,9 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->setHrefCallWith(executionContext, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
@@ -139,7 +145,9 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toByteString(v8Value, exceptionState), exceptionState);
+    V8StringResource<> cppValue = toByteString(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setHrefByteString(cppValue);
 }
 

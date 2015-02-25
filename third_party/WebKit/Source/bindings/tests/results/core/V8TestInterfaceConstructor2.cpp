@@ -36,7 +36,9 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        stringArg = info[0];
+        if (!stringArg.prepare())
+            return;
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -54,7 +56,9 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate(), exceptionState), exceptionState);
+        dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(dictionaryArg);
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -67,7 +71,9 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
     Vector<Vector<String>> stringSequenceSequenceArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringSequenceSequenceArg, toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
+        stringSequenceSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(stringSequenceSequenceArg);
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -86,10 +92,16 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> optionalStringArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
-        TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[2]);
+        longArg = toInt32(info[1], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        defaultUndefinedOptionalStringArg = info[2];
+        if (!defaultUndefinedOptionalStringArg.prepare())
+            return;
         if (!info[3]->IsUndefined()) {
-            TOSTRING_VOID_INTERNAL(defaultNullStringOptionalStringArg, info[3]);
+            defaultNullStringOptionalStringArg = info[3];
+            if (!defaultNullStringOptionalStringArg.prepare())
+                return;
         } else {
             defaultNullStringOptionalStringArg = nullptr;
         }
@@ -98,7 +110,9 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalDictionaryArg, Dictionary(info[4], info.GetIsolate(), exceptionState), exceptionState);
+        defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
         if (UNLIKELY(info.Length() <= 5)) {
             RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
             v8::Local<v8::Object> wrapper = info.Holder();
@@ -106,7 +120,9 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
             v8SetReturnValue(info, wrapper);
             return;
         }
-        TOSTRING_VOID_INTERNAL(optionalStringArg, info[5]);
+        optionalStringArg = info[5];
+        if (!optionalStringArg.prepare())
+            return;
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg, optionalStringArg);
     v8::Local<v8::Object> wrapper = info.Holder();

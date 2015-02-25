@@ -53,7 +53,9 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "uLongLongAttribute", "TestTypedefs", holder, info.GetIsolate());
     TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(unsigned long long, cppValue, toUInt64(v8Value, exceptionState), exceptionState);
+    unsigned long long cppValue = toUInt64(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setULongLongAttribute(cppValue);
 }
 
@@ -95,7 +97,9 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
             impl->voidMethodArrayOfLongsArg();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayOfLongsArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
+        arrayOfLongsArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
@@ -119,8 +123,12 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
     float floatArg;
     V8StringResource<> stringArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toFloat(info[0], exceptionState), exceptionState);
-        TOSTRING_VOID_INTERNAL(stringArg, info[1]);
+        floatArg = toFloat(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        stringArg = info[1];
+        if (!stringArg.prepare())
+            return;
     }
     impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
@@ -168,7 +176,9 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
+        testInterfaceEmptyTypeSequenceArg = (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
@@ -221,7 +231,9 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> arrayOfStringsArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayOfStringsArg, toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
+        arrayOfStringsArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     v8SetReturnValue(info, toV8(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
@@ -244,7 +256,9 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> stringArrayArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringArrayArg, toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
+        stringArrayArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     v8SetReturnValue(info, toV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
@@ -264,7 +278,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        stringArg = info[0];
+        if (!stringArg.prepare())
+            return;
     }
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();

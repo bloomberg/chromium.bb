@@ -94,7 +94,9 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(d, toRestrictedDouble(info[1], exceptionState), exceptionState);
+        d = toRestrictedDouble(info[1], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     TestPartialInterface4::voidMethodDocument(document, d);
 }
@@ -163,7 +165,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         if (!info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-                exceptionState.throwIfNeeded();
+            exceptionState.throwIfNeeded();
             return;
         }
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);

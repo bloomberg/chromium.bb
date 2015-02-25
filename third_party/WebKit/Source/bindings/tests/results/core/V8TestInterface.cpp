@@ -109,7 +109,9 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
+    double cppValue = toRestrictedDouble(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setDoubleAttribute(cppValue);
 }
 
@@ -139,7 +141,9 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toRestrictedFloat(v8Value, exceptionState), exceptionState);
+    float cppValue = toRestrictedFloat(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setFloatAttribute(cppValue);
 }
 
@@ -169,7 +173,9 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+    double cppValue = toDouble(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setUnrestrictedDoubleAttribute(cppValue);
 }
 
@@ -199,7 +205,9 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
+    float cppValue = toFloat(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setUnrestrictedFloatAttribute(cppValue);
 }
 
@@ -228,7 +236,9 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     String string = cppValue;
     if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3"))
         return;
@@ -262,9 +272,11 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 {
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringOrDoubleAttribute", "TestInterface", holder, info.GetIsolate());
-    StringOrDouble cppValue;
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState), exceptionState);
+    StringOrDouble cppValue;
+    V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setStringOrDoubleAttribute(cppValue);
 }
 
@@ -289,7 +301,9 @@ static void staticStringAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     TestInterfaceImplementation::setStaticStringAttribute(cppValue);
 }
 
@@ -319,7 +333,9 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setAlwaysExposedAttribute(cppValue);
 }
 
@@ -349,7 +365,9 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setWorkerExposedAttribute(cppValue);
 }
 
@@ -379,7 +397,9 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setWindowExposedAttribute(cppValue);
 }
 
@@ -451,7 +471,9 @@ static void implementsStaticStringAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     TestInterfaceImplementation::setImplementsStaticStringAttribute(cppValue);
 }
 
@@ -494,7 +516,9 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     impl->setImplementsStringAttribute(cppValue);
 }
 
@@ -654,7 +678,9 @@ static void implements2StaticStringAttributeAttributeGetterCallback(v8::Local<v8
 
 static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     TestImplements2::setImplements2StaticStringAttribute(cppValue);
 }
 
@@ -683,7 +709,9 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     TestImplements2::setImplements2StringAttribute(*impl, cppValue);
 }
 
@@ -712,7 +740,9 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     TestImplements3Implementation::setImplements3StringAttribute(*impl, cppValue);
 }
 
@@ -737,7 +767,9 @@ static void implements3StaticStringAttributeAttributeGetterCallback(v8::Local<v8
 
 static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     TestImplements3Implementation::setImplements3StaticStringAttribute(cppValue);
 }
 
@@ -772,7 +804,9 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     TestPartialInterface::setPartialLongAttribute(*impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -806,7 +840,9 @@ static void partialStaticLongAttributeAttributeGetterCallback(v8::Local<v8::Stri
 static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialStaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     TestPartialInterface::setPartialStaticLongAttribute(cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -845,7 +881,9 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterface::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
@@ -883,7 +921,9 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     String string = cppValue;
     if (!(string == "foo" || string == "bar"))
         return;
@@ -926,7 +966,9 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
     V8TestInterface::PrivateScript::stringAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -959,7 +1001,9 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     TestPartialInterfaceImplementation::setPartial2LongAttribute(*impl, cppValue);
 }
 
@@ -985,7 +1029,9 @@ static void partial2StaticLongAttributeAttributeGetterCallback(v8::Local<v8::Str
 static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     TestPartialInterfaceImplementation::setPartial2StaticLongAttribute(cppValue);
 }
 
@@ -1054,8 +1100,12 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     double doubleArg;
     float floatArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toRestrictedDouble(info[0], exceptionState), exceptionState);
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toRestrictedFloat(info[1], exceptionState), exceptionState);
+        doubleArg = toRestrictedDouble(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        floatArg = toRestrictedFloat(info[1], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
@@ -1079,8 +1129,12 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     double unrestrictedDoubleArg;
     float unrestrictedFloatArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unrestrictedDoubleArg, toDouble(info[0], exceptionState), exceptionState);
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unrestrictedFloatArg, toFloat(info[1], exceptionState), exceptionState);
+        unrestrictedDoubleArg = toDouble(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        unrestrictedFloatArg = toFloat(info[1], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestrictedDoubleArg, unrestrictedFloatArg);
 }
@@ -1101,7 +1155,9 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     V8StringResource<> testEnumArg;
     {
-        TOSTRING_VOID_INTERNAL(testEnumArg, info[0]);
+        testEnumArg = info[0];
+        if (!testEnumArg.prepare())
+            return;
         String string = testEnumArg;
         if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestEnumArg", "TestInterface", "parameter 1 ('" + string + "') is not a valid enum value."));
@@ -1238,7 +1294,9 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag1Method(const v8::Func
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int longArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        longArg = toInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->overloadMethodWithExposedAndRuntimeEnabledFlag(longArg);
 }
@@ -1248,7 +1306,9 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag2Method(const v8::Func
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     V8StringResource<> string;
     {
-        TOSTRING_VOID_INTERNAL(string, info[0]);
+        string = info[0];
+        if (!string.prepare())
+            return;
     }
     impl->overloadMethodWithExposedAndRuntimeEnabledFlag(string);
 }
@@ -1303,6 +1363,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
+    return;
 }
 
 static void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1350,7 +1411,9 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     double doubleArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toRestrictedDouble(info[0], exceptionState), exceptionState);
+        doubleArg = toRestrictedDouble(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->voidMethodPartialOverload(doubleArg);
 }
@@ -1410,7 +1473,9 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     V8StringResource<> strArg;
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        TOSTRING_VOID_INTERNAL(strArg, info[0]);
+        strArg = info[0];
+        if (!strArg.prepare())
+            return;
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         if (!testInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
@@ -1536,7 +1601,9 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int longArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        longArg = toInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     TestPartialInterface::partialVoidMethodLongArg(*impl, longArg);
 }
@@ -1615,7 +1682,9 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int value;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
+        value = toInt16(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     int result = 0;
     if (!V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
@@ -1852,7 +1921,9 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
+    V8StringResource<> propertyValue = v8Value;
+    if (!propertyValue.prepare())
+        return;
     bool result = impl->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
@@ -1917,8 +1988,12 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
         return;
 
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
-    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
+    V8StringResource<> propertyName(nameString);
+    if (!propertyName.prepare())
+        return;
+    V8StringResource<> propertyValue = v8Value;
+    if (!propertyValue.prepare())
+        return;
     bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
@@ -2355,7 +2430,9 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    int cppValue = toInt16(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return false;
     *result = cppValue;
     RELEASE_ASSERT(!exceptionState.hadException());
     return true;
@@ -2382,7 +2459,9 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder);
     if (v8Value.IsEmpty())
         return false;
-    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return false;
     RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;

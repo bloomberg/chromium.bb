@@ -237,7 +237,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    TOSTRING_VOID(V8StringResource<>, type, info[0]);
+    V8StringResource<> type(info[0]);
+    if (!type.prepare())
+        return;
     v8::Local<v8::Value> initializedByEventConstructorReadonlyAnyAttribute;
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {

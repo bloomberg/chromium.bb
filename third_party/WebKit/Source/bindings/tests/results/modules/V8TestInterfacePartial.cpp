@@ -39,7 +39,9 @@ static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     TestPartialInterfaceImplementation3::voidMethodPartialOverload(*impl, value);
 }
@@ -61,13 +63,16 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
+    return;
 }
 
 static void staticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     TestPartialInterfaceImplementation3::staticVoidMethodPartialOverload(value);
 }
@@ -89,6 +94,7 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
+    return;
 }
 
 static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -122,16 +128,26 @@ static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+    return;
+}
+
+static void staticPromiseMethodPartialOverload2MethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
+{
+    V8StringResource<> value;
+    {
+        value = info[0];
+        if (!value.prepare(exceptionState))
+            return;
+    }
+    v8SetReturnValue(info, TestPartialInterfaceImplementation3::staticPromiseMethodPartialOverload(value).v8Value());
 }
 
 static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "staticPromiseMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
-    V8StringResource<> value;
-    {
-        TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(value, info[0], exceptionState, info, ScriptState::current(info.GetIsolate()));
-    }
-    v8SetReturnValue(info, TestPartialInterfaceImplementation3::staticPromiseMethodPartialOverload(value).v8Value());
+    staticPromiseMethodPartialOverload2MethodPromise(info, exceptionState);
+    if (exceptionState.hadException())
+        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
 }
 
 static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -151,6 +167,7 @@ static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+    return;
 }
 
 static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -158,7 +175,9 @@ static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     TestPartialInterfaceImplementation3::partial2VoidMethod(*impl, value);
 }
@@ -198,6 +217,7 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
+    return;
 }
 
 static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -209,7 +229,9 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     V8StringResource<> arg;
     {
-        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        arg = info[0];
+        if (!arg.prepare())
+            return;
         String string = arg;
         if (!(string == "EnumModulesValue1" || string == "EnumModulesValue2")) {
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partialVoidTestEnumModulesArgMethod", "TestInterface", "parameter 1 ('" + string + "') is not a valid enum value."));
@@ -230,7 +252,9 @@ static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::V
 {
     V8StringResource<> value;
     {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
+        value = info[0];
+        if (!value.prepare())
+            return;
     }
     TestPartialInterfaceImplementation3::partial2StaticVoidMethod(value);
 }
@@ -252,6 +276,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
+    return;
 }
 
 } // namespace TestInterfaceImplementationPartialV8Internal
@@ -314,7 +339,9 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    int cppValue = toInt16(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return false;
     *result = cppValue;
     RELEASE_ASSERT(!exceptionState.hadException());
     return true;

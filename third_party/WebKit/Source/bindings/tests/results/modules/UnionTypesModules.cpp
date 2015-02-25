@@ -66,7 +66,9 @@ void V8BooleanOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Valu
     }
 
     {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        V8StringResource<> cppValue = v8Value;
+        if (!cppValue.prepare(exceptionState))
+            return;
         impl.setString(cppValue);
         return;
     }

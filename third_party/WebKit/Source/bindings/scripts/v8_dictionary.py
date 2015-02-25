@@ -117,11 +117,11 @@ def member_context(dictionary, member):
         'name': member.name,
         'setter_name': setter_name_for_dictionary_member(member),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
-        'use_output_parameter_for_result': unwrapped_idl_type.use_output_parameter_for_result,
         'v8_default_value': v8_default_value,
         'v8_value_to_local_cpp_value': unwrapped_idl_type.v8_value_to_local_cpp_value(
             member.extended_attributes, member.name + 'Value',
-            member.name, isolate='isolate', restricted_float=restricted_float),
+            member.name, isolate='isolate', use_exception_state=True,
+            restricted_float=restricted_float),
     }
 
 

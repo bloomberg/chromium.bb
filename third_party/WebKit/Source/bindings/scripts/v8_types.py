@@ -594,64 +594,67 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
 
 
 # FIXME: this function should be refactored, as this takes too many flags.
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False, needs_exception_state_for_string=False, restricted_float=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, isolate='info.GetIsolate()', bailout_return_value=None, use_exception_state=False, restricted_float=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
     idl_type = idl_type.preprocessed_type
 
     if idl_type.base_type in ('void', 'object', 'EventHandler', 'EventListener'):
-        return '/* no V8 -> C++ conversion for IDL type: %s */' % idl_type.name
+        return {
+            'error_message': 'no V8 -> C++ conversion for IDL type: %s' % idl_type.name
+        }
 
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate, restricted_float=restricted_float)
 
-    if idl_type.is_dictionary or idl_type.is_union_type:
-        return 'TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(%s, exceptionState)' % cpp_value
+    # Optional expression that returns a value to be assigned to the local variable.
+    assign_expression = None
+    # Optional void expression executed unconditionally.
+    set_expression = None
+    # Optional expression that returns true if the conversion fails.
+    check_expression = None
+    # Optional expression used as the return value when returning. Only
+    # meaningful if 'check_expression' is not None.
+    return_expression = bailout_return_value
 
     if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
-        # Types that need error handling and use one of a group of (C++) macros
-        # to take care of this.
+        # Types for which conversion can fail and that need error handling.
 
-        args = [variable_name, cpp_value]
-
-        if idl_type.v8_conversion_needs_exception_state:
-            macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
-        elif return_promise or needs_exception_state_for_string:
-            macro = 'TOSTRING_VOID_EXCEPTIONSTATE'
+        if use_exception_state:
+            check_expression = 'exceptionState.hadException()'
         else:
-            macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
+            check_expression = 'exceptionState.throwIfNeeded()'
 
-        if macro.endswith('_EXCEPTIONSTATE'):
-            args.append('exceptionState')
-
-        if used_in_private_script:
-            args.append('false')
-
-        suffix = ''
-
-        if return_promise:
-            suffix += '_PROMISE'
-            args.append('info')
-            if macro.endswith('_EXCEPTIONSTATE'):
-                args.append('ScriptState::current(%s)' % isolate)
-
-        if declare_variable:
-            args.insert(0, this_cpp_type)
+        if idl_type.is_dictionary or idl_type.is_union_type:
+            set_expression = cpp_value
         else:
-            suffix += '_INTERNAL'
-
-        return '%s(%s)' % (macro + suffix, ', '.join(args))
+            assign_expression = cpp_value
+            # Note: 'not idl_type.v8_conversion_needs_exception_state' implies
+            # 'idl_type.is_string_type', but there are types for which both are
+            # true (ByteString and USVString), so using idl_type.is_string_type
+            # as the condition here would be wrong.
+            if not idl_type.v8_conversion_needs_exception_state:
+                if use_exception_state:
+                    check_expression = '!%s.prepare(exceptionState)' % variable_name
+                else:
+                    check_expression = '!%s.prepare()' % variable_name
+    elif not idl_type.v8_conversion_is_trivial:
+        raise Exception('unclassified V8 -> C++ conversion for IDL type: %s' % idl_type.name)
+    else:
+        assign_expression = cpp_value
 
     # Types that don't need error handling, and simply assign a value to the
     # local variable.
 
-    if not idl_type.v8_conversion_is_trivial:
-        raise Exception('unclassified V8 -> C++ conversion for IDL type: %s' % idl_type.name)
-
-    assignment = '%s = %s' % (variable_name, cpp_value)
-    if declare_variable:
-        return '%s %s' % (this_cpp_type, assignment)
-    return assignment
+    return {
+        'assign_expression': assign_expression,
+        'check_expression': check_expression,
+        'cpp_type': this_cpp_type,
+        'cpp_name': variable_name,
+        'declare_variable': declare_variable,
+        'return_expression': bailout_return_value,
+        'set_expression': set_expression,
+    }
 
 
 IdlTypeBase.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value

@@ -47,7 +47,9 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
+        index = toUInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     RefPtr<TestInterfaceEmpty> result = impl->item(index, exceptionState);
     if (exceptionState.hadException()) {
@@ -76,7 +78,9 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     unsigned index;
     TestInterfaceEmpty* value;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
+        index = toUInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         if (!value) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
@@ -110,7 +114,9 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
+        index = toUInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     bool result = impl->deleteItem(index, exceptionState);
     if (exceptionState.hadException()) {
@@ -138,7 +144,9 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     V8StringResource<> name;
     {
-        TOSTRING_VOID_INTERNAL(name, info[0]);
+        name = info[0];
+        if (!name.prepare())
+            return;
     }
     RefPtr<TestInterfaceEmpty> result = impl->namedItem(name, exceptionState);
     if (exceptionState.hadException()) {
@@ -167,7 +175,9 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> name;
     TestInterfaceEmpty* value;
     {
-        TOSTRING_VOID_INTERNAL(name, info[0]);
+        name = info[0];
+        if (!name.prepare())
+            return;
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         if (!value && !isUndefinedOrNull(info[1])) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
@@ -201,7 +211,9 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     V8StringResource<> name;
     {
-        TOSTRING_VOID_INTERNAL(name, info[0]);
+        name = info[0];
+        if (!name.prepare())
+            return;
     }
     bool result = impl->deleteNamedItem(name, exceptionState);
     if (exceptionState.hadException()) {
@@ -305,7 +317,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         if (!info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-                exceptionState.throwIfNeeded();
+            exceptionState.throwIfNeeded();
             return;
         }
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
@@ -500,7 +512,9 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     v8::String::Utf8Value namedProperty(nameString);
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
+    V8StringResource<> propertyName(nameString);
+    if (!propertyName.prepare())
+        return;
     TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!propertyValue && !isUndefinedOrNull(v8Value)) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");

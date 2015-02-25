@@ -179,6 +179,12 @@ public:
     {
     }
 
+    V8StringResource(const String& string)
+        : m_mode(Externalize)
+        , m_string(string)
+    {
+    }
+
     void operator=(v8::Handle<v8::Value> object)
     {
         m_v8Object = object;
