@@ -9,6 +9,7 @@ component("blink") {
   output_name = "cc_blink"
 
   sources = [
+    "context_provider_web_context.h",
     "cc_blink_export.h",
     "scrollbar_impl.cc",
     "scrollbar_impl.h",

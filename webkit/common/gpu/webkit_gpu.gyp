@@ -39,7 +39,6 @@
             # This list contains all .h and .cc in gpu except for test code.
             'context_provider_in_process.cc',
             'context_provider_in_process.h',
-            'context_provider_web_context.h',
             'grcontext_for_webgraphicscontext3d.cc',
             'grcontext_for_webgraphicscontext3d.h',
           ],
