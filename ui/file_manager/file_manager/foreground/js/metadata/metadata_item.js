@@ -138,4 +138,22 @@ function MetadataItem() {
    * @public {string|undefined}
    */
   this.mediaArtist;
+
+  /**
+   * Mime type obtained by content provider based on URL.
+   * TODO(hirono): Remove the mediaMimeType.
+   * @public {string|undefined}
+   */
+  this.mediaMimeType;
+
+  /**
+   * "Image File Directory" obtained from EXIF header.
+   * @public {!Object|undefined}
+   */
+  this.ifd;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.exifLittleEndian;
 }

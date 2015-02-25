@@ -53,11 +53,14 @@ function ContentMetadataProvider(cache, opt_messagePort) {
  * @const {!Array<string>}
  */
 ContentMetadataProvider.PROPERTY_NAMES = [
-  'contentThumbnailUrl',
-  'contentThumbnailTransform',
   'contentImageTransform',
-  'mediaTitle',
-  'mediaArtist'
+  'contentThumbnailTransform',
+  'contentThumbnailUrl',
+  'exifLittleEndian',
+  'ifd',
+  'mediaArtist',
+  'mediaMimeType',
+  'mediaTitle'
 ];
 
 /**
@@ -75,11 +78,14 @@ ContentMetadataProvider.WORKER_SCRIPT =
  */
 ContentMetadataProvider.convertContentMetadata = function(metadata) {
   var item = new MetadataItem();
-  item.contentThumbnailUrl = metadata['thumbnailURL'];
-  item.contentThumbnailTransform = metadata['thumbnailTransform'];
   item.contentImageTransform = metadata['imageTransform'];
-  item.mediaTitle = metadata['title'];
+  item.contentThumbnailTransform = metadata['thumbnailTransform'];
+  item.contentThumbnailUrl = metadata['thumbnailURL'];
+  item.exifLittleEndian = metadata['littleEndian'];
+  item.ifd = metadata['ifd'];
   item.mediaArtist = metadata['artist'];
+  item.mediaMimeType = metadata['mimeType'];
+  item.mediaTitle = metadata['title'];
   return item;
 };
 
