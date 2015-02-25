@@ -203,7 +203,7 @@ private:
     void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const Layer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<Layer*>& layersNeedingPaintInvalidation);
     void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, const IntPoint& graphicsLayerParentLocation);
     void updateAncestorClippingLayerGeometry(const Layer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
-    void updateOverflowControlsHostLayerGeometry(const Layer* compositingStackingContext);
+    void updateOverflowControlsHostLayerGeometry(const Layer* compositingStackingContext, const Layer* compositingContainer);
     void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
     void updateChildTransformLayerGeometry();
     void updateMaskLayerGeometry();

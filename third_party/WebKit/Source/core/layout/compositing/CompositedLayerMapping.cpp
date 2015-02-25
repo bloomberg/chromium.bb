@@ -691,7 +691,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
 
     // Might update graphicsLayerParentLocation.
     updateAncestorClippingLayerGeometry(compositingContainer, snappedOffsetFromCompositedAncestor, graphicsLayerParentLocation);
-    updateOverflowControlsHostLayerGeometry(compositingStackingContext);
+    updateOverflowControlsHostLayerGeometry(compositingStackingContext, compositingContainer);
 
     FloatSize contentsSize = relativeCompositingBounds.size();
 
@@ -806,19 +806,27 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const Layer* co
     graphicsLayerParentLocation = parentClipRect.location();
 }
 
-void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const Layer* compositingStackingContext)
+void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const Layer* compositingStackingContext, const Layer* compositingContainer)
 {
     if (!m_overflowControlsHostLayer)
         return;
 
     if (needsToReparentOverflowControls()) {
         if (m_overflowControlsClippingLayer) {
-            m_overflowControlsClippingLayer->setPosition(m_ancestorClippingLayer->position());
             m_overflowControlsClippingLayer->setSize(m_ancestorClippingLayer->size());
             m_overflowControlsClippingLayer->setOffsetFromRenderer(m_ancestorClippingLayer->offsetFromRenderer());
             m_overflowControlsClippingLayer->setMasksToBounds(true);
-
             m_overflowControlsHostLayer->setPosition(IntPoint(-m_overflowControlsClippingLayer->offsetFromRenderer()));
+
+            FloatPoint position = m_ancestorClippingLayer->position();
+            if (compositingStackingContext != compositingContainer) {
+                LayoutPoint offset;
+                compositingContainer->convertToLayerCoords(compositingStackingContext, offset);
+                FloatSize offsetFromStackingContainer = toFloatSize(FloatPoint(offset));
+                position += offsetFromStackingContainer;
+            }
+
+            m_overflowControlsClippingLayer->setPosition(position);
         } else {
             // The controls are in the same 2D space as the compositing container, so we can map them into the space of the container.
             TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
