@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
             text run at (195,43) width 144: "box-align: stretch"
         RenderText {#text} at (339,40) size 74x19
           text run at (339,40) width 74: " is specified."
-      RenderDeprecatedFlexibleBox {DIV} at (0,76) size 100x100 [bgcolor=#FF0000]
+      LayoutDeprecatedFlexibleBox {DIV} at (0,76) size 100x100 [bgcolor=#FF0000]
         RenderBlock {IMG} at (0,0) size 100x100 [bgcolor=#008000]
 layer at (8,84) size 100x100 clip at (9,85) size 98x98
   RenderBlock {DIV} at (0,0) size 100x100 [border: (1px solid #C0C0C0)]

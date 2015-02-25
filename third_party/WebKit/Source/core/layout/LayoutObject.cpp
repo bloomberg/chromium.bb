@@ -51,6 +51,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutGrid.h"
@@ -74,7 +75,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
@@ -204,7 +204,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
         return new LayoutTableCaption(element);
     case BOX:
     case INLINE_BOX:
-        return new RenderDeprecatedFlexibleBox(*element);
+        return new LayoutDeprecatedFlexibleBox(*element);
     case FLEX:
     case INLINE_FLEX:
         return new RenderFlexibleBox(element);

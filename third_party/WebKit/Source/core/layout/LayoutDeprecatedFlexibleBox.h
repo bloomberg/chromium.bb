@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderDeprecatedFlexibleBox_h
-#define RenderDeprecatedFlexibleBox_h
+#ifndef LayoutDeprecatedFlexibleBox_h
+#define LayoutDeprecatedFlexibleBox_h
 
 #include "core/rendering/RenderBlock.h"
 
@@ -29,10 +29,10 @@ namespace blink {
 
 class FlexBoxIterator;
 
-class RenderDeprecatedFlexibleBox final : public RenderBlock {
+class LayoutDeprecatedFlexibleBox final : public RenderBlock {
 public:
-    RenderDeprecatedFlexibleBox(Element&);
-    virtual ~RenderDeprecatedFlexibleBox();
+    LayoutDeprecatedFlexibleBox(Element&);
+    virtual ~LayoutDeprecatedFlexibleBox();
 
     virtual const char* renderName() const override;
 
@@ -63,8 +63,8 @@ private:
     bool m_stretchingChildren;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
 
 } // namespace blink
 
-#endif // RenderDeprecatedFlexibleBox_h
+#endif // LayoutDeprecatedFlexibleBox_h
