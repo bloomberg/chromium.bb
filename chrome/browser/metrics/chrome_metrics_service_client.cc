@@ -276,8 +276,9 @@ void ChromeMetricsServiceClient::Initialize() {
   scoped_ptr<metrics::NetworkMetricsProvider> network_metrics_provider(
       new metrics::NetworkMetricsProvider(
           content::BrowserThread::GetBlockingPool()));
-  metrics_service_->SetConnectionTypeCallback(
-      network_metrics_provider->GetConnectionCallback());
+  base::Callback<void(bool*)> cellular_callback =
+      network_metrics_provider->GetConnectionCallback();
+  metrics_service_->SetConnectionTypeCallback(cellular_callback);
   metrics_service_->RegisterMetricsProvider(network_metrics_provider.Pass());
 
   metrics_service_->RegisterMetricsProvider(
@@ -286,7 +287,9 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider()));
-  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider;
+
+  profiler_metrics_provider_ =
+      new metrics::ProfilerMetricsProvider(cellular_callback);
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 

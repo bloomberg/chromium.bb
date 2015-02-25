@@ -6,6 +6,7 @@
 #define COMPONENTS_METRICS_PROFILER_PROFILER_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
@@ -19,7 +20,8 @@ namespace metrics {
 // section of the UMA proto.
 class ProfilerMetricsProvider : public MetricsProvider {
  public:
-  ProfilerMetricsProvider();
+  explicit ProfilerMetricsProvider(
+      const base::Callback<void(bool*)>& cellular_callback);
   ~ProfilerMetricsProvider() override;
 
   // MetricsDataProvider:
@@ -32,6 +34,10 @@ class ProfilerMetricsProvider : public MetricsProvider {
       int process_type);
 
  private:
+  // Returns whether current connection is cellular or not according to the
+  // callback.
+  bool IsCellularConnection();
+
   // Saved cache of generated Profiler event protos, to be copied into the UMA
   // proto when ProvideGeneralMetrics() is called.
   ProfilerEventProto profiler_event_cache_;
@@ -39,6 +45,9 @@ class ProfilerMetricsProvider : public MetricsProvider {
   // True if this instance has recorded profiler data since the last call to
   // ProvideGeneralMetrics().
   bool has_profiler_data_;
+
+  // Callback function used to get current network connection type.
+  base::Callback<void(bool*)> cellular_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilerMetricsProvider);
 };

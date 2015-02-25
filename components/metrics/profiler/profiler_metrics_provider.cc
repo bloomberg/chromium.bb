@@ -107,16 +107,19 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
   }
 }
 
-bool SkipProfilerDataUpload() {
-  // If skip_profiler_data is set in experiment params then skip the uplaod.
-  std::string skip_profiler_data = variations::GetVariationParamValue(
-      "UMALogUploadInterval", "skip_profiler_data");
-  return skip_profiler_data == "true";
+// Returns true if the user is assigned to the experiment group for enabled
+// cellular uploads.
+bool IsCellularEnabledByExperiment() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("UMA_EnableCellularLogUpload");
+  return group_name == "Enabled";
 }
 
 }  // namespace
 
-ProfilerMetricsProvider::ProfilerMetricsProvider() : has_profiler_data_(false) {
+ProfilerMetricsProvider::ProfilerMetricsProvider(
+    const base::Callback<void(bool*)>& cellular_callback)
+    : has_profiler_data_(false), cellular_callback_(cellular_callback) {
 }
 
 ProfilerMetricsProvider::~ProfilerMetricsProvider() {
@@ -139,9 +142,8 @@ void ProfilerMetricsProvider::ProvideGeneralMetrics(
 void ProfilerMetricsProvider::RecordProfilerData(
     const tracked_objects::ProcessDataSnapshot& process_data,
     int process_type) {
-  if (SkipProfilerDataUpload())
+  if (IsCellularConnection() && IsCellularEnabledByExperiment())
     return;
-
   if (tracked_objects::GetTimeSourceType() !=
       tracked_objects::TIME_SOURCE_TYPE_WALL_TIME) {
     // We currently only support the default time source, wall clock time.
@@ -152,6 +154,16 @@ void ProfilerMetricsProvider::RecordProfilerData(
   profiler_event_cache_.set_profile_type(ProfilerEventProto::STARTUP_PROFILE);
   profiler_event_cache_.set_time_source(ProfilerEventProto::WALL_CLOCK_TIME);
   WriteProfilerData(process_data, process_type, &profiler_event_cache_);
+}
+
+bool ProfilerMetricsProvider::IsCellularConnection() {
+  bool is_cellular = false;
+  // For android get current connection type from NetworkMetricsProvider.
+#if defined(OS_ANDROID)
+  if (!cellular_callback_.is_null())
+    cellular_callback_.Run(&is_cellular);
+#endif
+  return is_cellular;
 }
 
 }  // namespace metrics
