@@ -4,11 +4,7 @@
 
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/local_discovery/privet_http_asynchronous_factory_mac.h"
-#else
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory_impl.h"
-#endif
 
 namespace local_discovery {
 
@@ -16,14 +12,8 @@ namespace local_discovery {
 scoped_ptr<PrivetHTTPAsynchronousFactory>
 PrivetHTTPAsynchronousFactory::CreateInstance(
     net::URLRequestContextGetter* request_context) {
-#if defined(OS_MACOSX)
-  return make_scoped_ptr<PrivetHTTPAsynchronousFactory>(
-      new PrivetHTTPAsynchronousFactoryMac(request_context));
-
-#else
   return make_scoped_ptr<PrivetHTTPAsynchronousFactory>(
       new PrivetHTTPAsynchronousFactoryImpl(request_context));
-#endif
 }
 
 }  // namespace local_discovery

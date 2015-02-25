@@ -1648,8 +1648,6 @@
       'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java'
     ],
     'chrome_browser_mdns_sources': [
-      'browser/local_discovery/privet_http_asynchronous_factory_impl.cc',
-      'browser/local_discovery/privet_http_asynchronous_factory_impl.h',
       'browser/local_discovery/privet_traffic_detector.cc',
       'browser/local_discovery/privet_traffic_detector.h',
       'browser/local_discovery/service_discovery_client_mdns.cc',
@@ -2431,8 +2429,8 @@
       'browser/local_discovery/privet_http.h',
       'browser/local_discovery/privet_http_asynchronous_factory.cc',
       'browser/local_discovery/privet_http_asynchronous_factory.h',
-      'browser/local_discovery/privet_http_asynchronous_factory_mac.cc',
-      'browser/local_discovery/privet_http_asynchronous_factory_mac.h',
+      'browser/local_discovery/privet_http_asynchronous_factory_impl.cc',
+      'browser/local_discovery/privet_http_asynchronous_factory_impl.h',
       'browser/local_discovery/privet_http_impl.cc',
       'browser/local_discovery/privet_http_impl.h',
       'browser/local_discovery/privet_local_printer_lister.cc',

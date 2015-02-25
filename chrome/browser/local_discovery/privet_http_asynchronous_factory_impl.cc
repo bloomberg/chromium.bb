@@ -71,7 +71,13 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start() {
+#if defined(OS_MACOSX)
+  // MAC already has IP there.
+  callback_.Run(scoped_ptr<PrivetHTTPClient>(
+      new PrivetHTTPClientImpl(name_, hostport_, request_context_.get())));
+#else
   resolver_->Start();
+#endif
 }
 
 const std::string&
