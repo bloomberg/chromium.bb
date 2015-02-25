@@ -618,7 +618,7 @@ def HostTools(host, options):
                   [
                   '-DBUILD_SHARED_LIBS=ON',
                   '-DCMAKE_BUILD_TYPE=' + ('Debug' if HostIsDebug(options)
-                                           else 'RelWithDebInfo'),
+                                           else 'Release'),
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
                   '-DLLVM_APPEND_VC_REV=ON',
