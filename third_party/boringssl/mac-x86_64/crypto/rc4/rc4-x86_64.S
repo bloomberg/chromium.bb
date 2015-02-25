@@ -592,31 +592,4 @@ L$exit_key:
 	movl	%eax,-4(%rdi)
 	.byte	0xf3,0xc3
 
-
-.globl	_RC4_options
-.private_extern _RC4_options
-
-.p2align	4
-_RC4_options:
-	leaq	L$opts(%rip),%rax
-	movq	_OPENSSL_ia32cap_P(%rip),%rdx
-	movl	(%rdx),%edx
-	btl	$20,%edx
-	jc	L$8xchar
-	btl	$30,%edx
-	jnc	L$done
-	addq	$25,%rax
-	.byte	0xf3,0xc3
-L$8xchar:
-	addq	$12,%rax
-L$done:
-	.byte	0xf3,0xc3
-.p2align	6
-L$opts:
-.byte	114,99,52,40,56,120,44,105,110,116,41,0
-.byte	114,99,52,40,56,120,44,99,104,97,114,41,0
-.byte	114,99,52,40,49,54,120,44,105,110,116,41,0
-.byte	82,67,52,32,102,111,114,32,120,56,54,95,54,52,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
-.p2align	6
-
 #endif

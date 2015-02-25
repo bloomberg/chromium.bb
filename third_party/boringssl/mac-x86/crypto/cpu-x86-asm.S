@@ -100,10 +100,6 @@ L004nocacheinfo:
 	cmpl	$0,%ebp
 	jne	L005notintel
 	orl	$1073741824,%edx
-	andb	$15,%ah
-	cmpb	$15,%ah
-	jne	L005notintel
-	orl	$1048576,%edx
 L005notintel:
 	btl	$28,%edx
 	jnc	L002generic

@@ -2692,4 +2692,5 @@ sha256_block_data_order_armv8:
 .align	2
 #if __ARM_MAX_ARCH__>=7
 .comm   OPENSSL_armcap_P,4,4
+.hidden OPENSSL_armcap_P
 #endif

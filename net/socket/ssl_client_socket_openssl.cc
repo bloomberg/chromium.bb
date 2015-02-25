@@ -820,6 +820,8 @@ int SSLClientSocketOpenSSL::Init() {
   mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START,
                      ssl_config_.false_start_enabled);
 
+  mode.ConfigureFlag(SSL_MODE_SEND_FALLBACK_SCSV, ssl_config_.version_fallback);
+
   SSL_set_mode(ssl_, mode.set_mask);
   SSL_clear_mode(ssl_, mode.clear_mask);
 
@@ -872,9 +874,6 @@ int SSLClientSocketOpenSSL::Init() {
   // handshake at which point the appropriate error is bubbled up to the client.
   LOG_IF(WARNING, rv != 1) << "SSL_set_cipher_list('" << command << "') "
                               "returned " << rv;
-
-  if (ssl_config_.version_fallback)
-    SSL_enable_fallback_scsv(ssl_);
 
   // TLS channel ids.
   if (IsChannelIDEnabled(ssl_config_, channel_id_service_)) {

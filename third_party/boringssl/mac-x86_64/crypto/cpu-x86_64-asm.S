@@ -104,10 +104,6 @@ L$nocacheinfo:
 	cmpl	$0,%r9d
 	jne	L$notintel
 	orl	$1073741824,%edx
-	andb	$15,%ah
-	cmpb	$15,%ah
-	jne	L$notintel
-	orl	$1048576,%edx
 L$notintel:
 	btl	$28,%edx
 	jnc	L$generic

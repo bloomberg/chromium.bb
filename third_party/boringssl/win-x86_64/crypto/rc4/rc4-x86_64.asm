@@ -619,35 +619,6 @@ $L$exit_key:
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
 $L$SEH_end_asm_RC4_set_key:
-
-global	RC4_options
-
-ALIGN	16
-RC4_options:
-	lea	rax,[$L$opts]
-	mov	rdx,QWORD[OPENSSL_ia32cap_P]
-	mov	edx,DWORD[rdx]
-	bt	edx,20
-	jc	NEAR $L$8xchar
-	bt	edx,30
-	jnc	NEAR $L$done
-	add	rax,25
-	DB	0F3h,0C3h		;repret
-$L$8xchar:
-	add	rax,12
-$L$done:
-	DB	0F3h,0C3h		;repret
-ALIGN	64
-$L$opts:
-DB	114,99,52,40,56,120,44,105,110,116,41,0
-DB	114,99,52,40,56,120,44,99,104,97,114,41,0
-DB	114,99,52,40,49,54,120,44,105,110,116,41,0
-DB	82,67,52,32,102,111,114,32,120,56,54,95,54,52,44,32
-DB	67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97
-DB	112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103
-DB	62,0
-ALIGN	64
-
 EXTERN	__imp_RtlVirtualUnwind
 
 ALIGN	16

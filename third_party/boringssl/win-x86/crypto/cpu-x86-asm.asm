@@ -112,10 +112,6 @@ L$004nocacheinfo:
 	cmp	ebp,0
 	jne	NEAR L$005notintel
 	or	edx,1073741824
-	and	ah,15
-	cmp	ah,15
-	jne	NEAR L$005notintel
-	or	edx,1048576
 L$005notintel:
 	bt	edx,28
 	jnc	NEAR L$002generic

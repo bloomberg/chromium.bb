@@ -104,10 +104,6 @@ OPENSSL_ia32_cpuid:
 	cmpl	$0,%r9d
 	jne	.Lnotintel
 	orl	$1073741824,%edx
-	andb	$15,%ah
-	cmpb	$15,%ah
-	jne	.Lnotintel
-	orl	$1048576,%edx
 .Lnotintel:
 	btl	$28,%edx
 	jnc	.Lgeneric

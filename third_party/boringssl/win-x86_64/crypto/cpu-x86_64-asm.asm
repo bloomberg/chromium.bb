@@ -114,10 +114,6 @@ $L$nocacheinfo:
 	cmp	r9d,0
 	jne	NEAR $L$notintel
 	or	edx,0x40000000
-	and	ah,15
-	cmp	ah,15
-	jne	NEAR $L$notintel
-	or	edx,0x00100000
 $L$notintel:
 	bt	edx,28
 	jnc	NEAR $L$generic
