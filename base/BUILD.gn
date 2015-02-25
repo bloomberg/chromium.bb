@@ -1139,6 +1139,23 @@ source_set("protect_file_posix") {
   ]
 }
 
+if (is_win) {
+  shared_library("pe_image_test") {
+    sources = [
+      "win/pe_image_test.cc",
+    ]
+    ldflags = [
+      "/DELAYLOAD:cfgmgr32.dll",
+      "/DELAYLOAD:shell32.dll",
+      "/SUBSYSTEM:WINDOWS",
+    ]
+    libs = [
+      "cfgmgr32.lib",
+      "shell32.lib",
+    ]
+  }
+}
+
 test("base_unittests") {
   sources = [
     "android/application_status_listener_unittest.cc",
@@ -1445,6 +1462,10 @@ test("base_unittests") {
     set_sources_assignment_filter([])
     sources += [ "debug/proc_maps_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  if (is_win) {
+    deps += [ ":pe_image_test" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

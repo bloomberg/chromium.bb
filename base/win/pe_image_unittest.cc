@@ -3,29 +3,140 @@
 // found in the LICENSE file.
 
 // This file contains unit tests for PEImage.
+#include <algorithm>
+#include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
 
+namespace {
+
+class Expectations {
+ public:
+  enum Value {
+    SECTIONS = 0,
+    IMPORTS_DLLS,
+    DELAY_DLLS,
+    EXPORTS,
+    IMPORTS,
+    DELAY_IMPORTS,
+    RELOCS
+  };
+
+  enum Arch {
+    ARCH_X86 = 0,
+    ARCH_X64,
+    ARCH_ALL
+  };
+
+  Expectations();
+
+  void SetDefault(Value value, int count);
+  void SetOverride(Value value, base::win::Version version,
+                   Arch arch, int count);
+  void SetOverride(Value value, base::win::Version version, int count);
+  void SetOverride(Value value, Arch arch, int count);
+
+  // returns -1 on failure.
+  int GetExpectation(Value value);
+
+ private:
+  class Override {
+   public:
+    enum MatchType { MATCH_VERSION, MATCH_ARCH, MATCH_BOTH, MATCH_NONE };
+
+    Override(Value value, base::win::Version version, Arch arch, int count)
+      : value_(value), version_(version), arch_(arch), count_(count) {
+    };
+
+    bool Matches(Value value, base::win::Version version,
+                 Arch arch, MatchType type) {
+      if (value_ != value)
+        return false;
+
+      switch (type) {
+        case MATCH_BOTH:
+          return (arch == arch_ && version == version_);
+        case MATCH_ARCH:
+          return (arch == arch_ && version_ == base::win::VERSION_WIN_LAST);
+        case MATCH_VERSION:
+          return (arch_ == ARCH_ALL && version == version_);
+        case MATCH_NONE:
+          return (arch_ == ARCH_ALL && version_ == base::win::VERSION_WIN_LAST);
+      }
+      return false;
+    }
+
+    int GetCount() { return count_; }
+
+   private:
+    Value value_;
+    base::win::Version version_;
+    Arch arch_;
+    int count_;
+  };
+
+  bool MatchesMyArch(Arch arch);
+
+  std::vector<Override> overrides_;
+  Arch my_arch_;
+  base::win::Version my_version_;
+};
+
+Expectations::Expectations() {
+  my_version_ = base::win::GetVersion();
+#if defined(ARCH_CPU_64_BITS)
+  my_arch_ = ARCH_X64;
+#else
+  my_arch_ = ARCH_X86;
+#endif
+}
+
+int Expectations::GetExpectation(Value value) {
+  // Prefer OS version specificity over Arch specificity.
+  for (auto type : { Override::MATCH_BOTH,
+                     Override::MATCH_VERSION,
+                     Override::MATCH_ARCH,
+                     Override::MATCH_NONE }) {
+    for (auto override : overrides_) {
+      if (override.Matches(value, my_version_, my_arch_, type))
+        return override.GetCount();
+    }
+  }
+  return -1;
+}
+
+void Expectations::SetDefault(Value value, int count) {
+  SetOverride(value, base::win::VERSION_WIN_LAST, ARCH_ALL, count);
+}
+
+void Expectations::SetOverride(Value value,
+                               base::win::Version version,
+                               Arch arch,
+                               int count) {
+  overrides_.push_back(Override(value, version, arch, count));
+}
+
+void Expectations::SetOverride(Value value,
+                               base::win::Version version,
+                               int count) {
+  SetOverride(value, version, ARCH_ALL, count);
+}
+
+void Expectations::SetOverride(Value value, Arch arch, int count) {
+  SetOverride(value, base::win::VERSION_WIN_LAST, arch, count);
+}
+
+}  // namespace
+
 namespace base {
 namespace win {
 
-// Just counts the number of invocations.
-bool ExportsCallback(const PEImage &image,
-                     DWORD ordinal,
-                     DWORD hint,
-                     LPCSTR name,
-                     PVOID function,
-                     LPCSTR forward,
-                     PVOID cookie) {
-  int* count = reinterpret_cast<int*>(cookie);
-  (*count)++;
-  return true;
-}
+namespace {
 
 // Just counts the number of invocations.
-bool ImportsCallback(const PEImage &image,
+bool ImportsCallback(const PEImage& image,
                      LPCSTR module,
                      DWORD ordinal,
                      LPCSTR name,
@@ -38,18 +149,18 @@ bool ImportsCallback(const PEImage &image,
 }
 
 // Just counts the number of invocations.
-bool SectionsCallback(const PEImage &image,
-                       PIMAGE_SECTION_HEADER header,
-                       PVOID section_start,
-                       DWORD section_size,
-                       PVOID cookie) {
+bool SectionsCallback(const PEImage& image,
+                      PIMAGE_SECTION_HEADER header,
+                      PVOID section_start,
+                      DWORD section_size,
+                      PVOID cookie) {
   int* count = reinterpret_cast<int*>(cookie);
   (*count)++;
   return true;
 }
 
 // Just counts the number of invocations.
-bool RelocsCallback(const PEImage &image,
+bool RelocsCallback(const PEImage& image,
                     WORD type,
                     PVOID address,
                     PVOID cookie) {
@@ -59,7 +170,7 @@ bool RelocsCallback(const PEImage &image,
 }
 
 // Just counts the number of invocations.
-bool ImportChunksCallback(const PEImage &image,
+bool ImportChunksCallback(const PEImage& image,
                           LPCSTR module,
                           PIMAGE_THUNK_DATA name_table,
                           PIMAGE_THUNK_DATA iat,
@@ -70,7 +181,7 @@ bool ImportChunksCallback(const PEImage &image,
 }
 
 // Just counts the number of invocations.
-bool DelayImportChunksCallback(const PEImage &image,
+bool DelayImportChunksCallback(const PEImage& image,
                                PImgDelayDescr delay_descriptor,
                                LPCSTR module,
                                PIMAGE_THUNK_DATA name_table,
@@ -83,167 +194,89 @@ bool DelayImportChunksCallback(const PEImage &image,
   return true;
 }
 
-// Identifiers for the set of supported expectations.
-enum ExpectationSet {
-  WIN_2K_SET,
-  WIN_XP_SET,
-  WIN_VISTA_SET,
-  WIN_7_SET,
-  WIN_8_SET,
-  UNSUPPORTED_SET,
-};
-
-// We'll be using some known values for the tests.
-enum Value {
-  sections = 0,
-  imports_dlls,
-  delay_dlls,
-  exports,
-  imports,
-  delay_imports,
-  relocs
-};
-
-ExpectationSet GetExpectationSet(DWORD os) {
-  if (os == 50)
-    return WIN_2K_SET;
-  if (os == 51)
-    return WIN_XP_SET;
-  if (os == 60)
-    return WIN_VISTA_SET;
-  if (os == 61)
-    return WIN_7_SET;
-  if (os >= 62)
-    return WIN_8_SET;
-  return UNSUPPORTED_SET;
+// Just counts the number of invocations.
+bool ExportsCallback(const PEImage& image,
+                     DWORD ordinal,
+                     DWORD hint,
+                     LPCSTR name,
+                     PVOID function,
+                     LPCSTR forward,
+                     PVOID cookie) {
+  int* count = reinterpret_cast<int*>(cookie);
+  (*count)++;
+  return true;
 }
 
-// Retrieves the expected value from advapi32.dll based on the OS.
-int GetExpectedValue(Value value, DWORD os) {
-  const int xp_delay_dlls = 2;
-  const int xp_exports = 675;
-  const int xp_imports = 422;
-  const int xp_delay_imports = 8;
-  const int xp_relocs = 9180;
-  const int vista_delay_dlls = 4;
-  const int vista_exports = 799;
-  const int vista_imports = 476;
-  const int vista_delay_imports = 24;
-  const int vista_relocs = 10188;
-  const int w2k_delay_dlls = 0;
-  const int w2k_exports = 566;
-  const int w2k_imports = 357;
-  const int w2k_delay_imports = 0;
-  const int w2k_relocs = 7388;
-  const int win7_delay_dlls = 7;
-  const int win7_exports = 806;
-  const int win7_imports = 568;
-  const int win7_delay_imports = 71;
-  int win7_relocs = 7812;
-  int win7_sections = 4;
-  const int win8_delay_dlls = 9;
-  const int win8_exports = 806;
-  const int win8_imports = 568;
-  const int win8_delay_imports = 113;
-  const int win8_relocs = 9478;
-  int win8_sections = 4;
-  int win8_import_dlls = 17;
-
-  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
-  // 32-bit process on a 32-bit system.
-  if (os_info->architecture() == base::win::OSInfo::X86_ARCHITECTURE) {
-    win8_sections = 5;
-    win8_import_dlls = 19;
-
-  // 64-bit process on a 64-bit system.
-  } else if (os_info->wow64_status() == base::win::OSInfo::WOW64_DISABLED) {
-    win7_sections = 6;
-    win7_relocs = 2712;
-  }
-
-  // Contains the expected value, for each enumerated property (Value), and the
-  // OS version: [Value][os_version]
-  const int expected[][5] = {
-    {4, 4, 4, win7_sections, win8_sections},
-    {3, 3, 3, 13, win8_import_dlls},
-    {w2k_delay_dlls, xp_delay_dlls, vista_delay_dlls, win7_delay_dlls,
-     win8_delay_dlls},
-    {w2k_exports, xp_exports, vista_exports, win7_exports, win8_exports},
-    {w2k_imports, xp_imports, vista_imports, win7_imports, win8_imports},
-    {w2k_delay_imports, xp_delay_imports,
-     vista_delay_imports, win7_delay_imports, win8_delay_imports},
-    {w2k_relocs, xp_relocs, vista_relocs, win7_relocs, win8_relocs}
-  };
-  COMPILE_ASSERT(arraysize(expected[0]) == UNSUPPORTED_SET,
-                 expected_value_set_mismatch);
-
-  if (value > relocs)
-    return 0;
-  ExpectationSet expected_set = GetExpectationSet(os);
-  if (expected_set >= arraysize(expected)) {
-    // This should never happen.  Log a failure if it does.
-    EXPECT_NE(UNSUPPORTED_SET, expected_set);
-    expected_set = WIN_2K_SET;
-  }
-
-  return expected[value][expected_set];
-}
-
-
-// TODO(jschuh): crbug.com/167707 Need to fix test on Win64 bots
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE_EnumeratesPE DISABLED_EnumeratesPE
-#else
-#define MAYBE_EnumeratesPE EnumeratesPE
-#endif
+}  // namespace
 
 // Tests that we are able to enumerate stuff from a PE file, and that
 // the actual number of items found is within the expected range.
-TEST(PEImageTest, MAYBE_EnumeratesPE) {
-  HMODULE module = LoadLibrary(L"advapi32.dll");
+TEST(PEImageTest, EnumeratesPE) {
+  Expectations expectations;
+
+#ifndef NDEBUG
+  // Default Debug expectations.
+  expectations.SetDefault(Expectations::SECTIONS, 7);
+  expectations.SetDefault(Expectations::IMPORTS_DLLS, 3);
+  expectations.SetDefault(Expectations::DELAY_DLLS, 2);
+  expectations.SetDefault(Expectations::EXPORTS, 2);
+  expectations.SetDefault(Expectations::IMPORTS, 49);
+  expectations.SetDefault(Expectations::DELAY_IMPORTS, 2);
+  expectations.SetDefault(Expectations::RELOCS, 438);
+
+  // 64-bit Debug expectations.
+  expectations.SetOverride(Expectations::SECTIONS, Expectations::ARCH_X64, 8);
+  expectations.SetOverride(Expectations::IMPORTS, Expectations::ARCH_X64, 69);
+  expectations.SetOverride(Expectations::RELOCS, Expectations::ARCH_X64, 632);
+#else
+  // Default Release expectations.
+  expectations.SetDefault(Expectations::SECTIONS, 5);
+  expectations.SetDefault(Expectations::IMPORTS_DLLS, 2);
+  expectations.SetDefault(Expectations::DELAY_DLLS, 2);
+  expectations.SetDefault(Expectations::EXPORTS, 2);
+  expectations.SetDefault(Expectations::IMPORTS, 66);
+  expectations.SetDefault(Expectations::DELAY_IMPORTS, 2);
+  expectations.SetDefault(Expectations::RELOCS, 1586);
+
+  // 64-bit Release expectations.
+  expectations.SetOverride(Expectations::SECTIONS, Expectations::ARCH_X64, 6);
+  expectations.SetOverride(Expectations::IMPORTS, Expectations::ARCH_X64, 69);
+  expectations.SetOverride(Expectations::RELOCS, Expectations::ARCH_X64, 632);
+#endif
+
+  HMODULE module = LoadLibrary(L"pe_image_test.dll");
   ASSERT_TRUE(NULL != module);
 
   PEImage pe(module);
   int count = 0;
   EXPECT_TRUE(pe.VerifyMagic());
 
-  DWORD os = pe.GetNTHeaders()->OptionalHeader.MajorOperatingSystemVersion;
-  os = os * 10 + pe.GetNTHeaders()->OptionalHeader.MinorOperatingSystemVersion;
-
-  // Skip this test for unsupported OS versions.
-  if (GetExpectationSet(os) == UNSUPPORTED_SET)
-    return;
-
   pe.EnumSections(SectionsCallback, &count);
-  EXPECT_EQ(GetExpectedValue(sections, os), count);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::SECTIONS), count);
 
   count = 0;
   pe.EnumImportChunks(ImportChunksCallback, &count);
-  EXPECT_EQ(GetExpectedValue(imports_dlls, os), count);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::IMPORTS_DLLS), count);
 
   count = 0;
   pe.EnumDelayImportChunks(DelayImportChunksCallback, &count);
-  EXPECT_EQ(GetExpectedValue(delay_dlls, os), count);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::DELAY_DLLS), count);
 
   count = 0;
   pe.EnumExports(ExportsCallback, &count);
-  EXPECT_GT(count, GetExpectedValue(exports, os) - 20);
-  EXPECT_LT(count, GetExpectedValue(exports, os) + 100);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::EXPORTS), count);
 
   count = 0;
   pe.EnumAllImports(ImportsCallback, &count);
-  EXPECT_GT(count, GetExpectedValue(imports, os) - 20);
-  EXPECT_LT(count, GetExpectedValue(imports, os) + 100);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::IMPORTS), count);
 
   count = 0;
   pe.EnumAllDelayImports(ImportsCallback, &count);
-  EXPECT_GT(count, GetExpectedValue(delay_imports, os) - 2);
-  EXPECT_LT(count, GetExpectedValue(delay_imports, os) + 8);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::DELAY_IMPORTS), count);
 
   count = 0;
   pe.EnumRelocs(RelocsCallback, &count);
-  EXPECT_GT(count, GetExpectedValue(relocs, os) - 150);
-  EXPECT_LT(count, GetExpectedValue(relocs, os) + 1500);
+  EXPECT_EQ(expectations.GetExpectation(Expectations::RELOCS), count);
 
   FreeLibrary(module);
 }

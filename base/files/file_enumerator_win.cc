@@ -147,7 +147,8 @@ FilePath FileEnumerator::Next() {
         // add it to pending_paths_ so we scan it after we finish scanning this
         // directory. However, don't do recursion through reparse points or we
         // may end up with an infinite cycle.
-        if (!(find_data_.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+        DWORD attributes = GetFileAttributes(cur_file.value().c_str());
+        if (!(attributes & FILE_ATTRIBUTE_REPARSE_POINT))
           pending_paths_.push(cur_file);
       }
       if (file_type_ & FileEnumerator::DIRECTORIES)

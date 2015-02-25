@@ -3,6 +3,7 @@
     "all"
   ],
   "gtest_tests": [
+    "base_unittests",
     "views_unittests",
     "wm_unittests",
     "aura_unittests",

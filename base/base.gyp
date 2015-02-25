@@ -778,6 +778,9 @@
             'message_loop/message_pump_libevent_unittest.cc',
             'threading/worker_pool_posix_unittest.cc',
           ],
+          'dependencies': [
+            'pe_image_test',
+          ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [
             4267,
@@ -1544,6 +1547,26 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+            },
+          },
+        },
+        {
+          'target_name': 'pe_image_test',
+          'type': 'shared_library',
+          'sources': [
+            'win/pe_image_test.cc',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+              'DelayLoadDLLs': [
+                'cfgmgr32.dll',
+                'shell32.dll',
+              ],
+              'AdditionalDependencies': [
+                'cfgmgr32.lib',
+                'shell32.lib',
+              ],
             },
           },
         },
