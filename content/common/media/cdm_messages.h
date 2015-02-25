@@ -27,7 +27,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::Exception,
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
                           media::MediaKeys::MESSAGE_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(CdmHostMsg_CreateSession_InitDataType,
-                          CREATE_SESSION_TYPE_LAST)
+                          INIT_DATA_TYPE_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
   IPC_STRUCT_TRAITS_MEMBER(key_id)

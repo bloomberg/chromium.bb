@@ -6,10 +6,11 @@
 #define CONTENT_COMMON_MEDIA_CDM_MESSAGES_ENUMS_H_
 
 // The Initialization Data Type when a request is generated.
+// TODO(ddorwin): Replace this with a generic constant. See crbug.com/417440#c9.
 enum CdmHostMsg_CreateSession_InitDataType {
-  CREATE_SESSION_TYPE_WEBM,
-  CREATE_SESSION_TYPE_MP4,
-  CREATE_SESSION_TYPE_LAST = CREATE_SESSION_TYPE_MP4
+  INIT_DATA_TYPE_WEBM,
+  INIT_DATA_TYPE_CENC,
+  INIT_DATA_TYPE_MAX = INIT_DATA_TYPE_CENC
 };
 
 #endif  // CONTENT_COMMON_MEDIA_CDM_MESSAGES_ENUMS_H_

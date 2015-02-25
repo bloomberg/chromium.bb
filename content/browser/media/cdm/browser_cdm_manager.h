@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
@@ -147,7 +148,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
       int render_frame_id,
       const GURL& security_origin,
       int cdm_id,
-      const std::string& init_data_type,
+      media::EmeInitDataType init_data_type,
       const std::vector<uint8>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise);
 
@@ -159,7 +160,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   void GenerateRequestIfPermitted(
       int render_frame_id,
       int cdm_id,
-      const std::string& init_data_type,
+      media::EmeInitDataType init_data_type,
       const std::vector<uint8>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise,
       bool permitted);

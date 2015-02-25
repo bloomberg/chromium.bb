@@ -66,9 +66,9 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
   // See http://crbug.com/342510
   CdmHostMsg_CreateSession_InitDataType create_session_init_data_type;
   if (init_data_type == "cenc") {
-    create_session_init_data_type = CREATE_SESSION_TYPE_MP4;
+    create_session_init_data_type = INIT_DATA_TYPE_CENC;
   } else if (init_data_type == "webm") {
-    create_session_init_data_type = CREATE_SESSION_TYPE_WEBM;
+    create_session_init_data_type = INIT_DATA_TYPE_WEBM;
   } else {
     DLOG(ERROR) << "Unsupported EME CreateSession content type of "
                 << init_data_type;

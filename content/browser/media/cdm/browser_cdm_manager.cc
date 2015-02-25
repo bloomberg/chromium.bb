@@ -345,18 +345,16 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
     return;
   }
 
-  // Convert the session content type into a MIME type. "audio" and "video"
-  // don't matter, so using "video" for the MIME type.
-  // Ref:
-  // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession
-  std::string mime_type;
+  media::EmeInitDataType eme_init_data_type = media::EME_INIT_DATA_TYPE_NONE;
   switch (init_data_type) {
-    case CREATE_SESSION_TYPE_WEBM:
-      mime_type = "video/webm";
+    case INIT_DATA_TYPE_WEBM:
+      eme_init_data_type = media::EME_INIT_DATA_TYPE_WEBM;
       break;
-    case CREATE_SESSION_TYPE_MP4:
-      mime_type = "video/mp4";
+#if defined(USE_PROPRIETARY_CODECS)
+    case INIT_DATA_TYPE_CENC:
+      eme_init_data_type = media::EME_INIT_DATA_TYPE_CENC;
       break;
+#endif
     default:
       NOTREACHED();
       promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0,
@@ -367,8 +365,8 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
 #if defined(OS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    GenerateRequestIfPermitted(render_frame_id, cdm_id, mime_type, init_data,
-                               promise.Pass(), true);
+    GenerateRequestIfPermitted(render_frame_id, cdm_id, eme_init_data_type,
+                               init_data, promise.Pass(), true);
     return;
   }
 #endif
@@ -389,8 +387,8 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
   }
   GURL security_origin = iter->second;
 
-  RequestSessionPermission(render_frame_id, security_origin, cdm_id, mime_type,
-                           init_data, promise.Pass());
+  RequestSessionPermission(render_frame_id, security_origin, cdm_id,
+                           eme_init_data_type, init_data, promise.Pass());
 }
 
 void BrowserCdmManager::OnUpdateSession(int render_frame_id,
@@ -501,7 +499,7 @@ void BrowserCdmManager::RequestSessionPermission(
     int render_frame_id,
     const GURL& security_origin,
     int cdm_id,
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -531,7 +529,7 @@ void BrowserCdmManager::RequestSessionPermission(
 void BrowserCdmManager::GenerateRequestIfPermitted(
     int render_frame_id,
     int cdm_id,
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise,
     bool permitted) {
@@ -547,10 +545,27 @@ void BrowserCdmManager::GenerateRequestIfPermitted(
     return;
   }
 
+  // TODO(ddorwin): Move this conversion to MediaDrmBridge when fixing
+  // crbug.com/417440.
+  // "audio"/"video" does not matter, so use "video".
+  std::string init_data_type_string;
+  switch (init_data_type) {
+    case media::EME_INIT_DATA_TYPE_WEBM:
+      init_data_type_string = "video/webm";
+      break;
+#if defined(USE_PROPRIETARY_CODECS)
+    case media::EME_INIT_DATA_TYPE_CENC:
+      init_data_type_string = "video/mp4";
+      break;
+#endif
+    default:
+      NOTREACHED();
+  }
+
   // Only the temporary session type is supported in browser CDM path.
   // TODO(xhwang): Add SessionType support if needed.
   cdm->CreateSessionAndGenerateRequest(media::MediaKeys::TEMPORARY_SESSION,
-                                       init_data_type, &init_data[0],
+                                       init_data_type_string, &init_data[0],
                                        init_data.size(), promise.Pass());
 }
 
