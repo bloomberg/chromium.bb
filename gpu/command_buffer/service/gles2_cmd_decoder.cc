@@ -2858,8 +2858,14 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   caps.egl_image_external =
       feature_info_->feature_flags().oes_egl_image_external;
+  caps.texture_format_atc =
+      feature_info_->feature_flags().ext_texture_format_atc;
   caps.texture_format_bgra8888 =
       feature_info_->feature_flags().ext_texture_format_bgra8888;
+  caps.texture_format_dxt1 =
+      feature_info_->feature_flags().ext_texture_format_dxt1;
+  caps.texture_format_dxt5 =
+      feature_info_->feature_flags().ext_texture_format_dxt5;
   caps.texture_format_etc1 =
       feature_info_->feature_flags().oes_compressed_etc1_rgb8_texture;
   caps.texture_format_etc1_npot =

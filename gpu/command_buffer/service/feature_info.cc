@@ -132,7 +132,10 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
       native_vertex_array_object(false),
+      ext_texture_format_atc(false),
       ext_texture_format_bgra8888(false),
+      ext_texture_format_dxt1(false),
+      ext_texture_format_dxt5(false),
       enable_shader_name_hashing(false),
       enable_samplers(false),
       ext_draw_buffers(false),
@@ -333,6 +336,8 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_dxt1) {
+    feature_flags_.ext_texture_format_dxt1 = true;
+
     AddExtensionString("GL_EXT_texture_compression_dxt1");
     validators_.compressed_texture_format.AddValue(
         GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
@@ -350,12 +355,25 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_dxt5) {
+    feature_flags_.ext_texture_format_dxt5 = true;
+
     // The difference between GL_EXT_texture_compression_s3tc and
     // GL_CHROMIUM_texture_compression_dxt5 is that the former
     // requires on the fly compression. The latter does not.
     AddExtensionString("GL_CHROMIUM_texture_compression_dxt5");
     validators_.compressed_texture_format.AddValue(
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+  }
+
+  bool have_atc = extensions.Contains("GL_AMD_compressed_ATC_texture") ||
+                  extensions.Contains("GL_ATI_texture_compression_atitc");
+  if (have_atc) {
+    feature_flags_.ext_texture_format_atc = true;
+
+    AddExtensionString("GL_AMD_compressed_ATC_texture");
+    validators_.compressed_texture_format.AddValue(GL_ATC_RGB_AMD);
+    validators_.compressed_texture_format.AddValue(
+        GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
   }
 
   // Check if we should enable GL_EXT_texture_filter_anisotropic.
