@@ -425,7 +425,7 @@ void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPt
         finishOnePart();
     else if (response.isMultipart())
         m_loadingMultipartContent = true;
-    if (RuntimeEnabledFeatures::clientHintsDprEnabled()) {
+    if (RuntimeEnabledFeatures::clientHintsEnabled()) {
         m_devicePixelRatioHeaderValue = response.httpHeaderField("DPR").toFloat(&m_hasDevicePixelRatioHeaderValue);
         if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {
             m_devicePixelRatioHeaderValue = 1.0;

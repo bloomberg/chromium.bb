@@ -46,6 +46,7 @@
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -720,6 +721,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     TRACE_EVENT0("blink", "ResourceFetcher::requestResource");
 
     upgradeInsecureRequest(request);
+    addClientHintsIfNeccessary(request);
 
     KURL url = request.resourceRequest().url();
 
@@ -931,6 +933,19 @@ void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
             fetchRequest.mutableResourceRequest().setURL(url);
         }
     }
+}
+
+void ResourceFetcher::addClientHintsIfNeccessary(FetchRequest& fetchRequest)
+{
+    if (!RuntimeEnabledFeatures::clientHintsEnabled() || !m_document || !frame())
+        return;
+
+    if (frame()->shouldSendDPRHint())
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
+
+    // FIXME: Send the RW hint based on the actual resource width, when we have it.
+    if (frame()->shouldSendRWHint() && frame()->view())
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(frame()->view()->viewportWidth())));
 }
 
 ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const FetchRequest& request, Resource* resource)

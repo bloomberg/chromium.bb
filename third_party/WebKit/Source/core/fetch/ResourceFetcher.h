@@ -180,7 +180,8 @@ public:
     static ResourceFetcher* toResourceFetcher(ResourceLoaderHost*);
 
 private:
-    friend class ResourceFetcherTest;
+    friend class ResourceFetcherUpgradeTest;
+    friend class ResourceFetcherHintsTest;
 
     explicit ResourceFetcher(DocumentLoader*);
 
@@ -201,6 +202,7 @@ private:
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
     void upgradeInsecureRequest(FetchRequest&);
+    void addClientHintsIfNeccessary(FetchRequest&);
 
     bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const;
 

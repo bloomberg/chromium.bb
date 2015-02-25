@@ -828,6 +828,8 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
     , m_instrumentingAgents(host->instrumentingAgents())
+    , m_shouldSendDPRHint(false)
+    , m_shouldSendRWHint(false)
 {
 }
 

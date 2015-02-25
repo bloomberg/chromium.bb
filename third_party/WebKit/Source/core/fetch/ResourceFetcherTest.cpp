@@ -37,8 +37,11 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourcePtr.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/Page.h"
+#include "core/testing/DummyPageHolder.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -46,9 +49,9 @@
 
 namespace blink {
 
-class ResourceFetcherTest : public ::testing::Test {
+class ResourceFetcherUpgradeTest : public ::testing::Test {
 public:
-    ResourceFetcherTest()
+    ResourceFetcherUpgradeTest()
         : secureURL(ParsedURLString, "https://secureorigin.test/image.png")
         , exampleOrigin(SecurityOrigin::create(KURL(ParsedURLString, "https://example.test/")))
         , secureOrigin(SecurityOrigin::create(secureURL))
@@ -116,7 +119,7 @@ protected:
     RefPtrWillBePersistent<Document> document;
 };
 
-TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
+TEST_F(ResourceFetcherUpgradeTest, StartLoadAfterFrameDetach)
 {
     EXPECT_EQ(fetcher->frame(), static_cast<LocalFrame*>(0));
 
@@ -128,7 +131,7 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(0));
 }
 
-TEST_F(ResourceFetcherTest, UpgradeInsecureResourceRequests)
+TEST_F(ResourceFetcherUpgradeTest, UpgradeInsecureResourceRequests)
 {
     struct TestCase {
         const char* original;
@@ -172,7 +175,7 @@ TEST_F(ResourceFetcherTest, UpgradeInsecureResourceRequests)
     }
 }
 
-TEST_F(ResourceFetcherTest, DoNotUpgradeInsecureResourceRequests)
+TEST_F(ResourceFetcherUpgradeTest, DoNotUpgradeInsecureResourceRequests)
 {
     document->setSecurityOrigin(secureOrigin);
     document->setInsecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade);
@@ -190,7 +193,7 @@ TEST_F(ResourceFetcherTest, DoNotUpgradeInsecureResourceRequests)
     expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
 }
 
-TEST_F(ResourceFetcherTest, MonitorInsecureResourceRequests)
+TEST_F(ResourceFetcherUpgradeTest, MonitorInsecureResourceRequests)
 {
     document->setSecurityOrigin(secureOrigin);
     document->setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
@@ -208,7 +211,7 @@ TEST_F(ResourceFetcherTest, MonitorInsecureResourceRequests)
     expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
 }
 
-TEST_F(ResourceFetcherTest, SendPreferHeader)
+TEST_F(ResourceFetcherUpgradeTest, SendPreferHeader)
 {
     struct TestCase {
         const char* toRequest;
@@ -235,6 +238,71 @@ TEST_F(ResourceFetcherTest, SendPreferHeader)
         document->setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
         expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
     }
+}
+
+class ResourceFetcherHintsTest : public ::testing::Test {
+public:
+    ResourceFetcherHintsTest() { }
+
+protected:
+    virtual void SetUp()
+    {
+        dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        dummyPageHolder->page().setDeviceScaleFactor(1.0);
+        documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
+        document = toHTMLDocument(&dummyPageHolder->document());
+        fetcher = documentLoader->fetcher();
+        fetcher->setDocument(document.get());
+    }
+
+    void expectHeader(const char* input, const char* headerName, bool isPresent, const char* headerValue)
+    {
+        KURL inputURL(ParsedURLString, input);
+        FetchRequest fetchRequest = FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+        fetcher->addClientHintsIfNeccessary(fetchRequest);
+
+        EXPECT_STREQ(isPresent ? headerValue : "",
+            fetchRequest.resourceRequest().httpHeaderField(headerName).utf8().data());
+    }
+
+    OwnPtr<DummyPageHolder> dummyPageHolder;
+    // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
+    // as the ResourceFetcher and Document live due to indirect usage.
+    RefPtr<DocumentLoader> documentLoader;
+    RefPtrWillBePersistent<Document> document;
+    RefPtrWillBePersistent<ResourceFetcher> fetcher;
+};
+
+TEST_F(ResourceFetcherHintsTest, MonitorDPRHints)
+{
+    expectHeader("http://www.example.com/1.gif", "DPR", false, "");
+    dummyPageHolder->frame().setShouldSendDPRHint();
+    expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
+    dummyPageHolder->page().setDeviceScaleFactor(2.5);
+    expectHeader("http://www.example.com/1.gif", "DPR", true, "2.5");
+    expectHeader("http://www.example.com/1.gif", "RW", false, "");
+}
+
+TEST_F(ResourceFetcherHintsTest, MonitorRWHints)
+{
+    expectHeader("http://www.example.com/1.gif", "RW", false, "");
+    dummyPageHolder->frame().setShouldSendRWHint();
+    expectHeader("http://www.example.com/1.gif", "RW", true, "500");
+    dummyPageHolder->frameView().setLayoutSizeFixedToFrameSize(false);
+    dummyPageHolder->frameView().setLayoutSize(IntSize(800, 800));
+    expectHeader("http://www.example.com/1.gif", "RW", true, "800");
+    expectHeader("http://www.example.com/1.gif", "DPR", false, "");
+}
+
+TEST_F(ResourceFetcherHintsTest, MonitorBothHints)
+{
+    expectHeader("http://www.example.com/1.gif", "DPR", false, "");
+    expectHeader("http://www.example.com/1.gif", "RW", false, "");
+
+    dummyPageHolder->frame().setShouldSendDPRHint();
+    dummyPageHolder->frame().setShouldSendRWHint();
+    expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
+    expectHeader("http://www.example.com/1.gif", "RW", true, "500");
 }
 
 } // namespace

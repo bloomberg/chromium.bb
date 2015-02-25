@@ -560,6 +560,8 @@ public:
 
     void lineLayoutTime(double ms);
 
+    int viewportWidth() const;
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);

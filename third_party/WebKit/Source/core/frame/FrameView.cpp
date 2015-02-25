@@ -4070,6 +4070,12 @@ void FrameView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll
         updateScrollbars(scrollOffsetDouble());
 }
 
+int FrameView::viewportWidth() const
+{
+    int viewportWidth = layoutSize(IncludeScrollbars).width();
+    return adjustForAbsoluteZoom(viewportWidth, renderView());
+}
+
 ScrollableArea* FrameView::scrollableArea()
 {
     Settings* settings = frame().settings();

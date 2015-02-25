@@ -444,6 +444,14 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
         ResourceFetcher* fetcher = ResourceFetcher::toResourceFetcher(m_loader->host());
         if (fetcher && fetcher->frame()) {
             LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), fetcher->frame()->document());
+            if (RuntimeEnabledFeatures::clientHintsEnabled() && type() == Resource::MainResource) {
+                String acceptCH = response.httpHeaderField("accept-ch").lower();
+                // FIXME: Write an actual parser for this comma delimited header. crbug.com/461741
+                if (acceptCH.contains("dpr"))
+                    fetcher->frame()->setShouldSendDPRHint();
+                if (acceptCH.contains("rw"))
+                    fetcher->frame()->setShouldSendRWHint();
+            }
         }
     }
 

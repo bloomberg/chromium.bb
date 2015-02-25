@@ -29,7 +29,7 @@ Beacon status=stable
 BleedingEdgeFastPaths
 BlinkScheduler
 Bluetooth status=experimental
-ClientHintsDpr status=experimental
+ClientHints status=experimental
 CompositedSelectionUpdate
 ContextMenu status=experimental
 CredentialManager status=test

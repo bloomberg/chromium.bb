@@ -175,6 +175,11 @@ namespace blink {
 #endif
         DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
+        void setShouldSendDPRHint() { m_shouldSendDPRHint = true; }
+        void setShouldSendRWHint() { m_shouldSendRWHint = true; }
+        bool shouldSendDPRHint() { return m_shouldSendDPRHint; }
+        bool shouldSendRWHint() { return m_shouldSendRWHint; }
+
     // ========
 
     private:
@@ -228,6 +233,9 @@ namespace blink {
         bool m_inViewSourceMode;
 
         RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+
+        bool m_shouldSendDPRHint;
+        bool m_shouldSendRWHint;
     };
 
     inline void LocalFrame::init()
