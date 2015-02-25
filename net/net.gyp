@@ -716,6 +716,7 @@
             ],
           }, {  # else
             'sources!': [
+              'dns/host_resolver_mojo_unittest.cc',
               'dns/mojo_host_resolver_impl_unittest.cc',
               'proxy/mojo_proxy_resolver_impl_unittest.cc',
             ],
@@ -962,6 +963,7 @@
         'test/embedded_test_server/http_request.h',
         'test/embedded_test_server/http_response.cc',
         'test/embedded_test_server/http_response.h',
+        'test/event_waiter.h',
         'test/net_test_suite.cc',
         'test/net_test_suite.h',
         'test/python_utils.cc',
@@ -1281,6 +1283,8 @@
           'target_name': 'net_utility_services',
           'type': 'static_library',
           'sources': [
+            'dns/host_resolver_mojo.cc',
+            'dns/host_resolver_mojo.h',
             'proxy/mojo_proxy_resolver_impl.cc',
             'proxy/mojo_proxy_resolver_impl.h',
           ],

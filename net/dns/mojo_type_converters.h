@@ -18,6 +18,13 @@ struct TypeConverter<net::HostResolver::RequestInfo,
 };
 
 template <>
+struct TypeConverter<net::interfaces::HostResolverRequestInfoPtr,
+                     net::HostResolver::RequestInfo> {
+  static net::interfaces::HostResolverRequestInfoPtr Convert(
+      const net::HostResolver::RequestInfo& obj);
+};
+
+template <>
 struct TypeConverter<net::interfaces::AddressListPtr, net::AddressList> {
   static net::interfaces::AddressListPtr Convert(const net::AddressList& obj);
 };

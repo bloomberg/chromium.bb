@@ -657,6 +657,7 @@ source_set("test_support") {
     "test/embedded_test_server/http_request.h",
     "test/embedded_test_server/http_response.cc",
     "test/embedded_test_server/http_response.h",
+    "test/event_waiter.h",
     "test/net_test_suite.cc",
     "test/net_test_suite.h",
     "test/python_utils.cc",
@@ -821,6 +822,8 @@ if (use_v8_in_net && !is_android) {
 
   source_set("net_utility_services") {
     sources = [
+      "dns/host_resolver_mojo.cc",
+      "dns/host_resolver_mojo.h",
       "proxy/mojo_proxy_resolver_impl.cc",
       "proxy/mojo_proxy_resolver_impl.h",
     ]
@@ -1392,6 +1395,7 @@ if (!is_android && !is_win && !is_mac) {
       ]
     } else {
       sources -= [
+        "dns/host_resolver_mojo_unittest.cc",
         "dns/mojo_host_resolver_impl_unittest.cc",
         "proxy/mojo_proxy_resolver_impl_unittest.cc",
       ]
