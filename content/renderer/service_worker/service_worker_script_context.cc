@@ -253,7 +253,7 @@ void ServiceWorkerScriptContext::PostMessageToDocument(
   // messages for MessagePort (e.g. QueueMessages) are sent from main thread
   // (with thread hopping), so we need to do the same thread hopping here not
   // to overtake those messages.
-  embedded_context_->main_thread_task_runner()->PostTask(
+  embedded_context_->main_thread_proxy()->PostTask(
       FROM_HERE,
       base::Bind(&SendPostMessageToDocumentOnMainThread,
                  make_scoped_refptr(embedded_context_->thread_safe_sender()),
@@ -268,7 +268,7 @@ void ServiceWorkerScriptContext::PostCrossOriginMessageToClient(
   // messages for MessagePort (e.g. QueueMessages) are sent from main thread
   // (with thread hopping), so we need to do the same thread hopping here not
   // to overtake those messages.
-  embedded_context_->main_thread_task_runner()->PostTask(
+  embedded_context_->main_thread_proxy()->PostTask(
       FROM_HERE,
       base::Bind(&SendCrossOriginMessageToClientOnMainThread,
                  make_scoped_refptr(embedded_context_->thread_safe_sender()),
@@ -412,12 +412,11 @@ void ServiceWorkerScriptContext::OnPostMessage(
                "ServiceWorkerScriptContext::OnPostEvent");
   std::vector<WebMessagePortChannelImpl*> ports;
   if (!sent_message_port_ids.empty()) {
-    base::SingleThreadTaskRunner* task_runner =
-        embedded_context_->main_thread_task_runner();
+    base::MessageLoopProxy* loop_proxy = embedded_context_->main_thread_proxy();
     ports.resize(sent_message_port_ids.size());
     for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
       ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i], task_runner);
+          new_routing_ids[i], sent_message_port_ids[i], loop_proxy);
     }
   }
 
@@ -439,12 +438,11 @@ void ServiceWorkerScriptContext::OnCrossOriginMessageToWorker(
                "ServiceWorkerScriptContext::OnCrossOriginMessageToWorker");
   std::vector<WebMessagePortChannelImpl*> ports;
   if (!sent_message_port_ids.empty()) {
-    base::SingleThreadTaskRunner* task_runner =
-        embedded_context_->main_thread_task_runner();
+    base::MessageLoopProxy* loop_proxy = embedded_context_->main_thread_proxy();
     ports.resize(sent_message_port_ids.size());
     for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
       ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i], task_runner);
+          new_routing_ids[i], sent_message_port_ids[i], loop_proxy);
     }
   }
 
