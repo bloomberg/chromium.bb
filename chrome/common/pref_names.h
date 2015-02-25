@@ -407,7 +407,6 @@ extern const char kPushMessagingApplicationIdMap[];
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];
-extern const char kEasyUnlockLocalStateUserPrefs[];
 extern const char kEasyUnlockPairing[];
 extern const char kEasyUnlockProximityRequired[];
 extern const char kEasyUnlockShowTutorial[];
@@ -812,8 +811,10 @@ extern const char kQuickCheckEnabled[];
 extern const char kBrowserGuestModeEnabled[];
 extern const char kBrowserAddPersonEnabled[];
 
+extern const char kEasyUnlockDeviceId[];
 extern const char kEasyUnlockHardlockState[];
 extern const char kEasyUnlockLocalStateTpmKeys[];
+extern const char kEasyUnlockLocalStateUserPrefs[];
 
 extern const char kPasswordBubbleTimeStamp[];
 extern const char kPasswordBubbleNopesCount[];

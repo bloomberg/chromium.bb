@@ -82,6 +82,9 @@ class EasyUnlockService : public KeyedService {
   // Returns the user's preferences.
   static UserSettings GetUserSettings(const std::string& user_id);
 
+  // Returns the identifier for the device.
+  static std::string GetDeviceId();
+
   // Returns true if Easy sign-in is enabled.
   static bool IsSignInEnabled();
 

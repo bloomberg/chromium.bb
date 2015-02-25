@@ -11,6 +11,8 @@ source_set("cryptauth") {
     "cryptauth_api_call_flow.h",
     "cryptauth_client.cc",
     "cryptauth_client.h",
+    "cryptauth_enrollment_utils.cc",
+    "cryptauth_enrollment_utils.h",
   ]
 
   deps = [

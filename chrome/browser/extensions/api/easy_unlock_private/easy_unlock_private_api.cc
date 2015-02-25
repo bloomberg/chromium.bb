@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/bluetooth_util.h"
+#include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/proximity_auth/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -685,6 +686,9 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
     EasyUnlockService::UserSettings user_settings =
         EasyUnlockService::GetUserSettings(user_id);
     users[0]->require_close_proximity = user_settings.require_close_proximity;
+
+    users[0]->device_user_id = proximity_auth::CalculateDeviceUserId(
+        EasyUnlockService::GetDeviceId(), user_id);
   }
   results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
   return true;

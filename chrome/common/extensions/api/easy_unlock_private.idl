@@ -144,6 +144,12 @@ namespace easyUnlockPrivate {
     // The user id.
     DOMString userId;
 
+    // A stable identifier for the user and device. If a user is removed and
+    // added to the same device, this id will remain the same. However, this id
+    // will be different if another user is added to the same device or if the
+    // same user is added on another device.
+    DOMString deviceUserId;
+
     // Whether the user is logged in. If not logged in, the app is running on
     // the signin screen.
     boolean loggedIn;

@@ -1220,12 +1220,6 @@ const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 // Whether Easy Unlock is enabled.
 const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 
-// A dictionary in local state containing each user's Easy Unlock profile
-// preferences, so they can be accessed outside of the user's profile. The value
-// is a dictionary containing an entry for each user. Each user's entry mirrors
-// their profile's Easy Unlock preferences.
-const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
-
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 
@@ -2267,12 +2261,23 @@ const char kBrowserGuestModeEnabled[] = "profile.browser_guest_enabled";
 // Whether Adding a new Person is enabled within the user manager.
 const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 
+// Device identifier used by Easy Unlock stored in local state. This id will be
+// combined with a user id, before being registered with the CryptAuth server,
+// so it can't correlate users on the same device.
+extern const char kEasyUnlockDeviceId[] = "easy_unlock.device_id";
+
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
 
 // A dictionary that maps user id to public part of RSA key pair used by
 // Easy Sign-in for the user.
 const char kEasyUnlockLocalStateTpmKeys[] = "easy_unlock.public_tpm_keys";
+
+// A dictionary in local state containing each user's Easy Unlock profile
+// preferences, so they can be accessed outside of the user's profile. The value
+// is a dictionary containing an entry for each user. Each user's entry mirrors
+// their profile's Easy Unlock preferences.
+const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
 
 // The beginning of time span when we count user's "Nope" for the password
 // bubble.

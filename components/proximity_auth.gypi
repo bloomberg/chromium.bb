@@ -77,6 +77,8 @@
         "proximity_auth/cryptauth/cryptauth_api_call_flow.h",
         "proximity_auth/cryptauth/cryptauth_client.cc",
         "proximity_auth/cryptauth/cryptauth_client.h",
+        "proximity_auth/cryptauth/cryptauth_enrollment_utils.cc",
+        "proximity_auth/cryptauth/cryptauth_enrollment_utils.h",
       ],
       'export_dependent_settings': [
         'cryptauth_proto',
