@@ -327,15 +327,23 @@ argument types: i16, i32, i64 (the types supported by C-style GCC builtins).</p>
 <li><code>llvm.ctlz</code></li>
 <li><code>llvm.cttz</code></li>
 <li><p class="first"><code>llvm.ctpop</code></p>
-<p>The overloaded llvm.ctlz, llvm.cttz, and llvm.ctpop intrinsics are only
-supported with the i32 and i64 argument types (the types supported by
-C-style GCC builtins).</p>
+<p>The overloaded <code>llvm.ctlz</code>, <code>llvm.cttz</code>, and <code>llvm.ctpop</code> intrinsics
+are only supported with the i32 and i64 argument types (the types
+supported by C-style GCC builtins).</p>
+</li>
+<li><p class="first"><code>llvm.fabs</code></p>
+<p>The overloaded <code>llvm.fabs</code> intrinsic is supported for float, double and
+<code>&lt;4 x float&gt;</code> argument types. It returns the absolute value of
+the argument. Some notable points: it returns <code>+0.0</code> when given <code>-0.0</code>,
+<code>+inf</code> when given <code>-inf</code>, and a positive <code>NaN</code> when given any
+signed <code>NaN</code>.</p>
+<p>NOTE: This intrinsic was introduced in the pepper_42 SDK.</p>
 </li>
 <li><p class="first"><code>llvm.sqrt</code></p>
 <p>The overloaded <code>llvm.sqrt</code> intrinsic is only supported for float
 and double arguments types. This has the same semantics as the libc
-sqrt function, returning NaN for values less than -0.0. However, this
-does not set <code>errno</code> when the result is NaN (see the
+sqrt function, returning <code>NaN</code> for values less than <code>-0.0</code>.
+However, this does not set <code>errno</code> when the result is NaN (see the
 <a class="reference internal" href="#ir-and-errno"><em>instructions and errno</em></a> section).</p>
 </li>
 <li><code>llvm.stacksave</code></li>

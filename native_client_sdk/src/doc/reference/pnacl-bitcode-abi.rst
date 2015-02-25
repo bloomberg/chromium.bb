@@ -430,16 +430,26 @@ The only intrinsics supported by PNaCl bitcode are the following.
 * ``llvm.cttz``
 * ``llvm.ctpop``
 
-  The overloaded llvm.ctlz, llvm.cttz, and llvm.ctpop intrinsics are only
-  supported with the i32 and i64 argument types (the types supported by
-  C-style GCC builtins).
+  The overloaded ``llvm.ctlz``, ``llvm.cttz``, and ``llvm.ctpop`` intrinsics
+  are only supported with the i32 and i64 argument types (the types
+  supported by C-style GCC builtins).
+
+* ``llvm.fabs``
+
+  The overloaded ``llvm.fabs`` intrinsic is supported for float, double and
+  ``<4 x float>`` argument types. It returns the absolute value of
+  the argument. Some notable points: it returns ``+0.0`` when given ``-0.0``,
+  ``+inf`` when given ``-inf``, and a positive ``NaN`` when given any
+  signed ``NaN``.
+
+  NOTE: This intrinsic was introduced in the pepper_42 SDK.
 
 * ``llvm.sqrt``
 
   The overloaded ``llvm.sqrt`` intrinsic is only supported for float
   and double arguments types. This has the same semantics as the libc
-  sqrt function, returning NaN for values less than -0.0. However, this
-  does not set ``errno`` when the result is NaN (see the
+  sqrt function, returning ``NaN`` for values less than ``-0.0``.
+  However, this does not set ``errno`` when the result is NaN (see the
   :ref:`instructions and errno <ir_and_errno>` section).
 
 * ``llvm.stacksave``
