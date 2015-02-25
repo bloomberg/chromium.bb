@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="../../../../ui/webui/resources/js/cr/ui/focus_row.js">
+<include src="../../../../ui/webui/resources/js/cr/ui/focus_grid.js">
 <include src="../uber/uber_utils.js">
 <include src="extension_code.js">
 <include src="extension_commands_overlay.js">
@@ -139,6 +141,7 @@ cr.define('extensions', function() {
 
       $('toggle-dev-on').addEventListener('change', function(e) {
         this.updateDevControlsVisibility_(true);
+        $('extension-settings-list').updateFocusableElements();
         chrome.send('extensionSettingsToggleDeveloperMode',
                     [$('toggle-dev-on').checked]);
       }.bind(this));

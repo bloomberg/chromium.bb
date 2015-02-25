@@ -28,24 +28,34 @@ cr.define('extensions', function() {
   /**
    * Creates a new ExtensionError HTMLElement; this is used to show a
    * notification to the user when an error is caused by an extension.
-   * @param {Object} error The error the element should represent.
+   * @param {RuntimeError} error The error the element should represent.
+   * @param {Element} boundary The boundary for the focus grid.
    * @constructor
-   * @extends {HTMLDivElement}
+   * @extends {cr.ui.FocusRow}
    */
-  function ExtensionError(error) {
+  function ExtensionError(error, boundary) {
     var div = cloneTemplate('extension-error-metadata');
     div.__proto__ = ExtensionError.prototype;
-    div.decorate(error);
+    div.decorate(error, boundary);
     return div;
   }
 
   ExtensionError.prototype = {
-    __proto__: HTMLDivElement.prototype,
+    __proto__: cr.ui.FocusRow.prototype,
+
+    /** @override */
+    getEquivalentElement: function(element) {
+      return assert(this.querySelector('.extension-error-view-details'));
+    },
 
     /**
-     * @param {RuntimeError} error
+     * @param {RuntimeError} error The error the element should represent
+     * @param {Element} boundary The boundary for the FocusGrid.
+     * @override
      */
-    decorate: function(error) {
+    decorate: function(error, boundary) {
+      cr.ui.FocusRow.prototype.decorate.call(this, boundary);
+
       // Add an additional class for the severity level.
       if (error.level == 0)
         this.classList.add('extension-error-severity-info');
@@ -56,6 +66,9 @@ cr.define('extensions', function() {
 
       var iconNode = document.createElement('img');
       iconNode.className = 'extension-error-icon';
+      // TODO(hcarmona): Populate alt text with a proper description since this
+      // icon conveys the severity of the error. (info, warning, fatal).
+      iconNode.alt = '';
       this.insertBefore(iconNode, this.firstChild);
 
       var messageSpan = this.querySelector('.extension-error-message');
@@ -79,6 +92,8 @@ cr.define('extensions', function() {
           extensions.ExtensionErrorOverlay.getInstance().setErrorAndShowOverlay(
               error, extensionUrl);
         });
+
+        this.addFocusableElement(viewDetailsLink);
       }
     },
   };
@@ -109,17 +124,70 @@ cr.define('extensions', function() {
     __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      this.contents_ = this.querySelector('.extension-error-list-contents');
+      this.focusGrid_ = new cr.ui.FocusGrid();
+      this.gridBoundary_ = this.querySelector('.extension-error-list-contents');
+      this.gridBoundary_.addEventListener('focus', this.onFocus_.bind(this));
+      this.gridBoundary_.addEventListener('focusin',
+                                          this.onFocusin_.bind(this));
       this.errors_.forEach(function(error) {
         if (idIsValid(error.extensionId)) {
-          this.contents_.appendChild(document.createElement('li')).appendChild(
-              new ExtensionError(error));
+          var focusRow = new ExtensionError(error, this.gridBoundary_);
+          this.gridBoundary_.appendChild(
+              document.createElement('li')).appendChild(focusRow);
+          this.focusGrid_.addRow(focusRow);
         }
       }, this);
 
-      var numShowing = this.contents_.children.length;
+      var numShowing = this.focusGrid_.rows.length;
       if (numShowing > ExtensionErrorList.MAX_ERRORS_TO_SHOW_)
         this.initShowMoreLink_();
+    },
+
+    /**
+     * @return {?Element} The element that toggles between show more and show
+     *     less, or null if it's hidden. Button will be hidden if there are less
+     *     errors than |MAX_ERRORS_TO_SHOW_|.
+     */
+    getToggleElement: function() {
+      return this.querySelector(
+          '.extension-error-list-show-more [is="action-link"]:not([hidden])');
+    },
+
+    /** @return {!Element} The element containing the list of errors. */
+    getErrorListElement: function() {
+      return this.gridBoundary_;
+    },
+
+    /**
+     * The grid should not be focusable once it or an element inside it is
+     * focused. This is necessary to allow tabbing out of the grid in reverse.
+     * @private
+     */
+    onFocusin_: function() {
+      this.gridBoundary_.tabIndex = -1;
+    },
+
+    /**
+     * Focus the first focusable row when tabbing into the grid for the
+     * first time.
+     * @private
+     */
+    onFocus_: function() {
+      var activeRow = this.gridBoundary_.querySelector('.focus-row-active');
+      var toggleButton = this.getToggleElement();
+
+      if (toggleButton && !toggleButton.isShowingAll) {
+        var rows = this.focusGrid_.rows;
+        assert(rows.length > ExtensionErrorList.MAX_ERRORS_TO_SHOW_);
+
+        var firstVisible = rows.length - ExtensionErrorList.MAX_ERRORS_TO_SHOW_;
+        if (rows.indexOf(activeRow) < firstVisible)
+          activeRow = rows[firstVisible];
+      } else if (!activeRow) {
+        activeRow = this.focusGrid_.rows[0];
+      }
+
+      activeRow.getEquivalentElement(null).focus();
     },
 
     /**
@@ -144,6 +212,9 @@ cr.define('extensions', function() {
       });
 
       link.addEventListener('click', function(e) {
+        // Needs to be enabled in case the focused row is now hidden.
+        this.gridBoundary_.tabIndex = 0;
+
         link.isShowingAll = !link.isShowingAll;
 
         var message = link.isShowingAll ? 'extensionErrorsShowFewer' :

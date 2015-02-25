@@ -30,12 +30,14 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   void InstallGoodExtension();
 
+  void InstallErrorsExtension();
+
   void AddManagedPolicyProvider();
 
  private:
   bool WaitForExtensionViewsToLoad();
-  const extensions::Extension* LoadUnpackedExtension(
-      const base::FilePath& path);
+  const extensions::Extension* InstallUnpackedExtension(
+      const base::FilePath& path, const char* id);
   const extensions::Extension* InstallExtension(const base::FilePath& path);
 
   scoped_ptr<ExtensionTestNotificationObserver> observer_;

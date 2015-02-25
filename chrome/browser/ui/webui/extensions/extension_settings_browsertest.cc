@@ -26,6 +26,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension_set.h"
 
 using extensions::Extension;
@@ -59,7 +60,20 @@ void ExtensionSettingsUIBrowserTest::InstallGoodExtension() {
     return;
   }
   base::FilePath extensions_data_dir = test_data_dir.AppendASCII("extensions");
-  InstallExtension(extensions_data_dir.AppendASCII("good.crx"));
+  EXPECT_TRUE(InstallExtension(extensions_data_dir.AppendASCII("good.crx")));
+}
+
+void ExtensionSettingsUIBrowserTest::InstallErrorsExtension() {
+  base::FilePath test_data_dir;
+  if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
+    ADD_FAILURE();
+    return;
+  }
+  base::FilePath extensions_data_dir = test_data_dir.AppendASCII("extensions");
+  extensions_data_dir = extensions_data_dir.AppendASCII("error_console");
+  EXPECT_TRUE(InstallUnpackedExtension(
+      extensions_data_dir.AppendASCII("runtime_and_manifest_errors"),
+      "pdlpifnclfacjobnmbpngemkalkjamnf"));
 }
 
 void ExtensionSettingsUIBrowserTest::AddManagedPolicyProvider() {
@@ -81,9 +95,29 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 };
 
+const Extension* ExtensionSettingsUIBrowserTest::InstallUnpackedExtension(
+    const base::FilePath& path, const char* id) {
+  if (path.empty())
+    return NULL;
+
+  Profile* profile = GetProfile();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  service->set_show_extensions_prompts(false);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  extensions::TestExtensionRegistryObserver observer(registry, id);
+
+  extensions::UnpackedInstaller::Create(service)->Load(path);
+
+  // Test will timeout if extension is not loaded.
+  observer.WaitForExtensionLoaded();
+  return service->GetExtensionById(last_loaded_extension_id(), false);
+}
+
 const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
     const base::FilePath& path) {
-  Profile* profile = this->GetProfile();
+  Profile* profile = GetProfile();
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extensions::ExtensionRegistry* registry =

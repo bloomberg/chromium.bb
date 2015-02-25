@@ -417,3 +417,7 @@ html[dir='rtl'] #extension-settings .trash {
   -webkit-padding-start: 8px;
   background-image: none;
 }
+
+.focus-row-active {
+  background-color: rgba(0, 0, 0, .05);
+}

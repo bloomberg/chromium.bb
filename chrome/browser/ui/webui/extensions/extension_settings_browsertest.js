@@ -63,25 +63,60 @@ AsyncExtensionSettingsWebUITest.prototype = {
 
   /** @override */
   isAsync: true,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  InstallGoodExtension();');
+    GEN('  InstallErrorsExtension();');
+  },
+
+  enableDeveloperMode: function(callback) {
+    var devControls = $('dev-controls');
+
+    // Make sure developer controls are hidden before checkbox is clicked.
+    assertEquals(0, devControls.offsetHeight);
+    $('toggle-dev-on').click();
+
+    document.addEventListener('webkitTransitionEnd', function f(e) {
+      if (e.target == devControls) {
+        // Make sure developer controls are not hidden after checkbox is
+        // clicked.
+        assertGT(devControls.offsetHeight, 0);
+
+        document.removeEventListener(f, 'webkitTransitionEnd');
+        callback();
+      }
+    });
+    ensureTransitionEndEvent(devControls, 4000);
+  },
 };
 
 TEST_F('AsyncExtensionSettingsWebUITest', 'testDeveloperModeA11y', function() {
-  var devControls = $('dev-controls');
+  this.enableDeveloperMode(testDone);
+});
 
-  // Make sure developer controls are hidden before checkbox is clicked.
-  assertEquals(0, devControls.offsetHeight);
-  $('toggle-dev-on').click();
+TEST_F('AsyncExtensionSettingsWebUITest', 'testErrorListButtonVisibility',
+    function() {
+  this.enableDeveloperMode(function() {
+    // 2 extensions are loaded:
+    //   The 'good' extension will have 0 errors wich means no error list
+    //     buttons.
+    //   The 'bad' extension will have >3 manifest errors and <3 runtime errors.
+    //     This means 2 buttons: 1 visible and 1 hidden.
+    var visibleButtons = document.querySelectorAll(
+        '.extension-error-list-show-more > a:not([hidden])');
+    assertEquals(1, visibleButtons.length);
+    // Visible buttons must be part of the focusRow.
+    assertTrue(visibleButtons[0].hasAttribute('column-type'));
 
-  document.addEventListener('webkitTransitionEnd', function f(e) {
-    if (e.target == devControls) {
-      // Make sure developer controls are not hidden after checkbox is clicked.
-      assertGT(devControls.offsetHeight, 0);
+    var hiddenButtons = document.querySelectorAll(
+        '.extension-error-list-show-more > a[hidden]');
+    assertEquals(1, hiddenButtons.length);
+    // Hidden buttons must NOT be part of the focusRow.
+    assertFalse(hiddenButtons[0].hasAttribute('column-type'));
 
-      document.removeEventListener(f, 'webkitTransitionEnd');
-      testDone();
-    }
+    testDone();
   });
-  ensureTransitionEndEvent(devControls, 4000);
 });
 
 /**
