@@ -74,7 +74,11 @@ void DriWindowDelegateImpl::Initialize() {
   SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
   for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
     cursor_buffers_[i] = new DriBuffer(drm);
-    if (!cursor_buffers_[i]->Initialize(info)) {
+    // Don't register a framebuffer for cursors since they are special (they
+    // aren't modesetting buffers and drivers may fail to register them due to
+    // their small sizes).
+    if (!cursor_buffers_[i]->Initialize(
+            info, false /* should_register_framebuffer */)) {
       LOG(ERROR) << "Failed to initialize cursor buffer";
       return;
     }

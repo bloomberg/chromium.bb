@@ -32,7 +32,7 @@ class MockDriWindowDelegate : public ui::DriWindowDelegate {
     scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm));
     SkImageInfo info = SkImageInfo::MakeN32Premul(kDefaultMode.hdisplay,
                                                   kDefaultMode.vdisplay);
-    EXPECT_TRUE(buffer->Initialize(info));
+    EXPECT_TRUE(buffer->Initialize(info, true));
     EXPECT_TRUE(controller_->Modeset(ui::OverlayPlane(buffer), kDefaultMode));
   }
   ~MockDriWindowDelegate() override {}

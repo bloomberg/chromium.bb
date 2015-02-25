@@ -24,7 +24,9 @@ class OZONE_EXPORT DriBuffer : public ScanoutBuffer {
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
-  bool Initialize(const SkImageInfo& info);
+  // |should_register_framebuffer| is used to distinguish the buffers that are
+  // used for modesetting.
+  bool Initialize(const SkImageInfo& info, bool should_register_framebuffer);
 
   SkCanvas* GetCanvas() const;
 

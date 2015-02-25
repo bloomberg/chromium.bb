@@ -53,20 +53,18 @@ DriBuffer::~DriBuffer() {
   dri_->DestroyDumbBuffer(info, handle_, stride_, pixels);
 }
 
-bool DriBuffer::Initialize(const SkImageInfo& info) {
+bool DriBuffer::Initialize(const SkImageInfo& info,
+                           bool should_register_framebuffer) {
   void* pixels = NULL;
   if (!dri_->CreateDumbBuffer(info, &handle_, &stride_, &pixels)) {
     VLOG(2) << "Cannot create drm dumb buffer";
     return false;
   }
 
-  if (!dri_->AddFramebuffer(info.width(),
-                            info.height(),
-                            GetColorDepth(info.colorType()),
-                            info.bytesPerPixel() << 3,
-                            stride_,
-                            handle_,
-                            &framebuffer_)) {
+  if (should_register_framebuffer &&
+      !dri_->AddFramebuffer(
+          info.width(), info.height(), GetColorDepth(info.colorType()),
+          info.bytesPerPixel() << 3, stride_, handle_, &framebuffer_)) {
     VLOG(2) << "Failed to register framebuffer: " << strerror(errno);
     return false;
   }
@@ -106,7 +104,7 @@ scoped_refptr<ScanoutBuffer> DriBufferGenerator::Create(
     const gfx::Size& size) {
   scoped_refptr<DriBuffer> buffer(new DriBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  if (!buffer->Initialize(info))
+  if (!buffer->Initialize(info, true /* should_register_framebuffer */))
     return NULL;
 
   return buffer;

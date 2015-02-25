@@ -26,7 +26,8 @@ scoped_refptr<DriBuffer> AllocateBuffer(const scoped_refptr<DriWrapper>& dri,
   scoped_refptr<DriBuffer> buffer(new DriBuffer(dri));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
 
-  bool initialized = buffer->Initialize(info);
+  bool initialized =
+      buffer->Initialize(info, true /* should_register_framebuffer */);
   DCHECK(initialized) << "Failed to create drm buffer.";
 
   return buffer;
