@@ -647,12 +647,14 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
         document().nodeChildrenWillBeRemoved(*this);
     }
 
+#if !ENABLE(OILPAN)
     // FIXME: Remove this NodeVector. Right now WebPluginContainerImpl::m_element is a
     // raw ptr which means the code below can drop the last ref to a plugin element and
     // then the code in UpdateSuspendScope::performDeferredWidgetTreeOperations will
     // try to destroy the plugin which will be a use-after-free. We should use a RefPtr
     // in the WebPluginContainerImpl instead.
     NodeVector removedChildren;
+#endif
     {
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
 
@@ -660,11 +662,14 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
             EventDispatchForbiddenScope assertNoEventDispatch;
             ScriptForbiddenScope forbidScript;
 
+#if !ENABLE(OILPAN)
             removedChildren.reserveInitialCapacity(countChildren());
-
+#endif
             while (RefPtrWillBeRawPtr<Node> child = m_firstChild) {
                 removeBetween(0, child->nextSibling(), *child);
+#if !ENABLE(OILPAN)
                 removedChildren.append(child.get());
+#endif
                 notifyNodeRemoved(*child);
             }
         }
