@@ -94,6 +94,7 @@ void LayoutTextControlSingleLine::layout()
 {
     SubtreeLayoutScope layoutScope(*this);
 
+    // FIXME: This code is madness (https://crbug.com/461117)
     // FIXME: We should remove the height-related hacks in layout() and
     // styleDidChange(). We need them because
     // - Center the inner elements vertically if the input height is taller than
@@ -106,6 +107,7 @@ void LayoutTextControlSingleLine::layout()
     // because of compability.
 
     LayoutBox* innerEditorRenderer = innerEditorElement()->layoutBox();
+    bool innerEditorRendererHadLayout = innerEditorRenderer && innerEditorRenderer->needsLayout();
     LayoutBox* viewPortRenderer = editingViewPortElement() ? editingViewPortElement()->layoutBox() : 0;
 
     // To ensure consistency between layouts, we need to reset any conditionally overriden height.
@@ -156,6 +158,11 @@ void LayoutTextControlSingleLine::layout()
             containerRenderer->style()->setLogicalHeight(Length(containerLogicalHeight, Fixed));
         }
     }
+
+    // We ensure that the inner editor renderer is laid out at least once. This is
+    // required as the logic below assumes that we don't carry over previous layout values.
+    if (innerEditorRenderer && !innerEditorRendererHadLayout)
+        layoutScope.setNeedsLayout(innerEditorRenderer);
 
     // If we need another layout pass, we have changed one of children's height so we need to relayout them.
     if (needsLayout())
