@@ -103,11 +103,7 @@ public:
 
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
     // This should be removed once StringKeyframes no longer uses InterpolableAnimatableValues.
-    void forceConversionsToAnimatableValues(Element* element)
-    {
-        ensureKeyframeGroups();
-        ensureInterpolationEffect(element);
-    }
+    void forceConversionsToAnimatableValues(Element*);
 
     // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
     void snapshotCompositableProperties(const Element*, const LayoutStyle&);

@@ -37,6 +37,7 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSPropertyEquality.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Document.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -62,6 +63,14 @@ void KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     ensureInterpolationEffect();
 
     return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
+}
+
+void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element* element)
+{
+    ASSERT(element);
+    ensureKeyframeGroups();
+    element->document().updateDistributionForNodeIfNeeded(element);
+    ensureInterpolationEffect(element);
 }
 
 void KeyframeEffectModelBase::snapshotCompositableProperties(const Element* element, const LayoutStyle& style)
