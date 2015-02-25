@@ -54,6 +54,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::PopupListBoxRow: return "DrawingPopupListBoxRow";
     case DisplayItem::Resizer: return "DrawingResizer";
     case DisplayItem::SVGFilter: return "DrawingSVGFilter";
+    case DisplayItem::SVGMask: return "DrawingSVGMask";
     case DisplayItem::ScrollbarCorner: return "DrawingScrollbarCorner";
     case DisplayItem::ScrollbarHorizontal: return "DrawingScrollbarHorizontal";
     case DisplayItem::ScrollbarTickMark: return "DrawingScrollbarTickMark";

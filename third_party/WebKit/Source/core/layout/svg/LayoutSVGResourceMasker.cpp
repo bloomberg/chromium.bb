@@ -22,9 +22,14 @@
 
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/CompositingRecorder.h"
 #include "core/paint/SVGPaintContext.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -65,8 +70,13 @@ bool LayoutSVGResourceMasker::prepareEffect(LayoutObject* object, GraphicsContex
     if (paintInvalidationRect.isEmpty() || !element()->hasChildren())
         return false;
 
-    // Content layer start.
-    context->beginTransparencyLayer(1, &paintInvalidationRect);
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(context->displayItemList());
+        context->displayItemList()->add(BeginCompositingDisplayItem::create(object->displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
+    } else {
+        BeginCompositingDisplayItem beginCompositingContent(object->displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
+        beginCompositingContent.replay(context);
+    }
 
     return true;
 }
@@ -79,30 +89,23 @@ void LayoutSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
-
-    const SVGLayoutStyle& svgStyle = style()->svgStyle();
-    ColorFilter maskLayerFilter = svgStyle.maskType() == MT_LUMINANCE
-        ? ColorFilterLuminanceToAlpha : ColorFilterNone;
-    ColorFilter maskContentFilter = svgStyle.colorInterpolation() == CI_LINEARRGB
-        ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
-
-    // Mask layer start.
-    context->beginLayer(1, SkXfermode::kDstIn_Mode, &paintInvalidationRect, maskLayerFilter);
     {
-        // Draw the mask with color conversion (when needed).
-        GraphicsContextStateSaver maskContentSaver(*context);
-        context->setColorFilter(maskContentFilter);
-
-        drawMaskForRenderer(context, object->objectBoundingBox());
+        ColorFilter maskLayerFilter = style()->svgStyle().maskType() == MT_LUMINANCE
+            ? ColorFilterLuminanceToAlpha : ColorFilterNone;
+        CompositingRecorder maskCompositing(context, object->displayItemClient(), SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
+        drawMaskForRenderer(context, object->displayItemClient(), object->objectBoundingBox());
     }
 
-    // Transfer mask layer -> content layer (DstIn)
-    context->endLayer();
-    // Transfer content layer -> backdrop (SrcOver)
-    context->endLayer();
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(context->displayItemList());
+        context->displayItemList()->add(EndCompositingDisplayItem::create(object->displayItemClient()));
+    } else {
+        EndCompositingDisplayItem endCompositingContent(object->displayItemClient());
+        endCompositingContent.replay(context);
+    }
 }
 
-void LayoutSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, const FloatRect& targetBoundingBox)
+void LayoutSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, DisplayItemClient client, const FloatRect& targetBoundingBox)
 {
     ASSERT(context);
 
@@ -111,26 +114,41 @@ void LayoutSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, cons
     if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
         contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
-        context->concatCTM(contentTransformation);
     }
 
     if (!m_maskContentPicture) {
         SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        createPicture(context);
+        m_maskContentPicture = createContentPicture();
     }
 
-    context->drawPicture(m_maskContentPicture.get());
+    TransformRecorder recorder(*context, client, contentTransformation);
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(context->displayItemList());
+        context->displayItemList()->add(DrawingDisplayItem::create(client, DisplayItem::SVGMask, m_maskContentPicture));
+    } else {
+        DrawingDisplayItem maskPicture(client, DisplayItem::SVGMask, m_maskContentPicture);
+        maskPicture.replay(context);
+    }
 }
 
-void LayoutSVGResourceMasker::createPicture(GraphicsContext* context)
+PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture()
 {
-    ASSERT(context);
-
     // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
     FloatRect bounds = strokeBoundingBox();
-    context->beginRecording(bounds);
+
+    OwnPtr<DisplayItemList> displayItemList;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        displayItemList = DisplayItemList::create();
+    GraphicsContext context(nullptr, displayItemList.get());
+    context.beginRecording(bounds);
+
+    ColorFilter maskContentFilter = style()->svgStyle().colorInterpolation() == CI_LINEARRGB
+        ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
+    context.setColorFilter(maskContentFilter);
+
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         LayoutObject* renderer = childElement->renderer();
         if (!renderer)
@@ -139,9 +157,12 @@ void LayoutSVGResourceMasker::createPicture(GraphicsContext* context)
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGPaintContext::paintSubtree(context, renderer);
+        SVGPaintContext::paintSubtree(&context, renderer);
     }
-    m_maskContentPicture = context->endRecording();
+
+    if (displayItemList)
+        displayItemList->replay(&context);
+    return context.endRecording();
 }
 
 void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()

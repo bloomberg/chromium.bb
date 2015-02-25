@@ -5,6 +5,7 @@
 #ifndef CompositingRecorder_h
 #define CompositingRecorder_h
 
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
@@ -16,7 +17,7 @@ class LayoutObject;
 
 class CompositingRecorder {
 public:
-    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const CompositeOperator, const WebBlendMode&, const float);
+    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const SkXfermode::Mode, const float, const FloatRect* = 0, ColorFilter = ColorFilterNone);
 
     ~CompositingRecorder();
 

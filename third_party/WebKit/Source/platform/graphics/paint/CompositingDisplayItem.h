@@ -5,7 +5,7 @@
 #ifndef CompositingDisplayItem_h
 #define CompositingDisplayItem_h
 
-#include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
@@ -19,16 +19,20 @@ namespace blink {
 class PLATFORM_EXPORT BeginCompositingDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const CompositeOperator compositeOp, const WebBlendMode& blendMode, const float opacity)
+    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* clipRect = 0, ColorFilter colorFilter = ColorFilterNone)
     {
-        return adoptPtr(new BeginCompositingDisplayItem(client, compositeOp, blendMode, opacity));
+        return adoptPtr(new BeginCompositingDisplayItem(client, xferMode, opacity, clipRect, colorFilter));
     }
 
-    BeginCompositingDisplayItem(DisplayItemClient client, const CompositeOperator compositeOp, const WebBlendMode& blendMode, const float opacity)
+    BeginCompositingDisplayItem(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* clipRect = 0, ColorFilter colorFilter = ColorFilterNone)
         : PairedBeginDisplayItem(client, BeginCompositing)
-        , m_compositeOp(compositeOp)
-        , m_blendMode(blendMode)
-        , m_opacity(opacity) { }
+        , m_xferMode(xferMode)
+        , m_opacity(opacity)
+        , m_colorFilter(colorFilter)
+        {
+            if (clipRect)
+                m_clipRect = adoptPtr(new FloatRect(*clipRect));
+        }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -37,9 +41,10 @@ private:
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    const CompositeOperator m_compositeOp;
-    const WebBlendMode m_blendMode;
+    const SkXfermode::Mode m_xferMode;
     const float m_opacity;
+    OwnPtr<FloatRect> m_clipRect;
+    ColorFilter m_colorFilter;
 };
 
 class PLATFORM_EXPORT EndCompositingDisplayItem : public PairedEndDisplayItem {

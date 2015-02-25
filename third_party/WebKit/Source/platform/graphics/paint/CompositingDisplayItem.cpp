@@ -14,20 +14,20 @@ namespace blink {
 
 void BeginCompositingDisplayItem::replay(GraphicsContext* context)
 {
-    context->beginLayer(m_opacity, WebCoreCompositeToSkiaComposite(m_compositeOp, m_blendMode));
+    context->beginLayer(m_opacity, m_xferMode, m_clipRect.get(), m_colorFilter);
 }
 
 void BeginCompositingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    // FIXME: Change this to appendCompositingItem.
-    list->appendTransparencyItem(m_opacity, m_blendMode);
+    // FIXME: Pass across the rect too.
+    list->appendCompositingItem(m_opacity, m_xferMode, GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter).get());
 }
 
 #ifndef NDEBUG
 void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", compositingOp: %d, blendMode: %d, opacity: %f", m_compositeOp, m_blendMode, m_opacity));
+    stringBuilder.append(WTF::String::format(", xferMode: %d, opacity: %f", m_xferMode, m_opacity));
 }
 #endif
 
@@ -38,8 +38,7 @@ void EndCompositingDisplayItem::replay(GraphicsContext* context)
 
 void EndCompositingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    // FIXME: Change this to appendEndCompositingItem.
-    list->appendEndTransparencyItem();
+    list->appendEndCompositingItem();
 }
 
 } // namespace blink

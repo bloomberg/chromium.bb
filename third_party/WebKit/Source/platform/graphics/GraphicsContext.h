@@ -390,6 +390,8 @@ public:
     void setInDrawingRecorder(bool);
 #endif
 
+    static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
+
 private:
     const GraphicsContextState* immutableState() const { return m_paintState; }
 
@@ -401,8 +403,6 @@ private:
 
     static void setPathFromPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, FloatSize, FloatSize, FloatSize, FloatSize);
-
-    static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
 #if OS(MACOSX)
     static inline int focusRingOutset(int offset) { return offset + 2; }

@@ -26,7 +26,6 @@ public:
 
     PassRefPtr<const SkPicture> picture() const { return m_picture; }
 
-protected:
     DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<const SkPicture> picture)
         : DisplayItem(client, type), m_picture(picture)
     {

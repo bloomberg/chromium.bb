@@ -12,8 +12,10 @@
 #include "WebSize.h"
 #include "WebVector.h"
 
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
 // FIXME: Remove this once references to this macro in chromium are removed.
@@ -47,6 +49,9 @@ public:
     virtual void appendEndTransformItem() = 0;
     virtual void appendTransparencyItem(float opacity, WebBlendMode) = 0;
     virtual void appendEndTransparencyItem() = 0;
+    virtual void appendCompositingItem(float opacity,
+        SkXfermode::Mode, SkColorFilter*) = 0;
+    virtual void appendEndCompositingItem() = 0;
 
     virtual void appendFilterItem(const WebFilterOperations&, const WebFloatRect& bounds) = 0;
     virtual void appendEndFilterItem() = 0;

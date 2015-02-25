@@ -68,6 +68,7 @@ public:
         PopupListBoxRow,
         Resizer,
         SVGFilter,
+        SVGMask,
         ScrollbarCorner,
         ScrollbarHorizontal,
         ScrollbarTickMark,

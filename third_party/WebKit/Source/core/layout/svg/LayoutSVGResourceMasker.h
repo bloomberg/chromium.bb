@@ -59,8 +59,8 @@ public:
 
 private:
     void calculateMaskContentPaintInvalidationRect();
-    void drawMaskForRenderer(GraphicsContext*, const FloatRect& targetBoundingBox);
-    void createPicture(GraphicsContext*);
+    void drawMaskForRenderer(GraphicsContext*, DisplayItemClient, const FloatRect& targetBoundingBox);
+    PassRefPtr<const SkPicture> createContentPicture();
 
     RefPtr<const SkPicture> m_maskContentPicture;
     FloatRect m_maskContentBoundaries;
