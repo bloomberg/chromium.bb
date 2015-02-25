@@ -191,6 +191,11 @@ class BuildRowController(object):
     """Return a Q for builds with no annotations yet."""
     return models.Q(annotationstable__isnull=True)
 
+  @classmethod
+  def GetQRestrictToBuildConfig(cls, build_config):
+    """Return a Q for builds with the given build_config."""
+    return models.Q(build_config=build_config)
+
   @property
   def num_builds(self):
     return len(self._build_rows_map)

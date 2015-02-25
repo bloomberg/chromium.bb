@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+from django import http
 from django.conf import urls
 
 from build_annotations import views
@@ -13,8 +14,12 @@ from build_annotations import views
 
 urlpatterns = urls.patterns(
     '',
-    urls.url(r'^$', views.ListBuildsView.as_view(),
+    urls.url(r'^$',
+             lambda r: http.HttpResponseRedirect(
+                 'builds_list/master-paladin/')),
+    urls.url(r'^builds_list/(?P<build_config>[\w-]+)/$',
+             views.ListBuildsView.as_view(),
              name='builds_list'),
-    urls.url(r'edit_annotations/(?P<build_id>\d+)/$',
+    urls.url(r'edit_annotations/(?P<build_config>[\w-]+)/(?P<build_id>\d+)/$',
              views.EditAnnotationsView.as_view(),
              name='edit_annotations'))

@@ -23,6 +23,7 @@ class ListBuildsView(generic.list.ListView):
 
   def __init__(self, *args, **kwargs):
     super(ListBuildsView, self).__init__(*args, **kwargs)
+    self._build_config = None
     self._search_form = None
     self._controller = None
     self._session = None
@@ -30,9 +31,15 @@ class ListBuildsView(generic.list.ListView):
   def get_queryset(self):
     self._EnsureSessionInitialized()
     self._controller = build_row_controller.BuildRowController()
+    build_config_q = None
+    if self._build_config is not None:
+      build_config_q = self._controller.GetQRestrictToBuildConfig(
+          self._build_config)
+
     return self._controller.GetStructuredBuilds(
         latest_build_id=self._session['latest_build_id'],
-        num_builds=self._session['num_builds'])
+        num_builds=self._session['num_builds'],
+        extra_filter_q=build_config_q)
 
   def get_context_object_name(self, _):
     return 'builds_list'
@@ -41,20 +48,23 @@ class ListBuildsView(generic.list.ListView):
     context = super(ListBuildsView, self).get_context_data(**kwargs)
     context['search_form'] = self._GetSearchForm()
     context['latest_build_id_cached'] = self._GetLatestBuildId()
+    context['build_config'] = self._build_config
     return context
 
-  def get(self, request):
+  # pylint: disable=arguments-differ
+  def get(self, request, build_config=None):
     self._session = request.session
+    self._build_config = build_config
     return super(ListBuildsView, self).get(request)
 
-  def post(self, request):
+  def post(self, request, build_config):
     self._session = request.session
     form = ba_forms.SearchForm(request.POST)
     self._search_form = form
     if form.is_valid():
       self._session['latest_build_id'] = form.cleaned_data['latest_build_id']
       self._session['num_builds'] = form.cleaned_data['num_builds']
-    return self.get(request)
+    return self.get(request, build_config)
 
   def put(self, *args, **kwargs):
     return self.post(*args, **kwargs)
@@ -93,18 +103,21 @@ class EditAnnotationsView(generic.base.View):
     self._context = {}
     self._request = None
     self._session = None
+    self._build_config = None
     self._build_id = None
     super(EditAnnotationsView, self).__init__(*args, **kwargs)
 
-  def get(self, request, build_id):
+  def get(self, request, build_config, build_id):
     self._request = request
+    self._build_config = build_config
     self._build_id = build_id
     self._session = request.session
     self._PopulateContext()
     return shortcuts.render(request, self.template_name, self._context)
 
-  def post(self, request, build_id):
+  def post(self, request, build_config, build_id):
     self._request = request
+    self._build_config = build_config
     self._build_id = build_id
     self._session = request.session
     self._formset = ba_forms.AnnotationsFormSet(request.POST)
@@ -112,7 +125,7 @@ class EditAnnotationsView(generic.base.View):
       self._SaveAnnotations()
       return http.HttpResponseRedirect(
           urlresolvers.reverse('build_annotations:edit_annotations',
-                               args=[self._build_id]))
+                               args=[self._build_config, self._build_id]))
     else:
       self._PopulateContext()
       return shortcuts.render(request, self.template_name, self._context)
@@ -123,6 +136,7 @@ class EditAnnotationsView(generic.base.View):
       raise http.Http404
 
     self._context = {}
+    self._context['build_config'] = self._build_config
     self._context['build_row'] = build_row
     self._context['annotations_formset'] = self._GetAnnotationsFormSet()
 

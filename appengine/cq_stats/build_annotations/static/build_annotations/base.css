@@ -7,6 +7,26 @@ body {
   margin-left: 20px;
   margin-right: 20px;
 }
+
+/* Navigation bar */
+ul.navbar {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+li.navbar {
+  float: left;
+  padding: 5px;
+}
+a.navbar {
+  display: block;
+  width: 150px;
+  background-color: #B2CFB9;
+  font-weight: bold;
+  text-align: center;
+}
+
 td, th {
   text-align: left;
 }

@@ -103,6 +103,7 @@ class BuildTable(BaseModel):
   builder_name = ba_fields.ReadOnlyCharField()
   waterfall = ba_fields.ReadOnlyCharField()
   build_number = ba_fields.ReadOnlyIntegerField()
+  build_config = ba_fields.ReadOnlyCharField()
   bot_hostname = ba_fields.ReadOnlyCharField()
   start_time = ba_fields.ReadOnlyDateTimeField()
   finish_time = ba_fields.ReadOnlyDateTimeField()
