@@ -11,6 +11,4 @@ class ContextLostExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
-    self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
-              ['win', 'mac', 'linux'], bug=457217)
+    pass
