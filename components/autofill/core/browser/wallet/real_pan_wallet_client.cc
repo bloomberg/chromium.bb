@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -105,6 +106,8 @@ void RealPanWalletClient::UnmaskCard(
   request_.reset(net::URLFetcher::Create(
       0, GetUnmaskCardRequestUrl(), net::URLFetcher::POST, this));
   request_->SetRequestContext(context_getter_.get());
+  request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE);
 
   base::DictionaryValue request_dict;
   request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");

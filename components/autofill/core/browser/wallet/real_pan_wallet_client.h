@@ -76,8 +76,7 @@ class RealPanWalletClient : public net::URLFetcherDelegate,
   // Adds the token to |request_| and starts the request.
   void SetOAuth2TokenAndStartRequest();
 
-  // The context for the request. Ensures the gdToken cookie is set as a header
-  // in the requests to Online Wallet if it is present.
+  // The context for the request.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
 
   // Observer class that has its various On* methods called based on the results
