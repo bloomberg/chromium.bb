@@ -6488,6 +6488,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="EasyUnlockNotificationEvent">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
+  <obsolete>
+    Deprecated 02/2015. Replaced by EasyUnlock.Setup.PromoNotificationEvent.
+  </obsolete>
   <summary>
     Tracks events related to notifications used by EasyUnlock feature. For
     example a specific EasyUnlock notification being shown or clicked.
@@ -6582,6 +6585,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     to identify the most likely candidate device for use as a Smart Lock key,
     and then records the most confounding reason why that device is still not
     eligible to be used as an unlock key.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.Setup.PromoNotificationEvent"
+    enum="EasyUnlockPromoNotificationEvent">
+  <owner>isherman@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Measures user interactions with the Smart Lock promo notification.
+  </summary>
+  <details>
+    Due to technical limitations of the implementation, it is hard to track
+    precisely which users opened the setup app as a result of interacting with
+    the promo notification. This metric measures setup app interactions from all
+    users who click on the promo notification, and subsequently launch the setup
+    app.
   </details>
 </histogram>
 
@@ -46468,6 +46487,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Set up notification clicked"/>
   <int value="2" label="Try out notification shown"/>
   <int value="3" label="Try out notification clicked"/>
+</enum>
+
+<enum name="EasyUnlockPromoNotificationEvent" type="int">
+  <int value="0" label="Promo notification shown"/>
+  <int value="1" label="Promo notification clicked"/>
+  <int value="2" label="Promo notification dismissed"/>
+  <int value="3" label="Setup app launched"/>
+  <int value="4" label="Setup completed successfully"/>
 </enum>
 
 <enum name="EasyUnlockRemoteLockScreenState" type="int">
