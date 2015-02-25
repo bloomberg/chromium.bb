@@ -35,7 +35,7 @@ remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
     remoting.xhr.get(remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
                      parseHostListResponse, '', headers);
   };
-  remoting.identity.callWithToken(onToken, onError);
+  remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
 
 /**
@@ -68,7 +68,7 @@ remoting.HostListApiImpl.prototype.put =
         JSON.stringify(newHostDetails),
         headers);
   };
-  remoting.identity.callWithToken(onToken, onError);
+  remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
 
 /**
@@ -87,7 +87,7 @@ remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
         remoting.xhr.defaultResponse(onDone, onError),
         '', headers);
   };
-  remoting.identity.callWithToken(onToken, onError);
+  remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
 
 /**

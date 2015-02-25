@@ -354,36 +354,25 @@ remoting.It2MeHelpeeChannel.prototype.initializeHost_ = function() {
 };
 
 /**
- * @return {Promise<string>} Promise that resolves with the OAuth token as the
+ * @return {!Promise<string>} Promise that resolves with the OAuth token as the
  * value.
  */
 remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
   if (base.isAppsV2()) {
-    /**
-     * @param {function(*=):void} resolve
-     * @param {function(*=):void} reject
-     */
-    return new Promise(function(resolve, reject){
-      remoting.identity.callWithToken(resolve, reject);
-    });
+    return remoting.identity.getToken();
   } else {
-    /**
-     * @param {function(*=):void} resolve
-     * @param {function(*=):void} reject
-     */
-    return new Promise(function(resolve, reject) {
-      /** @param {remoting.Error} error */
-      var onError = function(error) {
+      var onError = function(/** * */ error) {
         if (error === remoting.Error.NOT_AUTHENTICATED) {
-          remoting.oauth2.doAuthRedirect(function() {
-            remoting.identity.callWithToken(resolve, reject);
+          return new Promise(function(resolve, reject) {
+            remoting.oauth2.doAuthRedirect(function() {
+              remoting.identity.getToken().then(resolve);
+            });
           });
-          return;
         }
-        reject(new Error(remoting.Error.NOT_AUTHENTICATED));
+        throw Error(remoting.Error.NOT_AUTHENTICATED);
       };
-      remoting.identity.callWithToken(resolve, onError);
-    });
+    return /** @type {!Promise<string>} */ (
+        remoting.identity.getToken().catch(onError));
   }
 };
 
@@ -393,17 +382,11 @@ remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
  *   of the user.
  */
 remoting.It2MeHelpeeChannel.prototype.fetchEmail_ = function(token) {
-  /**
-   * @param {function(*=):void} resolve
-   * @param {function(*=):void} reject
-   */
-  return new Promise(function(resolve, reject){
-    /** @param {string} email */
-    function onEmail (email) {
-      resolve({ email: email, token: token });
-    }
-    remoting.identity.getEmail(onEmail, reject);
-  });
+  /** @param {string} email */
+  function onEmail (email) {
+    return { email: email, token: token };
+  }
+  return remoting.identity.getEmail().then(onEmail);
 };
 
 /**

@@ -128,10 +128,10 @@ QUnit.asyncTest('connect() should return access code',
   });
   sinon.stub(chrome.identity, 'getAuthToken')
       .callsArgWith(1, 'token');
-  sinon.stub(remoting.identity, 'callWithToken')
-      .callsArgWith(0, 'token');
+  sinon.stub(remoting.identity, 'getToken')
+      .returns(Promise.resolve('token'));
   sinon.stub(remoting.identity, 'getEmail')
-      .callsArgWith(0, {token: 'token', email: 'test@chromium.org'});
+      .returns(Promise.resolve('test@chromium.org'));
   // Stubs Host behavior.
   sinon.stub(host, 'initialized').returns(true);
   sinon.stub(host, 'connect')

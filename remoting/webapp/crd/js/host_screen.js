@@ -74,9 +74,9 @@ remoting.tryShare = function() {
  */
 remoting.startHostUsingFacade_ = function(hostFacade) {
   console.log('Attempting to share...');
-  remoting.identity.callWithToken(
+  remoting.identity.getToken().then(
       remoting.tryShareWithToken_.bind(null, hostFacade),
-      remoting.showErrorMessage);
+      remoting.Error.handler(remoting.showErrorMessage));
 }
 
 /**

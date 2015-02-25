@@ -778,8 +778,10 @@ remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
   /** @param {remoting.Error} error */
   var sendError = function(error) {
     console.log('Failed to refresh access token: ' + error);
-  }
-  remoting.identity.callWithNewToken(sendToken, sendError);
+  };
+  remoting.identity.getNewToken().
+      then(sendToken).
+      catch(remoting.Error.handler(sendError));
   window.setTimeout(this.sendGoogleDriveAccessToken_.bind(this),
                     remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS);
 };

@@ -84,17 +84,14 @@ remoting.OAuth2.prototype.isAuthenticated = function() {
 /**
  * Remove the cached auth token, if any.
  *
- * @param {function():void=} opt_onDone Completion callback.
- * @return {void} Nothing.
+ * @return {!Promise<null>} A promise resolved with the operation completes.
  */
-remoting.OAuth2.prototype.removeCachedAuthToken = function(opt_onDone) {
+remoting.OAuth2.prototype.removeCachedAuthToken = function() {
   window.localStorage.removeItem(this.KEY_EMAIL_);
   window.localStorage.removeItem(this.KEY_FULLNAME_);
   this.clearAccessToken_();
   this.clearRefreshToken_();
-  if (opt_onDone) {
-   opt_onDone();
-  }
+  return Promise.resolve(null);
 };
 
 /**
@@ -353,92 +350,100 @@ remoting.OAuth2.prototype.printStartHostCommandLine = function() {
 };
 
 /**
- * Call a function with an access token, refreshing it first if necessary.
- * The access token will remain valid for at least 2 minutes.
+ * Get an access token, refreshing it first if necessary.  The access
+ * token will remain valid for at least 2 minutes.
  *
- * @param {function(string):void} onOk Function to invoke with access token if
- *     an access token was successfully retrieved.
- * @param {function(remoting.Error):void} onError Function to invoke with an
- *     error code on failure.
- * @return {void} Nothing.
+ * @return {!Promise<string>} A promise resolved the an access token or
+ *     rejected with a remoting.Error.
  */
-remoting.OAuth2.prototype.callWithToken = function(onOk, onError) {
-  var refreshToken = this.getRefreshToken();
-  if (refreshToken) {
-    if (this.needsNewAccessToken_()) {
-      remoting.oauth2Api.refreshAccessToken(
-          this.onAccessToken_.bind(this, onOk), onError,
-          this.getClientId_(), this.getClientSecret_(),
-          refreshToken);
+remoting.OAuth2.prototype.getToken = function() {
+  /** @const */
+  var that = this;
+
+  return new Promise(function(resolve, reject) {
+    var refreshToken = that.getRefreshToken();
+    if (refreshToken) {
+      if (that.needsNewAccessToken_()) {
+        remoting.oauth2Api.refreshAccessToken(
+            that.onAccessToken_.bind(that, resolve), reject,
+            that.getClientId_(), that.getClientSecret_(),
+            refreshToken);
+      } else {
+        resolve(that.getAccessTokenInternal_()['token']);
+      }
     } else {
-      onOk(this.getAccessTokenInternal_()['token']);
+      reject(remoting.Error.NOT_AUTHENTICATED);
     }
-  } else {
-    onError(remoting.Error.NOT_AUTHENTICATED);
-  }
+  });
 };
 
 /**
  * Get the user's email address.
  *
- * @param {function(string):void} onOk Callback invoked when the email
- *     address is available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
- *     error occurs.
- * @return {void} Nothing.
+ * @return {!Promise<string>} Promise resolved with the user's email
+ *     address or rejected with a remoting.Error.
  */
-remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
+remoting.OAuth2.prototype.getEmail = function() {
   var cached = window.localStorage.getItem(this.KEY_EMAIL_);
   if (typeof cached == 'string') {
-    onOk(cached);
-    return;
+    return Promise.resolve(cached);
   }
   /** @type {remoting.OAuth2} */
   var that = this;
-  /** @param {string} email */
-  var onResponse = function(email) {
-    window.localStorage.setItem(that.KEY_EMAIL_, email);
-    window.localStorage.setItem(that.KEY_FULLNAME_, '');
-    onOk(email);
-  };
 
-  this.callWithToken(
-      remoting.oauth2Api.getEmail.bind(remoting.oauth2Api, onResponse, onError),
-      onError);
+  return new Promise(function(resolve, reject) {
+    /** @param {string} email */
+    var onResponse = function(email) {
+      window.localStorage.setItem(that.KEY_EMAIL_, email);
+      window.localStorage.setItem(that.KEY_FULLNAME_, '');
+      resolve(email);
+    };
+
+    that.getToken().then(
+        remoting.oauth2Api.getEmail.bind(
+            remoting.oauth2Api, onResponse, reject),
+        reject);
+  });
 };
 
 /**
  * Get the user's email address and full name.
  *
- * @param {function(string,string):void} onOk Callback invoked when the user's
- *     email address and full name are available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
- *     error occurs.
- * @return {void} Nothing.
+ * @return {!Promise<{email: string, name: string}>} Promise
+ *     resolved with the user's email address and full name, or rejected
+ *     with a remoting.Error.
  */
-remoting.OAuth2.prototype.getUserInfo = function(onOk, onError) {
+remoting.OAuth2.prototype.getUserInfo = function() {
   var cachedEmail = window.localStorage.getItem(this.KEY_EMAIL_);
   var cachedName = window.localStorage.getItem(this.KEY_FULLNAME_);
   if (typeof cachedEmail == 'string' && typeof cachedName == 'string') {
-    onOk(cachedEmail, cachedName);
-    return;
+    /**
+     * The temp variable is needed to work around a compiler bug.
+     * @type {{email: string, name: string}}
+     */
+    var result = {email: cachedEmail, name: cachedName};
+    return Promise.resolve(result);
   }
+
   /** @type {remoting.OAuth2} */
   var that = this;
-  /**
-   * @param {string} email
-   * @param {string} name
-   */
-  var onResponse = function(email, name) {
-    window.localStorage.setItem(that.KEY_EMAIL_, email);
-    window.localStorage.setItem(that.KEY_FULLNAME_, name);
-    onOk(email, name);
-  };
 
-  this.callWithToken(
-      remoting.oauth2Api.getUserInfo.bind(
-          remoting.oauth2Api, onResponse, onError),
-      onError);
+  return new Promise(function(resolve, reject) {
+    /**
+     * @param {string} email
+     * @param {string} name
+     */
+    var onResponse = function(email, name) {
+      window.localStorage.setItem(that.KEY_EMAIL_, email);
+      window.localStorage.setItem(that.KEY_FULLNAME_, name);
+      resolve({email: email, name: name});
+    };
+
+    that.getToken().then(
+        remoting.oauth2Api.getUserInfo.bind(
+            remoting.oauth2Api, onResponse, reject),
+        reject);
+  });
 };
 
 /**

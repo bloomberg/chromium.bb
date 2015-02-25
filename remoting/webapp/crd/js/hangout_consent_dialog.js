@@ -103,4 +103,3 @@ remoting.HangoutConsentDialog.getInstance = function() {
 };
 
 }());
-

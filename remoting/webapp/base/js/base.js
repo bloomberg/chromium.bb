@@ -237,17 +237,16 @@ base.escapeHTML = function(str) {
  *  };
  *
  * @constructor
+ * @template T
  */
 base.Deferred = function() {
   /**
-   * @type {?function(?):void}
-   * @private
+   * @private {?function(?):void}
    */
   this.resolve_ = null;
 
   /**
-   * @type {?function(?):void}
-   * @private
+   * @private {?function(?):void}
    */
   this.reject_ = null;
 
@@ -262,8 +261,7 @@ base.Deferred = function() {
   };
 
   /**
-   * @type {Promise}
-   * @private
+   * @private {!Promise<T>}
    */
   this.promise_ = new Promise(initPromise.bind(this));
 };
@@ -278,7 +276,7 @@ base.Deferred.prototype.resolve = function(opt_value) {
   this.resolve_(opt_value);
 };
 
-/** @return {Promise} */
+/** @return {!Promise<T>} */
 base.Deferred.prototype.promise = function() {
   return this.promise_;
 };

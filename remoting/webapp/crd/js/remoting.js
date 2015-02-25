@@ -110,7 +110,7 @@ remoting.promptClose = function() {
  * Also clear all local storage, to avoid leaking information.
  */
 remoting.signOut = function() {
-  remoting.oauth2.removeCachedAuthToken(function(){
+  remoting.oauth2.removeCachedAuthToken().then(function(){
     chrome.storage.local.clear();
     remoting.setMode(remoting.AppMode.HOME);
     window.location.reload();

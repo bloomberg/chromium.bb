@@ -15,12 +15,11 @@ remoting.initElementEventHandlers = function() {
     // We don't need a token until we authenticate, but asking for one here
     // handles the token-expired case earlier, avoiding asking the user for
     // the access code both before and after re-authentication.
-    remoting.identity.callWithToken(
-        /** @param {string} token */
-        function(token) {
+    remoting.identity.getToken().
+        then(function(token) {
           remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
-        },
-        remoting.showErrorMessage);
+        }).
+        catch(remoting.Error.handler(remoting.showErrorMessage));
   };
   var goFinishedIT2Me = function() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {

@@ -26,12 +26,19 @@ function fail() {
  * @param {boolean} v1HasHost
  */
 function setMigrationData_(v1UserName, v1UserEmail, v1HasHosts) {
-  remoting.identity.getUserInfo = function(onDone, onError) {
+  remoting.identity.getUserInfo = function() {
     if (base.isAppsV2()) {
-      onDone('v2user@gmail.com','v2userName');
+      return Promise.resolve(
+          {email: 'v2user@gmail.com', name: 'v2userName'});
     } else {
-      onDone(v1UserEmail, v1UserName);
+      return Promise.resolve(
+          {email: v1UserEmail, name: v1UserName});
     }
+  };
+  remoting.identity.getEmail = function() {
+    return remoting.identity.getUserInfo().then(function(info) {
+      return info.email;
+    });
   };
 
   mockIsAppsV2.returns(false);

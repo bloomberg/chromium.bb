@@ -61,3 +61,65 @@ remoting.Error.fromHttpStatus = function(httpStatus) {
     return remoting.Error.AUTHENTICATION_FAILED;
   }
 };
+
+/**
+ * Create an error-handling function suitable for passing to a
+ * Promise's "catch" method.
+ *
+ * @param {function(remoting.Error):void} onError
+ * @return {function(*):void}
+ */
+remoting.Error.handler = function(onError) {
+  return function(/** * */ error) {
+    if (typeof error == 'string') {
+      onError(/** @type {remoting.Error} */ (error));
+    } else {
+      console.error('Unexpected error: %o', error);
+      onError(remoting.Error.UNEXPECTED);
+    }
+  };
+};
+
+// /**
+//  * @param {(!Promise<T>|
+//  *     function(function(T):void,function(remoting.Error):void))} arg
+//  * @constructor
+//  * @template T
+//  */
+// remoting.Promise = function(arg) {
+//   var promise;
+//   if (typeof arg == 'function') {
+//     promise = new Promise(arg);
+//   } else {
+//     promise = arg;
+//   }
+
+//   /** @const */
+//   this.promise = promise;
+// };
+
+// /**
+//  * @param {?function(T)} onResolve
+//  * @param {?function(remoting.Error)=} opt_onReject
+//  * @return {!remoting.Promise}
+//  */
+// remoting.Promise.prototype.then = function(onResolve, opt_onReject) {
+//   return new remoting.Promise(this.promise.then(
+//       onResolve,
+//       opt_onReject && function(/** * */ error) {
+//         if (typeof error == 'string') {
+//           opt_onReject(/** @type {remoting.Error} */ (error));
+//         } else {
+//           console.error('Unexpected error: %o', error);
+//           opt_onReject(remoting.Error.UNEXPECTED);
+//         }
+//       }));
+// };
+
+// /**
+//  * @param {?function(remoting.Error)} onReject
+//  * @return {!remoting.Promise<T>}
+//  */
+// remoting.Promise.prototype.catch = function(onReject) {
+//   return this.then(null, onReject);
+// };

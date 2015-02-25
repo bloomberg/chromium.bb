@@ -306,9 +306,10 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    */
   function onHostClientId(
       hostName, privateKey, publicKey, hostClientId) {
-    remoting.identity.callWithToken(
+    remoting.identity.getToken().then(
         doRegisterHost.bind(
-            null, hostName, privateKey, publicKey, hostClientId), onError);
+            null, hostName, privateKey, publicKey, hostClientId),
+        remoting.Error.handler(onError));
   }
 
   /**
@@ -323,9 +324,10 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
       that.hostDaemonFacade_.getHostClientId(
           onHostClientId.bind(null, hostName, privateKey, publicKey), onError);
     } else {
-      remoting.identity.callWithToken(
+      remoting.identity.getToken().then(
           doRegisterHost.bind(
-              null, hostName, privateKey, publicKey, null), onError);
+              null, hostName, privateKey, publicKey, null),
+          remoting.Error.handler(onError));
     }
   }
 
@@ -558,8 +560,9 @@ remoting.HostController.prototype.getClientBaseJid_ = function(
 
   /** @param {string} token */
   function connectSignalingWithToken(token) {
-    remoting.identity.getEmail(
-        connectSignalingWithTokenAndEmail.bind(null, token), onError);
+    remoting.identity.getEmail().then(
+        connectSignalingWithTokenAndEmail.bind(null, token),
+        remoting.Error.handler(onError));
   }
 
   /**
@@ -571,7 +574,8 @@ remoting.HostController.prototype.getClientBaseJid_ = function(
         remoting.settings.XMPP_SERVER_FOR_CLIENT, email, token);
   }
 
-  remoting.identity.callWithToken(connectSignalingWithToken, onError);
+  remoting.identity.getToken().then(
+      connectSignalingWithToken, remoting.Error.handler(onError));
 };
 
 /** @type {remoting.HostController} */

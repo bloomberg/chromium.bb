@@ -31,8 +31,8 @@ remoting.Identity = function(opt_consentDialog) {
   this.email_ = '';
   /** @type {string} @private */
   this.fullName_ = '';
-  /** @type {Array<remoting.Identity.Callbacks>} */
-  this.pendingCallbacks_ = [];
+  /** @type {base.Deferred<string>} */
+  this.authTokenDeferred_ = null;
 };
 
 /**
@@ -51,122 +51,120 @@ remoting.Identity.ConsentDialog = function() {};
 remoting.Identity.ConsentDialog.prototype.show = function() {};
 
 /**
- * Call a function with an access token.
+ * Gets an access token.
  *
- * @param {function(string):void} onOk Function to invoke with access token if
- *     an access token was successfully retrieved.
- * @param {function(remoting.Error):void} onError Function to invoke with an
- *     error code on failure.
- * @return {void} Nothing.
+ * @return {!Promise<string>} A promise resolved with an access token
+ *     or rejected with a remoting.Error.
  */
-remoting.Identity.prototype.callWithToken = function(onOk, onError) {
-  this.pendingCallbacks_.push(new remoting.Identity.Callbacks(onOk, onError));
-  if (this.pendingCallbacks_.length == 1) {
+remoting.Identity.prototype.getToken = function() {
+  /** @const */
+  var that = this;
+
+  if (this.authTokenDeferred_ == null) {
+    this.authTokenDeferred_ = new base.Deferred();
     chrome.identity.getAuthToken(
         { 'interactive': false },
-        this.onAuthComplete_.bind(this, false));
+        that.onAuthComplete_.bind(that, false));
   }
+  return this.authTokenDeferred_.promise();
 };
 
 /**
- * Call a function with a fresh access token.
+ * Gets a fresh access token.
  *
- * @param {function(string):void} onOk Function to invoke with access token if
- *     an access token was successfully retrieved.
- * @param {function(remoting.Error):void} onError Function to invoke with an
- *     error code on failure.
- * @return {void} Nothing.
+ * @return {!Promise<string>} A promise resolved with an access token
+ *     or rejected with a remoting.Error.
  */
-remoting.Identity.prototype.callWithNewToken = function(onOk, onError) {
+remoting.Identity.prototype.getNewToken = function() {
   /** @type {remoting.Identity} */
   var that = this;
 
-  /**
-   * @param {string} token
-   */
-  function revokeToken(token) {
-    chrome.identity.removeCachedAuthToken(
-        {'token': token },
-        that.callWithToken.bind(that, onOk, onError));
-  }
-
-  this.callWithToken(revokeToken, onError);
+  return this.getToken().then(function(/** string */ token) {
+    return new Promise(function(resolve, reject) {
+      chrome.identity.removeCachedAuthToken({'token': token }, function() {
+        resolve(that.getToken());
+      });
+    });
+  });
 };
 
 /**
- * Remove the cached auth token, if any.
+ * Removes the cached auth token, if any.
  *
- * @param {function():void=} opt_onDone Completion callback.
- * @return {void} Nothing.
+ * @return {!Promise<null>} A promise resolved with the operation completes.
  */
-remoting.Identity.prototype.removeCachedAuthToken = function(opt_onDone) {
-  var onDone = (opt_onDone) ? opt_onDone : base.doNothing;
-
-  /** @param {string} token */
-  var onToken = function(token) {
-    if (token) {
-      chrome.identity.removeCachedAuthToken({'token': token}, onDone);
-    } else {
-      onDone();
-    }
-  };
-  chrome.identity.getAuthToken({'interactive': false}, onToken);
+remoting.Identity.prototype.removeCachedAuthToken = function() {
+  return new Promise(function(resolve, reject) {
+    /** @param {string} token */
+    var onToken = function(token) {
+      if (token) {
+        chrome.identity.removeCachedAuthToken(
+            {'token': token}, resolve.bind(null, null));
+      } else {
+        resolve(null);
+      }
+    };
+    chrome.identity.getAuthToken({'interactive': false}, onToken);
+  });
 };
 
 /**
- * Get the user's email address and full name.
- * The full name will be null unless the webapp has requested and been
- * granted the userinfo.profile permission.
+ * Gets the user's email address and full name.  The full name will be
+ * null unless the webapp has requested and been granted the
+ * userinfo.profile permission.
  *
- * @param {function(string,string):void} onOk Callback invoked when the user's
- *     email address and full name are available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
- *     error occurs.
- * @return {void} Nothing.
+ * TODO(jrw): Type declarations say the name can't be null.  Are the
+ * types wrong, or is the documentation wrong?
+ *
+ * @return {!Promise<{email:string, name:string}>} Promise
+ *     resolved with the user's email address and full name, or rejected
+ *     with a remoting.Error.
  */
-remoting.Identity.prototype.getUserInfo = function(onOk, onError) {
+remoting.Identity.prototype.getUserInfo = function() {
   if (this.isAuthenticated()) {
-    onOk(this.email_, this.fullName_);
-    return;
+    /**
+     * The temp variable is needed to work around a compiler bug.
+     * @type {{email: string, name: string}}
+     */
+    var result = {email: this.email_, name: this.fullName_};
+    return Promise.resolve(result);
   }
 
   /** @type {remoting.Identity} */
   var that = this;
 
-  /**
-   * @param {string} email
-   * @param {string} name
-   */
-  var onResponse = function(email, name) {
-    that.email_ = email;
-    that.fullName_ = name;
-    onOk(email, name);
-  };
+  return this.getToken().then(function(token) {
+    return new Promise(function(resolve, reject) {
+      /**
+       * @param {string} email
+       * @param {string} name
+       */
+      var onResponse = function(email, name) {
+        that.email_ = email;
+        that.fullName_ = name;
+        resolve({email: email, name: name});
+      };
 
-  this.callWithToken(
-      remoting.oauth2Api.getUserInfo.bind(
-          remoting.oauth2Api, onResponse, onError),
-      onError);
+      remoting.oauth2Api.getUserInfo(onResponse, reject, token);
+    });
+  });
 };
 
 /**
- * Get the user's email address.
+ * Gets the user's email address.
  *
- * @param {function(string):void} onOk Callback invoked when the email
- *     address is available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
- *     error occurs.
- * @return {void} Nothing.
+ * @return {!Promise<string>} Promise resolved with the user's email
+ *     address or rejected with a remoting.Error.
  */
-remoting.Identity.prototype.getEmail = function(onOk, onError) {
-  this.getUserInfo(function(email, name) {
-    onOk(email);
-  }, onError);
+remoting.Identity.prototype.getEmail = function() {
+  this.getUserInfo().then(function(userInfo) {
+    return userInfo.email;
+  });
 };
 
 /**
- * Get the user's email address, or null if no successful call to getUserInfo
- * has been made.
+ * Gets the user's email address, or null if no successful call to
+ * getUserInfo has been made.
  *
  * @return {?string} The cached email address, if available.
  */
@@ -175,7 +173,8 @@ remoting.Identity.prototype.getCachedEmail = function() {
 };
 
 /**
- * Get the user's full name.
+ * Gets the user's full name.
+ *
  * This will return null if either:
  *   No successful call to getUserInfo has been made, or
  *   The webapp doesn't have permission to access this value.
@@ -195,13 +194,15 @@ remoting.Identity.prototype.getCachedUserFullName = function() {
  * @private
  */
 remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
+  var authTokenDeferred = this.authTokenDeferred_;
+  if (authTokenDeferred == null) {
+    return;
+  }
+  this.authTokenDeferred_ = null;
+
   // Pass the token to the callback(s) if it was retrieved successfully.
   if (token) {
-    while (this.pendingCallbacks_.length > 0) {
-      var callback = /** @type {remoting.Identity.Callbacks} */
-          (this.pendingCallbacks_.shift());
-      callback.onOk(token);
-    }
+    authTokenDeferred.resolve(token);
     return;
   }
 
@@ -212,11 +213,7 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
         chrome.runtime.lastError ? chrome.runtime.lastError.message
                                  : 'Unknown error.';
     console.error(error_message);
-    while (this.pendingCallbacks_.length > 0) {
-      var callback = /** @type {remoting.Identity.Callbacks} */
-          (this.pendingCallbacks_.shift());
-      callback.onError(remoting.Error.NOT_AUTHENTICATED);
-    }
+    authTokenDeferred.reject(remoting.Error.NOT_AUTHENTICATED);
     return;
   }
 
@@ -226,24 +223,9 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
   var showConsentDialog =
       (this.consentDialog_) ? this.consentDialog_.show() : Promise.resolve();
   showConsentDialog.then(function() {
-    chrome.identity.getAuthToken({'interactive': true},
-                                 that.onAuthComplete_.bind(that, true));
+    chrome.identity.getAuthToken(
+        {'interactive': true}, that.onAuthComplete_.bind(that, true));
   });
-};
-
-/**
- * Internal representation for pair of callWithToken callbacks.
- *
- * @param {function(string):void} onOk
- * @param {function(remoting.Error):void} onError
- * @constructor
- * @private
- */
-remoting.Identity.Callbacks = function(onOk, onError) {
-  /** @type {function(string):void} */
-  this.onOk = onOk;
-  /** @type {function(remoting.Error):void} */
-  this.onError = onError;
 };
 
 /**

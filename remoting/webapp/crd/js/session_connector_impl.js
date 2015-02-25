@@ -309,8 +309,9 @@ remoting.SessionConnectorImpl.prototype.connectIT2Me = function(accessCode) {
   var hostId = normalizedAccessCode.substring(0, kSupportIdLen);
   this.passPhrase_ = normalizedAccessCode;
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.IT2ME;
-  remoting.identity.callWithToken(
-      this.connectIT2MeWithToken_.bind(this, hostId), this.onError_);
+  remoting.identity.getToken().then(
+      this.connectIT2MeWithToken_.bind(this, hostId),
+      remoting.Error.handler(this.onError_));
 };
 
 /**
@@ -374,8 +375,9 @@ remoting.SessionConnectorImpl.prototype.connectSignaling_ = function() {
 
   /** @param {string} token */
   function connectSignalingWithToken(token) {
-    remoting.identity.getUserInfo(
-        connectSignalingWithTokenAndUserInfo.bind(null, token), that.onError_);
+    remoting.identity.getUserInfo().then(
+        connectSignalingWithTokenAndUserInfo.bind(null, token),
+        remoting.Error.handler(that.onError_));
   }
 
   /**
@@ -385,19 +387,20 @@ remoting.SessionConnectorImpl.prototype.connectSignaling_ = function() {
    * and been granted the userinfo.profile permission.
    *
    * @param {string} token
-   * @param {string} email
-   * @param {string} fullName
+   * @param {{email: string, name: string}} userInfo
    */
-  function connectSignalingWithTokenAndUserInfo(token, email, fullName) {
+  function connectSignalingWithTokenAndUserInfo(token, userInfo) {
     that.signalStrategy_.connect(
-        remoting.settings.XMPP_SERVER_FOR_CLIENT, email, token);
+        remoting.settings.XMPP_SERVER_FOR_CLIENT, userInfo.email, token);
   }
 
   this.signalStrategy_ = remoting.SignalStrategy.create();
   this.signalStrategy_.setStateChangedCallback(
       this.onSignalingState_.bind(this));
 
-  remoting.identity.callWithToken(connectSignalingWithToken, this.onError_);
+  remoting.identity.getToken().then(
+      connectSignalingWithToken,
+      remoting.Error.handler(this.onError_));
 };
 
 /**

@@ -42,8 +42,12 @@ remoting.initIdentity = function(onUserInfoAvailable) {
     }
   }
 
-  remoting.identity.getUserInfo(onUserInfoAvailable,
-                                onGetIdentityInfoError);
+  remoting.identity.getUserInfo().then(function(userInfo) {
+    onUserInfoAvailable(userInfo.email, userInfo.name);
+  }).catch(function(error) {
+    onGetIdentityInfoError(
+        /** @type {remoting.Error} */ (error));
+  });
 };
 
 /**
@@ -52,7 +56,7 @@ remoting.initIdentity = function(onUserInfoAvailable) {
  * @return {void}  Nothing.
  */
 remoting.handleAuthFailureAndRelaunch = function() {
-  remoting.identity.removeCachedAuthToken(function(){
+  remoting.identity.removeCachedAuthToken().then(function(){
     if (base.isAppsV2()) {
       base.Ipc.invoke('remoting.ActivationHandler.restart',
                       chrome.app.window.current().id);

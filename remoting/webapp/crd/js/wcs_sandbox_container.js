@@ -97,8 +97,9 @@ remoting.WcsSandboxContainer.prototype.ensureAccessTokenRefreshTimer_ =
  * @return {void} Nothing.
  */
 remoting.WcsSandboxContainer.prototype.refreshAccessToken_ = function() {
-  remoting.identity.callWithToken(
-      this.setAccessToken_.bind(this), this.onError_);
+  remoting.identity.getToken().then(
+      this.setAccessToken_.bind(this),
+      remoting.Error.handler(this.onError_));
 };
 
 /**

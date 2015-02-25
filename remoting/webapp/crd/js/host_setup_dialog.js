@@ -163,9 +163,9 @@ remoting.HostSetupDialog.prototype.showForStart = function() {
     // Although we don't need an access token in order to start the host,
     // using callWithToken here ensures consistent error handling in the
     // case where the refresh token is invalid.
-    remoting.identity.callWithToken(
+    remoting.identity.getToken().then(
         that.showForStartWithToken_.bind(that, state),
-        remoting.showErrorMessage);
+        remoting.Error.handler(remoting.showErrorMessage));
   };
 
   this.hostController_.getLocalHostState(onState);

@@ -63,7 +63,7 @@ remoting.AuthDialog.prototype.addToRegion = function(rects) {
 /** @private */
 remoting.AuthDialog.prototype.onClick_ = function() {
   this.rootElement_.hidden = true;
-  this.onAuthButtonDeferred_.resolve();
+  this.onAuthButtonDeferred_.resolve(null);
   this.onAuthButtonDeferred_ = null;
   remoting.windowShape.updateClientWindowShape();
 };

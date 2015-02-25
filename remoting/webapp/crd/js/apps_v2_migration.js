@@ -47,8 +47,7 @@ remoting.AppsV2Migration.hasHostsInV1App = function() {
   var getV1UserInfo = base.Promise.as(chrome.storage.local.get,
                                        [MIGRATION_KEY_],
                                        chrome.storage.local);
-  var getEmail = base.Promise.as(remoting.identity.getUserInfo, [],
-                                 remoting.identity, true);
+  var getEmail = remoting.identity.getEmail();
 
   return Promise.all([getV1UserInfo, getEmail]).then(
     /** @param {Object} results */
@@ -93,14 +92,13 @@ remoting.AppsV2Migration.saveUserInfo = function() {
      * @param {string} email
      * @param {string} fullName
      */
-    remoting.identity.getUserInfo(function(email, fullName) {
+    remoting.identity.getUserInfo().then(function(userInfo) {
       var preference = {};
       preference[MIGRATION_KEY_] =
-        new remoting.MigrationSettings(email, fullName);
+        new remoting.MigrationSettings(userInfo.email, userInfo.name);
       chrome.storage.local.set(preference);
-    }, base.doNothing);
+    }).catch(base.doNothing);
   }
 };
 
 }());
-
