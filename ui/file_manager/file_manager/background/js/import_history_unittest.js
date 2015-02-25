@@ -61,7 +61,7 @@ function setUp() {
       importer.createMetadataHashcode,
       storage);
 
-  historyProvider = history.refresh();
+  historyProvider = history.whenReady();
 }
 
 function tearDown() {
@@ -271,75 +271,6 @@ function testRecordStorage_SerializingOperations(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryLoaderIntegration(callback) {
-
-  /** @type {!SyncFileEntryProvider|undefined} */
-  var fileProvider;
-
-  /** @type {!HistoryLoader|undefined} */
-  var loader;
-
-  /** @type {!importer.ImportHistory|undefined} */
-  var history;
-
-  /** @type {!TestSyncFileEntryProvider|undefined} */
-  var syncFileProvider;
-
-  testPromise = createFileEntry('historyLoaderTest.data')
-      .then(
-          /**
-           * @param  {!FileEntry} fileEntry
-           * @return {!Promise.<!<Array.<!importer.ImportHistory>>}
-           */
-          function(fileEntry) {
-            syncFileProvider = new TestSyncFileEntryProvider(fileEntry);
-            loader = new importer.SynchronizedHistoryLoader(syncFileProvider);
-            // Used to write new data to the "sync" file...data to be
-            // refreshed by the the non-remote history instance.
-            var remoteLoader = new importer.SynchronizedHistoryLoader(
-                new TestSyncFileEntryProvider(fileEntry));
-
-            var promises = [];
-            promises.push(loader.getHistory());
-            promises.push(remoteLoader.getHistory());
-            return Promise.all(promises);
-          })
-      .then(
-          /**
-           * @param {!<Array.<!importer.ImportHistory>} histories
-           * @return {!Promise.<?>}
-           */
-          function(histories) {
-            history = histories[0];
-            var remoteHistory = histories[1];
-            return remoteHistory.markImported(testFileEntry, SPACE_CAMP);
-          })
-      .then(
-          /**
-           * @return {!Promise.<?>} Resolves
-           *     when history has been reloaded.
-           */
-          function() {
-            syncFileProvider.fireSyncEvent();
-          })
-      // TODO(smckay): Add markCopied support once FileWriter issues
-      // are resolved.
-      .then(
-          /**
-           * @return {!Promise.<boolean>} Resolves with true if the
-           *     entry was previously marked as imported.
-           */
-          function() {
-            return history.wasImported(testFileEntry, SPACE_CAMP);
-          })
-      .then(
-          function(wasImported) {
-            assertTrue(wasImported);
-          });
-
-  reportPromise(testPromise, callback);
-}
-
 /**
  * Installs stub APIs.
  */
@@ -415,11 +346,18 @@ function createFileEntry(fileName) {
  */
 var TestRecordStorage = function() {
 
+  var timeStamp = importer.toSecondsFromEpoch(
+        FILE_LAST_MODIFIED);
   // Pre-populate the store with some "previously written" data <wink>.
   /** @private {!Array.<!Array.<string>>} */
   this.records_ = [
-    [1, FILE_LAST_MODIFIED + '_' + FILE_SIZE, GOOGLE_DRIVE],
-    [0, FILE_LAST_MODIFIED + '_' + FILE_SIZE, 'google-drive', 'url4'],
+    [1,
+      timeStamp + '_' + FILE_SIZE, GOOGLE_DRIVE],
+    [0,
+      timeStamp + '_' + FILE_SIZE,
+      'google-drive',
+      '$/some/url/snazzy.pants',
+      '$/someother/url/snazzy.pants'],
     [1, '99999_99999', SPACE_CAMP]
   ];
 
@@ -455,32 +393,11 @@ var TestSyncFileEntryProvider = function(fileEntry) {
   /** @private {!FileEntry} */
   this.fileEntry_ = fileEntry;
 
-  /** @private {function()} */
-  this.listener_;
-
-  /**
-   * @override
-   * @this {TestSyncFileEntryProvider}
-   */
-  this.addSyncListener = function(listener) {
-    if (!!this.listener_) {
-      throw new Error('Listener already set. Unexpected reality!');
-    }
-    this.listener_ = listener;
-  };
-
   /**
    * @override
    * @this {TestSyncFileEntryProvider}
    */
   this.getSyncFileEntry = function() {
     return Promise.resolve(this.fileEntry_);
-  };
-
-  /**
-   * @this {TestSyncFileEntryProvider}
-   */
-  this.fireSyncEvent = function() {
-    this.listener_();
   };
 };

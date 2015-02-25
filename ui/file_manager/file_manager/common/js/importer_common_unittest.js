@@ -223,6 +223,39 @@ function testRotateLogs_RemembersInitialActiveLog(callback) {
   reportPromise(promise, callback);
 }
 
+function testDeflateAppUrl() {
+  var url = 'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj' +
+      '/external/removable/USB%20Drive/DCIM/derekkind2.jpg';
+  var deflated = importer.deflateAppUrl(url);
+
+  // Just verify that the string starts with our secret sauce marker...
+  assertEquals('$', deflated.substring(0, 1),
+      'Deflated URLs must beging with the deflation marker.');
+
+  // And that it is shorter than the original...
+  assertTrue(deflated.length < url.length,
+      'Deflated URLs must be shorter than the original.');
+
+  // And finally that we can reconstitute the original.
+  assertEquals(url, importer.inflateAppUrl(deflated),
+      'Deflated then inflated URLs must match original URL.');
+};
+
+function testCreateMetadataHashcode(callback) {
+  var promise = importer.createMetadataHashcode(cameraFileEntry)
+      .then(
+          function(hashcode) {
+            // Note that the expression matches at least 4 numbers
+            // in the last segment, since we hard code the byte
+            // size in our test file to a four digit size.
+            // In reality it will vary.
+            assertEquals(0, hashcode.search(/[0-9]{9,}_[0-9]{4,}/),
+                'Hashcode (' + hashcode + ') does not match next pattern.');
+          });
+
+  reportPromise(promise, callback);
+}
+
 /** @param {string} path */
 function assertIsMediaDir(path) {
   var dir = createDirectoryEntry(sdVolume, path);

@@ -367,6 +367,44 @@ importer.PromisingFileEntry.prototype.getMetadata = function() {
 };
 
 /**
+ * This prefix is stripped from URL used in import history. It is stripped
+ * to same on disk space, parsing time, and runtime memory.
+ * @private @const {string}
+ */
+importer.APP_URL_PREFIX_ =
+    'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/external';
+
+/**
+ * Strips non-unique information from the URL. The resulting
+ * value can be reconstituted using {@code importer.inflateAppUrl}.
+ *
+ * @param {string} url
+ * @return {string}
+ */
+importer.deflateAppUrl = function(url) {
+  if (url.substring(0, importer.APP_URL_PREFIX_.length) ===
+      importer.APP_URL_PREFIX_) {
+    return '$' + url.substring(importer.APP_URL_PREFIX_.length);
+  }
+
+  return url;
+};
+
+/**
+ * Reconstitutes a url previous deflated by {@code deflateAppUrl}.
+ * Returns the original string if it can't be inflated.
+ *
+ * @param {string} deflated
+ * @return {string}
+ */
+importer.inflateAppUrl = function(deflated) {
+  if (deflated.substring(0, 1) === '$') {
+    return importer.APP_URL_PREFIX_ + deflated.substring(1);
+  }
+  return deflated;
+};
+
+/**
  * @param {!FileEntry} fileEntry
  * @return {!Promise.<string>} Resolves with a "hashcode" consisting of
  *     just the last modified time and the file size.
@@ -393,10 +431,27 @@ importer.createMetadataHashcode = function(fileEntry) {
                   } else if (!('size' in metadata)) {
                     reject('File entry missing "size" field.');
                   } else {
-                    resolve(metadata.modificationTime + '_' + metadata.size);
+                    var secondsSinceEpoch =
+                        importer.toSecondsFromEpoch(metadata.modificationTime);
+                    resolve(secondsSinceEpoch + '_' + metadata.size);
                   }
                 }.bind(this));
-      }.bind(this));
+      }.bind(this))
+      .catch(importer.getLogger().catcher('importer-common-create-hashcode'));
+};
+
+/**
+ * @param {string} date A date string in the form
+ *     expected by Date.parse.
+ * @return {string} The number of seconds from epoch to the date...as a string.
+ */
+importer.toSecondsFromEpoch = function(date) {
+  // Since we're parsing a value that only has
+  // precision to the second, our last three digits
+  // will always be 000. We strip them and end up
+  // with seconds.
+  var milliseconds = String(Date.parse(date));
+  return milliseconds.substring(0, milliseconds.length - 3);
 };
 
 /**
@@ -406,14 +461,6 @@ importer.createMetadataHashcode = function(fileEntry) {
  * @interface
  */
 importer.SyncFileEntryProvider = function() {};
-
-/**
- * Adds a listener to be notified when the the FileEntry owned/managed
- * by this class is updated via sync.
- *
- * @param {function()} syncListener
- */
-importer.SyncFileEntryProvider.prototype.addSyncListener;
 
 /**
  * Provides accsess to the sync FileEntry owned/managed by this class.
@@ -441,8 +488,6 @@ importer.ChromeSyncFileEntryProvider = function(fileName) {
 
   /** @private {Promise.<!FileEntry>} */
   this.fileEntryPromise_ = null;
-
-  this.monitorSyncEvents_();
 };
 
 /**
@@ -458,25 +503,6 @@ importer.ChromeSyncFileEntryProvider.getFileEntry =
         return new importer.ChromeSyncFileEntryProvider(fileName)
           .getSyncFileEntry();
       });
-};
-
-/**
- * Wraps chrome.syncFileSystem.onFileStatusChanged
- * so that we can report to our listeners when our file has changed.
- * @private
- */
-importer.ChromeSyncFileEntryProvider.prototype.monitorSyncEvents_ =
-    function() {
-  chrome.syncFileSystem.onFileStatusChanged.addListener(
-      this.handleSyncEvent_.bind(this));
-};
-
-/** @override */
-importer.ChromeSyncFileEntryProvider.prototype.addSyncListener =
-    function(listener) {
-  if (this.syncListeners_.indexOf(listener) === -1) {
-    this.syncListeners_.push(listener);
-  }
 };
 
 /** @override */
@@ -589,8 +615,8 @@ importer.ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ =
         }
 
         if (event.action && event.action !== 'updated') {
-          console.error(
-              'Unexpected sync event action for sync file: ' + event.action);
+          console.warn(
+              'Unusual sync event action for sync file: ' + event.action);
           return;
         }
 

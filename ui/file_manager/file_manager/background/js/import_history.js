@@ -13,6 +13,12 @@ var importer = importer || {};
 importer.ImportHistory = function() {};
 
 /**
+ * @return {!Promise.<!importer.ImportHistory>} Resolves when history
+ *     has been fully loaded.
+ */
+importer.ImportHistory.prototype.whenReady;
+
+/**
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
  * @return {!Promise.<boolean>} Resolves with true if the FileEntry
@@ -102,8 +108,13 @@ importer.DummyImportHistory = function(answer) {
 };
 
 /** @override */
+importer.DummyImportHistory.prototype.whenReady = function() {
+  return Promise.resolve(/** @type {!importer.ImportHistory} */ (this));
+};
+
+/** @override */
 importer.DummyImportHistory.prototype.getHistory = function() {
-  return Promise.resolve(this);
+  return this.whenReady();
 };
 
 /** @override */
@@ -212,104 +223,8 @@ importer.PersistentImportHistory = function(hashGenerator, storage) {
   /** @private {!Array.<!importer.ImportHistory.Observer>} */
   this.observers_ = [];
 
-  /** @private {!Promise.<!importer.PersistentImportHistory>} */
-  this.whenReady_ = this.refresh_();
-};
-
-/**
- * Loads history from storage and merges in any previously existing entries
- * that are not present in the newly loaded data. Should be called
- * when the storage is externally changed.
- *
- * @return {!Promise.<!importer.PersistentImportHistory>} Resolves when history
- *     has been refreshed.
- * @private
- */
-importer.PersistentImportHistory.prototype.refresh_ = function() {
-  var oldCopiedEntries = this.copiedEntries_;
-  // NOTE: importDetailsIndex is built in relation to the copiedEntries_
-  // data, so we don't need to preserve the information in that field.
-  var oldImportedEntries = this.importedEntries_;
-
-  this.copiedEntries_ = {};
-  this.importedEntries_ = {};
-
-  return this.storage_.readAll()
-      .then(this.updateHistoryRecords_.bind(this))
-      .then(this.mergeCopiedEntries_.bind(this, oldCopiedEntries))
-      .then(this.mergeImportedEntries_.bind(this, oldImportedEntries))
-      .then(
-          /**
-           * @return {!importer.PersistentImportHistory}
-           * @this {importer.PersistentImportHistory}
-           */
-          function() {
-            return this;
-          }.bind(this))
-      .catch(importer.getLogger().catcher('import-history-refresh'));
-};
-
-/**
- * Adds all copied entries into existing entries.
- *
- * @param {!Object.<string, !Object.<!importer.Destination, importer.Urls>>}
- *     entries
- * @return {!Promise.<?>} Resolves once all updates are completed.
- * @private
- */
-importer.PersistentImportHistory.prototype.mergeCopiedEntries_ =
-    function(entries) {
-  var promises = [];
-  for (var key in entries) {
-    for (var destination in entries[key]) {
-      // This method is only called when data is reloaded from disk.
-      // In such a situation we defend against loss of in-memory data
-      // by copying it out of the way, reloading data from disk, then
-      // merging that data back into the freshly loaded data. For that
-      // reason we will write newly created entries back to disk.
-
-      var urls = entries[key][destination];
-      if (this.updateInMemoryCopyRecord_(
-          key,
-          destination,
-          urls.sourceUrl,
-          urls.destinationUrl)) {
-        promises.push(this.storage_.write([
-            importer.RecordType_.COPY,
-            key,
-            destination,
-            urls.sourceUrl,
-            urls.destinationUrl]));
-      }
-    }
-  }
-  return Promise.all(promises);
-};
-
-/**
- * Adds all imported entries into existing entries.
- *
- * @param {!Object.<string, !Array.<!importer.Destination>>} entries
- * @return {!Promise.<?>} Resolves once all updates are completed.
- * @private
- */
-importer.PersistentImportHistory.prototype.mergeImportedEntries_ =
-    function(entries) {
-  var promises = [];
-  for (var key in entries) {
-    entries[key].forEach(
-        /**
-         * @param {!importer.Destination} destination
-         * @this {importer.PersistentImportHistory}
-         */
-        function(destination) {
-          if (this.updateInMemoryImportRecord_(key, destination)) {
-            promises.push(this.storage_.write(
-                [importer.RecordType_.IMPORT, key, destination]));
-          }
-        }.bind(this));
-  }
-  return Promise.all(promises);
+  /** @private {Promise.<!importer.PersistentImportHistory>} */
+  this.whenReady_ = this.load_();
 };
 
 /**
@@ -318,10 +233,20 @@ importer.PersistentImportHistory.prototype.mergeImportedEntries_ =
  *
  * @return {!Promise.<!importer.PersistentImportHistory>} Resolves when
  *     history has been refreshed.
+ * @private
  */
-importer.PersistentImportHistory.prototype.refresh = function() {
-  this.whenReady_ = this.refresh_();
-  return this.whenReady_;
+importer.PersistentImportHistory.prototype.load_ = function() {
+  return this.storage_.readAll()
+      .then(this.updateHistoryRecords_.bind(this))
+      .then(
+          /**
+           * @return {!importer.PersistentImportHistory}
+           * @this {importer.PersistentImportHistory}
+           */
+          function() {
+            return this;
+          }.bind(this))
+      .catch(importer.getLogger().catcher('import-history-load'));
 };
 
 /**
@@ -342,6 +267,8 @@ importer.PersistentImportHistory.prototype.updateHistoryRecords_ =
 };
 
 /**
+ * Detects record type and expands records to appropriate arguments.
+ *
  * @param {!Array.<*>} record
  * @this {importer.PersistentImportHistory}
  */
@@ -349,6 +276,12 @@ importer.PersistentImportHistory.prototype.updateInMemoryRecord_ =
     function(record) {
   switch (record[0]) {
     case importer.RecordType_.COPY:
+      if (record.length !== 5) {
+        importer.getLogger().error(
+            'Skipping copy record with wrong number of fields: ' +
+            record.length);
+        break;
+      }
       this.updateInMemoryCopyRecord_(
           /** @type {string} */ (
               record[1]),  // key
@@ -360,6 +293,12 @@ importer.PersistentImportHistory.prototype.updateInMemoryRecord_ =
               record[4])); // destinationUrl
       return;
     case importer.RecordType_.IMPORT:
+      if (record.length !== 3) {
+        importer.getLogger().error(
+            'Skipping import record with wrong number of fields: ' +
+            record.length);
+        break;
+      }
       this.updateInMemoryImportRecord_(
           /** @type {string } */ (
               record[1]),  // key
@@ -470,8 +409,8 @@ importer.PersistentImportHistory.prototype.markCopied =
                 importer.RecordType_.COPY,
                 key,
                 destination,
-                entry.toURL(),
-                destinationUrl]);
+                importer.deflateAppUrl(entry.toURL()),
+                importer.deflateAppUrl(destinationUrl)]);
           }.bind(this))
       .then(this.notifyObservers_.bind(
           this,
@@ -494,8 +433,9 @@ importer.PersistentImportHistory.prototype.listUnimportedUrls =
           var imported = this.importedEntries_[key];
           for (var destination in this.copiedEntries_[key]) {
             if (!imported || imported.indexOf(destination) === -1) {
-              unimported.push(
+              var url = importer.inflateAppUrl(
                   this.copiedEntries_[key][destination].destinationUrl);
+              unimported.push(url);
             }
           }
         }
@@ -533,7 +473,8 @@ importer.PersistentImportHistory.prototype.markImported =
 /** @override */
 importer.PersistentImportHistory.prototype.markImportedByUrl =
     function(destinationUrl) {
-  var key = this.copyKeyIndex_[destinationUrl];
+  var deflatedUrl = importer.deflateAppUrl(destinationUrl);
+  var key = this.copyKeyIndex_[deflatedUrl];
   if (!!key) {
     var copyData = this.copiedEntries_[key];
 
@@ -541,16 +482,18 @@ importer.PersistentImportHistory.prototype.markImportedByUrl =
     // unnecessary given the fact that there will almost always
     // be just one destination for a file (assumption).
     for (var destination in copyData) {
-      if (copyData[destination].destinationUrl === destinationUrl) {
+      if (copyData[destination].destinationUrl === deflatedUrl) {
         return this.storeRecord_([
             importer.RecordType_.IMPORT,
             key,
             destination]).then(
               function() {
+                var sourceUrl = importer.inflateAppUrl(
+                    copyData[destination].sourceUrl);
                 // Here we try to create an Entry for the source URL.
                 // This will allow observers to update the UI if the
                 // source entry is in view.
-                util.urlToEntry(copyData[destination].sourceUrl).then(
+                util.urlToEntry(sourceUrl).then(
                     function(entry) {
                       if (entry.isFile) {
                         this.notifyObservers_(
@@ -558,7 +501,13 @@ importer.PersistentImportHistory.prototype.markImportedByUrl =
                             /** @type {!FileEntry} */ (entry),
                             destination);
                       }
-                    }.bind(this));
+                    }.bind(this))
+                    .catch(
+                        function(error) {
+                          console.log('Unable to lookup original entry for: ' +
+                              sourceUrl);
+                          return;
+                        });
               }.bind(this)
             )
             .catch(importer.getLogger().catcher('mark-imported-by-url'));
@@ -686,8 +635,6 @@ importer.SynchronizedHistoryLoader = function(fileProvider) {
 importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
   if (this.needsInitialization_) {
     this.needsInitialization_ = false;
-    this.fileProvider_.addSyncListener(
-        this.onSyncedDataChanged_.bind(this));
 
     this.fileProvider_.getSyncFileEntry()
         .then(
@@ -702,7 +649,7 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
                   importer.createMetadataHashcode,
                   storage);
               new importer.DriveSyncWatcher(history);
-              history.refresh().then(
+              history.whenReady().then(
                   /** @this {importer.SynchronizedHistoryLoader} */
                   function() {
                     this.historyResolver_.resolve(history);
@@ -718,22 +665,6 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
 importer.SynchronizedHistoryLoader.prototype.addHistoryLoadedListener =
     function(listener) {
   this.historyResolver_.promise.then(listener);
-};
-
-/**
- * Handles file sync events, by simply reloading history. The presumption
- * is that 99% of the time these events will basically be happening when
- * there is no active import process.
- *
- * @private
- */
-importer.SynchronizedHistoryLoader.prototype.onSyncedDataChanged_ =
-    function() {
-  this.historyResolver_.promise.then(
-      /** @param {!importer.ImportHistory} history */
-      function(history) {
-        history.refresh();
-      });
 };
 
 /**
@@ -929,7 +860,7 @@ importer.DriveSyncWatcher = function(history) {
   this.history_.addObserver(
       this.onHistoryChanged_.bind(this));
 
-  this.history_.whenReady_
+  this.history_.whenReady()
       .then(
           function() {
             this.history_.listUnimportedUrls(importer.Destination.GOOGLE_DRIVE)
