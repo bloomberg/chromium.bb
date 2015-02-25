@@ -12,7 +12,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
     os.pardir, os.pardir, os.pardir, 'tools', 'telemetry'))
 
 from telemetry import benchmark_runner
-from telemetry.core import environment
 
 
 def _LaunchDBus():
@@ -85,12 +84,14 @@ def _ShutdownDBus():
 
 
 if __name__ == '__main__':
-  base_dir = os.path.dirname(os.path.realpath(__file__))
-  benchmark_runner.config = environment.Environment([base_dir])
+  top_level_dir = os.path.dirname(os.path.realpath(__file__))
+  environment = benchmark_runner.Environment(
+      top_level_dir=top_level_dir,
+      benchmark_dirs=[os.path.join(top_level_dir, 'gpu_tests')])
 
   did_launch_dbus = _LaunchDBus()
   try:
-    retcode = benchmark_runner.main()
+    retcode = benchmark_runner.main(environment)
   finally:
     if did_launch_dbus:
       _ShutdownDBus()

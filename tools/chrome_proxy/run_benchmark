@@ -10,10 +10,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'perf'))
 
 from telemetry import benchmark_runner
-from telemetry.core import environment
 
 
 if __name__ == '__main__':
-  base_dir = os.path.dirname(os.path.realpath(__file__))
-  benchmark_runner.config = environment.Environment([base_dir])
-  sys.exit(benchmark_runner.main())
+  top_level_dir = os.path.dirname(os.path.realpath(__file__))
+  environment = benchmark_runner.Environment(
+      top_level_dir=top_level_dir,
+      benchmark_dirs=[os.path.join(top_level_dir, 'integration_tests')])
+  sys.exit(benchmark_runner.main(environment))
