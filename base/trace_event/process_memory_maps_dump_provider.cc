@@ -4,6 +4,7 @@
 
 #include "base/trace_event/process_memory_maps_dump_provider.h"
 
+#include <cctype>
 #include <fstream>
 
 #include "base/logging.h"
@@ -19,15 +20,123 @@ namespace trace_event {
 std::istream* ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = nullptr;
 
 namespace {
+
+const uint32 kMaxLineSize = 4096;
+
+bool ParseSmapsHeader(std::istream* smaps,
+                      ProcessMemoryMaps::VMRegion* region) {
+  // e.g., "00400000-00421000 r-xp 00000000 fc:01 1234  /foo.so\n"
+  bool res = true;  // Whether this region should be appended or skipped.
+  uint64 end_addr;
+  std::string protection_flags;
+  std::string ignored;
+  *smaps >> std::hex >> region->start_address;
+  smaps->ignore(1);
+  *smaps >> std::hex >> end_addr;
+  if (end_addr > region->start_address) {
+    region->size_in_bytes = end_addr - region->start_address;
+  } else {
+    // This is not just paranoia, it can actually happen (See crbug.com/461237).
+    region->size_in_bytes = 0;
+    res = false;
+  }
+
+  region->protection_flags = 0;
+  *smaps >> protection_flags;
+  CHECK(4UL == protection_flags.size());
+  if (protection_flags[0] == 'r') {
+    region->protection_flags |=
+        ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
+  }
+  if (protection_flags[1] == 'w') {
+    region->protection_flags |=
+        ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
+  }
+  if (protection_flags[2] == 'x') {
+    region->protection_flags |=
+        ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
+  }
+  *smaps >> std::hex >> region->mapped_file_offset;
+  *smaps >> ignored;  // Ignore device maj-min (fc:01 in the example above).
+  *smaps >> ignored;  // Ignore inode number (1234 in the example above).
+
+  while (smaps->peek() == ' ')
+    smaps->ignore(1);
+  char mapped_file[kMaxLineSize];
+  smaps->getline(mapped_file, sizeof(mapped_file));
+  region->mapped_file = mapped_file;
+
+  return res;
+}
+
+uint32 ParseSmapsCounter(std::istream* smaps,
+                         ProcessMemoryMaps::VMRegion* region) {
+  // e.g., "RSS:  0 Kb\n"
+  uint32 res = 0;
+  std::string counter_name;
+  *smaps >> counter_name;
+
+  // TODO(primiano): "Swap" should also be accounted as resident. Check
+  // whether Rss isn't already counting swapped and fix below if that is
+  // the case.
+  if (counter_name == "Rss:") {
+    *smaps >> std::dec >> region->byte_stats_resident;
+    region->byte_stats_resident *= 1024;
+    res = 1;
+  } else if (counter_name == "Anonymous:") {
+    *smaps >> std::dec >> region->byte_stats_anonymous;
+    region->byte_stats_anonymous *= 1024;
+    res = 1;
+  }
+
+#ifndef NDEBUG
+  // Paranoid check against changes of the Kernel /proc interface.
+  if (res) {
+    std::string unit;
+    *smaps >> unit;
+    DCHECK_EQ("kB", unit);
+  }
+#endif
+
+  smaps->ignore(kMaxLineSize, '\n');
+
+  return res;
+}
+
 uint32 ReadLinuxProcSmapsFile(std::istream* smaps, ProcessMemoryMaps* pmm) {
   if (!smaps->good()) {
     LOG(ERROR) << "Could not read smaps file.";
     return 0;
   }
-  uint32 num_regions_processed = 0;
-  // TODO(primiano): in next CLs add the actual code to process the smaps file.
-  return num_regions_processed;
+  const uint32 kNumExpectedCountersPerRegion = 2;
+  uint32 counters_parsed_for_current_region = 0;
+  uint32 num_valid_regions = 0;
+  ProcessMemoryMaps::VMRegion region;
+  bool should_add_current_region = false;
+  for (;;) {
+    int next = smaps->peek();
+    if (next == std::ifstream::traits_type::eof() || next == '\n')
+      break;
+    if (isxdigit(next) && !isupper(next)) {
+      region = {0};
+      counters_parsed_for_current_region = 0;
+      should_add_current_region = ParseSmapsHeader(smaps, &region);
+    } else {
+      counters_parsed_for_current_region += ParseSmapsCounter(smaps, &region);
+      DCHECK_LE(counters_parsed_for_current_region,
+                kNumExpectedCountersPerRegion);
+      if (counters_parsed_for_current_region == kNumExpectedCountersPerRegion) {
+        if (should_add_current_region) {
+          pmm->AddVMRegion(region);
+          ++num_valid_regions;
+          should_add_current_region = false;
+        }
+      }
+    }
+  }
+  return num_valid_regions;
 }
+
 }  // namespace
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
