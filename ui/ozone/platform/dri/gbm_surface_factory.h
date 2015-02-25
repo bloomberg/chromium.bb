@@ -19,8 +19,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   GbmSurfaceFactory(bool allow_surfaceless);
   ~GbmSurfaceFactory() override;
 
-  void InitializeGpu(const scoped_refptr<GbmWrapper>& gbm,
-                     DrmDeviceManager* drm_device_manager,
+  void InitializeGpu(DrmDeviceManager* drm_device_manager,
                      DriWindowDelegateManager* window_manager);
 
   // DriSurfaceFactory:
@@ -53,7 +52,6 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
  private:
   scoped_refptr<GbmWrapper> GetGbmDevice(gfx::AcceleratedWidget widget);
 
-  scoped_refptr<GbmWrapper> gbm_;
   bool allow_surfaceless_;
 
   DrmDeviceManager* drm_device_manager_;  // Not owned.

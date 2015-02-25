@@ -75,26 +75,20 @@ GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
 void GbmSurfaceFactory::InitializeGpu(
-    const scoped_refptr<GbmWrapper>& gbm,
     DrmDeviceManager* drm_device_manager,
     DriWindowDelegateManager* window_manager) {
-  gbm_ = gbm;
   drm_device_manager_ = drm_device_manager;
   window_manager_ = window_manager;
 }
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
-#if defined(USE_MESA_PLATFORM_NULL)
   return EGL_DEFAULT_DISPLAY;
-#else
-  DCHECK(gbm_);
-  return reinterpret_cast<intptr_t>(gbm_->device());
-#endif
 }
 
 int GbmSurfaceFactory::GetDrmFd() {
-  DCHECK(gbm_);
-  return gbm_->get_fd();
+  scoped_refptr<GbmWrapper> gbm = GetGbmDevice(gfx::kNullAcceleratedWidget);
+  DCHECK(gbm);
+  return gbm->get_fd();
 }
 
 const int32* GbmSurfaceFactory::GetEGLSurfaceProperties(

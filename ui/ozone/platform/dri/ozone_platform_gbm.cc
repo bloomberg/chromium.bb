@@ -189,7 +189,7 @@ class OzonePlatformGbm : public OzonePlatform {
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
-    surface_factory_ozone_->InitializeGpu(gbm_, drm_device_manager_.get(),
+    surface_factory_ozone_->InitializeGpu(drm_device_manager_.get(),
                                           window_delegate_manager_.get());
     scoped_ptr<NativeDisplayDelegateDri> ndd(new NativeDisplayDelegateDri(
         screen_manager_.get(), gbm_,
