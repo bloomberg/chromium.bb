@@ -115,6 +115,10 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
 
     init_params_.native_widget = native_widget_mac_;
 
+    // Use a frameless window, otherwise Widget will try to center the window
+    // before the tests covering the Init() flow are ready to do that.
+    init_params_.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+
     // To control the lifetime without an actual window that must be closed,
     // tests in this file need to use WIDGET_OWNS_NATIVE_WIDGET.
     init_params_.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

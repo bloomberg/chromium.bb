@@ -1005,8 +1005,11 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
 
   EXPECT_FALSE(widget_bounds_changed());
 
-  // Init causes a bounds change, even while not showing.
-  widget->Init(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  // Init causes a bounds change, even while not showing. Note some platforms
+  // cause a bounds change even when the bounds are empty. Mac does not.
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
   EXPECT_TRUE(widget_bounds_changed());
   reset();
 

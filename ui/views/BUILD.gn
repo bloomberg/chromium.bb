@@ -193,10 +193,6 @@ if (!is_win || link_chrome_on_windows) {
       "//url",
     ]
 
-    if (is_chromeos) {
-      sources -= [ "ime/input_method_bridge_unittest.cc" ]
-    }
-
     if (is_win) {
       deps += [
         "//third_party/iaccessible2",
@@ -239,6 +235,9 @@ if (!is_win || link_chrome_on_windows) {
           sources += gypi_values.views_unittests_desktop_aurax11_sources
         }
       }
+    }
+    if (!is_chromeos) {
+      sources += gypi_values.views_unittests_desktop_sources
     }
     if (use_x11) {
       deps += [

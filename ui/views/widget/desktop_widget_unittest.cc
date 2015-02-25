@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -12,13 +12,13 @@ namespace views {
 typedef ViewsTestBase DesktopScreenPositionClientTest;
 
 // Verifies setting the bounds of a dialog parented to a Widget with a
-// DesktopNativeWidgetAura is positioned correctly.
+// PlatformDesktopNativeWidget is positioned correctly.
 TEST_F(DesktopScreenPositionClientTest, PositionDialog) {
   Widget parent_widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(10, 11, 200, 200);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
+  params.native_widget = new PlatformDesktopNativeWidget(&parent_widget);
   parent_widget.Init(params);
 
   // Owned by |dialog|.
@@ -52,7 +52,7 @@ TEST_F(DesktopScreenPositionClientTest, PositionControlWithNonRootParent) {
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   params1.bounds = gfx::Rect(origin, gfx::Size(700, 600));
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params1.native_widget = new DesktopNativeWidgetAura(&widget1);
+  params1.native_widget = new PlatformDesktopNativeWidget(&widget1);
   widget1.Init(params1);
 
   Widget::InitParams params2 =

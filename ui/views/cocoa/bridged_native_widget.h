@@ -62,7 +62,12 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // This does NOT take ownership of |focus_manager|.
   void SetFocusManager(FocusManager* focus_manager);
 
-  // Changes the bounds of the window and the hosted layer if present.
+  // Changes the bounds of the window and the hosted layer if present. The
+  // origin is a location in screen coordinates except for "child" windows,
+  // which are positioned relative to their parent(). SetBounds() considers a
+  // "child" window to be one initialized with InitParams specifying all of:
+  // a |parent| NSWindow, the |child| attribute, and a |type| that
+  // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
   void SetBounds(const gfx::Rect& new_bounds);
 
   // Set or clears the views::View bridged by the content view. This does NOT
@@ -211,6 +216,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   scoped_ptr<ui::InputMethod> input_method_;
   scoped_ptr<CocoaMouseCapture> mouse_capture_;
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.
+  Widget::InitParams::Type widget_type_;
 
   BridgedNativeWidget* parent_;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidget*> child_windows_;

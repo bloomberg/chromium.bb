@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme.h"
@@ -31,19 +32,6 @@ NSInteger StyleMaskForParams(const Widget::InitParams& params) {
            NSMiniaturizableWindowMask | NSResizableWindowMask;
   }
   return NSBorderlessWindowMask;
-}
-
-NSRect ValidateContentRect(NSRect content_rect) {
-  // A contentRect with zero width or height is a banned practice in Chrome, due
-  // to unpredictable OSX treatment. For now, silently give a minimum dimension.
-  // TODO(tapted): Add a DCHECK, or add emulation logic (e.g. to auto-hide).
-  if (NSWidth(content_rect) == 0)
-    content_rect.size.width = 1;
-
-  if (NSHeight(content_rect) == 0)
-    content_rect.size.height = 1;
-
-  return content_rect;
 }
 
 gfx::Size WindowSizeForClientAreaSize(NSWindow* window, const gfx::Size& size) {
@@ -99,12 +87,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
   NSInteger style_mask = StyleMaskForParams(params);
-  NSRect content_rect = ValidateContentRect(
-      [NSWindow contentRectForFrameRect:gfx::ScreenRectToNSRect(params.bounds)
-                              styleMask:style_mask]);
-
   base::scoped_nsobject<NSWindow> window([[NativeWidgetMacNSWindow alloc]
-      initWithContentRect:content_rect
+      initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:style_mask
                   backing:NSBackingStoreBuffered
                     defer:YES]);

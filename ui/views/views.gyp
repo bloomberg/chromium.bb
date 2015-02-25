@@ -548,7 +548,6 @@
       'event_monitor_unittest.cc',
       'focus/focus_manager_unittest.cc',
       'focus/focus_traversal_unittest.cc',
-      'ime/input_method_bridge_unittest.cc',
       'layout/box_layout_unittest.cc',
       'layout/grid_layout_unittest.cc',
       'rect_based_targeting_utils_unittest.cc',
@@ -568,6 +567,10 @@
       'window/dialog_client_view_unittest.cc',
       'window/dialog_delegate_unittest.cc',
     ],
+    'views_unittests_desktop_sources': [
+      'ime/input_method_bridge_unittest.cc',
+      'widget/desktop_widget_unittest.cc',
+    ],
     'views_unittests_aura_sources': [
       'corewm/tooltip_controller_unittest.cc',
       'touchui/touch_selection_controller_impl_unittest.cc',
@@ -575,7 +578,6 @@
     'views_unittests_desktop_aura_sources': [
       'widget/desktop_aura/desktop_focus_rules_unittest.cc',
       'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',
-      'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
     ],
     'views_unittests_desktop_aurax11_sources': [
       'widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc',
@@ -799,11 +801,6 @@
         '<@(views_unittests_sources)',
       ],
       'conditions': [
-        ['chromeos==1', {
-          'sources!': [
-            'ime/input_method_bridge_unittest.cc',
-          ],
-        }],
         ['OS=="win"', {
           'dependencies': [
             '../../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
@@ -860,6 +857,9 @@
               'sources': [ '<@(views_unittests_desktop_aurax11_sources)' ],
             }],
           ]
+        }],
+        ['chromeos==0', {
+          'sources': [ '<@(views_unittests_desktop_sources)' ],
         }],
         ['use_x11==1', {
           'dependencies': [
