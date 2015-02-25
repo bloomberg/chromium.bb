@@ -69,8 +69,10 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // ManagedFullScreenBubbleDelegateView:
   views::View* GetInitiallyFocusedView() override;
   void Init() override;
-  void WindowClosing() override;
   void Close() override;
+
+  // WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // Refreshes the bubble's state: called to display a confirmation screen after
   // a user selects "Never for this site", for instance.
