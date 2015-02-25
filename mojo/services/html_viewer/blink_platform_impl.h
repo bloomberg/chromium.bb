@@ -12,6 +12,7 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "mojo/services/html_viewer/blink_resource_map.h"
 #include "mojo/services/html_viewer/webmimeregistry_impl.h"
+#include "mojo/services/html_viewer/webscheduler_impl.h"
 #include "mojo/services/html_viewer/webthemeengine_impl.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
@@ -26,6 +27,7 @@ class BlinkPlatformImpl : public blink::Platform {
   // blink::Platform methods:
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebThemeEngine* themeEngine();
+  virtual blink::WebScheduler* scheduler();
   virtual blink::WebString defaultLocale();
   virtual double currentTime();
   virtual double monotonicallyIncreasingTime();
@@ -76,6 +78,7 @@ class BlinkPlatformImpl : public blink::Platform {
   cc_blink::WebCompositorSupportImpl compositor_support_;
   WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
+  WebSchedulerImpl scheduler_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
   BlinkResourceMap blink_resource_map_;
 

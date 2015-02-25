@@ -51,7 +51,8 @@ BlinkPlatformImpl::BlinkPlatformImpl()
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
-      current_thread_slot_(&DestroyCurrentThread) {
+      current_thread_slot_(&DestroyCurrentThread),
+      scheduler_(main_loop_->message_loop_proxy()) {
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -63,6 +64,10 @@ blink::WebMimeRegistry* BlinkPlatformImpl::mimeRegistry() {
 
 blink::WebThemeEngine* BlinkPlatformImpl::themeEngine() {
   return &theme_engine_;
+}
+
+blink::WebScheduler* BlinkPlatformImpl::scheduler() {
+  return &scheduler_;
 }
 
 blink::WebString BlinkPlatformImpl::defaultLocale() {
