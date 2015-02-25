@@ -143,7 +143,8 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   ASSERT_EQ(root_view_accessible.get(), child_widget_parent_accessible.get());
 }
 
-TEST_F(NativeViewAcccessibilityWinTest, RetrieveAllAlerts) {
+// Flaky on Windows: https://crbug.com/461837.
+TEST_F(NativeViewAcccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
