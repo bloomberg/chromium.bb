@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -142,6 +143,15 @@ class LoginTest : public chromeos::LoginManagerTest {
   }
 };
 
+// Used to make sure that the system tray is visible and within the screen
+// bounds after login.
+void TestSystemTrayIsVisible() {
+  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
+  EXPECT_TRUE(tray->visible());
+  EXPECT_TRUE(primary_win->bounds().Contains(tray->GetBoundsInScreen()));
+}
+
 // After a chrome crash, the session manager will restart chrome with
 // the -login-user flag indicating that the user is already logged in.
 // This profile should NOT be an OTR profile.
@@ -151,11 +161,15 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   profile_base_path.insert(0, chrome::kProfileDirPrefix);
   EXPECT_EQ(profile_base_path, profile->GetPath().BaseName().value());
   EXPECT_FALSE(profile->IsOffTheRecord());
+
+  TestSystemTrayIsVisible();
 }
 
 // Verifies the cursor is not hidden at startup when user is logged in.
 IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
+
+  TestSystemTrayIsVisible();
 }
 
 // After a guest login, we should get the OTR default profile.
@@ -164,11 +178,15 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
   EXPECT_TRUE(profile->IsOffTheRecord());
   // Ensure there's extension service for this profile.
   EXPECT_TRUE(extensions::ExtensionSystem::Get(profile)->extension_service());
+
+  TestSystemTrayIsVisible();
 }
 
 // Verifies the cursor is not hidden at startup when running guest session.
 IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
+
+  TestSystemTrayIsVisible();
 }
 
 // Verifies the cursor is hidden at startup on login screen.
@@ -185,6 +203,8 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
 
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, chromeos::LoginDisplayHostImpl::default_host());
+
+  TestSystemTrayIsVisible();
 }
 
 // Verifies that the webui for login comes up successfully.
@@ -219,6 +239,8 @@ IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
+
+  TestSystemTrayIsVisible();
 }
 
 }  // namespace
