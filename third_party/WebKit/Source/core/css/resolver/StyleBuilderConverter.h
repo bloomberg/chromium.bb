@@ -64,7 +64,6 @@ public:
     template <typename T> static T convertLineWidth(StyleResolverState&, CSSValue*);
     static Length convertLength(const StyleResolverState&, CSSValue*);
     static Length convertLengthOrAuto(const StyleResolverState&, CSSValue*);
-    static Length convertLengthUnzoomed(const StyleResolverState&, CSSValue*);
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static TabSize convertLengthOrTabSpaces(StyleResolverState&, CSSValue*);

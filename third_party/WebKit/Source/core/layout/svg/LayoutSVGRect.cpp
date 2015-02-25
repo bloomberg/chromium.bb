@@ -76,8 +76,8 @@ void LayoutSVGRect::updateShapeFromElement()
 
     m_fillBoundingBox = FloatRect(
         FloatPoint(
-            lengthContext.valueForLength(style()->svgStyle().x(), LengthModeWidth),
-            lengthContext.valueForLength(style()->svgStyle().y(), LengthModeHeight)),
+            lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), LengthModeWidth),
+            lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), LengthModeHeight)),
         boundingBoxSize);
 
     // To decide if the stroke contains a point we create two rects which represent the inner and

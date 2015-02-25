@@ -505,13 +505,6 @@ Length StyleBuilderConverter::convertLengthOrAuto(const StyleResolverState& stat
     return primitiveValue->convertToLength(state.cssToLengthConversionData());
 }
 
-Length StyleBuilderConverter::convertLengthUnzoomed(const StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    CSSToLengthConversionData conversionData = state.cssToLengthConversionData().copyWithAdjustedZoom(1.0f);
-    return primitiveValue->convertToLength(conversionData);
-}
-
 Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

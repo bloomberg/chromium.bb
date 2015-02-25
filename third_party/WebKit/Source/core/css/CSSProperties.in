@@ -282,8 +282,8 @@ unicode-bidi
 vector-effect svg
 vertical-align animatable, custom_inherit, custom_value
 visibility animatable, inherited
-x animatable, svg, converter=convertLengthUnzoomed
-y animatable, svg, converter=convertLengthUnzoomed
+x animatable, svg, converter=convertLength
+y animatable, svg, converter=convertLength
 -webkit-animation-delay custom_all
 -webkit-animation-direction custom_all
 -webkit-animation-duration custom_all
