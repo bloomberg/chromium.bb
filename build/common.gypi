@@ -512,6 +512,9 @@
       # Webrtc compilation is enabled by default. Set to 0 to disable.
       'enable_webrtc%': 1,
 
+      # Media router support is enabled by default. Set to 0 to disable.
+      'enable_media_router%': 1,      
+
       # Enables use of the session service, which is enabled by default.
       # Support for disabling depends on the platform.
       'enable_session_service%': 1,
@@ -870,8 +873,10 @@
 
         ['OS=="android" or OS=="ios"', {
           'enable_captive_portal_detection%': 0,
+          'enable_media_router%': 0,
         }, {
           'enable_captive_portal_detection%': 1,
+          'enable_media_router%': 1,
         }],
 
         # Enable Skia UI text drawing incrementally on different platforms.
@@ -1111,6 +1116,7 @@
     'remoting%': '<(remoting)',
     'enable_one_click_signin%': '<(enable_one_click_signin)',
     'enable_pre_sync_backup%': '<(enable_pre_sync_backup)',
+    'enable_media_router%': '<(enable_media_router)',
     'enable_webrtc%': '<(enable_webrtc)',
     'chromium_win_pch%': '<(chromium_win_pch)',
     'configuration_policy%': '<(configuration_policy)',
@@ -2113,6 +2119,9 @@
       }],
       ['use_concatenated_impulse_responses==1', {
         'grit_defines': ['-D', 'use_concatenated_impulse_responses'],
+      }],
+      ['enable_media_router==1', {
+        'grit_defines': ['-D', 'enable_media_router'],
       }],
       ['enable_webrtc==1', {
         'grit_defines': ['-D', 'enable_webrtc'],
