@@ -35,7 +35,7 @@ class UtilitySandboxedProcessLauncherDelegate
  public:
   UtilitySandboxedProcessLauncherDelegate(const base::FilePath& exposed_dir,
                                           bool launch_elevated, bool no_sandbox,
-                                          base::EnvironmentMap& env,
+                                          const base::EnvironmentMap& env,
                                           ChildProcessHost* host)
       : exposed_dir_(exposed_dir),
 #if defined(OS_WIN)
@@ -50,11 +50,11 @@ class UtilitySandboxedProcessLauncherDelegate
   ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldLaunchElevated() override {
+  bool ShouldLaunchElevated() override {
     return launch_elevated_;
   }
-  virtual void PreSandbox(bool* disable_default_policy,
-                          base::FilePath* exposed_dir) override {
+  void PreSandbox(bool* disable_default_policy,
+                  base::FilePath* exposed_dir) override {
     *exposed_dir = exposed_dir_;
   }
 #elif defined(OS_POSIX)
@@ -67,8 +67,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 
  private:
-
- base::FilePath exposed_dir_;
+  base::FilePath exposed_dir_;
 
 #if defined(OS_WIN)
   bool launch_elevated_;

@@ -48,7 +48,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   void EnableMDns() override;
   void DisableSandbox() override;
 #if defined(OS_WIN)
-  virtual void ElevatePrivileges() override;
+  void ElevatePrivileges() override;
 #endif
   const ChildProcessData& GetData() override;
 #if defined(OS_POSIX)
