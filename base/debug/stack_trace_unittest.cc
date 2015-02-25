@@ -120,8 +120,7 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
 }
 
 // The test is used for manual testing, e.g., to see the raw output.
-// TODO(scottmg): http://crbug.com/461160
-TEST_F(StackTraceTest, DISABLED_DebugOutputToStream) {
+TEST_F(StackTraceTest, DebugOutputToStream) {
   StackTrace trace;
   std::ostringstream os;
   trace.OutputToStream(&os);
@@ -129,8 +128,7 @@ TEST_F(StackTraceTest, DISABLED_DebugOutputToStream) {
 }
 
 // The test is used for manual testing, e.g., to see the raw output.
-// TODO(scottmg): http://crbug.com/461160
-TEST_F(StackTraceTest, DISABLED_DebugPrintBacktrace) {
+TEST_F(StackTraceTest, DebugPrintBacktrace) {
   StackTrace().Print();
 }
 #endif  // !defined(__UCLIBC__)
