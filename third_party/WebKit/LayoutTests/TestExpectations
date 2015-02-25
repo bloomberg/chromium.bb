@@ -1794,9 +1794,6 @@ crbug.com/457157 http/tests/fetch/workers/fetch-access-control-redirect-nocors-b
 crbug.com/457157 http/tests/fetch/workers/fetch-access-control-redirect-nocors-other-https.html [ Failure ]
 crbug.com/457157 http/tests/fetch/workers/fetch-access-control-redirect-nocors.html [ Failure ]
 
-crbug.com/459966 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/459966 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/459966 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsRebaseline ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-other-https.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-base-https-other-https.html [ Slow ]
