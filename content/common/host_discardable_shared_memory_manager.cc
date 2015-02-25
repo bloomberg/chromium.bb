@@ -159,7 +159,10 @@ void HostDiscardableSharedMemoryManager::OnMemoryPressure(
 
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      // Purge memory until usage is within half of |memory_limit_|.
+      ReduceMemoryUsageUntilWithinLimit(memory_limit_ / 2);
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // Purge everything possible when pressure is critical.
