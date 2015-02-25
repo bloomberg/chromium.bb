@@ -55,6 +55,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   void ClearView();
 
+  void SetOffscreenPreRaster(bool enabled);
+
   // View update notifications.
   void SetIsPaused(bool paused);
   void SetViewVisibility(bool visible);
@@ -157,6 +159,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   float page_scale_factor_;
   bool on_new_picture_enable_;
   bool clear_view_;
+
+  bool offscreen_pre_raster_;
 
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;

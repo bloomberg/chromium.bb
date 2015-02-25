@@ -400,6 +400,11 @@ bool AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
   return true;
 }
 
+void AwContents::SetOffscreenPreRaster(bool enabled) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  browser_view_renderer_.SetOffscreenPreRaster(enabled);
+}
+
 void AwContents::AddVisitedLinks(JNIEnv* env,
                                    jobject obj,
                                    jobjectArray jvisited_links) {

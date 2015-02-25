@@ -120,6 +120,7 @@ void FakeWindow::OnDrawHardware() {
   on_draw_hardware_pending_ = false;
 
   hooks_->WillOnDraw();
+  view_->PrepareToDraw(gfx::Vector2d(), location_);
   bool success = view_->OnDrawHardware();
   hooks_->DidOnDraw(success);
   if (success) {

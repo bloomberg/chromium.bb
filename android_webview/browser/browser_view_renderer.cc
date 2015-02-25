@@ -68,6 +68,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       page_scale_factor_(1.0),
       on_new_picture_enable_(false),
       clear_view_(false),
+      offscreen_pre_raster_(false),
       compositor_needs_continuous_invalidate_(false),
       invalidate_after_composite_(false),
       block_invalidates_(false),
@@ -128,8 +129,11 @@ size_t BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
   if (g_memory_override_in_bytes)
     return static_cast<size_t>(g_memory_override_in_bytes);
 
-  size_t width = last_on_draw_global_visible_rect_.width();
-  size_t height = last_on_draw_global_visible_rect_.height();
+  gfx::Rect interest_rect = offscreen_pre_raster_
+                                ? gfx::Rect(size_)
+                                : last_on_draw_global_visible_rect_;
+  size_t width = interest_rect.width();
+  size_t height = interest_rect.height();
   size_t bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
   // Round up to a multiple of kMemoryAllocationStep.
   bytes_limit =
@@ -178,15 +182,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return false;
   }
 
-  if (last_on_draw_global_visible_rect_.IsEmpty() &&
-      parent_draw_constraints_.surface_rect.IsEmpty()) {
-    TRACE_EVENT_INSTANT0("android_webview",
-                         "EarlyOut_EmptyVisibleRect",
-                         TRACE_EVENT_SCOPE_THREAD);
-    shared_renderer_state_.SetForceInvalidateOnNextDrawGLOnUI(true);
-    return true;
-  }
-
   ReturnResourceFromParent();
   if (shared_renderer_state_.HasCompositorFrameOnUI()) {
     TRACE_EVENT_INSTANT0("android_webview",
@@ -222,11 +217,15 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
   // applied onto the layer so global visible rect does not make sense here.
   // In this case, just use the surface rect for tiling.
   gfx::Rect viewport_rect_for_tile_priority;
-  if (parent_draw_constraints_.is_layer ||
-      last_on_draw_global_visible_rect_.IsEmpty()) {
-    viewport_rect_for_tile_priority = parent_draw_constraints_.surface_rect;
-  } else {
-    viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
+
+  // Leave viewport_rect_for_tile_priority empty if offscreen_pre_raster_ is on.
+  if (!offscreen_pre_raster_) {
+    if (parent_draw_constraints_.is_layer ||
+        last_on_draw_global_visible_rect_.IsEmpty()) {
+      viewport_rect_for_tile_priority = parent_draw_constraints_.surface_rect;
+    } else {
+      viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
+    }
   }
 
   scoped_ptr<cc::CompositorFrame> frame =
@@ -324,6 +323,11 @@ void BrowserViewRenderer::ClearView() {
   clear_view_ = true;
   // Always invalidate ignoring the compositor to actually clear the webview.
   EnsureContinuousInvalidation(true, false);
+}
+
+void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
+  // TODO(hush): anything to do when the setting is toggled?
+  offscreen_pre_raster_ = enable;
 }
 
 void BrowserViewRenderer::SetIsPaused(bool paused) {

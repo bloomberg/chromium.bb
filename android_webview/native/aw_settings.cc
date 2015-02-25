@@ -131,6 +131,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env, jobject obj) {
   ResetScrollAndScaleState(env, obj);
   UpdateFormDataPreferencesLocked(env, obj);
   UpdateRendererPreferencesLocked(env, obj);
+  UpdateOffscreenPreRasterLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env, jobject obj) {
@@ -207,6 +208,14 @@ void AwSettings::UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj) {
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (update_prefs && host)
     host->SyncRendererPrefs();
+}
+
+void AwSettings::UpdateOffscreenPreRasterLocked(JNIEnv* env, jobject obj) {
+  AwContents* contents = AwContents::FromWebContents(web_contents());
+  if (contents) {
+    contents->SetOffscreenPreRaster(
+        Java_AwSettings_getOffscreenPreRasterLocked(env, obj));
+  }
 }
 
 void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {

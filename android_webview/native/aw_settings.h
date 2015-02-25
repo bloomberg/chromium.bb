@@ -38,6 +38,7 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj);
   void UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj);
   void UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj);
+  void UpdateOffscreenPreRasterLocked(JNIEnv* env, jobject obj);
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
 

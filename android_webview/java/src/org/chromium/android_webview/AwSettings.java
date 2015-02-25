@@ -88,6 +88,7 @@ public class AwSettings {
     private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
     private int mMixedContentMode = MIXED_CONTENT_NEVER_ALLOW;
     private boolean mVideoOverlayForEmbeddedVideoEnabled = false;
+    private boolean mOffscreenPreRaster = false;
 
     // Although this bit is stored on AwSettings it is actually controlled via the CookieManager.
     private boolean mAcceptThirdPartyCookies = false;
@@ -1559,6 +1560,45 @@ public class AwSettings {
                 || mMixedContentMode == MIXED_CONTENT_COMPATIBILITY_MODE;
     }
 
+    public boolean getOffscreenPreRaster() {
+        synchronized (mAwSettingsLock) {
+            return getOffscreenPreRasterLocked();
+        }
+    }
+
+    @CalledByNative
+    private boolean getOffscreenPreRasterLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mOffscreenPreRaster;
+    }
+
+    /**
+     * Sets whether this WebView should raster tiles when it is
+     * offscreen but attached to window. Turning this on can avoid
+     * rendering artifacts when animating an offscreen WebView on-screen.
+     * In particular, insertVisualStateCallback requires this mode to function.
+     * Offscreen WebViews in this mode uses more memory. Please follow
+     * these guidelines to limit memory usage:
+     * - Webview size should be not be larger than the device screen size.
+     * - Limit simple mode to a small number of webviews. Use it for
+     *   visible webviews and webviews about to be animated to visible.
+     */
+    public void setOffscreenPreRaster(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (enabled != mOffscreenPreRaster) {
+                mOffscreenPreRaster = enabled;
+                mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateOffscreenPreRasterLocked(mNativeAwSettings);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
     /**
      * Sets whether to use the video overlay for the embedded video.
      * @param flag whether to enable the video overlay for the embedded video.
@@ -1671,4 +1711,6 @@ public class AwSettings {
     private native void nativeUpdateFormDataPreferencesLocked(long nativeAwSettings);
 
     private native void nativeUpdateRendererPreferencesLocked(long nativeAwSettings);
+
+    private native void nativeUpdateOffscreenPreRasterLocked(long nativeAwSettings);
 }

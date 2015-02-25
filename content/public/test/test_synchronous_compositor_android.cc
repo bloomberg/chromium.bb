@@ -44,7 +44,14 @@ scoped_ptr<cc::CompositorFrame> TestSynchronousCompositor::DemandDrawHw(
     gfx::Rect viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   DCHECK(hardware_initialized_);
-  return nullptr;
+  scoped_ptr<cc::CompositorFrame> compositor_frame(new cc::CompositorFrame);
+  scoped_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
+  scoped_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
+  root_pass->SetNew(cc::RenderPassId(1, 1), viewport, viewport,
+                    gfx::Transform());
+  frame->render_pass_list.push_back(root_pass.Pass());
+  compositor_frame->delegated_frame_data = frame.Pass();
+  return compositor_frame.Pass();
 }
 
 void TestSynchronousCompositor::ReturnResources(

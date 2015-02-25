@@ -81,6 +81,8 @@ class AwContents : public FindHelper::Listener,
                                  const std::string& host,
                                  const std::string& realm);
 
+  void SetOffscreenPreRaster(bool enabled);
+
   // Methods called from Java.
   void SetJavaPeers(JNIEnv* env,
                     jobject obj,
