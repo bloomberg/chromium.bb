@@ -246,10 +246,10 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 
 // TODO(jamescook): Should these be AppNSWindow to match AppWindow?
 // http://crbug.com/344082
-@interface ShellNSWindow : ChromeEventProcessingWindow
+@interface AppNSWindow : ChromeEventProcessingWindow
 @end
 
-@implementation ShellNSWindow
+@implementation AppNSWindow
 
 // Similar to ChromeBrowserWindow, don't draw the title, but allow it to be seen
 // in menus, Expose, etc.
@@ -259,10 +259,10 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 
 @end
 
-@interface ShellFramelessNSWindow : ShellNSWindow
+@interface AppFramelessNSWindow : AppNSWindow
 @end
 
-@implementation ShellFramelessNSWindow
+@implementation AppFramelessNSWindow
 
 + (NSRect)frameRectForContentRect:(NSRect)contentRect
                         styleMask:(NSUInteger)mask {
@@ -321,7 +321,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
 
   base::scoped_nsobject<NSWindow> window;
   Class window_class = has_frame_ ?
-      [ShellNSWindow class] : [ShellFramelessNSWindow class];
+      [AppNSWindow class] : [AppFramelessNSWindow class];
 
   // Estimate the initial bounds of the window. Once the frame insets are known,
   // the window bounds and constraints can be set precisely.
@@ -974,10 +974,10 @@ void NativeAppWindowCocoa::SetInterceptAllKeys(bool want_all_key) {
 NativeAppWindowCocoa::~NativeAppWindowCocoa() {
 }
 
-ShellNSWindow* NativeAppWindowCocoa::window() const {
+AppNSWindow* NativeAppWindowCocoa::window() const {
   NSWindow* window = [window_controller_ window];
-  CHECK(!window || [window isKindOfClass:[ShellNSWindow class]]);
-  return static_cast<ShellNSWindow*>(window);
+  CHECK(!window || [window isKindOfClass:[AppNSWindow class]]);
+  return static_cast<AppNSWindow*>(window);
 }
 
 content::WebContents* NativeAppWindowCocoa::WebContents() const {

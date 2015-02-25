@@ -19,9 +19,9 @@
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
+@class AppNSWindow;
 class ExtensionKeybindingRegistryCocoa;
 class NativeAppWindowCocoa;
-@class ShellNSWindow;
 class SkRegion;
 @class TitlebarBackgroundView;
 
@@ -167,7 +167,7 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
  private:
   ~NativeAppWindowCocoa() override;
 
-  ShellNSWindow* window() const;
+  AppNSWindow* window() const;
   content::WebContents* WebContents() const;
 
   // Returns the WindowStyleMask based on the type of window frame.
