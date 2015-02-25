@@ -92,13 +92,12 @@ class FileStreamMd5Digester {
 
  private:
   // Kicks off a read of the next chunk from the stream.
-  void ReadNextChunk();
+  void ReadNextChunk(const ResultCallback& callback);
   // Handles the incoming chunk of data from a stream read.
-  void OnChunkRead(int result);
+  void OnChunkRead(const ResultCallback& callback, int bytes_read);
 
   // Maximum chunk size for read operations.
   scoped_ptr<storage::FileStreamReader> reader_;
-  ResultCallback callback_;
   scoped_refptr<net::IOBuffer> buffer_;
   base::MD5Context md5_context_;
 

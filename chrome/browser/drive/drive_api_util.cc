@@ -177,40 +177,42 @@ void FileStreamMd5Digester::GetMd5Digest(
     scoped_ptr<storage::FileStreamReader> stream_reader,
     const ResultCallback& callback) {
   reader_ = stream_reader.Pass();
-  callback_ = callback;
   base::MD5Init(&md5_context_);
 
   // Start the read/hash.
-  ReadNextChunk();
+  ReadNextChunk(callback);
 }
 
-void FileStreamMd5Digester::ReadNextChunk() {
-  const int result = reader_->Read(
-      buffer_.get(), kMd5DigestBufferSize,
-      base::Bind(&FileStreamMd5Digester::OnChunkRead, base::Unretained(this)));
+void FileStreamMd5Digester::ReadNextChunk(const ResultCallback& callback) {
+  const int result =
+      reader_->Read(buffer_.get(), kMd5DigestBufferSize,
+                    base::Bind(&FileStreamMd5Digester::OnChunkRead,
+                               base::Unretained(this), callback));
   if (result != net::ERR_IO_PENDING)
-    OnChunkRead(result);
+    OnChunkRead(callback, result);
 }
 
-void FileStreamMd5Digester::OnChunkRead(int bytesRead) {
-  if (bytesRead < 0) {
+void FileStreamMd5Digester::OnChunkRead(const ResultCallback& callback,
+                                        int bytes_read) {
+  if (bytes_read < 0) {
     // Error - just return empty string.
-    callback_.Run("");
+    callback.Run("");
     return;
-  } else if (bytesRead == 0) {
+  } else if (bytes_read == 0) {
     // EOF.
     base::MD5Digest digest;
     base::MD5Final(&digest, &md5_context_);
     std::string result = MD5DigestToBase16(digest);
-    callback_.Run(result);
+    callback.Run(result);
     return;
   }
 
   // Read data and digest it.
-  base::MD5Update(&md5_context_, base::StringPiece(buffer_->data(), bytesRead));
+  base::MD5Update(&md5_context_,
+                  base::StringPiece(buffer_->data(), bytes_read));
 
   // Kick off the next read.
-  ReadNextChunk();
+  ReadNextChunk(callback);
 }
 
 std::string GetHostedDocumentExtension(const std::string& mime_type) {
