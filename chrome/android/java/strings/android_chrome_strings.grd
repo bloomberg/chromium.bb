@@ -858,7 +858,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_NEW_TAB" desc="Content description for the new tab button.">
         New tab
       </message>
-      <!-- TODO(newt): remove duplicated strings once crbug.com/176069 is fixed. -->
       <message name="IDS_TAB_LOADING_DEFAULT_TITLE" desc="The title of a tab when we are still waiting for either the URL or the real title. This generally shows when the page is first loading.">
         Loading…
       </message>
