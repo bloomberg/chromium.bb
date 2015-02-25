@@ -119,7 +119,7 @@ browserTest.Bump_Scroll.prototype.noScrollWindowed = function() {
       window.innerWidth + this.kHostDesktopSizeDelta,
       window.innerHeight + this.kHostDesktopSizeDelta);
   this.moveMouseTo(0, 0);
-  return this.verifyScroll(undefined, undefined);
+  return this.verifyNoScroll();
 };
 
 /**
@@ -131,7 +131,7 @@ browserTest.Bump_Scroll.prototype.noScrollSmaller = function() {
       window.innerWidth - this.kHostDesktopSizeDelta,
       window.innerHeight - this.kHostDesktopSizeDelta);
   this.moveMouseTo(0, 0);
-  return this.verifyScroll(undefined, undefined);
+  return this.verifyNoScroll();
 };
 
 /**
@@ -217,13 +217,13 @@ browserTest.Bump_Scroll.prototype.testVerifyScroll = function() {
   var that = this;
 
   // No events raised (e.g. windowed mode).
-  var result = this.verifyScroll(undefined, undefined, fakeViewport)
+  var result = this.verifyNoScroll(fakeViewport)
 
   .then(function() {
     // Start and end events raised, but no scrolling (e.g. full-screen mode
     // with host desktop <= window size).
     fakeViewport = new browserTest.FakeDesktopViewport;
-    var result = that.verifyScroll(undefined, undefined, fakeViewport);
+    var result = that.verifyNoScroll(fakeViewport);
     fakeViewport.raiseEvent(STARTED, {});
     fakeViewport.raiseEvent(STOPPED, {});
     return result;
@@ -319,4 +319,22 @@ browserTest.Bump_Scroll.prototype.verifyScroll =
   }).then(function() {
     return verifyPluginPosition();
   });
+};
+
+/**
+ * @param {browserTest.FakeDesktopViewport=} opt_desktopViewport
+ *     DesktopViewport fake, for testing.
+ *
+ * @return {Promise<boolean>} A promise that resolves to true if no scrolling
+ *   occurs within a timeout.
+ */
+browserTest.Bump_Scroll.prototype.verifyNoScroll =
+    function(opt_desktopViewport) {
+  var desktopViewport = opt_desktopViewport ||
+                        remoting.desktopConnectedView.getViewportForTesting();
+  var bumpScroller = desktopViewport.getBumpScrollerForTesting();
+  if (!bumpScroller) {
+    Promise.resolve(true);
+  }
+  return this.verifyScroll(undefined, undefined, desktopViewport);
 };

@@ -92,10 +92,17 @@ remoting.DesktopViewport.prototype.getResizeToClient = function() {
  * @return {{top:number, left:number}} The top-left corner of the plugin.
  */
 remoting.DesktopViewport.prototype.getPluginPositionForTesting = function() {
-  var style = this.pluginContainer_.style;
+  /**
+   * @param {number|string} value
+   * @return {number}
+   */
+  function toFloat(value) {
+    var number = parseFloat(value);
+    return isNaN(number) ? 0 : number;
+  }
   return {
-    top: parseFloat(style.marginTop),
-    left: parseFloat(style.marginLeft)
+    top: toFloat(this.pluginContainer_.style.marginTop),
+    left: toFloat(this.pluginContainer_.style.marginLeft)
   };
 };
 
