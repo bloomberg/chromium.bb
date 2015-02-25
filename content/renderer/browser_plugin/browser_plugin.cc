@@ -120,18 +120,16 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
 void BrowserPlugin::Attach() {
   Detach();
 
-  // TODO(fsamuel): Add support for reattachment.
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
-  attach_params.origin = plugin_rect().origin();
+  attach_params.view_rect = view_rect();
   attach_params.is_full_page_plugin = false;
   if (container()) {
     blink::WebLocalFrame* frame = container()->element().document().frame();
     attach_params.is_full_page_plugin =
         frame->view()->mainFrame()->document().isPluginDocument();
   }
-  attach_params.view_size = gfx::Size(width(), height());
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Attach(
       render_frame_routing_id_,
       browser_plugin_instance_id_,
@@ -380,17 +378,17 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
     // content_shell does not have the sad plugin bitmap, so we'll paint black
     // instead to make it clear that something went wrong.
     if (sad_guest_) {
-      PaintSadPlugin(canvas, plugin_rect_, *sad_guest_);
+      PaintSadPlugin(canvas, view_rect_, *sad_guest_);
       return;
     }
   }
   SkAutoCanvasRestore auto_restore(canvas, true);
-  canvas->translate(plugin_rect_.x(), plugin_rect_.y());
+  canvas->translate(view_rect_.x(), view_rect_.y());
   SkRect image_data_rect = SkRect::MakeXYWH(
       SkIntToScalar(0),
       SkIntToScalar(0),
-      SkIntToScalar(plugin_rect_.width()),
-      SkIntToScalar(plugin_rect_.height()));
+      SkIntToScalar(view_rect_.width()),
+      SkIntToScalar(view_rect_.height()));
   canvas->clipRect(image_data_rect);
   // Paint black or white in case we have nothing in our backing store or we
   // need to show a gutter.
@@ -424,12 +422,12 @@ void BrowserPlugin::updateGeometry(
     const WebRect& clip_rect,
     const WebVector<WebRect>& cut_outs_rects,
     bool is_visible) {
-  int old_width = width();
-  int old_height = height();
-  plugin_rect_ = window_rect;
+  int old_width = view_rect_.width();
+  int old_height = view_rect_.height();
+  view_rect_ = window_rect;
   if (!ready_) {
     if (delegate_) {
-      delegate_->DidResizeElement(gfx::Size(), plugin_size());
+      delegate_->DidResizeElement(gfx::Size(), view_rect_.size());
       delegate_->Ready();
     }
     ready_ = true;
@@ -440,13 +438,13 @@ void BrowserPlugin::updateGeometry(
   if (old_width == window_rect.width && old_height == window_rect.height) {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateGeometry(
-        browser_plugin_instance_id_, plugin_rect_));
+        browser_plugin_instance_id_, view_rect_));
     return;
   }
 
   if (delegate_) {
     delegate_->DidResizeElement(
-        gfx::Size(old_width, old_height), plugin_size());
+        gfx::Size(old_width, old_height), view_rect_.size());
   }
 }
 
@@ -494,7 +492,7 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
-                                                plugin_rect_,
+                                                view_rect_,
                                                 &event));
   GetWebKitCursorInfo(cursor_, &cursor_info);
   return true;
@@ -623,7 +621,7 @@ bool BrowserPlugin::HandleMouseLockedInputEvent(
     const blink::WebMouseEvent& event) {
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
-                                                plugin_rect_,
+                                                view_rect_,
                                                 &event));
   return true;
 }

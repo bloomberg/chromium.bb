@@ -146,10 +146,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   ~BrowserPlugin() override;
 
-  int width() const { return plugin_rect_.width(); }
-  int height() const { return plugin_rect_.height(); }
-  gfx::Size plugin_size() const { return plugin_rect_.size(); }
-  gfx::Rect plugin_rect() const { return plugin_rect_; }
+  gfx::Rect view_rect() const { return view_rect_; }
 
   void ShowSadGraphic();
 
@@ -173,7 +170,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // then we will attempt to access a nullptr.
   const int render_frame_routing_id_;
   blink::WebPluginContainer* container_;
-  gfx::Rect plugin_rect_;
+  gfx::Rect view_rect_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;

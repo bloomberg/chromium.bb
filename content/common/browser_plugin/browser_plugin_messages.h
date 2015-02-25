@@ -42,8 +42,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
   // The new size of the guest view.
-  IPC_STRUCT_MEMBER(gfx::Size, view_size)
-  IPC_STRUCT_MEMBER(gfx::Point, origin)
+  IPC_STRUCT_MEMBER(gfx::Rect, view_rect)
   // Whether the browser plugin is a full page plugin document.
   IPC_STRUCT_MEMBER(bool, is_full_page_plugin)
 IPC_STRUCT_END()
