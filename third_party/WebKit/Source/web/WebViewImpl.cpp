@@ -282,6 +282,29 @@ UserGestureNotifier::~UserGestureNotifier()
     }
 }
 
+class EmptyEventListener final : public EventListener {
+public:
+    static PassRefPtr<EmptyEventListener> create()
+    {
+        return adoptRef(new EmptyEventListener());
+    }
+
+    bool operator==(const EventListener& other) override
+    {
+        return this == &other;
+    }
+
+private:
+    EmptyEventListener()
+        : EventListener(CPPEventListenerType)
+    {
+    }
+
+    void handleEvent(ExecutionContext* executionContext, Event*) override
+    {
+    }
+};
+
 } // namespace
 
 // WebView ----------------------------------------------------------------
@@ -1575,22 +1598,14 @@ void WebViewImpl::popupOpened(PopupContainer* popupContainer)
 {
     ASSERT(!m_selectPopup);
     m_selectPopup = popupContainer;
-    ASSERT(mainFrameImpl()->frame()->document());
-    Document& document = *mainFrameImpl()->frame()->document();
-    page()->frameHost().eventHandlerRegistry().didAddEventHandler(document, EventHandlerRegistry::WheelEvent);
+    enablePopupMouseWheelEventListener();
 }
 
 void WebViewImpl::popupClosed(PopupContainer* popupContainer)
 {
     ASSERT(m_selectPopup);
     m_selectPopup = nullptr;
-    ASSERT(mainFrameImpl()->frame()->document());
-    Document& document = *mainFrameImpl()->frame()->document();
-    // Remove the handler we added in |popupOpened| conditionally, because the
-    // Document may have already removed it, for instance, due to a navigation.
-    EventHandlerRegistry* registry = &document.frameHost()->eventHandlerRegistry();
-    if (registry->eventHandlerTargets(EventHandlerRegistry::WheelEvent)->contains(&document))
-        registry->didRemoveEventHandler(document, EventHandlerRegistry::WheelEvent);
+    disablePopupMouseWheelEventListener();
 }
 
 PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client)
@@ -1607,6 +1622,7 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client)
         m_pagePopup->closePopup();
         m_pagePopup = nullptr;
     }
+    enablePopupMouseWheelEventListener();
     return m_pagePopup.get();
 }
 
@@ -1619,6 +1635,26 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
         return;
     m_pagePopup->closePopup();
     m_pagePopup = nullptr;
+    disablePopupMouseWheelEventListener();
+}
+
+void WebViewImpl::enablePopupMouseWheelEventListener()
+{
+    ASSERT(!m_popupMouseWheelEventListener);
+    ASSERT(mainFrameImpl()->frame()->document());
+    // We register an empty event listener, EmptyEventListener, so that mouse
+    // wheel events get sent to the WebView.
+    m_popupMouseWheelEventListener = EmptyEventListener::create();
+    mainFrameImpl()->frame()->document()->addEventListener(EventTypeNames::mousewheel, m_popupMouseWheelEventListener, false);
+}
+
+void WebViewImpl::disablePopupMouseWheelEventListener()
+{
+    ASSERT(m_popupMouseWheelEventListener);
+    ASSERT(mainFrameImpl()->frame()->document());
+    // Document may have already removed the event listener, for instance, due
+    // to a navigation, but remove it anyway.
+    mainFrameImpl()->frame()->document()->removeEventListener(EventTypeNames::mousewheel, m_popupMouseWheelEventListener.release(), false);
 }
 
 LocalDOMWindow* WebViewImpl::pagePopupWindow() const

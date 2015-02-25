@@ -622,6 +622,9 @@ private:
     InputMethodContext* inputMethodContext();
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 
+    void enablePopupMouseWheelEventListener();
+    void disablePopupMouseWheelEventListener();
+
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebSpellCheckClient* m_spellCheckClient;
 
@@ -766,6 +769,8 @@ private:
     float m_zoomFactorOverride;
 
     bool m_userGestureObserved;
+
+    RefPtr<EventListener> m_popupMouseWheelEventListener;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());
