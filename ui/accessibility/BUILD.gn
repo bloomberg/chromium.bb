@@ -31,6 +31,8 @@ component("accessibility") {
     "platform/ax_platform_node_delegate.h",
     "platform/ax_platform_node_mac.h",
     "platform/ax_platform_node_mac.mm",
+    "platform/ax_platform_node_win.h",
+    "platform/ax_platform_node_win.cc",
   ]
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
@@ -41,10 +43,16 @@ component("accessibility") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_win) {
+    public_deps += [ "//third_party/iaccessible2" ]
+  }
 }
 
 source_set("test_support") {
   sources = [
+    "platform/test_ax_node_wrapper.cc",
+    "platform/test_ax_node_wrapper.h",
     "tree_generator.cc",
     "tree_generator.h",
   ]
@@ -60,6 +68,7 @@ test("accessibility_unittests") {
     "ax_text_utils_unittest.cc",
     "ax_tree_serializer_unittest.cc",
     "ax_tree_unittest.cc",
+    "platform/ax_platform_node_win_unittest.cc",
   ]
 
   deps = [
@@ -71,6 +80,10 @@ test("accessibility_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_win) {
+    deps += [ "//third_party/iaccessible2" ]
+  }
 }
 
 json_schema_api("ax_gen") {
