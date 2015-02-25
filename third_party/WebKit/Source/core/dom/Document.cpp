@@ -5487,7 +5487,7 @@ void Document::setAutofocusElement(Element* element)
 
 Element* Document::activeElement() const
 {
-    if (Element* element = treeScope().adjustedFocusedElement())
+    if (Element* element = adjustedFocusedElement())
         return element;
     return body();
 }
