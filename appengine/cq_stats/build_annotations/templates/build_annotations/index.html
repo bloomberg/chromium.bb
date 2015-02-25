@@ -48,7 +48,7 @@
     <th class="build_list">Annotation Summary</th>
   </tr>
 {% for build_row in builds_list %}
-  <tr>
+  <tr class="build_item_{{ build_row.status }}">
     <td class="build_list"><a href="{% url 'build_annotations:edit_annotations' build_config build_row.id %}">{{ build_row.id }}</a></td>
     <td class="build_list">{{ build_row.build_number }}</td>
     <td class="build_list">{{ build_row.status|truncatechars:20 }}</td>

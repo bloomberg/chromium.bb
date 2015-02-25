@@ -41,6 +41,7 @@ table {
 h1, h2, h3 {
   color: #0B3B17;
 }
+
 table.build_list, table.annotations_list {
   border: 1px solid green;
   width: 100%;
@@ -57,10 +58,24 @@ td.build_list, td.annotations_list {
   text-align: left;
   display: inherit;
 }
+tr.build_item_pass {
+  background-color: #B2DF99;
+}
+tr.build_item_inflight {
+  background-color: #DDDF99;
+}
+tr.build_item_fail {
+  background-color: #DF99A9;
+}
+tr.build_item_aborted {
+  background-color: #C499DF;
+}
+
 th.build_details, td.build_details {
   padding-right: 30px;
   background-color: #E6E6E6;
 }
+
 .hidden {
   display: none;
 }
