@@ -76,12 +76,12 @@ function openFileDialog(volumeName, expectedSet) {
         expectedSet,
         function(windowId) {
           return remoteCall.waitForElement(windowId,
-                                           '.button-panel paper-button.cancel').
+                                           '.button-panel button.cancel').
               then(function() {
                 return remoteCall.callRemoteTestUtil(
                     'fakeEvent',
                     windowId,
-                    ['.button-panel paper-button.cancel', 'click']);
+                    ['.button-panel button.cancel', 'click']);
               });
         });
   }).then(function(result) {
@@ -110,12 +110,12 @@ function openFileDialog(volumeName, expectedSet) {
         expectedSet,
         function(windowId) {
           return remoteCall.waitForElement(windowId,
-                                           '.button-panel paper-button.ok').
+                                           '.button-panel button.ok').
               then(function() {
                 return remoteCall.callRemoteTestUtil(
                     'fakeEvent',
                     windowId,
-                    ['.button-panel paper-button.ok', 'click']);
+                    ['.button-panel button.ok', 'click']);
               });
         });
   }).then(function(result) {
