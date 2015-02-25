@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 // See: http://crbug.com/298193
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_DidStopLoadingDetailsWithPending \
   DISABLED_DidStopLoadingDetailsWithPending
 #else
