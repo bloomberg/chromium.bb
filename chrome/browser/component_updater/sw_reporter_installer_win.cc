@@ -33,6 +33,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/safe_browsing/srt_global_error_win.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -45,10 +47,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using safe_browsing::IsInSRTPromptFieldTrialGroups;
 
 namespace component_updater {
 
@@ -64,6 +66,7 @@ enum SwReporterUmaValue {
   SW_REPORTER_FAILED_TO_START = 4,
   SW_REPORTER_REGISTRY_EXIT_CODE = 5,
   SW_REPORTER_RESET_RETRIES = 6,  // Deprecated.
+  SW_REPORTER_DOWNLOAD_START = 7,
   SW_REPORTER_MAX,
 };
 
@@ -93,11 +96,6 @@ const wchar_t kExitCodeRegistryValueName[] = L"ExitCode";
 const wchar_t kStartTimeRegistryValueName[] = L"StartTime";
 const wchar_t kUploadResultsValueName[] = L"UploadResults";
 const wchar_t kVersionRegistryValueName[] = L"Version";
-
-// Field trial strings.
-const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
-const char kSRTPromptOnGroup[] = "On";
-const char kSRTPromptSeedParamName[] = "Seed";
 
 // Exit codes that identify that a cleanup is needed.
 const int kCleanupNeeded = 0;
@@ -174,20 +172,21 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
 // so the kSwReporterPromptVersion prefs can be set.
 void ReportAndClearExitCode(int exit_code, const std::string& version) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
-  base::win::RegKey srt_key(HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey,
-                            KEY_WRITE);
-  srt_key.DeleteValue(kExitCodeRegistryValueName);
 
   if (g_browser_process && g_browser_process->local_state()) {
     g_browser_process->local_state()->SetInteger(prefs::kSwReporterLastExitCode,
                                                  exit_code);
   }
 
+  base::win::RegKey srt_key(HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey,
+                            KEY_SET_VALUE);
+  srt_key.DeleteValue(kExitCodeRegistryValueName);
+
   if ((exit_code != kPostRebootCleanupNeeded && exit_code != kCleanupNeeded) ||
-      base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
-          kSRTPromptOnGroup) {
+      !IsInSRTPromptFieldTrialGroups()) {
     return;
   }
+
   // Find the last active browser, which may be NULL, in which case we won't
   // show the prompt this time and will wait until the next run of the
   // reporter. We can't use other ways of finding a browser because we don't
@@ -205,58 +204,19 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
 
   // Don't show the prompt again if it's been shown before for this profile
   // and for the current Finch seed.
-  std::map<std::string, std::string> params;
-  variations::GetVariationParams(kSRTPromptTrialName, &params);
-  const std::string previous_prompt_seed =
-      prefs->GetString(prefs::kSwReporterPromptSeed);
-  std::map<std::string, std::string>::const_iterator seed_iter(
-      params.find(std::string(kSRTPromptSeedParamName)));
-  bool valid_incoming_seed =
-      seed_iter != params.end() && !seed_iter->second.empty();
-  if (valid_incoming_seed && seed_iter->second == previous_prompt_seed)
+  std::string incoming_seed = safe_browsing::GetIncomingSRTSeed();
+  std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
+  if (!incoming_seed.empty() && incoming_seed == old_seed)
     return;
 
-  // If we don't have a new seed, and have shown the prompt before, don't show
-  // it again.
-  const std::string prompt_version =
-      prefs->GetString(prefs::kSwReporterPromptVersion);
-  if (!valid_incoming_seed && !prompt_version.empty())
-    return;
-
-  if (valid_incoming_seed)
-    prefs->SetString(prefs::kSwReporterPromptSeed, seed_iter->second);
+  if (!incoming_seed.empty())
+    prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
   prefs->SetString(prefs::kSwReporterPromptVersion, version);
   prefs->SetInteger(prefs::kSwReporterPromptReason, exit_code);
 
-  // Make sure we have a tabbed browser since we need to anchor the bubble to
-  // the toolbar's wrench menu. Create one if none exist already.
-  if (browser->type() != Browser::TYPE_TABBED) {
-    browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
-    if (!browser)
-      browser = new Browser(Browser::CreateParams(profile, desktop_type));
-  }
-  GlobalErrorService* global_error_service =
-      GlobalErrorServiceFactory::GetForProfile(profile);
-  SRTGlobalError* global_error = new SRTGlobalError(global_error_service);
-
-  // |global_error_service| takes ownership of |global_error| and keeps it
-  // alive until RemoveGlobalError() is called, and even then, the object
-  // is not destroyed, the caller of RemoveGlobalError is responsible to
-  // destroy it, and in the case of the SRTGlobalError, it deletes itself
-  // but only after the bubble has been interacted with.
-  global_error_service->AddGlobalError(global_error);
-
-  // Do not try to show bubble if another GlobalError is already showing
-  // one. The bubble will be shown once the others have been dismissed.
-  const GlobalErrorService::GlobalErrorList& global_errors(
-      global_error_service->errors());
-  GlobalErrorService::GlobalErrorList::const_iterator it;
-  for (it = global_errors.begin(); it != global_errors.end(); ++it) {
-    if ((*it)->GetBubbleView())
-      break;
-  }
-  if (it == global_errors.end())
-    global_error->ShowBubbleView(browser);
+  // Download the SRT.
+  ReportUmaStep(SW_REPORTER_DOWNLOAD_START);
+  safe_browsing::FetchSRTAndDisplayBubble();
 }
 
 // This function is called from a worker thread to launch the SwReporter and
@@ -393,8 +353,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
   // The Sw reporter doesn't need to run if the user isn't reporting metrics and
   // isn't in the SRTPrompt field trial "On" group.
   if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() &&
-      base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
-          kSRTPromptOnGroup) {
+      !IsInSRTPromptFieldTrialGroups()) {
     return;
   }
 
