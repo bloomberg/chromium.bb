@@ -461,6 +461,11 @@ IntPoint PinchViewport::minimumScrollPosition() const
 
 IntPoint PinchViewport::maximumScrollPosition() const
 {
+    return flooredIntPoint(maximumScrollPositionDouble());
+}
+
+DoublePoint PinchViewport::maximumScrollPositionDouble() const
+{
     if (!mainFrame())
         return IntPoint();
 
@@ -481,8 +486,7 @@ IntPoint PinchViewport::maximumScrollPosition() const
 
     FloatSize maxPosition = frameViewSize - viewportSize;
     maxPosition.scale(1 / m_scale);
-
-    return flooredIntPoint(maxPosition);
+    return DoublePoint(maxPosition);
 }
 
 IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float scale)
@@ -578,8 +582,8 @@ LocalFrame* PinchViewport::mainFrame() const
 FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
 {
     FloatPoint clampedOffset(offset);
-    clampedOffset = clampedOffset.shrunkTo(FloatPoint(maximumScrollPosition()));
-    clampedOffset = clampedOffset.expandedTo(FloatPoint(minimumScrollPosition()));
+    clampedOffset = clampedOffset.shrunkTo(FloatPoint(maximumScrollPositionDouble()));
+    clampedOffset = clampedOffset.expandedTo(FloatPoint(minimumScrollPositionDouble()));
     return clampedOffset;
 }
 

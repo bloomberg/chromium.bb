@@ -1137,11 +1137,11 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustment)
 
     // Simulate bringing up the top controls by 10.5px.
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 1, -10.5f / 20);
-    EXPECT_SIZE_EQ(FloatSize(500, 440.5f), pinchViewport.visibleRect().size());
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 440.5f), pinchViewport.visibleRect().size());
 
     // maximumScrollPosition floors the final values.
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(500, floor(881 - 440.5f)), pinchViewport.location());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(500, 881 - 440.5f), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
     frameView.scrollBy(IntSize(10000, 10000));
@@ -1204,7 +1204,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
 
     // Ensure max scroll offsets are updated properly.
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(375, floor(877 - 548.75)), pinchViewport.location());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(375, 877.5 - 548.75), pinchViewport.location());
 
     frameView.scrollBy(IntSize(10000, 10000));
     EXPECT_POINT_EQ(
@@ -1446,6 +1446,23 @@ TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
 
     FrameView& frameView = *localFrame->frameView();
     EXPECT_SIZE_EQ(IntSize(200, 400), frameView.frameRect().size());
+}
+
+// Tests that the maximum scroll offset of the viewport can be fractional.
+TEST_F(PinchViewportTest, FractionalMaxScrollOffset)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(101, 201));
+    navigateTo("about:blank");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    ScrollableArea* scrollableArea = &pinchViewport;
+
+    webViewImpl()->setPageScaleFactor(1.0);
+    EXPECT_FLOAT_POINT_EQ(DoublePoint(), scrollableArea->maximumScrollPositionDouble());
+
+    webViewImpl()->setPageScaleFactor(2);
+    EXPECT_FLOAT_POINT_EQ(DoublePoint(101. / 2., 201. / 2.), scrollableArea->maximumScrollPositionDouble());
 }
 
 } // namespace

@@ -44,6 +44,7 @@ struct SkPoint;
 
 namespace blink {
 
+class DoublePoint;
 class IntPoint;
 class IntSize;
 class LayoutPoint;
@@ -54,6 +55,7 @@ public:
     FloatPoint() : m_x(0), m_y(0) { }
     FloatPoint(float x, float y) : m_x(x), m_y(y) { }
     FloatPoint(const IntPoint&);
+    explicit FloatPoint(const DoublePoint&);
     explicit FloatPoint(const LayoutPoint&);
     explicit FloatPoint(const FloatSize& size) : m_x(size.width()), m_y(size.height()) { }
     explicit FloatPoint(const LayoutSize&);

@@ -29,6 +29,7 @@
 
 #include "SkPoint.h"
 #include "platform/FloatConversion.h"
+#include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include <limits>
@@ -43,6 +44,10 @@ static inline SkScalar WebCoreFloatToSkScalar(float f)
 }
 
 FloatPoint::FloatPoint(const IntPoint& p) : m_x(p.x()), m_y(p.y())
+{
+}
+
+FloatPoint::FloatPoint(const DoublePoint& p) : m_x(p.x()), m_y(p.y())
 {
 }
 

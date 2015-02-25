@@ -180,7 +180,9 @@ public:
     virtual IntPoint scrollPosition() const = 0;
     virtual DoublePoint scrollPositionDouble() const { return DoublePoint(scrollPosition()); }
     virtual IntPoint minimumScrollPosition() const = 0;
+    virtual DoublePoint minimumScrollPositionDouble() const { return DoublePoint(minimumScrollPosition()); }
     virtual IntPoint maximumScrollPosition() const = 0;
+    virtual DoublePoint maximumScrollPositionDouble() const { return DoublePoint(maximumScrollPosition()); }
 
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
     virtual int visibleHeight() const { return visibleContentRect().height(); }

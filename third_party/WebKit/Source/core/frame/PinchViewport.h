@@ -166,6 +166,7 @@ private:
     virtual DoublePoint scrollPositionDouble() const override { return m_offset; }
     virtual IntPoint minimumScrollPosition() const override;
     virtual IntPoint maximumScrollPosition() const override;
+    virtual DoublePoint maximumScrollPositionDouble() const override;
     virtual int visibleHeight() const override { return visibleRect().height(); };
     virtual int visibleWidth() const override { return visibleRect().width(); };
     virtual IntSize contentsSize() const override;

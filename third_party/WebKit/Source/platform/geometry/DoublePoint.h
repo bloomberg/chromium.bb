@@ -7,6 +7,7 @@
 
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/LayoutPoint.h"
 
@@ -36,19 +37,29 @@ public:
     }
     explicit DoublePoint(const LayoutPoint&);
 
+    explicit DoublePoint(const IntSize& size)
+        : m_x(size.width()), m_y(size.height())
+    {
+    }
+
+    explicit DoublePoint(const FloatSize& size)
+        : m_x(size.width()), m_y(size.height())
+    {
+    }
+
     explicit DoublePoint(const DoubleSize& size)
         : m_x(size.width()), m_y(size.height())
     {
     }
 
-    DoublePoint expandedTo(int x, int y) const
+    DoublePoint expandedTo(const DoublePoint& other) const
     {
-        return DoublePoint(m_x > x ? m_x : x, m_y > y ? m_y : y);
+        return DoublePoint(std::max(m_x, other.m_x), std::max(m_y, other.m_y));
     }
 
-    DoublePoint shrunkTo(int x, int y) const
+    DoublePoint shrunkTo(const DoublePoint& other) const
     {
-        return DoublePoint(m_x < x ? m_x : x, m_y < y ? m_y : y);
+        return DoublePoint(std::min(m_x, other.m_x), std::min(m_y, other.m_y));
     }
 
     double x() const { return m_x; }

@@ -3257,10 +3257,8 @@ DoublePoint FrameView::adjustScrollPositionWithinRange(const DoublePoint& scroll
 {
     if (!constrainsScrollingToContentEdge())
         return scrollPoint;
-    DoublePoint newScrollPosition = scrollPoint.shrunkTo(
-        maximumScrollPosition().x(), maximumScrollPosition().y());
-    newScrollPosition = newScrollPosition.expandedTo(
-        minimumScrollPosition().x(), minimumScrollPosition().y());
+    DoublePoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPositionDouble());
+    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPositionDouble());
     return newScrollPosition;
 }
 
