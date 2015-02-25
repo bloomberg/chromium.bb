@@ -100,16 +100,6 @@ void Gradient::sortStopsIfNecessary()
     std::stable_sort(m_stops.begin(), m_stops.end(), compareStops);
 }
 
-bool Gradient::hasAlpha() const
-{
-    for (size_t i = 0; i < m_stops.size(); i++) {
-        if (m_stops[i].color.hasAlpha())
-            return true;
-    }
-
-    return false;
-}
-
 void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod)
 {
     // FIXME: Should it become necessary, allow calls to this method after m_gradient has been set.

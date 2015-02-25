@@ -1012,6 +1012,23 @@ crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Ti
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
+crbug.com/114835 fast/gradients/css3-color-stops.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/css3-degenerate-color-stops.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/css3-radial-gradients.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/css3-radial-gradients3.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/css3-repeating-linear-gradients.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/css3-repeating-linear-gradients2.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/css3-repeating-radial-gradients.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-color-stops.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-radial-gradients-color-hints.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-radial-gradients.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-radial-gradients3.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-repeating-gradient-color-hint.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-repeating-linear-gradient.html [ NeedsRebaseline ]
+crbug.com/114835 fast/gradients/unprefixed-repeating-radial-gradients.html [ NeedsRebaseline ]
+crbug.com/114835 fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsRebaseline ]
+crbug.com/114835 svg/zoom/page/zoom-background-images.html [ NeedsRebaseline ]
+
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]

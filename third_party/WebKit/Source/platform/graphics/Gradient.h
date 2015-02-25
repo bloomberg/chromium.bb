@@ -64,7 +64,6 @@ public:
     void addColorStop(const ColorStop&);
     void addColorStop(float value, const Color& color) { addColorStop(ColorStop(value, color)); }
 
-    bool hasAlpha() const;
     bool shaderChanged() const { return !m_gradient; }
 
     bool isRadial() const { return m_radial; }
@@ -115,7 +114,7 @@ public:
     void setDrawsInPMColorSpace(bool drawInPMColorSpace);
 
     void setSpreadMethod(GradientSpreadMethod);
-    GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
+    GradientSpreadMethod spreadMethod() const { return m_spreadMethod; }
     void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
     AffineTransform gradientSpaceTransform() { return m_gradientSpaceTransformation; }
 
