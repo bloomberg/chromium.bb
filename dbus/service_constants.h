@@ -1715,6 +1715,7 @@ const uint32_t kInvalidFileId = 0xffffffff;
 
 // For OpenStorage method:
 const char kReadOnlyMode[] = "ro";
+const char kReadWriteMode[] = "rw";
 
 // For GetFileInfo() method:
 // The id of the root node in a storage, as defined by the PTP/MTP standards.
