@@ -576,7 +576,7 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_storage_half_float) {
       GL_LUMINANCE_ALPHA16F_EXT));
 }
 
-// Check how to handle ES, texture_storage and BGRA combination; 8 tests.
+// Check how to handle ES, texture_storage and BGRA combination; 10 tests.
 
 // 1- ES2 + GL_EXT_texture_storage -> GL_EXT_texture_storage (and no
 // GL_EXT_texture_format_BGRA8888 - we don't claim to handle GL_BGRA8 in
@@ -656,6 +656,24 @@ TEST_F(FeatureInfoTest, InitializeGLES3_texture_storage) {
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_texture_storage"));
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_EXT_texture_format_BGRA8888")));
+}
+
+// 9- ANGLE will add the GL_CHROMIUM_renderbuffer_format_BGRA8888 extension and
+// the GL_BGRA8_EXT render buffer format.
+TEST_F(FeatureInfoTest, InitializeWithANGLE_BGRA8) {
+  SetupInitExpectationsWithGLVersion("", kGLRendererStringANGLE, "");
+  EXPECT_TRUE(info_->gl_version_info().is_angle);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
+  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_BGRA8_EXT));
+}
+
+// 10- vanilla opengl es means no GL_CHROMIUM_renderbuffer_format_BGRA8888
+TEST_F(FeatureInfoTest,
+       InitializeGLES2_no_CHROMIUM_renderbuffer_format_BGRA8888) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 2.0");
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888")));
 }
 
 TEST_F(FeatureInfoTest, InitializeARB_texture_float) {

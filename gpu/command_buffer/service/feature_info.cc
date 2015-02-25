@@ -471,7 +471,9 @@ void FeatureInfo::InitializeFeatures() {
     enable_texture_format_bgra8888 = true;
   }
 
-  if (extensions.Contains("GL_EXT_bgra")) {
+  // Only desktop GL extension GL_EXT_bgra or ANGLE guarantee that we can
+  // allocate a renderbuffer with this format.
+  if (extensions.Contains("GL_EXT_bgra") || gl_version_info_->is_angle) {
     enable_render_buffer_bgra = true;
   }
 
