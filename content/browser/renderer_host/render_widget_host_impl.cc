@@ -568,7 +568,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   WasResized();
 }
 
-void RenderWidgetHostImpl::GetResizeParams(
+bool RenderWidgetHostImpl::GetResizeParams(
     ViewMsg_Resize_Params* resize_params) {
   *resize_params = ViewMsg_Resize_Params();
 
@@ -588,16 +588,34 @@ void RenderWidgetHostImpl::GetResizeParams(
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
     resize_params->is_fullscreen = IsFullscreen();
   }
+
+  const bool size_changed =
+      !old_resize_params_ ||
+      old_resize_params_->new_size != resize_params->new_size;
+  bool dirty =
+      size_changed || screen_info_out_of_date_ ||
+      old_resize_params_->physical_backing_size !=
+          resize_params->physical_backing_size ||
+      old_resize_params_->is_fullscreen != resize_params->is_fullscreen ||
+      old_resize_params_->top_controls_height !=
+          resize_params->top_controls_height ||
+      old_resize_params_->top_controls_shrink_blink_size !=
+          resize_params->top_controls_shrink_blink_size ||
+      old_resize_params_->visible_viewport_size !=
+          resize_params->visible_viewport_size;
+
+  // We don't expect to receive an ACK when the requested size or the physical
+  // backing size is empty, or when the main viewport size didn't change.
+  resize_params->needs_resize_ack =
+      g_check_for_pending_resize_ack && !resize_params->new_size.IsEmpty() &&
+      !resize_params->physical_backing_size.IsEmpty() && size_changed;
+
+  return dirty;
 }
 
 void RenderWidgetHostImpl::SetInitialRenderSizeParams(
     const ViewMsg_Resize_Params& resize_params) {
-  // We don't expect to receive an ACK when the requested size or the physical
-  // backing size is empty, or when the main viewport size didn't change.
-  if (!resize_params.new_size.IsEmpty() &&
-      !resize_params.physical_backing_size.IsEmpty()) {
-    resize_ack_pending_ = g_check_for_pending_resize_ack;
-  }
+  resize_ack_pending_ = resize_params.needs_resize_ack;
 
   old_resize_params_ =
       make_scoped_ptr(new ViewMsg_Resize_Params(resize_params));
@@ -611,42 +629,15 @@ void RenderWidgetHostImpl::WasResized() {
     return;
   }
 
-  bool size_changed = true;
-  bool width_changed = true;
-  bool side_payload_changed = screen_info_out_of_date_;
   scoped_ptr<ViewMsg_Resize_Params> params(new ViewMsg_Resize_Params);
-
-  GetResizeParams(params.get());
-  if (old_resize_params_) {
-    size_changed = old_resize_params_->new_size != params->new_size;
-    width_changed =
-        old_resize_params_->new_size.width() != params->new_size.width();
-    side_payload_changed =
-        side_payload_changed ||
-        old_resize_params_->physical_backing_size !=
-            params->physical_backing_size ||
-        old_resize_params_->is_fullscreen != params->is_fullscreen ||
-        old_resize_params_->top_controls_height !=
-            params->top_controls_height ||
-        old_resize_params_->top_controls_shrink_blink_size !=
-            params->top_controls_shrink_blink_size ||
-        old_resize_params_->visible_viewport_size !=
-            params->visible_viewport_size;
-  }
-
-  if (!size_changed && !side_payload_changed)
+  if (!GetResizeParams(params.get()))
     return;
 
-  // We don't expect to receive an ACK when the requested size or the physical
-  // backing size is empty, or when the main viewport size didn't change.
-  if (!params->new_size.IsEmpty() && !params->physical_backing_size.IsEmpty() &&
-      size_changed) {
-    resize_ack_pending_ = g_check_for_pending_resize_ack;
-  }
-
-  if (!Send(new ViewMsg_Resize(routing_id_, *params))) {
-    resize_ack_pending_ = false;
-  } else {
+  bool width_changed =
+      !old_resize_params_ ||
+      old_resize_params_->new_size.width() != params->new_size.width();
+  if (Send(new ViewMsg_Resize(routing_id_, *params))) {
+    resize_ack_pending_ = params->needs_resize_ack;
     old_resize_params_.swap(params);
   }
 

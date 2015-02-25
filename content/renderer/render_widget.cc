@@ -778,7 +778,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
                           const gfx::Size& visible_viewport_size,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
-                          ResizeAck resize_ack) {
+                          const ResizeAck resize_ack) {
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
     // one.
@@ -816,8 +816,6 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // ensures that we only resize as fast as we can paint.  We only need to
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
-  } else if (!resizing_mode_selector_->is_synchronous_mode()) {
-    resize_ack = NO_RESIZE_ACK;
   }
 
   webwidget()->resizePinchViewport(gfx::Size(
@@ -825,9 +823,10 @@ void RenderWidget::Resize(const gfx::Size& new_size,
       visible_viewport_size.height()));
 
   if (new_size.IsEmpty() || physical_backing_size.IsEmpty()) {
-    // For empty size or empty physical_backing_size, there is no next paint
-    // (along with which to send the ack) until they are set to non-empty.
-    resize_ack = NO_RESIZE_ACK;
+    // In this case there is no paint/composite and therefore no
+    // ViewHostMsg_UpdateRect to send the resize ack with. We'd need to send the
+    // ack through a fake ViewHostMsg_UpdateRect or a different message.
+    DCHECK_EQ(resize_ack, NO_RESIZE_ACK);
   }
 
   // Send the Resize_ACK flag once we paint again if requested.
@@ -910,7 +909,7 @@ void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
          params.visible_viewport_size,
          params.resizer_rect,
          params.is_fullscreen,
-         SEND_RESIZE_ACK);
+         params.needs_resize_ack ? SEND_RESIZE_ACK : NO_RESIZE_ACK);
 
   if (orientation_changed)
     OnOrientationChange();

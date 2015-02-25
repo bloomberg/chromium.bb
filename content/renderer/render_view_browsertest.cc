@@ -2283,27 +2283,6 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   EXPECT_LE(late_nav_reported_start, after_navigation);
 }
 
-class RenderViewImplInitialSizeTest : public RenderViewImplTest {
- public:
-  RenderViewImplInitialSizeTest()
-      : RenderViewImplTest(), initial_size_(200, 100) {}
-
- protected:
-  scoped_ptr<ViewMsg_Resize_Params> InitialSizeParams() override {
-    scoped_ptr<ViewMsg_Resize_Params> initial_size_params(
-        new ViewMsg_Resize_Params());
-    initial_size_params->new_size = initial_size_;
-    return initial_size_params.Pass();
-  }
-
-  gfx::Size initial_size_;
-};
-
-TEST_F(RenderViewImplInitialSizeTest, InitialSize) {
-  ASSERT_EQ(initial_size_, view_->GetSize());
-  ASSERT_EQ(initial_size_, gfx::Size(view_->GetWebView()->size()));
-}
-
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   LoadHTML("<body style='margin:0;'><div style='display:inline-block; "
            "width:400px; height:400px;'/></body>");

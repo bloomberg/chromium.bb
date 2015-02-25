@@ -564,7 +564,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                      const gfx::Size& max_size);
 
   // Fills in the |resize_params| struct.
-  void GetResizeParams(ViewMsg_Resize_Params* resize_params);
+  // Returns |false| if the update is redundant, |true| otherwise.
+  bool GetResizeParams(ViewMsg_Resize_Params* resize_params);
 
   // Sets the |resize_params| that were sent to the renderer bundled with the
   // request to create a new RenderWidget.

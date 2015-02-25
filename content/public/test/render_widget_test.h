@@ -10,18 +10,24 @@
 #include "content/public/test/render_view_test.h"
 
 class SkBitmap;
+struct ViewMsg_Resize_Params;
 
 namespace gfx {
 class Size;
 }
 
 namespace content {
+class RenderWidget;
 
 class RenderWidgetTest : public RenderViewTest {
  public:
   RenderWidgetTest();
 
  protected:
+  RenderWidget* widget();
+  void OnResize(const ViewMsg_Resize_Params& params);
+  bool next_paint_is_resize_ack();
+
   static const int kNumBytesPerPixel;
   static const int kLargeWidth;
   static const int kLargeHeight;
@@ -30,9 +36,6 @@ class RenderWidgetTest : public RenderViewTest {
   static const int kTextPositionX;
   static const int kTextPositionY;
   static const uint32 kRedARGB;
-
-  // Test for OnResize and Resize.
-  void TestOnResize();
 };
 
 }  // namespace content
