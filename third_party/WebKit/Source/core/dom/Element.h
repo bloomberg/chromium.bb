@@ -187,12 +187,10 @@ public:
     virtual int scrollWidth();
     virtual int scrollHeight();
 
-    virtual void scrollBy(double x, double y);
+    void scrollBy(double x, double y);
     virtual void scrollBy(const ScrollToOptions&);
-    virtual void scrollTo(double x, double y);
+    void scrollTo(double x, double y);
     virtual void scrollTo(const ScrollToOptions&);
-    void scroll(double x, double y) { scrollTo(x, y); }
-    void scroll(const ScrollToOptions& scrollToOptions) { scrollTo(scrollToOptions); }
 
     IntRect boundsInViewportSpace();
 
