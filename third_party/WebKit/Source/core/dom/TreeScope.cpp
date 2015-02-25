@@ -47,9 +47,9 @@
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -270,7 +270,7 @@ HitTestResult hitTestInDocument(const Document* document, int x, int y)
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(hitPoint);
-    document->renderView()->hitTest(request, result);
+    document->layoutView()->hitTest(request, result);
     return result;
 }
 
@@ -300,7 +300,7 @@ Vector<Element*> TreeScope::elementsFromPoint(int x, int y) const
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
     HitTestResult result(hitPoint);
-    document.renderView()->hitTest(request, result);
+    document.layoutView()->hitTest(request, result);
 
     Node* lastNode = nullptr;
     for (const auto rectBasedNode : result.listBasedTestResult()) {

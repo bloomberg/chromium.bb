@@ -37,13 +37,13 @@ class ForceHorriblySlowRectMapping;
 class LayoutBox;
 class LayoutFlowThread;
 class LayoutObject;
-class RenderView;
+class LayoutView;
 
 class LayoutState {
     WTF_MAKE_NONCOPYABLE(LayoutState);
 public:
-    // Constructor for root LayoutState created by RenderView
-    LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView&);
+    // Constructor for root LayoutState created by LayoutView
+    LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, LayoutView&);
     // Constructor for sub-tree layout
     explicit LayoutState(LayoutObject& root);
 

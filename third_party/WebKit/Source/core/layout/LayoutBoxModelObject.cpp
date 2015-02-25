@@ -32,6 +32,7 @@
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRegion.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/BorderEdge.h"
@@ -40,7 +41,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/DrawLooperBuilder.h"
@@ -77,7 +77,7 @@ void LayoutBoxModelObject::setSelectionState(SelectionState state)
     // This is a workaround for http://webkit.org/b/32123
     // The containing block can be null in case of an orphaned tree.
     RenderBlock* containingBlock = this->containingBlock();
-    if (containingBlock && !containingBlock->isRenderView())
+    if (containingBlock && !containingBlock->isLayoutView())
         containingBlock->setSelectionState(state);
 }
 
@@ -114,7 +114,7 @@ void LayoutBoxModelObject::willBeDestroyed()
     ASSERT(!continuation());
 
     if (isPositioned()) {
-        // Don't use this->view() because the document's renderView has been set to 0 during destruction.
+        // Don't use this->view() because the document's layoutView has been set to 0 during destruction.
         if (LocalFrame* frame = this->frame()) {
             if (FrameView* frameView = frame->view()) {
                 if (style()->hasViewportConstrainedPosition())
@@ -222,8 +222,8 @@ LayerScrollableArea* LayoutBoxModelObject::scrollableArea() const
 void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     if (hasLayer()) {
-        if (isRenderView()) {
-            // RenderView is handled with a special fast-path, but it needs to know the current layer.
+        if (isLayoutView()) {
+            // LayoutView is handled with a special fast-path, but it needs to know the current layer.
             LayoutObject::addLayerHitTestRects(rects, layer(), LayoutPoint(), LayoutRect());
         } else {
             // Since a LayoutObject never lives outside it's container Layer, we can switch
@@ -361,7 +361,7 @@ RenderBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
 
     // Match LayoutBox::availableLogicalHeightUsing by special casing
     // the render view. The available height is taken from the frame.
-    if (cb->isRenderView())
+    if (cb->isLayoutView())
         return 0;
 
     if (cb->isOutOfFlowPositioned() && !cb->style()->logicalTop().isAuto() && !cb->style()->logicalBottom().isAuto())

@@ -194,7 +194,7 @@ static float computeFontSize(StyleResolverState& state, CSSPrimitiveValue* primi
     float em = state.parentStyle()->specifiedFontSize();
     float rem = state.rootElementStyle() ? state.rootElementStyle()->specifiedFontSize() : 1.0f;
     CSSToLengthConversionData::FontSizes fontSizes(em, rem, &state.parentStyle()->font());
-    CSSToLengthConversionData::ViewportSize viewportSize(state.document().renderView());
+    CSSToLengthConversionData::ViewportSize viewportSize(state.document().layoutView());
 
     CSSToLengthConversionData conversionData(state.style(), fontSizes, viewportSize, 1.0f);
     if (primitiveValue->isLength())

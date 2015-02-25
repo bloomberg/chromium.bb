@@ -65,6 +65,7 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -72,7 +73,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -104,7 +104,7 @@ Layer::Layer(LayoutBoxModelObject* renderer, LayerType type)
     : m_layerType(type)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
-    , m_isRootLayer(renderer->isRenderView())
+    , m_isRootLayer(renderer->isLayoutView())
     , m_visibleContentStatusDirty(true)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
@@ -422,7 +422,7 @@ TransformationMatrix Layer::renderableTransform(PaintBehavior paintBehavior) con
 
 static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, LayoutBox* ancestorColumnsRenderer)
 {
-    RenderView* view = renderer->view();
+    LayoutView* view = renderer->view();
     LayoutBoxModelObject* prevBlock = renderer;
     RenderBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();
@@ -497,7 +497,7 @@ void Layer::updatePagination()
 {
     bool usesRegionBasedColumns = useRegionBasedColumns();
     if ((!usesRegionBasedColumns && compositingState() != NotComposited) || !parent())
-        return; // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
+        return; // FIXME: For now the LayoutView can't be paginated.  Eventually printing will move to a model where it is though.
 
     // The main difference between the paginated booleans for the old column code and the new column code
     // is that each paginated layer has to paint on its own with the new code. There is no
@@ -528,7 +528,7 @@ void Layer::updatePagination()
     // For the new columns code, we want to walk up our containing block chain looking for an enclosing layer. Once
     // we find one, then we just check its pagination status.
     if (usesRegionBasedColumns) {
-        RenderView* view = renderer()->view();
+        LayoutView* view = renderer()->view();
         RenderBlock* containingBlock;
         for (containingBlock = renderer()->containingBlock();
             containingBlock && containingBlock != view;
@@ -1358,10 +1358,10 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
     // may need to be revisited in a future patch.
     // If the fixed renderer is inside a LayoutFlowThread, we should not compute location using localToAbsolute,
     // since localToAbsolute maps the coordinates from flow thread to regions coordinates and regions can be
-    // positioned in a completely different place in the viewport (RenderView).
+    // positioned in a completely different place in the viewport (LayoutView).
     if (position == FixedPosition && (!ancestorLayer || ancestorLayer == renderer->view()->layer())) {
         // If the fixed layer's container is the root, just add in the offset of the view. We can obtain this by calling
-        // localToAbsolute() on the RenderView.
+        // localToAbsolute() on the LayoutView.
         FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), IsFixed);
         location += LayoutSize(absPos.x(), absPos.y());
         return ancestorLayer;
@@ -1387,7 +1387,7 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
             }
         }
 
-        ASSERT(fixedPositionContainerLayer); // We should have hit the RenderView's layer at least.
+        ASSERT(fixedPositionContainerLayer); // We should have hit the LayoutView's layer at least.
 
         if (fixedPositionContainerLayer != ancestorLayer) {
             LayoutPoint fixedContainerCoords;
@@ -1398,7 +1398,7 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
 
             location += (fixedContainerCoords - ancestorCoords);
         } else {
-            // RenderView has been handled in the first top-level 'if' block above.
+            // LayoutView has been handled in the first top-level 'if' block above.
             ASSERT(ancestorLayer != renderer->view()->layer());
             ASSERT(ancestorLayer->hasTransformRelatedProperty());
 
@@ -1419,7 +1419,7 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
         parentLayer = layer->parent();
         bool foundAncestorFirst = false;
         while (parentLayer) {
-            // LayoutFlowThread is a positioned container, child of RenderView, positioned at (0,0).
+            // LayoutFlowThread is a positioned container, child of LayoutView, positioned at (0,0).
             // This implies that, for out-of-flow positioned elements inside a LayoutFlowThread,
             // we are bailing out before reaching root layer.
             if (parentLayer->isPositionedContainer())
@@ -1433,7 +1433,7 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
             parentLayer = parentLayer->parent();
         }
 
-        // We should not reach RenderView layer past the LayoutFlowThread layer for any
+        // We should not reach LayoutView layer past the LayoutFlowThread layer for any
         // children of the LayoutFlowThread.
         ASSERT(!renderer->flowThreadContainingBlock() || parentLayer != renderer->view()->layer());
 
@@ -1663,9 +1663,9 @@ bool Layer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTes
 {
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
-    // RenderView should make sure to update layout before entering hit testing
+    // LayoutView should make sure to update layout before entering hit testing
     ASSERT(!renderer()->frame()->view()->layoutPending());
-    ASSERT(!renderer()->document().renderView()->needsLayout());
+    ASSERT(!renderer()->document().layoutView()->needsLayout());
 
     // Start with frameVisibleRect to ensure we include the scrollbars.
     LayoutRect hitTestArea = frameVisibleRect(renderer());
@@ -1681,7 +1681,7 @@ bool Layer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTes
         // At that time, the events of the mouse should be fired.
         LayoutPoint hitPoint = hitTestLocation.point();
         if (!request.isChildFrameHitTest() && ((request.active() || request.release()) || (request.move() && hitTestArea.contains(hitPoint.x(), hitPoint.y()))) && isRootLayer()) {
-            renderer()->updateHitTestResult(result, toRenderView(renderer())->flipForWritingMode(hitTestLocation.point()));
+            renderer()->updateHitTestResult(result, toLayoutView(renderer())->flipForWritingMode(hitTestLocation.point()));
             insideLayer = this;
         }
     }
@@ -2295,14 +2295,14 @@ bool Layer::hasBlockSelectionGapBounds() const
 bool Layer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const Layer* rootLayer, const LayoutPoint* offsetFromRoot) const
 {
     // Always examine the canvas and the root.
-    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the RenderView
+    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
     // paints the root's background.
     if (isRootLayer() || renderer()->isDocumentElement())
         return true;
 
     // If we aren't an inline flow, and our layer bounds do intersect the damage rect, then we
     // can go ahead and return true.
-    RenderView* view = renderer()->view();
+    LayoutView* view = renderer()->view();
     ASSERT(view);
     if (view && !renderer()->isRenderInline()) {
         if (layerBounds.intersects(damageRect))

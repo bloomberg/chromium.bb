@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/layout/LayoutQuote.h"
 
+#include "core/layout/LayoutView.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
 

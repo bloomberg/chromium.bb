@@ -60,17 +60,17 @@ enum CompositingStateTransitionType {
 // become compositing, and creates and maintains a hierarchy of
 // GraphicsLayers based on the Layer painting order.
 //
-// There is one LayerCompositor per RenderView.
+// There is one LayerCompositor per LayoutView.
 
 class LayerCompositor final : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit LayerCompositor(RenderView&);
+    explicit LayerCompositor(LayoutView&);
     virtual ~LayerCompositor();
 
     void updateIfNeededRecursive();
 
-    // Return true if this RenderView is in "compositing mode" (i.e. has one or more
+    // Return true if this LayoutView is in "compositing mode" (i.e. has one or more
     // composited Layers)
     bool inCompositingMode() const;
     // FIXME: Replace all callers with inCompositingMode and remove this function.
@@ -206,7 +206,7 @@ private:
 
     void applyOverlayFullscreenVideoAdjustment();
 
-    RenderView& m_renderView;
+    LayoutView& m_layoutView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
 

@@ -61,6 +61,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
@@ -69,7 +70,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderView.h"
 #include "core/testing/NullExecutionContext.h"
 #include "core/testing/URLTestHelpers.h"
 #include "modules/mediastream/MediaStream.h"
@@ -703,7 +703,7 @@ static void enableViewportSettings(WebSettings* settings)
 static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierSet = false;
-    for (LayoutObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (LayoutObject* renderer = document->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->style()) {
             renderer->style()->setTextAutosizingMultiplier(multiplier);
 
@@ -718,7 +718,7 @@ static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierChecked = false;
-    for (LayoutObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (LayoutObject* renderer = document->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->style() && renderer->isText()) {
             EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
             multiplierChecked = true;
@@ -802,7 +802,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
         if (!frame->isLocalFrame())
             continue;
         EXPECT_TRUE(setTextAutosizingMultiplier(toLocalFrame(frame)->document(), 2));
-        for (LayoutObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+        for (LayoutObject* renderer = toLocalFrame(frame)->document()->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_FALSE(renderer->needsLayout());
         }
@@ -812,7 +812,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        for (LayoutObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+        for (LayoutObject* renderer = toLocalFrame(frame)->document()->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_TRUE(renderer->needsLayout());
         }
@@ -2317,13 +2317,13 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "large-div.html");
 
     FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
-    EXPECT_TRUE(view->renderView()->compositor()->layerForHorizontalScrollbar());
-    EXPECT_TRUE(view->renderView()->compositor()->layerForVerticalScrollbar());
+    EXPECT_TRUE(view->layoutView()->compositor()->layerForHorizontalScrollbar());
+    EXPECT_TRUE(view->layoutView()->compositor()->layerForVerticalScrollbar());
 
     webViewHelper.webView()->resize(WebSize(viewWidth * 10, viewHeight * 10));
     webViewHelper.webView()->layout();
-    EXPECT_FALSE(view->renderView()->compositor()->layerForHorizontalScrollbar());
-    EXPECT_FALSE(view->renderView()->compositor()->layerForVerticalScrollbar());
+    EXPECT_FALSE(view->layoutView()->compositor()->layerForHorizontalScrollbar());
+    EXPECT_FALSE(view->layoutView()->compositor()->layerForVerticalScrollbar());
 }
 
 void setScaleAndScrollAndLayout(WebView* webView, WebPoint scroll, float scale)

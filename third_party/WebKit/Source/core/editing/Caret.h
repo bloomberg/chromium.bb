@@ -37,7 +37,7 @@ class LocalFrame;
 class GraphicsContext;
 class PositionWithAffinity;
 class RenderBlock;
-class RenderView;
+class LayoutView;
 
 class CaretBase {
     WTF_MAKE_NONCOPYABLE(CaretBase);
@@ -55,7 +55,7 @@ protected:
     bool updateCaretRect(Document*, const VisiblePosition& caretPosition);
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(Node&) const;
-    bool shouldRepaintCaret(const RenderView*) const;
+    bool shouldRepaintCaret(const LayoutView*) const;
     void paintCaret(Node*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }

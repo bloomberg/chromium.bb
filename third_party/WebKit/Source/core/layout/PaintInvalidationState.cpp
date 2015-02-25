@@ -6,30 +6,30 @@
 #include "core/layout/PaintInvalidationState.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/Partitions.h"
 
 namespace blink {
 
-PaintInvalidationState::PaintInvalidationState(const RenderView& renderView)
+PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(false)
-    , m_paintInvalidationContainer(*renderView.containerForPaintInvalidation())
+    , m_paintInvalidationContainer(*layoutView.containerForPaintInvalidation())
 {
-    bool establishesPaintInvalidationContainer = renderView == m_paintInvalidationContainer;
+    bool establishesPaintInvalidationContainer = layoutView == m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
-        if (!renderView.supportsPaintInvalidationStateCachedOffsets()) {
+        if (!layoutView.supportsPaintInvalidationStateCachedOffsets()) {
             m_cachedOffsetsEnabled = false;
             return;
         }
-        FloatPoint point = renderView.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+        FloatPoint point = layoutView.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
         m_paintOffset = LayoutSize(point.x(), point.y());
     }
-    m_clipRect = renderView.viewRect();
+    m_clipRect = layoutView.viewRect();
     m_clipRect.move(m_paintOffset);
     m_clipped = true;
 }

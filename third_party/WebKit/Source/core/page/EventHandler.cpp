@@ -65,6 +65,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -79,7 +80,6 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -697,7 +697,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     if (m_selectionInitiationState != ExtendedSelection) {
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
         HitTestResult result(m_mouseDownPos);
-        m_frame->document()->renderView()->hitTest(request, result);
+        m_frame->document()->layoutView()->hitTest(request, result);
 
         updateSelectionForMouseDrag(result);
     }
@@ -710,7 +710,7 @@ void EventHandler::updateSelectionForMouseDrag()
     FrameView* view = m_frame->view();
     if (!view)
         return;
-    RenderView* renderer = m_frame->contentRenderer();
+    LayoutView* renderer = m_frame->contentRenderer();
     if (!renderer)
         return;
 
@@ -882,7 +882,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
 
     HitTestResult result(point, padding.height(), padding.width(), padding.height(), padding.width());
 
-    // RenderView::hitTest causes a layout, and we don't want to hit that until the first
+    // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
     // have intentionally clicked on something belonging to this page. Furthermore,
     // mousemove events before the first layout should not lead to a premature layout()
@@ -924,7 +924,7 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
 
     bool rootLayerScrolls = m_frame->settings() && m_frame->settings()->rootLayerScrolls();
     LayoutBox* curBox = node->renderer()->enclosingBox();
-    while (curBox && (rootLayerScrolls || !curBox->isRenderView())) {
+    while (curBox && (rootLayerScrolls || !curBox->isLayoutView())) {
         ScrollDirection physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
 
@@ -1022,15 +1022,15 @@ void EventHandler::updateCursor()
     if (!view || !view->shouldSetCursor())
         return;
 
-    RenderView* renderView = view->renderView();
-    if (!renderView)
+    LayoutView* layoutView = view->layoutView();
+    if (!layoutView)
         return;
 
     m_frame->document()->updateLayout();
 
     HitTestRequest request(HitTestRequest::ReadOnly);
     HitTestResult result(view->windowToContents(m_lastKnownMousePosition));
-    renderView->hitTest(request, result);
+    layoutView->hitTest(request, result);
 
     OptionalCursor optionalCursor = selectCursor(result);
     if (optionalCursor.isCursorChange()) {
@@ -1979,7 +1979,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
     Document* doc = m_frame->document();
 
-    if (!doc->renderView())
+    if (!doc->layoutView())
         return false;
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
@@ -1992,7 +1992,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
     HitTestRequest request(HitTestRequest::ReadOnly);
     HitTestResult result(vPoint);
-    doc->renderView()->hitTest(request, result);
+    doc->layoutView()->hitTest(request, result);
 
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
@@ -2188,14 +2188,14 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
 
     if (!eventTarget) {
         Document* document = m_frame->document();
-        if (!document->renderView())
+        if (!document->layoutView())
             return false;
 
         FrameView* view = m_frame->view();
         LayoutPoint viewPoint = view->windowToContents(gestureEvent.position());
         HitTestRequest request(HitTestRequest::ReadOnly);
         HitTestResult result(viewPoint);
-        document->renderView()->hitTest(request, result);
+        document->layoutView()->hitTest(request, result);
 
         eventTarget = result.innerNode();
 
@@ -2464,7 +2464,7 @@ bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEve
 bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureEvent)
 {
     Document* document = m_frame->document();
-    if (!document->renderView())
+    if (!document->layoutView())
         return false;
 
     FrameView* view = m_frame->view();
@@ -3009,7 +3009,7 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
     ASSERT(m_frame);
     ASSERT(m_frame->document());
 
-    if (RenderView* renderer = m_frame->contentRenderer()) {
+    if (LayoutView* renderer = m_frame->contentRenderer()) {
         if (FrameView* view = m_frame->view()) {
             HitTestRequest request(HitTestRequest::Move);
             HitTestResult result(view->windowToContents(m_lastKnownMousePosition));

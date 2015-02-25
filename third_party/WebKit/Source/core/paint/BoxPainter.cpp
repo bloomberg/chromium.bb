@@ -15,6 +15,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/style/BorderEdge.h"
@@ -23,7 +24,6 @@
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -68,10 +68,10 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
 
 LayoutRect BoxPainter::scrolledBackgroundRect()
 {
-    RenderView* renderView = m_layoutBox.view();
-    LayoutRect result = renderView->backgroundRect(&m_layoutBox);
-    if (renderView->hasOverflowClip())
-        result.move(-renderView->scrolledContentOffset());
+    LayoutView* layoutView = m_layoutBox.view();
+    LayoutRect result = layoutView->backgroundRect(&m_layoutBox);
+    if (layoutView->hasOverflowClip())
+        result.move(-layoutView->scrolledContentOffset());
     return result;
 }
 

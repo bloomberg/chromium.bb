@@ -525,7 +525,7 @@ bool SVGSVGElement::rendererIsNeeded(const LayoutStyle& style)
 {
     // FIXME: We should respect display: none on the documentElement svg element
     // but many things in FrameView and SVGImage depend on the LayoutSVGRoot when
-    // they should instead depend on the RenderView.
+    // they should instead depend on the LayoutView.
     // https://bugs.webkit.org/show_bug.cgi?id=103493
     if (document().documentElement() == this)
         return true;

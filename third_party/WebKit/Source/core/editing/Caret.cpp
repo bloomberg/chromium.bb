@@ -33,8 +33,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -104,7 +104,7 @@ void DragCaretController::nodeWillBeRemoved(Node& node)
     if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))
         return;
 
-    m_position.deepEquivalent().document()->renderView()->clearSelection();
+    m_position.deepEquivalent().document()->layoutView()->clearSelection();
     clear();
 }
 
@@ -230,7 +230,7 @@ bool CaretBase::shouldRepaintCaret(Node& node) const
     return node.isContentEditable() || (node.parentNode() && node.parentNode()->isContentEditable());
 }
 
-bool CaretBase::shouldRepaintCaret(const RenderView* view) const
+bool CaretBase::shouldRepaintCaret(const LayoutView* view) const
 {
     ASSERT(view);
     if (FrameView* frameView = view->frameView()) {
@@ -245,7 +245,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
     if (caretRectChanged)
         return;
 
-    if (RenderView* view = node->document().renderView()) {
+    if (LayoutView* view = node->document().layoutView()) {
         if (node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || shouldRepaintCaret(view))
             invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
     }

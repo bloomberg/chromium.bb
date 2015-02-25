@@ -35,11 +35,11 @@ namespace blink {
 
 class CompositingReasonFinder;
 class Layer;
-class RenderView;
+class LayoutView;
 
 class CompositingRequirementsUpdater {
 public:
-    CompositingRequirementsUpdater(RenderView&, CompositingReasonFinder&);
+    CompositingRequirementsUpdater(LayoutView&, CompositingReasonFinder&);
     ~CompositingRequirementsUpdater();
 
     //  Recurse through the layers in z-index and overflow order (which is equivalent to painting order)
@@ -59,7 +59,7 @@ private:
 
     void updateRecursive(Layer* ancestorLayer, Layer* currentLayer, OverlapMap&, RecursionData&, bool& descendantHas3DTransform, Vector<Layer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
 
-    RenderView& m_renderView;
+    LayoutView& m_layoutView;
     CompositingReasonFinder& m_compositingReasonFinder;
 };
 

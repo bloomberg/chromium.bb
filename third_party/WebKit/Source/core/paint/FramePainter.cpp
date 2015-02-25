@@ -10,13 +10,13 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/RenderView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -36,10 +36,10 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
     documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
 
     if (!documentDirtyRect.isEmpty()) {
-        TransformRecorder transformRecorder(*context, m_frameView.renderView()->displayItemClient(),
+        TransformRecorder transformRecorder(*context, m_frameView.layoutView()->displayItemClient(),
             AffineTransform::translation(m_frameView.x() - m_frameView.scrollX(), m_frameView.y() - m_frameView.scrollY()));
 
-        ClipRecorder recorder(m_frameView.renderView()->displayItemClient(), context, DisplayItem::ClipFrameToVisibleContentRect, m_frameView.visibleContentRect());
+        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameToVisibleContentRect, m_frameView.visibleContentRect());
 
         documentDirtyRect.moveBy(-m_frameView.location() + m_frameView.scrollPosition());
         paintContents(context, documentDirtyRect);
@@ -54,10 +54,10 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
         scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
         scrollViewDirtyRect.moveBy(-m_frameView.location());
 
-        TransformRecorder transformRecorder(*context, m_frameView.renderView()->displayItemClient(),
+        TransformRecorder transformRecorder(*context, m_frameView.layoutView()->displayItemClient(),
             AffineTransform::translation(m_frameView.x(), m_frameView.y()));
 
-        ClipRecorder recorder(m_frameView.renderView()->displayItemClient(), context, DisplayItem::ClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
+        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }
@@ -88,14 +88,14 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     if (fillWithRed) {
         IntRect contentRect(IntPoint(), m_frameView.contentsSize());
-        DrawingRecorder drawingRecorder(context, m_frameView.renderView()->displayItemClient(), DisplayItem::DebugRedFill, contentRect);
+        DrawingRecorder drawingRecorder(context, m_frameView.layoutView()->displayItemClient(), DisplayItem::DebugRedFill, contentRect);
         if (!drawingRecorder.canUseCachedDrawing())
             context->fillRect(contentRect, Color(0xFF, 0, 0));
     }
 #endif
 
-    RenderView* renderView = m_frameView.renderView();
-    if (!renderView) {
+    LayoutView* layoutView = m_frameView.layoutView();
+    if (!layoutView) {
         WTF_LOG_ERROR("called FramePainter::paint with nil renderer");
         return;
     }
@@ -103,7 +103,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     RELEASE_ASSERT(!m_frameView.needsLayout());
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(renderView, rect, 0));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(layoutView, rect, 0));
 
     bool isTopLevelPainter = !s_inPaintContents;
     s_inPaintContents = true;
@@ -128,10 +128,10 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     // m_frameView.nodeToDraw() is used to draw only one element (and its descendants)
     LayoutObject* renderer = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->renderer() : 0;
-    Layer* rootLayer = renderView->layer();
+    Layer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
-    renderView->assertSubtreeIsLaidOut();
+    layoutView->assertSubtreeIsLaidOut();
     LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->renderer());
 #endif
 
@@ -161,7 +161,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
         s_inPaintContents = false;
     }
 
-    InspectorInstrumentation::didPaint(renderView, 0, context, rect);
+    InspectorInstrumentation::didPaint(layoutView, 0, context, rect);
 }
 
 void FramePainter::paintScrollbars(GraphicsContext* context, const IntRect& rect)

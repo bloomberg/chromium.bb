@@ -265,7 +265,7 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
         // Resource containers are nasty: they can invalidate clients outside the current SubtreeLayoutScope.
         // Since they only care about viewport size changes (to resolve their relative lengths), we trigger
         // their invalidation directly from SVGSVGElement::svgAttributeChange() or at a higher
-        // SubtreeLayoutScope (in RenderView::layout()).
+        // SubtreeLayoutScope (in LayoutView::layout()).
         if (forceLayout && !child->isSVGResourceContainer())
             layoutScope.setNeedsLayout(child);
 

@@ -6,7 +6,7 @@
 #include "web/PageOverlay.h"
 
 #include "core/frame/FrameView.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"

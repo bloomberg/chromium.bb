@@ -35,9 +35,9 @@
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutView.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -77,7 +77,7 @@ LayoutObject* RenderTreeBuilderForElement::parentRenderer() const
         // top layer only talks about display: none ancestors so putting a <dialog> inside an
         // <optgroup> seems like it should still work even though this check will prevent it.
         if (m_node->isInTopLayer())
-            return m_node->document().renderView();
+            return m_node->document().layoutView();
     }
 
     return parentRenderer;

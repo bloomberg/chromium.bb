@@ -31,10 +31,10 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderView.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -68,7 +68,7 @@ LayerType LayoutEmbeddedObject::layerTypeRequired() const
     // This can't just use LayoutPart::layerTypeRequired, because LayerCompositor
     // doesn't loop through LayoutEmbeddedObjects the way it does frames in order
     // to update the self painting bit on their Layer.
-    // Also, unlike iframes, embeds don't used the usesCompositing bit on RenderView
+    // Also, unlike iframes, embeds don't used the usesCompositing bit on LayoutView
     // in requiresAcceleratedCompositing.
     if (requiresAcceleratedCompositing())
         return NormalLayer;

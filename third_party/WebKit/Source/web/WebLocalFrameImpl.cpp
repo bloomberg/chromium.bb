@@ -135,6 +135,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/style/StyleInheritedData.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -146,7 +147,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
-#include "core/rendering/RenderView.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/geolocation/GeolocationController.h"
@@ -263,7 +263,7 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
             continue;
         LocalFrame* curLocalChild = toLocalFrame(curChild);
         // Ignore the text of non-visible frames.
-        RenderView* contentRenderer = curLocalChild->contentRenderer();
+        LayoutView* contentRenderer = curLocalChild->contentRenderer();
         LayoutPart* ownerRenderer = curLocalChild->ownerRenderer();
         if (!contentRenderer || !contentRenderer->size().width() || !contentRenderer->size().height()
             || (contentRenderer->location().x() + contentRenderer->size().width() <= 0) || (contentRenderer->location().y() + contentRenderer->size().height() <= 0)
@@ -340,11 +340,11 @@ public:
     float spoolSinglePage(GraphicsContext& graphicsContext, int pageNumber)
     {
         dispatchEventsForPrintingOnAllFrames();
-        if (!frame()->document() || !frame()->document()->renderView())
+        if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
         frame()->view()->updateLayoutAndStyleForPainting();
-        if (!frame()->document() || !frame()->document()->renderView())
+        if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
         return spoolPage(graphicsContext, pageNumber);
@@ -353,11 +353,11 @@ public:
     void spoolAllPagesWithBoundaries(GraphicsContext& graphicsContext, const FloatSize& pageSizeInPixels)
     {
         dispatchEventsForPrintingOnAllFrames();
-        if (!frame()->document() || !frame()->document()->renderView())
+        if (!frame()->document() || !frame()->document()->layoutView())
             return;
 
         frame()->view()->updateLayoutAndStyleForPainting();
-        if (!frame()->document() || !frame()->document()->renderView())
+        if (!frame()->document() || !frame()->document()->layoutView())
             return;
 
         float pageHeight;
@@ -1269,7 +1269,7 @@ VisiblePosition WebLocalFrameImpl::visiblePositionForWindowPoint(const WebPoint&
 
     HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
     HitTestResult result(frame()->view()->windowToContents(roundedIntPoint(unscaledPoint)));
-    frame()->document()->renderView()->layer()->hitTest(request, result);
+    frame()->document()->layoutView()->layer()->hitTest(request, result);
 
     if (Node* node = result.innerNode())
         return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);

@@ -25,7 +25,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/editing/PositionWithAffinity.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 
 namespace blink {
 

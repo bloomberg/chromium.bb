@@ -14,7 +14,7 @@ namespace blink {
 class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutSVGModelObject;
-class RenderView;
+class LayoutView;
 
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
@@ -22,7 +22,7 @@ public:
     PaintInvalidationState(const PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer);
     PaintInvalidationState(const PaintInvalidationState& next, const LayoutSVGModelObject& renderer);
 
-    explicit PaintInvalidationState(const RenderView&);
+    explicit PaintInvalidationState(const LayoutView&);
 
     const LayoutRect& clipRect() const { return m_clipRect; }
     const LayoutSize& paintOffset() const { return m_paintOffset; }

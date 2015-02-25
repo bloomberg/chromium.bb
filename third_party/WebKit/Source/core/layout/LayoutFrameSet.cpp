@@ -30,10 +30,10 @@
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/layout/LayoutFrame.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/EventHandler.h"
 #include "core/paint/FrameSetPainter.h"
-#include "core/rendering/RenderView.h"
 #include "platform/Cursor.h"
 #include "platform/graphics/GraphicsContext.h"
 

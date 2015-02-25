@@ -9,6 +9,7 @@
 #include "core/layout/ClipPathOperation.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/page/Page.h"
@@ -19,7 +20,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -185,7 +185,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         || (!isPaintingScrollingContent && isPaintingCompositedForeground));
     bool shouldPaintContent = m_renderLayer.hasVisibleContent() && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
-    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_renderLayer.renderer()->isRenderView() && !m_renderLayer.renderer()->isDocumentElement())
+    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_renderLayer.renderer()->isLayoutView() && !m_renderLayer.renderer()->isDocumentElement())
         return;
 
     // Ensure our lists are up-to-date.
@@ -469,7 +469,7 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
 
 static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, LayoutBox* ancestorColumnsRenderer)
 {
-    RenderView* view = renderer->view();
+    LayoutView* view = renderer->view();
     LayoutBoxModelObject* prevBlock = renderer;
     RenderBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();

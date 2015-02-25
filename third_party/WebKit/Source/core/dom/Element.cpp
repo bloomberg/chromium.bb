@@ -104,6 +104,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -112,7 +113,6 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -498,7 +498,7 @@ static float localZoomForRenderer(LayoutObject& renderer)
             }
             prev = curr;
         }
-        if (prev->isRenderView())
+        if (prev->isLayoutView())
             zoomFactor = prev->style()->zoom();
     }
     return zoomFactor;
@@ -588,8 +588,8 @@ int Element::clientWidth()
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
-            if (RenderView* renderView = document().renderView())
-                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().width(), *renderView);
+            if (LayoutView* layoutView = document().layoutView())
+                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().width(), *layoutView);
         }
     }
 
@@ -609,8 +609,8 @@ int Element::clientHeight()
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
-            if (RenderView* renderView = document().renderView())
-                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().height(), *renderView);
+            if (LayoutView* layoutView = document().layoutView())
+                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().height(), *layoutView);
         }
     }
 
@@ -2815,7 +2815,7 @@ void Element::setIsInTopLayer(bool inTopLayer)
         return;
     setElementFlag(IsInTopLayer, inTopLayer);
 
-    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
+    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under LayoutView according to its
     // top layer position, or in its usual place if not in the top layer.
     lazyReattachIfAttached();
 }

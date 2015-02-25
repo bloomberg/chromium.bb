@@ -46,10 +46,10 @@
 #include "core/html/RadioNodeList.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderView.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
 

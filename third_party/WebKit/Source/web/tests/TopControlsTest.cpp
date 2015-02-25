@@ -31,7 +31,7 @@
 #include "core/frame/TopControls.h"
 
 #include "core/frame/LocalFrame.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 #include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"

@@ -38,11 +38,11 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/NotImplemented.h"
 #include "public/web/WebBeginFrameArgs.h"
@@ -975,10 +975,10 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
 LayerCompositor* WebFrameWidgetImpl::compositor() const
 {
     LocalFrame* frame = toLocalFrame(toCoreFrame(m_localRoot));
-    if (!frame || !frame->document() || !frame->document()->renderView())
+    if (!frame || !frame->document() || !frame->document()->layoutView())
         return nullptr;
 
-    return frame->document()->renderView()->compositor();
+    return frame->document()->layoutView()->compositor();
 }
 
 void WebFrameWidgetImpl::suppressInvalidations(bool enable)

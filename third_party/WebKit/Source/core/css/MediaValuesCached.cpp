@@ -33,7 +33,7 @@ PassRefPtr<MediaValues> MediaValuesCached::create(LocalFrame* frame)
     ASSERT(!frame || frame->view());
     if (!frame || !frame->view())
         return adoptRef(new MediaValuesCached());
-    ASSERT(frame->document() && frame->document()->renderView());
+    ASSERT(frame->document() && frame->document()->layoutView());
     return adoptRef(new MediaValuesCached(frame));
 }
 

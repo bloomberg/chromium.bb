@@ -45,13 +45,13 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXARIAGrid.h"
 #include "modules/accessibility/AXARIAGridCell.h"
 #include "modules/accessibility/AXARIAGridRow.h"
@@ -763,7 +763,7 @@ void AXObjectCacheImpl::postNotification(AXObject* object, Document* document, A
         object = object->observableObject();
 
     if (!object && document)
-        object = get(document->renderView());
+        object = get(document->layoutView());
 
     if (!object)
         return;
@@ -982,7 +982,7 @@ void AXObjectCacheImpl::postPlatformNotification(AXObject* obj, AXNotification n
         Document* document = toFrameView(scrollBar->parent())->frame().document();
         if (document != document->topDocument())
             return;
-        obj = get(document->renderView());
+        obj = get(document->layoutView());
     }
 
     if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())

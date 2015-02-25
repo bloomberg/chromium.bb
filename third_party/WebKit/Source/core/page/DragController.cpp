@@ -55,6 +55,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/DragClient.h"
@@ -67,7 +68,6 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
-#include "core/rendering/RenderView.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
@@ -320,7 +320,7 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(point);
-    documentUnderMouse->renderView()->hitTest(request, result);
+    documentUnderMouse->layoutView()->hitTest(request, result);
 
     Node* n = result.innerNode();
     while (n && !n->isElementNode())

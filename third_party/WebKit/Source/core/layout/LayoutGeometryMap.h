@@ -56,8 +56,8 @@ public:
     }
 
     // Map to a container. Will assert that the container has been pushed onto this map.
-    // A null container maps through the RenderView (including its scale transform, if any).
-    // If the container is the RenderView, the scroll offset is applied, but not the scale.
+    // A null container maps through the LayoutView (including its scale transform, if any).
+    // If the container is the LayoutView, the scroll offset is applied, but not the scale.
     FloatPoint mapToContainer(const FloatPoint&, const LayoutBoxModelObject*) const;
     FloatQuad mapToContainer(const FloatRect&, const LayoutBoxModelObject*) const;
 
@@ -89,7 +89,7 @@ private:
 #endif
 
 #if ENABLE(ASSERT)
-    bool isTopmostRenderView(const LayoutObject* renderer) const;
+    bool isTopmostLayoutView(const LayoutObject* renderer) const;
 #endif
 
     typedef Vector<LayoutGeometryMapStep, 32> LayoutGeometryMapSteps;

@@ -105,6 +105,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoader.h"
@@ -119,7 +120,6 @@
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderView.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
 #include "core/testing/InternalSettings.h"
@@ -316,7 +316,7 @@ unsigned Internals::hitTestCount(Document* doc, ExceptionState& exceptionState) 
         return 0;
     }
 
-    return doc->renderView()->hitTestCount();
+    return doc->layoutView()->hitTestCount();
 }
 
 
@@ -1301,7 +1301,7 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
     if (exceptionState.hadException())
         return nullptr;
 
-    if (RenderView* view = document->renderView()) {
+    if (LayoutView* view = document->layoutView()) {
         if (LayerCompositor* compositor = view->compositor()) {
             if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
                 LayerRectList* rects = LayerRectList::create();
@@ -1353,9 +1353,9 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
 
     LocalFrame* frame = document->frame();
     FrameView* frameView = document->view();
-    RenderView* renderView = document->renderView();
+    LayoutView* layoutView = document->layoutView();
 
-    if (!renderView)
+    if (!layoutView)
         return nullptr;
 
     float zoomFactor = frame->pageZoomFactor();
@@ -1375,7 +1375,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
 
     WillBeHeapVector<RefPtrWillBeMember<Node> > matches;
     HitTestResult result(point, topPadding, rightPadding, bottomPadding, leftPadding);
-    renderView->hitTest(request, result);
+    layoutView->hitTest(request, result);
     copyToVector(result.listBasedTestResult(), matches);
 
     return StaticNodeList::adopt(matches);
@@ -1831,8 +1831,8 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
         return;
     }
 
-    if (RenderView *renderView = document->renderView())
-        renderView->invalidatePaintForViewAndCompositedLayers();
+    if (LayoutView *layoutView = document->layoutView())
+        layoutView->invalidatePaintForViewAndCompositedLayers();
 }
 
 PassRefPtrWillBeRawPtr<ClientRectList> Internals::draggableRegions(Document* document, ExceptionState& exceptionState)
@@ -2058,7 +2058,7 @@ bool Internals::loseSharedGraphicsContext3D()
 void Internals::forceCompositingUpdate(Document* document, ExceptionState& exceptionState)
 {
     ASSERT(document);
-    if (!document->renderView()) {
+    if (!document->layoutView()) {
         exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
         return;
     }

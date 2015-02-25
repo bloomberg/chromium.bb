@@ -59,9 +59,9 @@
 #include "core/html/track/VideoTrack.h"
 #include "core/html/track/VideoTrackList.h"
 #include "core/layout/LayoutVideo.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoader.h"
-#include "core/rendering/RenderView.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
@@ -3148,7 +3148,7 @@ void HTMLMediaElement::didBecomeFullscreenElement()
     if (mediaControls())
         mediaControls()->enteredFullscreen();
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
-        document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+        document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void HTMLMediaElement::willStopBeingFullscreenElement()
@@ -3156,7 +3156,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
     if (mediaControls())
         mediaControls()->exitedFullscreen();
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
-        document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+        document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 blink::WebLayer* HTMLMediaElement::platformLayer() const

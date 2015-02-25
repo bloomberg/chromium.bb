@@ -23,6 +23,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/VerticalPositionCache.h"
 #include "core/layout/line/EllipsisBox.h"
@@ -30,7 +31,6 @@
 #include "core/paint/RootInlineBoxPainter.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/text/BidiResolver.h"
 #include "wtf/unicode/Unicode.h"
 

@@ -12,12 +12,12 @@
 namespace blink {
 
 class LayoutObject;
-class RenderView;
+class LayoutView;
 
 class CompositingReasonFinder {
     WTF_MAKE_NONCOPYABLE(CompositingReasonFinder);
 public:
-    explicit CompositingReasonFinder(RenderView&);
+    explicit CompositingReasonFinder(LayoutView&);
 
     CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
     CompositingReasons directReasons(const Layer*) const;
@@ -37,7 +37,7 @@ private:
     bool requiresCompositingForPositionFixed(const Layer*) const;
     bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 
-    RenderView& m_renderView;
+    LayoutView& m_layoutView;
     CompositingTriggerFlags m_compositingTriggers;
 };
 

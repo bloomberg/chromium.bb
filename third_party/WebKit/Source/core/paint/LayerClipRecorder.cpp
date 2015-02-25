@@ -7,7 +7,7 @@
 
 #include "core/layout/ClipRect.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -42,7 +42,7 @@ static bool inContainingBlockChain(Layer* startLayer, Layer* endLayer)
     if (startLayer == endLayer)
         return true;
 
-    RenderView* view = startLayer->renderer()->view();
+    LayoutView* view = startLayer->renderer()->view();
     for (RenderBlock* currentBlock = startLayer->renderer()->containingBlock(); currentBlock && currentBlock != view; currentBlock = currentBlock->containingBlock()) {
         if (currentBlock->layer() == endLayer)
             return true;

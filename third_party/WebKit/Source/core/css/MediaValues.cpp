@@ -16,10 +16,10 @@
 #include "core/frame/Settings.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 #include "platform/PlatformScreen.h"
 
 namespace blink {
@@ -35,14 +35,14 @@ int MediaValues::calculateViewportWidth(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->document());
     int viewportWidth = frame->view()->layoutSize(IncludeScrollbars).width();
-    return adjustForAbsoluteZoom(viewportWidth, frame->document()->renderView());
+    return adjustForAbsoluteZoom(viewportWidth, frame->document()->layoutView());
 }
 
 int MediaValues::calculateViewportHeight(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->document());
     int viewportHeight = frame->view()->layoutSize(IncludeScrollbars).height();
-    return adjustForAbsoluteZoom(viewportHeight, frame->document()->renderView());
+    return adjustForAbsoluteZoom(viewportHeight, frame->document()->layoutView());
 }
 
 int MediaValues::calculateDeviceWidth(LocalFrame* frame) const
@@ -123,7 +123,7 @@ bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const
 {
     ASSERT(frame && frame->contentRenderer() && frame->contentRenderer()->compositor());
     bool threeDEnabled = false;
-    if (RenderView* view = frame->contentRenderer())
+    if (LayoutView* view = frame->contentRenderer())
         threeDEnabled = view->compositor()->hasAcceleratedCompositing();
     return threeDEnabled;
 }

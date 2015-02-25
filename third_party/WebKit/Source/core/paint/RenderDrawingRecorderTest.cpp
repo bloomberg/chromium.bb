@@ -7,7 +7,7 @@
 
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutTestHelper.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -17,11 +17,11 @@ namespace blink {
 
 class RenderDrawingRecorderTest : public RenderingTest {
 public:
-    RenderDrawingRecorderTest() : m_renderView(nullptr) { }
+    RenderDrawingRecorderTest() : m_layoutView(nullptr) { }
 
 protected:
-    RenderView* renderView() { return m_renderView; }
-    DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    LayoutView* layoutView() { return m_layoutView; }
+    DisplayItemList& rootDisplayItemList() { return *layoutView()->layer()->graphicsLayerBacking()->displayItemList(); }
     const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
 
 private:
@@ -32,8 +32,8 @@ private:
         RenderingTest::SetUp();
         enableCompositing();
 
-        m_renderView = document().view()->renderView();
-        ASSERT_TRUE(m_renderView);
+        m_layoutView = document().view()->layoutView();
+        ASSERT_TRUE(m_layoutView);
     }
 
     virtual void TearDown() override
@@ -42,15 +42,15 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
     }
 
-    RenderView* m_renderView;
+    LayoutView* m_layoutView;
 };
 
-void drawNothing(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
+void drawNothing(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
 }
 
-void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
+void drawRect(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
     if (drawingRecorder.canUseCachedDrawing())
@@ -63,10 +63,10 @@ void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 TEST_F(RenderDrawingRecorderTest, Nothing)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = renderView()->viewRect();
+    FloatRect bound = layoutView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
-    drawNothing(&context, renderView(), PaintPhaseForeground, bound);
+    drawNothing(&context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 }
@@ -74,8 +74,8 @@ TEST_F(RenderDrawingRecorderTest, Nothing)
 TEST_F(RenderDrawingRecorderTest, Rect)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = renderView()->viewRect();
-    drawRect(&context, renderView(), PaintPhaseForeground, bound);
+    FloatRect bound = layoutView()->viewRect();
+    drawRect(&context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
     EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
@@ -86,15 +86,15 @@ TEST_F(RenderDrawingRecorderTest, Cached)
     RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
 
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = renderView()->viewRect();
-    drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
-    drawRect(&context, renderView(), PaintPhaseForeground, bound);
+    FloatRect bound = layoutView()->viewRect();
+    drawNothing(&context, layoutView(), PaintPhaseBlockBackground, bound);
+    drawRect(&context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
     EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 
-    drawNothing(&context, renderView(), PaintPhaseBlockBackground, bound);
-    drawRect(&context, renderView(), PaintPhaseForeground, bound);
+    drawNothing(&context, layoutView(), PaintPhaseBlockBackground, bound);
+    drawRect(&context, layoutView(), PaintPhaseForeground, bound);
     EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
     EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
     EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isCached());

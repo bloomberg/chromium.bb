@@ -181,7 +181,7 @@ AXObject* AXScrollView::webAreaObject() const
         return 0;
 
     Document* doc = m_scrollView->frame().document();
-    if (!doc || !doc->renderView())
+    if (!doc || !doc->layoutView())
         return 0;
 
     return axObjectCache()->getOrCreate(doc);

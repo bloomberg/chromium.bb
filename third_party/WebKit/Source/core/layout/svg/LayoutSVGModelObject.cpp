@@ -32,11 +32,11 @@
 #include "core/layout/svg/LayoutSVGModelObject.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace blink {

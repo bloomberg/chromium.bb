@@ -32,9 +32,9 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayerReflectionInfo.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 

@@ -29,8 +29,8 @@
 #include "core/layout/CounterNode.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
 
 #ifndef NDEBUG

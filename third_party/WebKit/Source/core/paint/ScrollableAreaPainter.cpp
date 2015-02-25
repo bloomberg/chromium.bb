@@ -7,10 +7,10 @@
 
 #include "core/layout/Layer.h"
 #include "core/layout/LayerScrollableArea.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/ScrollbarPainter.h"
-#include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -114,11 +114,11 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
         if (!overflowControlsIntersectRect(localDamgeRect))
             return;
 
-        RenderView* renderView = m_renderLayerScrollableArea.box().view();
+        LayoutView* layoutView = m_renderLayerScrollableArea.box().view();
 
         Layer* paintingRoot = m_renderLayerScrollableArea.layer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
         if (!paintingRoot)
-            paintingRoot = renderView->layer();
+            paintingRoot = layoutView->layer();
 
         paintingRoot->setContainsDirtyOverlayScrollbars(true);
         return;

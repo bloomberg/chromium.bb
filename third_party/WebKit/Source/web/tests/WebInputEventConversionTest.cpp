@@ -42,8 +42,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 #include "core/testing/URLTestHelpers.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
@@ -109,7 +109,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
-    RenderView* documentRenderView = document->renderView();
+    LayoutView* documentLayoutView = document->layoutView();
 
     WebTouchPoint p0, p1;
     p0.id = 1;
@@ -132,7 +132,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         touchList->append(touch0);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchStart, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StatePressed, webTouchBuilder.touches[0].state);
@@ -155,7 +155,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         movedTouchList->append(touch0);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[0].state);
@@ -172,7 +172,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         releasedTouchList->append(touch1);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), releasedTouchList.get(), EventTypeNames::touchend, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[0].state);
@@ -189,7 +189,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         cancelledTouchList->append(touch1);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), cancelledTouchList.get(), EventTypeNames::touchcancel, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchCancel, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[0].state);
@@ -209,7 +209,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         }
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::touchesLengthCap), webTouchBuilder.touchesLength);
     }
 }
@@ -233,7 +233,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
-    RenderView* documentRenderView = document->renderView();
+    LayoutView* documentLayoutView = document->layoutView();
 
     {
         WebMouseEvent webMouseEvent;
@@ -382,7 +382,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
         RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
-        WebMouseEventBuilder webMouseBuilder(view, documentRenderView, *mouseEvent);
+        WebMouseEventBuilder webMouseBuilder(view, documentLayoutView, *mouseEvent);
 
         EXPECT_EQ(10, webMouseBuilder.x);
         EXPECT_EQ(10, webMouseBuilder.y);
@@ -395,7 +395,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
         RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
-        WebMouseEventBuilder webMouseBuilder(view, documentRenderView, *mouseEvent);
+        WebMouseEventBuilder webMouseBuilder(view, documentLayoutView, *mouseEvent);
         EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
     }
 
@@ -406,7 +406,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         // deltaY) to the page scale. This may lead to unexpected bugs if a
         // PlatformGestureEvent is transformed into WebGestureEvent and back.
         RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
-        WebGestureEventBuilder webGestureBuilder(view, documentRenderView, *gestureEvent);
+        WebGestureEventBuilder webGestureBuilder(view, documentLayoutView, *gestureEvent);
 
         EXPECT_EQ(10, webGestureBuilder.x);
         EXPECT_EQ(12, webGestureBuilder.y);
@@ -425,7 +425,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         touchList->append(touch);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
         EXPECT_EQ(10, webTouchBuilder.touches[0].screenPosition.x);
         EXPECT_FLOAT_EQ(9.5, webTouchBuilder.touches[0].screenPosition.y);
@@ -600,7 +600,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
-    RenderView* documentRenderView = document->renderView();
+    LayoutView* documentLayoutView = document->layoutView();
 
     {
         WebGestureEvent webGestureEvent;
@@ -621,7 +621,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
         EXPECT_EQ(1, platformGestureBuilder.tapCount());
 
         RefPtrWillBeRawPtr<GestureEvent> coreGestureEvent = GestureEvent::create(domWindow, platformGestureBuilder);
-        WebGestureEventBuilder recreatedWebGestureEvent(view, documentRenderView, *coreGestureEvent);
+        WebGestureEventBuilder recreatedWebGestureEvent(view, documentLayoutView, *coreGestureEvent);
         EXPECT_EQ(webGestureEvent.type, recreatedWebGestureEvent.type);
         EXPECT_EQ(webGestureEvent.x, recreatedWebGestureEvent.x);
         EXPECT_EQ(webGestureEvent.y, recreatedWebGestureEvent.y);
@@ -807,7 +807,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
         WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(),  IntPoint(2, 6), IntPoint(10, 30),
         true, false, false, false, 0, true, true);
-    WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->renderView(), *event);
+    WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->layoutView(), *event);
     EXPECT_EQ(1, webMouseWheel.wheelTicksX);
     EXPECT_EQ(3, webMouseWheel.wheelTicksY);
     EXPECT_EQ(5, webMouseWheel.deltaX);

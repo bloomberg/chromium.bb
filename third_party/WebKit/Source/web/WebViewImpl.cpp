@@ -67,6 +67,7 @@
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
@@ -86,7 +87,6 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
-#include "core/rendering/RenderView.h"
 #include "core/storage/InspectorDOMStorageAgent.h"
 #include "core/storage/StorageNamespaceController.h"
 #include "modules/accessibility/AXObject.h"
@@ -3441,7 +3441,7 @@ IntSize WebViewImpl::contentsSize() const
 {
     if (!page()->mainFrame()->isLocalFrame())
         return IntSize();
-    RenderView* root = page()->deprecatedLocalMainFrame()->contentRenderer();
+    LayoutView* root = page()->deprecatedLocalMainFrame()->contentRenderer();
     if (!root)
         return IntSize();
     return root->documentRect().size();
@@ -3450,11 +3450,11 @@ IntSize WebViewImpl::contentsSize() const
 WebSize WebViewImpl::contentsPreferredMinimumSize()
 {
     Document* document = m_page->mainFrame()->isLocalFrame() ? m_page->deprecatedLocalMainFrame()->document() : 0;
-    if (!document || !document->renderView() || !document->documentElement())
+    if (!document || !document->layoutView() || !document->documentElement())
         return WebSize();
 
     layout();
-    int widthScaled = document->renderView()->minPreferredLogicalWidth(); // Already accounts for zoom.
+    int widthScaled = document->layoutView()->minPreferredLogicalWidth(); // Already accounts for zoom.
     int heightScaled = static_cast<int>(document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel()));
     return IntSize(widthScaled, heightScaled);
 }
@@ -4186,13 +4186,13 @@ void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
         return;
 
     if (pinchVirtualViewportEnabled()) {
-        m_page->deprecatedLocalMainFrame()->view()->renderView()->compositor()->setOverlayLayer(layer);
+        m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->setOverlayLayer(layer);
         return;
     }
 
     // FIXME(bokan): This path goes away after virtual viewport pinch is enabled everywhere.
     if (!m_rootTransformLayer)
-        m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
+        m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->ensureRootTransformLayer();
 
     if (m_rootTransformLayer) {
         if (layer->parent() != m_rootTransformLayer)
@@ -4336,10 +4336,10 @@ LayerCompositor* WebViewImpl::compositor() const
     if (!page() || !page()->mainFrame() || !page()->mainFrame()->isLocalFrame())
         return 0;
 
-    if (!page()->deprecatedLocalMainFrame()->document() || !page()->deprecatedLocalMainFrame()->document()->renderView())
+    if (!page()->deprecatedLocalMainFrame()->document() || !page()->deprecatedLocalMainFrame()->document()->layoutView())
         return 0;
 
-    return page()->deprecatedLocalMainFrame()->document()->renderView()->compositor();
+    return page()->deprecatedLocalMainFrame()->document()->layoutView()->compositor();
 }
 
 void WebViewImpl::registerForAnimations(WebLayer* layer)
@@ -4553,7 +4553,7 @@ void WebViewImpl::updateRootLayerTransform()
     // FIXME(bokan): m_rootTransformLayer is always set here in pinch virtual viewport. This can go away once
     // that's default everywhere.
     if (!m_rootTransformLayer && m_page->mainFrame()->isLocalFrame())
-        m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
+        m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->ensureRootTransformLayer();
 
     if (m_rootTransformLayer) {
         TransformationMatrix transform;

@@ -27,10 +27,10 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "public/platform/Platform.h"
@@ -459,10 +459,10 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
     ASSERT_TRUE(layoutPart->widget()->isFrameView());
 
     FrameView* innerFrameView = toFrameView(layoutPart->widget());
-    RenderView* innerRenderView = innerFrameView->renderView();
-    ASSERT_TRUE(innerRenderView);
+    LayoutView* innerLayoutView = innerFrameView->layoutView();
+    ASSERT_TRUE(innerLayoutView);
 
-    LayerCompositor* innerCompositor = innerRenderView->compositor();
+    LayerCompositor* innerCompositor = innerLayoutView->compositor();
     ASSERT_TRUE(innerCompositor->inCompositingMode());
     ASSERT_TRUE(innerCompositor->scrollLayer());
 
@@ -503,10 +503,10 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
     ASSERT_TRUE(layoutPart->widget()->isFrameView());
 
     FrameView* innerFrameView = toFrameView(layoutPart->widget());
-    RenderView* innerRenderView = innerFrameView->renderView();
-    ASSERT_TRUE(innerRenderView);
+    LayoutView* innerLayoutView = innerFrameView->layoutView();
+    ASSERT_TRUE(innerLayoutView);
 
-    LayerCompositor* innerCompositor = innerRenderView->compositor();
+    LayerCompositor* innerCompositor = innerLayoutView->compositor();
     ASSERT_TRUE(innerCompositor->inCompositingMode());
     ASSERT_TRUE(innerCompositor->scrollLayer());
 

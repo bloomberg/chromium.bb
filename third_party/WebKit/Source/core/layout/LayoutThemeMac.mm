@@ -42,7 +42,7 @@
 #import "core/layout/LayoutMediaControls.h"
 #import "core/layout/LayoutMeter.h"
 #import "core/layout/LayoutProgress.h"
-#import "core/rendering/RenderView.h"
+#import "core/layout/LayoutView.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/PlatformResourceLoader.h"
 #import "platform/SharedBuffer.h"

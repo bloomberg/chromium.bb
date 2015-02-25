@@ -35,6 +35,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
@@ -43,7 +44,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
-#include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -296,7 +296,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
         return 0;
     AXObjectCache* cache = document->axObjectCache();
     ASSERT(cache);
-    return toAXObjectCacheImpl(cache)->getOrCreate(document->renderView());
+    return toAXObjectCacheImpl(cache)->getOrCreate(document->layoutView());
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)

@@ -28,7 +28,7 @@
 #include "core/layout/LayoutMedia.h"
 
 #include "core/html/HTMLMediaElement.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 
 namespace blink {
 

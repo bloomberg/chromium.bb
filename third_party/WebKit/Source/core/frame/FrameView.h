@@ -59,7 +59,7 @@ class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutScrollbarPart;
-class RenderView;
+class LayoutView;
 class ScrollingCoordinator;
 struct CompositedSelectionBound;
 
@@ -67,7 +67,7 @@ typedef unsigned long long DOMTimeStamp;
 
 class FrameView final : public Widget, public ScrollableArea {
 public:
-    friend class RenderView;
+    friend class LayoutView;
     friend class Internals;
 
     static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*);
@@ -86,7 +86,7 @@ public:
 
     Page* page() const;
 
-    RenderView* renderView() const;
+    LayoutView* layoutView() const;
 
     void setCanHaveScrollbars(bool);
 

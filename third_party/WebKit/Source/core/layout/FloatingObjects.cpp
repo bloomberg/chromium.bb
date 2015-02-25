@@ -25,8 +25,8 @@
 #include "core/layout/FloatingObjects.h"
 
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutView.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderView.h"
 
 using namespace WTF;
 

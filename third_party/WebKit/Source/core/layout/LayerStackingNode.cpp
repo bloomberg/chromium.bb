@@ -45,8 +45,8 @@
 #include "core/layout/LayerStackingNode.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
-#include "core/rendering/RenderView.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -155,7 +155,7 @@ void LayerStackingNode::rebuildZOrderLists()
     // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
     // The renderers of top layer elements are children of the view, sorted in top layer stacking order.
     if (layer()->isRootLayer()) {
-        RenderView* view = renderer()->view();
+        LayoutView* view = renderer()->view();
         for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {

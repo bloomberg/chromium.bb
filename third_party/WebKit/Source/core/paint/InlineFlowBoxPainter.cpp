@@ -6,12 +6,12 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 

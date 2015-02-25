@@ -47,6 +47,7 @@
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/ShadowList.h"
@@ -57,7 +58,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
@@ -152,7 +152,7 @@ void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
 
     if (isFloating()) {
         RenderBlockFlow* parentBlockFlow = 0;
-        for (LayoutObject* curr = parent(); curr && !curr->isRenderView(); curr = curr->parent()) {
+        for (LayoutObject* curr = parent(); curr && !curr->isLayoutView(); curr = curr->parent()) {
             if (curr->isRenderBlockFlow()) {
                 RenderBlockFlow* currBlockFlow = toRenderBlockFlow(curr);
                 if (!parentBlockFlow || currBlockFlow->containsFloat(this))
@@ -302,10 +302,10 @@ void LayoutBox::updateFromStyle()
 
     const LayoutStyle& styleToUse = styleRef();
     bool isRootObject = isDocumentElement();
-    bool isViewObject = isRenderView();
+    bool isViewObject = isLayoutView();
     bool rootLayerScrolls = document().settings() && document().settings()->rootLayerScrolls();
 
-    // The root and the RenderView always paint their backgrounds/borders.
+    // The root and the LayoutView always paint their backgrounds/borders.
     if (isRootObject || isViewObject)
         setHasBoxDecorationBackground(true);
 
@@ -1390,9 +1390,9 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
 {
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
-    // If we are set to do a full paint invalidation that means the RenderView will be
+    // If we are set to do a full paint invalidation that means the LayoutView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
-    // renderers as they'll be covered by the RenderView.
+    // renderers as they'll be covered by the LayoutView.
     if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason)) {
         invalidatePaintForOverflowIfNeeded();
 
@@ -1789,7 +1789,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
     // offset corner for the enclosing container). This allows for a fully RL or BT document to issue paint invalidations
     // properly even during layout, since the rect remains flipped all the way until the end.
     //
-    // RenderView::computeRectForPaintInvalidation then converts the rect to physical coordinates. We also convert to
+    // LayoutView::computeRectForPaintInvalidation then converts the rect to physical coordinates. We also convert to
     // physical when we hit a paintInvalidationContainer boundary. Therefore the final rect returned is always in the
     // physical coordinate space of the paintInvalidationContainer.
     const LayoutStyle& styleToUse = styleRef();
@@ -1873,13 +1873,13 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
         LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
         rect.move(-containerOffset);
         // If the paintInvalidationContainer is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
-        if (paintInvalidationContainer->style()->position() != FixedPosition && o->isRenderView())
-            toRenderView(o)->adjustViewportConstrainedOffset(rect, RenderView::viewportConstrainedPosition(position));
+        if (paintInvalidationContainer->style()->position() != FixedPosition && o->isLayoutView())
+            toLayoutView(o)->adjustViewportConstrainedOffset(rect, LayoutView::viewportConstrainedPosition(position));
         return;
     }
 
-    if (o->isRenderView())
-        toRenderView(o)->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, RenderView::viewportConstrainedPosition(position), paintInvalidationState);
+    if (o->isLayoutView())
+        toLayoutView(o)->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, LayoutView::viewportConstrainedPosition(position), paintInvalidationState);
     else
         o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
@@ -2334,7 +2334,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     // WinIE quirk: The <html> block always fills the entire canvas in quirks mode.  The <body> always fills the
     // <html> block in quirks mode.  Only apply this quirk if the block is normal flow and no height
     // is specified. When we're printing, we also need this quirk if the body or root has a percentage
-    // height since we don't set a height in RenderView when we're printing. So without this quirk, the
+    // height since we don't set a height in LayoutView when we're printing. So without this quirk, the
     // height has nothing to be a percentage of, and it ends up being 0. That is bad.
     bool paginatedContentNeedsBaseHeight = document().printing() && h.isPercent()
         && (isDocumentElement() || (isBody() && document().documentElement()->renderer()->style()->logicalHeight().isPercent())) && !isInline();
@@ -2427,7 +2427,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     RenderBlock* cb = containingBlock();
     const LayoutBox* containingBlockChild = this;
     LayoutUnit rootMarginBorderPaddingHeight = 0;
-    while (!cb->isRenderView() && skipContainingBlockForPercentHeightCalculation(cb)) {
+    while (!cb->isLayoutView() && skipContainingBlockForPercentHeightCalculation(cb)) {
         if (cb->isBody() || cb->isDocumentElement())
             rootMarginBorderPaddingHeight += cb->marginBefore() + cb->marginAfter() + cb->borderAndPaddingLogicalHeight();
         skippedAutoHeightContainingBlock = true;
@@ -2490,7 +2490,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
         LogicalExtentComputedValues computedValues;
         cb->computeLogicalHeight(cb->logicalHeight(), 0, computedValues);
         availableHeight = computedValues.m_extent - cb->borderAndPaddingLogicalHeight() - cb->scrollbarLogicalHeight();
-    } else if (cb->isRenderView()) {
+    } else if (cb->isLayoutView()) {
         availableHeight = view()->viewLogicalHeightForPercentages();
     }
 
@@ -2638,7 +2638,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
             // table cells using percentage heights.
             // FIXME: This needs to be made writing-mode-aware. If the cell and image are perpendicular writing-modes, this isn't right.
             // https://bugs.webkit.org/show_bug.cgi?id=46997
-            while (cb && !cb->isRenderView() && (cb->style()->logicalHeight().isAuto() || cb->style()->logicalHeight().isPercent())) {
+            while (cb && !cb->isLayoutView() && (cb->style()->logicalHeight().isAuto() || cb->style()->logicalHeight().isPercent())) {
                 if (cb->isTableCell()) {
                     // Don't let table cells squeeze percent-height replaced elements
                     // <http://bugs.webkit.org/show_bug.cgi?id=15359>
@@ -2669,8 +2669,8 @@ LayoutUnit LayoutBox::availableLogicalHeight(AvailableLogicalHeightType heightTy
 
 LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogicalHeightType heightType) const
 {
-    if (isRenderView())
-        return isHorizontalWritingMode() ? toRenderView(this)->frameView()->unscaledVisibleContentSize().height() : toRenderView(this)->frameView()->unscaledVisibleContentSize().width();
+    if (isLayoutView())
+        return isHorizontalWritingMode() ? toLayoutView(this)->frameView()->unscaledVisibleContentSize().height() : toLayoutView(this)->frameView()->unscaledVisibleContentSize().width();
 
     // We need to stop here, since we don't want to increase the height of the table
     // artificially.  We're going to rely on this cell getting expanded to some new
@@ -2729,8 +2729,8 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
         return containingBlockLogicalHeightForPositioned(containingBlock, false);
 
     // Use viewport as container for top-level fixed-position elements.
-    if (style()->position() == FixedPosition && containingBlock->isRenderView()) {
-        const RenderView* view = toRenderView(containingBlock);
+    if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
+        const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
             LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
             return containingBlock->isHorizontalWritingMode() ? viewportRect.width() : viewportRect.height();
@@ -2772,8 +2772,8 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         return containingBlockLogicalWidthForPositioned(containingBlock, false);
 
     // Use viewport as container for top-level fixed-position elements.
-    if (style()->position() == FixedPosition && containingBlock->isRenderView()) {
-        const RenderView* view = toRenderView(containingBlock);
+    if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
+        const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
             LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
             return containingBlock->isHorizontalWritingMode() ? viewportRect.height() : viewportRect.width();
@@ -4123,7 +4123,7 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
 
     // For overflow clip objects, we don't want to propagate overflow into unreachable areas.
     LayoutRect overflowRect(rect);
-    if (hasOverflowClip() || isRenderView()) {
+    if (hasOverflowClip() || isLayoutView()) {
         // Overflow is in the block's coordinate space and thus is flipped for horizontal-bt and vertical-rl
         // writing modes.  At this stage that is actually a simplification, since we can treat horizontal-tb/bt as the same
         // and vertical-lr/rl as the same.
@@ -4198,12 +4198,12 @@ void LayoutBox::clearLayoutOverflow()
 bool LayoutBox::logicalWidthIsResolvableFromBlock(const RenderBlock* containingBlock)
 {
     const RenderBlock* cb = containingBlock;
-    while (!cb->isRenderView() && !cb->isOutOfFlowPositioned() && (cb->style()->logicalWidth().isAuto() || cb->isAnonymousBlock()))
+    while (!cb->isLayoutView() && !cb->isOutOfFlowPositioned() && (cb->style()->logicalWidth().isAuto() || cb->isAnonymousBlock()))
         cb = cb->containingBlock();
 
     if (cb->style()->logicalWidth().isFixed())
         return true;
-    if (cb->isRenderView())
+    if (cb->isLayoutView())
         return true;
     if (cb->isOutOfFlowPositioned())
         return true;
@@ -4242,7 +4242,7 @@ bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const RenderBlock* 
     // only at explicit containers.
     const RenderBlock* cb = containingBlock;
     bool inQuirksMode = cb->document().inQuirksMode();
-    while (!cb->isRenderView() && !cb->isBody() && !cb->isTableCell() && !cb->isOutOfFlowPositioned() && cb->style()->logicalHeight().isAuto()) {
+    while (!cb->isLayoutView() && !cb->isBody() && !cb->isTableCell() && !cb->isOutOfFlowPositioned() && cb->style()->logicalHeight().isAuto()) {
         if (!inQuirksMode && !cb->isAnonymousBlock())
             break;
         cb = cb->containingBlock();
@@ -4266,7 +4266,7 @@ bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const RenderBlock* 
         return true;
     if (cb->style()->logicalHeight().isPercent() && !isOutOfFlowPositionedWithSpecifiedHeight)
         return percentageLogicalHeightIsResolvableFromBlock(cb->containingBlock(), cb->isOutOfFlowPositioned());
-    if (cb->isRenderView() || inQuirksMode || isOutOfFlowPositionedWithSpecifiedHeight)
+    if (cb->isLayoutView() || inQuirksMode || isOutOfFlowPositionedWithSpecifiedHeight)
         return true;
     if (cb->isDocumentElement() && isOutOfFlowPositioned) {
         // Match the positioned objects behavior, which is that positioned objects will fill their viewport

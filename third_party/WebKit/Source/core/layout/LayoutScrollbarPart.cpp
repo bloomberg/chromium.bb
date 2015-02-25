@@ -29,8 +29,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {

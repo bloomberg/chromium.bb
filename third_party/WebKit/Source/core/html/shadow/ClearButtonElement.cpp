@@ -29,8 +29,8 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 

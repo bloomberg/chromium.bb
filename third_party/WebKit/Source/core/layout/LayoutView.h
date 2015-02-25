@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef RenderView_h
-#define RenderView_h
+#ifndef LayoutView_h
+#define LayoutView_h
 
 #include "core/dom/Position.h"
 #include "core/frame/FrameView.h"
@@ -42,10 +42,10 @@ class LayoutQuote;
 // It's dimensions match that of the logical viewport (which may be different from
 // the visible viewport in fixed-layout mode), and it is always at position (0,0)
 // relative to the document (and so isn't necessarily in view).
-class RenderView final : public RenderBlockFlow {
+class LayoutView final : public RenderBlockFlow {
 public:
-    explicit RenderView(Document*);
-    virtual ~RenderView();
+    explicit LayoutView(Document*);
+    virtual ~LayoutView();
     void willBeDestroyed() override;
 
     bool hitTest(const HitTestRequest&, HitTestResult&);
@@ -56,7 +56,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderView"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderView || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || RenderBlockFlow::isOfType(type); }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
@@ -232,7 +232,7 @@ private:
     OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderView, isRenderView());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
 
 // Suspends the LayoutState cached offset and clipRect optimization. Used under transforms
 // that cannot be represented by LayoutState (common in SVG) and when manipulating the render
@@ -262,4 +262,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderView_h
+#endif // LayoutView_h

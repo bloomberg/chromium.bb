@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/css/CSSToLengthConversionData.h"
 
+#include "core/layout/LayoutView.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 
@@ -67,9 +67,9 @@ float CSSToLengthConversionData::FontSizes::ch() const
     return m_font->fontMetrics().zeroWidth();
 }
 
-CSSToLengthConversionData::ViewportSize::ViewportSize(const RenderView* renderView)
-    : m_width(renderView ? renderView->layoutViewportWidth() : 0)
-    , m_height(renderView ? renderView->layoutViewportHeight() : 0)
+CSSToLengthConversionData::ViewportSize::ViewportSize(const LayoutView* layoutView)
+    : m_width(layoutView ? layoutView->layoutViewportWidth() : 0)
+    , m_height(layoutView ? layoutView->layoutViewportHeight() : 0)
 {
 }
 
@@ -82,8 +82,8 @@ CSSToLengthConversionData::CSSToLengthConversionData(const LayoutStyle* style, c
     ASSERT(m_style);
 }
 
-CSSToLengthConversionData::CSSToLengthConversionData(const LayoutStyle* style, const LayoutStyle* rootStyle, const RenderView* renderView, float zoom)
-    : CSSToLengthConversionData(style, FontSizes(style, rootStyle), ViewportSize(renderView), zoom)
+CSSToLengthConversionData::CSSToLengthConversionData(const LayoutStyle* style, const LayoutStyle* rootStyle, const LayoutView* layoutView, float zoom)
+    : CSSToLengthConversionData(style, FontSizes(style, rootStyle), ViewportSize(layoutView), zoom)
 {
 }
 

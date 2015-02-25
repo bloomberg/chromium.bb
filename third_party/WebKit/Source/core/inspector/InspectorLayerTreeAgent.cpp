@@ -43,10 +43,10 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/rendering/RenderView.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PictureSnapshot.h"
@@ -242,8 +242,8 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(Layer* root, LayerIdToNode
     if (!root->renderer()->isLayoutIFrame())
         return;
     FrameView* childFrameView = toFrameView(toLayoutPart(root->renderer())->widget());
-    if (RenderView* childRenderView = childFrameView->renderView()) {
-        if (LayerCompositor* childCompositor = childRenderView->compositor())
+    if (LayoutView* childLayoutView = childFrameView->layoutView()) {
+        if (LayerCompositor* childCompositor = childLayoutView->compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);
     }
 }
@@ -267,8 +267,8 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 
 LayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
 {
-    RenderView* renderView = m_pageAgent->inspectedFrame()->contentRenderer();
-    LayerCompositor* compositor = renderView ? renderView->compositor() : nullptr;
+    LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentRenderer();
+    LayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
     return compositor;
 }
 

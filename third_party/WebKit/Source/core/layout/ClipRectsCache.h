@@ -19,7 +19,7 @@ enum ClipRectsCacheSlot {
     // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
     RootRelativeClipRects,
 
-    // Relative to the RenderView's layer. Used for compositing overlap testing.
+    // Relative to the LayoutView's layer. Used for compositing overlap testing.
     AbsoluteClipRects,
 
     // Relative to painting ancestor. Used for painting.

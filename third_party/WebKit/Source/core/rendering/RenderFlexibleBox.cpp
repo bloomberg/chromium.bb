@@ -33,10 +33,10 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"
 #include <limits>

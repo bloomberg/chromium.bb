@@ -42,6 +42,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
@@ -54,7 +55,6 @@
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "wtf/HexNumber.h"
 #include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -213,9 +213,9 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
     if (adjustForTableCells)
         r.move(0, -toLayoutTableCell(o.containingBlock())->intrinsicPaddingBefore());
 
-    if (o.isRenderView()) {
-        r.setWidth(toRenderView(o).viewWidth(IncludeScrollbars));
-        r.setHeight(toRenderView(o).viewHeight(IncludeScrollbars));
+    if (o.isLayoutView()) {
+        r.setWidth(toLayoutView(o).viewWidth(IncludeScrollbars));
+        r.setHeight(toLayoutView(o).viewHeight(IncludeScrollbars));
     }
 
     ts << " " << r;
@@ -487,7 +487,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
         Widget* widget = toLayoutPart(o).widget();
         if (widget && widget->isFrameView()) {
             FrameView* view = toFrameView(widget);
-            RenderView* root = view->renderView();
+            LayoutView* root = view->layoutView();
             if (root) {
                 view->layout();
                 Layer* layer = root->layer();
@@ -515,13 +515,13 @@ static void write(TextStream& ts, Layer& layer,
     IntRect adjustedOutlineClipRect = pixelSnappedIntRect(outlineClipRect);
 
     Settings* settings = layer.renderer()->document().settings();
-    bool reportFrameScrollInfo = layer.renderer()->isRenderView() && settings && !settings->rootLayerScrolls();
+    bool reportFrameScrollInfo = layer.renderer()->isLayoutView() && settings && !settings->rootLayerScrolls();
 
     if (reportFrameScrollInfo) {
-        RenderView* renderView = toRenderView(layer.renderer());
+        LayoutView* layoutView = toLayoutView(layer.renderer());
 
-        adjustedLayoutBoundsWithScrollbars.setWidth(renderView->viewWidth(IncludeScrollbars));
-        adjustedLayoutBoundsWithScrollbars.setHeight(renderView->viewHeight(IncludeScrollbars));
+        adjustedLayoutBoundsWithScrollbars.setWidth(layoutView->viewWidth(IncludeScrollbars));
+        adjustedLayoutBoundsWithScrollbars.setHeight(layoutView->viewHeight(IncludeScrollbars));
     }
 
     writeIndent(ts, indent);
@@ -550,7 +550,7 @@ static void write(TextStream& ts, Layer& layer,
     if (layer.renderer()->hasOverflowClip() || reportFrameScrollInfo) {
         ScrollableArea* scrollableArea;
         if (reportFrameScrollInfo)
-            scrollableArea = toRenderView(layer.renderer())->frameView();
+            scrollableArea = toLayoutView(layer.renderer())->frameView();
         else
             scrollableArea = layer.scrollableArea();
 

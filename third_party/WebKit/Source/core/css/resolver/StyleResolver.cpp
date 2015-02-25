@@ -79,8 +79,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/style/KeyframeList.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -214,8 +214,8 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 {
     collectFeatures();
 
-    if (document().renderView() && document().renderView()->style())
-        document().renderView()->style()->font().update(document().styleEngine()->fontSelector());
+    if (document().layoutView() && document().layoutView()->style())
+        document().layoutView()->style()->font().update(document().styleEngine()->fontSelector());
 
     collectViewportRules();
 

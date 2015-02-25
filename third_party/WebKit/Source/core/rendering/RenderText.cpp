@@ -33,13 +33,13 @@
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderCombineText.h"
-#include "core/rendering/RenderView.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1227,7 +1227,7 @@ void RenderText::setSelectionState(SelectionState state)
 
     // The containing block can be null in case of an orphaned tree.
     RenderBlock* containingBlock = this->containingBlock();
-    if (containingBlock && !containingBlock->isRenderView())
+    if (containingBlock && !containingBlock->isLayoutView())
         containingBlock->setSelectionState(state);
 }
 

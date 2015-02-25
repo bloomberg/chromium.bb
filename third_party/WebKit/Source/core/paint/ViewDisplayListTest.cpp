@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/FocusController.h"
@@ -14,7 +15,6 @@
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/SubtreeRecorder.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -27,12 +27,12 @@ namespace blink {
 class ViewDisplayListTest : public RenderingTest {
 public:
     ViewDisplayListTest()
-        : m_renderView(nullptr)
+        : m_layoutView(nullptr)
         , m_originalDisplayItemCacheEnabled(false) { }
 
 protected:
-    RenderView* renderView() { return m_renderView; }
-    DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    LayoutView* layoutView() { return m_layoutView; }
+    DisplayItemList& rootDisplayItemList() { return *layoutView()->layer()->graphicsLayerBacking()->displayItemList(); }
     const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
 
 private:
@@ -44,8 +44,8 @@ private:
         RenderingTest::SetUp();
         enableCompositing();
 
-        m_renderView = document().view()->renderView();
-        ASSERT_TRUE(m_renderView);
+        m_layoutView = document().view()->layoutView();
+        ASSERT_TRUE(m_layoutView);
     }
 
     virtual void TearDown() override
@@ -54,7 +54,7 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(m_originalDisplayItemCacheEnabled);
     }
 
-    RenderView* m_renderView;
+    LayoutView* m_layoutView;
     bool m_originalDisplayItemCacheEnabled;
 };
 
@@ -105,15 +105,15 @@ void drawClippedRect(GraphicsContext* context, LayoutBoxModelObject* renderer, P
 TEST_F(ViewDisplayListTest, NestedRecorders)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = renderView()->viewRect();
+    FloatRect bound = layoutView()->viewRect();
 
-    drawClippedRect(&context, renderView(), PaintPhaseForeground, bound);
+    drawClippedRect(&context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(renderView(), DisplayItem::ClipLayerForeground),
-        TestDisplayItem(renderView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(renderView(), DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
+        TestDisplayItem(layoutView(), DisplayItem::ClipLayerForeground),
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(layoutView(), DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerForeground)));
 }
 
 TEST_F(ViewDisplayListTest, UpdateBasic)
@@ -431,8 +431,8 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
-    RenderView* renderView = document().renderView();
-    Layer* rootLayer = renderView->layer();
+    LayoutView* layoutView = document().layoutView();
+    Layer* rootLayer = layoutView->layer();
     LayoutObject* htmlRenderer = document().documentElement()->renderer();
     Element* div = toElement(document().body()->firstChild());
     LayoutObject* divRenderer = document().body()->firstChild()->renderer();
@@ -466,8 +466,8 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
-    RenderView* renderView = document().renderView();
-    Layer* rootLayer = renderView->layer();
+    LayoutView* layoutView = document().layoutView();
+    Layer* rootLayer = layoutView->layer();
     LayoutObject* htmlRenderer = document().documentElement()->renderer();
     LayoutObject* bodyRenderer = document().body()->renderer();
     Element* div = toElement(document().body()->firstChild());

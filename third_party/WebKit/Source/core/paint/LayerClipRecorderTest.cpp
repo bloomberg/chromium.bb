@@ -6,9 +6,9 @@
 #include "core/paint/LayerClipRecorder.h"
 
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -19,11 +19,11 @@ namespace {
 
 class LayerClipRecorderTest : public RenderingTest {
 public:
-    LayerClipRecorderTest() : m_renderView(nullptr) { }
+    LayerClipRecorderTest() : m_layoutView(nullptr) { }
 
 protected:
-    RenderView* renderView() { return m_renderView; }
-    DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    LayoutView* layoutView() { return m_layoutView; }
+    DisplayItemList& rootDisplayItemList() { return *layoutView()->layer()->graphicsLayerBacking()->displayItemList(); }
 
 private:
     virtual void SetUp() override
@@ -33,21 +33,21 @@ private:
         RenderingTest::SetUp();
         enableCompositing();
 
-        m_renderView = document().view()->renderView();
-        ASSERT_TRUE(m_renderView);
+        m_layoutView = document().view()->layoutView();
+        ASSERT_TRUE(m_layoutView);
     }
 
-    RenderView* m_renderView;
+    LayoutView* m_layoutView;
 };
 
-void drawEmptyClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
+void drawEmptyClip(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
     LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
 
-void drawRectInClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
+void drawRectInClip(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
@@ -60,10 +60,10 @@ void drawRectInClip(GraphicsContext* context, RenderView* renderer, PaintPhase p
 TEST_F(LayerClipRecorderTest, Single)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = renderView()->viewRect();
+    FloatRect bound = layoutView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
-    drawRectInClip(&context, renderView(), PaintPhaseForeground, bound);
+    drawRectInClip(&context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)3, rootDisplayItemList().paintList().size());
     EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isClip());
@@ -74,10 +74,10 @@ TEST_F(LayerClipRecorderTest, Single)
 TEST_F(LayerClipRecorderTest, Empty)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    FloatRect bound = renderView()->viewRect();
+    FloatRect bound = layoutView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
-    drawEmptyClip(&context, renderView(), PaintPhaseForeground, bound);
+    drawEmptyClip(&context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 }

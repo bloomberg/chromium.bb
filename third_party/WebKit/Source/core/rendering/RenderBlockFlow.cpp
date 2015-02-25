@@ -42,13 +42,13 @@
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutPagedFlowThread.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderView.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 #include "platform/text/BidiTextRun.h"
@@ -148,8 +148,8 @@ public:
 static bool inNormalFlow(LayoutBox* child)
 {
     RenderBlock* curr = child->containingBlock();
-    RenderView* renderView = child->view();
-    while (curr && curr != renderView) {
+    LayoutView* layoutView = child->view();
+    while (curr && curr != layoutView) {
         if (curr->hasColumns() || curr->isLayoutFlowThread())
             return true;
         if (curr->isFloatingOrOutOfFlowPositioned())
@@ -354,9 +354,9 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     while (!done)
         done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
 
-    RenderView* renderView = view();
-    if (renderView->layoutState()->pageLogicalHeight())
-        setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(*this, logicalTop()));
+    LayoutView* layoutView = view();
+    if (layoutView->layoutState()->pageLogicalHeight())
+        setPageLogicalOffset(layoutView->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
     updateLayerTransformAfterLayout();
 
@@ -898,7 +898,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     }
 
     // Inline blocks are covered by the isReplaced() check in the avoidFloats method.
-    if (avoidsFloats() || isDocumentElement() || isRenderView() || isFloatingOrOutOfFlowPositioned() || isTableCell()) {
+    if (avoidsFloats() || isDocumentElement() || isLayoutView() || isFloatingOrOutOfFlowPositioned() || isTableCell()) {
         if (m_floatingObjects) {
             m_floatingObjects->clear();
         }
@@ -1089,8 +1089,8 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
     , m_discardMargin(false)
 {
     const LayoutStyle& blockStyle = blockFlow->styleRef();
-    ASSERT(blockFlow->isRenderView() || blockFlow->parent());
-    m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isLayoutFlowThread() && !blockFlow->isRenderView();
+    ASSERT(blockFlow->isLayoutView() || blockFlow->parent());
+    m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isLayoutFlowThread() && !blockFlow->isLayoutView();
 
     m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle.marginBeforeCollapse() != MSEPARATE;
 
@@ -1955,7 +1955,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const LayoutStyle* ol
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
         FloatingObjectSetIterator end = floatingObjectSet.end();
 
-        for (LayoutObject* curr = parent(); curr && !curr->isRenderView(); curr = curr->parent()) {
+        for (LayoutObject* curr = parent(); curr && !curr->isLayoutView(); curr = curr->parent()) {
             if (curr->isRenderBlockFlow()) {
                 RenderBlockFlow* currBlock = toRenderBlockFlow(curr);
 
@@ -2651,8 +2651,8 @@ bool RenderBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult
         return false;
 
     LayoutPoint adjustedLocation = accumulatedOffset;
-    if (isRenderView()) {
-        DoublePoint position = toRenderView(this)->frameView()->scrollPositionDouble();
+    if (isLayoutView()) {
+        DoublePoint position = toLayoutView(this)->frameView()->scrollPositionDouble();
         adjustedLocation.move(position.x(), position.y());
     }
 
@@ -2747,7 +2747,7 @@ GapRects RenderBlockFlow::selectionGaps(const RenderBlock* rootBlock, const Layo
         flippedBlockRect.moveBy(rootBlockPhysicalPosition);
         clipOutPositionedObjects(*paintInfo, flippedBlockRect.location(), positionedObjects());
         if (isBody() || isDocumentElement()) // The <body> must make sure to examine its containingBlock's positioned objects.
-            for (RenderBlock* cb = containingBlock(); cb && !cb->isRenderView(); cb = cb->containingBlock())
+            for (RenderBlock* cb = containingBlock(); cb && !cb->isLayoutView(); cb = cb->containingBlock())
                 clipOutPositionedObjects(*paintInfo, cb->location(), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
         clipOutFloatingObjects(rootBlock, paintInfo, rootBlockPhysicalPosition, offsetFromRootBlock);
     }

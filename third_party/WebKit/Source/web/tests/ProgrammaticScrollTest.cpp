@@ -1,7 +1,7 @@
 #include "config.h"
 
 #include "core/frame/FrameView.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 #include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"

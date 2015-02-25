@@ -46,7 +46,7 @@
 
 #include "core/frame/Settings.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 
 namespace blink {
 
@@ -70,7 +70,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& render
 {
     ASSERT(renderer.hasOverflowClip() || renderer.hasClip());
 
-    RenderView* view = renderer.view();
+    LayoutView* view = renderer.view();
     ASSERT(view);
     if (clipRects.fixed() && context.rootLayer->renderer() == view)
         offset -= view->frameView()->scrollOffsetForViewportConstrainedObjects();

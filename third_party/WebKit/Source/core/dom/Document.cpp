@@ -164,6 +164,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/CookieJar.h"
@@ -181,7 +182,6 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
@@ -450,7 +450,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
     , m_isTransitionDocument(false)
-    , m_renderView(0)
+    , m_layoutView(0)
 #if !ENABLE(OILPAN)
     , m_weakFactory(this)
 #endif
@@ -521,7 +521,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 
 Document::~Document()
 {
-    ASSERT(!renderView());
+    ASSERT(!layoutView());
     ASSERT(!parentTreeScope());
 #if !ENABLE(OILPAN)
     ASSERT(m_ranges.isEmpty());
@@ -1236,7 +1236,7 @@ AtomicString Document::contentType() const
 
 Element* Document::elementFromPoint(int x, int y) const
 {
-    if (!renderView())
+    if (!layoutView())
         return 0;
 
     return TreeScope::elementFromPoint(x, y);
@@ -1244,14 +1244,14 @@ Element* Document::elementFromPoint(int x, int y) const
 
 Vector<Element*> Document::elementsFromPoint(int x, int y) const
 {
-    if (!renderView())
+    if (!layoutView())
         return Vector<Element*>();
     return TreeScope::elementsFromPoint(x, y);
 }
 
 PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
-    if (!renderView())
+    if (!layoutView())
         return nullptr;
     HitTestResult result = hitTestInDocument(this, x, y);
     LayoutObject* renderer = result.renderer();
@@ -1692,7 +1692,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
 
-    RefPtr<LayoutStyle> documentStyle = renderView()->style();
+    RefPtr<LayoutStyle> documentStyle = layoutView()->style();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->overflowX() != overflowX
@@ -1706,7 +1706,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         newStyle->setOverflowX(overflowX);
         newStyle->setOverflowY(overflowY);
         newStyle->setScrollBlocksOn(scrollBlocksOn);
-        renderView()->setStyle(newStyle);
+        layoutView()->setStyle(newStyle);
         setupFontBuilder(*newStyle);
     }
 
@@ -1809,9 +1809,9 @@ void Document::updateStyle(StyleRecalcChange change)
     if (change == Force) {
         m_hasNodesWithPlaceholderStyle = false;
         RefPtr<LayoutStyle> documentStyle = StyleResolver::styleForDocument(*this);
-        StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(documentStyle.get(), renderView()->style());
+        StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(documentStyle.get(), layoutView()->style());
         if (localChange != NoChange)
-            renderView()->setStyle(documentStyle.release());
+            layoutView()->setStyle(documentStyle.release());
     }
 
     clearNeedsStyleRecalc();
@@ -2094,12 +2094,12 @@ void Document::attach(const AttachContext& context)
     ASSERT(m_lifecycle.state() == DocumentLifecycle::Inactive);
     ASSERT(!m_axObjectCache || this != &axObjectCacheOwner());
 
-    m_renderView = new RenderView(this);
-    setRenderer(m_renderView);
+    m_layoutView = new LayoutView(this);
+    setRenderer(m_layoutView);
 
-    m_renderView->setIsInWindow(true);
-    m_renderView->setStyle(StyleResolver::styleForDocument(*this));
-    m_renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
+    m_layoutView->setIsInWindow(true);
+    m_layoutView->setStyle(StyleResolver::styleForDocument(*this));
+    m_layoutView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
     ContainerNode::attach(context);
 
@@ -2139,8 +2139,8 @@ void Document::detach(const AttachContext& context)
     if (m_domWindow)
         m_domWindow->clearEventQueue();
 
-    if (m_renderView)
-        m_renderView->setIsInWindow(false);
+    if (m_layoutView)
+        m_layoutView->setIsInWindow(false);
 
     if (m_frame) {
         FrameView* view = m_frame->view();
@@ -2163,7 +2163,7 @@ void Document::detach(const AttachContext& context)
 
     }
 
-    m_renderView = 0;
+    m_layoutView = 0;
     ContainerNode::detach(context);
 
     m_styleEngine->didDetach();
@@ -2237,7 +2237,7 @@ AXObjectCache* Document::existingAXObjectCache() const
 {
     // If the renderer is gone then we are in the process of destruction.
     // This method will be called before m_frame = nullptr.
-    if (!axObjectCacheOwner().renderView())
+    if (!axObjectCacheOwner().layoutView())
         return 0;
 
     return axObjectCacheOwner().m_axObjectCache.get();
@@ -2256,7 +2256,7 @@ AXObjectCache* Document::axObjectCache() const
     Document& cacheOwner = this->axObjectCacheOwner();
 
     // If the document has already been detached, do not make a new axObjectCache.
-    if (!cacheOwner.renderView())
+    if (!cacheOwner.layoutView())
         return 0;
 
     ASSERT(&cacheOwner == this || !m_axObjectCache);
@@ -2500,7 +2500,7 @@ void Document::implicitClose()
         HTMLStyleElement::dispatchPendingLoadEvents();
     }
 
-    // JS running below could remove the frame or destroy the RenderView so we call
+    // JS running below could remove the frame or destroy the LayoutView so we call
     // those two functions repeatedly and don't save them on the stack.
 
     // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
@@ -2539,13 +2539,13 @@ void Document::implicitClose()
         updateRenderTreeIfNeeded();
 
         // Always do a layout after loading if needed.
-        if (view() && renderView() && (!renderView()->firstChild() || renderView()->needsLayout()))
+        if (view() && layoutView() && (!layoutView()->firstChild() || layoutView()->needsLayout()))
             view()->layout();
     }
 
     m_loadEventProgress = LoadEventCompleted;
 
-    if (frame() && renderView() && settings()->accessibilityEnabled()) {
+    if (frame() && layoutView() && settings()->accessibilityEnabled()) {
         if (AXObjectCache* cache = axObjectCache()) {
             if (this == &axObjectCacheOwner())
                 cache->handleLoadComplete(this);
@@ -3120,19 +3120,19 @@ String Document::outgoingOrigin() const
 
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
-    ASSERT(!renderView() || renderView()->isRenderView());
+    ASSERT(!layoutView() || layoutView()->isLayoutView());
 
-    // RenderView::hitTest causes a layout, and we don't want to hit that until the first
+    // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
     // have intentionally clicked on something belonging to this page. Furthermore,
     // mousemove events before the first layout should not lead to a premature layout()
     // happening, which could show a flash of white.
     // See also the similar code in EventHandler::hitTestResultAtPoint.
-    if (!renderView() || !view() || !view()->didFirstLayout())
+    if (!layoutView() || !view() || !view()->didFirstLayout())
         return MouseEventWithHitTestResults(event, HitTestResult(LayoutPoint()));
 
     HitTestResult result(documentPoint);
-    renderView()->hitTest(request, result);
+    layoutView()->hitTest(request, result);
 
     if (!request.readOnly())
         updateHoverActiveState(request, result.innerElement(), &event);
@@ -3336,9 +3336,9 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
 
-        ASSERT(renderView() || importsController());
-        if (renderView())
-            renderView()->invalidatePaintForViewAndCompositedLayers();
+        ASSERT(layoutView() || importsController());
+        if (layoutView())
+            layoutView()->invalidatePaintForViewAndCompositedLayers();
     }
 }
 
@@ -4210,8 +4210,8 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     if (shouldUseVisualOrdering != m_visuallyOrdered) {
         m_visuallyOrdered = shouldUseVisualOrdering;
         // FIXME: How is possible to not have a renderer here?
-        if (renderView())
-            renderView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
+        if (layoutView())
+            layoutView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisuallyOrdered));
     }
 }

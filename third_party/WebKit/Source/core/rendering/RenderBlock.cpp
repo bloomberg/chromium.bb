@@ -49,6 +49,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTextControl.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/line/InlineIterator.h"
@@ -64,7 +65,6 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderView.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "wtf/StdLibExtras.h"
@@ -292,7 +292,7 @@ void RenderBlock::styleWillChange(StyleDifference diff, const LayoutStyle& newSt
             // Remove our absolutely positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
             LayoutObject* cb = parent();
-            while (cb && (cb->style()->position() == StaticPosition || (cb->isInline() && !cb->isReplaced())) && !cb->isRenderView()) {
+            while (cb && (cb->style()->position() == StaticPosition || (cb->isInline() && !cb->isReplaced())) && !cb->isLayoutView()) {
                 if (cb->style()->position() == RelativePosition && cb->isInline() && !cb->isReplaced()) {
                     cb = cb->containingBlock();
                     break;
@@ -555,7 +555,7 @@ RenderBlockFlow* RenderBlock::containingColumnsBlock(bool allowAnonymousColumnBl
 {
     RenderBlock* firstChildIgnoringAnonymousWrappers = 0;
     for (LayoutObject* curr = this; curr; curr = curr->parent()) {
-        if (!curr->isRenderBlock() || curr->isFloatingOrOutOfFlowPositioned() || curr->isTableCell() || curr->isDocumentElement() || curr->isRenderView() || curr->hasOverflowClip()
+        if (!curr->isRenderBlock() || curr->isFloatingOrOutOfFlowPositioned() || curr->isTableCell() || curr->isDocumentElement() || curr->isLayoutView() || curr->hasOverflowClip()
             || curr->isInlineBlockOrInlineTable())
             return 0;
 
@@ -1294,7 +1294,7 @@ bool RenderBlock::isSelfCollapsingBlock() const
     bool hasAutoHeight = logicalHeightLength.isAuto();
     if (logicalHeightLength.isPercent() && !document().inQuirksMode()) {
         hasAutoHeight = true;
-        for (RenderBlock* cb = containingBlock(); !cb->isRenderView(); cb = cb->containingBlock()) {
+        for (RenderBlock* cb = containingBlock(); !cb->isLayoutView(); cb = cb->containingBlock()) {
             if (cb->style()->logicalHeight().isFixed() || cb->isTableCell())
                 hasAutoHeight = false;
         }
@@ -1543,7 +1543,7 @@ void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, L
     // FIXME: Technically percentage height objects only need a relayout if their percentage isn't going to be turned into
     // an auto value. Add a method to determine this, so that we can avoid the relayout.
     bool hasRelativeLogicalHeight = child.hasRelativeLogicalHeight() || (child.isAnonymous() && this->hasRelativeLogicalHeight());
-    if (relayoutChildren || (hasRelativeLogicalHeight && !isRenderView()))
+    if (relayoutChildren || (hasRelativeLogicalHeight && !isLayoutView()))
         child.setChildNeedsLayout(MarkOnlyThis);
 
     // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
@@ -1645,7 +1645,7 @@ void RenderBlock::markFixedPositionObjectForLayoutIfNeeded(LayoutObject* child, 
         return;
 
     LayoutObject* o = child->parent();
-    while (o && !o->isRenderView() && o->style()->position() != AbsolutePosition)
+    while (o && !o->isLayoutView() && o->style()->position() != AbsolutePosition)
         o = o->parent();
     if (o->style()->position() != AbsolutePosition)
         return;
@@ -2167,7 +2167,7 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     LayoutPoint adjustedLocation(accumulatedOffset + location());
     LayoutSize localOffset = toLayoutSize(adjustedLocation);
 
-    if (!isRenderView()) {
+    if (!isLayoutView()) {
         // Check if we need to do anything at all.
         // If we have clipping, then we can't have any spillout.
         LayoutRect overflowBox = hasOverflowClip() ? borderBoxRect() : visualOverflowRect();
@@ -2394,7 +2394,7 @@ static inline bool isEditingBoundary(LayoutObject* ancestor, LayoutObject* child
 {
     ASSERT(!ancestor || ancestor->nonPseudoNode());
     ASSERT(child && child->nonPseudoNode());
-    return !ancestor || !ancestor->parent() || (ancestor->hasLayer() && ancestor->parent()->isRenderView())
+    return !ancestor || !ancestor->parent() || (ancestor->hasLayer() && ancestor->parent()->isLayoutView())
         || ancestor->nonPseudoNode()->hasEditableStyle() == child->nonPseudoNode()->hasEditableStyle();
 }
 
@@ -3619,21 +3619,21 @@ LayoutUnit RenderBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundar
 
 LayoutUnit RenderBlock::pageLogicalHeightForOffset(LayoutUnit offset) const
 {
-    RenderView* renderView = view();
+    LayoutView* layoutView = view();
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread)
-        return renderView->layoutState()->pageLogicalHeight();
+        return layoutView->layoutState()->pageLogicalHeight();
     return flowThread->pageLogicalHeightForOffset(offset + offsetFromLogicalTopOfFirstPage());
 }
 
 LayoutUnit RenderBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule) const
 {
-    RenderView* renderView = view();
+    LayoutView* layoutView = view();
     offset += offsetFromLogicalTopOfFirstPage();
 
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread) {
-        LayoutUnit pageLogicalHeight = renderView->layoutState()->pageLogicalHeight();
+        LayoutUnit pageLogicalHeight = layoutView->layoutState()->pageLogicalHeight();
         LayoutUnit remainingHeight = pageLogicalHeight - intMod(offset, pageLogicalHeight);
         if (pageBoundaryRule == IncludePageBoundary) {
             // If includeBoundaryPoint is true the line exactly on the top edge of a

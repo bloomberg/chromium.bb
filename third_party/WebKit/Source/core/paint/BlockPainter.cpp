@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxClipper.h"
@@ -25,7 +26,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -44,7 +44,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     PaintPhase originalPhase = localPaintInfo.phase;
 
     // Check if we need to do anything at all.
-    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the RenderView
+    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
     // paints the root's background.
     if (!m_renderBlock.isDocumentElement()) {
         LayoutRect overflowBox = overflowRectForPaintRejection();
@@ -460,7 +460,7 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
     // Avoid painting descendants of the root element when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, styleResolverChanged() on the Document
     // will do a full paint invalidation.
-    if (m_renderBlock.document().didLayoutWithPendingStylesheets() && !m_renderBlock.isRenderView())
+    if (m_renderBlock.document().didLayoutWithPendingStylesheets() && !m_renderBlock.isLayoutView())
         return;
 
     if (m_renderBlock.childrenInline()) {

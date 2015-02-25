@@ -9,14 +9,14 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 
-CompositingReasonFinder::CompositingReasonFinder(RenderView& renderView)
-    : m_renderView(renderView)
+CompositingReasonFinder::CompositingReasonFinder(LayoutView& layoutView)
+    : m_layoutView(layoutView)
     , m_compositingTriggers(static_cast<CompositingTriggerFlags>(AllCompositingTriggers))
 {
     updateTriggers();
@@ -26,7 +26,7 @@ void CompositingReasonFinder::updateTriggers()
 {
     m_compositingTriggers = 0;
 
-    Settings& settings = m_renderView.document().page()->settings();
+    Settings& settings = m_layoutView.document().page()->settings();
     if (settings.preferCompositingToLCDTextEnabled()) {
         m_compositingTriggers |= ScrollableInnerFrameTrigger;
         m_compositingTriggers |= OverflowScrollTrigger;
@@ -42,7 +42,7 @@ bool CompositingReasonFinder::hasOverflowScrollTrigger() const
 bool CompositingReasonFinder::isMainFrame() const
 {
     // FIXME: LocalFrame::isMainFrame() is probably better.
-    return !m_renderView.document().ownerElement();
+    return !m_layoutView.document().ownerElement();
 }
 
 CompositingReasons CompositingReasonFinder::directReasons(const Layer* layer) const
@@ -64,14 +64,14 @@ CompositingReasons CompositingReasonFinder::directReasons(const Layer* layer) co
 bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
 {
     // Need this done first to determine overflow.
-    ASSERT(!m_renderView.needsLayout());
+    ASSERT(!m_layoutView.needsLayout());
     if (isMainFrame())
         return false;
 
     if (!(m_compositingTriggers & ScrollableInnerFrameTrigger))
         return false;
 
-    return m_renderView.frameView()->isScrollable();
+    return m_layoutView.frameView()->isScrollable();
 }
 
 CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle(LayoutObject* renderer) const
@@ -105,7 +105,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
         reasons |= CompositingReasonPerspectiveWith3DDescendants;
 
     // Ignore scroll-blocks-on on the document element, because it will get propagated to
-    // the RenderView (by Document::inheritHtmlAndBodyElementStyles) and we don't want to
+    // the LayoutView (by Document::inheritHtmlAndBodyElementStyles) and we don't want to
     // create two composited layers.
     if (style.hasScrollBlocksOn() && !renderer->isDocumentElement())
         reasons |= CompositingReasonScrollBlocksOn;
@@ -184,7 +184,7 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Layer* l
         return false;
     // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
     // They will stay fixed wrt the container rather than the enclosing frame.
-    return layer->scrollsWithViewport() && m_renderView.frameView()->isScrollable();
+    return layer->scrollsWithViewport() && m_layoutView.frameView()->isScrollable();
 }
 
 bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutObject* renderer) const
@@ -198,7 +198,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
     ASSERT(style.hasScrollBlocksOn() && !renderer->isDocumentElement());
 
     // scroll-blocks-on style is propagated from the document element to the document.
-    ASSERT(!renderer->isRenderView()
+    ASSERT(!renderer->isLayoutView()
         || !renderer->document().documentElement()
         || !renderer->document().documentElement()->renderer()
         || renderer->document().documentElement()->renderer()->style()->scrollBlocksOn() == style.scrollBlocksOn());
@@ -212,9 +212,9 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
     // We could consider tracking the current state in CompositingRequirementsUpdater::update.
 
     // Ensure iframes don't get composited when they require no more blocking than their parent.
-    if (renderer->isRenderView()) {
-        if (const FrameView* parentFrame = toRenderView(renderer)->frameView()->parentFrameView()) {
-            if (const RenderView* parentRenderer = parentFrame->renderView()) {
+    if (renderer->isLayoutView()) {
+        if (const FrameView* parentFrame = toLayoutView(renderer)->frameView()->parentFrameView()) {
+            if (const LayoutView* parentRenderer = parentFrame->layoutView()) {
                 // Does this frame contain only blocks-on bits already present in the parent frame?
                 if (!(style.scrollBlocksOn() & ~parentRenderer->style()->scrollBlocksOn()))
                     return false;

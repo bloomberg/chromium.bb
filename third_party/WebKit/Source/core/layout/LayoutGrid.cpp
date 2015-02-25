@@ -27,11 +27,11 @@
 #include "core/layout/LayoutGrid.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/style/GridCoordinate.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/paint/GridPainter.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {

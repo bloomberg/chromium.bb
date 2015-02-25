@@ -32,7 +32,7 @@
 #include "core/layout/LayoutFlowThread.h"
 
 #include "core/layout/LayoutMultiColumnSet.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 
 namespace blink {
 

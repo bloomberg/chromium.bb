@@ -27,9 +27,9 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/ReplacedPainter.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {

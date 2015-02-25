@@ -130,7 +130,7 @@ class PlatformMouseEvent;
 class ProcessingInstruction;
 class QualifiedName;
 class Range;
-class RenderView;
+class LayoutView;
 class RequestAnimationFrameCallback;
 class ResourceFetcher;
 class SVGDocumentExtensions;
@@ -497,10 +497,10 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) override;
     void prepareForDestruction();
 
-    // If you have a Document, use renderView() instead which is faster.
+    // If you have a Document, use layoutView() instead which is faster.
     void renderer() const = delete;
 
-    RenderView* renderView() const { return m_renderView; }
+    LayoutView* layoutView() const { return m_layoutView; }
 
     Document& axObjectCacheOwner() const;
     AXObjectCache* existingAXObjectCache() const;
@@ -1320,7 +1320,7 @@ private:
     bool m_isMobileDocument;
     bool m_isTransitionDocument;
 
-    RenderView* m_renderView;
+    LayoutView* m_layoutView;
 
 #if !ENABLE(OILPAN)
     WeakPtrFactory<Document> m_weakFactory;

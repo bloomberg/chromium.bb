@@ -54,6 +54,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -62,7 +63,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/DragImage.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -397,9 +397,9 @@ void LocalFrame::setPagePopupOwner(Element& owner)
     m_pagePopupOwner = &owner;
 }
 
-RenderView* LocalFrame::contentRenderer() const
+LayoutView* LocalFrame::contentRenderer() const
 {
-    return document() ? document()->renderView() : nullptr;
+    return document() ? document()->layoutView() : nullptr;
 }
 
 void LocalFrame::didChangeVisibilityState()

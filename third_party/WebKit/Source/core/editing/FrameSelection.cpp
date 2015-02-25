@@ -60,6 +60,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
@@ -68,7 +69,6 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderView.h"
 #include "platform/SecureTextInput.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -370,7 +370,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
     }
 
     if (clearRenderTreeSelection)
-        m_selection.start().document()->renderView()->clearSelection();
+        m_selection.start().document()->layoutView()->clearSelection();
 
     if (clearDOMTreeSelection)
         setSelection(VisibleSelection(), DoNotSetFocus);
@@ -1182,7 +1182,7 @@ void FrameSelection::prepareForDestruction()
 
     m_caretBlinkTimer.stop();
 
-    RenderView* view = m_frame->contentRenderer();
+    LayoutView* view = m_frame->contentRenderer();
     if (view)
         view->clearSelection();
 
@@ -1270,7 +1270,7 @@ void FrameSelection::invalidateCaretRect()
     if (!m_caretBlinkTimer.isActive() && newNode == m_previousCaretNode && newRect == m_previousCaretRect)
         return;
 
-    RenderView* view = m_frame->document()->renderView();
+    LayoutView* view = m_frame->document()->layoutView();
     if (m_previousCaretNode && (shouldRepaintCaret(*m_previousCaretNode) || shouldRepaintCaret(view)))
         invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
     if (newNode && (shouldRepaintCaret(*newNode) || shouldRepaintCaret(view)))
@@ -1295,12 +1295,12 @@ bool FrameSelection::contains(const LayoutPoint& point)
     // Treat a collapsed selection like no selection.
     if (!isRange())
         return false;
-    if (!document->renderView())
+    if (!document->layoutView())
         return false;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(point);
-    document->renderView()->hitTest(request, result);
+    document->layoutView()->hitTest(request, result);
     Node* innerNode = result.innerNode();
     if (!innerNode || !innerNode->renderer())
         return false;
@@ -1475,7 +1475,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     // Because LayoutObject::selectionBackgroundColor() and
     // LayoutObject::selectionForegroundColor() check if the frame is active,
     // we have to update places those colors were painted.
-    if (RenderView* view = document->renderView())
+    if (LayoutView* view = document->layoutView())
         view->invalidatePaintForSelection();
 
     // Caret appears in the active frame.
@@ -1568,7 +1568,7 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
     if (willNeedCaretRectUpdate)
         setCaretRectNeedsUpdate();
 
-    RenderView* view = m_frame->contentRenderer();
+    LayoutView* view = m_frame->contentRenderer();
     if (view)
         view->setSelection(*this);
 }
@@ -1695,12 +1695,12 @@ LayoutRect FrameSelection::unclippedBounds() const
     m_frame->document()->updateRenderTreeIfNeeded();
 
     FrameView* view = m_frame->view();
-    RenderView* renderView = m_frame->contentRenderer();
+    LayoutView* layoutView = m_frame->contentRenderer();
 
-    if (!view || !renderView)
+    if (!view || !layoutView)
         return LayoutRect();
 
-    return renderView->selectionBounds();
+    return layoutView->selectionBounds();
 }
 
 static inline HTMLFormElement* associatedFormElement(HTMLElement& element)

@@ -27,9 +27,9 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TextRunConstructor.h"
-#include "core/rendering/RenderView.h"
 #include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"

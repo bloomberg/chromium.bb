@@ -28,13 +28,13 @@
 
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
+#include "core/layout/LayoutView.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/Partitions.h"
 
 namespace blink {
 
-LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView& view)
+LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, LayoutView& view)
     : m_isPaginated(pageLogicalHeight)
     , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
     , m_containingBlockLogicalWidthChanged(false)
@@ -113,8 +113,8 @@ LayoutState::LayoutState(LayoutObject& root)
     , m_renderer(root)
 {
     ASSERT(!m_next);
-    // We'll end up pushing in RenderView itself, so don't bother adding it.
-    if (root.isRenderView())
+    // We'll end up pushing in LayoutView itself, so don't bother adding it.
+    if (root.isLayoutView())
         return;
 
     root.view()->pushLayoutState(*this);

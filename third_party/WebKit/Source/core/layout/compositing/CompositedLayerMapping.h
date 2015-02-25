@@ -410,7 +410,7 @@ private:
     unsigned m_contentOffsetInCompositingLayerDirty : 1;
 
     unsigned m_pendingUpdateScope : 2;
-    unsigned m_isMainFrameRenderViewLayer : 1;
+    unsigned m_isMainFrameLayoutViewLayer : 1;
 
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;

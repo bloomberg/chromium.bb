@@ -22,11 +22,11 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGBlock.h"
 
+#include "core/layout/LayoutView.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {

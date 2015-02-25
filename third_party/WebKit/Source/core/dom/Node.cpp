@@ -896,7 +896,7 @@ void Node::attach(const AttachContext&)
 {
     ASSERT(document().inStyleRecalc() || isDocumentNode());
     ASSERT(needsAttach());
-    ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
+    ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isLayoutView())));
 
     clearNeedsStyleRecalc();
 

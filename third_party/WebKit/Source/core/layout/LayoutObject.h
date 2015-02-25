@@ -68,7 +68,7 @@ class LayoutFlowThread;
 class LayoutGeometryMap;
 class Layer;
 class LayoutMultiColumnSpannerPlaceholder;
-class RenderView;
+class LayoutView;
 class TransformState;
 
 struct PaintInfo;
@@ -359,7 +359,7 @@ public:
     bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
     bool isLayoutRegion() const { return isOfType(LayoutObjectLayoutRegion); }
     bool isLayoutScrollbarPart() const { return isOfType(LayoutObjectLayoutScrollbarPart); }
-    bool isRenderView() const { return isOfType(LayoutObjectRenderView); }
+    bool isLayoutView() const { return isOfType(LayoutObjectLayoutView); }
     bool isReplica() const { return isOfType(LayoutObjectReplica); }
     bool isRuby() const { return isOfType(LayoutObjectRuby); }
     bool isRubyBase() const { return isOfType(LayoutObjectRubyBase); }
@@ -605,7 +605,7 @@ public:
 
     virtual void updateDragState(bool dragOn);
 
-    RenderView* view() const { return document().renderView(); };
+    LayoutView* view() const { return document().layoutView(); };
     FrameView* frameView() const { return document().view(); };
 
     bool isRooted() const;
@@ -749,7 +749,7 @@ public:
 
     bool canContainFixedPositionObjects() const
     {
-        return isRenderView() || (hasTransformRelatedProperty() && isRenderBlock()) || isSVGForeignObject();
+        return isLayoutView() || (hasTransformRelatedProperty() && isRenderBlock()) || isSVGForeignObject();
     }
 
     // Convert the given local point to absolute coordinates
@@ -1099,7 +1099,7 @@ protected:
         LayoutObjectLayoutPart,
         LayoutObjectLayoutRegion,
         LayoutObjectLayoutScrollbarPart,
-        LayoutObjectRenderView,
+        LayoutObjectLayoutView,
         LayoutObjectReplica,
         LayoutObjectRuby,
         LayoutObjectRubyBase,

@@ -7,36 +7,36 @@
 
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 
 void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // If we ever require layout but receive a paint anyway, something has gone horribly wrong.
-    ASSERT(!m_renderView.needsLayout());
-    // RenderViews should never be called to paint with an offset not on device pixels.
+    ASSERT(!m_layoutView.needsLayout());
+    // LayoutViews should never be called to paint with an offset not on device pixels.
     ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
 
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderView);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutView);
 
     // This avoids painting garbage between columns if there is a column gap.
-    if (m_renderView.frameView() && m_renderView.style()->isOverflowPaged()) {
+    if (m_layoutView.frameView() && m_layoutView.style()->isOverflowPaged()) {
         LayoutRect paintRect = paintInfo.rect;
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            paintRect = m_renderView.viewRect();
+            paintRect = m_layoutView.viewRect();
 
-        RenderDrawingRecorder recorder(paintInfo.context, m_renderView, DisplayItem::ViewBackground, paintRect);
+        RenderDrawingRecorder recorder(paintInfo.context, m_layoutView, DisplayItem::ViewBackground, paintRect);
         if (!recorder.canUseCachedDrawing())
-            paintInfo.context->fillRect(paintRect, m_renderView.frameView()->baseBackgroundColor());
+            paintInfo.context->fillRect(paintRect, m_layoutView.frameView()->baseBackgroundColor());
     }
 
-    m_renderView.paintObject(paintInfo, paintOffset);
-    BlockPainter(m_renderView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
+    m_layoutView.paintObject(paintInfo, paintOffset);
+    BlockPainter(m_layoutView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }
 
 static inline bool rendererObscuresBackground(LayoutBox* rootBox)
@@ -61,14 +61,14 @@ static inline bool rendererObscuresBackground(LayoutBox* rootBox)
 
 void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 {
-    if (m_renderView.document().ownerElement() || !m_renderView.view())
+    if (m_layoutView.document().ownerElement() || !m_layoutView.view())
         return;
 
     if (paintInfo.skipRootBackground())
         return;
 
     bool shouldPaintBackground = true;
-    Node* documentElement = m_renderView.document().documentElement();
+    Node* documentElement = m_layoutView.document().documentElement();
     if (LayoutBox* rootBox = documentElement ? toLayoutBox(documentElement->renderer()) : 0)
         shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !rendererObscuresBackground(rootBox);
 
@@ -80,14 +80,14 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     // if there is a transform on the <html>, or if there is a page scale factor less than 1.
     // Only fill with the base background color (typically white) if we're the root document,
     // since iframes/frames with no background in the child document should show the parent's background.
-    if (!m_renderView.frameView()->isTransparent()) {
+    if (!m_layoutView.frameView()->isTransparent()) {
         LayoutRect paintRect = paintInfo.rect;
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            paintRect = m_renderView.viewRect();
+            paintRect = m_layoutView.viewRect();
 
-        RenderDrawingRecorder recorder(paintInfo.context, m_renderView, DisplayItem::BoxDecorationBackground, m_renderView.viewRect());
+        RenderDrawingRecorder recorder(paintInfo.context, m_layoutView, DisplayItem::BoxDecorationBackground, m_layoutView.viewRect());
         if (!recorder.canUseCachedDrawing()) {
-            Color baseColor = m_renderView.frameView()->baseBackgroundColor();
+            Color baseColor = m_layoutView.frameView()->baseBackgroundColor();
             if (baseColor.alpha()) {
                 SkXfermode::Mode previousOperation = paintInfo.context->compositeOperation();
                 paintInfo.context->setCompositeOperation(SkXfermode::kSrc_Mode);
@@ -107,7 +107,7 @@ bool ViewPainter::rootFillsViewportBackground(LayoutBox* rootBox) const
     if (!rootBox->isSVG())
         return true;
 
-    return rootBox->frameRect().contains(m_renderView.frameRect());
+    return rootBox->frameRect().contains(m_layoutView.frameRect());
 }
 
 } // namespace blink

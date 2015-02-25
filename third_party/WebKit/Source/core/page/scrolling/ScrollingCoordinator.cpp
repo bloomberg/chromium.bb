@@ -37,12 +37,12 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/exported/WebScrollbarImpl.h"
@@ -513,7 +513,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     if (mapIter != layerChildFrameMap.end()) {
         for (size_t i = 0; i < mapIter->value.size(); i++) {
             const LocalFrame* childFrame = mapIter->value[i];
-            const Layer* childLayer = childFrame->view()->renderView()->layer();
+            const Layer* childLayer = childFrame->view()->layoutView()->layer();
             if (layersWithRects.contains(childLayer)) {
                 LayerFrameMap newLayerChildFrameMap;
                 makeLayerChildFrameMap(childFrame, &newLayerChildFrameMap);
@@ -638,8 +638,8 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
 
     // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
     // needs to commit here. We should expose a cleaner API for this.
-    RenderView* renderView = m_page->deprecatedLocalMainFrame()->contentRenderer();
-    if (renderView && renderView->compositor() && renderView->compositor()->staleInCompositingMode())
+    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentRenderer();
+    if (layoutView && layoutView->compositor() && layoutView->compositor()->staleInCompositingMode())
         m_page->deprecatedLocalMainFrame()->view()->scheduleAnimation();
 
     m_touchEventTargetRectsAreDirty = true;
@@ -730,10 +730,10 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
         return false;
 
     // We currently only support composited mode.
-    RenderView* renderView = m_page->deprecatedLocalMainFrame()->contentRenderer();
-    if (!renderView)
+    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentRenderer();
+    if (!layoutView)
         return false;
-    return renderView->usesCompositing();
+    return layoutView->usesCompositing();
 }
 
 Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(const LocalFrame* frame, const IntPoint& frameLocation) const
@@ -808,12 +808,12 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
     // Fullscreen HTML5 video when OverlayFullscreenVideo is enabled is implemented by replacing the
     // root cc::layer with the video layer so doing this optimization causes the compositor to think
     // that there are no handlers, therefore skip it.
-    if (!document->renderView()->compositor()->inOverlayFullscreenVideo()) {
+    if (!document->layoutView()->compositor()->inOverlayFullscreenVideo()) {
         for (const auto& eventTarget : *targets) {
             EventTarget* target = eventTarget.key;
             Node* node = target->toNode();
             if (target->toDOMWindow() || node == document || node == document->documentElement() || node == document->body()) {
-                if (RenderView* rendererView = document->renderView()) {
+                if (LayoutView* rendererView = document->layoutView()) {
                     rendererView->computeLayerHitTestRects(rects);
                 }
                 return;
@@ -910,8 +910,8 @@ bool ScrollingCoordinator::isForRootLayer(ScrollableArea* scrollableArea) const
         return false;
 
     // FIXME(305811): Refactor for OOPI.
-    RenderView* renderView = m_page->deprecatedLocalMainFrame()->view()->renderView();
-    return renderView ? scrollableArea == renderView->layer()->scrollableArea() : false;
+    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->view()->layoutView();
+    return layoutView ? scrollableArea == layoutView->layer()->scrollableArea() : false;
 }
 
 bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const

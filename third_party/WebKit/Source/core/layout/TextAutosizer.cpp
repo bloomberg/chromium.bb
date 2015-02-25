@@ -41,10 +41,10 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderView.h"
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 #include "core/dom/ExecutionContextTask.h"
@@ -104,7 +104,7 @@ void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
         }
     }
     String pageInfo = "";
-    if (cluster->m_root->isRenderView()) {
+    if (cluster->m_root->isLayoutView()) {
         pageInfo = String::format("; pageinfo: bm %f * (lw %d / fw %d)",
             m_pageInfo.m_baseMultiplier, m_pageInfo.m_layoutWidth, m_pageInfo.m_frameWidth);
     }
@@ -166,7 +166,7 @@ static bool isIndependentDescendant(const RenderBlock* renderer)
     ASSERT(isPotentialClusterRoot(renderer));
 
     RenderBlock* containingBlock = renderer->containingBlock();
-    return renderer->isRenderView()
+    return renderer->isLayoutView()
         || renderer->isFloating()
         || renderer->isOutOfFlowPositioned()
         || renderer->isTableCell()
@@ -511,8 +511,8 @@ void TextAutosizer::updatePageInfo()
     if (!m_pageInfo.m_settingEnabled || m_document->printing()) {
         m_pageInfo.m_pageNeedsAutosizing = false;
     } else {
-        RenderView* renderView = m_document->renderView();
-        bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
+        LayoutView* layoutView = m_document->layoutView();
+        bool horizontalWritingMode = isHorizontalWritingMode(layoutView->style()->writingMode());
 
         // FIXME: With out-of-process iframes, the top frame can be remote and
         // doesn't have sizing information. Just return if this is the case.
@@ -569,7 +569,7 @@ IntSize TextAutosizer::windowSize() const
 
 void TextAutosizer::resetMultipliers()
 {
-    LayoutObject* renderer = m_document->renderView();
+    LayoutObject* renderer = m_document->layoutView();
     while (renderer) {
         if (const LayoutStyle* style = renderer->style()) {
             if (style->textAutosizingMultiplier() != 1)
@@ -581,7 +581,7 @@ void TextAutosizer::resetMultipliers()
 
 void TextAutosizer::setAllTextNeedsLayout()
 {
-    LayoutObject* renderer = m_document->renderView();
+    LayoutObject* renderer = m_document->layoutView();
     while (renderer) {
         if (renderer->isText())
             renderer->setNeedsLayoutAndFullPaintInvalidation();
@@ -721,7 +721,7 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(const RenderBlock* blo
         return 0;
 
     Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
-    ASSERT(parentCluster || block->isRenderView());
+    ASSERT(parentCluster || block->isLayoutView());
 
     // If a non-independent block would not alter the SUPPRESSING flag, it doesn't need to be a cluster.
     bool parentSuppresses = parentCluster && (parentCluster->m_flags & SUPPRESSING);

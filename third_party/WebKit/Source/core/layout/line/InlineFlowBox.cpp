@@ -29,6 +29,7 @@
 #include "core/layout/LayoutRubyBase.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/style/ShadowList.h"
@@ -36,7 +37,6 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 

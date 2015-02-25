@@ -21,7 +21,7 @@ PassRefPtr<MediaValues> MediaValuesDynamic::create(Document& document)
 
 PassRefPtr<MediaValues> MediaValuesDynamic::create(LocalFrame* frame)
 {
-    if (!frame || !frame->view() || !frame->document() || !frame->document()->renderView())
+    if (!frame || !frame->view() || !frame->document() || !frame->document()->layoutView())
         return MediaValuesCached::create();
     return adoptRef(new MediaValuesDynamic(frame));
 }

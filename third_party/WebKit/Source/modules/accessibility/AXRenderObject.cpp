@@ -56,12 +56,12 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -299,7 +299,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isHTMLCanvasElement(node) && m_renderer->isCanvas())
         return CanvasRole;
 
-    if (cssBox && cssBox->isRenderView())
+    if (cssBox && cssBox->isLayoutView())
         return WebAreaRole;
 
     if (m_renderer->isSVGImage())
@@ -353,7 +353,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(dialogTag))
         return DialogRole;
 
-    // The HTML element should not be exposed as an element. That's what the RenderView element does.
+    // The HTML element should not be exposed as an element. That's what the LayoutView element does.
     if (isHTMLHtmlElement(node))
         return IgnoredRole;
 

@@ -719,6 +719,7 @@
             'layout/LayoutVTTCue.h',
             'layout/LayoutVideo.cpp',
             'layout/LayoutVideo.h',
+            'layout/LayoutView.cpp',
             'layout/LayoutWordBreak.cpp',
             'layout/LayoutWordBreak.h',
             'layout/MultiColumnFragmentainerGroup.cpp',
@@ -855,7 +856,6 @@
             'rendering/RenderText.cpp',
             'rendering/RenderTextFragment.cpp',
             'rendering/RenderTextFragment.h',
-            'rendering/RenderView.cpp',
         ],
         'webcore_non_rendering_files': [
             'Init.cpp',

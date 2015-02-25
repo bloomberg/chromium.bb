@@ -31,11 +31,11 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 
@@ -120,7 +120,7 @@ bool LayoutPart::requiresAcceleratedCompositing() const
         return true;
 
     if (Document* contentDocument = element->contentDocument()) {
-        if (RenderView* view = contentDocument->renderView())
+        if (LayoutView* view = contentDocument->layoutView())
             return view->usesCompositing();
     }
 
@@ -151,7 +151,7 @@ bool LayoutPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
         return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
 
     FrameView* childFrameView = toFrameView(widget());
-    RenderView* childRoot = childFrameView->renderView();
+    LayoutView* childRoot = childFrameView->layoutView();
 
     if (visibleToHitTestRequest(request) && childRoot) {
         LayoutPoint adjustedLocation = accumulatedOffset + location();

@@ -67,6 +67,7 @@
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/ContentData.h"
@@ -77,7 +78,6 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -689,7 +689,7 @@ void LayoutObject::markContainingBlocksForLayout(bool scheduleRelayout, LayoutOb
         // Don't mark the outermost object of an unrooted subtree. That object will be
         // marked when the subtree is added to the document.
         LayoutObject* container = object->container();
-        if (!container && !object->isRenderView())
+        if (!container && !object->isLayoutView())
             return;
         if (!last->isText() && last->style()->hasOutOfFlowPosition()) {
             bool willSkipRelativelyPositionedInlines = !object->isRenderBlock() || object->isAnonymousBlock();
@@ -765,7 +765,7 @@ void LayoutObject::invalidateContainerPreferredLogicalWidths()
         // Don't invalidate the outermost object of an unrooted subtree. That object will be
         // invalidated when the subtree is added to the document.
         LayoutObject* container = o->isTableCell() ? o->containingBlock() : o->container();
-        if (!container && !o->isRenderView())
+        if (!container && !o->isLayoutView())
             break;
 
         o->m_bitfields.setPreferredLogicalWidthsDirty(true);
@@ -1060,10 +1060,10 @@ const LayoutBoxModelObject* LayoutObject::adjustCompositedContainerForSpecialAnc
     if (paintInvalidationContainer)
         return paintInvalidationContainer;
 
-    RenderView* renderView = view();
-    while (renderView->frame()->ownerRenderer())
-        renderView = renderView->frame()->ownerRenderer()->view();
-    return renderView;
+    LayoutView* layoutView = view();
+    while (layoutView->frame()->ownerRenderer())
+        layoutView = layoutView->frame()->ownerRenderer()->view();
+    return layoutView;
 }
 
 bool LayoutObject::isPaintInvalidationContainer() const
@@ -1126,8 +1126,8 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* pai
         "object", this->debugName().ascii(),
         "info", jsonObjectForPaintInvalidationInfo(r, paintInvalidationReasonToString(invalidationReason)));
 
-    if (paintInvalidationContainer->isRenderView()) {
-        toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
+    if (paintInvalidationContainer->isLayoutView()) {
+        toLayoutView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
         return;
     }
 
@@ -1237,7 +1237,7 @@ void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paint
 
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    RenderView* v = view();
+    LayoutView* v = view();
     if (v->document().printing())
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
 
@@ -1254,9 +1254,9 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     // This is because we need to update the old rect regardless.
     invalidateSelectionIfNeeded(paintInvalidationContainer, invalidationReason);
 
-    // If we are set to do a full paint invalidation that means the RenderView will issue
+    // If we are set to do a full paint invalidation that means the LayoutView will issue
     // paint invalidations. We can then skip issuing of paint invalidations for the child
-    // renderers as they'll be covered by the RenderView.
+    // renderers as they'll be covered by the LayoutView.
     if (view()->doingFullPaintInvalidation())
         return invalidationReason;
 
@@ -2167,7 +2167,7 @@ void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Lay
     // Note that we don't use Region here because Union is O(N) - better to just keep a list of
     // partially redundant rectangles. If we find examples where this is expensive, then we could
     // rewrite Region to be more efficient. See https://bugs.webkit.org/show_bug.cgi?id=100814.
-    if (!isRenderView()) {
+    if (!isLayoutView()) {
         for (LayoutObject* curr = slowFirstChild(); curr; curr = curr->nextSibling()) {
             curr->addLayerHitTestRects(layerRects, currentLayer,  layerOffset, newContainerRect);
         }
@@ -2581,14 +2581,14 @@ bool LayoutObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitT
 
 void LayoutObject::scheduleRelayout()
 {
-    if (isRenderView()) {
-        FrameView* view = toRenderView(this)->frameView();
+    if (isLayoutView()) {
+        FrameView* view = toLayoutView(this)->frameView();
         if (view)
             view->scheduleRelayout();
     } else {
         if (isRooted()) {
-            if (RenderView* renderView = view()) {
-                if (FrameView* frameView = renderView->frameView())
+            if (LayoutView* layoutView = view()) {
+                if (FrameView* frameView = layoutView->frameView())
                     frameView->scheduleRelayoutOfSubtree(this);
             }
         }

@@ -187,7 +187,7 @@ static bool shouldScaleColumns(LayoutTable* table)
         Length tw = table->style()->width();
         if ((tw.isAuto() || tw.isPercent()) && !table->isOutOfFlowPositioned()) {
             RenderBlock* cb = table->containingBlock();
-            while (cb && !cb->isRenderView() && !cb->isTableCell()
+            while (cb && !cb->isLayoutView() && !cb->isTableCell()
                 && cb->style()->width().isAuto() && !cb->isOutOfFlowPositioned())
                 cb = cb->containingBlock();
 

@@ -51,8 +51,8 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -323,7 +323,7 @@ WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();
     AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
-    return cache ? WebAXObject(cache->getOrCreate(document->renderView())) : WebAXObject();
+    return cache ? WebAXObject(cache->getOrCreate(document->layoutView())) : WebAXObject();
 }
 
 WebAXObject WebDocument::accessibilityObjectFromID(int axID) const

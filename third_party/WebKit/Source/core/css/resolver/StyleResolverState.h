@@ -65,7 +65,7 @@ public:
     {
         // FIXME: Improve RAII of StyleResolverState to remove this function.
         m_style = style;
-        m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().renderView(), m_style->effectiveZoom());
+        m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutView(), m_style->effectiveZoom());
     }
     const LayoutStyle* style() const { return m_style.get(); }
     LayoutStyle* style() { return m_style.get(); }

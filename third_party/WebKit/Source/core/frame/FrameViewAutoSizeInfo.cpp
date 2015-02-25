@@ -8,7 +8,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBox.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 
 namespace blink {
 
@@ -69,11 +69,11 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
         // Update various sizes including contentsSize, scrollHeight, etc.
         document->updateLayoutIgnorePendingStylesheets();
 
-        RenderView* renderView = document->renderView();
-        if (!renderView)
+        LayoutView* layoutView = document->layoutView();
+        if (!layoutView)
             return;
 
-        int width = renderView->minPreferredLogicalWidth();
+        int width = layoutView->minPreferredLogicalWidth();
 
         LayoutBox* documentLayoutBox = documentElement->layoutBox();
         if (!documentLayoutBox)

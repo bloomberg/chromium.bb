@@ -7,9 +7,9 @@
 
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
-#include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"

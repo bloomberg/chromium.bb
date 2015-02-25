@@ -29,8 +29,8 @@
 
 #include "core/layout/LayerStackingNode.h"
 #include "core/layout/LayerStackingNodeIterator.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
-#include "core/rendering/RenderView.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -175,8 +175,8 @@ static CompositingReasons subtreeReasonsForCompositing(Layer* layer, bool hasCom
     return subtreeReasons;
 }
 
-CompositingRequirementsUpdater::CompositingRequirementsUpdater(RenderView& renderView, CompositingReasonFinder& compositingReasonFinder)
-    : m_renderView(renderView)
+CompositingRequirementsUpdater::CompositingRequirementsUpdater(LayoutView& layoutView, CompositingReasonFinder& compositingReasonFinder)
+    : m_layoutView(layoutView)
     , m_compositingReasonFinder(compositingReasonFinder)
 {
 }
@@ -206,7 +206,7 @@ void CompositingRequirementsUpdater::update(Layer* root)
 
 void CompositingRequirementsUpdater::updateRecursive(Layer* ancestorLayer, Layer* layer, OverlapMap& overlapMap, RecursionData& currentRecursionData, bool& descendantHas3DTransform, Vector<Layer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox)
 {
-    LayerCompositor* compositor = m_renderView.compositor();
+    LayerCompositor* compositor = m_layoutView.compositor();
 
     layer->stackingNode()->updateLayerListsIfNeeded();
 
@@ -249,7 +249,7 @@ void CompositingRequirementsUpdater::updateRecursive(Layer* ancestorLayer, Layer
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = currentRecursionData.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
-    if (m_renderView.compositor()->preferCompositingToLCDTextEnabled()) {
+    if (m_layoutView.compositor()->preferCompositingToLCDTextEnabled()) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
             Layer* unclippedDescendant = unclippedDescendants.at(i);

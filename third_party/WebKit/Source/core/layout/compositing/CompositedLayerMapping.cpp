@@ -44,6 +44,7 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/KeyframeList.h"
 #include "core/page/Chrome.h"
@@ -54,7 +55,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
@@ -169,12 +169,12 @@ CompositedLayerMapping::CompositedLayerMapping(Layer& layer)
     : m_owningLayer(layer)
     , m_contentOffsetInCompositingLayerDirty(false)
     , m_pendingUpdateScope(GraphicsLayerUpdateNone)
-    , m_isMainFrameRenderViewLayer(false)
+    , m_isMainFrameLayoutViewLayer(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
     , m_scrollingContentsAreEmpty(false)
 {
     if (layer.isRootLayer() && renderer()->frame()->isMainFrame())
-        m_isMainFrameRenderViewLayer = true;
+        m_isMainFrameLayoutViewLayer = true;
 
     createPrimaryGraphicsLayer();
 }
@@ -225,7 +225,7 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
     m_graphicsLayer = createGraphicsLayer(m_owningLayer.compositingReasons());
 
 #if !OS(ANDROID)
-    if (m_isMainFrameRenderViewLayer)
+    if (m_isMainFrameLayoutViewLayer)
         m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
 #endif
 
@@ -312,7 +312,7 @@ void CompositedLayerMapping::updateScrollBlocksOn(const LayoutStyle& style)
 
 void CompositedLayerMapping::updateContentsOpaque()
 {
-    ASSERT(m_isMainFrameRenderViewLayer || !m_backgroundLayer);
+    ASSERT(m_isMainFrameLayoutViewLayer || !m_backgroundLayer);
     if (isAcceleratedCanvas(renderer())) {
         // Determine whether the rendering context's external texture layer is opaque.
         CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
@@ -1020,7 +1020,7 @@ void CompositedLayerMapping::updateBackgroundLayerGeometry(const FloatSize& rela
 
     FloatSize backgroundSize = relativeCompositingBoundsSize;
     if (backgroundLayerPaintsFixedRootBackground()) {
-        FrameView* frameView = toRenderView(renderer())->frameView();
+        FrameView* frameView = toLayoutView(renderer())->frameView();
         backgroundSize = frameView->visibleContentRect().size();
     }
     m_backgroundLayer->setPosition(FloatPoint());
@@ -1262,7 +1262,7 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip, bool n
     if (needsDescendantClip) {
         // We don't need a child containment layer if we're the main frame render view
         // layer. It's redundant as the frame clip above us will handle this clipping.
-        if (!m_childContainmentLayer && !m_isMainFrameRenderViewLayer) {
+        if (!m_childContainmentLayer && !m_isMainFrameLayoutViewLayer) {
             m_childContainmentLayer = createGraphicsLayer(CompositingReasonLayerForDescendantClip);
             m_childContainmentLayer->setMasksToBounds(true);
             layersChanged = true;

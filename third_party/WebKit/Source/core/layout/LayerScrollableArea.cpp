@@ -57,6 +57,7 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Chrome.h"
@@ -64,7 +65,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderView.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -200,7 +200,7 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
 
     IntRect scrollRect = rect;
     // If we are not yet inserted into the tree, there is no need to issue paint invaldiations.
-    if (!box().isRenderView() && !box().parent())
+    if (!box().isLayoutView() && !box().parent())
         return;
 
     if (scrollbar == m_vBar.get())
@@ -305,7 +305,7 @@ IntRect LayerScrollableArea::scrollCornerRect() const
 
 IntRect LayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
 {
-    RenderView* view = box().view();
+    LayoutView* view = box().view();
     if (!view)
         return scrollbarRect;
 
@@ -317,7 +317,7 @@ IntRect LayerScrollableArea::convertFromScrollbarToContainingView(const Scrollba
 
 IntRect LayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
 {
-    RenderView* view = box().view();
+    LayoutView* view = box().view();
     if (!view)
         return parentRect;
 
@@ -328,7 +328,7 @@ IntRect LayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollba
 
 IntPoint LayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
 {
-    RenderView* view = box().view();
+    LayoutView* view = box().view();
     if (!view)
         return scrollbarPoint;
 
@@ -339,7 +339,7 @@ IntPoint LayerScrollableArea::convertFromScrollbarToContainingView(const Scrollb
 
 IntPoint LayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
 {
-    RenderView* view = box().view();
+    LayoutView* view = box().view();
     if (!view)
         return parentPoint;
 
@@ -497,7 +497,7 @@ bool LayerScrollableArea::scrollAnimatorEnabled() const
 
 bool LayerScrollableArea::shouldSuspendScrollAnimations() const
 {
-    RenderView* view = box().view();
+    LayoutView* view = box().view();
     if (!view)
         return true;
     return view->frameView()->shouldSuspendScrollAnimations();
@@ -505,7 +505,7 @@ bool LayerScrollableArea::shouldSuspendScrollAnimations() const
 
 bool LayerScrollableArea::scrollbarsCanBeActive() const
 {
-    RenderView* view = box().view();
+    LayoutView* view = box().view();
     if (!view)
         return false;
     return view->frameView()->scrollbarsCanBeActive();
@@ -761,7 +761,7 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
 static bool canHaveOverflowScrollbars(const LayoutBox& box)
 {
     bool rootLayerScrolls = box.document().settings() && box.document().settings()->rootLayerScrolls();
-    return (rootLayerScrolls || !box.isRenderView()) && box.document().viewportDefiningElement() != box.node();
+    return (rootLayerScrolls || !box.isLayoutView()) && box.document().viewportDefiningElement() != box.node();
 }
 
 void LayerScrollableArea::updateAfterStyleChange(const LayoutStyle* oldStyle)

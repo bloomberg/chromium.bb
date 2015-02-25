@@ -37,8 +37,8 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderView.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {

@@ -23,7 +23,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutView.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -59,7 +59,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
     m_pageRects.clear();
     outPageHeight = 0;
 
-    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->renderView())
+    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->layoutView())
         return;
 
     if (userScaleFactor <= 0) {
@@ -67,7 +67,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
         return;
     }
 
-    RenderView* view = m_frame->document()->renderView();
+    LayoutView* view = m_frame->document()->layoutView();
     const IntRect& documentRect = view->documentRect();
     FloatSize pageSize = m_frame->resizePageRectsKeepingRatio(FloatSize(printRect.width(), printRect.height()), FloatSize(documentRect.width(), documentRect.height()));
     float pageWidth = pageSize.width();
@@ -92,10 +92,10 @@ void PrintContext::computePageRectsWithPageSize(const FloatSize& pageSizeInPixel
 
 void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels, bool allowInlineDirectionTiling)
 {
-    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->renderView())
+    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->layoutView())
         return;
 
-    RenderView* view = m_frame->document()->renderView();
+    LayoutView* view = m_frame->document()->layoutView();
 
     IntRect docRect = view->documentRect();
 
