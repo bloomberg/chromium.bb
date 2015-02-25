@@ -18,7 +18,7 @@ class CardUnmaskPromptView;
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
   explicit CardUnmaskPromptControllerImpl(content::WebContents* web_contents);
-  ~CardUnmaskPromptControllerImpl();
+  virtual ~CardUnmaskPromptControllerImpl();
 
   // Functions called by ChromeAutofillClient.
   void ShowPrompt(const CreditCard& card,
@@ -41,9 +41,14 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool GetStoreLocallyStartState() const override;
   bool InputTextIsValid(const base::string16& input_text) const override;
 
+ protected:
+  virtual void OnDidLoadRiskFingerprint(const std::string& risk_data);
+
+  // Exposed for testing.
+  CardUnmaskPromptView* view() { return card_unmask_view_; }
+
  private:
   void LoadRiskFingerprint();
-  void OnDidLoadRiskFingerprint(const std::string& risk_data);
 
   content::WebContents* web_contents_;
   CreditCard card_;

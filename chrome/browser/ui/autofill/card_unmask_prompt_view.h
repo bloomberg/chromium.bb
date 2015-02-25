@@ -22,8 +22,8 @@ class CardUnmaskPromptView {
   virtual void GotVerificationResult(bool success) = 0;
 
  protected:
-  CardUnmaskPromptView();
-  virtual ~CardUnmaskPromptView();
+  CardUnmaskPromptView() {}
+  virtual ~CardUnmaskPromptView() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptView);
