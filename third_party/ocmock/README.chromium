@@ -32,8 +32,5 @@ the comparison of types between invocation return type description (which
 changed from "c" to "B" on arm64) and NSValue objCType (which didn't change)
 on arm64 for BOOL values.
 
-Chromium does patch OCMBoxedReturnValueProvider.m to handle comparison of
-return type and value type for C++ objects when compiling with clang and
-using libc++ STL library. The file is renamed OCMBoxedReturnValueProvider.mm
-to be compiled as an Objective-C++ class to allow detection of the C++ STL
-library used. Pull request: https://github.com/erikdoe/ocmock/pull/97
+Chromium also patches in 65ee89744bc1fbb9461f26d83e08243068cb212b that fixes
+the comparison between opaque (forward-declared) and non-opaque types.

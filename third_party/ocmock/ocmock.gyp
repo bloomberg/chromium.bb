@@ -42,7 +42,7 @@
             'OCMock/OCMBlockCaller.h',
             'OCMock/OCMBlockCaller.m',
             'OCMock/OCMBoxedReturnValueProvider.h',
-            'OCMock/OCMBoxedReturnValueProvider.mm',
+            'OCMock/OCMBoxedReturnValueProvider.m',
             'OCMock/OCMConstraint.h',
             'OCMock/OCMConstraint.m',
             'OCMock/OCMExceptionReturnValueProvider.h',
