@@ -827,6 +827,16 @@ void EventRouter::OnRefreshTokenInvalid() {
       file_manager_private::OnDriveConnectionStatusChanged::Create());
 }
 
+void EventRouter::OnReadyToSendRequests() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Raise a DriveConnectionStatusChanged event to notify the status online.
+  BroadcastEvent(
+      profile_,
+      file_manager_private::OnDriveConnectionStatusChanged::kEventName,
+      file_manager_private::OnDriveConnectionStatusChanged::Create());
+}
+
 void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
                                               const base::FilePath& local_path,
                                               bool got_error) {

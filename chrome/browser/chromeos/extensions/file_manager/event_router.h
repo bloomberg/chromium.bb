@@ -121,6 +121,7 @@ class EventRouter : public KeyedService,
 
   // drive::DriveServiceObserver overrides.
   void OnRefreshTokenInvalid() override;
+  void OnReadyToSendRequests() override;
 
   // drive::FileSystemObserver overrides.
   void OnDirectoryChanged(const base::FilePath& drive_path) override;
