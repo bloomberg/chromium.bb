@@ -57,8 +57,6 @@ extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncKeystoreEncryptionBootstrapToken[];
 
-extern const char kSyncAcknowledgedSyncTypes[];
-
 extern const char kSyncSessionsGUID[];
 
 #if defined(OS_CHROMEOS)

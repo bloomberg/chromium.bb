@@ -86,10 +86,6 @@ const char kSyncKeystoreEncryptionBootstrapToken[] =
 // passphrase.
 const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";
 
-// List of the currently acknowledged set of sync types, used to figure out
-// if a new sync type has rolled out so we can notify the user.
-const char kSyncAcknowledgedSyncTypes[] = "sync.acknowledged_types";
-
 // The GUID session sync will use to identify this client, even across sync
 // disable/enable events.
 const char kSyncSessionsGUID[] = "sync.session_sync_guid";

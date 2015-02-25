@@ -123,9 +123,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void SetSpareBootstrapToken(const std::string& token);
 #endif
 
-  // Merges the given set of types with the set of acknowledged types.
-  void AcknowledgeSyncedTypes(syncer::ModelTypeSet types);
-
   // Get/Set number of rollback attempts allowed.
   virtual int GetRemainingRollbackTries() const;
   virtual void SetRemainingRollbackTries(int times);
@@ -139,7 +136,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // For testing.
 
   void SetManagedForTest(bool is_managed);
-  syncer::ModelTypeSet GetAcknowledgeSyncedTypesForTest() const;
 
  private:
   void RegisterPrefGroups();

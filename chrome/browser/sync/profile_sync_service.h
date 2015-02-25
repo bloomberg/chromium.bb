@@ -702,10 +702,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Resets the flag for suppressing sync startup and starts the sync backend.
   virtual void UnsuppressAndStart();
 
-  // Marks all currently registered types as "acknowledged" so we won't prompt
-  // the user about them any more.
-  void AcknowledgeSyncedTypes();
-
   SyncErrorController* sync_error_controller() {
     return sync_error_controller_.get();
   }

@@ -1814,7 +1814,6 @@ void ProfileSyncService::OnUserChoseDatatypes(
   if (directory_data_type_manager_.get())
     directory_data_type_manager_->ResetDataTypeErrors();
   ChangePreferredDataTypes(chosen_types);
-  AcknowledgeSyncedTypes();
 }
 
 void ProfileSyncService::ChangePreferredDataTypes(
@@ -2502,10 +2501,6 @@ void ProfileSyncService::UnsuppressAndStart() {
   sync_prefs_.SetStartSuppressed(false);
   DCHECK(!signin_.get() || signin_->GetOriginal()->IsAuthenticated());
   startup_controller_->TryStart();
-}
-
-void ProfileSyncService::AcknowledgeSyncedTypes() {
-  sync_prefs_.AcknowledgeSyncedTypes(GetRegisteredDataTypes());
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {
