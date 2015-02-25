@@ -182,6 +182,17 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
                             bool keyDown,
                             ui::KeyboardCode keycode,
                             NSUInteger flags) {
+  // If caps lock is set for an alpha keycode, treat it as if shift was pressed.
+  // Note on Mac (unlike other platforms) shift while caps is down does not go
+  // back to lowercase.
+  if (keycode >= ui::VKEY_A && keycode <= ui::VKEY_Z &&
+      (flags & NSAlphaShiftKeyMask))
+    flags |= NSShiftKeyMask;
+
+  // Clear caps regardless -- MacKeyCodeForWindowsKeyCode doesn't implement
+  // logic to support it.
+  flags &= ~NSAlphaShiftKeyMask;
+
   unichar character;
   unichar shifted_character;
   int macKeycode = ui::MacKeyCodeForWindowsKeyCode(

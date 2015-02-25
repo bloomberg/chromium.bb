@@ -65,7 +65,7 @@ const KeyCodeMap kKeyCodesMap[] = {
   { VKEY_PRINT /* 0x2A */, -1, NSPrintFunctionKey },
   { VKEY_EXECUTE /* 0x2B */, -1, NSExecuteFunctionKey },
   { VKEY_SNAPSHOT /* 0x2C */, -1, NSPrintScreenFunctionKey },
-  { VKEY_INSERT /* 0x2D */, -1, NSInsertFunctionKey },
+  { VKEY_INSERT /* 0x2D */, kVK_Help, NSInsertFunctionKey },
   { VKEY_DELETE /* 0x2E */, kVK_ForwardDelete, NSDeleteFunctionKey },
   { VKEY_HELP /* 0x2F */, kVK_Help, kHelpCharCode },
   { VKEY_0 /* 0x30 */, kVK_ANSI_0, '0' },
@@ -455,6 +455,10 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                 NSUInteger flags,
                                 unichar* us_keyboard_shifted_character,
                                 unichar* keyboard_character) {
+  // In release code, |flags| is used to lookup accelerators, so logic to handle
+  // caps lock properly isn't implemented.
+  DCHECK_EQ(0u, flags & NSAlphaShiftKeyMask);
+
   KeyCodeMap from;
   from.keycode = keycode;
 
