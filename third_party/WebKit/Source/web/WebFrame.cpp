@@ -13,7 +13,9 @@
 #include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
+#include "public/web/WebSandboxFlags.h"
 #include "web/OpenedFrameTracker.h"
+#include "web/RemoteBridgeFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include <algorithm>
@@ -108,6 +110,16 @@ void WebFrame::detach()
 WebSecurityOrigin WebFrame::securityOrigin() const
 {
     return WebSecurityOrigin(toCoreFrame(this)->securityContext()->securityOrigin());
+}
+
+
+void WebFrame::setFrameOwnerSandboxFlags(WebSandboxFlags flags)
+{
+    // At the moment, this is only used to replicate sandbox flags
+    // for frames with a remote owner.
+    FrameOwner* owner = toCoreFrame(this)->owner();
+    ASSERT(owner);
+    toRemoteBridgeFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
 WebFrame* WebFrame::opener() const

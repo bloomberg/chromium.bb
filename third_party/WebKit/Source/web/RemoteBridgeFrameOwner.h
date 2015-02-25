@@ -49,6 +49,8 @@ private:
     SandboxFlags m_sandboxFlags;
 };
 
+DEFINE_TYPE_CASTS(RemoteBridgeFrameOwner, FrameOwner, owner, !owner->isLocal(), !owner.isLocal());
+
 } // namespace blink
 
 #endif // RemoteBridgeFrameOwner_h

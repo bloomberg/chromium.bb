@@ -76,6 +76,7 @@ class WebURL;
 class WebURLLoader;
 class WebURLRequest;
 class WebView;
+enum class WebSandboxFlags;
 struct WebConsoleMessage;
 struct WebFindOptions;
 struct WebFloatPoint;
@@ -166,6 +167,12 @@ public:
 
     // The security origin of this frame.
     BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+
+    // Updates the sandbox flags in the frame's FrameOwner.  This is used when
+    // this frame's parent is in another process and it dynamically updates
+    // this frame's sandbox flags.  The flags won't take effect until the next
+    // navigation.
+    BLINK_EXPORT void setFrameOwnerSandboxFlags(WebSandboxFlags);
 
     // Geometry -----------------------------------------------------------
 

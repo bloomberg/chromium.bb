@@ -845,6 +845,13 @@ void FrameLoaderClientImpl::didChangeName(const String& name)
     m_webFrame->client()->didChangeName(m_webFrame, name);
 }
 
+void FrameLoaderClientImpl::didChangeSandboxFlags(Frame* childFrame, SandboxFlags flags)
+{
+    if (!m_webFrame->client())
+        return;
+    m_webFrame->client()->didChangeSandboxFlags(WebFrame::fromFrame(childFrame), static_cast<WebSandboxFlags>(flags));
+}
+
 void FrameLoaderClientImpl::dispatchWillOpenWebSocket(WebSocketHandle* handle)
 {
     m_webFrame->client()->willOpenWebSocket(handle);

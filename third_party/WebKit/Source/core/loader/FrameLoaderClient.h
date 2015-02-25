@@ -194,6 +194,8 @@ namespace blink {
 
         virtual void didChangeName(const String&) { }
 
+        virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) { }
+
         virtual void dispatchWillOpenWebSocket(blink::WebSocketHandle*) { }
 
         virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) { }

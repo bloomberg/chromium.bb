@@ -165,6 +165,9 @@ public:
     // This frame's name has changed.
     virtual void didChangeName(WebLocalFrame*, const WebString&) { }
 
+    // The sandbox flags have changed for a child frame of this frame.
+    virtual void didChangeSandboxFlags(WebFrame* childFrame, WebSandboxFlags flags) { }
+
     // Called when a watched CSS selector matches or stops matching.
     virtual void didMatchCSS(WebLocalFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) { }
 

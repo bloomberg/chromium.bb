@@ -1854,7 +1854,13 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
 }
 
+// FIXME(alexmos): Remove when Chromium side is updated to pass name and sandbox flags.
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame)
+{
+    initializeToReplaceRemoteFrame(oldWebFrame, "", WebSandboxFlags::None);
+}
+
+void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags)
 {
     Frame* oldFrame = toCoreFrame(oldWebFrame);
     // Note: this *always* temporarily sets a frame owner, even for main frames!
@@ -1864,7 +1870,9 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone);
     m_frame = LocalFrame::create(&m_frameLoaderClientImpl, oldFrame->host(), tempOwner.get());
     m_frame->setOwner(oldFrame->owner());
-    m_frame->tree().setName(oldFrame->tree().name());
+    if (m_frame->owner() && !m_frame->owner()->isLocal())
+        toRemoteBridgeFrameOwner(m_frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
+    m_frame->tree().setName(name);
     setParent(oldWebFrame->parent());
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be

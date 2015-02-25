@@ -149,6 +149,7 @@ public:
     virtual WebCookieJar* cookieJar() const override;
     virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*, LocalFrame* sourceFrame) const override;
     virtual void didChangeName(const String&) override;
+    virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
 
     virtual void dispatchWillOpenWebSocket(WebSocketHandle*) override;
 
