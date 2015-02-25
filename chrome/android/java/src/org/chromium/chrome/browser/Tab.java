@@ -1970,7 +1970,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The native pointer representing the native side of this {@link Tab} object.
      */
     @CalledByNative
-    protected long getNativePtr() {
+    private long getNativePtr() {
         return mNativeTabAndroid;
     }
 

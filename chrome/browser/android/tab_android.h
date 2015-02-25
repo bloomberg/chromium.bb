@@ -109,7 +109,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   void SetWindowSessionID(SessionID::id_type window_id);
   void SetSyncId(int sync_id);
 
-  virtual void HandlePopupNavigation(chrome::NavigateParams* params);
+  void HandlePopupNavigation(chrome::NavigateParams* params);
 
   bool HasPrerenderedUrl(GURL gurl);
 
@@ -142,28 +142,26 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Methods called from Java via JNI -----------------------------------------
 
-  virtual void Destroy(JNIEnv* env, jobject obj);
-  virtual void InitWebContents(JNIEnv* env,
-                               jobject obj,
-                               jboolean incognito,
-                               jobject jcontent_view_core,
-                               jobject jweb_contents_delegate,
-                               jobject jcontext_menu_populator);
-  virtual void DestroyWebContents(JNIEnv* env,
-                                  jobject obj,
-                                  jboolean delete_native);
+  void Destroy(JNIEnv* env, jobject obj);
+  void InitWebContents(JNIEnv* env,
+                       jobject obj,
+                       jboolean incognito,
+                       jobject jcontent_view_core,
+                       jobject jweb_contents_delegate,
+                       jobject jcontext_menu_populator);
+  void DestroyWebContents(JNIEnv* env, jobject obj, jboolean delete_native);
   base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
                                                                jobject obj);
-  virtual TabLoadStatus LoadUrl(JNIEnv* env,
-                                jobject obj,
-                                jstring url,
-                                jstring j_extra_headers,
-                                jbyteArray j_post_data,
-                                jint page_transition,
-                                jstring j_referrer_url,
-                                jint referrer_policy,
-                                jboolean is_renderer_initiated,
-                                jlong intent_received_timestamp);
+  TabLoadStatus LoadUrl(JNIEnv* env,
+                        jobject obj,
+                        jstring url,
+                        jstring j_extra_headers,
+                        jbyteArray j_post_data,
+                        jint page_transition,
+                        jstring j_referrer_url,
+                        jint referrer_policy,
+                        jboolean is_renderer_initiated,
+                        jlong intent_received_timestamp);
   void SetActiveNavigationEntryTitleForUrl(JNIEnv* env,
                                            jobject obj,
                                            jstring jurl,
