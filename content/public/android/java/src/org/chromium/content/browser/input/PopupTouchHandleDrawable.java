@@ -390,7 +390,7 @@ public class PopupTouchHandleDrawable extends View {
 
     @CalledByNative
     private int getPositionY() {
-        return mPositionX;
+        return mPositionY;
     }
 
     @CalledByNative
