@@ -36,6 +36,11 @@ void GiveItSomeTime() {
 
 const char kTouchEventDataURL[] =
     "data:text/html;charset=utf-8,"
+#if defined(OS_ANDROID)
+    "<head>"
+    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+    "</head>"
+#endif
     "<body onload='setup();'>"
     "<div id='first'></div><div id='second'></div><div id='third'></div>"
     "<style>"

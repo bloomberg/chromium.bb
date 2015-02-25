@@ -16,6 +16,10 @@ ResourceDispatcherHostBrowserTest.CrossSiteAfterCrash
 RenderFrameHostManagerTest.IgnoreRendererDebugURLsWhenCrashed
 RenderFrameHostManagerTest.ProcessExitWithSwappedOutViews
 
+# Crashes due to using --disable-gpu.
+# Needs to investigate more in http://crbug.com/461624.
+ScreenOrientationBrowserTest.*
+
 # Failures
 RenderViewHostTest.BaseURLParam
 OffTheRecordClipboardTest.ClearContentData
@@ -92,13 +96,6 @@ BrowserGpuChannelHostFactoryTest.AlreadyEstablished
 BrowserGpuChannelHostFactoryTest.Basic
 BrowserGpuChannelHostFactoryTest.CrashAndRecover
 BrowserGpuChannelHostFactoryTest.EstablishAndTerminate
-
-# http://crbug.com/338011
-TouchInputBrowserTest.MultiPointTouchPress
-TouchInputBrowserTest.TouchHandlerConsume
-TouchInputBrowserTest.TouchHandlerNoConsume
-TouchInputBrowserTest.TouchNoHandler
-TouchActionBrowserTest.*
 
 # http://crbug.com/338408
 TracingControllerTest.EnableCaptureAndDisableMonitoring

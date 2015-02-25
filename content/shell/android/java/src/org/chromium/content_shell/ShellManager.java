@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
@@ -68,13 +69,22 @@ public class ShellManager extends FrameLayout {
      * @param window The window used to generate all shells.
      */
     public void setWindow(WindowAndroid window) {
+        setWindow(window, true);
+    }
+
+    /**
+     * @param window The window used to generate all shells.
+     * @param initialLoadingNeeded Whether initial loading is needed or not.
+     */
+    @VisibleForTesting
+    public void setWindow(WindowAndroid window, final boolean initialLoadingNeeded) {
         assert window != null;
         mWindow = window;
         mContentViewRenderView = new ContentViewRenderView(getContext()) {
             @Override
             protected void onReadyToRender() {
                 if (sStartup) {
-                    mActiveShell.loadUrl(mStartupUrl);
+                    if (initialLoadingNeeded) mActiveShell.loadUrl(mStartupUrl);
                     sStartup = false;
                 }
             }

@@ -103,6 +103,18 @@ public class ContentViewRenderView extends FrameLayout {
         mContentReadbackHandler.initNativeContentReadbackHandler();
     }
 
+    @Override
+    protected void onSizeChanged(int wPix, int hPix, int owPix, int ohPix) {
+        // If mContentViewCore was initialized too early, physical backing size is empty.
+        // In this case, we should resize it before viewport size is set.
+        // TODO(jaekyun): Remove this workaround when more proper fix is landed.
+        if (mContentViewCore != null && mContentViewCore.getPhysicalBackingWidthPix() == 0
+                && mContentViewCore.getPhysicalBackingHeightPix() == 0) {
+            mContentViewCore.onPhysicalBackingSizeChanged(wPix, hPix);
+        }
+        super.onSizeChanged(wPix, hPix, owPix, ohPix);
+    }
+
     /**
      * @return The content readback handler.
      */

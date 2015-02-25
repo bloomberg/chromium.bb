@@ -1,5 +1,5 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
-++++android.view.View clickable name='Text line 1'
+++++android.view.View clickable name='Text line 1 '
 ++++android.view.View
 ++++android.view.View clickable name='Text line 2'

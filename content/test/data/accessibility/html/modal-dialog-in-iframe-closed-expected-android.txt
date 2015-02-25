@@ -1,6 +1,6 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
-++++android.view.View clickable name='Test for modal dialog closed in an iframe.'
+++++android.view.View clickable name='Test for modal dialog closed in an iframe. '
 ++++android.view.View
 ++++++android.view.View
 ++++++++android.view.View scrollable
