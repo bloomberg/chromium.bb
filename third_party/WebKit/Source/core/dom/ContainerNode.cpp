@@ -235,9 +235,13 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
         if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(child);
+        {
+            EventDispatchForbiddenScope assertNoEventDispatch;
+            ScriptForbiddenScope forbidScript;
 
-        insertBeforeCommon(*next, child);
+            treeScope().adoptIfNeeded(child);
+            insertBeforeCommon(*next, child);
+        }
 
         updateTreeAfterInsertion(child);
     }
@@ -302,11 +306,15 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
-    insertBeforeCommon(nextChild, *newChild);
+    {
+        EventDispatchForbiddenScope assertNoEventDispatch;
+        ScriptForbiddenScope forbidScript;
 
-    newChild->updateAncestorConnectedSubframeCountForInsertion();
-
-    ChildListMutationScope(*this).childAdded(*newChild);
+        treeScope().adoptIfNeeded(*newChild);
+        insertBeforeCommon(nextChild, *newChild);
+        newChild->updateAncestorConnectedSubframeCountForInsertion();
+        ChildListMutationScope(*this).childAdded(*newChild);
+    }
 
     notifyNodeInserted(*newChild, ChildrenChangeSourceParser);
 }
