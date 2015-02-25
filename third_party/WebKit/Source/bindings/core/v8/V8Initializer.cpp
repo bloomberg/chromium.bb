@@ -329,29 +329,21 @@ static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> conte
     return false;
 }
 
-static void idleGCTaskInMainThread(double deadlineSeconds);
-
-static void postIdleGCTaskMainThread()
-{
-    if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
-        Scheduler* scheduler = Scheduler::shared();
-        if (scheduler)
-            scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
-    }
-}
-
 static void idleGCTaskInMainThread(double deadlineSeconds)
 {
     ASSERT(isMainThread());
     ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
+    bool gcFinished = false;
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // FIXME: Change V8's API to take a deadline - http://crbug.com/417668
-    double idleTimeInSeconds = deadlineSeconds - Platform::current()->monotonicallyIncreasingTime();
-    int idleTimeInMillis = static_cast<int>(idleTimeInSeconds * 1000);
-    if (idleTimeInMillis > 0)
-        isolate->IdleNotification(idleTimeInMillis);
-    // FIXME: only repost if there is more work to do.
-    postIdleGCTaskMainThread();
+    if (deadlineSeconds > Platform::current()->monotonicallyIncreasingTime())
+        gcFinished = isolate->IdleNotificationDeadline(deadlineSeconds);
+
+    Scheduler* scheduler = Scheduler::shared();
+    ASSERT(scheduler);
+    if (gcFinished)
+        scheduler->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
+    else
+        scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
 }
 
 static void timerTraceProfilerInMainThread(const char* name, int status)
@@ -419,7 +411,8 @@ void V8Initializer::initializeMainThreadIfNeeded()
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
 
-    postIdleGCTaskMainThread();
+    if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
+        Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
 
     isolate->SetEventLogger(timerTraceProfilerInMainThread);
     isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
