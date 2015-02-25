@@ -59,18 +59,17 @@ def attribute_context(interface, attribute):
     is_reflect = 'Reflect' in extended_attributes
     if is_custom_element_callbacks or is_reflect:
         includes.add('core/dom/custom/CustomElementProcessingStack.h')
-    # [PerWorldBindings]
-    if 'PerWorldBindings' in extended_attributes:
-        assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
     # [ImplementedInPrivateScript]
     is_implemented_in_private_script = 'ImplementedInPrivateScript' in extended_attributes
     if is_implemented_in_private_script:
         includes.add('bindings/core/v8/PrivateScriptRunner.h')
         includes.add('core/frame/LocalFrame.h')
         includes.add('platform/ScriptForbiddenScope.h')
-
     # [OnlyExposedToPrivateScript]
     is_only_exposed_to_private_script = 'OnlyExposedToPrivateScript' in extended_attributes
+    # [PerWorldBindings]
+    if 'PerWorldBindings' in extended_attributes:
+        assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
 
     if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -427,18 +426,18 @@ def scoped_content_attribute_name(interface, attribute):
 # Attribute configuration
 ################################################################################
 
-# [Replaceable]
+# [PutForwards], [Replaceable]
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
     cpp_class_name_or_partial = cpp_name_or_partial(interface)
 
     extended_attributes = attribute.extended_attributes
-    if (('Replaceable' in extended_attributes and
-         'PutForwards' not in extended_attributes) or
-        is_constructor_attribute(attribute)):
+    if (is_constructor_attribute(attribute)):
         return '%sV8Internal::%sForceSetAttributeOnThisCallback' % (
             cpp_class_name_or_partial, cpp_class_name)
-    if attribute.is_read_only and 'PutForwards' not in extended_attributes:
+    if (attribute.is_read_only and
+            'PutForwards' not in extended_attributes and
+            'Replaceable' not in extended_attributes):
         return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name_or_partial, attribute.name)
 

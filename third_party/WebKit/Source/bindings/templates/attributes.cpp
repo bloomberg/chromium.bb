@@ -214,7 +214,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
     {# Local variables #}
-    {% if not attribute.is_static %}
+    {% if not attribute.is_static and not attribute.is_replaceable %}
     v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {% if attribute.has_setter_exception_state %}
@@ -226,6 +226,9 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {{attribute.cpp_type}} impl = WTF::getPtr(proxyImpl->{{attribute.name}}());
     if (!impl)
         return;
+    {% elif attribute.is_replaceable %}
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
+    {{cpp_class}}ForceSetAttributeOnThis(propertyName, v8Value, info);
     {% elif not attribute.is_static %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     {% endif %}
@@ -235,7 +238,9 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {# Convert JS value to C++ value #}
     {% if attribute.idl_type != 'EventHandler' %}
+    {% if v8_value_to_local_cpp_value(attribute) %}
     {{v8_value_to_local_cpp_value(attribute) | indent}}
+    {% endif %}
     {% elif not is_node %}{# EventHandler hack #}
     moveEventListenerToNewWrapper(info.GetIsolate(), holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex);
     {% endif %}
@@ -268,7 +273,9 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {# Set #}
+    {% if attribute.cpp_setter %}
     {{attribute.cpp_setter}};
+    {% endif %}
     {# Post-set #}
     {% if attribute.is_setter_raises_exception %}
     exceptionState.throwIfNeeded();

@@ -51,6 +51,34 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {{constant_getter_callback(constant)}}
 {% endfor %}
 {# Attributes #}
+{% block replaceable_attribute_setter_and_callback %}
+{% if has_replaceable_attributes or has_constructor_attributes %}
+template<class CallbackInfo>
+static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+{
+    {% if is_check_security %}
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
+    v8::String::Utf8Value attributeName(name);
+    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
+    if (info.This()->IsObject())
+        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+}
+
+{% endif %}
+{% if has_constructor_attributes %}
+static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    {{cpp_class_or_partial}}V8Internal::{{cpp_class}}ForceSetAttributeOnThis(name, v8Value, info);
+}
+
+{% endif %}
+{% endblock %}
+{##############################################################################}
 {% from 'attributes.cpp' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback,
@@ -64,7 +92,9 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
-{% if not attribute.is_read_only or attribute.put_forwards %}
+{% if (not attribute.is_read_only or
+       attribute.put_forwards or
+       attribute.is_replaceable) %}
 {% if not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
@@ -94,31 +124,6 @@ static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::Prop
 {{constructor_getter_callback(attribute, world_suffix)}}
 {% endfor %}
 {% endfor %}
-{##############################################################################}
-{% block replaceable_attribute_setter_and_callback %}
-{% if has_replaceable_attributes or has_constructor_attributes %}
-static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    {% if is_check_security %}
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    v8::String::Utf8Value attributeName(name);
-    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    {% endif %}
-    if (info.This()->IsObject())
-        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
-}
-
-static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    {{cpp_class_or_partial}}V8Internal::{{cpp_class}}ForceSetAttributeOnThis(name, v8Value, info);
-}
-
-{% endif %}
-{% endblock %}
 {##############################################################################}
 {% block security_check_functions %}
 {% if has_access_check_callbacks %}
