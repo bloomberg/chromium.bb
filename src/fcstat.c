@@ -213,7 +213,7 @@ FcScandir (const char		*dirp,
     *dlist = NULL;
     while ((dent = readdir (d)))
     {
-	if ((filter) (dent))
+	if (!filter || (filter) (dent))
 	{
 	    p = (struct dirent *) malloc (sizeof (struct dirent));
 	    memcpy (p, dent, sizeof (struct dirent));
