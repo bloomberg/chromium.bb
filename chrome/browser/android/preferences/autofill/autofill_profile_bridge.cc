@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "jni/AutofillProfileBridge_jni.h"
@@ -59,21 +60,25 @@ static void GetSupportedCountries(JNIEnv* env,
                                   jobject j_country_name_list) {
   std::vector<std::string> country_codes =
       ::i18n::addressinput::GetRegionCodes();
-  std::vector<base::string16> country_names;
+  std::vector<std::string> known_country_codes;
+  std::vector<base::string16> known_country_names;
   std::string locale = g_browser_process->GetApplicationLocale();
   for (auto country_code : country_codes) {
-    country_names.push_back(l10n_util::GetDisplayNameForCountry(country_code,
-                                                                locale));
+    const base::string16& country_name =
+        l10n_util::GetDisplayNameForCountry(country_code, locale);
+    // Don't display a country code for which a name is not known yet.
+    if (country_name != base::UTF8ToUTF16(country_code)) {
+      known_country_codes.push_back(country_code);
+      known_country_names.push_back(country_name);
+    }
   }
 
-  Java_AutofillProfileBridge_stringArrayToList(env,
-                                               ToJavaArrayOfStrings(
-                                                   env, country_codes).obj(),
-                                               j_country_code_list);
-  Java_AutofillProfileBridge_stringArrayToList(env,
-                                               ToJavaArrayOfStrings(
-                                                   env, country_names).obj(),
-                                               j_country_name_list);
+  Java_AutofillProfileBridge_stringArrayToList(
+      env, ToJavaArrayOfStrings(env, known_country_codes).obj(),
+      j_country_code_list);
+  Java_AutofillProfileBridge_stringArrayToList(
+      env, ToJavaArrayOfStrings(env, known_country_names).obj(),
+      j_country_name_list);
 }
 
 static jstring GetAddressUiComponents(JNIEnv* env,
