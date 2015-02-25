@@ -91,18 +91,47 @@ ECPrivateKey* ECPrivateKey::Create() {
   EnsureNSSInit();
 
   ScopedPK11Slot slot(GetTempKeySlot());
-  return CreateWithParams(slot.get(),
-                          false /* not permanent */,
-                          false /* not sensitive */);
-}
+  if (!slot)
+    return nullptr;
 
-#if defined(USE_NSS)
-// static
-ECPrivateKey* ECPrivateKey::CreateSensitive(PK11SlotInfo* slot) {
-  return CreateWithParams(
-      slot, true /* permanent */, true /* sensitive */);
+  scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
+
+  SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
+  if (!oid_data) {
+    DLOG(ERROR) << "SECOID_FindOIDByTag: " << PORT_GetError();
+    return nullptr;
+  }
+
+  // SECKEYECParams is a SECItem containing the DER encoded ASN.1 ECParameters
+  // value.  For a named curve, that is just the OBJECT IDENTIFIER of the curve.
+  // In addition to the oid data, the encoding requires one byte for the ASN.1
+  // tag and one byte for the length (assuming the length is <= 127).
+  CHECK_LE(oid_data->oid.len, 127U);
+  std::vector<unsigned char> parameters_buf(2 + oid_data->oid.len);
+  SECKEYECParams ec_parameters = {
+    siDEROID, &parameters_buf[0],
+    static_cast<unsigned>(parameters_buf.size())
+  };
+
+  ec_parameters.data[0] = SEC_ASN1_OBJECT_ID;
+  ec_parameters.data[1] = static_cast<unsigned char>(oid_data->oid.len);
+  memcpy(ec_parameters.data + 2, oid_data->oid.data, oid_data->oid.len);
+
+  result->key_ = PK11_GenerateKeyPair(slot.get(),
+                                      CKM_EC_KEY_PAIR_GEN,
+                                      &ec_parameters,
+                                      &result->public_key_,
+                                      PR_FALSE /* not permanent */,
+                                      PR_FALSE /* not sensitive */,
+                                      NULL);
+  if (!result->key_) {
+    DLOG(ERROR) << "PK11_GenerateKeyPair: " << PORT_GetError();
+    return nullptr;
+  }
+  CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(result->public_key_));
+
+  return result.release();
 }
-#endif
 
 // static
 ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
@@ -112,31 +141,43 @@ ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
   EnsureNSSInit();
 
   ScopedPK11Slot slot(GetTempKeySlot());
-  return CreateFromEncryptedPrivateKeyInfoWithParams(
+  if (!slot)
+    return nullptr;
+
+  scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
+
+  SECItem encoded_spki = {
+    siBuffer,
+    const_cast<unsigned char*>(&subject_public_key_info[0]),
+    static_cast<unsigned>(subject_public_key_info.size())
+  };
+  CERTSubjectPublicKeyInfo* decoded_spki = SECKEY_DecodeDERSubjectPublicKeyInfo(
+      &encoded_spki);
+  if (!decoded_spki) {
+    DLOG(ERROR) << "SECKEY_DecodeDERSubjectPublicKeyInfo: " << PORT_GetError();
+    return nullptr;
+  }
+
+  bool success = ImportFromEncryptedPrivateKeyInfo(
       slot.get(),
       password,
-      encrypted_private_key_info,
-      subject_public_key_info,
+      &encrypted_private_key_info[0],
+      encrypted_private_key_info.size(),
+      decoded_spki,
       false /* not permanent */,
-      false /* not sensitive */);
-}
+      false /* not sensitive */,
+      &result->key_,
+      &result->public_key_);
 
-#if defined(USE_NSS)
-// static
-ECPrivateKey* ECPrivateKey::CreateSensitiveFromEncryptedPrivateKeyInfo(
-    PK11SlotInfo* slot,
-    const std::string& password,
-    const std::vector<uint8>& encrypted_private_key_info,
-    const std::vector<uint8>& subject_public_key_info) {
-  return CreateFromEncryptedPrivateKeyInfoWithParams(
-      slot,
-      password,
-      encrypted_private_key_info,
-      subject_public_key_info,
-      true /* permanent */,
-      true /* sensitive */);
+  SECKEY_DestroySubjectPublicKeyInfo(decoded_spki);
+
+  if (success) {
+    CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(result->public_key_));
+    return result.release();
+  }
+
+  return nullptr;
 }
-#endif
 
 // static
 bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
@@ -312,94 +353,5 @@ bool ECPrivateKey::ExportECParams(std::vector<uint8>* output) {
 }
 
 ECPrivateKey::ECPrivateKey() : key_(NULL), public_key_(NULL) {}
-
-// static
-ECPrivateKey* ECPrivateKey::CreateWithParams(PK11SlotInfo* slot,
-                                             bool permanent,
-                                             bool sensitive) {
-  if (!slot)
-    return NULL;
-
-  scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
-
-  SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
-  if (!oid_data) {
-    DLOG(ERROR) << "SECOID_FindOIDByTag: " << PORT_GetError();
-    return NULL;
-  }
-
-  // SECKEYECParams is a SECItem containing the DER encoded ASN.1 ECParameters
-  // value.  For a named curve, that is just the OBJECT IDENTIFIER of the curve.
-  // In addition to the oid data, the encoding requires one byte for the ASN.1
-  // tag and one byte for the length (assuming the length is <= 127).
-  DCHECK_LE(oid_data->oid.len, 127U);
-  std::vector<unsigned char> parameters_buf(2 + oid_data->oid.len);
-  SECKEYECParams ec_parameters = {
-    siDEROID, &parameters_buf[0],
-    static_cast<unsigned>(parameters_buf.size())
-  };
-
-  ec_parameters.data[0] = SEC_ASN1_OBJECT_ID;
-  ec_parameters.data[1] = static_cast<unsigned char>(oid_data->oid.len);
-  memcpy(ec_parameters.data + 2, oid_data->oid.data, oid_data->oid.len);
-
-  result->key_ = PK11_GenerateKeyPair(slot,
-                                      CKM_EC_KEY_PAIR_GEN,
-                                      &ec_parameters,
-                                      &result->public_key_,
-                                      permanent,
-                                      sensitive,
-                                      NULL);
-  if (!result->key_) {
-    DLOG(ERROR) << "PK11_GenerateKeyPair: " << PORT_GetError();
-    return NULL;
-  }
-  CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(result->public_key_));
-
-  return result.release();
-}
-
-// static
-ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfoWithParams(
-    PK11SlotInfo* slot,
-    const std::string& password,
-    const std::vector<uint8>& encrypted_private_key_info,
-    const std::vector<uint8>& subject_public_key_info,
-    bool permanent,
-    bool sensitive) {
-  scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
-
-  SECItem encoded_spki = {
-    siBuffer,
-    const_cast<unsigned char*>(&subject_public_key_info[0]),
-    static_cast<unsigned>(subject_public_key_info.size())
-  };
-  CERTSubjectPublicKeyInfo* decoded_spki = SECKEY_DecodeDERSubjectPublicKeyInfo(
-      &encoded_spki);
-  if (!decoded_spki) {
-    DLOG(ERROR) << "SECKEY_DecodeDERSubjectPublicKeyInfo: " << PORT_GetError();
-    return NULL;
-  }
-
-  bool success = ImportFromEncryptedPrivateKeyInfo(
-      slot,
-      password,
-      &encrypted_private_key_info[0],
-      encrypted_private_key_info.size(),
-      decoded_spki,
-      permanent,
-      sensitive,
-      &result->key_,
-      &result->public_key_);
-
-  SECKEY_DestroySubjectPublicKeyInfo(decoded_spki);
-
-  if (success) {
-    CHECK_EQ(ecKey, SECKEY_GetPublicKeyType(result->public_key_));
-    return result.release();
-  }
-
-  return NULL;
-}
 
 }  // namespace crypto
