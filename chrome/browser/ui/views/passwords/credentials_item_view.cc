@@ -53,7 +53,7 @@ base::string16 GetLowerLabelText(const autofill::PasswordForm& form,
   if (!form.federation_url.is_empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
-        base::ASCIIToUTF16(form.federation_url.host()));
+        base::UTF8ToUTF16(form.federation_url.host()));
   }
   return form.display_name.empty() ? base::string16() : form.username_value;
 }
