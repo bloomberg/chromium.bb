@@ -34,6 +34,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/sessions/session_id.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -51,7 +52,6 @@
 #endif
 
 class BrowserContentSettingBubbleModelDelegate;
-class BrowserContentTranslateDriverObserver;
 class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
@@ -114,6 +114,7 @@ class Browser : public TabStripModelObserver,
 #if defined(ENABLE_EXTENSIONS)
                 public extensions::ExtensionRegistryObserver,
 #endif
+                public translate::ContentTranslateDriver::Observer,
                 public ui::SelectFileDialog::Listener {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
@@ -714,6 +715,10 @@ class Browser : public TabStripModelObserver,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 #endif
 
+  // Overridden from translate::ContentTranslateDriver::Observer:
+  void OnIsPageTranslatedChanged(content::WebContents* source) override;
+  void OnTranslateEnabledChanged(content::WebContents* source) override;
+
   // Command and state updating ///////////////////////////////////////////////
 
   // Handle changes to kDevTools preference.
@@ -961,8 +966,6 @@ class Browser : public TabStripModelObserver,
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
-
-  scoped_ptr<BrowserContentTranslateDriverObserver> translate_driver_observer_;
 
   scoped_ptr<ValidationMessageBubble> validation_message_bubble_;
 

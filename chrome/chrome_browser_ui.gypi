@@ -127,8 +127,6 @@
       'browser/ui/browser_commands_chromeos.h',
       'browser/ui/browser_commands_mac.cc',
       'browser/ui/browser_commands_mac.h',
-      'browser/ui/browser_content_translate_driver_observer.cc',
-      'browser/ui/browser_content_translate_driver_observer.h',
       'browser/ui/browser_dialogs.h',
       'browser/ui/browser_instant_controller.cc',
       'browser/ui/browser_instant_controller.h',

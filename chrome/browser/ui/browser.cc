@@ -90,7 +90,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/browser_content_translate_driver_observer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -159,6 +158,7 @@
 #include "components/search/search.h"
 #include "components/sessions/session_types.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -361,8 +361,6 @@ Browser::Browser(const CreateParams& params)
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false),
-      translate_driver_observer_(
-          new BrowserContentTranslateDriverObserver(this)),
       chrome_updater_factory_(this),
       weak_factory_(this) {
   // If this causes a crash then a window is being opened using a profile type
@@ -2066,6 +2064,24 @@ void Browser::OnExtensionUnloaded(
 #endif  // defined(ENABLE_EXTENSIONS)
 
 ///////////////////////////////////////////////////////////////////////////////
+// Browser, translate::ContentTranslateDriver::Observer implementation:
+
+void Browser::OnIsPageTranslatedChanged(content::WebContents* source) {
+  DCHECK(source);
+  if (tab_strip_model_->GetActiveWebContents() == source) {
+    window_->SetTranslateIconToggled(
+        ChromeTranslateClient::FromWebContents(
+            source)->GetLanguageState().IsPageTranslated());
+  }
+}
+
+void Browser::OnTranslateEnabledChanged(content::WebContents* source) {
+  DCHECK(source);
+  if (tab_strip_model_->GetActiveWebContents() == source)
+    UpdateToolbar(false);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
 
 void Browser::OnDevToolsDisabledChanged() {
@@ -2293,11 +2309,11 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
       ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();
   if (delegate) {
     ui_zoom::ZoomController::FromWebContents(web_contents)->AddObserver(this);
-    content_translate_driver.AddObserver(translate_driver_observer_.get());
+    content_translate_driver.AddObserver(this);
   } else {
-    ui_zoom::ZoomController::FromWebContents(web_contents)
-        ->RemoveObserver(this);
-    content_translate_driver.RemoveObserver(translate_driver_observer_.get());
+    ui_zoom::ZoomController::FromWebContents(web_contents)->RemoveObserver(
+        this);
+    content_translate_driver.RemoveObserver(this);
   }
 }
 
