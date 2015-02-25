@@ -508,12 +508,16 @@ MockHttpCache::MockHttpCache(net::HttpCache::BackendFactory* disk_cache_factory)
     : http_cache_(new MockNetworkLayer(), NULL, disk_cache_factory) {
 }
 
-MockDiskCache* MockHttpCache::disk_cache() {
+disk_cache::Backend* MockHttpCache::backend() {
   net::TestCompletionCallback cb;
   disk_cache::Backend* backend;
   int rv = http_cache_.GetBackend(&backend, cb.callback());
   rv = cb.GetResult(rv);
-  return (rv == net::OK) ? static_cast<MockDiskCache*>(backend) : NULL;
+  return (rv == net::OK) ? backend : NULL;
+}
+
+MockDiskCache* MockHttpCache::disk_cache() {
+  return static_cast<MockDiskCache*>(backend());
 }
 
 int MockHttpCache::CreateTransaction(scoped_ptr<net::HttpTransaction>* trans) {
@@ -564,7 +568,7 @@ bool MockHttpCache::WriteResponseInfo(
 bool MockHttpCache::OpenBackendEntry(const std::string& key,
                                      disk_cache::Entry** entry) {
   net::TestCompletionCallback cb;
-  int rv = disk_cache()->OpenEntry(key, entry, cb.callback());
+  int rv = backend()->OpenEntry(key, entry, cb.callback());
   return (cb.GetResult(rv) == net::OK);
 }
 
@@ -572,7 +576,7 @@ bool MockHttpCache::CreateBackendEntry(const std::string& key,
                                        disk_cache::Entry** entry,
                                        net::NetLog* net_log) {
   net::TestCompletionCallback cb;
-  int rv = disk_cache()->CreateEntry(key, entry, cb.callback());
+  int rv = backend()->CreateEntry(key, entry, cb.callback());
   return (cb.GetResult(rv) == net::OK);
 }
 

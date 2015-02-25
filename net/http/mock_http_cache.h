@@ -181,6 +181,7 @@ class MockHttpCache {
   MockNetworkLayer* network_layer() {
     return static_cast<MockNetworkLayer*>(http_cache_.network_layer());
   }
+  disk_cache::Backend* backend();
   MockDiskCache* disk_cache();
 
   // Wrapper around http_cache()->CreateTransaction(net::DEFAULT_PRIORITY...)
