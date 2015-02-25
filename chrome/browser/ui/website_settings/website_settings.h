@@ -35,6 +35,9 @@ class WebsiteSettingsUI;
 // closed.
 class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
  public:
+  // TODO(palmer): Figure out if it is possible to unify SiteConnectionStatus
+  // and SiteIdentityStatus.
+  //
   // Status of a connection to a website.
   enum SiteConnectionStatus {
     SITE_CONNECTION_STATUS_UNKNOWN = 0,      // No status available.

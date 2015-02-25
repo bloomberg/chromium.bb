@@ -91,15 +91,23 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
 WebsiteSettingsUI::IdentityInfo::~IdentityInfo() {}
 
 base::string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
-  if (identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
-      identity_status ==  WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
-    return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
+  switch (identity_status) {
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
+      return l10n_util::GetStringUTF16(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_UNKNOWN_TRANSPORT);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INTERNAL_PAGE);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT:
+    default:
+      return l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
   }
-  if (identity_status ==
-          WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT) {
-    return l10n_util::GetStringUTF16(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
-  }
-  return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);
 }
 
 WebsiteSettingsUI::~WebsiteSettingsUI() {

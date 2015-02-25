@@ -203,15 +203,17 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
 
   layout->AddPaddingRow(0, kHeaderRowSpacing);
 
-  layout->StartRow(0, label_column);
+  layout->StartRow(1, label_column);
   status_ = new views::Label(base::string16());
+  status_->SetMultiLine(true);
+  status_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(status_,
                   1,
                   1,
                   views::GridLayout::LEADING,
-                  views::GridLayout::CENTER);
+                  views::GridLayout::LEADING);
 
-  layout->AddPaddingRow(0, kHeaderPaddingBottom);
+  layout->AddPaddingRow(1, kHeaderPaddingBottom);
 }
 
 PopupHeaderView::~PopupHeaderView() {
@@ -560,7 +562,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
       identity_status_text =
-          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
+          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
       text_color = kIdentityVerifiedTextColor;
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
@@ -569,7 +571,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       break;
     default:
       identity_status_text =
-         l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);
+         l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
       break;
   }
   header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
