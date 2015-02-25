@@ -77,7 +77,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
       TaskQueueManager::WorkQueueUpdateEventType event_type);
   void EnqueueTaskLocked(const base::PendingTask& pending_task);
 
-  void TraceWorkQueueSize() const;
+  void TraceQueueSize(bool is_locked) const;
   static const char* PumpPolicyToString(
       TaskQueueManager::PumpPolicy pump_policy);
   static void QueueAsValueInto(const base::TaskQueue& queue,
@@ -181,7 +181,7 @@ bool TaskQueue::UpdateWorkQueue(
     if (!ShouldAutoPumpQueueLocked(event_type))
       return false;
     work_queue_.Swap(&incoming_queue_);
-    TraceWorkQueueSize();
+    TraceQueueSize(true);
     return true;
   }
 }
@@ -189,15 +189,24 @@ bool TaskQueue::UpdateWorkQueue(
 base::PendingTask TaskQueue::TakeTaskFromWorkQueue() {
   base::PendingTask pending_task = work_queue_.front();
   work_queue_.pop();
-  TraceWorkQueueSize();
+  TraceQueueSize(false);
   return pending_task;
 }
 
-void TaskQueue::TraceWorkQueueSize() const {
-  if (!name_)
+void TaskQueue::TraceQueueSize(bool is_locked) const {
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), &is_tracing);
+  if (!is_tracing || !name_)
     return;
+  if (!is_locked)
+    lock_.Acquire();
+  else
+    lock_.AssertAcquired();
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), name_,
-                 work_queue_.size());
+                 incoming_queue_.size() + work_queue_.size());
+  if (!is_locked)
+    lock_.Release();
 }
 
 void TaskQueue::EnqueueTask(const base::PendingTask& pending_task) {
@@ -224,6 +233,7 @@ void TaskQueue::EnqueueTaskLocked(const base::PendingTask& pending_task) {
     // before getting here.
     incoming_queue_.back().delayed_run_time = base::TimeTicks();
   }
+  TraceQueueSize(true);
 }
 
 void TaskQueue::SetPumpPolicy(TaskQueueManager::PumpPolicy pump_policy) {
