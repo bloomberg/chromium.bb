@@ -43,7 +43,10 @@ TEST_F(ShaderManagerTest, Basic) {
   // Check we get nothing for a non-existent shader.
   EXPECT_TRUE(manager_.GetShader(kClient2Id) == NULL);
   // Check we can't get the shader after we remove it.
-  manager_.MarkAsDeleted(shader1);
+  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Delete(shader1);
   EXPECT_TRUE(manager_.GetShader(kClient1Id) == NULL);
 }
 
@@ -79,8 +82,14 @@ TEST_F(ShaderManagerTest, DeleteBug) {
   ASSERT_TRUE(shader1.get());
   ASSERT_TRUE(shader2.get());
   manager_.UseShader(shader1.get());
-  manager_.MarkAsDeleted(shader1.get());
-  manager_.MarkAsDeleted(shader2.get());
+  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Delete(shader1.get());
+  EXPECT_CALL(*gl_, DeleteShader(kService2Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Delete(shader2.get());
   EXPECT_TRUE(manager_.IsOwned(shader1.get()));
   EXPECT_FALSE(manager_.IsOwned(shader2.get()));
 }
@@ -249,7 +258,10 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   EXPECT_TRUE(shader1->InUse());
   manager_.UseShader(shader1);
   EXPECT_TRUE(shader1->InUse());
-  manager_.MarkAsDeleted(shader1);
+  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Delete(shader1);
   EXPECT_TRUE(shader1->IsDeleted());
   Shader* shader2 = manager_.GetShader(kClient1Id);
   EXPECT_EQ(shader1, shader2);
@@ -272,7 +284,10 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   EXPECT_FALSE(shader1->InUse());
   shader2 = manager_.GetShader(kClient1Id);
   EXPECT_EQ(shader1, shader2);
-  manager_.MarkAsDeleted(shader1);  // this should delete the shader.
+  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Delete(shader1);  // this should delete the shader.
   shader2 = manager_.GetShader(kClient1Id);
   EXPECT_TRUE(shader2 == NULL);
 }

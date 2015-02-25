@@ -251,5 +251,38 @@ TEST_F(GLProgramTest, DeferCompileWithExt) {
   EXPECT_NE(0u, program_good2);
 }
 
+TEST_F(GLProgramTest, DeleteAttachedShaderLinks) {
+  static const char* v_shdr_str = R"(
+      attribute vec4 vPosition;
+      void main()
+      {
+        gl_Position = vPosition;
+      }
+  )";
+  static const char* f_shdr_str = R"(
+      void main()
+      {
+        gl_FragColor = vec4(1, 1, 1, 1);
+      }
+  )";
+
+  // Compiling the shaders, attaching, then deleting before linking should work.
+  GLuint vs = GLTestHelper::CompileShader(GL_VERTEX_SHADER, v_shdr_str);
+  GLuint fs = GLTestHelper::CompileShader(GL_FRAGMENT_SHADER, f_shdr_str);
+
+  GLuint program = glCreateProgram();
+  glAttachShader(program, vs);
+  glAttachShader(program, fs);
+
+  glDeleteShader(vs);
+  glDeleteShader(fs);
+
+  glLinkProgram(program);
+
+  GLint linked = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &linked);
+  EXPECT_NE(0, linked);
+}
+
 }  // namespace gpu
 

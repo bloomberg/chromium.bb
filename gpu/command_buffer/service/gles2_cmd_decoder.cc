@@ -5133,8 +5133,7 @@ error::Error GLES2DecoderImpl::HandleDeleteShader(uint32 immediate_data_size,
     Shader* shader = GetShader(client_id);
     if (shader) {
       if (!shader->IsDeleted()) {
-        glDeleteShader(shader->service_id());
-        shader_manager()->MarkAsDeleted(shader);
+        shader_manager()->Delete(shader);
       }
     } else {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteShader", "unknown shader");

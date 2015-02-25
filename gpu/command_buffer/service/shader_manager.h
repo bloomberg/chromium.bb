@@ -147,7 +147,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   void IncUseCount();
   void DecUseCount();
-  void MarkAsDeleted();
+  void Delete();
 
   int use_count_;
 
@@ -215,7 +215,7 @@ class GPU_EXPORT ShaderManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
-  void MarkAsDeleted(Shader* shader);
+  void Delete(Shader* shader);
 
   // Mark a shader as used
   void UseShader(Shader* shader);

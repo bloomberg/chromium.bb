@@ -133,8 +133,13 @@ void Shader::DecUseCount() {
   DCHECK_GE(use_count_, 0);
 }
 
-void Shader::MarkAsDeleted() {
+void Shader::Delete() {
+  if (use_count_ > 0) {
+    // If attached, compile the shader before we delete it.
+    DoCompile();
+  }
   DCHECK_NE(service_id_, 0u);
+  glDeleteShader(service_id_);
   service_id_ = 0;
 }
 
@@ -185,8 +190,7 @@ void ShaderManager::Destroy(bool have_context) {
     if (have_context) {
       Shader* shader = shaders_.begin()->second.get();
       if (!shader->IsDeleted()) {
-        glDeleteShader(shader->service_id());
-        shader->MarkAsDeleted();
+        shader->Delete();
       }
     }
     shaders_.erase(shaders_.begin());
@@ -247,10 +251,10 @@ void ShaderManager::RemoveShader(Shader* shader) {
   }
 }
 
-void ShaderManager::MarkAsDeleted(Shader* shader) {
+void ShaderManager::Delete(Shader* shader) {
   DCHECK(shader);
   DCHECK(IsOwned(shader));
-  shader->MarkAsDeleted();
+  shader->Delete();
   RemoveShader(shader);
 }
 
@@ -269,5 +273,3 @@ void ShaderManager::UnuseShader(Shader* shader) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-
