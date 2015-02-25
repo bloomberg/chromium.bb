@@ -1151,32 +1151,9 @@ void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track)
 
 void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
 {
-    if (track->trackType() == TextTrack::TrackElement) {
-        // 4.8.10.12.3 Sourcing out-of-band text tracks
-        // ... when a text track corresponding to a track element is created with text track
-        // mode set to disabled and subsequently changes its text track mode to hidden, showing,
-        // or showing by default for the first time, the user agent must immediately and synchronously
-        // run the following algorithm ...
-
-        for (HTMLTrackElement* trackElement = Traversal<HTMLTrackElement>::firstChild(*this); trackElement; trackElement = Traversal<HTMLTrackElement>::nextSibling(*trackElement)) {
-            if (trackElement->track() != track)
-                continue;
-
-            // Mark this track as "configured" so configureTextTracks won't change the mode again.
-            track->setHasBeenConfigured(true);
-            if (track->mode() != TextTrack::disabledKeyword()) {
-                if (trackElement->readyState() == HTMLTrackElement::LOADED)
-                    cueTimeline().addCues(track, track->cues());
-
-                // If this is the first added track, create the list of text tracks.
-                if (!m_textTracks)
-                    m_textTracks = TextTrackList::create(this);
-            }
-            break;
-        }
-    } else if (track->trackType() == TextTrack::AddTrack && track->mode() != TextTrack::disabledKeyword()) {
-        cueTimeline().addCues(track, track->cues());
-    }
+    // Mark this track as "configured" so configureTextTracks won't change the mode again.
+    if (track->trackType() == TextTrack::TrackElement)
+        track->setHasBeenConfigured(true);
 
     configureTextTrackDisplay(AssumeVisibleChange);
 
