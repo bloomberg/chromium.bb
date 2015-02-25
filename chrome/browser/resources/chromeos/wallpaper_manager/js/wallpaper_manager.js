@@ -195,6 +195,7 @@ function WallpaperManager(dialogDom) {
    * @private
    */
   WallpaperManager.prototype.toggleSurpriseMe_ = function() {
+    var self = this;
     var checkbox = $('surprise-me').querySelector('#checkbox');
     var shouldEnable = !checkbox.classList.contains('checked');
     WallpaperUtil.saveToStorage(Constants.AccessSurpriseMeEnabledKey,
@@ -203,6 +204,11 @@ function WallpaperManager(dialogDom) {
           if (shouldEnable) {
             checkbox.classList.add('checked');
           } else {
+            // Unchecking the "Surprise me" checkbox falls back to the previous
+            // wallpaper before "Surprise me" was turned on.
+            self.setSelectedWallpaper_(self.wallpaperGrid_.activeItem_);
+            self.onWallpaperChanged_(self.wallpaperGrid_.activeItem_,
+                                     self.currentWallpaper_);
             checkbox.classList.remove('checked');
           }
           $('categories-list').disabled = shouldEnable;
@@ -982,7 +988,7 @@ function WallpaperManager(dialogDom) {
     bar.style.width = selectedListItem.offsetWidth + 'px';
 
     var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
-    var selectedItem;
+    var selectedItem = null;
     if (selectedListItem.custom) {
       this.document_.body.setAttribute('custom', '');
       var errorHandler = this.onFileSystemError_.bind(this);
@@ -1028,8 +1034,10 @@ function WallpaperManager(dialogDom) {
         };
         wallpapersDataModel.push(lastElement);
         self.wallpaperGrid_.dataModel = wallpapersDataModel;
-        self.wallpaperGrid_.selectedItem = selectedItem;
-        self.wallpaperGrid_.activeItem = selectedItem;
+        if (selectedItem) {
+          self.wallpaperGrid_.selectedItem = selectedItem;
+          self.wallpaperGrid_.activeItem = selectedItem;
+        }
       };
 
       var success = function(dirEntry) {
@@ -1082,8 +1090,10 @@ function WallpaperManager(dialogDom) {
         }
       }
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
-      this.wallpaperGrid_.selectedItem = selectedItem;
-      this.wallpaperGrid_.activeItem = selectedItem;
+      if (selectedItem) {
+        this.wallpaperGrid_.selectedItem = selectedItem;
+        this.wallpaperGrid_.activeItem = selectedItem;
+      }
     }
   };
 
