@@ -13,7 +13,6 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.RectF;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
 import org.chromium.chrome.browser.UrlConstants;
@@ -42,19 +41,36 @@ public class RoundedIconGenerator {
      * Constructs the generator and initializes the common members based on the display density.
      *
      * @param context The context used for initialization.
-     * @param iconWidthDp The width of the generated icon.
-     * @param iconHeightDp The height of the generated icon.
-     * @param cornerRadiusDp The radius of the corners in the icon.
+     * @param iconWidthDp The width of the generated icon in dp.
+     * @param iconHeightDp The height of the generated icon in dp.
+     * @param cornerRadiusDp The radius of the corners in the icon in dp.
      * @param backgroundColor Color at which the rounded rectangle should be drawn.
-     * @param textSizeSp Size at which the text should be drawn.
+     * @param textSizeSp Size at which the text should be drawn in dp.
      */
     public RoundedIconGenerator(Context context, int iconWidthDp, int iconHeightDp,
-                                int cornerRadiusDp, int backgroundColor, int textSizeSp) {
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+            int cornerRadiusDp, int backgroundColor, int textSizeSp) {
+        this((int) (context.getResources().getDisplayMetrics().density * iconWidthDp),
+                (int) (context.getResources().getDisplayMetrics().density * iconHeightDp),
+                (int) (context.getResources().getDisplayMetrics().density * cornerRadiusDp),
+                backgroundColor,
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSizeSp,
+                        context.getResources().getDisplayMetrics()));
+    }
 
-        mIconWidthPx = (int) (iconWidthDp * displayMetrics.density);
-        mIconHeightPx = (int) (iconHeightDp * displayMetrics.density);
-        mCornerRadiusPx = (int) (cornerRadiusDp * displayMetrics.density);
+    /**
+     * Constructs the generator and initializes the common members ignoring display density.
+     *
+     * @param iconWidthPx The width of the generated icon in pixels.
+     * @param iconHeightPx The height of the generated icon in pixels.
+     * @param cornerRadiusPx The radius of the corners in the icon in pixels.
+     * @param backgroundColor Color at which the rounded rectangle should be drawn.
+     * @param textSizePx Size at which the text should be drawn in pixels.
+     */
+    public RoundedIconGenerator(int iconWidthPx, int iconHeightPx, int cornerRadiusPx,
+            int backgroundColor, float textSizePx) {
+        mIconWidthPx = iconWidthPx;
+        mIconHeightPx = iconHeightPx;
+        mCornerRadiusPx = cornerRadiusPx;
 
         mBackgroundRect = new RectF(0, 0, mIconWidthPx, mIconHeightPx);
 
@@ -64,8 +80,7 @@ public class RoundedIconGenerator {
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setColor(Color.WHITE);
         mTextPaint.setFakeBoldText(true);
-        mTextPaint.setTextSize(TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, textSizeSp, displayMetrics));
+        mTextPaint.setTextSize(textSizePx);
 
         FontMetrics textFontMetrics = mTextPaint.getFontMetrics();
         mTextHeight = (float) Math.ceil(textFontMetrics.bottom - textFontMetrics.top);

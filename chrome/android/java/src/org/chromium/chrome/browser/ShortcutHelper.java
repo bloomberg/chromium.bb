@@ -166,7 +166,7 @@ public class ShortcutHelper {
 
         shortcutIntent.setPackage(context.getPackageName());
         context.sendBroadcast(BookmarkUtils.createAddToHomeIntent(context, shortcutIntent, title,
-                icon, red, green, blue));
+                icon, url, red, green, blue));
 
         // Alert the user about adding the shortcut.
         if (returnToHomescreen) {
