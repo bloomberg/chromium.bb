@@ -1230,6 +1230,7 @@
       'vibration/testing/InternalsVibration.h',
     ],
     'modules_unittest_files': [
+      'accessibility/AXObjectTest.cpp',
       'fetch/BodyStreamBufferTest.cpp',
       'fetch/FetchResponseDataTest.cpp',
       'fetch/RequestTest.cpp',

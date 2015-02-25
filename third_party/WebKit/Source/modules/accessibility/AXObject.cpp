@@ -40,6 +40,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
+#include "wtf/HashSet.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
@@ -51,6 +52,7 @@ using namespace HTMLNames;
 
 namespace {
 typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
+typedef HashSet<String, CaseFoldingHash> ARIAWidgetSet;
 
 struct RoleEntry {
     const char* ariaRole;
@@ -156,6 +158,68 @@ static Vector<AtomicString>* createRoleNameVector()
 
     return roleNameVector;
 }
+
+const char* ariaWidgets[] = {
+    // From http://www.w3.org/TR/wai-aria/roles#widget_roles
+    "alert",
+    "alertdialog",
+    "button",
+    "checkbox",
+    "dialog",
+    "gridcell",
+    "link",
+    "log",
+    "marquee",
+    "menuitem",
+    "menuitemcheckbox",
+    "menuitemradio",
+    "option",
+    "progressbar",
+    "radio",
+    "scrollbar",
+    "slider",
+    "spinbutton",
+    "status",
+    "tab",
+    "tabpanel",
+    "textbox",
+    "timer",
+    "tooltip",
+    "treeitem",
+    // Composite user interface widgets.  This list is also from w3.org site refrerenced above.
+    "combobox",
+    "grid",
+    "listbox",
+    "menu",
+    "menubar",
+    "radiogroup",
+    "tablist",
+    "tree",
+    "treegrid"
+};
+
+static ARIAWidgetSet* createARIARoleWidgetSet()
+{
+    ARIAWidgetSet* widgetSet = new HashSet<String, CaseFoldingHash>();
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(ariaWidgets); ++i)
+        widgetSet->add(String(ariaWidgets[i]));
+    return widgetSet;
+}
+
+const char* ariaInteractiveWidgetAttributes[] = {
+    // These attributes implicitly indicate the given widget is interactive.
+    // From http://www.w3.org/TR/wai-aria/states_and_properties#attrs_widgets
+    "aria-activedescendant",
+    "aria-checked",
+    "aria-controls",
+    "aria-disabled", // If it's disabled, it can be made interactive.
+    "aria-expanded",
+    "aria-haspopup",
+    "aria-multiselectable",
+    "aria-pressed",
+    "aria-required",
+    "aria-selected"
+};
 
 } // namespace
 
@@ -991,6 +1055,51 @@ AccessibilityRole AXObject::ariaRoleToWebCoreRole(const String& value)
     }
 
     return role;
+}
+
+bool AXObject::isInsideFocusableElementOrARIAWidget(const Node& node)
+{
+    const Node* curNode = &node;
+    do {
+        if (curNode->isElementNode()) {
+            const Element* element = toElement(curNode);
+            if (element->isFocusable())
+                return true;
+            String role = element->getAttribute("role");
+            if (!role.isEmpty() && AXObject::includesARIAWidgetRole(role))
+                return true;
+            if (hasInteractiveARIAAttribute(*element))
+                return true;
+        }
+        curNode = curNode->parentNode();
+    } while (curNode && !isHTMLBodyElement(node));
+    return false;
+}
+
+bool AXObject::hasInteractiveARIAAttribute(const Element& element)
+{
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(ariaInteractiveWidgetAttributes); ++i) {
+        const char* attribute = ariaInteractiveWidgetAttributes[i];
+        if (element.hasAttribute(attribute)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool AXObject::includesARIAWidgetRole(const String& role)
+{
+    static const HashSet<String, CaseFoldingHash>* roleSet = createARIARoleWidgetSet();
+
+    Vector<String> roleVector;
+    role.split(' ', roleVector);
+    unsigned size = roleVector.size();
+    for (unsigned i = 0; i < size; ++i) {
+        String roleName = roleVector[i];
+        if (roleSet->contains(roleName))
+            return true;
+    }
+    return false;
 }
 
 AccessibilityRole AXObject::buttonRoleType() const

@@ -615,6 +615,7 @@ public:
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
     static IntRect boundingBoxForQuads(LayoutObject*, const Vector<FloatQuad>&);
     static const AtomicString& roleName(AccessibilityRole);
+    static bool isInsideFocusableElementOrARIAWidget(const Node&);
 
 protected:
     AXID m_id;
@@ -652,6 +653,10 @@ protected:
     // Updates the cached attribute values. This may be recursive, so to prevent deadlocks,
     // functions called here may only search up the tree (ancestors), not down.
     void updateCachedAttributeValuesIfNeeded() const;
+
+private:
+    static bool includesARIAWidgetRole(const String&);
+    static bool hasInteractiveARIAAttribute(const Element&);
 };
 
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate) \

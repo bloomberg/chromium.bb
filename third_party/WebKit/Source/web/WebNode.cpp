@@ -163,6 +163,11 @@ bool WebNode::isContentEditable() const
     return m_private->isContentEditable();
 }
 
+bool WebNode::isInsideFocusableElementOrARIAWidget() const
+{
+    return AXObject::isInsideFocusableElementOrARIAWidget(*this->constUnwrap<Node>());
+}
+
 bool WebNode::isElementNode() const
 {
     return m_private->isElementNode();
