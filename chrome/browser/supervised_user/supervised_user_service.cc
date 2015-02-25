@@ -78,6 +78,42 @@ const char* const kCustodianInfoPrefs[] = {
   prefs::kSupervisedUserSecondCustodianProfileURL,
 };
 
+#if defined(ENABLE_EXTENSIONS)
+enum ExtensionState {
+  EXTENSION_FORCED,
+  EXTENSION_BLOCKED,
+  EXTENSION_ALLOWED
+};
+
+ExtensionState GetExtensionState(const extensions::Extension* extension) {
+  if (extension->is_theme())
+    return EXTENSION_ALLOWED;
+
+  bool was_installed_by_default = extension->was_installed_by_default();
+  bool was_installed_by_custodian = extension->was_installed_by_custodian();
+#if defined(OS_CHROMEOS)
+  // On Chrome OS all external sources are controlled by us so it means that
+  // they are "default". Method was_installed_by_default returns false because
+  // extensions creation flags are ignored in case of default extensions with
+  // update URL(the flags aren't passed to OnExternalExtensionUpdateUrlFound).
+  // TODO(dpolukhin): remove this Chrome OS specific code as soon as creation
+  // flags are not ignored.
+  was_installed_by_default =
+      extensions::Manifest::IsExternalLocation(extension->location());
+#endif
+  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
+      was_installed_by_default ||
+      was_installed_by_custodian) {
+    // Enforce default extensions as well as custodian-installed extensions
+    // (if we'd allow the supervised user to uninstall them, there'd be no way
+    // to get them back).
+    return EXTENSION_FORCED;
+  }
+
+  return EXTENSION_BLOCKED;
+}
+#endif
+
 }  // namespace
 
 base::FilePath SupervisedUserService::Delegate::GetBlacklistPath() const {
@@ -344,54 +380,6 @@ void SupervisedUserService::AddPermissionRequestCreator(
   permissions_creators_.push_back(creator.release());
 }
 
-#if defined(ENABLE_EXTENSIONS)
-std::string SupervisedUserService::GetDebugPolicyProviderName() const {
-  // Save the string space in official builds.
-#ifdef NDEBUG
-  NOTREACHED();
-  return std::string();
-#else
-  return "Supervised User Service";
-#endif
-}
-
-bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
-                                        base::string16* error) const {
-  base::string16 tmp_error;
-  if (ExtensionManagementPolicyImpl(extension, &tmp_error))
-    return true;
-
-  bool was_installed_by_default = extension->was_installed_by_default();
-  bool was_installed_by_custodian = extension->was_installed_by_custodian();
-#if defined(OS_CHROMEOS)
-  // On Chrome OS all external sources are controlled by us so it means that
-  // they are "default". Method was_installed_by_default returns false because
-  // extensions creation flags are ignored in case of default extensions with
-  // update URL(the flags aren't passed to OnExternalExtensionUpdateUrlFound).
-  // TODO(dpolukhin): remove this Chrome OS specific code as soon as creation
-  // flags are not ignored.
-  was_installed_by_default =
-      extensions::Manifest::IsExternalLocation(extension->location());
-#endif
-  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
-      was_installed_by_default ||
-      was_installed_by_custodian) {
-    return true;
-  }
-
-  if (error)
-    *error = tmp_error;
-  return false;
-}
-
-bool SupervisedUserService::UserMayModifySettings(
-    const extensions::Extension* extension,
-    base::string16* error) const {
-  return ExtensionManagementPolicyImpl(extension, error);
-}
-
-#endif  // defined(ENABLE_EXTENSIONS)
-
 syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
   if (!ProfileIsSupervised())
     return syncer::ModelTypeSet();
@@ -481,16 +469,38 @@ void SupervisedUserService::FinishSetupSync() {
 }
 
 #if defined(ENABLE_EXTENSIONS)
-bool SupervisedUserService::ExtensionManagementPolicyImpl(
+std::string SupervisedUserService::GetDebugPolicyProviderName() const {
+  // Save the string space in official builds.
+#ifdef NDEBUG
+  NOTREACHED();
+  return std::string();
+#else
+  return "Supervised User Service";
+#endif
+}
+
+bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
+                                        base::string16* error) const {
+  DCHECK(ProfileIsSupervised());
+  ExtensionState result = GetExtensionState(extension);
+  bool may_load = (result != EXTENSION_BLOCKED);
+  if (!may_load && error)
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
+  return may_load;
+}
+
+// Note: Having MustRemainInstalled always say "true" for custodian-installed
+// extensions does NOT prevent remote uninstalls (which is a bit unexpected, but
+// exactly what we want).
+bool SupervisedUserService::MustRemainInstalled(
     const extensions::Extension* extension,
     base::string16* error) const {
-  // |extension| can be NULL in unit_tests.
-  if (!ProfileIsSupervised() || (extension && extension->is_theme()))
-    return true;
-
-  if (error)
+  DCHECK(ProfileIsSupervised());
+  ExtensionState result = GetExtensionState(extension);
+  bool may_not_uninstall = (result == EXTENSION_FORCED);
+  if (may_not_uninstall && error)
     *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
-  return false;
+  return may_not_uninstall;
 }
 
 void SupervisedUserService::SetExtensionsActive() {

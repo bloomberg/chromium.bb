@@ -427,61 +427,51 @@ class SupervisedUserServiceExtensionTest
       : SupervisedUserServiceExtensionTestBase(true) {}
 };
 
-TEST_F(SupervisedUserServiceExtensionTestUnsupervised,
-       ExtensionManagementPolicyProvider) {
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_.get());
-  EXPECT_FALSE(profile_->IsSupervised());
-
-  scoped_refptr<extensions::Extension> extension = MakeExtension(false);
-  base::string16 error_1;
-  EXPECT_TRUE(supervised_user_service->UserMayLoad(extension.get(), &error_1));
-  EXPECT_EQ(base::string16(), error_1);
-
-  base::string16 error_2;
-  EXPECT_TRUE(
-      supervised_user_service->UserMayModifySettings(extension.get(),
-                                                     &error_2));
-  EXPECT_EQ(base::string16(), error_2);
-}
-
 TEST_F(SupervisedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   ASSERT_TRUE(profile_->IsSupervised());
 
-  // Check that a supervised user can install a theme.
-  scoped_refptr<extensions::Extension> theme = MakeThemeExtension();
-  base::string16 error_1;
-  EXPECT_TRUE(supervised_user_service->UserMayLoad(theme.get(), &error_1));
-  EXPECT_TRUE(error_1.empty());
-  EXPECT_TRUE(
-      supervised_user_service->UserMayModifySettings(theme.get(), &error_1));
-  EXPECT_TRUE(error_1.empty());
+  // Check that a supervised user can install and uninstall a theme.
+  {
+    scoped_refptr<extensions::Extension> theme = MakeThemeExtension();
 
-  // Now check a different kind of extension.
-  scoped_refptr<extensions::Extension> extension = MakeExtension(false);
-  EXPECT_FALSE(supervised_user_service->UserMayLoad(extension.get(), &error_1));
-  EXPECT_FALSE(error_1.empty());
+    base::string16 error_1;
+    EXPECT_TRUE(supervised_user_service->UserMayLoad(theme.get(), &error_1));
+    EXPECT_TRUE(error_1.empty());
 
-  base::string16 error_2;
-  EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                              &error_2));
-  EXPECT_FALSE(error_2.empty());
+    base::string16 error_2;
+    EXPECT_FALSE(
+        supervised_user_service->MustRemainInstalled(theme.get(), &error_2));
+    EXPECT_TRUE(error_2.empty());
+  }
 
-  // Check that an extension that was installed by the custodian may be loaded.
-  base::string16 error_3;
-  scoped_refptr<extensions::Extension> extension_2 = MakeExtension(true);
-  EXPECT_TRUE(supervised_user_service->UserMayLoad(extension_2.get(),
-                                                   &error_3));
-  EXPECT_TRUE(error_3.empty());
+  // Now check a different kind of extension; the supervised user should not be
+  // able to load it.
+  {
+    scoped_refptr<extensions::Extension> extension = MakeExtension(false);
 
-  // The supervised user should still not be able to uninstall or disable the
-  // extension.
-  base::string16 error_4;
-  EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension_2.get(),
-                                                              &error_4));
-  EXPECT_FALSE(error_4.empty());
+    base::string16 error;
+    EXPECT_FALSE(supervised_user_service->UserMayLoad(extension.get(), &error));
+    EXPECT_FALSE(error.empty());
+  }
+
+  {
+    // Check that a custodian-installed extension may be loaded, but not
+    // uninstalled.
+    scoped_refptr<extensions::Extension> extension = MakeExtension(true);
+
+    base::string16 error_1;
+    EXPECT_TRUE(
+        supervised_user_service->UserMayLoad(extension.get(), &error_1));
+    EXPECT_TRUE(error_1.empty());
+
+    base::string16 error_2;
+    EXPECT_TRUE(
+        supervised_user_service->MustRemainInstalled(extension.get(),
+                                                     &error_2));
+    EXPECT_FALSE(error_2.empty());
+  }
 
 #ifndef NDEBUG
   EXPECT_FALSE(supervised_user_service->GetDebugPolicyProviderName().empty());

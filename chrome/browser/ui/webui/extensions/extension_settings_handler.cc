@@ -271,6 +271,11 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   // recommended install.
   DCHECK(!(managed_install || recommended_install) || !suspicious_install);
 
+  // |web_ui()| can be null in unit tests.
+  bool installed_by_custodian = web_ui() &&
+      util::IsExtensionSupervised(extension, Profile::FromWebUI(web_ui()));
+  extension_data->SetBoolean("installedByCustodian", installed_by_custodian);
+
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
                                       extension_misc::EXTENSION_ICON_MEDIUM,
@@ -1111,6 +1116,9 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
   const Extension* extension =
       extension_service_->GetInstalledExtension(extension_id);
   if (!extension)
+    return;
+
+  if (util::IsExtensionSupervised(extension, Profile::FromWebUI(web_ui())))
     return;
 
   if (!management_policy_->UserMayModifySettings(extension, NULL)) {

@@ -162,15 +162,6 @@ class SupervisedUserService : public KeyedService,
   void AddPermissionRequestCreator(
       scoped_ptr<PermissionRequestCreator> creator);
 
-#if defined(ENABLE_EXTENSIONS)
-  // extensions::ManagementPolicy::Provider implementation:
-  std::string GetDebugPolicyProviderName() const override;
-  bool UserMayLoad(const extensions::Extension* extension,
-                   base::string16* error) const override;
-  bool UserMayModifySettings(const extensions::Extension* extension,
-                             base::string16* error) const override;
-#endif
-
   // SyncTypePreferenceProvider implementation:
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
@@ -192,6 +183,8 @@ class SupervisedUserService : public KeyedService,
                            ChangesIncludedSessionOnChangedSettings);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
                            ChangesSyncSessionStateOnChangedSettings);
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceExtensionTest,
+                           ExtensionManagementPolicyProvider);
 
   // A bridge from the UI thread to the SupervisedUserURLFilters, one of which
   // lives on the IO thread. This class mediates access to them and makes sure
@@ -259,11 +252,12 @@ class SupervisedUserService : public KeyedService,
   void OnCustodianInfoChanged();
 
 #if defined(ENABLE_EXTENSIONS)
-  // Internal implementation for ExtensionManagementPolicy::Delegate methods.
-  // If |error| is not NULL, it will be filled with an error message if the
-  // requested extension action (install, modify status, etc.) is not permitted.
-  bool ExtensionManagementPolicyImpl(const extensions::Extension* extension,
-                                     base::string16* error) const;
+  // extensions::ManagementPolicy::Provider implementation:
+  std::string GetDebugPolicyProviderName() const override;
+  bool UserMayLoad(const extensions::Extension* extension,
+                   base::string16* error) const override;
+  bool MustRemainInstalled(const extensions::Extension* extension,
+                           base::string16* error) const override;
 
   // Extensions helper to SetActive().
   void SetExtensionsActive();

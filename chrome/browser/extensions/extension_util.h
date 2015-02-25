@@ -22,6 +22,8 @@ namespace gfx {
 class ImageSkia;
 }
 
+class Profile;
+
 namespace extensions {
 
 class Extension;
@@ -134,6 +136,9 @@ const gfx::ImageSkia& GetDefaultAppIcon();
 // TODO(benwells): http://crbug.com/441128: Remove this entirely once the
 // feature is stable.
 bool IsNewBookmarkAppsEnabled();
+
+// Returns true for custodian-installed extensions in a supervised profile.
+bool IsExtensionSupervised(const Extension* extension, Profile* profile);
 
 }  // namespace util
 }  // namespace extensions

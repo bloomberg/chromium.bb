@@ -393,5 +393,9 @@ bool IsNewBookmarkAppsEnabled() {
 #endif
 }
 
+bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
+  return extension->was_installed_by_custodian() && profile->IsSupervised();
+}
+
 }  // namespace util
 }  // namespace extensions

@@ -29,6 +29,7 @@
  *            icon: string,
  *            id: string,
  *            incognitoCanBeEnabled: boolean,
+ *            installedByCustodian: boolean,
  *            installWarnings: (Array|undefined),
  *            is_hosted_app: boolean,
  *            is_platform_app: boolean,
@@ -433,6 +434,7 @@ cr.define('options', function() {
                                      extension.suspiciousInstall ||
                                      extension.corruptInstall ||
                                      extension.updateRequiredByPolicy ||
+                                     extension.installedByCustodian ||
                                      extension.dependentExtensions.length > 0;
         item.querySelector('input').disabled = enableCheckboxDisabled;
         item.querySelector('input').checked = extension.enabled;

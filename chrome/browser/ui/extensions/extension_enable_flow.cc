@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_details.h"
@@ -83,6 +84,12 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = service->GetExtensionById(extension_id_, true);
   if (!extension) {
+    delegate_->ExtensionEnableFlowAborted(false);  // |delegate_| may delete us.
+    return;
+  }
+
+  // Supervised users can't re-enable custodian-installed extensions.
+  if (extensions::util::IsExtensionSupervised(extension, profile_)) {
     delegate_->ExtensionEnableFlowAborted(false);  // |delegate_| may delete us.
     return;
   }
