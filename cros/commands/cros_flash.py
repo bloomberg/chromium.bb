@@ -567,19 +567,15 @@ class RemoteDeviceUpdater(object):
                 src_image_to_delta=self.src_image_to_delta,
                 static_dir=DEVSERVER_STATIC_DIR)
           else:
-            # For xbuddy paths, we should do a sanity check / confirmation
-            # when the xbuddy board doesn't match the board on the
-            # device. Unfortunately this isn't currently possible since we
-            # don't want to duplicate xbuddy code.  TODO(sosa):
-            # crbug.com/340722 and use it to compare boards.
-
             device_addr = 'ssh://%s' % self.ssh_hostname
             if self.ssh_port:
               device_addr = '%s:%d' % (device_addr, self.ssh_port)
+
             # Translate the xbuddy path to get the exact image to use.
             translated_path = ds_wrapper.GetImagePathWithXbuddy(
                 self.image, self.board, version=self.sdk_version,
-                static_dir=DEVSERVER_STATIC_DIR, device=device_addr)
+                static_dir=DEVSERVER_STATIC_DIR, device=device_addr,
+                lookup_only=True)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
             image_path = ds_wrapper.ConvertTranslatedPath(self.image,

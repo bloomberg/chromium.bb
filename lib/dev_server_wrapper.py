@@ -108,7 +108,8 @@ def GetXbuddyPath(path):
 
 # pylint: disable=import-error
 def GetImagePathWithXbuddy(path, board, version=None,
-                           static_dir=DEFAULT_STATIC_DIR, device='<DEVICE>'):
+                           static_dir=DEFAULT_STATIC_DIR, device='<DEVICE>',
+                           lookup_only=False):
   """Gets image path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -120,6 +121,8 @@ def GetImagePathWithXbuddy(path, board, version=None,
     version: The default version to use if one is not specified in |path|.
     static_dir: Static directory to stage the image in.
     device: The device specified by the user.
+    lookup_only: Caller only wants to translate the path not download the
+      artifact.
 
   Returns:
     A translated path to the image: build-id/version/image_name.
@@ -134,9 +137,11 @@ def GetImagePathWithXbuddy(path, board, version=None,
   xb = xbuddy.XBuddy(static_dir=static_dir, board=board, version=version,
                      log_screen=False)
   path_list = GetXbuddyPath(path).rsplit(os.path.sep)
-
   try:
-    build_id, file_name = xb.Get(path_list)
+    if lookup_only:
+      build_id, file_name = xb.Translate(path_list)
+    else:
+      build_id, file_name = xb.Get(path_list)
     return os.path.join(build_id, file_name)
   except xbuddy.XBuddyException as e:
     logging.error('Locating image "%s" failed. The path might not be valid or '

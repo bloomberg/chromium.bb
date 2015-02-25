@@ -144,7 +144,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
           self.cmd_mock.inst.Run()
           dev_server_wrapper.GetImagePathWithXbuddy.assert_called_with(
               'project_sdk', mock.ANY, version='1.2.3', static_dir=mock.ANY,
-              device='ssh://%s' % self.DEVICE)
+              device='ssh://%s' % self.DEVICE, lookup_only=True)
           self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
           self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
