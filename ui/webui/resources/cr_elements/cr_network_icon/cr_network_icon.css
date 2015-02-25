@@ -1,0 +1,47 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  display: inline-block;
+  overflow: hidden;
+  position: relative;
+}
+
+#icon {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+#icon.multi-level {
+  height: 500%;
+}
+
+#icon.level0 {
+  top: 0px;
+}
+
+#icon.level1 {
+  top: -100%;
+}
+
+#icon.level2 {
+  top: -200%;
+}
+
+#icon.level3 {
+  top: -300%;
+}
+
+#icon.level4 {
+  top: -400%;
+}
+
+#secure {
+  height: 40%;
+  margin-left: 60%;
+  margin-top: 60%;
+  position: absolute;
+  width: 40%;
+}

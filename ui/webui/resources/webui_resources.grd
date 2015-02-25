@@ -202,6 +202,8 @@ without changes to the corresponding grd file. -->
                file="images/trash.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_CLOUDS"
                file="images/clouds.png" type="BINDATA" />
+
+      <part file="cr_elements_images.grdp" />
     </includes>
     <structures>
       <structure name="IDR_WEBUI_CSS_ALERT_OVERLAY"

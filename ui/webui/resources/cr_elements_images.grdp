@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_ICON_ETHERNET"
+           file="cr_elements/cr_network_icon/ethernet.png" 
+           type="BINDATA" />
+  <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_ICON_WIFI"
+           file="cr_elements/cr_network_icon/wifi.png" 
+           type="BINDATA" />
+  <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_ICON_MOBILE"
+           file="cr_elements/cr_network_icon/mobile.png" 
+           type="BINDATA" />
+  <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_ICON_VPN"
+           file="cr_elements/cr_network_icon/vpn.png" 
+           type="BINDATA" />
+  <include name="IDR_WEBUI_CR_ELEMENTS_NETWORK_ICON_SECURE"
+           file="cr_elements/cr_network_icon/secure.png" 
+           type="BINDATA" />
+</grit-part>

@@ -1,8 +1,11 @@
-/*
- * Copyright 2013 The Chromium Authors. All rights reserved.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
+
+paper-button[raised].colored {
+  background: rgb(66, 133, 244);
+  color: white;
+}
 
 #header {
   margin: 5px;
@@ -10,6 +13,28 @@
 
 #header a {
   padding: 0 4px;
+}
+
+#header cr-network-icon {
+  height: 40px;
+  width: 40px;
+}
+
+#default-network {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  padding: 4px;
+}
+
+#default-network-text {
+  -webkit-padding-start: 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#refresh {
+  margin: 4px;
 }
 
 .state-table {
@@ -41,6 +66,11 @@
 
 .state-table-expanded-cell {
   white-space: pre-wrap;
+}
+
+.state-table cr-network-icon {
+  height: 25px;
+  width: 25px;
 }
 
 #advanced-options {

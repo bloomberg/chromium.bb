@@ -158,6 +158,10 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("stateFormatOption", IDS_NETWORK_UI_FORMAT_STATE);
   html->AddLocalizedString("shillFormatOption", IDS_NETWORK_UI_FORMAT_SHILL);
 
+  html->AddLocalizedString("defaultNetworkText",
+                           IDS_NETWORK_UI_DEFAULT_NETWORK);
+  html->AddLocalizedString("noNetworkText",
+                           IDS_STATUSBAR_NO_NETWORKS_MESSAGE);
   html->AddLocalizedString("visibleNetworksLabel",
                            IDS_NETWORK_UI_VISIBLE_NETWORKS);
   html->AddLocalizedString("favoriteNetworksLabel",
