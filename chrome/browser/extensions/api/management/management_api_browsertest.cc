@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -253,6 +254,8 @@ class ExtensionManagementApiEscalationTest :
     const char* const enabled_string = enabled ? "true" : "false";
     if (user_gesture)
       function->set_user_gesture(true);
+    function->SetRenderViewHost(browser()->tab_strip_model()->
+        GetActiveWebContents()->GetRenderViewHost());
     bool response = util::RunFunction(
         function.get(),
         base::StringPrintf("[\"%s\", %s]", kId, enabled_string),

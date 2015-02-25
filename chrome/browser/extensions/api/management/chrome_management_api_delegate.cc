@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -46,9 +45,9 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
   ManagementSetEnabledFunctionInstallPromptDelegate(
       extensions::ManagementSetEnabledFunction* function,
       const extensions::Extension* extension)
-      : function_(function), details_(function) {
+      : function_(function) {
     install_prompt_.reset(
-        new ExtensionInstallPrompt(details_.GetAssociatedWebContents()));
+        new ExtensionInstallPrompt(function->GetSenderWebContents()));
     install_prompt_->ConfirmReEnable(this, extension);
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
@@ -62,10 +61,11 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
 
  private:
   extensions::ManagementSetEnabledFunction* function_;
-  ChromeExtensionFunctionDetails details_;
 
   // Used for prompting to re-enable items with permissions escalation updates.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagementSetEnabledFunctionInstallPromptDelegate);
 };
 
 class ManagementUninstallFunctionUninstallDialogDelegate

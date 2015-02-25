@@ -476,7 +476,13 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   // Gets the "current" web contents if any. If there is no associated web
   // contents then defaults to the foremost one.
+  // NOTE: "current" can mean different things in different contexts. You
+  // probably want to use GetSenderWebContents().
   virtual content::WebContents* GetAssociatedWebContents();
+
+  // Returns the web contents associated with the sending |render_view_host_|.
+  // This can be null.
+  content::WebContents* GetSenderWebContents();
 
  protected:
   // Emits a message to the extension's devtools console.

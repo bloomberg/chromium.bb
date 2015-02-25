@@ -458,6 +458,11 @@ content::WebContents* UIThreadExtensionFunction::GetAssociatedWebContents() {
   return web_contents;
 }
 
+content::WebContents* UIThreadExtensionFunction::GetSenderWebContents() {
+  return render_view_host_ ?
+      content::WebContents::FromRenderViewHost(render_view_host_) : nullptr;
+}
+
 void UIThreadExtensionFunction::SendResponse(bool success) {
   if (delegate_)
     delegate_->OnSendResponse(this, success, bad_message_);

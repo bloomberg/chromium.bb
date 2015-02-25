@@ -828,9 +828,7 @@ bool DeveloperPrivateEnableFunction::RunSync() {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       // If the extension escalated permissions, we have to show a dialog.
-      content::WebContents* web_contents = render_view_host() ?
-          content::WebContents::FromRenderViewHost(render_view_host()) :
-          nullptr;
+      content::WebContents* web_contents = GetSenderWebContents();
       if (!web_contents)
         return false;
 
