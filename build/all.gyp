@@ -608,7 +608,6 @@
 
             '../tools/gn/gn.gyp:gn',
             '../tools/gn/gn.gyp:gn_unittests',
-            '../tools/imagediff/image_diff.gyp:image_diff#host',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
@@ -621,7 +620,7 @@
           'conditions': [
             ['OS!="win"', {
               'dependencies': [
-                '../breakpad/breakpad.gyp:symupload#host',
+                '../breakpad/breakpad.gyp:symupload',
               ],
             }],
             ['use_x11==1', {
