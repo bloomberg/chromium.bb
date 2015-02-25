@@ -406,6 +406,7 @@ def _CheckUmaHistogramChanges(input_api, output_api):
   if unmatched_histograms:
     with open('tools/metrics/histograms/histograms.xml') as histograms_xml:
       for histogram_name, f, line_num in unmatched_histograms:
+        histograms_xml.seek(0)
         histogram_name_found = False
         for line in histograms_xml:
           histogram_name_found = _FindHistogramNameInLine(histogram_name, line)
