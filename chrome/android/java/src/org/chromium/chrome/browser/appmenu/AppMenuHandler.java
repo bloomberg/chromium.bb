@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.PopupMenu;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UmaBridge;
 
 import java.util.ArrayList;
@@ -76,8 +77,7 @@ public class AppMenuHandler {
         }
         mDelegate.prepareMenu(mMenu);
 
-        ContextThemeWrapper wrapper = new ContextThemeWrapper(mActivity,
-                mDelegate.getMenuThemeResourceId());
+        ContextThemeWrapper wrapper = new ContextThemeWrapper(mActivity, R.style.OverflowMenuTheme);
 
         if (mAppMenu == null) {
             TypedArray a = wrapper.obtainStyledAttributes(new int[]

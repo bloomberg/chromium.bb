@@ -461,11 +461,6 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
         return mAppMenuHandler;
     }
 
-    @Override
-    public int getMenuThemeResourceId() {
-        return R.style.OverflowMenuTheme;
-    }
-
     @VisibleForTesting
     public TabModelSelector getTabModelSelector() {
         return mTabManager.getTabModelSelector();

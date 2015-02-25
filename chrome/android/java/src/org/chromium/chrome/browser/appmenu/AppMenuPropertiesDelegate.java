@@ -21,9 +21,4 @@ public interface AppMenuPropertiesDelegate {
      * @param mMenu Menu that will be used as the source for the App Menu pop up.
      */
     void prepareMenu(Menu mMenu);
-
-    /**
-     * @return The theme resource to use for displaying the App Menu.
-     */
-    int getMenuThemeResourceId();
 }

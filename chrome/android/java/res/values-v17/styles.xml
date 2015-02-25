@@ -119,7 +119,7 @@
              accessibility focusable. -->
         <item name="android:clickable">true</item>
     </style>
-    <style name="OverflowMenuThemeBase" parent="Theme.AppCompat.Light">
+    <style name="OverflowMenuTheme" parent="Theme.AppCompat.Light">
         <item name="android:popupBackground">@null</item>
         <item name="android:listDivider">@null</item>
         <item name="android:listPreferredItemHeightSmall">48dp</item>
@@ -127,7 +127,6 @@
         <item name="android:listPreferredItemPaddingEnd">16dp</item>
         <item name="android:textSize">16sp</item>
     </style>
-    <style name="OverflowMenuTheme" parent="OverflowMenuThemeBase" />
     <style name="OverflowMenuAnim">
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>
         <item name="android:windowExitAnimation">@anim/menu_exit</item>
