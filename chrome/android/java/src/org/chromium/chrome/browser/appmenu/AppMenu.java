@@ -23,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageButton;
 import android.widget.ListPopupWindow;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 
@@ -76,6 +77,44 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mNegativeSoftwareVerticalOffset =
                 res.getDimensionPixelSize(R.dimen.menu_negative_software_vertical_offset);
         mVerticalFadeDistance = res.getDimensionPixelSize(R.dimen.menu_vertical_fade_distance);
+    }
+
+    /**
+     * Notifies the menu that the contents of the menu item specified by {@code menuRowId} have
+     * changed.  This should be called if icons, titles, etc. are changing for a particular menu
+     * item while the menu is open.
+     * @param menuRowId The id of the menu item to change.  This must be a row id and not a child
+     *                  id.
+     */
+    public void menuItemContentChanged(int menuRowId) {
+        // Make sure we have all the valid state objects we need.
+        if (mAdapter == null || mMenu == null || mPopup == null || mPopup.getListView() == null) {
+            return;
+        }
+
+        // Calculate the item index.
+        int index = -1;
+        int menuSize = mMenu.size();
+        for (int i = 0; i < menuSize; i++) {
+            if (mMenu.getItem(i).getItemId() == menuRowId) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) return;
+
+        // Check if the item is visible.
+        ListView list = mPopup.getListView();
+        int startIndex = list.getFirstVisiblePosition();
+        int endIndex = list.getLastVisiblePosition();
+        if (index < startIndex || index > endIndex) return;
+
+        // Grab the correct View.
+        View view = list.getChildAt(index - startIndex);
+        if (view == null) return;
+
+        // Cause the Adapter to re-populate the View.
+        list.getAdapter().getView(index, view, list);
     }
 
     /**
