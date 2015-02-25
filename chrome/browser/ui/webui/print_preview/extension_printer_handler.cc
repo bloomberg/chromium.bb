@@ -19,6 +19,8 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
+#include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
+#include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 
@@ -87,8 +89,8 @@ void ExtensionPrinterHandler::Reset() {
 
 void ExtensionPrinterHandler::StartGetPrinters(
     const PrinterHandler::GetPrintersCallback& callback) {
-  extensions::PrinterProviderAPI::GetFactoryInstance()
-      ->Get(browser_context_)
+  extensions::PrinterProviderAPIFactory::GetInstance()
+      ->GetForBrowserContext(browser_context_)
       ->DispatchGetPrintersRequested(
           base::Bind(&ExtensionPrinterHandler::WrapGetPrintersCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
@@ -97,8 +99,8 @@ void ExtensionPrinterHandler::StartGetPrinters(
 void ExtensionPrinterHandler::StartGetCapability(
     const std::string& destination_id,
     const PrinterHandler::GetCapabilityCallback& callback) {
-  extensions::PrinterProviderAPI::GetFactoryInstance()
-      ->Get(browser_context_)
+  extensions::PrinterProviderAPIFactory::GetInstance()
+      ->GetForBrowserContext(browser_context_)
       ->DispatchGetCapabilityRequested(
           destination_id,
           base::Bind(&ExtensionPrinterHandler::WrapGetCapabilityCallback,
@@ -112,8 +114,8 @@ void ExtensionPrinterHandler::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedMemory>& print_data,
     const PrinterHandler::PrintCallback& callback) {
-  scoped_ptr<extensions::PrinterProviderAPI::PrintJob> print_job(
-      new extensions::PrinterProviderAPI::PrintJob());
+  scoped_ptr<extensions::PrinterProviderPrintJob> print_job(
+      new extensions::PrinterProviderPrintJob());
   print_job->printer_id = destination_id;
   print_job->ticket_json = ticket_json;
 
@@ -163,7 +165,7 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
 
 void ExtensionPrinterHandler::DispatchPrintJob(
     const PrinterHandler::PrintCallback& callback,
-    scoped_ptr<extensions::PrinterProviderAPI::PrintJob> print_job,
+    scoped_ptr<extensions::PrinterProviderPrintJob> print_job,
     const scoped_refptr<base::RefCountedMemory>& print_data) {
   if (!print_data) {
     WrapPrintCallback(callback, false, kInvalidDataPrintError);
@@ -172,8 +174,8 @@ void ExtensionPrinterHandler::DispatchPrintJob(
 
   print_job->document_bytes = print_data;
 
-  extensions::PrinterProviderAPI::GetFactoryInstance()
-      ->Get(browser_context_)
+  extensions::PrinterProviderAPIFactory::GetInstance()
+      ->GetForBrowserContext(browser_context_)
       ->DispatchPrintRequested(
           *print_job, base::Bind(&ExtensionPrinterHandler::WrapPrintCallback,
                                  weak_ptr_factory_.GetWeakPtr(), callback));

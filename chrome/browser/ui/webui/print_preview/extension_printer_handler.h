@@ -73,11 +73,9 @@ class ExtensionPrinterHandler : public PrinterHandler {
       const RefCountedMemoryCallback& callback);
 
   // Sets print job document data and dispatches it using printerProvider API.
-  // TODO(tbarzic): Move PrinterProvider::PrintJob to it's own file so it can
-  // be forward-declared.
   void DispatchPrintJob(
       const PrinterHandler::PrintCallback& callback,
-      scoped_ptr<extensions::PrinterProviderAPI::PrintJob> print_job,
+      scoped_ptr<extensions::PrinterProviderPrintJob> print_job,
       const scoped_refptr<base::RefCountedMemory>& data);
 
   // Methods used as wrappers to callbacks for extensions::PrinterProviderAPI

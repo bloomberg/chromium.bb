@@ -8,6 +8,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
+#include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
+#include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/shell/test/shell_apitest.h"
@@ -18,6 +20,7 @@
 namespace {
 
 using extensions::PrinterProviderAPI;
+using extensions::PrinterProviderAPIFactory;
 
 // Callback for PrinterProviderAPI::DispatchGetPrintersRequested calls.
 // It appends items in |printers| to |*printers_out|. If |done| is set, it runs
@@ -69,14 +72,14 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
 
   void StartGetPrintersRequest(
       const PrinterProviderAPI::GetPrintersCallback& callback) {
-    PrinterProviderAPI::GetFactoryInstance()
-        ->Get(browser_context())
+    PrinterProviderAPIFactory::GetInstance()
+        ->GetForBrowserContext(browser_context())
         ->DispatchGetPrintersRequested(callback);
   }
 
   void StartPrintRequest(const std::string& extension_id,
                          const PrinterProviderAPI::PrintCallback& callback) {
-    PrinterProviderAPI::PrintJob job;
+    extensions::PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
     job.ticket_json = "{}";
     job.content_type = "content_type";
@@ -84,16 +87,16 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     job.document_bytes =
         new base::RefCountedBytes(kDocumentBytes, arraysize(kDocumentBytes));
 
-    PrinterProviderAPI::GetFactoryInstance()
-        ->Get(browser_context())
+    PrinterProviderAPIFactory::GetInstance()
+        ->GetForBrowserContext(browser_context())
         ->DispatchPrintRequested(job, callback);
   }
 
   void StartCapabilityRequest(
       const std::string& extension_id,
       const PrinterProviderAPI::GetCapabilityCallback& callback) {
-    PrinterProviderAPI::GetFactoryInstance()
-        ->Get(browser_context())
+    PrinterProviderAPIFactory::GetInstance()
+        ->GetForBrowserContext(browser_context())
         ->DispatchGetCapabilityRequested(extension_id + ":printer_id",
                                          callback);
   }
