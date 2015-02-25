@@ -4,7 +4,13 @@
 
 /** @fileoverview Externs generated from namespace: developerPrivate */
 
-// Note: hand-modified to change Array to !Array in ItemInfo typedef.
+// Note: hand-modified to change Array to !Array in ItemInfo typedef, and add
+// typedef {string} for idl enums.
+
+/**
+ * @typedef {string}
+ */
+var ItemType;
 
 /**
  * @typedef {{
@@ -67,6 +73,26 @@ var ItemInfo;
  * }}
  */
 var InspectOptions;
+
+/**
+ * @typedef {string}
+ */
+var PackStatus;
+
+/**
+ * @typedef {string}
+ */
+var FileType;
+
+/**
+ * @typedef {string}
+ */
+var SelectType;
+
+/**
+ * @typedef {string}
+ */
+var EventType;
 
 /**
  * @typedef {{
@@ -195,6 +221,20 @@ chrome.developerPrivate.packDirectory = function(path, private_key_path, flags, 
  * @param {Function} callback
  */
 chrome.developerPrivate.isProfileManaged = function(callback) {};
+
+/**
+ * Reads and returns the contents of a file related to an extension which
+ * caused an error.
+ * @param {?} dict
+ * @param {Function} callback
+ */
+chrome.developerPrivate.requestFileSource = function(dict, callback) {};
+
+/**
+ * Open the developer tools to focus on a particular error.
+ * @param {?} dict
+ */
+chrome.developerPrivate.openDevTools = function(dict) {};
 
 /** @type {!ChromeEvent} */
 chrome.developerPrivate.onItemStateChanged;
