@@ -18,30 +18,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-namednodemap
+
 [
     SetWrapperReferenceFrom=element,
     TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface NamedNodeMap {
-
-    [MeasureAs=NamedNodeMapGetNamedItem] Attr getNamedItem(DOMString name);
-    [NotEnumerable, ImplementedAs=getNamedItem] getter Attr (DOMString name);
-
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr setNamedItem(Attr attr);
-
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem(DOMString name);
-
-    [MeasureAs=NamedNodeMapItem] getter Attr item(unsigned long index);
-
     readonly attribute unsigned long length;
-
-
-    // Introduced in DOM Level 2:
-
-    [MeasureAs=NamedNodeMapGetNamedItemNS] Attr getNamedItemNS(DOMString? namespaceURI, DOMString localName);
-
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr setNamedItemNS(Attr attr);
-
+    [MeasureAs=NamedNodeMapItem] getter Attr? item(unsigned long index);
+    // FIXME: getNamedItem should be an enumerable getter.
+    [MeasureAs=NamedNodeMapGetNamedItem] Attr? getNamedItem(DOMString name);
+    [NotEnumerable, ImplementedAs=getNamedItem] getter Attr? (DOMString name);
+    [MeasureAs=NamedNodeMapGetNamedItemNS] Attr? getNamedItemNS(DOMString? namespaceURI, DOMString localName);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr? setNamedItem(Attr attr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr? setNamedItemNS(Attr attr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem(DOMString name);
     [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Attr removeNamedItemNS(DOMString? namespaceURI, DOMString localName);
-
 };
