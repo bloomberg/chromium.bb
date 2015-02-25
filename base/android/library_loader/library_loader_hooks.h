@@ -62,7 +62,7 @@ BASE_EXPORT void SetVersionNumber(const char* version_number);
 BASE_EXPORT void LibraryLoaderExitHook();
 
 // Return the process type the shared library is loaded in.
-BASE_EXPORT LibraryProcessType GetLibraryProcesssType();
+BASE_EXPORT LibraryProcessType GetLibraryProcessType(JNIEnv* env);
 
 }  // namespace android
 }  // namespace base
