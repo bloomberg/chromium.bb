@@ -89,7 +89,7 @@ NetworkingConfigFinishAuthenticationFunction::Run() {
       service->GetAuthenticationResult();
   if (last_result.authentication_state != NetworkingConfigService::NOTRY ||
       last_result.guid != parameters_->guid) {
-    RespondNow(Error(kAuthenticationResultFailed));
+    return RespondNow(Error(kAuthenticationResultFailed));
   }
 
   // Populate NetworkingCaptivePortalAPI::AuthenticationResult.

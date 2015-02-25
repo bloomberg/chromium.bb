@@ -87,7 +87,10 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   static bool ValidationFailure(ChromeAsyncExtensionFunction* function);
 
  private:
-  ResponseAction Run() override;
+  // If you're hitting a compile error here due to "final" - great! You're doing
+  // the right thing, you just need to extend ChromeUIThreadExtensionFunction
+  // instead of ChromeAsyncExtensionFunction.
+  ResponseAction Run() final;
 };
 
 // A chrome specific analog to SyncExtensionFunction. This has access to a
@@ -111,7 +114,10 @@ class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   static bool ValidationFailure(ChromeSyncExtensionFunction* function);
 
  private:
-  ResponseAction Run() override;
+  // If you're hitting a compile error here due to "final" - great! You're doing
+  // the right thing, you just need to extend ChromeUIThreadExtensionFunction
+  // instead of ChromeSyncExtensionFunction.
+  ResponseAction Run() final;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_
