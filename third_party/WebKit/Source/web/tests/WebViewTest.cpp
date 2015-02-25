@@ -228,7 +228,6 @@ protected:
 
     void testTextInputType(WebTextInputType expectedType, const std::string& htmlFile);
     void testInputMode(const WebString& expectedInputMode, const std::string& htmlFile);
-    void testSelectionRootBounds(const char* htmlFile, float pageScaleFactor);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -1007,17 +1006,9 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
     EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);
 }
 
-class EnterFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
-public:
-    // WebViewClient methods
-    virtual bool enterFullScreen() { return true; }
-    virtual void exitFullScreen() { }
-};
-
-
 TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 {
-    EnterFullscreenWebViewClient client;
+    FrameTestHelpers::TestWebViewClient client;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("hello_world.html"));
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html", true, 0, &client);
     webViewImpl->resize(WebSize(640, 480));
@@ -1995,46 +1986,6 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
     Heap::collectAllGarbage();
 #endif
     EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
-}
-
-static WebRect ExpectedRootBounds(Document* document, float scaleFactor)
-{
-    Element* element = document->getElementById("root");
-    if (!element)
-        element = document->getElementById("target");
-    if (element->hasTagName(HTMLNames::iframeTag))
-        return ExpectedRootBounds(toHTMLIFrameElement(element)->contentDocument(), scaleFactor);
-
-    IntRect boundingBox;
-    if (element->hasTagName(HTMLNames::htmlTag))
-        boundingBox = IntRect(IntPoint(0, 0), document->frame()->view()->contentsSize());
-    else
-        boundingBox = element->pixelSnappedBoundingBox();
-    boundingBox = document->frame()->view()->contentsToWindow(boundingBox);
-    boundingBox.scale(scaleFactor);
-    return boundingBox;
-}
-
-void WebViewTest::testSelectionRootBounds(const char* htmlFile, float pageScaleFactor)
-{
-    std::string url = m_baseURL + htmlFile;
-
-    WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
-    webView->resize(WebSize(640, 480));
-    webView->setPageScaleFactor(pageScaleFactor);
-    webView->layout();
-    runPendingTasks();
-
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
-    EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
-    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
-
-    WebRect anchor, focus;
-    webView->selectionBounds(anchor, focus);
-    IntRect expectedIntRect = ExpectedRootBounds(document, webView->pageScaleFactor());
-    ASSERT_TRUE(expectedIntRect.contains(anchor));
-    // The "overflow" tests have the focus boundary outside of the element box.
-    ASSERT_EQ(url.find("overflow") == std::string::npos, expectedIntRect.contains(focus));
 }
 
 class NonUserInputTextUpdateWebViewClient : public FrameTestHelpers::TestWebViewClient {

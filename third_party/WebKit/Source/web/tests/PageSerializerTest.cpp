@@ -75,11 +75,6 @@ protected:
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 
-    void setBaseUrl(const char* url)
-    {
-        m_baseUrl = toKURL(url);
-    }
-
     void setBaseFolder(const char* folder)
     {
         m_folder = WebString::fromUTF8(folder);

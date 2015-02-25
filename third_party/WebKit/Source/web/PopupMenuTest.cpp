@@ -113,8 +113,6 @@ public:
         return PopupMenuStyle(Color::black, Color::white, font, true, false, Length(), TextDirection(), false /* has text direction override */);
     }
     virtual PopupMenuStyle menuStyle() const { return itemStyle(0); }
-    virtual int clientInsetLeft() const { return 0; }
-    virtual int clientInsetRight() const { return 0; }
     virtual LayoutUnit clientPaddingLeft() const { return 0; }
     virtual LayoutUnit clientPaddingRight() const { return 0; }
     virtual int listSize() const { return m_listSize; }
@@ -123,7 +121,6 @@ public:
     virtual bool itemIsSeparator(unsigned listIndex) const { return false; }
     virtual bool itemIsLabel(unsigned listIndex) const { return false; }
     virtual bool itemIsSelected(unsigned listIndex) const { return listIndex == m_selectIndex; }
-    virtual bool valueShouldChangeOnHotTrack() const { return false; }
     virtual void setTextFromItem(unsigned listIndex) { }
     virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *toElement(m_node); }
