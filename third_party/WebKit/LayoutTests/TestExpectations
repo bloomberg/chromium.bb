@@ -1,5 +1,6 @@
 
 crbug.com/452320 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/452320 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 # These need a manual rebaseline for Mac after crbug.com/452967
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure NeedsManualRebaseline ]
@@ -99,6 +100,7 @@ crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-t
 
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
+crbug.com/339118 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure Pass ]
@@ -1010,6 +1012,7 @@ crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects
 crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
+crbug.com/353754 virtual/scroll_customization/fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 
@@ -1732,6 +1735,7 @@ crbug.com/461238 [ Linux Win Debug ] editing/execCommand/delete-non-editable-ran
 
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
+crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/458420 [ Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/458420 [ Win Debug ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 

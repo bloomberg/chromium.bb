@@ -261,5 +261,20 @@
     "prefix": "slimmingpaint",
     "base": "css3/filters",
     "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "scroll_customization",
+    "base": "fast/scroll-behavior",
+    "args": ["--enable-blink-features=ScrollCustomization"]
+  },
+  {
+    "prefix": "scroll_customization",
+    "base": "fast/scrolling",
+    "args": ["--enable-blink-features=ScrollCustomization"]
+  },
+  {
+    "prefix": "scroll_customization",
+    "base": "fast/events/touch",
+    "args": ["--enable-blink-features=ScrollCustomization"]
   }
 ]
