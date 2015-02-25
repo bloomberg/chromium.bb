@@ -108,6 +108,7 @@ bool RenderTextMac::IsValidCursorIndex(size_t index) {
 }
 
 void RenderTextMac::OnLayoutTextAttributeChanged(bool text_changed) {
+  DCHECK(!multiline()) << "RenderTextMac does not support multi line";
   if (text_changed) {
     if (elide_behavior() != NO_ELIDE &&
         elide_behavior() != FADE_TAIL &&

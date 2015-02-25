@@ -1093,18 +1093,15 @@ HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {
 
 Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
   // TODO(ckocagil): Enable |lines_| usage on RenderTextMac.
-#if !defined(OS_MACOSX)
-  DCHECK_LT(line_number, lines_.size());
-#endif
+  if (multiline_)
+    DCHECK_LT(line_number, lines_.size());
   Vector2d offset;
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
   if (horizontal_alignment != ALIGN_LEFT) {
-#if !defined(OS_MACOSX)
-    const int width = std::ceil(lines_[line_number].size.width()) +
-        (cursor_enabled_ ? 1 : 0);
-#else
-    const int width = GetContentWidth();
-#endif
+    const int width = multiline_ ?
+        std::ceil(lines_[line_number].size.width()) +
+        (cursor_enabled_ ? 1 : 0) :
+        GetContentWidth();
     offset.set_x(display_rect().width() - width);
     // Put any extra margin pixel on the left to match legacy behavior.
     if (horizontal_alignment == ALIGN_CENTER)

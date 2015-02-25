@@ -2144,7 +2144,6 @@ TEST_F(RenderTextTest, Multiline_NewlineCharacterReplacement) {
   }
 }
 
-#if !defined(OS_MACOSX)
 // Ensure horizontal alignment works in multiline mode.
 TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
   const struct {
@@ -2193,7 +2192,6 @@ TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
     }
   }
 }
-#endif
 
 TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
   const wchar_t* kTestStrings[] = {
