@@ -29,49 +29,61 @@ class DevToolsEmbedderMessageDispatcher {
    public:
     virtual ~Delegate() {}
 
-    virtual void ActivateWindow() = 0;
-    virtual void CloseWindow() = 0;
-    virtual void LoadCompleted() = 0;
-    virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
-    virtual void InspectElementCompleted() = 0;
-    virtual void InspectedURLChanged(const std::string& url) = 0;
-    virtual void SetIsDocked(bool is_docked) = 0;
-    virtual void OpenInNewTab(const std::string& url) = 0;
-    virtual void SaveToFile(const std::string& url,
+    virtual void ActivateWindow(int request_id) = 0;
+    virtual void CloseWindow(int request_id) = 0;
+    virtual void LoadCompleted(int request_id) = 0;
+    virtual void SetInspectedPageBounds(int request_id,
+                                        const gfx::Rect& rect) = 0;
+    virtual void InspectElementCompleted(int request_id) = 0;
+    virtual void InspectedURLChanged(int request_id,
+                                     const std::string& url) = 0;
+    virtual void SetIsDocked(int request_id, bool is_docked) = 0;
+    virtual void OpenInNewTab(int request_id, const std::string& url) = 0;
+    virtual void SaveToFile(int request_id,
+                            const std::string& url,
                             const std::string& content,
                             bool save_as) = 0;
-    virtual void AppendToFile(const std::string& url,
+    virtual void AppendToFile(int request_id,
+                              const std::string& url,
                               const std::string& content) = 0;
-    virtual void RequestFileSystems() = 0;
-    virtual void AddFileSystem() = 0;
-    virtual void RemoveFileSystem(const std::string& file_system_path) = 0;
+    virtual void RequestFileSystems(int request_id) = 0;
+    virtual void AddFileSystem(int request_id) = 0;
+    virtual void RemoveFileSystem(int request_id,
+                                  const std::string& file_system_path) = 0;
     virtual void UpgradeDraggedFileSystemPermissions(
+        int request_id,
         const std::string& file_system_url) = 0;
     virtual void IndexPath(int request_id,
+                           int index_request_id,
                            const std::string& file_system_path) = 0;
-    virtual void StopIndexing(int request_id) = 0;
+    virtual void StopIndexing(int request_id, int index_request_id) = 0;
     virtual void SearchInPath(int request_id,
+                              int search_request_id,
                               const std::string& file_system_path,
                               const std::string& query) = 0;
-    virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
-    virtual void ZoomIn() = 0;
-    virtual void ZoomOut() = 0;
-    virtual void ResetZoom() = 0;
-    virtual void OpenUrlOnRemoteDeviceAndInspect(const std::string& browser_id,
+    virtual void SetWhitelistedShortcuts(int request_id,
+                                         const std::string& message) = 0;
+    virtual void ZoomIn(int request_id) = 0;
+    virtual void ZoomOut(int request_id) = 0;
+    virtual void ResetZoom(int request_id) = 0;
+    virtual void OpenUrlOnRemoteDeviceAndInspect(int request_id,
+                                                 const std::string& browser_id,
                                                  const std::string& url) = 0;
-
-    virtual void SetDeviceCountUpdatesEnabled(bool enabled) = 0;
-    virtual void SetDevicesUpdatesEnabled(bool enabled) = 0;
-    virtual void SendMessageToBrowser(const std::string& message) = 0;
-    virtual void RecordActionUMA(const std::string& name, int action) = 0;
+    virtual void SetDeviceCountUpdatesEnabled(int request_id, bool enabled) = 0;
+    virtual void SetDevicesUpdatesEnabled(int request_id, bool enabled) = 0;
+    virtual void SendMessageToBrowser(int request_id,
+                                      const std::string& message) = 0;
+    virtual void RecordActionUMA(int request_id,
+                                 const std::string& name,
+                                 int action) = 0;
   };
 
   virtual ~DevToolsEmbedderMessageDispatcher() {}
-  virtual bool Dispatch(const std::string& method,
-                        const base::ListValue* params,
-                        std::string* error) = 0;
+  virtual bool Dispatch(int request_id,
+                        const std::string& method,
+                        const base::ListValue* params) = 0;
 
-  static DevToolsEmbedderMessageDispatcher* createForDevToolsFrontend(
+  static DevToolsEmbedderMessageDispatcher* CreateForDevToolsFrontend(
       Delegate* delegate);
 };
 

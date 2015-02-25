@@ -65,11 +65,7 @@ template <typename T, typename... Ts>
 struct ParamTuple<T, Ts...> {
   bool Parse(const base::ListValue& list,
              const base::ListValue::const_iterator& it) {
-    if (it == list.end())
-      return false;
-    if (!GetValue(*it, &head))
-      return false;
-    return tail.Parse(list, it + 1);
+    return it != list.end() && GetValue(*it, &head) && tail.Parse(list, it + 1);
   }
 
   template <typename H, typename... As>
@@ -82,12 +78,13 @@ struct ParamTuple<T, Ts...> {
 };
 
 template<typename... As>
-bool ParseAndHandle(const base::Callback<void(As...)>& handler,
+bool ParseAndHandle(const base::Callback<void(int, As...)>& handler,
+                    int request_id,
                     const base::ListValue& list) {
   ParamTuple<As...> tuple;
   if (!tuple.Parse(list, list.begin()))
     return false;
-  tuple.Apply(handler);
+  tuple.Apply(handler, request_id);
   return true;
 }
 
@@ -105,43 +102,31 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
  public:
   ~DispatcherImpl() override {}
 
-  bool Dispatch(const std::string& method,
-                const base::ListValue* params,
-                std::string* error) override {
+  bool Dispatch(int request_id,
+                const std::string& method,
+                const base::ListValue* params) override {
     HandlerMap::iterator it = handlers_.find(method);
-    if (it == handlers_.end())
-      return false;
-
-    if (it->second.Run(*params))
-      return true;
-
-    if (error)
-      *error = "Invalid frontend host message parameters: " + method;
-    return false;
-  }
-
-  typedef base::Callback<bool(const base::ListValue&)> Handler;
-  void RegisterHandler(const std::string& method, const Handler& handler) {
-    handlers_[method] = handler;
+    return it != handlers_.end() && it->second.Run(request_id, *params);
   }
 
   template<typename T, typename... As>
   void RegisterHandler(const std::string& method,
-                       void (T::*handler)(As...), T* delegate) {
+                       void (T::*handler)(int, As...), T* delegate) {
     handlers_[method] = base::Bind(&ParseAndHandle<As...>,
                                    base::Bind(handler,
                                               base::Unretained(delegate)));
   }
 
  private:
-  typedef std::map<std::string, Handler> HandlerMap;
+  using Handler = base::Callback<bool(int, const base::ListValue&)>;
+  using HandlerMap = std::map<std::string, Handler>;
   HandlerMap handlers_;
 };
 
-
+// static
 DevToolsEmbedderMessageDispatcher*
-    DevToolsEmbedderMessageDispatcher::createForDevToolsFrontend(
-        Delegate* delegate) {
+DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
+    Delegate* delegate) {
   DispatcherImpl* d = new DispatcherImpl();
 
   d->RegisterHandler("bringToFront", &Delegate::ActivateWindow, delegate);
@@ -179,7 +164,6 @@ DevToolsEmbedderMessageDispatcher*
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
   d->RegisterHandler("sendMessageToBrowser",
                      &Delegate::SendMessageToBrowser, delegate);
-  d->RegisterHandler("recordActionUMA",
-                     &Delegate::RecordActionUMA, delegate);
+  d->RegisterHandler("recordActionUMA", &Delegate::RecordActionUMA, delegate);
   return d;
 }

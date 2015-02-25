@@ -376,7 +376,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
           ThemeServiceFactory::GetForProfile(profile_)));
 
   embedder_message_dispatcher_.reset(
-      DevToolsEmbedderMessageDispatcher::createForDevToolsFrontend(this));
+      DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(this));
 
   frontend_host_.reset(content::DevToolsFrontendHost::Create(
       web_contents_->GetMainFrame(), this));
@@ -391,8 +391,8 @@ DevToolsUIBindings::~DevToolsUIBindings() {
     jobs_it->second->Stop();
   }
   indexing_jobs_.clear();
-  SetDeviceCountUpdatesEnabled(false);
-  SetDevicesUpdatesEnabled(false);
+  SetDeviceCountUpdatesEnabled(0, false);
+  SetDevicesUpdatesEnabled(0, false);
 
   // Remove self from global list.
   DevToolsUIBindingsList* instances = g_instances.Pointer();
@@ -427,18 +427,9 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
     LOG(ERROR) << "Invalid message was sent to embedder: " << message;
     return;
   }
-
   int id = 0;
   dict->GetInteger(kFrontendHostId, &id);
-
-  std::string error;
-  embedder_message_dispatcher_->Dispatch(method, params, &error);
-  if (id) {
-    base::FundamentalValue id_value(id);
-    base::StringValue error_value(error);
-    CallClientFunction("DevToolsAPI.embedderMessageAck",
-                       &id_value, &error_value, NULL);
-  }
+  embedder_message_dispatcher_->Dispatch(id, method, params);
 }
 
 void DevToolsUIBindings::HandleMessageFromDevToolsFrontendToBackend(
@@ -475,32 +466,41 @@ void DevToolsUIBindings::AgentHostClosed(
   delegate_->InspectedContentsClosing();
 }
 
+void DevToolsUIBindings::SendMessageAck(int request_id) {
+  base::FundamentalValue id_value(request_id);
+  CallClientFunction("DevToolsAPI.embedderMessageAck",
+                     &id_value, nullptr, nullptr);
+}
+
 // DevToolsEmbedderMessageDispatcher::Delegate implementation -----------------
-void DevToolsUIBindings::ActivateWindow() {
+void DevToolsUIBindings::ActivateWindow(int request_id) {
   delegate_->ActivateWindow();
 }
 
-void DevToolsUIBindings::CloseWindow() {
+void DevToolsUIBindings::CloseWindow(int request_id) {
   delegate_->CloseWindow();
 }
 
-void DevToolsUIBindings::LoadCompleted() {
+void DevToolsUIBindings::LoadCompleted(int request_id) {
   FrontendLoaded();
 }
 
-void DevToolsUIBindings::SetInspectedPageBounds(const gfx::Rect& rect) {
+void DevToolsUIBindings::SetInspectedPageBounds(int request_id,
+                                                const gfx::Rect& rect) {
   delegate_->SetInspectedPageBounds(rect);
 }
 
-void DevToolsUIBindings::SetIsDocked(bool dock_requested) {
+void DevToolsUIBindings::SetIsDocked(int request_id, bool dock_requested) {
   delegate_->SetIsDocked(dock_requested);
+  SendMessageAck(request_id);
 }
 
-void DevToolsUIBindings::InspectElementCompleted() {
+void DevToolsUIBindings::InspectElementCompleted(int request_id) {
   delegate_->InspectElementCompleted();
 }
 
-void DevToolsUIBindings::InspectedURLChanged(const std::string& url) {
+void DevToolsUIBindings::InspectedURLChanged(int request_id,
+                                             const std::string& url) {
   content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   // DevTools UI is not localized.
@@ -509,11 +509,12 @@ void DevToolsUIBindings::InspectedURLChanged(const std::string& url) {
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
-void DevToolsUIBindings::OpenInNewTab(const std::string& url) {
+void DevToolsUIBindings::OpenInNewTab(int request_id, const std::string& url) {
   delegate_->OpenInNewTab(url);
 }
 
-void DevToolsUIBindings::SaveToFile(const std::string& url,
+void DevToolsUIBindings::SaveToFile(int request_id,
+                                    const std::string& url,
                                     const std::string& content,
                                     bool save_as) {
   file_helper_->Save(url, content, save_as,
@@ -523,20 +524,21 @@ void DevToolsUIBindings::SaveToFile(const std::string& url,
                                 weak_factory_.GetWeakPtr(), url));
 }
 
-void DevToolsUIBindings::AppendToFile(const std::string& url,
+void DevToolsUIBindings::AppendToFile(int request_id,
+                                      const std::string& url,
                                       const std::string& content) {
   file_helper_->Append(url, content,
                        base::Bind(&DevToolsUIBindings::AppendedTo,
                                   weak_factory_.GetWeakPtr(), url));
 }
 
-void DevToolsUIBindings::RequestFileSystems() {
+void DevToolsUIBindings::RequestFileSystems(int request_id) {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->RequestFileSystems(base::Bind(
       &DevToolsUIBindings::FileSystemsLoaded, weak_factory_.GetWeakPtr()));
 }
 
-void DevToolsUIBindings::AddFileSystem() {
+void DevToolsUIBindings::AddFileSystem(int request_id) {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->AddFileSystem(
       base::Bind(&DevToolsUIBindings::FileSystemAdded,
@@ -545,8 +547,8 @@ void DevToolsUIBindings::AddFileSystem() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void DevToolsUIBindings::RemoveFileSystem(
-    const std::string& file_system_path) {
+void DevToolsUIBindings::RemoveFileSystem(int request_id,
+                                          const std::string& file_system_path) {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->RemoveFileSystem(file_system_path);
   base::StringValue file_system_path_value(file_system_path);
@@ -555,6 +557,7 @@ void DevToolsUIBindings::RemoveFileSystem(
 }
 
 void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
+    int request_id,
     const std::string& file_system_url) {
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->UpgradeDraggedFileSystemPermissions(
@@ -566,36 +569,37 @@ void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
 }
 
 void DevToolsUIBindings::IndexPath(int request_id,
+                                   int index_request_id,
                                    const std::string& file_system_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
-    IndexingDone(request_id, file_system_path);
+    IndexingDone(index_request_id, file_system_path);
     return;
   }
-  if (indexing_jobs_.count(request_id) != 0)
+  if (indexing_jobs_.count(index_request_id) != 0)
     return;
-  indexing_jobs_[request_id] =
+  indexing_jobs_[index_request_id] =
       scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>(
           file_system_indexer_->IndexPath(
               file_system_path,
               Bind(&DevToolsUIBindings::IndexingTotalWorkCalculated,
                    weak_factory_.GetWeakPtr(),
-                   request_id,
+                   index_request_id,
                    file_system_path),
               Bind(&DevToolsUIBindings::IndexingWorked,
                    weak_factory_.GetWeakPtr(),
-                   request_id,
+                   index_request_id,
                    file_system_path),
               Bind(&DevToolsUIBindings::IndexingDone,
                    weak_factory_.GetWeakPtr(),
-                   request_id,
+                   index_request_id,
                    file_system_path)));
 }
 
-void DevToolsUIBindings::StopIndexing(int request_id) {
+void DevToolsUIBindings::StopIndexing(int request_id, int index_request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  IndexingJobsMap::iterator it = indexing_jobs_.find(request_id);
+  IndexingJobsMap::iterator it = indexing_jobs_.find(index_request_id);
   if (it == indexing_jobs_.end())
     return;
   it->second->Stop();
@@ -603,36 +607,39 @@ void DevToolsUIBindings::StopIndexing(int request_id) {
 }
 
 void DevToolsUIBindings::SearchInPath(int request_id,
+                                      int search_request_id,
                                       const std::string& file_system_path,
                                       const std::string& query) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
-    SearchCompleted(request_id, file_system_path, std::vector<std::string>());
+    SearchCompleted(search_request_id,
+                    file_system_path,
+                    std::vector<std::string>());
     return;
   }
   file_system_indexer_->SearchInPath(file_system_path,
                                      query,
                                      Bind(&DevToolsUIBindings::SearchCompleted,
                                           weak_factory_.GetWeakPtr(),
-                                          request_id,
+                                          search_request_id,
                                           file_system_path));
 }
 
-void DevToolsUIBindings::SetWhitelistedShortcuts(
-    const std::string& message) {
+void DevToolsUIBindings::SetWhitelistedShortcuts(int request_id,
+                                                 const std::string& message) {
   delegate_->SetWhitelistedShortcuts(message);
 }
 
-void DevToolsUIBindings::ZoomIn() {
+void DevToolsUIBindings::ZoomIn(int request_id) {
   ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
 }
 
-void DevToolsUIBindings::ZoomOut() {
+void DevToolsUIBindings::ZoomOut(int request_id) {
   ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
 }
 
-void DevToolsUIBindings::ResetZoom() {
+void DevToolsUIBindings::ResetZoom(int request_id) {
   ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
 }
 
@@ -642,6 +649,7 @@ static void InspectTarget(Profile* profile, DevToolsTargetImpl* target) {
 }
 
 void DevToolsUIBindings::OpenUrlOnRemoteDeviceAndInspect(
+    int request_id,
     const std::string& browser_id,
     const std::string& url) {
   if (remote_targets_handler_) {
@@ -650,7 +658,8 @@ void DevToolsUIBindings::OpenUrlOnRemoteDeviceAndInspect(
   }
 }
 
-void DevToolsUIBindings::SetDeviceCountUpdatesEnabled(bool enabled) {
+void DevToolsUIBindings::SetDeviceCountUpdatesEnabled(int request_id,
+                                                      bool enabled) {
   if (device_count_updates_enabled_ == enabled)
     return;
   DevToolsAndroidBridge* adb_bridge =
@@ -665,7 +674,8 @@ void DevToolsUIBindings::SetDeviceCountUpdatesEnabled(bool enabled) {
     adb_bridge->RemoveDeviceCountListener(this);
 }
 
-void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
+void DevToolsUIBindings::SetDevicesUpdatesEnabled(int request_id,
+                                                  bool enabled) {
   if (devices_updates_enabled_ == enabled)
     return;
   devices_updates_enabled_ = enabled;
@@ -679,12 +689,15 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
   }
 }
 
-void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
+void DevToolsUIBindings::SendMessageToBrowser(int request_id,
+                                              const std::string& message) {
   if (agent_host_.get())
     agent_host_->DispatchProtocolMessage(message);
 }
 
-void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
+void DevToolsUIBindings::RecordActionUMA(int request_id,
+                                         const std::string& name,
+                                         int action) {
   if (name == kDevToolsActionTakenHistogram)
     UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsActionTakenBoundary);
   else if (name == kDevToolsPanelShownHistogram)
