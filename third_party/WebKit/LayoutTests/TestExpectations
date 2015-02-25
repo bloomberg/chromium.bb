@@ -111,6 +111,10 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
+
+crbug.com/461779 [ Mac ] compositing/overflow/reparented-overlay-scrollbars-with-non-stacking-context-compositing-ancestor.html [ NeedsRebaseline ]
+crbug.com/461779 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/reparented-overlay-scrollbars-with-non-stacking-context-compositing-ancestor.html [ NeedsRebaseline ]
+
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feComponentTransfer-subregion.svg [ Crash ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-animated-transform-on-target-rect.svg [ Crash ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-change-target-id.svg [ Crash ImageOnlyFailure ]
@@ -1875,5 +1879,3 @@ crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-
 
 crbug.com/461371 [ Mac ] virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
 crbug.com/461371 [ Mac ] virtual/slimmingpaint/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
-
-crbug.com/461779 [ Mac ] compositing/overflow/reparented-overlay-scrollbars-with-non-stacking-context-compositing-ancestor.html [ Failure ]
