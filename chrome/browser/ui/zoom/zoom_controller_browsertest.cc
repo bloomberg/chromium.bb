@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, OnPreferenceChanged) {
       new_default_zoom_level,
       new_default_zoom_level,
       ZoomController::ZOOM_MODE_DEFAULT,
-      true);
+      false);
   ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
   // TODO(wjmaclean): Convert this to call partition-specific zoom level prefs
   // when they become available.
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
       new_zoom_level,
       new_zoom_level,
       ZoomController::ZOOM_MODE_DEFAULT,
-      true);  // We have a non-empty host, so this will be 'true'.
+      false);  // The ZoomController did not initiate, so this will be 'false'.
   ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
 
   content::HostZoomMap* host_zoom_map =

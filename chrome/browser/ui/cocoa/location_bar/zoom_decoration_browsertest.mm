@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/ui/zoom/page_zoom.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/test/test_utils.h"
 
@@ -77,6 +78,16 @@ class ZoomDecorationTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, BubbleAtDefaultZoom) {
   ZoomDecoration* zoom_decoration = GetZoomDecoration();
+
+  // TODO(wjmaclean): This shouldn't be necessary, but at present this test
+  // assumes the various Zoom() calls do not invoke a notification
+  // bubble, which prior to https://codereview.chromium.org/940673002/
+  // was accomplished by not showing the bubble for inactive windows.
+  // Since we now need to be able to show the zoom bubble as a notification
+  // on non-active pages, this test should be revised to account for
+  // these notifications.
+  ui_zoom::ZoomController::FromWebContents(
+      GetLocationBar()->GetWebContents())->SetShowsNotificationBubble(false);
 
   // Zoom in and reset.
   EXPECT_FALSE(zoom_decoration->IsVisible());

@@ -1938,9 +1938,7 @@ void Browser::URLStarredChanged(content::WebContents* web_contents,
 void Browser::OnZoomChanged(
     const ui_zoom::ZoomController::ZoomChangedEventData& data) {
   if (data.web_contents == tab_strip_model_->GetActiveWebContents()) {
-    // Only show the zoom bubble for zoom changes in the active window.
-    window_->ZoomChangedForActiveTab(data.can_show_bubble &&
-                                     window_->IsActive());
+    window_->ZoomChangedForActiveTab(data.can_show_bubble);
     // Change the zoom commands state based on the zoom state
     command_controller_->ZoomStateChanged();
   }

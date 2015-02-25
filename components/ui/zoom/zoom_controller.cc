@@ -318,24 +318,24 @@ void ZoomController::UpdateState(const std::string& host) {
     }
   }
 
-  // The zoom bubble should not be shown for zoom changes where the host is
-  // empty.
-  bool can_show_bubble = can_show_bubble_ && !host.empty();
-
   if (event_data_) {
     // For state changes initiated within the ZoomController, information about
     // the change should be sent.
     ZoomChangedEventData zoom_change_data = *event_data_;
     event_data_.reset();
-    zoom_change_data.can_show_bubble = can_show_bubble;
+    // The zoom bubble should not be shown for zoom changes where the host
+    // is empty.
+    zoom_change_data.can_show_bubble = can_show_bubble_ && !host.empty();
     FOR_EACH_OBSERVER(ZoomObserver, observers_,
                       OnZoomChanged(zoom_change_data));
   } else {
     // TODO(wjmaclean) Should we consider having HostZoomMap send both old and
     // new zoom levels here?
     double zoom_level = GetZoomLevel();
-    ZoomChangedEventData zoom_change_data(
-        web_contents(), zoom_level, zoom_level, zoom_mode_, can_show_bubble);
+    // We never show a zoom bubble for an event we didn't generate.
+    ZoomChangedEventData zoom_change_data(web_contents(), zoom_level,
+                                          zoom_level, zoom_mode_,
+                                          false /* can_show_bubble */);
     FOR_EACH_OBSERVER(ZoomObserver, observers_,
                       OnZoomChanged(zoom_change_data));
   }
