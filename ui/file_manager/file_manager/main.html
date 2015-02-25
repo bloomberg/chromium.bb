@@ -382,19 +382,21 @@
     </div>
 
     <div id="cloud-import-details" class="hidden" hidden>
-      <div class="banner">
-        <div class="title" i18n-content="CLOUD_IMPORT_TITLE"></div>
-        <div class="description" i18n-content="CLOUD_IMPORT_DESCRIPTION"></div>
-      </div>
-      <div class="main">
-        <div class="status">
-          <core-icon icon="cloud-queue"></core-icon>
-          <div class="content"></div>
+      <paper-shadow z="2">
+        <div class="banner">
+          <div class="title" i18n-content="CLOUD_IMPORT_TITLE"></div>
+          <div class="description" i18n-content="CLOUD_IMPORT_DESCRIPTION"></div>
         </div>
-        <paper-button class="import" tabindex="-1">
-          <span i18n-content="CLOUD_IMPORT_COMMAND"></span>
-        </paper-button>
-      </div>
+        <div class="main">
+          <div class="status">
+            <core-icon icon="cloud-queue"></core-icon>
+            <div class="content"></div>
+          </div>
+          <paper-button class="import" tabindex="-1">
+            <span i18n-content="CLOUD_IMPORT_COMMAND"></span>
+          </paper-button>
+        </div>
+      </paper-shadow>
     </div>
 
     <div class="dialog-container">

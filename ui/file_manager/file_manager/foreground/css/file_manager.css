@@ -427,8 +427,7 @@ body.selecting #gear-button {
 
 #cloud-import-details {
   background-color: white;
-  border-radius: 4px;
-  box-shadow: 2px 2px 6px #555555;
+  border-radius: 2px;
   line-height: 1.5em;
   position: absolute;
   right: 75px;  /* Positioned in relation to the cloud-import toolbar button */
@@ -445,7 +444,7 @@ body.selecting #gear-button {
 
 #cloud-import-details .banner {
   background-color: #37474F;
-  border-radius: 4px 4px 0px 0px;
+  border-radius: 2px 2px 0px 0px;
   color: white;
   padding: 20px;
 }
