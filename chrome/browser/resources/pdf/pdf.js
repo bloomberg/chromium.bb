@@ -262,7 +262,7 @@ PDFViewer.prototype = {
       case 37:  // Left arrow key.
         if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
           // Go to the previous page if there are no horizontal scrollbars.
-          if (!this.viewport_.documentHasScrollbars().x) {
+          if (!this.viewport_.documentHasScrollbars().horizontal) {
             this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
             // Since we do the movement of the page.
             e.preventDefault();
@@ -281,7 +281,7 @@ PDFViewer.prototype = {
       case 39:  // Right arrow key.
         if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
           // Go to the next page if there are no horizontal scrollbars.
-          if (!this.viewport_.documentHasScrollbars().x) {
+          if (!this.viewport_.documentHasScrollbars().horizontal) {
             this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
             // Since we do the movement of the page.
             e.preventDefault();
