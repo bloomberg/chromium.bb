@@ -202,9 +202,6 @@
   }
 
   tabStripObserverBridge_.reset();
-
-  NSWindow* window = [self window];
-  [[window parentWindow] removeChildWindow:window];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {

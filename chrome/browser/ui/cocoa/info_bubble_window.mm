@@ -185,8 +185,10 @@ class AppNotificationBridge : public content::NotificationObserver {
 // Called by InfoBubbleWindowCloser when the window is to be really closed
 // after the fading animation is complete.
 - (void)finishCloseAfterAnimation {
-  if (closing_)
+  if (closing_) {
+    [[self parentWindow] removeChildWindow:self];
     [super close];
+  }
 }
 
 // Adds animation for info bubbles being ordered to the front.
