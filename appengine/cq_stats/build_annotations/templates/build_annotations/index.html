@@ -1,11 +1,6 @@
-<html>
-<head>
-{% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'build_annotations/base.css' %}"/>
-<script type="text/javascript" src="{% static 'build_annotations/base.js' %}"></script>
-</head>
+{% extends 'build_annotations/base.html' %}
 
-<body>
+{% block content %}
 <h1> {{ build_config|title }} Builds</h1>
 <ul class="navbar">
   <li class="navbar">
@@ -60,6 +55,4 @@
   </tr>
 {% endfor %}
 </table>
-
-</body>
-</html>
+{% endblock %}  <!-- content -->

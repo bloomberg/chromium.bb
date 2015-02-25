@@ -10,11 +10,14 @@ from django import http
 from django import shortcuts
 from django.core import urlresolvers
 from django.views import generic
+from google.appengine.api import users
 
 from build_annotations import build_row_controller
 from build_annotations import models as ba_models
 from build_annotations import forms as ba_forms
 
+
+_DEFAULT_USERNAME = "SomeoneGotHereWithoutLoggingIn"
 
 class ListBuildsView(generic.list.ListView):
   """The landing page view of the app. Lists requested builds."""
@@ -23,6 +26,7 @@ class ListBuildsView(generic.list.ListView):
 
   def __init__(self, *args, **kwargs):
     super(ListBuildsView, self).__init__(*args, **kwargs)
+    self._username = _DEFAULT_USERNAME
     self._build_config = None
     self._search_form = None
     self._controller = None
@@ -46,6 +50,7 @@ class ListBuildsView(generic.list.ListView):
 
   def get_context_data(self, **kwargs):
     context = super(ListBuildsView, self).get_context_data(**kwargs)
+    context['username'] = self._username
     context['search_form'] = self._GetSearchForm()
     context['latest_build_id_cached'] = self._GetLatestBuildId()
     context['build_config'] = self._build_config
@@ -53,6 +58,9 @@ class ListBuildsView(generic.list.ListView):
 
   # pylint: disable=arguments-differ
   def get(self, request, build_config=None):
+    # We're assured that a username exists in prod because our app sits behind
+    # appengine login. Not so when running from dev_appserver.
+    self._username = users.get_current_user()
     self._session = request.session
     self._build_config = build_config
     return super(ListBuildsView, self).get(request)
@@ -98,8 +106,8 @@ class EditAnnotationsView(generic.base.View):
   template_name = 'build_annotations/edit_annotations.html'
 
   def __init__(self, *args, **kwargs):
+    self._username = _DEFAULT_USERNAME
     self._formset = None
-    self._annotator = 'default_annotator'
     self._context = {}
     self._request = None
     self._session = None
@@ -108,6 +116,9 @@ class EditAnnotationsView(generic.base.View):
     super(EditAnnotationsView, self).__init__(*args, **kwargs)
 
   def get(self, request, build_config, build_id):
+    # We're assured that a username exists in prod because our app sits behind
+    # appengine login. Not so when running from dev_appserver.
+    self._username = users.get_current_user()
     self._request = request
     self._build_config = build_config
     self._build_id = build_id
@@ -116,6 +127,9 @@ class EditAnnotationsView(generic.base.View):
     return shortcuts.render(request, self.template_name, self._context)
 
   def post(self, request, build_config, build_id):
+    # We're assured that a username exists in prod because our app sits behind
+    # appengine login. Not so when running from dev_appserver.
+    self._username = users.get_current_user()
     self._request = request
     self._build_config = build_config
     self._build_id = build_id
@@ -136,6 +150,7 @@ class EditAnnotationsView(generic.base.View):
       raise http.Http404
 
     self._context = {}
+    self._context['username'] = self._username
     self._context['build_config'] = self._build_config
     self._context['build_row'] = build_row
     self._context['annotations_formset'] = self._GetAnnotationsFormSet()
@@ -165,5 +180,5 @@ class EditAnnotationsView(generic.base.View):
     for model in models_to_save:
       if not hasattr(model, 'build_id') or model.build_id is None:
         model.build_id = build_row.build_entry
-        model.last_annotator = self._annotator
+      model.last_annotator = self._username
       model.save()

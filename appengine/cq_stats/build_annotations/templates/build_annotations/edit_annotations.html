@@ -1,12 +1,10 @@
-<html>
-<head>
-{% load build_annotations_filters %}
-{% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'build_annotations/base.css' %}"/>
-<script type="text/javascript" src="{% static 'build_annotations/base.js' %}"></script>
-</head>
+{% extends 'build_annotations/base.html' %}
 
-<body>
+{% block template-private-imports %}
+{% load build_annotations_filters %}
+{% endblock %}
+
+{% block content %}
 <h1>Annotate {{ build_config|title }} Build {{ build_row.id }}</h1>
 <ul class="navbar">
   <li class="navbar">
@@ -109,6 +107,5 @@
   </table>
   <input type="submit" value="Save Changes"/>
 </form>
+{% endblock %}  <!-- content -->
 
-</body>
-</html>
