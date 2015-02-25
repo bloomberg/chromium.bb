@@ -385,7 +385,7 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
     if (update_content_setting) {
       if ((IsSchemeSecure() && !devices.empty()) ||
           request_.request_type == content::MEDIA_OPEN_DEVICE) {
-        SetPermission(true);
+        StorePermission(true);
       }
     }
 
@@ -423,9 +423,11 @@ void MediaStreamDevicesController::Deny(
   DLOG(WARNING) << "MediaStreamDevicesController::Deny: " << result;
   NotifyUIRequestDenied();
 
-  if (update_content_setting) {
+  if (update_content_setting && request_.all_ancestors_have_same_origin) {
+    // Store sticky permissions if |update_content_setting| and the request
+    // is not done from an iframe where the ancestor has a different origin.
     CHECK_EQ(content::MEDIA_DEVICE_PERMISSION_DENIED, result);
-    SetPermission(false);
+    StorePermission(false);
   }
 
   content::MediaResponseCallback cb = callback_;
@@ -604,7 +606,7 @@ bool MediaStreamDevicesController::IsSchemeSecure() const {
       request_.security_origin.SchemeIs(extensions::kExtensionScheme);
 }
 
-void MediaStreamDevicesController::SetPermission(bool allowed) const {
+void MediaStreamDevicesController::StorePermission(bool allowed) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);

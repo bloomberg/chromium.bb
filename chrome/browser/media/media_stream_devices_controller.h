@@ -102,9 +102,10 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   // Returns true if the origin is a secure scheme, otherwise returns false.
   bool IsSchemeSecure() const;
 
-  // Sets the permission of the origin of the request. This is triggered when
-  // the users deny the request or allow the request for https sites.
-  void SetPermission(bool allowed) const;
+  // Store the permission to use media devices for the origin of the request.
+  // This is triggered when the users deny the request or allow the request
+  // for https sites.
+  void StorePermission(bool allowed) const;
 
   // Notifies the content setting UI that the media stream access request or
   // part of the request is accepted.
