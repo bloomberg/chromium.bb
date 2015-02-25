@@ -28,7 +28,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
-#include "ui/wm/core/shadow_types.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/shell_integration_linux.h"
@@ -217,8 +216,16 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   init_params.delegate = this;
   init_params.remove_standard_frame = IsFrameless() || has_frame_color_;
   init_params.use_system_default_icon = true;
-  if (create_params.alpha_enabled)
+  if (create_params.alpha_enabled) {
     init_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+
+    // The given window is most likely not rectangular since it uses
+    // transparency and has no standard frame, don't show a shadow for it.
+    // TODO(skuhne): If we run into an application which should have a shadow
+    // but does not have, a new attribute has to be added.
+    if (IsFrameless())
+      init_params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  }
   init_params.keep_on_top = create_params.always_on_top;
   init_params.visible_on_all_workspaces =
       create_params.visible_on_all_workspaces;
@@ -258,15 +265,6 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
       widget()->CenterWindow(window_bounds.size());
     else
       widget()->SetBounds(window_bounds);
-  }
-
-  if (IsFrameless() &&
-      init_params.opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW) {
-    // The given window is most likely not rectangular since it uses
-    // transparency and has no standard frame, don't show a shadow for it.
-    // TODO(skuhne): If we run into an application which should have a shadow
-    // but does not have, a new attribute has to be added.
-    wm::SetShadowType(widget()->GetNativeWindow(), wm::SHADOW_TYPE_NONE);
   }
 
 #if defined(OS_CHROMEOS)
