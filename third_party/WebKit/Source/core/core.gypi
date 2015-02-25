@@ -3497,6 +3497,7 @@
             'svg/properties/SVGPropertyTearOff.cpp',
         ],
         'core_dictionary_idl_files': [
+            'animation/AnimationTimingProperties.idl',
             'animation/ComputedTimingProperties.idl',
             'css/FontFaceDescriptors.idl',
             'css/MediaQueryListEventInit.idl',
@@ -3535,6 +3536,8 @@
             'storage/StorageEventInit.idl',
         ],
         'generated_core_dictionary_files': [
+            '<(blink_core_output_dir)/animation/AnimationTimingProperties.cpp',
+            '<(blink_core_output_dir)/animation/AnimationTimingProperties.h',
             '<(blink_core_output_dir)/animation/ComputedTimingProperties.cpp',
             '<(blink_core_output_dir)/animation/ComputedTimingProperties.h',
             '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',

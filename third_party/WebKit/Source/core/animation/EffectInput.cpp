@@ -32,6 +32,7 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
@@ -118,6 +119,15 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
     keyframeEffectModel->forceConversionsToAnimatableValues(element);
 
     return keyframeEffectModel;
+}
+
+PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, const AnimationEffectOrDictionarySequence& effectInput, ExceptionState& exceptionState)
+{
+    if (effectInput.isAnimationEffect())
+        return effectInput.getAsAnimationEffect();
+    if (effectInput.isDictionarySequence())
+        return convert(element, effectInput.getAsDictionarySequence(), exceptionState);
+    return nullptr;
 }
 
 } // namespace blink

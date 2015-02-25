@@ -31,10 +31,9 @@
 // http://dev.w3.org/fxtf/web-animations/#idl-def-Animation
 
 [
-    // FIXME: should be optional union type http://crbug.com/240176
-    Constructor(Element? target, sequence<Dictionary> keyframes),
-    Constructor(Element? target, sequence<Dictionary> keyframes, double timingInput),
-    Constructor(Element? target, sequence<Dictionary> keyframes, Dictionary timingInput),
+    // FIXME: the third argument should be "optional (unrestricted double or AnimationTimingProperties) timing".
+    Constructor(Element? target, sequence<Dictionary> keyframes, optional unrestricted double timing),
+    Constructor(Element? target, sequence<Dictionary> keyframes, AnimationTimingProperties timing),
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI,
 ] interface Animation : AnimationNode {

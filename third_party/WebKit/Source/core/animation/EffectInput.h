@@ -11,6 +11,7 @@
 namespace blink {
 
 class AnimationEffect;
+class AnimationEffectOrDictionarySequence;
 class Dictionary;
 class Element;
 class ExceptionState;
@@ -18,6 +19,7 @@ class ExceptionState;
 class EffectInput {
 public:
     static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const AnimationEffectOrDictionarySequence&, ExceptionState&);
 };
 
 } // namespace blink

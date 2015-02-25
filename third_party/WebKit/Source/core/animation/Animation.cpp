@@ -36,6 +36,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/AnimationTimingProperties.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -51,34 +52,19 @@ PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* target, PassRefPtrW
     return adoptRefWillBeNoop(new Animation(target, effect, timing, priority, eventDelegate));
 }
 
-PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Dictionary& timingInputDictionary)
-{
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    return create(element, effect, TimingInput::convert(timingInputDictionary));
-}
-PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration)
-{
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    return create(element, effect, TimingInput::convert(duration));
-}
-PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr<AnimationEffect> effect)
-{
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    return create(element, effect, Timing());
-}
-PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState& exceptionState)
-{
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    if (element)
-        UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
-    return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(timingInputDictionary));
-}
 PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
-        UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectDoubleTiming);
+        UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(duration));
+}
+PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const AnimationTimingProperties& timingInput, ExceptionState& exceptionState)
+{
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    if (element)
+        UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(timingInput));
 }
 PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {

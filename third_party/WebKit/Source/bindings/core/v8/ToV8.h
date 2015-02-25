@@ -16,6 +16,7 @@
 namespace blink {
 
 class DOMWindow;
+class Dictionary;
 class EventTarget;
 class WorkerGlobalScope;
 
@@ -180,6 +181,14 @@ inline v8::Handle<v8::Value> toV8(const ToV8UndefinedGenerator&  value, v8::Hand
 inline v8::Handle<v8::Value> toV8(const ScriptValue& value, v8::Handle<v8::Object> creationContext, v8::Isolate*)
 {
     return value.v8Value();
+}
+
+// Dictionary
+
+inline v8::Handle<v8::Value> toV8(const Dictionary& value, v8::Handle<v8::Object> creationContext, v8::Isolate*)
+{
+    ASSERT_NOT_REACHED();
+    return v8::Handle<v8::Value>();
 }
 
 // Array

@@ -10,10 +10,11 @@
 namespace blink {
 
 class Dictionary;
+class AnimationTimingProperties;
 
 class TimingInput {
 public:
-    static Timing convert(const Dictionary& timingInputDictionary);
+    static Timing convert(const AnimationTimingProperties& timingInput);
     static Timing convert(double duration);
 
     static void setStartDelay(Timing&, double startDelay);

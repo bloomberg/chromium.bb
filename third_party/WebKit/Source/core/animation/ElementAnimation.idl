@@ -33,8 +33,9 @@
 // http://dev.w3.org/fxtf/web-animations/#idl-def-Animatable
 
 partial interface Element {
-    // FIXME: needs support for union types http://crbug.com/240176
-    // AnimationPlayer animate((AnimationEffect or sequence<Dictionary>)? effect, optional (double or Dictionary) timing);
-    [Custom, RaisesException] AnimationPlayer animate(object effect, optional object timing);
+    // FIXME: Union types with dictionary type members doesn't work (yet).
+    // AnimationPlayer animate((AnimationEffect or sequence<Dictionary>)? effect, optional (double or AnimationTimingProperties) timing);
+    [RaisesException] AnimationPlayer animate((AnimationEffect or sequence<Dictionary>)? effect, optional double timing);
+    [RaisesException] AnimationPlayer animate((AnimationEffect or sequence<Dictionary>)? effect, AnimationTimingProperties timing);
     [RuntimeEnabled=WebAnimationsAPI] sequence<AnimationPlayer> getAnimationPlayers();
 };

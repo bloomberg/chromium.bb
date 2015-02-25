@@ -15,7 +15,6 @@
             'V8DedicatedWorkerGlobalScopeCustom.cpp',
             'V8DevToolsHostCustom.cpp',
             'V8DocumentCustom.cpp',
-            'V8ElementCustom.cpp',
             'V8ErrorEventCustom.cpp',
             'V8EventTargetCustom.cpp',
             'V8FileCustom.cpp',
