@@ -108,10 +108,6 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan):
       # be a lot of incomplete stack traces in the reports.
       extra_env['LD_LIBRARY_PATH'] = '/usr/lib/x86_64-linux-gnu/debug:'
 
-    suppressions_file = os.path.join(ROOT_DIR, 'tools', 'lsan',
-        'suppressions.txt')
-    lsan_options += ['suppressions=%s' % suppressions_file,
-                     'print_suppressions=1']
     extra_env['LSAN_OPTIONS'] = ' '.join(lsan_options)
 
   if msan:
