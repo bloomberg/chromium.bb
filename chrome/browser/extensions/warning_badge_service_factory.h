@@ -10,20 +10,19 @@
 
 namespace extensions {
 
-class ExtensionWarningBadgeService;
+class WarningBadgeService;
 
-class ExtensionWarningBadgeServiceFactory
-    : public BrowserContextKeyedServiceFactory {
+class WarningBadgeServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ExtensionWarningBadgeService* GetForBrowserContext(
+  static WarningBadgeService* GetForBrowserContext(
       content::BrowserContext* context);
-  static ExtensionWarningBadgeServiceFactory* GetInstance();
+  static WarningBadgeServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionWarningBadgeServiceFactory>;
+  friend struct DefaultSingletonTraits<WarningBadgeServiceFactory>;
 
-  ExtensionWarningBadgeServiceFactory();
-  ~ExtensionWarningBadgeServiceFactory() override;
+  WarningBadgeServiceFactory();
+  ~WarningBadgeServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation
   KeyedService* BuildServiceInstanceFor(
@@ -32,7 +31,7 @@ class ExtensionWarningBadgeServiceFactory
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWarningBadgeServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(WarningBadgeServiceFactory);
 };
 
 }  // namespace extensions

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_warning_badge_service.h"
+#include "chrome/browser/extensions/warning_badge_service.h"
 
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_warning_badge_service_factory.h"
+#include "chrome/browser/extensions/warning_badge_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -23,7 +23,7 @@ namespace {
 // is redirected to chrome://extensions to inspect the errors.
 class ErrorBadge : public GlobalError {
  public:
-  explicit ErrorBadge(ExtensionWarningBadgeService* badge_service);
+  explicit ErrorBadge(WarningBadgeService* badge_service);
   ~ErrorBadge() override;
 
   // Implementation for GlobalError:
@@ -40,15 +40,17 @@ class ErrorBadge : public GlobalError {
   static int GetMenuItemCommandID();
 
  private:
-  ExtensionWarningBadgeService* badge_service_;
+  WarningBadgeService* badge_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorBadge);
 };
 
-ErrorBadge::ErrorBadge(ExtensionWarningBadgeService* badge_service)
-    : badge_service_(badge_service) {}
+ErrorBadge::ErrorBadge(WarningBadgeService* badge_service)
+    : badge_service_(badge_service) {
+}
 
-ErrorBadge::~ErrorBadge() {}
+ErrorBadge::~ErrorBadge() {
+}
 
 bool ErrorBadge::HasMenuItem() {
   return true;
@@ -70,11 +72,17 @@ void ErrorBadge::ExecuteMenuItem(Browser* browser) {
   chrome::ExecuteCommand(browser, IDC_MANAGE_EXTENSIONS);
 }
 
-bool ErrorBadge::HasBubbleView() { return false; }
+bool ErrorBadge::HasBubbleView() {
+  return false;
+}
 
-bool ErrorBadge::HasShownBubbleView() { return false; }
+bool ErrorBadge::HasShownBubbleView() {
+  return false;
+}
 
-void ErrorBadge::ShowBubbleView(Browser* browser) { NOTREACHED(); }
+void ErrorBadge::ShowBubbleView(Browser* browser) {
+  NOTREACHED();
+}
 
 GlobalErrorBubbleViewBase* ErrorBadge::GetBubbleView() {
   return NULL;
@@ -87,21 +95,22 @@ int ErrorBadge::GetMenuItemCommandID() {
 
 }  // namespace
 
-ExtensionWarningBadgeService::ExtensionWarningBadgeService(Profile* profile)
+WarningBadgeService::WarningBadgeService(Profile* profile)
     : profile_(profile), warning_service_observer_(this) {
   DCHECK(CalledOnValidThread());
   warning_service_observer_.Add(WarningService::Get(profile_));
 }
 
-ExtensionWarningBadgeService::~ExtensionWarningBadgeService() {}
-
-// static
-ExtensionWarningBadgeService* ExtensionWarningBadgeService::Get(
-    content::BrowserContext* context) {
-  return ExtensionWarningBadgeServiceFactory::GetForBrowserContext(context);
+WarningBadgeService::~WarningBadgeService() {
 }
 
-void ExtensionWarningBadgeService::SuppressCurrentWarnings() {
+// static
+WarningBadgeService* WarningBadgeService::Get(
+    content::BrowserContext* context) {
+  return WarningBadgeServiceFactory::GetForBrowserContext(context);
+}
+
+void WarningBadgeService::SuppressCurrentWarnings() {
   DCHECK(CalledOnValidThread());
   size_t old_size = suppressed_warnings_.size();
 
@@ -112,16 +121,16 @@ void ExtensionWarningBadgeService::SuppressCurrentWarnings() {
     UpdateBadgeStatus();
 }
 
-const WarningSet& ExtensionWarningBadgeService::GetCurrentWarnings() const {
+const WarningSet& WarningBadgeService::GetCurrentWarnings() const {
   return WarningService::Get(profile_)->warnings();
 }
 
-void ExtensionWarningBadgeService::ExtensionWarningsChanged() {
+void WarningBadgeService::ExtensionWarningsChanged() {
   DCHECK(CalledOnValidThread());
   UpdateBadgeStatus();
 }
 
-void ExtensionWarningBadgeService::UpdateBadgeStatus() {
+void WarningBadgeService::UpdateBadgeStatus() {
   const std::set<Warning>& warnings = GetCurrentWarnings();
   bool non_suppressed_warnings_exist = false;
   for (std::set<Warning>::const_iterator i = warnings.begin();
@@ -134,7 +143,7 @@ void ExtensionWarningBadgeService::UpdateBadgeStatus() {
   ShowBadge(non_suppressed_warnings_exist);
 }
 
-void ExtensionWarningBadgeService::ShowBadge(bool show) {
+void WarningBadgeService::ShowBadge(bool show) {
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(profile_);
   GlobalError* error = service->GetGlobalErrorByMenuItemCommandID(

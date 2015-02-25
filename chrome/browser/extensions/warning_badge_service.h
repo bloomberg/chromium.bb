@@ -11,22 +11,20 @@
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
 
-// TODO(battre): Rename ExtensionWarningBadgeService to WarningBadgeService.
-
 class Profile;
 
 namespace extensions {
 
 // A service that is responsible for showing an extension warning badge on the
 // wrench menu.
-class ExtensionWarningBadgeService : public KeyedService,
-                                     public WarningService::Observer,
-                                     public base::NonThreadSafe {
+class WarningBadgeService : public KeyedService,
+                            public WarningService::Observer,
+                            public base::NonThreadSafe {
  public:
-  explicit ExtensionWarningBadgeService(Profile* profile);
-  ~ExtensionWarningBadgeService() override;
+  explicit WarningBadgeService(Profile* profile);
+  ~WarningBadgeService() override;
 
-  static ExtensionWarningBadgeService* Get(content::BrowserContext* context);
+  static WarningBadgeService* Get(content::BrowserContext* context);
 
   // Black lists all currently active extension warnings, so that they do not
   // trigger a warning badge again for the life-time of the browsing session.
@@ -51,7 +49,7 @@ class ExtensionWarningBadgeService : public KeyedService,
   // Warnings that do not trigger a badge on the wrench menu.
   WarningSet suppressed_warnings_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWarningBadgeService);
+  DISALLOW_COPY_AND_ASSIGN(WarningBadgeService);
 };
 
 }  // namespace extensions

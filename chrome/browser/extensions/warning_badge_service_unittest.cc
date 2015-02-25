@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_warning_badge_service.h"
+#include "chrome/browser/extensions/warning_badge_service.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,8 +19,8 @@ namespace {
 
 class TestExtensionWarningSet : public WarningService {
  public:
-  explicit TestExtensionWarningSet(Profile* profile) : WarningService(profile) {
-  }
+  explicit TestExtensionWarningSet(Profile* profile)
+      : WarningService(profile) {}
   ~TestExtensionWarningSet() override {}
 
   void AddWarning(const Warning& warning) {
@@ -30,13 +30,11 @@ class TestExtensionWarningSet : public WarningService {
   }
 };
 
-class TestExtensionWarningBadgeService : public ExtensionWarningBadgeService {
+class TestWarningBadgeService : public WarningBadgeService {
  public:
-  TestExtensionWarningBadgeService(Profile* profile,
-                                   WarningService* warning_service)
-      : ExtensionWarningBadgeService(profile),
-        warning_service_(warning_service) {}
-  ~TestExtensionWarningBadgeService() override {}
+  TestWarningBadgeService(Profile* profile, WarningService* warning_service)
+      : WarningBadgeService(profile), warning_service_(warning_service) {}
+  ~TestWarningBadgeService() override {}
 
   const std::set<Warning>& GetCurrentWarnings() const override {
     return warning_service_->warnings();
@@ -50,7 +48,7 @@ bool HasBadge(Profile* profile) {
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(profile);
   return service->GetGlobalErrorByMenuItemCommandID(IDC_EXTENSION_ERRORS) !=
-      NULL;
+         NULL;
 }
 
 const char ext1_id[] = "extension1";
@@ -60,10 +58,10 @@ const char ext2_id[] = "extension2";
 
 // Check that no badge appears if it has been suppressed for a specific
 // warning.
-TEST(ExtensionWarningBadgeServiceTest, SuppressBadgeForCurrentWarnings) {
+TEST(WarningBadgeServiceTest, SuppressBadgeForCurrentWarnings) {
   TestingProfile profile;
   TestExtensionWarningSet warnings(&profile);
-  TestExtensionWarningBadgeService badge_service(&profile, &warnings);
+  TestWarningBadgeService badge_service(&profile, &warnings);
   warnings.AddObserver(&badge_service);
 
   // Insert first warning.
@@ -91,4 +89,4 @@ TEST(ExtensionWarningBadgeServiceTest, SuppressBadgeForCurrentWarnings) {
   warnings.RemoveObserver(&badge_service);
 }
 
-}   // namespace extensions
+}  // namespace extensions

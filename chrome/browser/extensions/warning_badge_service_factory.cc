@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_warning_badge_service_factory.h"
+#include "chrome/browser/extensions/warning_badge_service_factory.h"
 
-#include "chrome/browser/extensions/extension_warning_badge_service.h"
+#include "chrome/browser/extensions/warning_badge_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -15,42 +15,39 @@ using content::BrowserContext;
 namespace extensions {
 
 // static
-ExtensionWarningBadgeService*
-ExtensionWarningBadgeServiceFactory::GetForBrowserContext(
+WarningBadgeService* WarningBadgeServiceFactory::GetForBrowserContext(
     BrowserContext* context) {
-  return static_cast<ExtensionWarningBadgeService*>(
+  return static_cast<WarningBadgeService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-ExtensionWarningBadgeServiceFactory*
-ExtensionWarningBadgeServiceFactory::GetInstance() {
-  return Singleton<ExtensionWarningBadgeServiceFactory>::get();
+WarningBadgeServiceFactory* WarningBadgeServiceFactory::GetInstance() {
+  return Singleton<WarningBadgeServiceFactory>::get();
 }
 
-ExtensionWarningBadgeServiceFactory::ExtensionWarningBadgeServiceFactory()
+WarningBadgeServiceFactory::WarningBadgeServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "ExtensionWarningBadgeService",
+          "WarningBadgeService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WarningServiceFactory::GetInstance());
 }
 
-ExtensionWarningBadgeServiceFactory::~ExtensionWarningBadgeServiceFactory() {
+WarningBadgeServiceFactory::~WarningBadgeServiceFactory() {
 }
 
-KeyedService* ExtensionWarningBadgeServiceFactory::BuildServiceInstanceFor(
+KeyedService* WarningBadgeServiceFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
-  return new ExtensionWarningBadgeService(static_cast<Profile*>(context));
+  return new WarningBadgeService(static_cast<Profile*>(context));
 }
 
-BrowserContext* ExtensionWarningBadgeServiceFactory::GetBrowserContextToUse(
+BrowserContext* WarningBadgeServiceFactory::GetBrowserContextToUse(
     BrowserContext* context) const {
   // Redirected in incognito.
   return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
-bool ExtensionWarningBadgeServiceFactory::ServiceIsCreatedWithBrowserContext()
-    const {
+bool WarningBadgeServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
