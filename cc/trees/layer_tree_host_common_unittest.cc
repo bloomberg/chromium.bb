@@ -8775,5 +8775,42 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   EXPECT_FALSE(animated->visible_rect_from_property_trees().IsEmpty());
 }
 
+// Verify that having an animated filter (but no current filter, as these
+// are mutually exclusive) correctly creates a render surface.
+TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> grandchild = Layer::Create();
+  root->AddChild(child);
+  child->AddChild(grandchild);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(grandchild.get(), identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false);
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  AddAnimatedFilterToLayer(child.get(), 10.0, 0.1f, 0.2f);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(root->render_surface());
+  EXPECT_TRUE(child->render_surface());
+  EXPECT_FALSE(grandchild->render_surface());
+
+  EXPECT_TRUE(root->filters().IsEmpty());
+  EXPECT_TRUE(child->filters().IsEmpty());
+  EXPECT_TRUE(grandchild->filters().IsEmpty());
+
+  EXPECT_FALSE(root->FilterIsAnimating());
+  EXPECT_TRUE(child->FilterIsAnimating());
+  EXPECT_FALSE(grandchild->FilterIsAnimating());
+}
+
 }  // namespace
 }  // namespace cc

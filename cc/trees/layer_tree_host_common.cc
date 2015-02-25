@@ -591,6 +591,13 @@ static bool SubtreeShouldRenderToSeparateSurface(
     return true;
   }
 
+  // If the layer will use a CSS filter.  In this case, the animation
+  // will start and add a filter to this layer, so it needs a surface.
+  if (layer->FilterIsAnimating()) {
+    DCHECK(!is_root);
+    return true;
+  }
+
   int num_descendants_that_draw_content =
       layer->NumDescendantsThatDrawContent();
 
@@ -1198,20 +1205,22 @@ struct PreCalculateMetaInformationRecursiveData {
   }
 };
 
-static bool ValidateRenderSurface(LayerImpl* layer) {
+static void ValidateRenderSurface(LayerImpl* layer) {
   // This test verifies that there are no cases where a LayerImpl needs
   // a render surface, but doesn't have one.
   if (layer->render_surface())
-    return true;
+    return;
 
-  return layer->filters().IsEmpty() && layer->background_filters().IsEmpty() &&
-         !layer->mask_layer() && !layer->replica_layer() &&
-         !IsRootLayer(layer) && !layer->is_root_for_isolated_group() &&
-         !layer->HasCopyRequest();
+  DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
+  DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
+  DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
+  DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
+  DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
+  DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
+  DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
 }
 
-static bool ValidateRenderSurface(Layer* layer) {
-  return true;
+static void ValidateRenderSurface(Layer* layer) {
 }
 
 // Recursively walks the layer tree to compute any information that is needed
@@ -1220,7 +1229,7 @@ template <typename LayerType>
 static void PreCalculateMetaInformation(
     LayerType* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
-  DCHECK(ValidateRenderSurface(layer));
+  ValidateRenderSurface(layer);
 
   layer->draw_properties().sorted_for_recursion = false;
   layer->draw_properties().has_child_with_a_scroll_parent = false;
