@@ -97,7 +97,9 @@ cvox.ChromeTts.prototype.addBridgeListener = function() {
           var id = msg['id'];
           var func = cvox.ChromeTts.functionMap[id];
           if (func != undefined) {
-            func();
+            if (!msg['cleanupOnly']) {
+              func();
+            }
             delete cvox.ChromeTts.functionMap[id];
           }
         }

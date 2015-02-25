@@ -56,8 +56,6 @@ Output = function() {
   this.speechStartCallback_;
   /** @type {function()} */
   this.speechEndCallback_;
-  /** @type {function()} */
-  this.speechInterruptedCallback_;
 
   /**
    * Current global options.
@@ -305,40 +303,17 @@ Output.prototype = {
   },
 
   /**
-   * Triggers callback for a speech event.
-   * @param {function()} callback
-   */
-  onSpeechInterrupted: function(callback) {
-    this.speechInterruptedCallback_ = callback;
-    return this;
-  },
-
-  /**
    * Executes all specified output.
    */
   go: function() {
     // Speech.
     var buff = this.buffer_;
-
-    var onEvent = function(evt) {
-      switch (evt.type) {
-        case 'start':
-          this.speechStartCallback_();
-          break;
-        case 'end':
-          this.speechEndCallback_();
-          break;
-        case 'interrupted':
-          this.speechInterruptedCallback_ && this.speechInterruptedCallback_();
-          break;
-      }
-    }.bind(this);
-
     if (buff.toString()) {
-      if (this.speechStartCallback_ ||
-          this.speechEndCallback_ ||
-          this.speechInterruptedCallback_)
-        this.speechProperties_['onEvent'] = onEvent;
+      if (this.speechStartCallback_)
+        this.speechProperties_['startCallback'] = this.speechStartCallback_;
+      if (this.speechEndCallback_) {
+        this.speechProperties_['endCallback'] = this.speechEndCallback_;
+      }
 
       cvox.ChromeVox.tts.speak(
           buff.toString(), cvox.QueueMode.FLUSH, this.speechProperties_);
@@ -701,7 +676,7 @@ Output.prototype = {
    */
   addToSpannable_: function(spannable, value, opt_options) {
     opt_options = opt_options || {ifEmpty: false, annotation: undefined};
-    if (value.length == 0 && !opt_options.annotation)
+    if ((!value || value.length == 0) && !opt_options.annotation)
       return;
 
     var spannableToAdd = new cvox.Spannable(value, opt_options.annotation);

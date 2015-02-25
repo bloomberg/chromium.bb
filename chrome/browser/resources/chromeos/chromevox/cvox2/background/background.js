@@ -185,8 +185,6 @@ Background.prototype = {
           new Output().withSpeechAndBraille(
                   this.currentRange_, prevRange, Output.EventType.NAVIGATE)
               .onSpeechEnd(function() { continueReading(prevRange); })
-              .onSpeechInterrupted(
-                  function() { global.isReadingContinuously = false; })
               .go();
           prevRange = this.currentRange_;
           this.currentRange_ =

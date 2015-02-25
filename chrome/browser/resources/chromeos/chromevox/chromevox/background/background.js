@@ -381,14 +381,16 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
       break;
     case 'TTS':
       if (msg['startCallbackId'] != undefined) {
-        msg['properties']['startCallback'] = function() {
+        msg['properties']['startCallback'] = function(opt_cleanupOnly) {
           port.postMessage({'message': 'TTS_CALLBACK',
+                            'cleanupOnly': opt_cleanupOnly,
                             'id': msg['startCallbackId']});
         };
       }
       if (msg['endCallbackId'] != undefined) {
-        msg['properties']['endCallback'] = function() {
+        msg['properties']['endCallback'] = function(opt_cleanupOnly) {
           port.postMessage({'message': 'TTS_CALLBACK',
+                            'cleanupOnly': opt_cleanupOnly,
                             'id': msg['endCallbackId']});
         };
       }

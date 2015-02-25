@@ -348,9 +348,7 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   this.currentUtterance_ = this.utteranceQueue_.shift();
   var utteranceId = this.currentUtterance_.id;
 
-  this.currentUtterance_.properties['onEvent'] =
-      this.currentUtterance_.properties['onEvent'] ||
-          goog.bind(function(event) {
+  this.currentUtterance_.properties['onEvent'] = goog.bind(function(event) {
             this.onTtsEvent_(event, utteranceId);
           },
   this);
@@ -400,10 +398,19 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
       }
       break;
     case 'end':
+      // End callbacks could cause additional speech to queue up.
+      this.currentUtterance_ = null;
       this.capturingTtsEventListeners_.forEach(function(listener) {
         listener.onTtsEnd();
       });
-    // Intentionally falls through.
+      if (utterance.properties['endCallback']) {
+        try {
+          utterance.properties['endCallback']();
+        } catch (e) {
+        }
+      }
+      this.startSpeakingNextItemInQueue_();
+      break;
     case 'interrupted':
       this.cancelUtterance_(utterance);
       this.currentUtterance_ = null;
@@ -457,7 +464,7 @@ cvox.TtsBackground.prototype.shouldCancel_ =
 cvox.TtsBackground.prototype.cancelUtterance_ = function(utterance) {
   if (utterance && utterance.properties['endCallback']) {
     try {
-      utterance.properties['endCallback']();
+      utterance.properties['endCallback'](true);
     } catch (e) {
     }
   }
@@ -486,6 +493,7 @@ cvox.TtsBackground.prototype.stop = function() {
   for (var i = 0; i < this.utteranceQueue_.length; i++) {
     this.cancelUtterance_(this.utteranceQueue_[i]);
   }
+
   this.utteranceQueue_.length = 0;
 
   chrome.tts.stop();
