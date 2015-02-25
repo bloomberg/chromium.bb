@@ -3780,8 +3780,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
 
   // Check that we logged all the headers correctly
   pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_SPDY_SESSION_SYN_STREAM,
+      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_SYN_STREAM,
       net::NetLog::PHASE_NONE);
 
   base::ListValue* header_list;

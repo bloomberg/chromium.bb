@@ -78,7 +78,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
   scoped_ptr<NetLogLogger> logger(new NetLogLogger(file, *constants));
 
   const int kDummyId = 1;
-  NetLog::Source source(NetLog::SOURCE_SPDY_SESSION, kDummyId);
+  NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
   NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE,
                                source,
                                NetLog::PHASE_BEGIN,
@@ -109,7 +109,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
   scoped_ptr<NetLogLogger> logger(new NetLogLogger(file, *constants));
 
   const int kDummyId = 1;
-  NetLog::Source source(NetLog::SOURCE_SPDY_SESSION, kDummyId);
+  NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
   NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE,
                                source,
                                NetLog::PHASE_BEGIN,

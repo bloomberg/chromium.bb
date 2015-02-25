@@ -106,7 +106,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       info->request_headers_text = request_line + request_headers.ToString();
       break;
     }
-    case net::NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS: {
+    case net::NetLog::TYPE_HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS: {
       scoped_ptr<base::Value> event_params(entry.ParametersToValue());
       net::SpdyHeaderBlock request_headers;
 

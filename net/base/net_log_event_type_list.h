@@ -1049,14 +1049,14 @@ EVENT_TYPE(HTTP_TRANSACTION_SEND_REQUEST_HEADERS)
 //   }
 EVENT_TYPE(HTTP_TRANSACTION_SEND_REQUEST_BODY)
 
-// This event is sent for a HTTP request over a SPDY stream.
+// This event is sent for a HTTP request over an HTTP/2 stream.
 // The following parameters are attached:
 //   {
 //     "headers": <The list of header:value pairs>,
 //   }
-EVENT_TYPE(HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS)
+EVENT_TYPE(HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS)
 
-// This event is sent for a HTTP request over a SPDY stream.
+// This event is sent for a HTTP request over a QUIC stream.
 // The following parameters are attached:
 //   {
 //     "headers": <The list of header:value pairs>,
@@ -1100,25 +1100,27 @@ EVENT_TYPE(HTTP_TRANSACTION_RESTART_AFTER_ERROR)
 //     "host": <The host-port string>,
 //     "proxy": <The Proxy PAC string>,
 //   }
-EVENT_TYPE(SPDY_SESSION)
+EVENT_TYPE(HTTP2_SESSION)
 
-// The SpdySession has been initilized with a socket.
+// The SpdySession has been initialized with a socket.
 //   {
 //     "source_dependency":  <Source identifier for the underlying socket>,
 //   }
-EVENT_TYPE(SPDY_SESSION_INITIALIZED)
+EVENT_TYPE(HTTP2_SESSION_INITIALIZED)
 
-// This event is sent for a SPDY SYN_STREAM.
+// This event is sent for a SPDY SYN_STREAM.  Note that there is no SYN_STREAM
+// frame in HTTP/2.
 // The following parameters are attached:
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
 //     "id": <The stream id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SYN_STREAM)
+EVENT_TYPE(HTTP2_SESSION_SYN_STREAM)
 
 // This event is sent for a SPDY SYN_STREAM pushed by the server, where a
-// net::URLRequest is already waiting for the stream.
+// net::URLRequest is already waiting for the stream.  Note that there is no
+// SYN_STREAM frame in HTTP/2.
 // The following parameters are attached:
 //   {
 //     "flags": <The control frame flags>,
@@ -1126,59 +1128,60 @@ EVENT_TYPE(SPDY_SESSION_SYN_STREAM)
 //     "id": <The stream id>,
 //     "associated_stream": <The stream id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_PUSHED_SYN_STREAM)
+EVENT_TYPE(HTTP2_SESSION_PUSHED_SYN_STREAM)
 
-// This event is sent for a sending SPDY HEADERS frame.
+// This event is sent for sending an HTTP/2 (or SPDY) HEADERS frame.
 // The following parameters are attached:
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
 //     "id": <The stream id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SEND_HEADERS)
+EVENT_TYPE(HTTP2_SESSION_SEND_HEADERS)
 
-// This event is sent for a receiving SPDY HEADERS frame.
+// This event is sent for receiving an HTTP/2 (or SPDY) HEADERS frame.
 // The following parameters are attached:
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
 //     "id": <The stream id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECV_HEADERS)
+EVENT_TYPE(HTTP2_SESSION_RECV_HEADERS)
 
-// This event is sent for a SPDY SYN_REPLY.
+// This event is sent for a SPDY SYN_REPLY.  Not that there is no SYN_REPLY
+// frame in HTTP/2.
 // The following parameters are attached:
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
 //     "id": <The stream id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SYN_REPLY)
+EVENT_TYPE(HTTP2_SESSION_SYN_REPLY)
 
-// On sending a SPDY SETTINGS frame.
+// On sending an HTTP/2 (or SPDY) SETTINGS frame.
 // The following parameters are attached:
 //   {
 //     "settings": <The list of setting id, flags and value>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SEND_SETTINGS)
+EVENT_TYPE(HTTP2_SESSION_SEND_SETTINGS)
 
-// Receipt of a SPDY SETTINGS frame is received.
+// Receipt of an HTTP/2 (or SPDY) SETTINGS frame is received.
 // The following parameters are attached:
 //   {
 //     "host": <The host-port string>,
 //     "clear_persisted": <Boolean indicating whether to clear all persisted
 //                         settings data for the given host>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECV_SETTINGS)
+EVENT_TYPE(HTTP2_SESSION_RECV_SETTINGS)
 
-// Receipt of a SPDY SETTING frame.
+// Receipt of an individual HTTP/2 (or SPDY) setting.
 // The following parameters are attached:
 //   {
 //     "id":    <The setting id>,
 //     "flags": <The setting flags>,
 //     "value": <The setting value>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECV_SETTING)
+EVENT_TYPE(HTTP2_SESSION_RECV_SETTING)
 
 // The receipt of a RST_STREAM
 // The following parameters are attached:
@@ -1186,7 +1189,7 @@ EVENT_TYPE(SPDY_SESSION_RECV_SETTING)
 //     "stream_id": <The stream ID for the window update>,
 //     "status": <The reason for the RST_STREAM>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RST_STREAM)
+EVENT_TYPE(HTTP2_SESSION_RST_STREAM)
 
 // Sending of a RST_STREAM
 // The following parameters are attached:
@@ -1195,17 +1198,17 @@ EVENT_TYPE(SPDY_SESSION_RST_STREAM)
 //     "status": <The reason for the RST_STREAM>,
 //     "description": <The textual description for the RST_STREAM>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SEND_RST_STREAM)
+EVENT_TYPE(HTTP2_SESSION_SEND_RST_STREAM)
 
-// Sending of a SPDY PING frame.
+// Sending of an HTTP/2 (or SPDY) PING frame.
 // The following parameters are attached:
 //   {
 //     "unique_id": <The unique id of the PING message>,
 //     "type": <The PING type ("sent", "received")>,
 //   }
-EVENT_TYPE(SPDY_SESSION_PING)
+EVENT_TYPE(HTTP2_SESSION_PING)
 
-// Receipt of a SPDY GOAWAY frame.
+// Receipt of an HTTP/2 (or SPDY) GOAWAY frame.
 // The following parameters are attached:
 //   {
 //     "last_accepted_stream_id": <Last stream id accepted by the server, duh>,
@@ -1213,43 +1216,37 @@ EVENT_TYPE(SPDY_SESSION_PING)
 //     "unclaimed_streams":       <Number of unclaimed push streams>,
 //     "status":                  <The reason for the GOAWAY>,
 //   }
-EVENT_TYPE(SPDY_SESSION_GOAWAY)
+EVENT_TYPE(HTTP2_SESSION_GOAWAY)
 
-// Receipt of a SPDY WINDOW_UPDATE frame (which controls the send window).
+// Receipt of an HTTP/2 (or SPDY) WINDOW_UPDATE frame (which controls the send
+// window).
 //   {
 //     "stream_id": <The stream ID for the window update>,
 //     "delta"    : <The delta window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECEIVED_WINDOW_UPDATE_FRAME)
+EVENT_TYPE(HTTP2_SESSION_RECEIVED_WINDOW_UPDATE_FRAME)
 
-// Sending of a SPDY WINDOW_UPDATE frame (which controls the receive window).
+// Sending of an HTTP/2 (or SPDY) WINDOW_UPDATE frame (which controls the
+// receive window).
 //   {
 //     "stream_id": <The stream ID for the window update>,
 //     "delta"    : <The delta window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SENT_WINDOW_UPDATE_FRAME)
+EVENT_TYPE(HTTP2_SESSION_SENT_WINDOW_UPDATE_FRAME)
 
 // This event indicates that the send window has been updated for a session.
 //   {
 //     "delta":      <The window size delta>,
 //     "new_window": <The new window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_UPDATE_SEND_WINDOW)
+EVENT_TYPE(HTTP2_SESSION_UPDATE_SEND_WINDOW)
 
 // This event indicates that the recv window has been updated for a session.
 //   {
 //     "delta":      <The window size delta>,
 //     "new_window": <The new window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_UPDATE_RECV_WINDOW)
-
-// Sending of a SPDY CREDENTIAL frame (which sends a certificate or
-// certificate chain to the server).
-//   {
-//     "slot"     : <The slot that this certificate should be stored in>,
-//     "origin"   : <The origin this certificate should be used for>,
-//   }
-EVENT_TYPE(SPDY_SESSION_SEND_CREDENTIAL)
+EVENT_TYPE(HTTP2_SESSION_UPDATE_RECV_WINDOW)
 
 // Sending a data frame
 //   {
@@ -1257,7 +1254,7 @@ EVENT_TYPE(SPDY_SESSION_SEND_CREDENTIAL)
 //     "length"   : <The size of data sent>,
 //     "flags"    : <Send data flags>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SEND_DATA)
+EVENT_TYPE(HTTP2_SESSION_SEND_DATA)
 
 // Receiving a data frame
 //   {
@@ -1265,50 +1262,50 @@ EVENT_TYPE(SPDY_SESSION_SEND_DATA)
 //     "length"   : <The size of data received>,
 //     "flags"    : <Receive data flags>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECV_DATA)
+EVENT_TYPE(HTTP2_SESSION_RECV_DATA)
 
-// This event is sent for a receiving SPDY PUSH_PROMISE frame.
+// This event is sent for receiving an HTTP/2 (or SPDY) PUSH_PROMISE frame.
 // The following parameters are attached:
 //   {
 //     "headers": <The list of header:value pairs>,
 //     "id": <The stream id>,
 //     "promised_stream_id": <The stream id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECV_PUSH_PROMISE)
+EVENT_TYPE(HTTP2_SESSION_RECV_PUSH_PROMISE)
 
 // A stream is stalled by the session send window being closed.
-EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW)
+EVENT_TYPE(HTTP2_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW)
 
 // A stream is stalled by its send window being closed.
-EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW)
+EVENT_TYPE(HTTP2_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW)
 
 // Session is closing
 //   {
 //     "net_error"  : <The error status of the closure>,
 //     "description": <The textual description for the closure>,
 //   }
-EVENT_TYPE(SPDY_SESSION_CLOSE)
+EVENT_TYPE(HTTP2_SESSION_CLOSE)
 
 // Event when the creation of a stream is stalled because we're at
 // the maximum number of concurrent streams.
-EVENT_TYPE(SPDY_SESSION_STALLED_MAX_STREAMS)
+EVENT_TYPE(HTTP2_SESSION_STALLED_MAX_STREAMS)
 
 // Received a value for initial window size in SETTINGS frame with
 // flow control turned off.
-EVENT_TYPE(SPDY_SESSION_INITIAL_WINDOW_SIZE_NO_FLOW_CONTROL)
+EVENT_TYPE(HTTP2_SESSION_INITIAL_WINDOW_SIZE_NO_FLOW_CONTROL)
 
 // Received an out-of-range value for initial window size in SETTINGS
 // frame.
 //   {
 //     "initial_window_size"  : <The initial window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE)
+EVENT_TYPE(HTTP2_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE)
 
 // Updating streams send window size by the delta window size.
 //   {
 //     "delta_window_size"    : <The delta window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE)
+EVENT_TYPE(HTTP2_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE)
 
 // ------------------------------------------------------------------------
 // SpdySessionPool
@@ -1318,49 +1315,50 @@ EVENT_TYPE(SPDY_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE)
 //   {
 //     "source_dependency": <The session id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_POOL_FOUND_EXISTING_SESSION)
+EVENT_TYPE(HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION)
 
 // This event indicates the pool is reusing an existing session from an
 // IP pooling match.
 //   {
 //     "source_dependency": <The session id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL)
+EVENT_TYPE(HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL)
 
 // This event indicates the pool created a new session
 //   {
 //     "source_dependency": <The session id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_POOL_CREATED_NEW_SESSION)
+EVENT_TYPE(HTTP2_SESSION_POOL_CREATED_NEW_SESSION)
 
-// This event indicates that a SSL socket has been upgraded to a SPDY session.
+// This event indicates that a SSL socket has been upgraded to an HTTP/2 (or
+// SPDY) session.
 //   {
 //     "source_dependency": <The session id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET)
+EVENT_TYPE(HTTP2_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET)
 
 // This event indicates that the session has been removed.
 //   {
 //     "source_dependency": <The session id>,
 //   }
-EVENT_TYPE(SPDY_SESSION_POOL_REMOVE_SESSION)
+EVENT_TYPE(HTTP2_SESSION_POOL_REMOVE_SESSION)
 
 // ------------------------------------------------------------------------
 // SpdyStream
 // ------------------------------------------------------------------------
 
-// The begin and end of a SPDY STREAM.
-EVENT_TYPE(SPDY_STREAM)
+// The begin and end of an HTTP/2 (or SPDY) STREAM.
+EVENT_TYPE(HTTP2_STREAM)
 
 // A stream is attached to a pushed stream.
 //   {
 //     "stream_id":  <The stream id>,
 //     "url":        <The url of the pushed resource>,
 //   }
-EVENT_TYPE(SPDY_STREAM_ADOPTED_PUSH_STREAM)
+EVENT_TYPE(HTTP2_STREAM_ADOPTED_PUSH_STREAM)
 
 // A stream is unstalled by flow control.
-EVENT_TYPE(SPDY_STREAM_FLOW_CONTROL_UNSTALLED)
+EVENT_TYPE(HTTP2_STREAM_FLOW_CONTROL_UNSTALLED)
 
 // This event indicates that the send window has been updated for a stream.
 //   {
@@ -1368,7 +1366,7 @@ EVENT_TYPE(SPDY_STREAM_FLOW_CONTROL_UNSTALLED)
 //     "delta":      <The window size delta>,
 //     "new_window": <The new window size>,
 //   }
-EVENT_TYPE(SPDY_STREAM_UPDATE_SEND_WINDOW)
+EVENT_TYPE(HTTP2_STREAM_UPDATE_SEND_WINDOW)
 
 // This event indicates that the recv window has been updated for a stream.
 //   {
@@ -1376,7 +1374,7 @@ EVENT_TYPE(SPDY_STREAM_UPDATE_SEND_WINDOW)
 //     "delta":      <The window size delta>,
 //     "new_window": <The new window size>,
 //   }
-EVENT_TYPE(SPDY_STREAM_UPDATE_RECV_WINDOW)
+EVENT_TYPE(HTTP2_STREAM_UPDATE_RECV_WINDOW)
 
 // This event indicates a stream error
 //   {
@@ -1384,14 +1382,14 @@ EVENT_TYPE(SPDY_STREAM_UPDATE_RECV_WINDOW)
 //     "status":      <The error status>,
 //     "description": <The textual description for the error>,
 //   }
-EVENT_TYPE(SPDY_STREAM_ERROR)
+EVENT_TYPE(HTTP2_STREAM_ERROR)
 
 // ------------------------------------------------------------------------
 // SpdyProxyClientSocket
 // ------------------------------------------------------------------------
 
-EVENT_TYPE(SPDY_PROXY_CLIENT_SESSION)
-// Identifies the SPDY session a source is using.
+EVENT_TYPE(HTTP2_PROXY_CLIENT_SESSION)
+// Identifies the HTTP/2 (or SPDY) session a source is using.
 //   {
 //     "source_dependency":  <Source identifier for the underlying session>,
 //   }

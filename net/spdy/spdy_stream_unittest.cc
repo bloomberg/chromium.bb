@@ -294,8 +294,7 @@ TEST_P(SpdyStreamTest, StreamError) {
 
   // Check that we logged SPDY_STREAM_ERROR correctly.
   int pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_SPDY_STREAM_ERROR,
+      entries, 0, net::NetLog::TYPE_HTTP2_STREAM_ERROR,
       net::NetLog::PHASE_NONE);
 
   int stream_id2;

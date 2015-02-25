@@ -100,7 +100,7 @@ var SourceEntry = (function() {
           if (e.params.host != undefined)
             this.description_ = e.params.host;
           break;
-        case EventSourceType.SPDY_SESSION:
+        case EventSourceType.HTTP2_SESSION:
           if (e.params.host)
             this.description_ = e.params.host + ' (' + e.params.proxy + ')';
           break;

@@ -57,7 +57,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source_net_log.source().ToEventParametersCallback());
   net_log_.AddEvent(
-      NetLog::TYPE_SPDY_PROXY_CLIENT_SESSION,
+      NetLog::TYPE_HTTP2_PROXY_CLIENT_SESSION,
       spdy_stream->net_log().source().ToEventParametersCallback());
 
   spdy_stream_->SetDelegate(this);

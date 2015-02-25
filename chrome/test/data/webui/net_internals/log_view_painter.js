@@ -97,7 +97,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
     }
   }
 
-  // Test with SPDY request headers, which use an object rather than an array.
+  // Test with HTTP/2 request headers, which use an object rather than an array.
   var spdyRequestHeadersEntry = {
     'params': {
       'headers': {
@@ -111,7 +111,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
     'phase': EventPhase.PHASE_BEGIN,
     'source': {'id': 329, 'type': EventSourceType.URL_REQUEST},
     'time': '22468349',
-    'type': EventSourceType.HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS
+    'type': EventSourceType.HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS
   };
   var strippedSpdyRequestHeadersEntry =
       stripCookiesAndLoginInfo(spdyRequestHeadersEntry);
@@ -1757,9 +1757,9 @@ function painterTestStripCookiesURLRequest() {
 }
 
 /**
- * Tests that cookies are NOT stripped from SPDY sessions when stripping is not
- * enabled. This test data was pieced together in order to get a "cookie" and
- * "set-cookie" header.
+ * Tests that cookies are NOT stripped from HTTP/2 sessions when stripping is
+ * not enabled. This test data was pieced together in order to get a "cookie"
+ * and "set-cookie" header.
  */
 function painterTestDontStripCookiesSPDYSession() {
   var testCase = {};
@@ -1787,10 +1787,10 @@ function painterTestDontStripCookiesSPDYSession() {
       'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 153,
-        'type': EventSourceType.SPDY_SESSION
+        'type': EventSourceType.HTTP2_SESSION
       },
       'time': '1012984638',
-      'type': EventType.SPDY_SESSION_SYN_STREAM
+      'type': EventType.HTTP2_SESSION_SYN_STREAM
     },
     {
       'params': {
@@ -1808,15 +1808,15 @@ function painterTestDontStripCookiesSPDYSession() {
       'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 153,
-        'type': EventSourceType.SPDY_SESSION
+        'type': EventSourceType.HTTP2_SESSION
       },
       'time': '1012992266',
-      'type': EventType.SPDY_SESSION_SYN_REPLY
+      'type': EventType.HTTP2_SESSION_SYN_REPLY
     }
   ];
 
   testCase.expectedText =
-    't=1338924082421 [st=   0]  SPDY_SESSION_SYN_STREAM\n' +
+    't=1338924082421 [st=   0]  HTTP2_SESSION_SYN_STREAM\n' +
     '                           --> flags = 1\n' +
     '                           --> :host: mail.google.com\n' +
     '                               :method: GET\n' +
@@ -1830,7 +1830,7 @@ function painterTestDontStripCookiesSPDYSession() {
     '                               cookie: MyMagicPony\n' +
     '                               user-agent: Mozilla/5.0\n' +
     '                           --> stream_id = 1\n' +
-    't=1338924090049 [st=7628]  SPDY_SESSION_SYN_REPLY\n' +
+    't=1338924090049 [st=7628]  HTTP2_SESSION_SYN_REPLY\n' +
     '                           --> flags = 0\n' +
     '                           --> :status: 204 No Content\n' +
     '                               :version: HTTP/1.1\n' +
@@ -1844,7 +1844,8 @@ function painterTestDontStripCookiesSPDYSession() {
 }
 
 /**
- * Tests that cookies are stripped from SPDY sessions when stripping is enabled.
+ * Tests that cookies are stripped from HTTP/2 sessions when stripping is
+ * enabled.
  */
 function painterTestStripCookiesSPDYSession() {
   var testCase = painterTestDontStripCookiesSPDYSession();
@@ -1855,9 +1856,9 @@ function painterTestStripCookiesSPDYSession() {
 }
 
 /**
- * Tests that cookies are NOT stripped from SPDY URL request headers when
- * stripping is not enabled. The difference from the above requests is that SPDY
- * URL request headers use dictionaries rather than lists.
+ * Tests that cookies are NOT stripped from HTTP/2 URL request headers when
+ * stripping is not enabled. The difference from the above requests is that
+ * HTTP/2 URL request headers use dictionaries rather than lists.
  */
 function painterTestSpdyURLRequestDontStripCookies() {
   var testCase = {};
@@ -1877,12 +1878,12 @@ function painterTestSpdyURLRequestDontStripCookies() {
       'phase': EventPhase.PHASE_NONE,
       'source': {'id': 329, 'type': EventSourceType.URL_REQUEST},
       'time': '954124663',
-      'type': EventType.HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS
+      'type': EventType.HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS
     }
   ];
 
   testCase.expectedText =
-'t=1338865223144 [st=0]  HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS\n' +
+'t=1338865223144 [st=0]  HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS\n' +
 '                        --> :host: www.google.com\n' +
 '                            :method: GET\n' +
 '                            :path: /\n' +
@@ -1893,7 +1894,7 @@ function painterTestSpdyURLRequestDontStripCookies() {
 }
 
 /**
- * Tests that cookies are NOT stripped from SPDY URL request headers when
+ * Tests that cookies are NOT stripped from HTTP/2 URL request headers when
  * stripping is not enabled. The difference from the above requests is that
  */
 function painterTestSpdyURLRequestStripCookies() {

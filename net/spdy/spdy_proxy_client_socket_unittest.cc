@@ -1281,8 +1281,8 @@ TEST_P(SpdyProxyClientSocketTest, NetLog) {
   ASSERT_EQ(entry_list.size(), 10u);
   EXPECT_TRUE(LogContainsBeginEvent(entry_list, 0, NetLog::TYPE_SOCKET_ALIVE));
   EXPECT_TRUE(LogContainsEvent(entry_list, 1,
-                  NetLog::TYPE_SPDY_PROXY_CLIENT_SESSION,
-                  NetLog::PHASE_NONE));
+                               NetLog::TYPE_HTTP2_PROXY_CLIENT_SESSION,
+                               NetLog::PHASE_NONE));
   EXPECT_TRUE(LogContainsBeginEvent(entry_list, 2,
                   NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
   EXPECT_TRUE(LogContainsEvent(entry_list, 3,

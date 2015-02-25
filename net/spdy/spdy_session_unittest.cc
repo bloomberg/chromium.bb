@@ -1651,10 +1651,9 @@ TEST_P(SpdySessionTest, Initialize) {
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
-  // Check that we logged TYPE_SPDY_SESSION_INITIALIZED correctly.
+  // Check that we logged TYPE_HTTP2_SESSION_INITIALIZED correctly.
   int pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_SPDY_SESSION_INITIALIZED,
+      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_INITIALIZED,
       net::NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
@@ -1700,8 +1699,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
   int pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_SPDY_SESSION_CLOSE,
+      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_CLOSE,
       net::NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
@@ -1745,11 +1743,9 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
-  int pos =
-      net::ExpectLogContainsSomewhere(entries,
-                                      0,
-                                      net::NetLog::TYPE_SPDY_SESSION_CLOSE,
-                                      net::NetLog::PHASE_NONE);
+  int pos = net::ExpectLogContainsSomewhere(
+      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_CLOSE,
+      net::NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
     CapturingNetLog::CapturedEntry entry = entries[pos];

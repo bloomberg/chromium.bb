@@ -266,7 +266,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
         stream_->GetProtocolVersion(), direct_,
         headers.get());
     stream_->net_log().AddEvent(
-        NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
+        NetLog::TYPE_HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
         base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
     result =
         stream_->SendRequestHeaders(
