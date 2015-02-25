@@ -30,5 +30,4 @@
 [
     NoInterfaceObject
 ] interface Console : ConsoleBase {
-    readonly attribute MemoryInfo memory;
 };

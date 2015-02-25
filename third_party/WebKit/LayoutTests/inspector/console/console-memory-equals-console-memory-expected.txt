@@ -1,0 +1,5 @@
+Tests that console.memory is strictly equal to itself.
+
+console.memory === console.memory
+true
+

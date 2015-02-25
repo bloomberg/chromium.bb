@@ -40,7 +40,6 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/timing/MemoryInfo.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -75,13 +74,6 @@ void Console::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> cons
         return;
 
     frame()->console().addMessage(consoleMessage);
-}
-
-PassRefPtrWillBeRawPtr<MemoryInfo> Console::memory() const
-{
-    // FIXME: Because we create a new object here each time,
-    // console.memory !== console.memory, which seems wrong.
-    return MemoryInfo::create();
 }
 
 } // namespace blink
