@@ -112,7 +112,7 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
 
 
 def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
-                          lint_filters=None):
+                          lint_filters=None, verbose_level=None):
   """Checks that all '.cc' and '.h' files pass cpplint.py."""
   _RE_IS_TEST = input_api.re.compile(r'.*tests?.(cc|h)$')
   result = []
@@ -136,7 +136,8 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
     else:
       level = 4
 
-    cpplint.ProcessFile(file_name, level)
+    verbose_level = verbose_level or level
+    cpplint.ProcessFile(file_name, verbose_level)
 
   if cpplint._cpplint_state.error_count > 0:
     if input_api.is_committing:
