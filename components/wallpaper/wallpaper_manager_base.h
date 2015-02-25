@@ -167,12 +167,14 @@ class WALLPAPER_EXPORT WallpaperManagerBase
     explicit TestApi(WallpaperManagerBase* wallpaper_manager);
     virtual ~TestApi();
 
-    base::FilePath current_wallpaper_path();
-
     bool GetWallpaperFromCache(const std::string& user_id,
                                gfx::ImageSkia* image);
 
+    bool GetPathFromCache(const std::string& user_id,
+                          base::FilePath* path);
+
     void SetWallpaperCache(const std::string& user_id,
+                           const base::FilePath& path,
                            const gfx::ImageSkia& image);
 
     void ClearDisposableWallpaperCache();
@@ -364,7 +366,11 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   friend class WallpaperManagerBrowserTestDefaultWallpaper;
   friend class WallpaperManagerPolicyTest;
 
-  typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
+  // The |CustomWallpaperElement| contains |first| the path of the image which
+  // is currently being loaded and or in progress of being loaded and |second|
+  // the image itself.
+  typedef std::pair<base::FilePath, gfx::ImageSkia> CustomWallpaperElement;
+  typedef std::map<std::string, CustomWallpaperElement> CustomWallpaperMap;
 
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
@@ -415,8 +421,12 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   virtual bool GetWallpaperFromCache(const std::string& user_id,
                                      gfx::ImageSkia* image);
 
+  // Gets path of encoded wallpaper from cache. Returns true if success.
+  virtual bool GetPathFromCache(const std::string& user_id,
+                                base::FilePath* path);
+
   // The number of wallpapers have loaded. For test only.
-  virtual int loaded_wallpapers() const;
+  virtual int loaded_wallpapers_for_test() const;
 
   // Cache some (or all) logged in users' wallpapers to memory at login
   // screen. It should not compete with first wallpaper loading when boot
@@ -493,8 +503,8 @@ class WALLPAPER_EXPORT WallpaperManagerBase
       const std::string& user_id,
       MovableOnDestroyCallbackHolder on_finish) = 0;
 
-  // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is the
-  // same as |current_wallpaper_path_|, do nothing. Must be called on UI thread.
+  // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is
+  // already loaded for that user, do nothing. Must be called on UI thread.
   virtual void StartLoad(const std::string& user_id,
                          const WallpaperInfo& info,
                          bool update_wallpaper,
@@ -562,16 +572,13 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   virtual void CreateSolidDefaultWallpaper();
 
   // The number of loaded wallpapers.
-  int loaded_wallpapers_;
+  int loaded_wallpapers_for_test_;
 
   // Sequence token associated with wallpaper operations.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 
   // Wallpaper sequenced task runner.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  // The file path of current loaded/loading custom/online wallpaper.
-  base::FilePath current_wallpaper_path_;
 
   // Logged-in user wallpaper information.
   WallpaperInfo current_user_wallpaper_info_;

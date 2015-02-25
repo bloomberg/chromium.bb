@@ -257,21 +257,25 @@ WallpaperManagerBase::TestApi::TestApi(WallpaperManagerBase* wallpaper_manager)
 WallpaperManagerBase::TestApi::~TestApi() {
 }
 
-base::FilePath WallpaperManagerBase::TestApi::current_wallpaper_path() {
-  return wallpaper_manager_->current_wallpaper_path_;
-}
-
 bool WallpaperManagerBase::TestApi::GetWallpaperFromCache(
     const std::string& user_id,
     gfx::ImageSkia* image) {
   return wallpaper_manager_->GetWallpaperFromCache(user_id, image);
 }
 
+bool WallpaperManagerBase::TestApi::GetPathFromCache(
+    const std::string& user_id,
+    base::FilePath* path) {
+  return wallpaper_manager_->GetPathFromCache(user_id, path);
+}
+
 void WallpaperManagerBase::TestApi::SetWallpaperCache(
     const std::string& user_id,
+    const base::FilePath& path,
     const gfx::ImageSkia& image) {
   DCHECK(!image.isNull());
-  wallpaper_manager_->wallpaper_cache_[user_id] = image;
+  wallpaper_manager_->wallpaper_cache_[user_id] =
+      CustomWallpaperElement(path, image);
 }
 
 void WallpaperManagerBase::TestApi::ClearDisposableWallpaperCache() {
@@ -473,7 +477,7 @@ base::FilePath WallpaperManagerBase::GetCustomWallpaperPath(
 }
 
 WallpaperManagerBase::WallpaperManagerBase()
-    : loaded_wallpapers_(0),
+    : loaded_wallpapers_for_test_(0),
       command_line_for_testing_(NULL),
       should_cache_wallpaper_(false),
       weak_factory_(this) {
@@ -649,7 +653,6 @@ void WallpaperManagerBase::UpdateWallpaper(bool clear_cache) {
   FOR_EACH_OBSERVER(Observer, observers_, OnUpdateWallpaperForTesting());
   if (clear_cache)
     wallpaper_cache_.clear();
-  current_wallpaper_path_.clear();
   // For GAIA login flow, the last_selected_user_ may not be set before user
   // login. If UpdateWallpaper is called at GAIA login screen, no wallpaper will
   // be set. It could result a black screen on external monitors.
@@ -682,15 +685,26 @@ bool WallpaperManagerBase::GetWallpaperFromCache(const std::string& user_id,
                                                  gfx::ImageSkia* image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(user_id);
-  if (it != wallpaper_cache_.end()) {
-    *image = (*it).second;
+  if (it != wallpaper_cache_.end() && !(*it).second.second.isNull()) {
+    *image = (*it).second.second;
     return true;
   }
   return false;
 }
 
-int WallpaperManagerBase::loaded_wallpapers() const {
-  return loaded_wallpapers_;
+bool WallpaperManagerBase::GetPathFromCache(const std::string& user_id,
+                                            base::FilePath* path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(user_id);
+  if (it != wallpaper_cache_.end()) {
+    *path = (*it).second.first;
+    return true;
+  }
+  return false;
+}
+
+int WallpaperManagerBase::loaded_wallpapers_for_test() const {
+  return loaded_wallpapers_for_test_;
 }
 
 void WallpaperManagerBase::CacheUsersWallpapers() {
@@ -711,7 +725,8 @@ void WallpaperManagerBase::CacheUsersWallpapers() {
 }
 
 void WallpaperManagerBase::CacheUserWallpaper(const std::string& user_id) {
-  if (wallpaper_cache_.find(user_id) != wallpaper_cache_.end())
+  CustomWallpaperMap::iterator it = wallpaper_cache_.find(user_id);
+  if (it != wallpaper_cache_.end() && !it->second.second.isNull())
     return;
   WallpaperInfo info;
   if (GetUserWallpaperInfo(user_id, &info)) {
@@ -725,6 +740,9 @@ void WallpaperManagerBase::CacheUserWallpaper(const std::string& user_id) {
       const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
       base::FilePath wallpaper_path = GetCustomWallpaperDir(sub_dir);
       wallpaper_path = wallpaper_path.Append(info.location);
+      // Set the path to the cache.
+      wallpaper_cache_[user_id] = CustomWallpaperElement(wallpaper_path,
+                                                         gfx::ImageSkia());
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&WallpaperManagerBase::GetCustomWallpaperInternal, user_id,
@@ -825,13 +843,16 @@ void WallpaperManagerBase::LoadWallpaper(
     CHECK(PathService::Get(dir_chromeos_wallpapers_path_id,
                            &wallpaper_dir));
     wallpaper_path = wallpaper_dir.Append(file_name);
-    if (current_wallpaper_path_ == wallpaper_path)
+
+    // If the wallpaper exists and it contains already the correct image we can
+    // return immediately.
+    CustomWallpaperMap::iterator it = wallpaper_cache_.find(user_id);
+    if (it != wallpaper_cache_.end() &&
+        it->second.first == wallpaper_path &&
+        !it->second.second.isNull())
       return;
 
-    if (update_wallpaper)
-      current_wallpaper_path_ = wallpaper_path;
-
-    loaded_wallpapers_++;
+    loaded_wallpapers_for_test_++;
     StartLoad(user_id, info, update_wallpaper, wallpaper_path,
               on_finish.Pass());
   } else if (info.type == user_manager::User::DEFAULT) {
@@ -1032,7 +1053,7 @@ WallpaperManagerBase::GetCustomWallpaperSubdirForCurrentResolution() {
 }
 
 void WallpaperManagerBase::CreateSolidDefaultWallpaper() {
-  loaded_wallpapers_++;
+  loaded_wallpapers_for_test_++;
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(kDefaultWallpaperColor);

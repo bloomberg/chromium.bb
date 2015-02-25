@@ -67,6 +67,9 @@ TEST_F(WallpaperManagerCacheTest, VerifyWallpaperCache) {
   std::string test_user_1 = "test1@example.com";
   std::string test_user_2 = "test2@example.com";
   std::string test_user_3 = "test3@example.com";
+  base::FilePath path1("path1");
+  base::FilePath path2("path2");
+  base::FilePath path3("path3");
   fake_user_manager()->AddUser(test_user_1);
   fake_user_manager()->AddUser(test_user_2);
   fake_user_manager()->AddUser(test_user_3);
@@ -81,21 +84,27 @@ TEST_F(WallpaperManagerCacheTest, VerifyWallpaperCache) {
   gfx::ImageSkia test_user_1_wallpaper = CreateTestImage(SK_ColorRED);
   gfx::ImageSkia test_user_2_wallpaper = CreateTestImage(SK_ColorGREEN);
   gfx::ImageSkia test_user_3_wallpaper = CreateTestImage(SK_ColorWHITE);
-  test_api->SetWallpaperCache(test_user_1, test_user_1_wallpaper);
-  test_api->SetWallpaperCache(test_user_2, test_user_2_wallpaper);
-  test_api->SetWallpaperCache(test_user_3, test_user_3_wallpaper);
+  test_api->SetWallpaperCache(test_user_1, path1, test_user_1_wallpaper);
+  test_api->SetWallpaperCache(test_user_2, path2, test_user_2_wallpaper);
+  test_api->SetWallpaperCache(test_user_3, path3, test_user_3_wallpaper);
 
   test_api->ClearDisposableWallpaperCache();
 
   gfx::ImageSkia cached_wallpaper;
   EXPECT_TRUE(test_api->GetWallpaperFromCache(test_user_1, &cached_wallpaper));
+  base::FilePath path;
+  EXPECT_TRUE(test_api->GetPathFromCache(test_user_1, &path));
   // Logged in users' wallpaper cache should be kept.
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(test_user_1_wallpaper));
+  EXPECT_EQ(path, path1);
   EXPECT_TRUE(test_api->GetWallpaperFromCache(test_user_2, &cached_wallpaper));
+  EXPECT_TRUE(test_api->GetPathFromCache(test_user_2, &path));
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(test_user_2_wallpaper));
+  EXPECT_EQ(path, path2);
 
   // Not logged in user's wallpaper cache should be cleared.
   EXPECT_FALSE(test_api->GetWallpaperFromCache(test_user_3, &cached_wallpaper));
+  EXPECT_FALSE(test_api->GetPathFromCache(test_user_3, &path));
 }
 
 }  // namespace chromeos

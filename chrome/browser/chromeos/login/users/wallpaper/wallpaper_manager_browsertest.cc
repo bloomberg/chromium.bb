@@ -131,7 +131,11 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   }
 
   int LoadedWallpapers() {
-    return WallpaperManager::Get()->loaded_wallpapers();
+    return WallpaperManager::Get()->loaded_wallpapers_for_test();
+  }
+
+  void CacheUserWallpaper(const std::string& user) {
+    WallpaperManager::Get()->CacheUserWallpaper(user);
   }
 
   void ClearDisposableWallpaperCache() {
@@ -500,6 +504,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   // Verify SetUserWallpaperNow updates wallpaper cache.
   gfx::ImageSkia cached_wallpaper;
   EXPECT_TRUE(test_api->GetWallpaperFromCache(kTestUser1, &cached_wallpaper));
+  base::FilePath path;
+  EXPECT_TRUE(test_api->GetPathFromCache(kTestUser1, &path));
+  EXPECT_FALSE(path.empty());
 }
 
 // Tests for crbug.com/339576. Wallpaper cache should be updated in
@@ -524,12 +531,18 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   gfx::ImageSkia cached_wallpaper;
   // Previous custom wallpaper should be cached after user login.
   EXPECT_TRUE(test_api->GetWallpaperFromCache(kTestUser1, &cached_wallpaper));
+  base::FilePath original_path;
+  EXPECT_TRUE(test_api->GetPathFromCache(kTestUser1, &original_path));
+  EXPECT_FALSE(original_path.empty());
 
   LogIn(kTestUser2, kTestUser2Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // Login another user should not delete logged in user's wallpaper cache.
   // Note active user is still kTestUser1.
   EXPECT_TRUE(test_api->GetWallpaperFromCache(kTestUser1, &cached_wallpaper));
+  base::FilePath path;
+  EXPECT_TRUE(test_api->GetPathFromCache(kTestUser1, &path));
+  EXPECT_EQ(original_path, path);
 
   gfx::ImageSkia red_wallpaper = CreateTestImage(SK_ColorRED);
   wallpaper_manager->SetWallpaperFromImageSkia(kTestUser1,
@@ -540,6 +553,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   // SetWallpaperFromImageSkia should update wallpaper cache when multi-profile
   // is turned on.
   EXPECT_TRUE(test_api->GetWallpaperFromCache(kTestUser1, &cached_wallpaper));
+  EXPECT_TRUE(test_api->GetPathFromCache(kTestUser1, &path));
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(red_wallpaper));
 
   gfx::ImageSkia green_wallpaper = CreateTestImage(SK_ColorGREEN);
@@ -555,6 +569,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   // turned on.
   EXPECT_TRUE(test_api->GetWallpaperFromCache(kTestUser1, &cached_wallpaper));
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(green_wallpaper));
+  EXPECT_TRUE(test_api->GetPathFromCache(kTestUser1, &path));
+  EXPECT_NE(original_path, path);
 
   wallpaper_manager->SetDefaultWallpaperNow(kTestUser1);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
