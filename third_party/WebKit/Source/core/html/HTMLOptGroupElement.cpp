@@ -98,6 +98,14 @@ void HTMLOptGroupElement::detach(const AttachContext& context)
     HTMLElement::detach(context);
 }
 
+bool HTMLOptGroupElement::rendererIsFocusable() const
+{
+    RefPtrWillBeRawPtr<HTMLSelectElement> select = ownerSelectElement();
+    if (select && select->usesMenuList())
+        return false;
+    return HTMLElement::rendererIsFocusable();
+}
+
 void HTMLOptGroupElement::updateNonLayoutStyle()
 {
     m_style = originalStyleForRenderer();

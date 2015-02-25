@@ -45,7 +45,7 @@ public:
 private:
     explicit HTMLOptGroupElement(Document&);
 
-    virtual bool rendererIsFocusable() const override { return true; }
+    virtual bool rendererIsFocusable() const override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
     virtual void accessKeyAction(bool sendMouseEvents) override;
