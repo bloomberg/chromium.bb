@@ -132,7 +132,6 @@ source_set("base") {
     "renderer_factory.h",
     "sample_format.cc",
     "sample_format.h",
-    "scoped_histogram_timer.h",
     "seekable_buffer.cc",
     "seekable_buffer.h",
     "serial_runner.cc",

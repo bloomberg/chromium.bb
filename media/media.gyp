@@ -345,7 +345,6 @@
         'base/renderer_factory.h',
         'base/sample_format.cc',
         'base/sample_format.h',
-        'base/scoped_histogram_timer.h',
         'base/seekable_buffer.cc',
         'base/seekable_buffer.h',
         'base/serial_runner.cc',
