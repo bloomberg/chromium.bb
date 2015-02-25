@@ -364,6 +364,7 @@
       'browser/profiles/profile_browsertest.cc',
       'browser/profiles/profile_list_desktop_browsertest.cc',
       'browser/profiles/profile_manager_browsertest.cc',
+      'browser/profiles/profile_window_browsertest.cc',
       'browser/referrer_policy_browsertest.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc',
