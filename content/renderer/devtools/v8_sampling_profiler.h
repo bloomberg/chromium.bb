@@ -11,12 +11,15 @@
 
 namespace content {
 
+class Sampler;
+class V8SamplingThread;
+
 // The class monitors enablement of V8 CPU profiler and
 // spawns a sampling thread when needed.
 class CONTENT_EXPORT V8SamplingProfiler final
     : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
-  V8SamplingProfiler();
+  explicit V8SamplingProfiler(bool underTest = false);
   ~V8SamplingProfiler();
 
   // Implementation of TraceLog::EnabledStateObserver
@@ -28,7 +31,8 @@ class CONTENT_EXPORT V8SamplingProfiler final
 
  private:
   scoped_ptr<base::WaitableEvent> waitable_event_for_testing_;
-  scoped_ptr<class V8SamplingThread> sampling_thread_;
+  scoped_ptr<V8SamplingThread> sampling_thread_;
+  scoped_ptr<Sampler> render_thread_sampler_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SamplingProfiler);
 };
