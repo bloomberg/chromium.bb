@@ -7,7 +7,7 @@
  "linux-release-64/sizes/nacl_helper-data/data": {"reva": 315014, "revb": 315022, "type": "absolute", "better": "lower", "improve": 220172, "regress": 243348, "sha1": "7b14efc5"},
  "linux-release-64/sizes/nacl_helper-si/initializers": {"reva": 271321, "revb": 271321, "type": "absolute", "better": "lower", "improve": 5, "regress": 7, "sha1": "f29296a1"},
  "linux-release-64/sizes/nacl_helper-text/text": {"reva": 308775, "revb": 308775, "type": "absolute", "better": "lower", "improve": 5944151, "regress": 6569853, "sha1": "1c60058b"},
- "linux-release-64/sizes/nacl_helper/nacl_helper": {"reva": 308775, "revb": 308775, "type": "absolute", "better": "lower", "improve": 8146212, "regress": 9003708, "sha1": "c059ee1f"},
+ "linux-release-64/sizes/nacl_helper/nacl_helper": {"reva": 317943, "revb": 318001, "type": "absolute", "better": "lower", "improve": 8596154, "regress": 9501081, "sha1": "f709e4d1"},
  "linux-release-64/sizes/nacl_helper_bootstrap-bss/bss": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 3898, "regress": 4310, "sha1": "788b809e"},
  "linux-release-64/sizes/nacl_helper_bootstrap-data/data": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 38, "regress": 42, "sha1": "02fba443"},
  "linux-release-64/sizes/nacl_helper_bootstrap-si/initializers": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 0, "regress": 0, "sha1": "228221af"},
