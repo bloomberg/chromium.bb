@@ -195,7 +195,7 @@ function navigateFocusBackward()
     eventSender.keyDown('\t', ['shiftKey']);
 }
 
-function testFocusNavigationFowrad(elements)
+function testFocusNavigationForward(elements)
 {
     for (var i = 0; i + 1 < elements.length; ++i)
         shouldNavigateFocus(elements[i], elements[i + 1], 'forward');
