@@ -83,6 +83,7 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
     return;
   }
   devices->swap(devices_);
+  std::vector<UsbMidiJack> input_jacks;
   for (size_t i = 0; i < devices_.size(); ++i) {
     UsbMidiDescriptorParser parser;
     std::vector<uint8> descriptor = devices_[i]->GetDescriptor();
@@ -96,7 +97,6 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
       initialize_callback_.Run(MIDI_INITIALIZATION_ERROR);
       return;
     }
-    std::vector<UsbMidiJack> input_jacks;
     for (size_t j = 0; j < jacks.size(); ++j) {
       if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
         output_streams_.push_back(new UsbMidiOutputStream(jacks[j]));
@@ -123,8 +123,8 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
         AddInputPort(port);
       }
     }
-    input_stream_.reset(new UsbMidiInputStream(input_jacks, this));
   }
+  input_stream_.reset(new UsbMidiInputStream(input_jacks, this));
   initialize_callback_.Run(MIDI_OK);
 }
 
