@@ -60,6 +60,8 @@
 using cc::ContextProvider;
 using gpu::gles2::GLES2Interface;
 
+static const int kNumRetriesBeforeSoftwareFallback = 4;
+
 namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
@@ -126,139 +128,140 @@ scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
   return scoped_ptr<cc::OverlayCandidateValidator>();
 }
 
+static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
+#if defined(OS_CHROMEOS)
+  // Software fallback does not happen on Chrome OS.
+  return true;
+#endif
+
+#if defined(OS_WIN)
+  if (::GetProp(compositor->widget(), kForceSoftwareCompositor) &&
+      ::RemoveProp(compositor->widget(), kForceSoftwareCompositor))
+    return false;
+#endif
+
+  return GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor();
+}
+
 void GpuProcessTransportFactory::CreateOutputSurface(
-    base::WeakPtr<ui::Compositor> compositor,
-    bool software_fallback) {
+    base::WeakPtr<ui::Compositor> compositor) {
   DCHECK(!!compositor);
   PerCompositorData* data = per_compositor_data_[compositor.get()];
   if (!data)
     data = CreatePerCompositorData(compositor.get());
 
-  bool create_software_renderer = software_fallback;
-#if defined(OS_CHROMEOS)
-  // Software fallback does not happen on Chrome OS.
-  create_software_renderer = false;
-#elif defined(OS_WIN)
-  if (::GetProp(compositor->widget(), kForceSoftwareCompositor)) {
-    if (::RemoveProp(compositor->widget(), kForceSoftwareCompositor))
-      create_software_renderer = true;
-  }
-#endif
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
-    create_software_renderer = true;
-
-  if (!create_software_renderer) {
+  bool create_gpu_output_surface =
+      ShouldCreateGpuOutputSurface(compositor.get());
+  if (create_gpu_output_surface) {
     CauseForGpuLaunch cause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
     BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-        cause,
-        base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
-                   callback_factory_.GetWeakPtr(),
-                   compositor,
-                   create_software_renderer));
+        cause, base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
+                          callback_factory_.GetWeakPtr(), compositor,
+                          create_gpu_output_surface, 0));
   } else {
-    EstablishedGpuChannel(compositor, create_software_renderer);
+    EstablishedGpuChannel(compositor, create_gpu_output_surface, 0);
   }
 }
 
 void GpuProcessTransportFactory::EstablishedGpuChannel(
     base::WeakPtr<ui::Compositor> compositor,
-    bool create_software_renderer) {
+    bool create_gpu_output_surface,
+    int num_attempts) {
   if (!compositor)
     return;
   PerCompositorData* data = per_compositor_data_[compositor.get()];
   DCHECK(data);
-  scoped_refptr<GpuChannelHost> gpu_channel_host =
-      BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
-  scoped_refptr<ContextProviderCommandBuffer> context_provider;
-  if (gpu_channel_host.get() && !create_software_renderer) {
-    context_provider = ContextProviderCommandBuffer::Create(
-        GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
-                                                        data->surface_id),
-        "Compositor");
-    if (!context_provider->BindToCurrentThread())
-      context_provider = nullptr;
+
+  if (num_attempts > kNumRetriesBeforeSoftwareFallback) {
+#if defined(OS_CHROMEOS)
+    LOG(FATAL) << "Unable to create a UI graphics context, and cannot use "
+               << "software compositing on ChromeOS.";
+#endif
+    create_gpu_output_surface = false;
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
-                        !!context_provider.get());
+  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  if (create_gpu_output_surface) {
+    scoped_refptr<GpuChannelHost> gpu_channel_host =
+        BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
+    if (gpu_channel_host.get()) {
+      context_provider = ContextProviderCommandBuffer::Create(
+          GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
+                                                          data->surface_id),
+          "Compositor");
+      if (context_provider && !context_provider->BindToCurrentThread())
+        context_provider = nullptr;
+    }
 
-  if (UseSurfacesEnabled()) {
-    // This gets a bit confusing. Here we have a ContextProvider configured to
-    // render directly to this widget. We need to make an OnscreenDisplayClient
-    // associated with this context, then return a SurfaceDisplayOutputSurface
-    // set up to draw to the display's surface.
-    cc::SurfaceManager* manager = surface_manager_.get();
-    scoped_ptr<cc::OutputSurface> display_surface;
-    if (!context_provider.get()) {
-      display_surface =
-          make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
-              CreateSoftwareOutputDevice(compositor.get()),
-              data->surface_id,
-              &output_surface_map_,
-              compositor->vsync_manager()));
-    } else {
-      display_surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
-          context_provider,
-          data->surface_id,
-          &output_surface_map_,
+    UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
+                          !!context_provider.get());
+
+    if (!context_provider) {
+      // Try again.
+      CauseForGpuLaunch cause =
+          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+          cause, base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
+                            callback_factory_.GetWeakPtr(), compositor,
+                            create_gpu_output_surface, num_attempts + 1));
+      return;
+    }
+  }
+
+  scoped_ptr<BrowserCompositorOutputSurface> surface;
+  if (!create_gpu_output_surface) {
+    surface = make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
+        CreateSoftwareOutputDevice(compositor.get()), data->surface_id,
+        &output_surface_map_, compositor->vsync_manager()));
+  } else {
+    DCHECK(context_provider);
+#if defined(USE_OZONE)
+    if (ui::SurfaceFactoryOzone::GetInstance()
+            ->CanShowPrimaryPlaneAsOverlay()) {
+      surface =
+          make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
+              context_provider, data->surface_id, &output_surface_map_,
+              compositor->vsync_manager(),
+              CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
+              BrowserGpuMemoryBufferManager::current()));
+    } else
+#endif
+    {
+      surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
+          context_provider, data->surface_id, &output_surface_map_,
           compositor->vsync_manager(),
           CreateOverlayCandidateValidator(compositor->widget())));
     }
-    scoped_ptr<cc::OnscreenDisplayClient> display_client(
-        new cc::OnscreenDisplayClient(
-            display_surface.Pass(), manager, HostSharedBitmapManager::current(),
-            BrowserGpuMemoryBufferManager::current(),
-            compositor->GetRendererSettings(), compositor->task_runner()));
-
-    scoped_ptr<cc::SurfaceDisplayOutputSurface> output_surface(
-        new cc::SurfaceDisplayOutputSurface(
-            manager, compositor->surface_id_allocator(), context_provider));
-    display_client->set_surface_output_surface(output_surface.get());
-    output_surface->set_display_client(display_client.get());
-    display_client->display()->Resize(compositor->size());
-    data->display_client = display_client.Pass();
-    compositor->SetOutputSurface(output_surface.Pass());
-    return;
   }
 
-  if (!context_provider.get()) {
-#if defined(OS_CHROMEOS)
-    LOG(FATAL) << "Shouldn't use software compositing on ChromeOS.";
-#endif
+  if (data->reflector)
+    data->reflector->OnSourceSurfaceReady(surface.get());
 
-    scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
-        new SoftwareBrowserCompositorOutputSurface(
-            CreateSoftwareOutputDevice(compositor.get()),
-            data->surface_id,
-            &output_surface_map_,
-            compositor->vsync_manager()));
+  if (!UseSurfacesEnabled()) {
     compositor->SetOutputSurface(surface.Pass());
     return;
   }
 
-  scoped_ptr<BrowserCompositorOutputSurface> surface;
-#if defined(USE_OZONE)
-  if (ui::SurfaceFactoryOzone::GetInstance()->CanShowPrimaryPlaneAsOverlay()) {
-    surface.reset(new GpuSurfacelessBrowserCompositorOutputSurface(
-        context_provider, data->surface_id, &output_surface_map_,
-        compositor->vsync_manager(),
-        CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
-        BrowserGpuMemoryBufferManager::current()));
-  }
-#endif
-  if (!surface)
-    surface.reset(new GpuBrowserCompositorOutputSurface(
-        context_provider,
-        data->surface_id,
-        &output_surface_map_,
-        compositor->vsync_manager(),
-        CreateOverlayCandidateValidator(compositor->widget())));
+  // This gets a bit confusing. Here we have a ContextProvider in the |surface|
+  // configured to render directly to this widget. We need to make an
+  // OnscreenDisplayClient associated with that context, then return a
+  // SurfaceDisplayOutputSurface set up to draw to the display's surface.
+  cc::SurfaceManager* manager = surface_manager_.get();
+  scoped_ptr<cc::OnscreenDisplayClient> display_client(
+      new cc::OnscreenDisplayClient(
+          surface.Pass(), manager, HostSharedBitmapManager::current(),
+          BrowserGpuMemoryBufferManager::current(),
+          compositor->GetRendererSettings(), compositor->task_runner()));
 
-  if (data->reflector.get())
-    data->reflector->OnSourceSurfaceReady(surface.get());
-
-  compositor->SetOutputSurface(surface.Pass());
+  scoped_ptr<cc::SurfaceDisplayOutputSurface> output_surface(
+      new cc::SurfaceDisplayOutputSurface(
+          manager, compositor->surface_id_allocator(), context_provider));
+  display_client->set_surface_output_surface(output_surface.get());
+  output_surface->set_display_client(display_client.get());
+  display_client->display()->Resize(compositor->size());
+  data->display_client = display_client.Pass();
+  compositor->SetOutputSurface(output_surface.Pass());
 }
 
 scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(

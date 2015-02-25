@@ -43,8 +43,7 @@ class GpuProcessTransportFactory
   CreateOffscreenCommandBufferContext();
 
   // ui::ContextFactory implementation.
-  void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor,
-                           bool software_fallback) override;
+  void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<ui::Reflector> CreateReflector(ui::Compositor* source,
                                                ui::Layer* target) override;
   void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
@@ -75,7 +74,8 @@ class GpuProcessTransportFactory
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
   void EstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
-                             bool create_software_renderer);
+                             bool create_gpu_output_surface,
+                             int num_attempts);
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
       scoped_refptr<GpuChannelHost> gpu_channel_host,
       int surface_id);
