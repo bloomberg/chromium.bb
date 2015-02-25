@@ -21,9 +21,6 @@
  */
 
 // http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGSVGElement
-
-// TODO: no css::ViewCSS available!
-// TODO: no events::DocumentEvent available!
 [
     TypeChecking=(Interface, Unrestricted),
 ] interface SVGSVGElement : SVGGraphicsElement {
