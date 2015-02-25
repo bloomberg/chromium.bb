@@ -1868,3 +1868,5 @@ crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-
 
 crbug.com/461371 [ Mac ] virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
 crbug.com/461371 [ Mac ] virtual/slimmingpaint/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
+
+crbug.com/461779 [ Mac ] compositing/overflow/reparented-overlay-scrollbars-with-non-stacking-context-compositing-ancestor.html [ Failure ]
