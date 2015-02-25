@@ -52,14 +52,9 @@ bool ShouldUseSmallShadowForWindow(aura::Window* window) {
   return false;
 }
 
-bool IsShadowAlwaysActive(aura::Window* window) {
-  return GetShadowType(window) == SHADOW_TYPE_RECTANGULAR_ALWAYS_ACTIVE;
-}
-
 Shadow::Style GetShadowStyleForWindow(aura::Window* window) {
   return ShouldUseSmallShadowForWindow(window) ? Shadow::STYLE_SMALL :
-      ((IsActiveWindow(window) || IsShadowAlwaysActive(window)) ?
-       Shadow::STYLE_ACTIVE : Shadow::STYLE_INACTIVE);
+      (IsActiveWindow(window) ? Shadow::STYLE_ACTIVE : Shadow::STYLE_INACTIVE);
 }
 
 // Returns the shadow style to be applied to |losing_active| when it is losing
@@ -68,9 +63,6 @@ Shadow::Style GetShadowStyleForWindow(aura::Window* window) {
 Shadow::Style GetShadowStyleForWindowLosingActive(
     aura::Window* losing_active,
     aura::Window* gaining_active) {
-  if (IsShadowAlwaysActive(losing_active))
-    return Shadow::STYLE_ACTIVE;
-
   if (gaining_active && aura::client::GetHideOnDeactivate(gaining_active)) {
     aura::Window::Windows::const_iterator it =
         std::find(GetTransientChildren(losing_active).begin(),
@@ -221,7 +213,6 @@ bool ShadowController::Impl::ShouldShowShadowForWindow(
     case SHADOW_TYPE_NONE:
       return false;
     case SHADOW_TYPE_RECTANGULAR:
-    case SHADOW_TYPE_RECTANGULAR_ALWAYS_ACTIVE:
       return true;
     default:
       NOTREACHED() << "Unknown shadow type " << type;

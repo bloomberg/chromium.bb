@@ -20,7 +20,6 @@ enum ShadowType {
   // Starts at 0 due to the cast in GetShadowType().
   SHADOW_TYPE_NONE = 0,
   SHADOW_TYPE_RECTANGULAR,
-  SHADOW_TYPE_RECTANGULAR_ALWAYS_ACTIVE,
 };
 
 WM_EXPORT void SetShadowType(aura::Window* window, ShadowType shadow_type);
