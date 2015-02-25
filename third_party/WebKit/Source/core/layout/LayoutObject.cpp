@@ -986,10 +986,10 @@ IntRect LayoutObject::absoluteBoundingBoxRectIgnoringTransforms() const
     if (!n)
         return IntRect();
 
-    LayoutRect result = rects[0];
+    IntRect result = rects[0];
     for (size_t i = 1; i < n; ++i)
         result.unite(rects[i]);
-    return pixelSnappedIntRect(result);
+    return result;
 }
 
 IntRect LayoutObject::absoluteFocusRingBoundingBoxRect() const

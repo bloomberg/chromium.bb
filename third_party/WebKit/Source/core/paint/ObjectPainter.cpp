@@ -50,7 +50,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
     IntRect inner = pixelSnappedIntRect(paintRect);
     inner.inflate(styleToUse.outlineOffset());
 
-    IntRect outer = pixelSnappedIntRect(inner);
+    IntRect outer = inner;
     LayoutUnit outlineWidth = styleToUse.outlineWidth();
     outer.inflate(outlineWidth);
 

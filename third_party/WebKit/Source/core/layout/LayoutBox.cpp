@@ -1170,7 +1170,7 @@ void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const L
 bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
 {
     ASSERT(hasBackground());
-    LayoutRect backgroundRect = pixelSnappedIntRect(borderBoxRect());
+    LayoutRect backgroundRect = enclosingIntRect(borderBoxRect());
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
     if (backgroundColor.alpha()) {

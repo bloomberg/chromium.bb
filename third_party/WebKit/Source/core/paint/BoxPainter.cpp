@@ -686,7 +686,7 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
             viewportRect.moveBy(-absoluteContainerOffset);
         }
 
-        geometry.setDestRect(pixelSnappedIntRect(viewportRect));
+        geometry.setDestRect(viewportRect);
         positioningAreaSize = geometry.destRect().size();
     }
 

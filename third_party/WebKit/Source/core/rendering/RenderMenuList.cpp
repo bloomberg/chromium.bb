@@ -380,7 +380,7 @@ bool RenderMenuList::multiple() const
 
 IntRect RenderMenuList::elementRectRelativeToViewport() const
 {
-    return selectElement()->document().view()->contentsToWindow(pixelSnappedIntRect(absoluteBoundingBoxRect()));
+    return selectElement()->document().view()->contentsToWindow(absoluteBoundingBoxRect());
 }
 
 Element& RenderMenuList::ownerElement() const
