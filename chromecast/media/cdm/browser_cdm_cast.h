@@ -52,11 +52,11 @@ class BrowserCdmCast : public ::media::BrowserCdm {
       const std::string& key_id) = 0;
 
  protected:
-  void OnSessionMessage(const std::string& web_session_id,
+  void OnSessionMessage(const std::string& session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
-  void OnSessionClosed(const std::string& web_session_id);
-  void OnSessionKeysChange(const std::string& web_session_id,
+  void OnSessionClosed(const std::string& session_id);
+  void OnSessionKeysChange(const std::string& session_id,
                            const ::media::KeyIdAndKeyPairs& keys);
 
  private:

@@ -57,25 +57,25 @@ void BrowserCdmCast::UnregisterPlayer(int registration_id) {
   cdm_unset_callbacks_.erase(registration_id);
 }
 
-void BrowserCdmCast::OnSessionMessage(const std::string& web_session_id,
+void BrowserCdmCast::OnSessionMessage(const std::string& session_id,
                                       const std::vector<uint8>& message,
                                       const GURL& destination_url) {
   // Note: Message type is not supported in Chromecast. Do our best guess here.
   ::media::MediaKeys::MessageType message_type =
       destination_url.is_empty() ? ::media::MediaKeys::LICENSE_REQUEST
                                  : ::media::MediaKeys::LICENSE_RENEWAL;
-  session_message_cb_.Run(web_session_id,
+  session_message_cb_.Run(session_id,
                           message_type,
                           message,
                           destination_url);
 }
 
-void BrowserCdmCast::OnSessionClosed(const std::string& web_session_id) {
-  session_closed_cb_.Run(web_session_id);
+void BrowserCdmCast::OnSessionClosed(const std::string& session_id) {
+  session_closed_cb_.Run(session_id);
 }
 
 void BrowserCdmCast::OnSessionKeysChange(
-    const std::string& web_session_id,
+    const std::string& session_id,
     const ::media::KeyIdAndKeyPairs& keys) {
   ::media::CdmKeysInfo cdm_keys_info;
   for (const std::pair<std::string, std::string>& key : keys) {
@@ -84,7 +84,7 @@ void BrowserCdmCast::OnSessionKeysChange(
     cdm_key_information->key_id.assign(key.first.begin(), key.first.end());
     cdm_keys_info.push_back(cdm_key_information.release());
   }
-  session_keys_change_cb_.Run(web_session_id, true, cdm_keys_info.Pass());
+  session_keys_change_cb_.Run(session_id, true, cdm_keys_info.Pass());
 
   // Notify listeners of a new key.
   {
