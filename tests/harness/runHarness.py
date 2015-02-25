@@ -126,7 +126,7 @@ class BrailleTest():
             self.tables.insert(0, 'unicode.dis')
         self.input = input
         self.expected = output
-        self.typeform = None if typeform is None else [ int(c) for c in typeform ]
+        self.typeform = [ int(c) for c in typeform ] if typeform else None
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
         self.expectedBrlCursorPos = brlCursorPos
