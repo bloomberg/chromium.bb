@@ -181,13 +181,67 @@ function test()
     {
         "args": {},
         "cat": "disabled-by-default-devtools.timeline",
+        "name": "Animation",
+        "ph": "b",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 445000,
+    },
+    {
+        "args": {},
+        "cat": "webkit.console",
+        "name": "timestamp",
+        "ph": "S",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 450000,
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
         "name": "Program",
         "ph": "E",
         "pid": 17851,
         "tid": 23,
         "ts": 500000,
         "tts": 5612506
-    }
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "B",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 1200000,
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Animation",
+        "ph": "e",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 1245000,
+    },
+    {
+        "args": {},
+        "cat": "webkit.console",
+        "name": "timestamp",
+        "ph": "F",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 1345000,
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "E",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 1500000,
+    },
     ];
 
     var cpuProfile = {
@@ -219,7 +273,7 @@ function test()
     tracingTimelineModel._addCpuProfile(WebInspector.targetManager.mainTarget().id(), cpuProfile);
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = tracingTimelineModel.inspectedTargetEvents();
-    InspectorTest.assertEquals(21, events.length);
+    InspectorTest.assertEquals(24, events.length);
     events.forEach(function(e) {
         InspectorTest.addResult(e.name + ": " + e.startTime + " " + e.selfTime + "/" + e.duration);
     });
