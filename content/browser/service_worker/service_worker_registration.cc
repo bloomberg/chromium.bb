@@ -396,6 +396,8 @@ void ServiceWorkerRegistration::DidGetRegistrationsForClaimClients(
 bool ServiceWorkerRegistration::ShouldClaim(
     ServiceWorkerProviderHost* provider_host,
     const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+  if (provider_host->IsHostToRunningServiceWorker())
+    return false;
   if (provider_host->controlling_version() == active_version())
     return false;
 
