@@ -163,6 +163,14 @@ public class ContentViewClient {
     }
 
     /**
+     * @return Whether an externally managed (i.e., not compositor-driven) fling
+     *         of this ContentView is active.
+     */
+    public boolean isExternalFlingActive() {
+        return false;
+    }
+
+    /**
      * Check whether a key should be propagated to the embedder or not.
      * We need to send almost every key to Blink. However:
      * 1. We don't want to block the device on the renderer for

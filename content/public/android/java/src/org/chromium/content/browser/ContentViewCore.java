@@ -1180,7 +1180,9 @@ public class ContentViewCore
     }
 
     public boolean isScrollInProgress() {
-        return mTouchScrollInProgress || mPotentiallyActiveFlingCount > 0;
+        return mTouchScrollInProgress
+                || mPotentiallyActiveFlingCount > 0
+                || getContentViewClient().isExternalFlingActive();
     }
 
     @SuppressWarnings("unused")

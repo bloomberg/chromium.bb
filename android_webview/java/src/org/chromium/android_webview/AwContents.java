@@ -2250,7 +2250,7 @@ public class AwContents implements SmartClipProvider,
     }
 
     @CalledByNative
-    private boolean isFlingActive() {
+    public boolean isFlingActive() {
         return mScrollOffsetManager.isFlingActive();
     }
 
