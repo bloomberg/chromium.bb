@@ -1095,7 +1095,8 @@ int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& descriptio
             m_lastAsyncOperationId = 1;
     } while (m_asyncOperations.contains(m_lastAsyncOperationId));
     m_asyncOperations.set(m_lastAsyncOperationId, chain);
-    m_asyncOperationNotifications.add(m_lastAsyncOperationId);
+    if (chain)
+        m_asyncOperationNotifications.add(m_lastAsyncOperationId);
     if (m_performingAsyncStepIn) {
         if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
             m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
