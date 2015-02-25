@@ -1459,6 +1459,7 @@ _x86_internal_release_boards = frozenset([
   'parrot',
   'parrot_freon',
   'parrot_ivb',
+  'parrot_ivb-freon',
   'parry',
   'peppy',
   'quawks',
@@ -1617,6 +1618,7 @@ _freon_boards = frozenset([
   'monroe',
   'panther',
   'parrot_freon',
+  'parrot_ivb-freon',
   'peppy',
   'quawks_freon',
   'rambi_freon',
@@ -2881,6 +2883,8 @@ _AddGroupConfig('ivybridge', 'stout', (
 # ivybridge chipset boards (freon variant)
 _AddGroupConfig('ivybridge-freon', 'stout_freon', (
   'link',
+), (
+    'parrot_ivb-freon',
 ),
   important=False,
 )
