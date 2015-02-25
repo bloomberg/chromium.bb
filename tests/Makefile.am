@@ -39,11 +39,10 @@ libdrmtest_la_SOURCES = \
 	drmtest.c \
 	drmtest.h
 
-libdrmtest_la_LIBADD = \
-	$(top_builddir)/libdrm.la \
+LDADD += \
+	libdrmtest.la \
 	$(LIBUDEV_LIBS)
 
-LDADD += libdrmtest.la
 
 XFAIL_TESTS =					\
 	auth					\
