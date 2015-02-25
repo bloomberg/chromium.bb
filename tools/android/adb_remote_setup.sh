@@ -4,14 +4,19 @@
 # found in the LICENSE file.
 
 # URL from which the latest version of this script can be downloaded.
-script_url="http://src.chromium.org/svn/trunk/src/tools/android/adb_remote_setup.sh"
+# Gitiles returns the result as base64 formatted, so the result needs to be
+# decoded. See https://code.google.com/p/gitiles/issues/detail?id=7 for
+# more information about this security precaution.
+script_url="https://chromium.googlesource.com/chromium/src.git/+/master"
+script_url+="/tools/android/adb_remote_setup.sh"
+script_url+="?format=TEXT"
 
 # Replaces this file with the latest version of the script and runs it.
 update-self() {
   local script="${BASH_SOURCE[0]}"
   local new_script="${script}.new"
   local updater_script="${script}.updater"
-  curl -sSf -o "$new_script" "$script_url" || return
+  curl -sSf "$script_url" | base64 --decode > "$new_script" || return
   chmod +x "$new_script" || return
 
   # Replace this file with the newly downloaded script.
