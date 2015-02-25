@@ -29,6 +29,14 @@ const char* const kChromeboxBoards[]  = {
 
 }  // namespace
 
+namespace chrome_device_types {
+
+const char kChromebox[] = "chromebox";
+const char kChromebase[] = "chromebase";
+const char kChromebook[] = "chromebook";
+
+}  // namespace chrome_device_types
+
 base::string16 GetChromeDeviceType() {
   return l10n_util::GetStringUTF16(GetChromeDeviceTypeResourceId());
 }
@@ -44,6 +52,20 @@ int GetChromeDeviceTypeResourceId() {
       return IDS_CHROMEBASE;
   }
   return IDS_CHROMEBOOK;
+}
+
+std::string GetChromeDeviceTypeString() {
+  int resource_id = GetChromeDeviceTypeResourceId();
+  switch (resource_id) {
+    case IDS_CHROMEBOX:
+      return chrome_device_types::kChromebox;
+    case IDS_CHROMEBASE:
+      return chrome_device_types::kChromebase;
+    default:
+      NOTREACHED() << "Unknown Chrome device type: " << resource_id;
+    case IDS_CHROMEBOOK:
+      return chrome_device_types::kChromebook;
+  }
 }
 
 }  // namespace chromeos

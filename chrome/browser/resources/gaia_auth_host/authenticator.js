@@ -167,6 +167,8 @@ cr.define('cr.login', function() {
     var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
 
     if (this.isMinuteMaidChromeOS) {
+      if (data.chromeType)
+        url = appendParam(url, 'chrometype', data.chromeType);
       if (data.clientId)
         url = appendParam(url, 'client_id', data.clientId);
       if (data.enterpriseDomain)

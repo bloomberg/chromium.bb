@@ -317,6 +317,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         $('progress-dots').hidden = true;
         if (data.enterpriseDomain)
           params.enterpriseDomain = data.enterpriseDomain;
+        params.chromeType = data.chromeType;
         data.useEmbedded = false;
         params.isMinuteMaidChromeOS = true;
         $('login-header-bar').showGuestButton = true;

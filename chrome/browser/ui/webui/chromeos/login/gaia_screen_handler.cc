@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -226,11 +227,14 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
 
   if (StartupUtils::IsWebviewSigninEnabled()) {
     params.SetBoolean("useMinuteMaid", true);
+
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     std::string enterprise_domain(connector->GetEnterpriseDomain());
     if (!enterprise_domain.empty())
       params.SetString("enterpriseDomain", enterprise_domain);
+
+    params.SetString("chromeType", GetChromeDeviceTypeString());
     params.SetString("clientId",
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     if (!command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {

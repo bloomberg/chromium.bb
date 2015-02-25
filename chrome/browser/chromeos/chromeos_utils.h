@@ -9,12 +9,24 @@
 
 namespace chromeos {
 
+namespace chrome_device_types {
+
+extern const char kChromebox[];
+extern const char kChromebase[];
+extern const char kChromebook[];
+
+}  // namespace chrome_device_types
+
 // Returns the name of the Chrome device type (e.g. Chromebook, Chromebox).
 base::string16 GetChromeDeviceType();
 
 // Returns the string resource ID for the name of the Chrome device type
 // (e.g. IDS_CHROMEBOOK, IDS_CHROMEBOX).
 int GetChromeDeviceTypeResourceId();
+
+// Returns the name of the Chrome device type to pass to the MinuteMaid param
+// 'chrometype' (returns chromebox, chromebase or chromebook).
+std::string GetChromeDeviceTypeString();
 
 }  // namespace chromeos
 
