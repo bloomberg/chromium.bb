@@ -401,6 +401,10 @@ void WebPluginContainerImpl::reportGeometry()
     if (!parent())
         return;
 
+    // crbug.com/459713: Remove this once we have been able to isolate the
+    // root cause of this scenario.
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_element->renderer());
+
     IntRect windowRect, clipRect;
     Vector<IntRect> cutOutRects;
     calculateGeometry(frameRect(), windowRect, clipRect, cutOutRects);
