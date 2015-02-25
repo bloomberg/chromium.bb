@@ -41,6 +41,9 @@
         'signaling/fake_signal_strategy.h',
         'signaling/mock_signal_strategy.cc',
         'signaling/mock_signal_strategy.h',
+        'test/access_token_fetcher.cc',
+        'test/app_remoting_test_driver_environment.cc',
+        'test/fake_access_token_fetcher.cc',
         'test/fake_network_dispatcher.cc',
         'test/fake_network_dispatcher.h',
         'test/fake_network_manager.cc',
@@ -51,6 +54,8 @@
         'test/fake_socket_factory.h',
         'test/leaky_bucket.cc',
         'test/leaky_bucket.h',
+        'test/mock_access_token_fetcher.cc',
+        'test/refresh_token_store.cc',
       ],
       'conditions': [
         ['enable_remoting_host == 0', {
@@ -221,6 +226,8 @@
         'signaling/log_to_server_unittest.cc',
         'signaling/server_log_entry_unittest.cc',
         'signaling/server_log_entry_unittest.h',
+        'test/access_token_fetcher_unittest.cc',
+        'test/app_remoting_test_driver_environment_unittest.cc'
       ],
       'conditions': [
         [ 'OS=="win"', {

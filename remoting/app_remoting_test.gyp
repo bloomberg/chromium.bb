@@ -29,6 +29,11 @@
       'defines': [
         'VERSION=<(version_full)',
       ],
+      'sources': [
+        'test/access_token_fetcher.cc',
+        'test/app_remoting_test_driver_environment.cc',
+        'test/refresh_token_store.cc',
+      ],
     },  # end of target 'ar_test_driver_common'
     {
       # An external version of the test driver tool which includes minimal tests

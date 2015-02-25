@@ -11,14 +11,16 @@
 #include "base/test/test_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
+#include "remoting/test/app_remoting_test_driver_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace switches {
-  const char kUserNameSwitchName[] = "username";
-  const char kAuthCodeSwitchName[] = "authcode";
-  const char kServiceEnvironmentSwitchName[] = "environment";
-  const char kHelpSwitchName[] = "help";
-  const char kSingleProcessTestsSwitchName[] = "single-process-tests";
+const char kAuthCodeSwitchName[] = "authcode";
+const char kHelpSwitchName[] = "help";
+const char kLoggingLevelSwitchName[] = "verbosity";
+const char kServiceEnvironmentSwitchName[] = "environment";
+const char kSingleProcessTestsSwitchName[] = "single-process-tests";
+const char kUserNameSwitchName[] = "username";
 }
 
 namespace {
@@ -66,6 +68,10 @@ void PrintUsage() {
          switches::kHelpSwitchName);
   printf("  %s: Specifies the service api to use (dev|test) [default: dev]\n",
          switches::kServiceEnvironmentSwitchName);
+  printf(
+      "  %s: Specifies the optional logging level of the tool (0-3)."
+      " [default: off]\n",
+      switches::kLoggingLevelSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -144,6 +150,63 @@ int main(int argc, char** argv) {
     PrintUsage();
     return -1;
   }
+
+  std::string user_name;
+  user_name = command_line->GetSwitchValueASCII(switches::kUserNameSwitchName);
+  DVLOG(1) << "Running tests as: " << user_name;
+
+  std::string auth_code;
+  // Check to see if the user passed in a one time use auth_code for
+  // refreshing their credentials.
+  auth_code = command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName);
+
+  std::string service_environment;
+  // If the user passed in a service environment, use it, otherwise set a
+  // default value.
+  service_environment = command_line->GetSwitchValueASCII(
+      switches::kServiceEnvironmentSwitchName);
+  if (service_environment.empty()) {
+    // Default to the development service environment.
+    service_environment = "dev";
+  } else if (service_environment != "test" && service_environment != "dev") {
+    // Only two values are allowed, so validate them before proceeding.
+    LOG(ERROR) << "Invalid " << switches::kServiceEnvironmentSwitchName
+               << " argument passed in.";
+    PrintUsage();
+    return -1;
+  }
+
+  // Update the logging verbosity level is user specified one.
+  std::string verbosity_level;
+  verbosity_level =
+        command_line->GetSwitchValueASCII(switches::kLoggingLevelSwitchName);
+  if (!verbosity_level.empty()) {
+    // Turn on logging for the test_driver and remoting components.
+    // This switch is parsed during logging::InitLogging.
+    command_line->AppendSwitchASCII("vmodule",
+                                    "*/remoting/*=" + verbosity_level);
+    logging::LoggingSettings logging_settings;
+    logging::InitLogging(logging_settings);
+  }
+
+  // Create and register our global test data object.  It will handle
+  // retrieving an access token for the user and spinning up VMs.
+  // The GTest framework will own the lifetime of this object once
+  // it is registered below.
+  scoped_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data;
+
+  shared_data.reset(new remoting::test::AppRemotingTestDriverEnvironment(
+      user_name, service_environment));
+
+  if (!shared_data->Initialize(auth_code)) {
+    // If we failed to initialize our shared data object, then bail.
+    return -1;
+  }
+
+  // Since we've successfully set up our shared_data object, we'll assign the
+  // value to our global* and transfer ownership to the framework.
+  remoting::test::AppRemotingSharedData = shared_data.release();
+  testing::AddGlobalTestEnvironment(remoting::test::AppRemotingSharedData);
 
   // Because many tests may access the same remoting host(s), we need to run
   // the tests sequentially so they do not interfere with each other.
