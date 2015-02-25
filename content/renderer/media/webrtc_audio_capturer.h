@@ -109,8 +109,8 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Called on the main render thread.
   media::AudioParameters GetOutputFormat() const;
 
-  // Used by the unittests to inject their own source to the capturer.
-  void SetCapturerSourceForTesting(
+  // Used by clients to inject their own source to the capturer.
+  void SetCapturerSource(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::AudioParameters params);
 
@@ -140,11 +140,11 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // view id and device information. Return true if success, otherwise false.
   bool Initialize();
 
-  // SetCapturerSource() is called if the client on the source side desires to
-  // provide their own captured audio data. Client is responsible for calling
-  // Start() on its own source to have the ball rolling.
+  // SetCapturerSourceInternal() is called if the client on the source side
+  // desires to provide their own captured audio data. Client is responsible
+  // for calling Start() on its own source to get the ball rolling.
   // Called on the main render thread.
-  void SetCapturerSource(
+  void SetCapturerSourceInternal(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::ChannelLayout channel_layout,
       float sample_rate);

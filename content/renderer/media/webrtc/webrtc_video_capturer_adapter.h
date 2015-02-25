@@ -11,8 +11,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "media/video/capture/video_capture_types.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 
 namespace content {

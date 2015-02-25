@@ -116,6 +116,7 @@ static_library("renderer") {
       "//extensions:extensions_resources",
       "//extensions/renderer",
       "//media/cast:net",
+      "//media/cast:receiver",
       "//media/cast:sender",
       "//media/cast/logging/proto",
     ]
@@ -123,6 +124,8 @@ static_library("renderer") {
       sources -= [
         "media/cast_rtp_stream.cc",
         "media/cast_rtp_stream.h",
+        "media/cast_receiver_session.cc",
+        "media/cast_receiver_session.h",
       ]
     }
   }

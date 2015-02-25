@@ -85,7 +85,7 @@ class WebRtcAudioCapturerTest : public testing::Test {
     EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), -1));
     EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
     EXPECT_CALL(*capturer_source_.get(), Start());
-    capturer_->SetCapturerSourceForTesting(capturer_source_, params_);
+    capturer_->SetCapturerSource(capturer_source_, params_);
 
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));

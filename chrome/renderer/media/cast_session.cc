@@ -91,6 +91,7 @@ void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
       base::Bind(
           &CastSessionDelegate::StartUDP,
           base::Unretained(delegate_.get()),
+          net::IPEndPoint(),
           remote_endpoint,
           base::Passed(&options)));
 }

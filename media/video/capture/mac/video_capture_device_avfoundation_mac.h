@@ -11,9 +11,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #import "media/base/mac/avfoundation_glue.h"
+#include "media/base/video_capture_types.h"
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
 #include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/video_capture_types.h"
 
 namespace media {
 class VideoCaptureDeviceMac;

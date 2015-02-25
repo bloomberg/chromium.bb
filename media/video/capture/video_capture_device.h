@@ -21,8 +21,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "media/video/capture/video_capture_types.h"
 
 namespace media {
 

@@ -201,9 +201,10 @@ bool WebRtcAudioCapturer::Initialize() {
   }
 
   // Create and configure the default audio capturing source.
-  SetCapturerSource(AudioDeviceFactory::NewInputDevice(render_view_id_),
-                    channel_layout,
-                    static_cast<float>(device_info_.device.input.sample_rate));
+  SetCapturerSourceInternal(
+      AudioDeviceFactory::NewInputDevice(render_view_id_),
+      channel_layout,
+      static_cast<float>(device_info_.device.input.sample_rate));
 
   // Add the capturer to the WebRtcAudioDeviceImpl since it needs some hardware
   // information from the capturer.
@@ -285,7 +286,7 @@ void WebRtcAudioCapturer::RemoveTrack(WebRtcLocalAudioTrack* track) {
   }
 }
 
-void WebRtcAudioCapturer::SetCapturerSource(
+void WebRtcAudioCapturer::SetCapturerSourceInternal(
     const scoped_refptr<media::AudioCapturerSource>& source,
     media::ChannelLayout channel_layout,
     float sample_rate) {
@@ -364,9 +365,9 @@ void WebRtcAudioCapturer::EnablePeerConnectionMode() {
 
   // Create a new audio stream as source which will open the hardware using
   // WebRtc native buffer size.
-  SetCapturerSource(AudioDeviceFactory::NewInputDevice(render_view_id),
-                    input_params.channel_layout(),
-                    static_cast<float>(input_params.sample_rate()));
+  SetCapturerSourceInternal(AudioDeviceFactory::NewInputDevice(render_view_id),
+                            input_params.channel_layout(),
+                            static_cast<float>(input_params.sample_rate()));
 }
 
 void WebRtcAudioCapturer::Start() {
@@ -585,12 +586,12 @@ int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
   return (sample_rate / 100);
 }
 
-void WebRtcAudioCapturer::SetCapturerSourceForTesting(
+void WebRtcAudioCapturer::SetCapturerSource(
     const scoped_refptr<media::AudioCapturerSource>& source,
     media::AudioParameters params) {
   // Create a new audio stream as source which uses the new source.
-  SetCapturerSource(source, params.channel_layout(),
-                    static_cast<float>(params.sample_rate()));
+  SetCapturerSourceInternal(source, params.channel_layout(),
+                            static_cast<float>(params.sample_rate()));
 }
 
 }  // namespace content

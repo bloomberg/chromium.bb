@@ -6,7 +6,7 @@
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "ipc/ipc_test_sink.h"
-#include "media/video/capture/video_capture_types.h"
+#include "media/base/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

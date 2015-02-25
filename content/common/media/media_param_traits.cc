@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/limits.h"
-#include "media/video/capture/video_capture_types.h"
+#include "media/base/video_capture_types.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;

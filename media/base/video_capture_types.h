@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_TYPES_H_
-#define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_TYPES_H_
+#ifndef MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
+#define MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
 
 #include <vector>
 
@@ -116,4 +116,4 @@ class MEDIA_EXPORT VideoCaptureParams {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_TYPES_H_
+#endif  // MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_

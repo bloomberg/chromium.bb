@@ -15,8 +15,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/threading/thread.h"
+#include "media/base/video_capture_types.h"
 #include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/video_capture_types.h"
 
 namespace media {
 

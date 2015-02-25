@@ -23,9 +23,9 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/video/capture/video_capture_types.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {

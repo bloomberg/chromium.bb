@@ -9,9 +9,9 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsexception_enabler.h"
+#include "media/base/video_capture_types.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/video_capture_types.h"
 #include "ui/gfx/geometry/size.h"
 
 @implementation VideoCaptureDeviceQTKit

@@ -7,10 +7,10 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
+#include "media/base/video_capture_types.h"
 #include "media/video/capture/fake_video_capture_device.h"
 #include "media/video/capture/fake_video_capture_device_factory.h"
 #include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -171,7 +171,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
         .WillOnce(Return());
     EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
     EXPECT_CALL(*capturer_source_.get(), OnStart());
-    capturer_->SetCapturerSourceForTesting(capturer_source_, params_);
+    capturer_->SetCapturerSource(capturer_source_, params_);
   }
 
   void TearDown() override {
@@ -428,7 +428,7 @@ TEST_F(WebRtcLocalAudioTrackTest,
   media::AudioParameters new_param(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       media::CHANNEL_LAYOUT_MONO, 44100, 16, 441);
-  new_capturer->SetCapturerSourceForTesting(new_source, new_param);
+  new_capturer->SetCapturerSource(new_source, new_param);
 
   // Setup the second audio track, connect it to the new capturer and start it.
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter_2(
@@ -482,7 +482,7 @@ TEST_F(WebRtcLocalAudioTrackTest, TrackWorkWithSmallBufferSize) {
   EXPECT_CALL(*source.get(), OnInitialize(_, capturer.get(), -1));
   EXPECT_CALL(*source.get(), SetAutomaticGainControl(true));
   EXPECT_CALL(*source.get(), OnStart());
-  capturer->SetCapturerSourceForTesting(source, params);
+  capturer->SetCapturerSource(source, params);
 
   // Setup a audio track, connect it to the capturer and start it.
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(

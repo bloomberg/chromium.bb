@@ -580,10 +580,12 @@ void UserMediaClientImpl::InitializeSourceObject(
 MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
     const StreamDeviceInfo& device,
     const MediaStreamSource::SourceStoppedCallback& stop_callback) {
-  return new content::MediaStreamVideoCapturerSource(
-      device,
-      stop_callback,
-      scoped_ptr<VideoCapturerDelegate>(new VideoCapturerDelegate(device)));
+  content::MediaStreamVideoCapturerSource* ret =
+      new content::MediaStreamVideoCapturerSource(
+          stop_callback,
+          make_scoped_ptr(new VideoCapturerDelegate(device)));
+  ret->SetDeviceInfo(device);
+  return ret;
 }
 
 void UserMediaClientImpl::CreateVideoTracks(

@@ -24,13 +24,14 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
   explicit MockVideoCapturerDelegate(const StreamDeviceInfo& device_info)
       : VideoCapturerDelegate(device_info) {}
 
-  MOCK_METHOD3(StartCapture,
-               void(const media::VideoCaptureParams& params,
-                    const VideoCaptureDeliverFrameCB& new_frame_callback,
-                    const RunningCallback& running_callback));
+  MOCK_METHOD4(
+      StartCapture,
+      void(const media::VideoCaptureParams& params,
+           const VideoCaptureDeliverFrameCB& new_frame_callback,
+           scoped_refptr<base::SingleThreadTaskRunner>
+           frame_callback_task_runner,
+           const RunningCallback& running_callback));
   MOCK_METHOD0(StopCapture, void());
-
-  virtual ~MockVideoCapturerDelegate() {}
 };
 
 class MediaStreamVideoCapturerSourceTest : public testing::Test {
@@ -52,10 +53,10 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         new MockVideoCapturerDelegate(device_info));
     delegate_ = delegate.get();
     source_ = new MediaStreamVideoCapturerSource(
-        device_info,
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                     base::Unretained(this)),
         delegate.Pass());
+    source_->SetDeviceInfo(device_info);
 
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
@@ -110,6 +111,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
       testing::Field(&media::VideoCaptureParams::resolution_change_policy,
                      media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT),
       testing::_,
+      testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
@@ -126,6 +128,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
       testing::Field(&media::VideoCaptureParams::resolution_change_policy,
                      media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT),
       testing::_,
+      testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
@@ -139,10 +142,10 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
       new VideoCapturerDelegate(device_info));
   VideoCapturerDelegate* delegate_ptr = delegate.get();
   source_ = new MediaStreamVideoCapturerSource(
-      device_info,
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
       delegate.Pass());
+  source_->SetDeviceInfo(device_info);
   webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeVideo,
                             base::UTF8ToUTF16("dummy_source_name"),
@@ -197,13 +200,14 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTime) {
   EXPECT_CALL(mock_delegate(), StartCapture(
       testing::_,
       testing::_,
+      testing::_,
       testing::_))
       .Times(1)
       .WillOnce(testing::DoAll(testing::SaveArg<1>(&deliver_frame_cb),
-                               testing::SaveArg<2>(&running_cb)));
+                               testing::SaveArg<3>(&running_cb)));
   EXPECT_CALL(mock_delegate(), StopCapture());
   blink::WebMediaStreamTrack track = StartSource();
-  running_cb.Run(MEDIA_DEVICE_OK);
+  running_cb.Run(true);
 
   base::RunLoop run_loop;
   base::TimeTicks reference_capture_time =

@@ -8,8 +8,8 @@
 #define CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
 
 #include "base/time/time.h"
+#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "media/video/capture/video_capture_types.h"
 
 namespace content {
 

@@ -9,7 +9,7 @@
 
 #include "media/video/capture/video_capture_device_factory.h"
 
-#include "media/video/capture/video_capture_types.h"
+#include "media/base/video_capture_types.h"
 
 namespace media {
 

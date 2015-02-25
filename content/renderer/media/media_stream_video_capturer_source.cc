@@ -105,6 +105,7 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
 void VideoCapturerDelegate::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureDeliverFrameCB& new_frame_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> frame_callback_task_runner,
     const RunningCallback& running_callback) {
   DCHECK(params.requested_format.IsValid());
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -117,6 +118,13 @@ void VideoCapturerDelegate::StartCapture(
       RenderThreadImpl::current()->video_capture_impl_manager();
   if (!manager)
     return;
+  if (frame_callback_task_runner !=
+      RenderThreadImpl::current()->GetIOMessageLoopProxy()) {
+    DCHECK(false) << "Only IO thread supported right now.";
+    running_callback.Run(false);
+    return;
+  }
+
   stop_capture_cb_ =
       manager->StartCapture(
           session_id_,
@@ -143,12 +151,11 @@ void VideoCapturerDelegate::OnStateUpdateOnRenderThread(
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "OnStateUpdateOnRenderThread state = " << state;
   if (state == VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
-    running_callback_.Run(MEDIA_DEVICE_OK);
+    running_callback_.Run(true);
     return;
   }
   if (state > VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
-    base::ResetAndReturn(&running_callback_).Run(
-        MEDIA_DEVICE_TRACK_START_FAILURE);
+    base::ResetAndReturn(&running_callback_).Run(false);
   }
 }
 
@@ -211,12 +218,15 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
-    const StreamDeviceInfo& device_info,
     const SourceStoppedCallback& stop_callback,
-    scoped_ptr<VideoCapturerDelegate> delegate)
+    scoped_ptr<media::VideoCapturerSource> delegate)
     : delegate_(delegate.Pass()) {
-  SetDeviceInfo(device_info);
   SetStopCallback(stop_callback);
+}
+
+void MediaStreamVideoCapturerSource::SetDeviceInfo(
+    const StreamDeviceInfo& device_info) {
+  MediaStreamVideoSource::SetDeviceInfo(device_info);
 }
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
@@ -247,8 +257,15 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
   delegate_->StartCapture(
       new_params,
       frame_callback,
-      base::Bind(&MediaStreamVideoCapturerSource::OnStartDone,
+      RenderThreadImpl::current() ?
+      RenderThreadImpl::current()->GetIOMessageLoopProxy() :
+      nullptr,
+      base::Bind(&MediaStreamVideoCapturerSource::OnStarted,
                  base::Unretained(this)));
+}
+
+void MediaStreamVideoCapturerSource::OnStarted(bool result) {
+  OnStartDone(result ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE);
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {

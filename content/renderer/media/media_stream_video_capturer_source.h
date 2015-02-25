@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_video_source.h"
+#include "media/base/video_capturer_source.h"
 
 namespace content {
 
@@ -20,42 +21,29 @@ namespace content {
 // and receive I420 frames from Chrome's video capture implementation.
 //
 // This is a render thread only object.
-class CONTENT_EXPORT VideoCapturerDelegate {
+
+class CONTENT_EXPORT VideoCapturerDelegate : public media::VideoCapturerSource {
  public:
-  typedef base::Callback<void(MediaStreamRequestResult result)> RunningCallback;
-
   explicit VideoCapturerDelegate(const StreamDeviceInfo& device_info);
-  virtual ~VideoCapturerDelegate();
+  ~VideoCapturerDelegate() override;
 
-  // Collects the formats that can currently be used.
-  // |max_requested_height|, |max_requested_width|, and
-  // |max_requested_frame_rate| is used by Tab and Screen capture to decide what
-  // resolution/framerate to generate. |callback| is triggered when the formats
-  // have been collected.
-  virtual void GetCurrentSupportedFormats(
+  // VideoCaptureDelegate Implementation.
+  void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback);
+      const VideoCaptureDeviceFormatsCB& callback) override;
 
-  // Starts capturing frames using the resolution in |params|.
-  // |new_frame_callback| is triggered when a new video frame is available.
-  // If capturing is started successfully then |running_callback| will be
-  // called with a parameter of true.
-  // If capturing fails to start or stopped due to an external event then
-  // |running_callback| will be called with a parameter of false.
-  virtual void StartCapture(
+  void StartCapture(
       const media::VideoCaptureParams& params,
       const VideoCaptureDeliverFrameCB& new_frame_callback,
-      const RunningCallback& running_callback);
+      scoped_refptr<base::SingleThreadTaskRunner> frame_callback_task_runner,
+      const RunningCallback& running_callback) override;
 
-  // Stops capturing frames and clears all callbacks including the
-  // SupportedFormatsCallback callback.
-  virtual void StopCapture();
+  void StopCapture() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, Ended);
-  friend class base::RefCountedThreadSafe<VideoCapturerDelegate>;
   friend class MockVideoCapturerDelegate;
 
   void OnStateUpdateOnRenderThread(VideoCaptureState state);
@@ -93,11 +81,12 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
     : public MediaStreamVideoSource {
  public:
   MediaStreamVideoCapturerSource(
-      const StreamDeviceInfo& device_info,
       const SourceStoppedCallback& stop_callback,
-      scoped_ptr<VideoCapturerDelegate> delegate);
+      scoped_ptr<media::VideoCapturerSource> delegate);
 
   virtual ~MediaStreamVideoCapturerSource();
+
+  void SetDeviceInfo(const StreamDeviceInfo& device_info);
 
  protected:
   // Implements MediaStreamVideoSource.
@@ -114,8 +103,9 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   void StopSourceImpl() override;
 
  private:
+  void OnStarted(bool result);
   // The delegate that provides video frames.
-  scoped_ptr<VideoCapturerDelegate> delegate_;
+  scoped_ptr<media::VideoCapturerSource> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);
 };

@@ -8,7 +8,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/video/capture/video_capture_types.h"
+#include "media/base/video_capture_types.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

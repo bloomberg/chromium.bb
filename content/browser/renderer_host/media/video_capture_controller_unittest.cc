@@ -20,8 +20,8 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/video_capture_types.h"
 #include "media/base/video_util.h"
-#include "media/video/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -122,6 +122,12 @@
       'renderer/extensions/webstore_bindings.h',
       'renderer/media/cast_ipc_dispatcher.cc',
       'renderer/media/cast_ipc_dispatcher.h',
+      'renderer/media/cast_receiver_audio_valve.cc',
+      'renderer/media/cast_receiver_audio_valve.h',
+      'renderer/media/cast_receiver_session.cc',
+      'renderer/media/cast_receiver_session.h',
+      'renderer/media/cast_receiver_session_delegate.cc',
+      'renderer/media/cast_receiver_session_delegate.h',
       'renderer/media/cast_rtp_stream.cc',
       'renderer/media/cast_rtp_stream.h',
       'renderer/media/cast_session.cc',
@@ -329,6 +335,7 @@
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../media/cast/cast.gyp:cast_logging_proto',
             '../media/cast/cast.gyp:cast_net',
+            '../media/cast/cast.gyp:cast_receiver',
             '../media/cast/cast.gyp:cast_sender',
             # TODO(hclam): See crbug.com/298380 for details.
             # We should isolate the APIs needed by the renderer.
