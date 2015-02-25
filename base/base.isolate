@@ -61,13 +61,6 @@
         ],
       },
     }],
-    ['lsan==1', {
-      'variables': {
-        'files': [
-          '../tools/lsan/suppressions.txt',
-        ],
-      },
-    }],
     # Copy the VS runtime DLLs into the isolate so that they
     # don't have to be preinstalled on the target machine.
     ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
