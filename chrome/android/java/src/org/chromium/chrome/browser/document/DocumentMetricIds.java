@@ -31,12 +31,17 @@ public class DocumentMetricIds {
     public static final int STARTED_BY_SEARCH_RESULT_PAGE = 300;
     public static final int STARTED_BY_SEARCH_SUGGESTION_EXTERNAL = 301;
     public static final int STARTED_BY_SEARCH_SUGGESTION_CHROME = 302;
+    // Please reserve 4xx for STARTED_BY_EXTERNAL_APP_
     public static final int STARTED_BY_EXTERNAL_APP_GMAIL = 400;
     public static final int STARTED_BY_EXTERNAL_APP_FACEBOOK = 401;
     public static final int STARTED_BY_EXTERNAL_APP_PLUS = 402;
     public static final int STARTED_BY_EXTERNAL_APP_TWITTER = 403;
     public static final int STARTED_BY_EXTERNAL_APP_CHROME = 404;
     public static final int STARTED_BY_EXTERNAL_APP_OTHER = 405;
+    public static final int STARTED_BY_EXTERNAL_APP_HANGOUTS = 406;
+    public static final int STARTED_BY_EXTERNAL_APP_MESSENGER = 407;
+    public static final int STARTED_BY_EXTERNAL_APP_NEWS = 408;
+    public static final int STARTED_BY_EXTERNAL_APP_LINE = 409;
     public static final int STARTED_BY_CONTEXTUAL_SEARCH = 500;
 
     // DocumentActivity.OptOutDecision (enumerated)
