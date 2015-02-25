@@ -39,7 +39,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
-#include "core/rendering/RenderSearchField.h"
+#include "core/layout/LayoutSearchField.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -64,7 +64,7 @@ void SearchInputType::countUsage()
 
 LayoutObject* SearchInputType::createRenderer(const LayoutStyle&) const
 {
-    return new RenderSearchField(&element());
+    return new LayoutSearchField(&element());
 }
 
 const AtomicString& SearchInputType::formControlType() const

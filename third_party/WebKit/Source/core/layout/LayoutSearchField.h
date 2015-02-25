@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderSearchField_h
-#define RenderSearchField_h
+#ifndef LayoutSearchField_h
+#define LayoutSearchField_h
 
 #include "core/layout/LayoutTextControlSingleLine.h"
 
@@ -29,10 +29,10 @@ namespace blink {
 
 class HTMLInputElement;
 
-class RenderSearchField final : public LayoutTextControlSingleLine {
+class LayoutSearchField final : public LayoutTextControlSingleLine {
 public:
-    RenderSearchField(HTMLInputElement*);
-    virtual ~RenderSearchField();
+    LayoutSearchField(HTMLInputElement*);
+    virtual ~LayoutSearchField();
 
 private:
     virtual void centerContainerIfNeeded(LayoutBox*) const override;
@@ -43,8 +43,8 @@ private:
     Element* cancelButtonElement() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSearchField, isTextField());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSearchField, isTextField());
 
 }
 
-#endif
+#endif // LayoutSearchField_h

@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderSearchField.h"
+#include "core/layout/LayoutSearchField.h"
 
 #include "core/InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -35,27 +35,27 @@ using namespace HTMLNames;
 
 // ----------------------------
 
-RenderSearchField::RenderSearchField(HTMLInputElement* element)
+LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
     : LayoutTextControlSingleLine(element)
 {
     ASSERT(element->type() == InputTypeNames::search);
 }
 
-RenderSearchField::~RenderSearchField()
+LayoutSearchField::~LayoutSearchField()
 {
 }
 
-inline Element* RenderSearchField::searchDecorationElement() const
+inline Element* LayoutSearchField::searchDecorationElement() const
 {
     return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::searchDecoration());
 }
 
-inline Element* RenderSearchField::cancelButtonElement() const
+inline Element* LayoutSearchField::cancelButtonElement() const
 {
     return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::clearButton());
 }
 
-LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
+LayoutUnit LayoutSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
     Element* searchDecoration = searchDecorationElement();
     if (LayoutBox* decorationRenderer = searchDecoration ? searchDecoration->layoutBox() : 0) {
@@ -73,12 +73,12 @@ LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight,
     return lineHeight + nonContentHeight;
 }
 
-LayoutUnit RenderSearchField::computeLogicalHeightLimit() const
+LayoutUnit LayoutSearchField::computeLogicalHeightLimit() const
 {
     return logicalHeight();
 }
 
-void RenderSearchField::centerContainerIfNeeded(LayoutBox* containerRenderer) const
+void LayoutSearchField::centerContainerIfNeeded(LayoutBox* containerRenderer) const
 {
     if (!containerRenderer)
         return;
