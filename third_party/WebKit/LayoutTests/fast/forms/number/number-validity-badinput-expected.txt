@@ -28,6 +28,11 @@ The element losts a renderer. The element state should not be changed.
 PASS number.style.display = "none"; number.validity.badInput is true
 A bad input should be cleared by value="".
 PASS number.value = ""; document.execCommand("SelectAll"); document.getSelection().toString() is ""
+Setting a valud value via |value| IDL attribute should clear badInput.
+PASS number.validity.badInput is true
+PASS number.checkValidity() is false
+PASS number.validity.badInput is false
+PASS number.checkValidity() is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

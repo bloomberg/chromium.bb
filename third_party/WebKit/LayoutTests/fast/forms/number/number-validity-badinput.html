@@ -64,6 +64,14 @@ number.focus();
 debug('A bad input should be cleared by value="".');
 shouldBeEqualToString('number.value = ""; document.execCommand("SelectAll"); document.getSelection().toString()', '');
 
+debug('Setting a valud value via |value| IDL attribute should clear badInput.');
+document.execCommand('InsertText', false, 'non-number');
+shouldBeTrue('number.validity.badInput');
+shouldBeFalse('number.checkValidity()');
+number.value = '123';
+shouldBeFalse('number.validity.badInput');
+shouldBeTrue('number.checkValidity()');
+
 document.getElementById('parent').innerHTML = '';
 </script>
 </body>
