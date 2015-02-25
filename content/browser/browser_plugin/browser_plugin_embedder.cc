@@ -151,12 +151,9 @@ void BrowserPluginEmbedder::OnAttach(
     RenderFrameHost* render_frame_host,
     int browser_plugin_instance_id,
     const BrowserPluginHostMsg_Attach_Params& params) {
-  // TODO(fsamuel): Change message routing to use the process ID of the
-  // |render_frame_host| once BrowserPlugin IPCs get routed using the RFH
-  // routing ID. See http://crbug.com/436339.
   WebContents* guest_web_contents =
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
-          web_contents()->GetRenderProcessHost()->GetID(),
+          render_frame_host->GetProcess()->GetID(),
           browser_plugin_instance_id);
   if (!guest_web_contents)
     return;

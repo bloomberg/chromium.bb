@@ -1893,11 +1893,8 @@ RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
     int browser_plugin_instance_id) {
   BrowserPluginGuestManager* guest_manager =
       GetBrowserContext()->GetGuestManager();
-  // TODO(fsamuel): Change message routing to use the process ID of the
-  // |render_frame_host| once BrowserPlugin IPCs get routed using the RFH
-  // routing ID. See http://crbug.com/436339.
   WebContents* guest = guest_manager->GetGuestByInstanceID(
-      GetRenderProcessHost()->GetID(), browser_plugin_instance_id);
+      render_frame_host->GetProcess()->GetID(), browser_plugin_instance_id);
   if (!guest)
     return NULL;
   return guest->GetMainFrame();

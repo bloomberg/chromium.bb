@@ -74,11 +74,11 @@ BrowserPlugin* BrowserPluginManager::CreateBrowserPlugin(
 }
 
 void BrowserPluginManager::DidCommitCompositorFrame(
-    int render_view_routing_id) {
+    int render_frame_routing_id) {
   IDMap<BrowserPlugin>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {
-    if (iter.GetCurrentValue()->render_view_routing_id() ==
-        render_view_routing_id) {
+    if (iter.GetCurrentValue()->render_frame_routing_id() ==
+        render_frame_routing_id) {
       iter.GetCurrentValue()->DidCommitCompositorFrame();
     }
     iter.Advance();
@@ -128,7 +128,7 @@ void BrowserPluginManager::OnCompositorFrameSwappedPluginUnavailable(
   params.producing_route_id = get<1>(param).producing_route_id;
   params.output_surface_id = get<1>(param).output_surface_id;
   Send(new BrowserPluginHostMsg_CompositorFrameSwappedACK(
-      message.routing_id(), get<0>(param), params));
+      get<0>(param), params));
 }
 
 }  // namespace content

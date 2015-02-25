@@ -52,21 +52,24 @@ IPC_STRUCT_END()
 
 // -----------------------------------------------------------------------------
 // These messages are from the embedder to the browser process.
+// Most messages from the embedder to the browser process are CONTROL because
+// they are routed to the appropriate BrowserPluginGuest based on the
+// browser_plugin_instance_id which is unique per embedder process.
 
 // This message is sent from BrowserPlugin to BrowserPluginGuest to issue an
 // edit command.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ExecuteEditCommand,
-                    int /* browser_plugin_instance_id */,
-                    std::string /* command */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_ExecuteEditCommand,
+                     int /* browser_plugin_instance_id */,
+                     std::string /* command */)
 
 // This message must be sent just before sending a key event.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
-                    int /* browser_plugin_instance_id */,
-                    std::vector<content::EditCommand> /* edit_commands */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
+                     int /* browser_plugin_instance_id */,
+                     std::vector<content::EditCommand> /* edit_commands */)
 
 // This message is sent from BrowserPlugin to BrowserPluginGuest whenever IME
 // composition state is updated.
-IPC_MESSAGE_ROUTED5(
+IPC_MESSAGE_CONTROL5(
     BrowserPluginHostMsg_ImeSetComposition,
     int /* browser_plugin_instance_id */,
     std::string /* text */,
@@ -76,21 +79,24 @@ IPC_MESSAGE_ROUTED5(
 
 // This message is sent from BrowserPlugin to BrowserPluginGuest to notify that
 // confirming the current composition is requested.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_ImeConfirmComposition,
-                    int /* browser_plugin_instance_id */,
-                    std::string /* text */,
-                    bool /* keep selection */)
+IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_ImeConfirmComposition,
+                     int /* browser_plugin_instance_id */,
+                     std::string /* text */,
+                     bool /* keep selection */)
 
 // Deletes the current selection plus the specified number of characters before
 // and after the selection or caret.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_ExtendSelectionAndDelete,
-                    int /* browser_plugin_instance_id */,
-                    int /* before */,
-                    int /* after */)
+IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_ExtendSelectionAndDelete,
+                     int /* browser_plugin_instance_id */,
+                     int /* before */,
+                     int /* after */)
 
 // This message is sent to the browser process to indicate that the
 // BrowserPlugin identified by |browser_plugin_instance_id| is ready to serve
 // as container for a guest. |params| is the state of the BrowserPlugin.
+// This message is routed because we create a BrowserPluginEmbedder object
+// the first time we see this message arrive to a WebContents. We need a routing
+// ID to get this message to a particular WebContents.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Attach,
                     int /* browser_plugin_instance_id */,
                     BrowserPluginHostMsg_Attach_Params /* params */)
@@ -98,53 +104,54 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Attach,
 // This message is sent to the browser process to indicate that the
 // BrowserPlugin identified by |browser_plugin_instance_id| will no longer serve
 // as a container for a guest.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Detach,
-                    int /* browser_plugin_instance_id */)
+IPC_MESSAGE_CONTROL1(BrowserPluginHostMsg_Detach,
+                     int /* browser_plugin_instance_id */)
 
 // Tells the guest to focus or defocus itself.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_SetFocus,
-                    int /* browser_plugin_instance_id */,
-                    bool /* enable */,
-                    blink::WebFocusType /* focus_type */)
+IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_SetFocus,
+                     int /* browser_plugin_instance_id */,
+                     bool /* enable */,
+                     blink::WebFocusType /* focus_type */)
 
 // Sends an input event to the guest.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
-                    int /* browser_plugin_instance_id */,
-                    gfx::Rect /* guest_window_rect */,
-                    IPC::WebInputEventPointer /* event */)
+IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_HandleInputEvent,
+                     int /* browser_plugin_instance_id */,
+                     gfx::Rect /* guest_window_rect */,
+                     IPC::WebInputEventPointer /* event */)
 
 // Notify the guest renderer that some resources given to the embededer
 // are not used any more.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ReclaimCompositorResources,
-                    int /* browser_plugin_instance_id */,
-                    FrameHostMsg_ReclaimCompositorResources_Params /* params */)
+IPC_MESSAGE_CONTROL2(
+    BrowserPluginHostMsg_ReclaimCompositorResources,
+    int /* browser_plugin_instance_id */,
+    FrameHostMsg_ReclaimCompositorResources_Params /* params */)
 
 // Tells the guest it has been shown or hidden.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
-                    int /* browser_plugin_instance_id */,
-                    bool /* visible */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_SetVisibility,
+                     int /* browser_plugin_instance_id */,
+                     bool /* visible */)
 
 // Tells the guest that a drag event happened on the plugin.
-IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
-                    int /* browser_plugin_instance_id */,
-                    blink::WebDragStatus /* drag_status */,
-                    content::DropData /* drop_data */,
-                    blink::WebDragOperationsMask /* operation_mask */,
-                    gfx::Point /* plugin_location */)
+IPC_MESSAGE_CONTROL5(BrowserPluginHostMsg_DragStatusUpdate,
+                     int /* browser_plugin_instance_id */,
+                     blink::WebDragStatus /* drag_status */,
+                     content::DropData /* drop_data */,
+                     blink::WebDragOperationsMask /* operation_mask */,
+                     gfx::Point /* plugin_location */)
 
 // Sends a PointerLock Lock ACK to the BrowserPluginGuest.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,
-                    int /* browser_plugin_instance_id */,
-                    bool /* succeeded */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_LockMouse_ACK,
+                     int /* browser_plugin_instance_id */,
+                     bool /* succeeded */)
 
 // Sends a PointerLock Unlock ACK to the BrowserPluginGuest.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_UnlockMouse_ACK,
-                    int /* browser_plugin_instance_id */)
+IPC_MESSAGE_CONTROL1(BrowserPluginHostMsg_UnlockMouse_ACK,
+                     int /* browser_plugin_instance_id */)
 
 // Sent when plugin's position has changed.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_UpdateGeometry,
-                    int /* browser_plugin_instance_id */,
-                    gfx::Rect /* view_rect */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_UpdateGeometry,
+                     int /* browser_plugin_instance_id */,
+                     gfx::Rect /* view_rect */)
 
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
@@ -191,6 +198,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetTooltipText,
                      base::string16 /* tooltip_text */)
 
 // Acknowledge that we presented an ubercomp frame.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_CompositorFrameSwappedACK,
-                    int /* browser_plugin_instance_id */,
-                    FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_CompositorFrameSwappedACK,
+                     int /* browser_plugin_instance_id */,
+                     FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)

@@ -32,7 +32,7 @@ class CONTENT_EXPORT BrowserPlugin :
  public:
   static BrowserPlugin* GetFromNode(blink::WebNode& node);
 
-  int render_view_routing_id() const { return render_view_routing_id_; }
+  int render_frame_routing_id() const { return render_frame_routing_id_; }
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
   bool attached() const { return attached_; }
 
@@ -168,10 +168,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents and is ready to receive IPCs.
   bool attached_;
-  // We cache the |render_view_|'s routing ID because we need it on destruction.
-  // If the |render_view_| is destroyed before the BrowserPlugin is destroyed
-  // then we will attempt to access a NULL pointer.
-  const int render_view_routing_id_;
+  // We cache the |render_frame_routing_id| because we need it on destruction.
+  // If the RenderFrame is destroyed before the BrowserPlugin is destroyed
+  // then we will attempt to access a nullptr.
+  const int render_frame_routing_id_;
   blink::WebPluginContainer* container_;
   gfx::Rect plugin_rect_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.

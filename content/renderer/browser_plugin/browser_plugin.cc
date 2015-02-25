@@ -61,7 +61,7 @@ BrowserPlugin* BrowserPlugin::GetFromNode(blink::WebNode& node) {
 BrowserPlugin::BrowserPlugin(RenderFrame* render_frame,
                              scoped_ptr<BrowserPluginDelegate> delegate)
     : attached_(false),
-      render_view_routing_id_(render_frame->GetRenderView()->GetRoutingID()),
+      render_frame_routing_id_(render_frame->GetRoutingID()),
       container_(nullptr),
       sad_guest_(nullptr),
       guest_crashed_(false),
@@ -133,7 +133,7 @@ void BrowserPlugin::Attach() {
   }
   attach_params.view_size = gfx::Size(width(), height());
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Attach(
-      render_view_routing_id_,
+      render_frame_routing_id_,
       browser_plugin_instance_id_,
       attach_params));
 
@@ -152,8 +152,8 @@ void BrowserPlugin::Detach() {
     compositing_helper_ = nullptr;
   }
 
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Detach(
-      render_view_routing_id_, browser_plugin_instance_id_));
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
@@ -163,7 +163,8 @@ void BrowserPlugin::DidCommitCompositorFrame() {
 
 void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
                                    bool reverse) {
-  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_frame = RenderFrameImpl::FromRoutingID(render_frame_routing_id());
+  auto render_view = render_frame ? render_frame->GetRenderView() : nullptr;
   if (!render_view)
     return;
   render_view->GetWebView()->advanceFocus(reverse);
@@ -225,7 +226,9 @@ void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
 
 void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
                                    bool enable) {
-  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_frame = RenderFrameImpl::FromRoutingID(render_frame_routing_id());
+  auto render_view = static_cast<RenderViewImpl*>(
+      render_frame ? render_frame->GetRenderView() : nullptr);
   if (enable) {
     if (mouse_locked_ || !render_view)
       return;
@@ -268,7 +271,6 @@ void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
     return;
   bool should_be_focused = ShouldGuestBeFocused();
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
-      render_view_routing_id_,
       browser_plugin_instance_id_,
       should_be_focused,
       focus_type));
@@ -276,7 +278,9 @@ void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   bool embedder_focused = false;
-  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_frame = RenderFrameImpl::FromRoutingID(render_frame_routing_id());
+  auto render_view = static_cast<RenderViewImpl*>(
+      render_frame ? render_frame->GetRenderView() : nullptr);
   if (render_view)
     embedder_focused = render_view->has_focus();
   return plugin_focused_ && embedder_focused;
@@ -340,7 +344,9 @@ void BrowserPlugin::destroy() {
 
   container_ = nullptr;
   // Will be a no-op if the mouse is not currently locked.
-  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_frame = RenderFrameImpl::FromRoutingID(render_frame_routing_id());
+  auto render_view = static_cast<RenderViewImpl*>(
+      render_frame ? render_frame->GetRenderView() : nullptr);
   if (render_view)
     render_view->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -434,7 +440,7 @@ void BrowserPlugin::updateGeometry(
   if (old_width == window_rect.width && old_height == window_rect.height) {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateGeometry(
-        render_view_routing_id_, browser_plugin_instance_id_, plugin_rect_));
+        browser_plugin_instance_id_, plugin_rect_));
     return;
   }
 
@@ -461,7 +467,6 @@ void BrowserPlugin::updateVisibility(bool visible) {
     compositing_helper_->UpdateVisibility(visible);
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetVisibility(
-      render_view_routing_id_,
       browser_plugin_instance_id_,
       visible));
 }
@@ -482,15 +487,13 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
       !edit_commands_.empty()) {
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent(
-            render_view_routing_id_,
             browser_plugin_instance_id_,
             edit_commands_));
     edit_commands_.clear();
   }
 
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
-                                                browser_plugin_instance_id_,
+      new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
                                                 plugin_rect_,
                                                 &event));
   GetWebKitCursorInfo(cursor_, &cursor_info);
@@ -506,7 +509,6 @@ bool BrowserPlugin::handleDragStatusUpdate(blink::WebDragStatus drag_status,
     return false;
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
-        render_view_routing_id_,
         browser_plugin_instance_id_,
         drag_status,
         DropDataBuilder::Build(drag_data),
@@ -544,7 +546,6 @@ void BrowserPlugin::didFailLoadingFrameRequest(
 
 bool BrowserPlugin::executeEditCommand(const blink::WebString& name) {
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ExecuteEditCommand(
-      render_view_routing_id_,
       browser_plugin_instance_id_,
       name.utf8()));
 
@@ -571,7 +572,6 @@ bool BrowserPlugin::setComposition(
     std_underlines.push_back(underlines[i]);
   }
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeSetComposition(
-      render_view_routing_id_,
       browser_plugin_instance_id_,
       text.utf8(),
       std_underlines,
@@ -589,7 +589,6 @@ bool BrowserPlugin::confirmComposition(
   bool keep_selection = (selectionBehavior == blink::WebWidget::KeepSelection);
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_ImeConfirmComposition(
-          render_view_routing_id_,
           browser_plugin_instance_id_,
           text.utf8(),
           keep_selection));
@@ -602,7 +601,6 @@ void BrowserPlugin::extendSelectionAndDelete(int before, int after) {
     return;
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_ExtendSelectionAndDelete(
-          render_view_routing_id_,
           browser_plugin_instance_id_,
           before,
           after));
@@ -611,7 +609,6 @@ void BrowserPlugin::extendSelectionAndDelete(int before, int after) {
 void BrowserPlugin::OnLockMouseACK(bool succeeded) {
   mouse_locked_ = succeeded;
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_LockMouse_ACK(
-      render_view_routing_id_,
       browser_plugin_instance_id_,
       succeeded));
 }
@@ -619,15 +616,13 @@ void BrowserPlugin::OnLockMouseACK(bool succeeded) {
 void BrowserPlugin::OnMouseLockLost() {
   mouse_locked_ = false;
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UnlockMouse_ACK(
-      render_view_routing_id_,
       browser_plugin_instance_id_));
 }
 
 bool BrowserPlugin::HandleMouseLockedInputEvent(
     const blink::WebMouseEvent& event) {
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
-                                                browser_plugin_instance_id_,
+      new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
                                                 plugin_rect_,
                                                 &event));
   return true;
