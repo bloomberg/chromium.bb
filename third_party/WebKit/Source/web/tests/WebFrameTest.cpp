@@ -1594,6 +1594,30 @@ TEST_F(WebFrameTest, OverflowHiddenDisablesScrolling)
 
     FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     EXPECT_FALSE(view->userInputScrollable(VerticalScrollbar));
+    EXPECT_FALSE(view->userInputScrollable(HorizontalScrollbar));
+}
+
+TEST_F(WebFrameTest, OverflowHiddenDisablesScrollingWithSetCanHaveScrollbars)
+{
+    registerMockedHttpURLLoad("body-overflow-hidden-short.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initialize(true, 0, &client);
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "body-overflow-hidden-short.html");
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    EXPECT_FALSE(view->userInputScrollable(VerticalScrollbar));
+    EXPECT_FALSE(view->userInputScrollable(HorizontalScrollbar));
+
+    webViewHelper.webViewImpl()->mainFrameImpl()->setCanHaveScrollbars(true);
+    EXPECT_FALSE(view->userInputScrollable(VerticalScrollbar));
+    EXPECT_FALSE(view->userInputScrollable(HorizontalScrollbar));
 }
 
 TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk)

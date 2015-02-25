@@ -462,17 +462,14 @@ void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     m_canHaveScrollbars = canHaveScrollbars;
 
-    ScrollbarMode newHorizontalMode;
-    ScrollbarMode newVerticalMode;
-
-    scrollbarModes(newHorizontalMode, newVerticalMode);
-
-    if (canHaveScrollbars && newVerticalMode == ScrollbarAlwaysOff)
+    ScrollbarMode newVerticalMode = m_verticalScrollbarMode;
+    if (canHaveScrollbars && m_verticalScrollbarMode == ScrollbarAlwaysOff)
         newVerticalMode = ScrollbarAuto;
     else if (!canHaveScrollbars)
         newVerticalMode = ScrollbarAlwaysOff;
 
-    if (canHaveScrollbars && newHorizontalMode == ScrollbarAlwaysOff)
+    ScrollbarMode newHorizontalMode = m_horizontalScrollbarMode;
+    if (canHaveScrollbars && m_horizontalScrollbarMode == ScrollbarAlwaysOff)
         newHorizontalMode = ScrollbarAuto;
     else if (!canHaveScrollbars)
         newHorizontalMode = ScrollbarAlwaysOff;
@@ -599,13 +596,9 @@ void FrameView::applyOverflowToViewportAndSetRenderer(LayoutObject* o, Scrollbar
         }
     }
 
-    bool ignoreOverflowHidden = false;
-    if (m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->isMainFrame())
-        ignoreOverflowHidden = true;
-
     switch (overflowX) {
         case OHIDDEN:
-            if (!ignoreOverflowHidden)
+            if (!shouldIgnoreOverflowHidden())
                 hMode = ScrollbarAlwaysOff;
             break;
         case OSCROLL:
@@ -621,7 +614,7 @@ void FrameView::applyOverflowToViewportAndSetRenderer(LayoutObject* o, Scrollbar
 
      switch (overflowY) {
         case OHIDDEN:
-            if (!ignoreOverflowHidden)
+            if (!shouldIgnoreOverflowHidden())
                 vMode = ScrollbarAlwaysOff;
             break;
         case OSCROLL:
@@ -3159,6 +3152,15 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
 {
     bool needsUpdate = false;
 
+    // If the page's overflow setting has disabled scrolling, do not allow anything to override that setting.
+    // http://crbug.com/426447
+    if (m_viewportRenderer && !shouldIgnoreOverflowHidden()) {
+        if (m_viewportRenderer->style()->overflowX() == OHIDDEN)
+            horizontalMode = ScrollbarAlwaysOff;
+        if (m_viewportRenderer->style()->overflowY() == OHIDDEN)
+            verticalMode = ScrollbarAlwaysOff;
+    }
+
     if (horizontalMode != horizontalScrollbarMode() && !m_horizontalScrollbarLock) {
         m_horizontalScrollbarMode = horizontalMode;
         needsUpdate = true;
@@ -3186,12 +3188,6 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
     if (!layer)
         return;
     layer->setUserScrollable(userInputScrollable(HorizontalScrollbar), userInputScrollable(VerticalScrollbar));
-}
-
-void FrameView::scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& verticalMode) const
-{
-    horizontalMode = m_horizontalScrollbarMode;
-    verticalMode = m_verticalScrollbarMode;
 }
 
 void FrameView::setClipsRepaints(bool clipsRepaints)
@@ -3505,6 +3501,11 @@ bool FrameView::needsScrollbarReconstruction() const
         || (m_verticalScrollbar && m_verticalScrollbar->isCustomScrollbar());
 
     return hasAnyScrollbar && (shouldUseCustom != hasCustom);
+}
+
+bool FrameView::shouldIgnoreOverflowHidden() const
+{
+    return m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->isMainFrame();
 }
 
 void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
