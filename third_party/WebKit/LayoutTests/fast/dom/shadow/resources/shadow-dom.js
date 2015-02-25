@@ -46,6 +46,23 @@ function createDOM(tagName, attributes)
     return element;
 }
 
+function convertTemplatesToShadowRootsWithin(node) {
+    var nodes = node.querySelectorAll("template");
+    for (var i = 0; i < nodes.length; ++i) {
+        var template = nodes[i];
+
+        var parent = template.parentNode;
+        parent.removeChild(template);
+        var shadowRoot = parent.createShadowRoot();
+        if (template.id)
+            shadowRoot.id = template.id;
+        var fragments = document.importNode(template.content, true);
+        shadowRoot.appendChild(fragments);
+
+        convertTemplatesToShadowRootsWithin(shadowRoot);
+    }
+}
+
 function isShadowHost(node)
 {
     return window.internals.oldestShadowRoot(node);
