@@ -15,7 +15,6 @@ namespace local_discovery {
 // static
 scoped_ptr<PrivetHTTPAsynchronousFactory>
 PrivetHTTPAsynchronousFactory::CreateInstance(
-    ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context) {
 #if defined(OS_MACOSX)
   return make_scoped_ptr<PrivetHTTPAsynchronousFactory>(
@@ -23,8 +22,7 @@ PrivetHTTPAsynchronousFactory::CreateInstance(
 
 #else
   return make_scoped_ptr<PrivetHTTPAsynchronousFactory>(
-      new PrivetHTTPAsynchronousFactoryImpl(service_discovery_client,
-                                            request_context));
+      new PrivetHTTPAsynchronousFactoryImpl(request_context));
 #endif
 }
 

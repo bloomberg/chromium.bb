@@ -171,7 +171,7 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
     privet_lister_.reset(
         new PrivetDeviceListerImpl(service_discovery_client_.get(), this));
     privet_http_factory_ = PrivetHTTPAsynchronousFactory::CreateInstance(
-        service_discovery_client_.get(), profile->GetRequestContext());
+        profile->GetRequestContext());
 
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetInstance()->GetForProfile(profile);
@@ -211,8 +211,7 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
 
   if (found->second.version < kCloudDevicesPrivetVersion) {
     privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-        device,
-        found->second.address,
+        device, found->second.address,
         base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
                    base::Unretained(this)));
     privet_resolution_->Start();

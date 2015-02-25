@@ -18,7 +18,6 @@ class URLRequestContextGetter;
 namespace local_discovery {
 
 class PrivetHTTPClient;
-class ServiceDiscoveryClient;
 
 class PrivetHTTPResolution {
  public:
@@ -34,7 +33,6 @@ class PrivetHTTPAsynchronousFactory {
   virtual ~PrivetHTTPAsynchronousFactory() {}
 
   static scoped_ptr<PrivetHTTPAsynchronousFactory> CreateInstance(
-      ServiceDiscoveryClient* service_discovery_client,
       net::URLRequestContextGetter* request_context);
 
   virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(

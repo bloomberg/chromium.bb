@@ -11,10 +11,11 @@
 
 namespace local_discovery {
 
+class ServiceDiscoverySharedClient;
+
 class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
  public:
-  PrivetHTTPAsynchronousFactoryImpl(
-      ServiceDiscoveryClient* service_discovery_client,
+  explicit PrivetHTTPAsynchronousFactoryImpl(
       net::URLRequestContextGetter* request_context);
   ~PrivetHTTPAsynchronousFactoryImpl() override;
 
@@ -29,7 +30,6 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
     ResolutionImpl(const std::string& name,
                    const net::HostPortPair& address,
                    const ResultCallback& callback,
-                   ServiceDiscoveryClient* service_discovery_client,
                    net::URLRequestContextGetter* request_context);
     ~ResolutionImpl() override;
 
@@ -46,9 +46,9 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
     net::HostPortPair hostport_;
     ResultCallback callback_;
     scoped_refptr<net::URLRequestContextGetter> request_context_;
+    scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
   };
 
-  ServiceDiscoveryClient* service_discovery_client_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 

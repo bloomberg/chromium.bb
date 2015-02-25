@@ -351,7 +351,7 @@ void PrivetNotificationService::StartLister() {
 
   scoped_ptr<PrivetHTTPAsynchronousFactory> http_factory(
       PrivetHTTPAsynchronousFactory::CreateInstance(
-          service_discovery_client_.get(), profile_->GetRequestContext()));
+          profile_->GetRequestContext()));
 
   privet_notifications_listener_.reset(new PrivetNotificationsListener(
       http_factory.Pass(), this));

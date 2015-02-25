@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
+#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace local_discovery {
@@ -28,10 +29,8 @@ std::string IPAddressToHostString(const net::IPAddressNumber& address) {
 }  // namespace
 
 PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
-    ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context)
-    : service_discovery_client_(service_discovery_client),
-      request_context_(request_context) {
+    : request_context_(request_context) {
 }
 
 PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {
@@ -43,33 +42,28 @@ PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
     const net::HostPortPair& address,
     const ResultCallback& callback) {
   return scoped_ptr<PrivetHTTPResolution>(
-      new ResolutionImpl(name,
-                         address,
-                         callback,
-                         service_discovery_client_,
-                         request_context_.get()));
+      new ResolutionImpl(name, address, callback, request_context_.get()));
 }
 
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
     const std::string& name,
     const net::HostPortPair& address,
     const ResultCallback& callback,
-    ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context)
     : name_(name),
       hostport_(address),
       callback_(callback),
       request_context_(request_context) {
-  net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
+  service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
 
+  net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPrivetIPv6Only)) {
     address_family = net::ADDRESS_FAMILY_IPV6;
   }
 
-  resolver_ = service_discovery_client->CreateLocalDomainResolver(
-      address.host(),
-      address_family,
+  resolver_ = service_discovery_client_->CreateLocalDomainResolver(
+      address.host(), address_family,
       base::Bind(&ResolutionImpl::ResolveComplete, base::Unretained(this)));
 }
 
