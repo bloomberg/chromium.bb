@@ -289,6 +289,7 @@ AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* err
 DEFINE_TRACE(InspectorAnimationAgent)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_pageAgent);
     visitor->trace(m_domAgent);
     visitor->trace(m_idToAnimationPlayer);
 #endif
