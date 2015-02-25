@@ -39,7 +39,7 @@ void SingleThreadIdleTaskRunner::PostIdleTaskAfterWakeup(
     const tracked_objects::Location& from_here,
     const IdleTask& idle_task) {
   after_wakeup_task_runner_->PostTask(
-      from_here, base::Bind(&SingleThreadIdleTaskRunner::PostIdleTask, this,
+      FROM_HERE, base::Bind(&SingleThreadIdleTaskRunner::PostIdleTask, this,
                             from_here, idle_task));
 }
 
