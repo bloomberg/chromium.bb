@@ -22,11 +22,22 @@ class ScrollbarAnimationControllerThinningTest
   ScrollbarAnimationControllerThinningTest()
       : host_impl_(&proxy_, &shared_bitmap_manager_) {}
 
-  void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                base::TimeDelta delay) override {
-    start_fade_ = start_fade;
+  void StartAnimatingScrollbarAnimationController(
+      ScrollbarAnimationController* controller) override {
+    is_animating_ = true;
   }
-  void SetNeedsScrollbarAnimationFrame() override {}
+  void StopAnimatingScrollbarAnimationController(
+      ScrollbarAnimationController* controller) override {
+    is_animating_ = false;
+  }
+  void PostDelayedScrollbarAnimationTask(const base::Closure& start_fade,
+                                         base::TimeDelta delay) override {
+    start_fade_ = start_fade;
+    delay_ = delay;
+  }
+  void SetNeedsRedrawForScrollbarAnimation() override {
+    did_request_redraw_ = true;
+  }
 
  protected:
   void SetUp() override {
@@ -57,11 +68,8 @@ class ScrollbarAnimationControllerThinningTest
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
 
     scrollbar_controller_ = ScrollbarAnimationControllerThinning::Create(
-        scroll_layer_ptr,
-        this,
-        base::TimeDelta::FromSeconds(2),
-        base::TimeDelta::FromSeconds(5),
-        base::TimeDelta::FromSeconds(3));
+        scroll_layer_ptr, this, base::TimeDelta::FromSeconds(2),
+        base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(3));
   }
 
   FakeImplProxy proxy_;
@@ -72,6 +80,9 @@ class ScrollbarAnimationControllerThinningTest
   scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
 
   base::Closure start_fade_;
+  base::TimeDelta delay_;
+  bool is_animating_;
+  bool did_request_redraw_;
 };
 
 // Check initialization of scrollbar.

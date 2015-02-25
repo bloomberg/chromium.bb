@@ -62,8 +62,6 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   void ApplyOpacityAndThumbThicknessScale(float opacity,
                                           float thumb_thickness_scale);
 
-  LayerImpl* scroll_layer_;
-
   bool mouse_is_over_scrollbar_;
   bool mouse_is_near_scrollbar_;
   // Are we narrowing or thickening the bars.

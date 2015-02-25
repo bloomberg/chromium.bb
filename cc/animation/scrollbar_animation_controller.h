@@ -9,17 +9,25 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 
+class ScrollbarAnimationController;
+
 class CC_EXPORT ScrollbarAnimationControllerClient {
  public:
-  virtual ~ScrollbarAnimationControllerClient() {}
+  virtual void StartAnimatingScrollbarAnimationController(
+      ScrollbarAnimationController* controller) = 0;
+  virtual void StopAnimatingScrollbarAnimationController(
+      ScrollbarAnimationController* controller) = 0;
+  virtual void PostDelayedScrollbarAnimationTask(const base::Closure& task,
+                                                 base::TimeDelta delay) = 0;
+  virtual void SetNeedsRedrawForScrollbarAnimation() = 0;
 
-  virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                        base::TimeDelta delay) = 0;
-  virtual void SetNeedsScrollbarAnimationFrame() = 0;
+ protected:
+  virtual ~ScrollbarAnimationControllerClient() {}
 };
 
 // This abstract class represents the compositor-side analogy of
@@ -38,7 +46,8 @@ class CC_EXPORT ScrollbarAnimationController {
   virtual void DidMouseMoveNear(float distance) {}
 
  protected:
-  ScrollbarAnimationController(ScrollbarAnimationControllerClient* client,
+  ScrollbarAnimationController(LayerImpl* scroll_layer,
+                               ScrollbarAnimationControllerClient* client,
                                base::TimeDelta delay_before_starting,
                                base::TimeDelta resize_delay_before_starting,
                                base::TimeDelta duration);
@@ -48,18 +57,21 @@ class CC_EXPORT ScrollbarAnimationController {
   void StartAnimation();
   void StopAnimation();
 
+  LayerImpl* scroll_layer_;
+  ScrollbarAnimationControllerClient* client_;
+
  private:
   // Returns how far through the animation we are as a progress value from
   // 0 to 1.
   float AnimationProgressAtTime(base::TimeTicks now);
 
-  void PostDelayedFade(bool on_resize);
+  void PostDelayedAnimationTask(bool on_resize);
 
-  ScrollbarAnimationControllerClient* client_;
   base::TimeTicks last_awaken_time_;
   base::TimeDelta delay_before_starting_;
   base::TimeDelta resize_delay_before_starting_;
   base::TimeDelta duration_;
+
   bool is_animating_;
 
   bool currently_scrolling_;

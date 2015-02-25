@@ -1362,10 +1362,10 @@ void ThreadProxy::RenewTreePriority() {
   }
 }
 
-void ThreadProxy::PostDelayedScrollbarFadeOnImplThread(
-    const base::Closure& start_fade,
+void ThreadProxy::PostDelayedAnimationTaskOnImplThread(
+    const base::Closure& task,
     base::TimeDelta delay) {
-  Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, start_fade, delay);
+  Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, task, delay);
 }
 
 void ThreadProxy::DidActivateSyncTree() {

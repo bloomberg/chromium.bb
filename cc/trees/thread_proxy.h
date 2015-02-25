@@ -205,7 +205,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
                                                int priority_cutoff) override;
   bool IsInsideDraw() override;
   void RenewTreePriority() override;
-  void PostDelayedScrollbarFadeOnImplThread(const base::Closure& start_fade,
+  void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
                                             base::TimeDelta delay) override;
   void DidActivateSyncTree() override;
   void DidPrepareTiles() override;

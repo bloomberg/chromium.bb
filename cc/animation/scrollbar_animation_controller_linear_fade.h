@@ -40,8 +40,6 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
   float OpacityAtTime(base::TimeTicks now) const;
   void ApplyOpacityToScrollbars(float opacity);
 
-  LayerImpl* scroll_layer_;
-
   DISALLOW_COPY_AND_ASSIGN(ScrollbarAnimationControllerLinearFade);
 };
 

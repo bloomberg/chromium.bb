@@ -17,12 +17,9 @@ ScrollbarAnimationControllerLinearFade::Create(
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration) {
-  return make_scoped_ptr(
-      new ScrollbarAnimationControllerLinearFade(scroll_layer,
-                                                 client,
-                                                 delay_before_starting,
-                                                 resize_delay_before_starting,
-                                                 duration));
+  return make_scoped_ptr(new ScrollbarAnimationControllerLinearFade(
+      scroll_layer, client, delay_before_starting, resize_delay_before_starting,
+      duration));
 }
 
 ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
@@ -31,18 +28,20 @@ ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration)
-    : ScrollbarAnimationController(client,
+    : ScrollbarAnimationController(scroll_layer,
+                                   client,
                                    delay_before_starting,
                                    resize_delay_before_starting,
-                                   duration),
-      scroll_layer_(scroll_layer) {
+                                   duration) {
 }
 
 ScrollbarAnimationControllerLinearFade::
-    ~ScrollbarAnimationControllerLinearFade() {}
+    ~ScrollbarAnimationControllerLinearFade() {
+}
 
 void ScrollbarAnimationControllerLinearFade::RunAnimationFrame(float progress) {
   ApplyOpacityToScrollbars(1.f - progress);
+  client_->SetNeedsRedrawForScrollbarAnimation();
   if (progress == 1.f)
     StopAnimation();
 }
@@ -59,8 +58,7 @@ void ScrollbarAnimationControllerLinearFade::ApplyOpacityToScrollbars(
 
   LayerImpl::ScrollbarSet* scrollbars = scroll_layer_->scrollbars();
   for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
-       it != scrollbars->end();
-       ++it) {
+       it != scrollbars->end(); ++it) {
     ScrollbarLayerImplBase* scrollbar = *it;
 
     if (scrollbar->is_overlay_scrollbar())

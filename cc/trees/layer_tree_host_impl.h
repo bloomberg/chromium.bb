@@ -103,9 +103,8 @@ class LayerTreeHostImplClient {
       int priority_cutoff) = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
-  virtual void PostDelayedScrollbarFadeOnImplThread(
-      const base::Closure& start_fade,
-      base::TimeDelta delay) = 0;
+  virtual void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
+                                                    base::TimeDelta delay) = 0;
   virtual void DidActivateSyncTree() = 0;
   virtual void DidPrepareTiles() = 0;
 
@@ -258,9 +257,13 @@ class CC_EXPORT LayerTreeHostImpl
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
 
   // ScrollbarAnimationControllerClient implementation.
-  void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                base::TimeDelta delay) override;
-  void SetNeedsScrollbarAnimationFrame() override;
+  void StartAnimatingScrollbarAnimationController(
+      ScrollbarAnimationController* controller) override;
+  void StopAnimatingScrollbarAnimationController(
+      ScrollbarAnimationController* controller) override;
+  void PostDelayedScrollbarAnimationTask(const base::Closure& task,
+                                         base::TimeDelta delay) override;
+  void SetNeedsRedrawForScrollbarAnimation() override;
 
   // OutputSurfaceClient implementation.
   void DeferredInitialize() override;
@@ -584,9 +587,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool HandleMouseOverScrollbar(LayerImpl* layer_impl,
                                 const gfx::PointF& device_viewport_point);
 
-  void AnimateScrollbarsRecursive(LayerImpl* layer,
-                                  base::TimeTicks time);
-
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
       InputHandler::ScrollInputType type,
@@ -716,6 +716,7 @@ class CC_EXPORT LayerTreeHostImpl
   base::TimeDelta begin_impl_frame_interval_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
+  std::set<ScrollbarAnimationController*> scrollbar_animation_controllers_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
