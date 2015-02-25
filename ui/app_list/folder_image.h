@@ -47,7 +47,7 @@ class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
   const gfx::ImageSkia& icon() const { return icon_; }
 
   // Returns the icon of one of the top items with |item_index|.
-  const gfx::ImageSkia& GetTopIcon(size_t item_index);
+  const gfx::ImageSkia& GetTopIcon(size_t item_index) const;
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
@@ -63,7 +63,7 @@ class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
   // The Rect returned is in the same coordinates of |folder_icon_bounds|.
   gfx::Rect GetTargetIconRectInFolderForItem(
       AppListItem* item,
-      const gfx::Rect& folder_icon_bounds);
+      const gfx::Rect& folder_icon_bounds) const;
 
   void AddObserver(FolderImageObserver* observer);
   void RemoveObserver(FolderImageObserver* observer);
