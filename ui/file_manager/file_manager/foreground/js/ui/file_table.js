@@ -742,8 +742,13 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
       /** @type {!HTMLDivElement} */ (item.querySelector('.date')), entry);
   this.updateSize_(
       /** @type {!HTMLDivElement} */ (item.querySelector('.size')), entry);
-  this.updateStatus_(
-      /** @type {!HTMLDivElement} */ (item.querySelector('.status')), entry);
+
+  // The status column isn't always visible.
+  // TODO(kenobi): Clean up once the status column's fate is determined.
+  var statusEl = item.querySelector('.status');
+  if (statusEl) {
+    this.updateStatus_(/** @type {!HTMLDivElement} */ (statusEl), entry);
+  }
 };
 
 /**
