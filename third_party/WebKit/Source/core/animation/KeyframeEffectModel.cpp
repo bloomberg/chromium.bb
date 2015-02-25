@@ -102,16 +102,16 @@ void KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyI
 
     ensureKeyframeGroups();
     auto& keyframes = m_keyframeGroups->get(property)->m_keyframes;
-
     ASSERT(keyframes.size() >= 2);
-    ASSERT(!toStringPropertySpecificKeyframe(*keyframes[0]).value() || !toStringPropertySpecificKeyframe(*keyframes[keyframes.size() - 1]).value());
 
-    if (!toStringPropertySpecificKeyframe(*keyframes.first()).value())
-        toStringPropertySpecificKeyframe(*keyframes.first()).setAnimatableValue(value);
-    if (!toStringPropertySpecificKeyframe(*keyframes.last()).value())
-        toStringPropertySpecificKeyframe(*keyframes.last()).setAnimatableValue(value);
+    auto& first = toStringPropertySpecificKeyframe(*keyframes.first());
+    auto& last = toStringPropertySpecificKeyframe(*keyframes.last());
+    ASSERT(!first.value() || !last.value());
 
-    // FIXME: Handle neutral keyframes that are not at 0% or 100%.
+    if (!first.value())
+        first.setAnimatableValue(value);
+    if (!last.value())
+        last.setAnimatableValue(value);
 }
 
 KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)
