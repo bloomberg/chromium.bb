@@ -165,6 +165,15 @@ void ServerChannelMojo::Close() {
   ChannelMojo::Close();
 }
 
+#if defined(OS_POSIX) && !defined(OS_NACL)
+
+base::ScopedFD TakeOrDupFile(internal::PlatformFileAttachment* attachment) {
+  return attachment->Owns() ? base::ScopedFD(attachment->TakePlatformFile())
+                            : base::ScopedFD(dup(attachment->file()));
+}
+
+#endif
+
 } // namespace
 
 //------------------------------------------------------------------------------
@@ -359,10 +368,10 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
         case MessageAttachment::TYPE_PLATFORM_FILE:
 #if defined(OS_POSIX) && !defined(OS_NACL)
         {
-          base::PlatformFile file =
-              dup(static_cast<IPC::internal::PlatformFileAttachment*>(
-                      attachment.get())->file());
-          if (file == -1) {
+          base::ScopedFD file =
+              TakeOrDupFile(static_cast<IPC::internal::PlatformFileAttachment*>(
+                  attachment.get()));
+          if (!file.is_valid()) {
             DPLOG(WARNING) << "Failed to dup FD to transmit.";
             set->CommitAll();
             return MOJO_RESULT_UNKNOWN;
@@ -371,7 +380,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
           MojoHandle wrapped_handle;
           MojoResult wrap_result = CreatePlatformHandleWrapper(
               mojo::embedder::ScopedPlatformHandle(
-                  mojo::embedder::PlatformHandle(file)),
+                  mojo::embedder::PlatformHandle(file.release())),
               &wrapped_handle);
           if (MOJO_RESULT_OK != wrap_result) {
             DLOG(WARNING) << "Pipe failed to wrap handles. Closing: "
