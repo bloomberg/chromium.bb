@@ -26,3 +26,5 @@ Local modifications:
 - Use the script third_party/closure_compiler/bump_compiler_version to update
   the versions of third_party/closure_compiler/compiler/compiler.jar and/or
   third_party/closure_compiler/externs/chrome_extensions.js.
+- Some externs here are for chrome-specific use; these primarily include the
+  *_private.js files.
