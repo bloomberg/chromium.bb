@@ -52,7 +52,7 @@ class AxProviderImplTest : public testing::Test {
     blink::initialize(new html_viewer::BlinkPlatformImpl());
   }
 
-  virtual ~AxProviderImplTest() override { blink::shutdown(); }
+  ~AxProviderImplTest() override { blink::shutdown(); }
 
  private:
   base::MessageLoopForUI message_loop;
