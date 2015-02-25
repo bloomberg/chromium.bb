@@ -272,7 +272,6 @@ v8.log
 /third_party/bidichecker
 /third_party/bison
 /third_party/boringssl/src
-/third_party/brotli/src
 /third_party/cacheinvalidation/cacheinvalidation_unittests_run.xml
 /third_party/cacheinvalidation/src
 /third_party/chromeos_login_manager

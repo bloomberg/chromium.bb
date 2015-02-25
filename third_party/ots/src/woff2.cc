@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <vector>
 
-#include "third_party/brotli/src/brotli/dec/decode.h"
+#include "third_party/brotli/dec/decode.h"
 
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"

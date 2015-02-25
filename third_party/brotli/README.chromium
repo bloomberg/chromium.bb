@@ -1,15 +1,17 @@
 Name: Brotli
-URL: https://code.google.com/p/font-compression-reference/
-Version: 0
+URL: https://github.com/google/brotli
+Version: 35cd3db9c1728ad26a2e46cb401e7a14424cb481
 License: Apache 2.0
-License File: src/LICENSE
+License File: LICENSE
 Security Critical: yes
 
 Description:
-Brotli is a generic byte-level compression algorithm that is proposed to
-be used at the byte-compression level in WOFF 2.0 font file format.
+Brotli is a generic byte-level compression algorithm that is used at the
+byte-compression level in WOFF 2.0 font file format. This library is used
+to decode WOFF 2.0 fonts.
 
-This library is used by src/third_party/ots, to decode WOFF 2.0 fonts.
-
-The font-compression-reference repository includes WOFF 2.0 encoder and
-tools, but Chrome/Chromium need only files under brotli/dec.
+Local Modifications:
+- This only includes the dec/ directory and the files under the repository
+  root, removing unneeded direcories such as encoder, tests, and tools.
+- BUILD.gn: Added.
+- brotli.gyp: Added.

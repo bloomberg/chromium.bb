@@ -3,3 +3,6 @@ URL: https://github.com/khaledhosny/ots.git
 Version: ea88f974e00e7fe0b4fbfe8d0adad8cfedf49c57
 Security Critical: yes
 License: BSD
+
+Local Modifications:
+- src/woff2.cc: Changed include path to brotli/dec/decode.h.
