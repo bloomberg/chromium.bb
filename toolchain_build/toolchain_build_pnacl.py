@@ -136,7 +136,7 @@ def TripleIsX8664(t):
   return fnmatch.fnmatch(t, 'x86_64*')
 
 def HostIsDebug(options):
-    return options.host_flavor == 'debug'
+  return options.host_flavor == 'debug'
 
 # Return a tuple (C compiler, C++ compiler) of the compilers to compile the host
 # toolchains
