@@ -265,10 +265,11 @@ void ComputeVisibleRectsUsingPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     TransformTree* transform_tree,
-    ClipTree* clip_tree) {
+    ClipTree* clip_tree,
+    OpacityTree* opacity_tree) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
-      viewport, device_transform, transform_tree, clip_tree);
+      viewport, device_transform, transform_tree, clip_tree, opacity_tree);
   ComputeTransforms(transform_tree);
   ComputeClips(clip_tree, *transform_tree);
 

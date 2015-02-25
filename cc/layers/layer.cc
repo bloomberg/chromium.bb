@@ -1318,6 +1318,24 @@ gfx::Transform Layer::draw_transform_from_property_trees(
   return xform;
 }
 
+float Layer::DrawOpacityFromPropertyTrees(const OpacityTree& tree) const {
+  if (!render_target())
+    return 0.f;
+
+  const OpacityNode* target_node =
+      tree.Node(render_target()->opacity_tree_index());
+  const OpacityNode* node = tree.Node(opacity_tree_index());
+  if (node == target_node)
+    return 1.f;
+
+  float draw_opacity = 1.f;
+  while (node != target_node) {
+    draw_opacity *= node->data;
+    node = tree.parent(node);
+  }
+  return draw_opacity;
+}
+
 void Layer::SetFrameTimingRequests(
     const std::vector<FrameTimingRequest>& requests) {
   frame_timing_requests_ = requests;

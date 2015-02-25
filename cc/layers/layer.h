@@ -472,8 +472,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void set_transform_tree_index(int index) { transform_tree_index_ = index; }
   void set_clip_tree_index(int index) { clip_tree_index_ = index; }
+  void set_opacity_tree_index(int index) { opacity_tree_index_ = index; }
   int clip_tree_index() const { return clip_tree_index_; }
   int transform_tree_index() const { return transform_tree_index_; }
+  int opacity_tree_index() const { return opacity_tree_index_; }
 
   void set_offset_to_transform_parent(gfx::Vector2dF offset) {
     offset_to_transform_parent_ = offset;
@@ -499,6 +501,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
       const TransformTree& tree) const;
   gfx::Transform draw_transform_from_property_trees(
       const TransformTree& tree) const;
+  float DrawOpacityFromPropertyTrees(const OpacityTree& tree) const;
 
   // TODO(vollick): These values are temporary and will be removed as soon as
   // render surface determinations are moved out of CDP. They only exist because

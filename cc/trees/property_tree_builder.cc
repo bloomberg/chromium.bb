@@ -21,10 +21,12 @@ namespace {
 struct DataForRecursion {
   TransformTree* transform_tree;
   ClipTree* clip_tree;
+  OpacityTree* opacity_tree;
   Layer* transform_tree_parent;
   Layer* transform_fixed_parent;
   Layer* render_target;
   int clip_tree_parent;
+  int opacity_tree_parent;
   gfx::Vector2dF offset_to_transform_tree_parent;
   gfx::Vector2dF offset_to_transform_fixed_parent;
   const Layer* page_scale_layer;
@@ -221,6 +223,32 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   layer->set_offset_to_transform_parent(gfx::Vector2dF());
 }
 
+void AddOpacityNodeIfNeeded(const DataForRecursion& data_from_ancestor,
+                            Layer* layer,
+                            DataForRecursion* data_for_children) {
+  const bool is_root = !layer->parent();
+  const bool has_transparency = layer->opacity() != 1.f;
+  const bool has_animated_opacity =
+      layer->layer_animation_controller()->IsAnimatingProperty(
+          Animation::OPACITY) ||
+      layer->OpacityCanAnimateOnImplThread();
+  bool requires_node = is_root || has_transparency || has_animated_opacity;
+
+  int parent_id = data_from_ancestor.opacity_tree_parent;
+
+  if (!requires_node) {
+    layer->set_opacity_tree_index(parent_id);
+    data_for_children->opacity_tree_parent = parent_id;
+    return;
+  }
+
+  OpacityNode node;
+  node.data = layer->opacity();
+  data_for_children->opacity_tree_parent =
+      data_for_children->opacity_tree->Insert(node, parent_id);
+  layer->set_opacity_tree_index(data_for_children->opacity_tree_parent);
+}
+
 void BuildPropertyTreesInternal(Layer* layer,
                                 const DataForRecursion& data_from_parent) {
   DataForRecursion data_for_children(data_from_parent);
@@ -229,6 +257,9 @@ void BuildPropertyTreesInternal(Layer* layer,
 
   AddTransformNodeIfNeeded(data_from_parent, layer, &data_for_children);
   AddClipNodeIfNeeded(data_from_parent, layer, &data_for_children);
+
+  if (data_from_parent.opacity_tree)
+    AddOpacityNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   if (layer == data_from_parent.page_scale_layer)
     data_for_children.in_subtree_of_page_scale_application_layer = true;
@@ -258,14 +289,17 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     TransformTree* transform_tree,
-    ClipTree* clip_tree) {
+    ClipTree* clip_tree,
+    OpacityTree* opacity_tree) {
   DataForRecursion data_for_recursion;
   data_for_recursion.transform_tree = transform_tree;
   data_for_recursion.clip_tree = clip_tree;
+  data_for_recursion.opacity_tree = opacity_tree;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = root_layer;
   data_for_recursion.clip_tree_parent = 0;
+  data_for_recursion.opacity_tree_parent = -1;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.page_scale_factor = page_scale_factor;
   data_for_recursion.device_scale_factor = device_scale_factor;

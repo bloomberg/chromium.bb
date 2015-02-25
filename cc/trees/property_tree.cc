@@ -33,6 +33,7 @@ int PropertyTree<T>::Insert(const T& tree_node, int parent_id) {
 
 template class PropertyTree<TransformNode>;
 template class PropertyTree<ClipNode>;
+template class PropertyTree<OpacityNode>;
 
 TransformNodeData::TransformNodeData()
     : target_id(-1),

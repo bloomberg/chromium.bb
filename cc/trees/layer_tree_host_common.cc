@@ -2521,11 +2521,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     // will eventually get these data passed directly to the compositor.
     TransformTree transform_tree;
     ClipTree clip_tree;
+    OpacityTree opacity_tree;
     ComputeVisibleRectsUsingPropertyTrees(
         inputs->root_layer, inputs->page_scale_application_layer,
         inputs->page_scale_factor, inputs->device_scale_factor,
         gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-        &transform_tree, &clip_tree);
+        &transform_tree, &clip_tree, &opacity_tree);
 
     LayerIterator<Layer> it, end;
     for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
@@ -2544,6 +2545,11 @@ void LayerTreeHostCommon::CalculateDrawProperties(
           current_layer->draw_transform(),
           current_layer->draw_transform_from_property_trees(transform_tree));
       CHECK(draw_transforms_match);
+
+      const bool draw_opacities_match =
+          current_layer->draw_opacity() ==
+          current_layer->DrawOpacityFromPropertyTrees(opacity_tree);
+      CHECK(draw_opacities_match);
     }
   }
 }

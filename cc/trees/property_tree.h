@@ -100,6 +100,8 @@ struct CC_EXPORT ClipNodeData {
 
 typedef TreeNode<ClipNodeData> ClipNode;
 
+typedef TreeNode<float> OpacityNode;
+
 template <typename T>
 class CC_EXPORT PropertyTree {
  public:
@@ -181,6 +183,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
+
+class CC_EXPORT OpacityTree final : public PropertyTree<OpacityNode> {};
 
 }  // namespace cc
 
