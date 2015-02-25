@@ -168,16 +168,18 @@ def RunCommand(command, variable_expander):
         expanded_command, exit_status))
 
 
-def DeleteGoogleUpdateRegistration(system_level, variable_expander):
+def DeleteGoogleUpdateRegistration(system_level, registry_subkey,
+                                   variable_expander):
   """Deletes Chrome's registration with Google Update.
 
   Args:
     system_level: True if system-level Chrome is to be deleted.
+    registry_subkey: The pre-expansion registry subkey for the product.
     variable_expander: A VariableExpander object.
   """
   root = (_winreg.HKEY_LOCAL_MACHINE if system_level
           else _winreg.HKEY_CURRENT_USER)
-  key_name = variable_expander.Expand('$CHROME_UPDATE_REGISTRY_SUBKEY')
+  key_name = variable_expander.Expand(registry_subkey)
   try:
     key_handle = _winreg.OpenKey(root, key_name, 0,
                                  _winreg.KEY_SET_VALUE |
@@ -196,17 +198,28 @@ def RunCleanCommand(force_clean, variable_expander):
         installations.
     variable_expander: A VariableExpander object.
   """
-  # TODO(sukolsak): Handle Chrome SxS installs.
+  # A list of (system_level, product_name, product_switch, registry_subkey)
+  # tuples for the possible installed products.
+  data = [
+    (False, '$CHROME_LONG_NAME', '',
+     '$CHROME_UPDATE_REGISTRY_SUBKEY'),
+    (True, '$CHROME_LONG_NAME', '--system-level',
+     '$CHROME_UPDATE_REGISTRY_SUBKEY'),
+  ]
+  if variable_expander.Expand('$SUPPORTS_SXS') == 'True':
+    data.append((False, '$CHROME_LONG_NAME_SXS', '',
+                 '$CHROME_UPDATE_REGISTRY_SUBKEY_SXS'))
+
   interactive_option = '--interactive' if not force_clean else ''
-  for system_level in (False, True):
-    level_option = '--system-level' if system_level else ''
+  for system_level, product_name, product_switch, registry_subkey in data:
     command = ('python uninstall_chrome.py '
-               '--chrome-long-name="$CHROME_LONG_NAME" '
+               '--chrome-long-name="%s" '
                '--no-error-if-absent %s %s' %
-               (level_option, interactive_option))
+               (product_name, product_switch, interactive_option))
     RunCommand(command, variable_expander)
     if force_clean:
-      DeleteGoogleUpdateRegistration(system_level, variable_expander)
+      DeleteGoogleUpdateRegistration(system_level, registry_subkey,
+                                     variable_expander)
 
 
 def MergePropertyDictionaries(current_property, new_property):
