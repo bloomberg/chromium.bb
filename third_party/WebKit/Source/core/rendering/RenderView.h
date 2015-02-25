@@ -29,6 +29,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/OwnPtr.h"
 
@@ -102,7 +103,7 @@ public:
     void setSelection(LayoutObject* start, int startPos, LayoutObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
     void clearSelection();
     void setSelection(const FrameSelection&);
-    bool hasPendingSelection() const { return m_pendingSelection.m_hasPendingSelection; }
+    bool hasPendingSelection() const { return m_pendingSelection->m_hasPendingSelection; }
     void commitPendingSelection();
     LayoutObject* selectionStart();
     LayoutObject* selectionEnd();
@@ -206,19 +207,17 @@ private:
 
     unsigned m_hitTestCount;
 
-    class PendingSelection final {
-        DISALLOW_ALLOCATION();
+    class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
     public:
-        PendingSelection();
+        static PassOwnPtrWillBeRawPtr<PendingSelection> create()
+        {
+            return adoptPtrWillBeNoop(new PendingSelection);
+        }
+
         void setSelection(const FrameSelection&);
         void clear();
 
-        void trace(Visitor* visitor)
-        {
-            visitor->trace(m_start);
-            visitor->trace(m_end);
-            visitor->trace(m_extent);
-        }
+        DECLARE_TRACE();
 
         Position m_start;
         Position m_end;
@@ -226,7 +225,11 @@ private:
         EAffinity m_affinity;
         bool m_hasPendingSelection : 1;
         bool m_shouldShowBlockCursor : 1;
-    } m_pendingSelection;
+
+    private:
+        PendingSelection();
+    };
+    OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderView, isRenderView());
