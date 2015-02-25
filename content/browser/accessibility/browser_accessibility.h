@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_text_utils.h"
 
 #if defined(OS_MACOSX) && __OBJC__
 @class BrowserAccessibilityCocoa;
@@ -110,6 +111,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Same as GetLocalBoundsForRange, in screen coordinates. Only valid when
   // the role is WebAXRoleStaticText.
   gfx::Rect GetGlobalBoundsForRange(int start, int len) const;
+
+  // Searches in the given text and from the given offset until the start of
+  // the next or previous word is found and returns its position.
+  int GetWordStartBoundary(
+      int start, ui::TextBoundaryDirection direction) const;
 
   // Returns the deepest descendant that contains the specified point
   // (in global screen coordinates).

@@ -47,7 +47,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
     return waiter.GetAXTree();
   }
 
-  // Make sure each node in the tree has an unique id.
+  // Make sure each node in the tree has a unique id.
   void RecursiveAssertUniqueIds(
       const ui::AXNode* node, base::hash_set<int>* ids) {
     ASSERT_TRUE(ids->find(node->id()) == ids->end());
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       GetAttr(root, ui::AX_ATTR_NAME).c_str());
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->data().role);
 
-  // Check properites of the BODY element.
+  // Check properties of the BODY element.
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* body = root->ChildAtIndex(0);
   EXPECT_EQ(ui::AX_ROLE_GROUP, body->data().role);

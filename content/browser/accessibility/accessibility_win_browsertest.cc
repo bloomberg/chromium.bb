@@ -5,11 +5,13 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
+#include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
@@ -22,6 +24,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "net/base/escape.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "ui/aura/window.h"
@@ -31,93 +34,13 @@ namespace content {
 
 namespace {
 
-// Helpers --------------------------------------------------------------------
 
-base::win::ScopedComPtr<IAccessible> GetAccessibleFromResultVariant(
-    IAccessible* parent,
-    VARIANT* var) {
-  base::win::ScopedComPtr<IAccessible> ptr;
-  switch (V_VT(var)) {
-    case VT_DISPATCH: {
-      IDispatch* dispatch = V_DISPATCH(var);
-      if (dispatch)
-        ptr.QueryFrom(dispatch);
-      break;
-    }
-
-    case VT_I4: {
-      base::win::ScopedComPtr<IDispatch> dispatch;
-      HRESULT hr = parent->get_accChild(*var, dispatch.Receive());
-      EXPECT_TRUE(SUCCEEDED(hr));
-      if (dispatch.get())
-        dispatch.QueryInterface(ptr.Receive());
-      break;
-    }
-  }
-  return ptr;
-}
-
-HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
-  // TODO(ctguil): For some reason querying the IAccessible2 interface from
-  // IAccessible fails.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
-  HRESULT hr = accessible->QueryInterface(service_provider.Receive());
-  return SUCCEEDED(hr) ?
-      service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
-}
-
-// Recursively search through all of the descendants reachable from an
-// IAccessible node and return true if we find one with the given role
-// and name.
-void RecursiveFindNodeInAccessibilityTree(IAccessible* node,
-                                          int32 expected_role,
-                                          const std::wstring& expected_name,
-                                          int32 depth,
-                                          bool* found) {
-  base::win::ScopedBstr name_bstr;
-  base::win::ScopedVariant childid_self(CHILDID_SELF);
-  node->get_accName(childid_self, name_bstr.Receive());
-  std::wstring name(name_bstr, name_bstr.Length());
-  base::win::ScopedVariant role;
-  node->get_accRole(childid_self, role.Receive());
-  ASSERT_EQ(VT_I4, role.type());
-
-  // Print the accessibility tree as we go, because if this test fails
-  // on the bots, this is really helpful in figuring out why.
-  for (int i = 0; i < depth; i++)
-    printf("  ");
-  printf("role=%s name=%s\n",
-      base::WideToUTF8(IAccessibleRoleToString(V_I4(&role))).c_str(),
-      base::WideToUTF8(name).c_str());
-
-  if (expected_role == V_I4(&role) && expected_name == name) {
-    *found = true;
-    return;
-  }
-
-  LONG child_count = 0;
-  HRESULT hr = node->get_accChildCount(&child_count);
-  ASSERT_EQ(S_OK, hr);
-
-  scoped_ptr<VARIANT[]> child_array(new VARIANT[child_count]);
-  LONG obtained_count = 0;
-  hr = AccessibleChildren(
-      node, 0, child_count, child_array.get(), &obtained_count);
-  ASSERT_EQ(S_OK, hr);
-  ASSERT_EQ(child_count, obtained_count);
-
-  for (int index = 0; index < obtained_count; index++) {
-    base::win::ScopedComPtr<IAccessible> child_accessible(
-        GetAccessibleFromResultVariant(node, &child_array.get()[index]));
-    if (child_accessible.get()) {
-      RecursiveFindNodeInAccessibilityTree(
-          child_accessible.get(), expected_role, expected_name, depth + 1,
-          found);
-      if (*found)
-        return;
-    }
-  }
-}
+const char INPUT_CONTENTS[] = "Moz/5.0 (ST 6.x; WWW33) "
+    "WebKit  \"KHTML, like\".";
+const char TEXTAREA_CONTENTS[] = "Moz/5.0 (ST 6.x; WWW33)\n"
+    "WebKit \n\"KHTML, like\".";
+const LONG CONTENTS_LENGTH = static_cast<LONG>(
+    (sizeof(INPUT_CONTENTS) - 1) / sizeof(char));
 
 
 // AccessibilityWinBrowserTest ------------------------------------------------
@@ -128,9 +51,36 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
   virtual ~AccessibilityWinBrowserTest();
 
  protected:
+  class AccessibleChecker;
   void LoadInitialAccessibilityTreeFromHtml(const std::string& html);
   IAccessible* GetRendererAccessible();
   void ExecuteScript(const std::wstring& script);
+  void SetUpInputField(
+      base::win::ScopedComPtr<IAccessibleText>* input_text);
+  void SetUpTextareaField(
+      base::win::ScopedComPtr<IAccessibleText>* textarea_text);
+
+
+  static base::win::ScopedComPtr<IAccessible>
+  AccessibilityWinBrowserTest::GetAccessibleFromVariant(
+      IAccessible* parent,
+      VARIANT* var);
+  static HRESULT QueryIAccessible2(IAccessible* accessible,
+                                    IAccessible2** accessible2);
+  static void FindNodeInAccessibilityTree(IAccessible* node,
+                                           int32 expected_role,
+                                           const std::wstring& expected_name,
+                                           int32 depth,
+                                           bool* found);
+  static void CheckTextAtOffset(
+      base::win::ScopedComPtr<IAccessibleText>& element,
+      LONG offset,
+      IA2TextBoundaryType boundary_type,
+      LONG expected_start_offset,
+      LONG expected_end_offset,
+      const std::wstring& expected_text);
+  static std::vector<base::win::ScopedVariant> GetAllAccessibleChildren(
+      IAccessible* element);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWinBrowserTest);
@@ -163,10 +113,249 @@ void AccessibilityWinBrowserTest::ExecuteScript(const std::wstring& script) {
   shell()->web_contents()->GetMainFrame()->ExecuteJavaScript(script);
 }
 
+// Loads a page with  an input text field and places sample text in it. Also,
+// places the caret on the last character.
+void AccessibilityWinBrowserTest::SetUpInputField(
+    base::win::ScopedComPtr<IAccessibleText>* input_text) {
+  ASSERT_NE(nullptr, input_text);
+  LoadInitialAccessibilityTreeFromHtml(std::string("<!DOCTYPE html><html><body>"
+      "<form><label for='textField'>Browser name:</label>"
+      "<input type='text' id='textField' name='name' value='") +
+      net::EscapeQueryParamValue(INPUT_CONTENTS, false) + std::string(
+      "'></form></body></html>"));
+
+  // Retrieve the IAccessible interface for the web page.
+  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.get());
+  ASSERT_EQ(1, document_children.size());
+
+  base::win::ScopedComPtr<IAccessible2> form;
+  HRESULT hr = QueryIAccessible2(GetAccessibleFromVariant(
+      document.get(), document_children[0].AsInput()).get(), form.Receive());
+  ASSERT_EQ(S_OK, hr);
+  std::vector<base::win::ScopedVariant> form_children =
+      GetAllAccessibleChildren(form.get());
+  ASSERT_EQ(2, form_children.size());
+
+  // Find the input text field.
+  base::win::ScopedComPtr<IAccessible2> input;
+  hr = QueryIAccessible2(GetAccessibleFromVariant(
+      form.get(), form_children[1].AsInput()).get(), input.Receive());
+  ASSERT_EQ(S_OK, hr);
+  LONG input_role = 0;
+  hr = input->role(&input_role);
+  ASSERT_EQ(S_OK, hr);
+  ASSERT_EQ(ROLE_SYSTEM_TEXT, input_role);
+
+  // Retrieve the IAccessibleText interface for the field.
+  hr = input.QueryInterface(input_text->Receive());
+  ASSERT_EQ(S_OK, hr);
+
+  // Set the caret on the last character.
+  AccessibilityNotificationWaiter waiter(
+      shell(), AccessibilityModeComplete,
+      ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  std::wstring caret_offset = base::UTF16ToWide(base::IntToString16(
+      static_cast<int>(CONTENTS_LENGTH - 1)));
+  ExecuteScript(std::wstring(
+      L"var textField = document.getElementById('textField');"
+      L"textField.focus();"
+      L"textField.setSelectionRange(") +
+      caret_offset + L"," + caret_offset + L");");
+  waiter.WaitForNotification();
+}
+
+// Loads a page with  a textarea text field and places sample text in it. Also,
+// places the caret on the last character.
+void AccessibilityWinBrowserTest::SetUpTextareaField(
+    base::win::ScopedComPtr<IAccessibleText>* textarea_text) {
+  ASSERT_NE(nullptr, textarea_text);
+  LoadInitialAccessibilityTreeFromHtml(std::string("<!DOCTYPE html><html><body>"
+      "<textarea id='textField' rows='3' cols='60'>") +
+      net::EscapeQueryParamValue(TEXTAREA_CONTENTS, false) + std::string(
+      "</textarea></body></html>"));
+
+  // Retrieve the IAccessible interface for the web page.
+  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.get());
+  ASSERT_EQ(1, document_children.size());
+
+  base::win::ScopedComPtr<IAccessible2> section;
+  HRESULT hr = QueryIAccessible2(GetAccessibleFromVariant(
+      document.get(), document_children[0].AsInput()).get(), section.Receive());
+  ASSERT_EQ(S_OK, hr);
+  std::vector<base::win::ScopedVariant> section_children =
+      GetAllAccessibleChildren(section.get());
+  ASSERT_EQ(1, section_children.size());
+
+  // Find the textarea text field.
+  base::win::ScopedComPtr<IAccessible2> textarea;
+  hr = QueryIAccessible2(GetAccessibleFromVariant(
+      section.get(), section_children[0].AsInput()).get(), textarea.Receive());
+  ASSERT_EQ(S_OK, hr);
+  LONG textarea_role = 0;
+  hr = textarea->role(&textarea_role);
+  ASSERT_EQ(S_OK, hr);
+  ASSERT_EQ(ROLE_SYSTEM_TEXT, textarea_role);
+
+  // Retrieve the IAccessibleText interface for the field.
+  hr = textarea.QueryInterface(textarea_text->Receive());
+  ASSERT_EQ(S_OK, hr);
+
+  // Set the caret on the last character.
+  AccessibilityNotificationWaiter waiter(
+      shell(), AccessibilityModeComplete,
+      ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  std::wstring caret_offset = base::UTF16ToWide(base::IntToString16(
+      static_cast<int>(CONTENTS_LENGTH - 1)));
+  ExecuteScript(std::wstring(
+      L"var textField = document.getElementById('textField');"
+      L"textField.focus();"
+      L"textField.setSelectionRange(") +
+      caret_offset + L"," + caret_offset + L");");
+  waiter.WaitForNotification();
+}
+
+
+// Static helpers ------------------------------------------------
+
+base::win::ScopedComPtr<IAccessible>
+AccessibilityWinBrowserTest::GetAccessibleFromVariant(
+    IAccessible* parent,
+    VARIANT* var) {
+  base::win::ScopedComPtr<IAccessible> ptr;
+  switch (V_VT(var)) {
+    case VT_DISPATCH: {
+      IDispatch* dispatch = V_DISPATCH(var);
+      if (dispatch)
+        dispatch->QueryInterface(ptr.Receive());
+      break;
+    }
+
+    case VT_I4: {
+      base::win::ScopedComPtr<IDispatch> dispatch;
+      HRESULT hr = parent->get_accChild(*var, dispatch.Receive());
+      EXPECT_TRUE(SUCCEEDED(hr));
+      if (dispatch.get())
+        dispatch.QueryInterface(ptr.Receive());
+      break;
+    }
+  }
+  return ptr;
+}
+
+HRESULT AccessibilityWinBrowserTest::QueryIAccessible2(
+    IAccessible* accessible,
+    IAccessible2** accessible2) {
+  // IA2 Spec dictates that IServiceProvider should be used instead of
+  // QueryInterface when retrieving IAccessible2.
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  HRESULT hr = accessible->QueryInterface(service_provider.Receive());
+  return SUCCEEDED(hr) ?
+      service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
+}
+
+// Recursively search through all of the descendants reachable from an
+// IAccessible node and return true if we find one with the given role
+// and name.
+void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
+    IAccessible* node,
+    int32 expected_role,
+    const std::wstring& expected_name,
+    int32 depth,
+    bool* found) {
+  base::win::ScopedBstr name_bstr;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  node->get_accName(childid_self, name_bstr.Receive());
+  std::wstring name(name_bstr, name_bstr.Length());
+  base::win::ScopedVariant role;
+  node->get_accRole(childid_self, role.Receive());
+  ASSERT_EQ(VT_I4, role.type());
+
+  // Print the accessibility tree as we go, because if this test fails
+  // on the bots, this is really helpful in figuring out why.
+  for (int i = 0; i < depth; i++)
+    printf("  ");
+  printf("role=%s name=%s\n",
+      base::WideToUTF8(IAccessibleRoleToString(V_I4(&role))).c_str(),
+      base::WideToUTF8(name).c_str());
+
+  if (expected_role == V_I4(&role) && expected_name == name) {
+    *found = true;
+    return;
+  }
+
+  std::vector<base::win::ScopedVariant> children = GetAllAccessibleChildren(
+      node);
+  for (size_t i = 0; i < children.size(); ++i) {
+    base::win::ScopedComPtr<IAccessible> child_accessible(
+        GetAccessibleFromVariant(node, children[i].AsInput()));
+    if (child_accessible) {
+      FindNodeInAccessibilityTree(
+          child_accessible.get(), expected_role, expected_name, depth + 1,
+          found);
+      if (*found)
+        return;
+    }
+  }
+}
+
+// Ensures that the text and the start and end offsets retrieved using
+// get_textAtOffset match the expected values.
+void AccessibilityWinBrowserTest::CheckTextAtOffset(
+    base::win::ScopedComPtr<IAccessibleText>& element,
+    LONG offset,
+    IA2TextBoundaryType boundary_type,
+    LONG expected_start_offset,
+    LONG expected_end_offset,
+    const std::wstring& expected_text) {
+  testing::Message message;
+  message << "While checking for \'" << expected_text << "\' at " <<
+      expected_start_offset << '-' << expected_end_offset << '.';
+  SCOPED_TRACE(message);
+
+  LONG start_offset = 0;
+  LONG end_offset = 0;
+  base::win::ScopedBstr text;
+  HRESULT hr = element->get_textAtOffset(
+      offset, boundary_type,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(expected_start_offset, start_offset);
+  EXPECT_EQ(expected_end_offset, end_offset);
+  EXPECT_EQ(expected_text, std::wstring(text, text.Length()));
+}
+
+std::vector<base::win::ScopedVariant>
+AccessibilityWinBrowserTest::GetAllAccessibleChildren(
+    IAccessible* element) {
+  LONG child_count = 0;
+  HRESULT hr = element->get_accChildCount(&child_count);
+  EXPECT_EQ(S_OK, hr);
+  if (child_count <= 0)
+      return std::vector<base::win::ScopedVariant>();
+
+  scoped_ptr<VARIANT[]> children_array(new VARIANT[child_count]);
+  LONG obtained_count = 0;
+  hr = AccessibleChildren(
+      element, 0, child_count, children_array.get(), &obtained_count);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(child_count, obtained_count);
+
+  std::vector<base::win::ScopedVariant> children(
+      static_cast<size_t>(child_count));
+  for (size_t i = 0; i < children.size(); i++) {
+    children[i].Reset(children_array[i]);
+  }
+  return children;
+}
+
 
 // AccessibleChecker ----------------------------------------------------------
 
-class AccessibleChecker {
+class AccessibilityWinBrowserTest::AccessibleChecker {
  public:
   // This constructor can be used if the IA2 role will be the same as the MSAA
   // role.
@@ -228,9 +417,10 @@ class AccessibleChecker {
   AccessibleCheckerVector children_;
 };
 
-AccessibleChecker::AccessibleChecker(const std::wstring& expected_name,
-                                     int32 expected_role,
-                                     const std::wstring& expected_value)
+AccessibilityWinBrowserTest::AccessibleChecker::AccessibleChecker(
+    const std::wstring& expected_name,
+    int32 expected_role,
+    const std::wstring& expected_value)
     : name_(expected_name),
       role_(expected_role),
       ia2_role_(expected_role),
@@ -238,10 +428,11 @@ AccessibleChecker::AccessibleChecker(const std::wstring& expected_name,
       state_(-1) {
 }
 
-AccessibleChecker::AccessibleChecker(const std::wstring& expected_name,
-                                     int32 expected_role,
-                                     int32 expected_ia2_role,
-                                     const std::wstring& expected_value)
+AccessibilityWinBrowserTest::AccessibleChecker::AccessibleChecker(
+    const std::wstring& expected_name,
+    int32 expected_role,
+    int32 expected_ia2_role,
+    const std::wstring& expected_value)
     : name_(expected_name),
       role_(expected_role),
       ia2_role_(expected_ia2_role),
@@ -249,10 +440,11 @@ AccessibleChecker::AccessibleChecker(const std::wstring& expected_name,
       state_(-1) {
 }
 
-AccessibleChecker::AccessibleChecker(const std::wstring& expected_name,
-                                     const std::wstring& expected_role,
-                                     int32 expected_ia2_role,
-                                     const std::wstring& expected_value)
+AccessibilityWinBrowserTest::AccessibleChecker::AccessibleChecker(
+    const std::wstring& expected_name,
+    const std::wstring& expected_role,
+    int32 expected_ia2_role,
+    const std::wstring& expected_value)
     : name_(expected_name),
       role_(expected_role.c_str()),
       ia2_role_(expected_ia2_role),
@@ -260,14 +452,15 @@ AccessibleChecker::AccessibleChecker(const std::wstring& expected_name,
       state_(-1) {
 }
 
-void AccessibleChecker::AppendExpectedChild(
+void AccessibilityWinBrowserTest::AccessibleChecker::AppendExpectedChild(
     AccessibleChecker* expected_child) {
   children_.push_back(expected_child);
 }
 
-void AccessibleChecker::CheckAccessible(IAccessible* accessible) {
-  SCOPED_TRACE("while checking " +
-                   base::UTF16ToUTF8(RoleVariantToString(role_)));
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessible(
+    IAccessible* accessible) {
+  SCOPED_TRACE("While checking "
+                   + base::UTF16ToUTF8(RoleVariantToString(role_)));
   CheckAccessibleName(accessible);
   CheckAccessibleRole(accessible);
   CheckIA2Role(accessible);
@@ -276,15 +469,18 @@ void AccessibleChecker::CheckAccessible(IAccessible* accessible) {
   CheckAccessibleChildren(accessible);
 }
 
-void AccessibleChecker::SetExpectedValue(const std::wstring& expected_value) {
+void AccessibilityWinBrowserTest::AccessibleChecker::SetExpectedValue(
+    const std::wstring& expected_value) {
   value_ = expected_value;
 }
 
-void AccessibleChecker::SetExpectedState(LONG expected_state) {
+void AccessibilityWinBrowserTest::AccessibleChecker::SetExpectedState(
+    LONG expected_state) {
   state_ = expected_state;
 }
 
-void AccessibleChecker::CheckAccessibleName(IAccessible* accessible) {
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleName(
+    IAccessible* accessible) {
   base::win::ScopedBstr name;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   HRESULT hr = accessible->get_accName(childid_self, name.Receive());
@@ -299,7 +495,8 @@ void AccessibleChecker::CheckAccessibleName(IAccessible* accessible) {
   }
 }
 
-void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleRole(
+    IAccessible* accessible) {
   base::win::ScopedVariant role;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   HRESULT hr = accessible->get_accRole(childid_self, role.Receive());
@@ -309,7 +506,8 @@ void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
       << "\nGot role: " << RoleVariantToString(role);
 }
 
-void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckIA2Role(
+    IAccessible* accessible) {
   base::win::ScopedComPtr<IAccessible2> accessible2;
   HRESULT hr = QueryIAccessible2(accessible, accessible2.Receive());
   ASSERT_EQ(S_OK, hr);
@@ -321,7 +519,8 @@ void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
     << "\nGot ia2 role: " << IAccessible2RoleToString(ia2_role);
 }
 
-void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleValue(
+    IAccessible* accessible) {
   // Don't check the value if if's a DOCUMENT role, because the value
   // is supposed to be the url (and we don't keep track of that in the
   // test expectations).
@@ -341,7 +540,8 @@ void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
   EXPECT_EQ(value_, std::wstring(value, value.Length()));
 }
 
-void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleState(
+    IAccessible* accessible) {
   if (state_ < 0)
     return;
 
@@ -360,31 +560,29 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
     << "\nGot state: " << IAccessibleStateToString(obj_state);
 }
 
-void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
-  LONG child_count = 0;
-  HRESULT hr = parent->get_accChildCount(&child_count);
-  EXPECT_EQ(S_OK, hr);
+void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleChildren(
+    IAccessible* parent) {
+  std::vector<base::win::ScopedVariant> obtained_children =
+      GetAllAccessibleChildren(parent);
+  size_t child_count = obtained_children.size();
   ASSERT_EQ(child_count, children_.size());
 
-  scoped_ptr<VARIANT[]> child_array(new VARIANT[child_count]);
-  LONG obtained_count = 0;
-  hr = AccessibleChildren(parent, 0, child_count,
-                          child_array.get(), &obtained_count);
-  ASSERT_EQ(S_OK, hr);
-  ASSERT_EQ(child_count, obtained_count);
-
-  VARIANT* child = child_array.get();
-  for (AccessibleCheckerVector::iterator child_checker = children_.begin();
-       child_checker != children_.end();
+  AccessibleCheckerVector::iterator child_checker;
+  std::vector<base::win::ScopedVariant>::iterator child;
+  for (child_checker = children_.begin(),
+       child = obtained_children.begin();
+       child_checker != children_.end()
+       && child != obtained_children.end();
        ++child_checker, ++child) {
     base::win::ScopedComPtr<IAccessible> child_accessible(
-        GetAccessibleFromResultVariant(parent, child));
+        GetAccessibleFromVariant(parent, child->AsInput()));
     ASSERT_TRUE(child_accessible.get());
     (*child_checker)->CheckAccessible(child_accessible.get());
   }
 }
 
-base::string16 AccessibleChecker::RoleVariantToString(
+base::string16
+AccessibilityWinBrowserTest::AccessibleChecker::RoleVariantToString(
     const base::win::ScopedVariant& role) {
   if (role.type() == VT_I4)
     return IAccessibleRoleToString(V_I4(&role));
@@ -667,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(S_OK, hr);
 
   bool found = false;
-  RecursiveFindNodeInAccessibilityTree(
+  FindNodeInAccessibilityTree(
       browser_accessible.get(), ROLE_SYSTEM_DOCUMENT, L"MyDocument", 0, &found);
   ASSERT_EQ(found, true);
 }
@@ -752,6 +950,521 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
   document_checker.AppendExpectedChild(&grouping1_checker);
   document_checker.AppendExpectedChild(&grouping2_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestSetCaretOffset) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+
+  LONG caret_offset = 0;
+  HRESULT hr = input_text->get_caretOffset(&caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(CONTENTS_LENGTH - 1, caret_offset);
+
+  AccessibilityNotificationWaiter waiter(
+      shell(), AccessibilityModeComplete,
+      ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  caret_offset = 0;
+  hr = input_text->setCaretOffset(caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  waiter.WaitForNotification();
+
+  hr = input_text->get_caretOffset(&caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, caret_offset);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestMultiLineSetCaretOffset) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+
+    LONG caret_offset = 0;
+  HRESULT hr = textarea_text->get_caretOffset(&caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(CONTENTS_LENGTH - 1, caret_offset);
+
+  AccessibilityNotificationWaiter waiter(
+      shell(), AccessibilityModeComplete,
+      ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  caret_offset = 0;
+  hr = textarea_text->setCaretOffset(caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  waiter.WaitForNotification();
+
+  hr = textarea_text->get_caretOffset(&caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, caret_offset);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestTextAtOffsetWithInvalidArgs) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+  HRESULT hr = input_text->get_textAtOffset(
+      0, IA2_TEXT_BOUNDARY_CHAR, NULL, NULL, NULL);
+  EXPECT_EQ(E_INVALIDARG, hr);
+
+  // Test invalid offset.
+  LONG start_offset = 0;
+  LONG end_offset = 0;
+  base::win::ScopedBstr text;
+  LONG invalid_offset = -5;
+  hr = input_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_CHAR,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  invalid_offset = CONTENTS_LENGTH + 1;
+  hr = input_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_WORD,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+
+  // According to the IA2 Spec, only line boundaries should succeed when
+  // the offset is one past the end of the text.
+  invalid_offset = CONTENTS_LENGTH;
+  hr = input_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_CHAR,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_WORD,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_SENTENCE,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_ALL,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+
+  // The same behavior should be observed when the special offset
+  // IA2_TEXT_OFFSET_LENGTH is used.
+  hr = input_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_CHAR,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_WORD,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_SENTENCE,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_ALL,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestMultiLineTextAtOffsetWithInvalidArgs) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+  HRESULT hr = textarea_text->get_textAtOffset(
+      0, IA2_TEXT_BOUNDARY_CHAR, NULL, NULL, NULL);
+  EXPECT_EQ(E_INVALIDARG, hr);
+
+  // Test invalid offset.
+  LONG start_offset = 0;
+  LONG end_offset = 0;
+  base::win::ScopedBstr text;
+  LONG invalid_offset = -5;
+  hr = textarea_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_CHAR,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  invalid_offset = CONTENTS_LENGTH + 1;
+  hr = textarea_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_WORD,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+
+  // According to the IA2 Spec, only line boundaries should succeed when
+  // the offset is one past the end of the text.
+  invalid_offset = CONTENTS_LENGTH;
+  hr = textarea_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_CHAR,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_WORD,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_SENTENCE,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(
+      invalid_offset, IA2_TEXT_BOUNDARY_ALL,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+
+  // The same behavior should be observed when the special offset
+  // IA2_TEXT_OFFSET_LENGTH is used.
+  hr = textarea_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_CHAR,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_WORD,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_SENTENCE,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(
+      IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_ALL,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestTextAtOffsetWithBoundaryCharacter) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+  for (LONG offset = 0; offset < CONTENTS_LENGTH; ++offset) {
+    std::wstring expected_text(1, INPUT_CONTENTS[offset]);
+    LONG expected_start_offset = offset;
+    LONG expected_end_offset = offset + 1;
+    CheckTextAtOffset(input_text, offset, IA2_TEXT_BOUNDARY_CHAR,
+        expected_start_offset, expected_end_offset, expected_text);
+  }
+
+  for (LONG offset = CONTENTS_LENGTH - 1; offset >= 0; --offset) {
+    std::wstring expected_text(1, INPUT_CONTENTS[offset]);
+    LONG expected_start_offset = offset;
+    LONG expected_end_offset = offset + 1;
+    CheckTextAtOffset(input_text, offset, IA2_TEXT_BOUNDARY_CHAR,
+        expected_start_offset, expected_end_offset, expected_text);
+  }
+
+  CheckTextAtOffset(input_text, IA2_TEXT_OFFSET_CARET,
+      IA2_TEXT_BOUNDARY_CHAR, CONTENTS_LENGTH - 1, CONTENTS_LENGTH, L".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+    DISABLED_TestMultiLineTextAtOffsetWithBoundaryCharacter) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+  for (LONG offset = 0; offset < CONTENTS_LENGTH; ++offset) {
+    std::wstring expected_text(1, TEXTAREA_CONTENTS[offset]);
+    LONG expected_start_offset = offset;
+    LONG expected_end_offset = offset + 1;
+    CheckTextAtOffset(textarea_text, offset, IA2_TEXT_BOUNDARY_CHAR,
+        expected_start_offset, expected_end_offset, expected_text);
+  }
+
+  for (LONG offset = CONTENTS_LENGTH - 1; offset >= 0; --offset) {
+    std::wstring expected_text(1, TEXTAREA_CONTENTS[offset]);
+    LONG expected_start_offset = offset;
+    LONG expected_end_offset = offset + 1;
+    CheckTextAtOffset(textarea_text, offset, IA2_TEXT_BOUNDARY_CHAR,
+        expected_start_offset, expected_end_offset, expected_text);
+  }
+
+  CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
+      IA2_TEXT_BOUNDARY_CHAR, CONTENTS_LENGTH - 1, CONTENTS_LENGTH, L".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestTextAtOffsetWithBoundaryWord) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+
+  // Trailing punctuation should be included as part of the previous word.
+  CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_WORD,
+      0, 4, L"Moz/");
+  CheckTextAtOffset(input_text, 2, IA2_TEXT_BOUNDARY_WORD,
+      0, 4, L"Moz/");
+
+  // If the offset is at the punctuation, it should return
+  // the previous word.
+  CheckTextAtOffset(input_text, 3, IA2_TEXT_BOUNDARY_WORD,
+      0, 4, L"Moz/");
+
+  // Numbers with a decimal point ("." for U.S), should be treated as one word.
+  // Also, trailing punctuation that occurs after empty space should be part of
+  // the word. ("5.0 (" and not "5.0 ".)
+  CheckTextAtOffset(input_text, 4, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(input_text, 5, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(input_text, 6, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(input_text, 7, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+
+  // Leading punctuation should not be included with the word after it.
+  CheckTextAtOffset(input_text, 8, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(input_text, 11, IA2_TEXT_BOUNDARY_WORD,
+      9, 12, L"ST ");
+
+  // Numbers separated from letters with trailing punctuation should
+  // be split into two words. Same for abreviations like "i.e.".
+  CheckTextAtOffset(input_text, 12, IA2_TEXT_BOUNDARY_WORD,
+      12, 14, L"6.");
+  CheckTextAtOffset(input_text, 15, IA2_TEXT_BOUNDARY_WORD,
+      14, 17, L"x; ");
+
+  // Words with numbers should be treated like ordinary words.
+  CheckTextAtOffset(input_text, 17, IA2_TEXT_BOUNDARY_WORD,
+      17, 24, L"WWW33) ");
+  CheckTextAtOffset(input_text, 23, IA2_TEXT_BOUNDARY_WORD,
+      17, 24, L"WWW33) ");
+
+  // Multiple trailing empty spaces should be part of the word preceding it.
+  CheckTextAtOffset(input_text, 28, IA2_TEXT_BOUNDARY_WORD,
+      24, 33, L"WebKit  \"");
+  CheckTextAtOffset(input_text, 31, IA2_TEXT_BOUNDARY_WORD,
+      24, 33, L"WebKit  \"");
+  CheckTextAtOffset(input_text, 32, IA2_TEXT_BOUNDARY_WORD,
+      24, 33, L"WebKit  \"");
+
+  // Leading punctuation such as quotation marks should not be part of the word.
+  CheckTextAtOffset(input_text, 33, IA2_TEXT_BOUNDARY_WORD,
+      33, 40, L"KHTML, ");
+  CheckTextAtOffset(input_text, 38, IA2_TEXT_BOUNDARY_WORD,
+      33, 40, L"KHTML, ");
+
+  // Trailing final punctuation should be part of the last word.
+  CheckTextAtOffset(input_text, 41, IA2_TEXT_BOUNDARY_WORD,
+      40, CONTENTS_LENGTH, L"like\".");
+  CheckTextAtOffset(input_text, 45, IA2_TEXT_BOUNDARY_WORD,
+      40, CONTENTS_LENGTH, L"like\".");
+
+  // Test special offsets.
+  CheckTextAtOffset(input_text, IA2_TEXT_OFFSET_CARET,
+      IA2_TEXT_BOUNDARY_WORD, 40, CONTENTS_LENGTH, L"like\".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+    DISABLED_TestMultiLineTextAtOffsetWithBoundaryWord) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+
+  // Trailing punctuation should be included as part of the previous word.
+  CheckTextAtOffset(textarea_text, 0, IA2_TEXT_BOUNDARY_WORD,
+      0, 4, L"Moz/");
+  CheckTextAtOffset(textarea_text, 2, IA2_TEXT_BOUNDARY_WORD,
+      0, 4, L"Moz/");
+
+  // If the offset is at the punctuation, it should return
+  // the previous word.
+  CheckTextAtOffset(textarea_text, 3, IA2_TEXT_BOUNDARY_WORD,
+      0, 4, L"Moz/");
+
+  // Numbers with a decimal point ("." for U.S), should be treated as one word.
+  // Also, trailing punctuation that occurs after empty space should be part of
+  // the word. ("5.0 (" and not "5.0 ".)
+  CheckTextAtOffset(textarea_text, 4, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(textarea_text, 5, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(textarea_text, 6, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(textarea_text, 7, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+
+  // Leading punctuation should not be included with the word after it.
+  CheckTextAtOffset(textarea_text, 8, IA2_TEXT_BOUNDARY_WORD,
+      4, 9, L"5.0 (");
+  CheckTextAtOffset(textarea_text, 11, IA2_TEXT_BOUNDARY_WORD,
+      9, 12, L"ST ");
+
+  // Numbers separated from letters with trailing punctuation should
+  // be split into two words. Same for abreviations like "i.e.".
+  CheckTextAtOffset(textarea_text, 12, IA2_TEXT_BOUNDARY_WORD,
+      12, 14, L"6.");
+  CheckTextAtOffset(textarea_text, 15, IA2_TEXT_BOUNDARY_WORD,
+      14, 17, L"x; ");
+
+  // Words with numbers should be treated like ordinary words.
+  CheckTextAtOffset(textarea_text, 17, IA2_TEXT_BOUNDARY_WORD,
+      17, 24, L"WWW33)\n");
+  CheckTextAtOffset(textarea_text, 23, IA2_TEXT_BOUNDARY_WORD,
+      17, 24, L"WWW33)\n");
+
+  // Multiple trailing empty spaces should be part of the word preceding it.
+  CheckTextAtOffset(textarea_text, 28, IA2_TEXT_BOUNDARY_WORD,
+      24, 33, L"WebKit \n\"");
+  CheckTextAtOffset(textarea_text, 31, IA2_TEXT_BOUNDARY_WORD,
+      24, 33, L"WebKit \n\"");
+  CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_WORD,
+      24, 33, L"WebKit \n\"");
+
+  // Leading punctuation such as quotation marks should not be part of the word.
+  CheckTextAtOffset(textarea_text, 33, IA2_TEXT_BOUNDARY_WORD,
+      33, 40, L"KHTML, ");
+  CheckTextAtOffset(textarea_text, 38, IA2_TEXT_BOUNDARY_WORD,
+      33, 40, L"KHTML, ");
+
+  // Trailing final punctuation should be part of the last word.
+  CheckTextAtOffset(textarea_text, 41, IA2_TEXT_BOUNDARY_WORD,
+      40, CONTENTS_LENGTH, L"like\".");
+  CheckTextAtOffset(textarea_text, 45, IA2_TEXT_BOUNDARY_WORD,
+      40, CONTENTS_LENGTH, L"like\".");
+
+  // Test special offsets.
+  CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
+      IA2_TEXT_BOUNDARY_WORD, 40, CONTENTS_LENGTH, L"like\".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestTextAtOffsetWithBoundarySentence) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+
+  // Sentence navigation is not currently implemented.
+  LONG start_offset = 0;
+  LONG end_offset = 0;
+  base::win::ScopedBstr text;
+  HRESULT hr = input_text->get_textAtOffset(
+      5, IA2_TEXT_BOUNDARY_SENTENCE,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestMultiLineTextAtOffsetWithBoundarySentence) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+
+  // Sentence navigation is not currently implemented.
+  LONG start_offset = 0;
+  LONG end_offset = 0;
+  base::win::ScopedBstr text;
+  HRESULT hr = textarea_text->get_textAtOffset(
+      25, IA2_TEXT_BOUNDARY_SENTENCE,
+      &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_FALSE, hr);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestTextAtOffsetWithBoundaryLine) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+
+  // Single line text fields should return the whole text.
+  CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_LINE,
+      0, CONTENTS_LENGTH, base::SysUTF8ToWide(INPUT_CONTENTS));
+
+  // Test special offsets.
+  CheckTextAtOffset(input_text, IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_LINE,
+      0, CONTENTS_LENGTH, base::SysUTF8ToWide(INPUT_CONTENTS));
+  CheckTextAtOffset(input_text, IA2_TEXT_OFFSET_CARET, IA2_TEXT_BOUNDARY_LINE,
+      0, CONTENTS_LENGTH, base::SysUTF8ToWide(INPUT_CONTENTS));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+    DISABLED_TestMultiLineTextAtOffsetWithBoundaryLine) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+
+  CheckTextAtOffset(textarea_text, 0, IA2_TEXT_BOUNDARY_LINE,
+      0, 24, L"Moz/5.0 (ST 6.x; WWW33)\n");
+
+  // If the offset is at the newline, return the line preceding it.
+  CheckTextAtOffset(textarea_text, 31, IA2_TEXT_BOUNDARY_LINE,
+      24, 32, L"WebKit \n");
+
+  // Last line does not have a trailing newline.
+  CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_LINE,
+      32, CONTENTS_LENGTH, L"\"KHTML, like\".");
+
+  // An offset one past the last character should return the last line.
+  CheckTextAtOffset(textarea_text, CONTENTS_LENGTH, IA2_TEXT_BOUNDARY_LINE,
+      32, CONTENTS_LENGTH, L"\"KHTML, like\".");
+
+  // Test special offsets.
+  CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_LENGTH,
+      IA2_TEXT_BOUNDARY_LINE, 32, CONTENTS_LENGTH, L"\"KHTML, like\".");
+  CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
+      IA2_TEXT_BOUNDARY_LINE, 32, CONTENTS_LENGTH, L"\"KHTML, like\".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestTextAtOffsetWithBoundaryAll) {
+  base::win::ScopedComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+
+  CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_ALL,
+      0, CONTENTS_LENGTH, base::SysUTF8ToWide(INPUT_CONTENTS));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestMultiLineTextAtOffsetWithBoundaryAll) {
+  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+
+  CheckTextAtOffset(textarea_text, CONTENTS_LENGTH - 1, IA2_TEXT_BOUNDARY_ALL,
+      0, CONTENTS_LENGTH, base::SysUTF8ToWide(TEXTAREA_CONTENTS));
 }
 
 }  // namespace content

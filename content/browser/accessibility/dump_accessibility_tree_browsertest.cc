@@ -41,7 +41,7 @@ typedef AccessibilityTreeFormatter::Filter Filter;
 // tests it against an expected baseline.
 //
 // The flow of the test is as outlined below.
-// 1. Load an html file from chrome/test/data/accessibility.
+// 1. Load an html file from content/test/data/accessibility.
 // 2. Read the expectation.
 // 3. Browse to the page and serialize the platform specific tree into a human
 //    readable string.

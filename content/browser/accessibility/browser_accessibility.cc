@@ -4,12 +4,15 @@
 
 #include "content/browser/accessibility/browser_accessibility.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/ax_text_utils.h"
 
 namespace content {
 
@@ -305,6 +308,75 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
   bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
 
   return bounds;
+}
+
+int BrowserAccessibility::GetWordStartBoundary(
+    int start, ui::TextBoundaryDirection direction) const {
+  int word_start = 0;
+  int prev_word_start = 0;
+  if (GetRole() != ui::AX_ROLE_STATIC_TEXT) {
+    for (size_t i = 0; i < InternalChildCount(); ++i) {
+      BrowserAccessibility* child = InternalGetChild(i);
+      int child_len = child->GetStaticTextLenRecursive();
+      int child_word_start = child->GetWordStartBoundary(start, direction);
+      word_start += child_word_start;
+      if (child_word_start != child_len)
+          break;
+      start -= child_len;
+    }
+    return word_start;
+  }
+
+  int child_start = 0;
+  int child_end = 0;
+  for (size_t i = 0; i < InternalChildCount(); ++i) {
+    // The next child starts where the previous one ended.
+    child_start = child_end;
+    BrowserAccessibility* child = InternalGetChild(i);
+    DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
+    const std::string& child_text = child->GetStringAttribute(
+        ui::AX_ATTR_VALUE);
+    int child_len = static_cast<int>(child_text.size());
+    child_end += child_len; // End is one past the last character.
+
+    const std::vector<int32>& word_starts = child->GetIntListAttribute(
+        ui::AX_ATTR_WORD_STARTS);
+    if (word_starts.empty()) {
+      word_start = child_end;
+      continue;
+    }
+
+    int local_start = start - child_start;
+    std::vector<int32>::const_iterator iter = std::upper_bound(
+        word_starts.begin(), word_starts.end(), local_start);
+    if (iter != word_starts.end()) {
+      if (direction == ui::FORWARDS_DIRECTION) {
+        word_start = child_start + *iter;
+      } else if (direction == ui::BACKWARDS_DIRECTION) {
+        if (iter == word_starts.begin()) {
+          // Return the position of the last word in the previous child.
+          word_start = prev_word_start;
+        } else {
+          word_start = child_start + *(iter - 1);
+        }
+      } else {
+        NOTREACHED();
+      }
+      break;
+    }
+
+    // No word start that is >= to the requested offset has been found.
+    prev_word_start = child_start + *(iter - 1);
+    if (direction == ui::FORWARDS_DIRECTION) {
+      word_start = child_end;
+    } else if (direction == ui::BACKWARDS_DIRECTION) {
+      word_start = prev_word_start;
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  return word_start;
 }
 
 BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(

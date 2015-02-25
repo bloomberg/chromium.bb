@@ -2091,6 +2091,15 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
   if (!start_offset || !end_offset || !text)
     return E_INVALIDARG;
 
+  const base::string16& text_str = TextForIAccessibleText();
+  HandleSpecialTextOffset(text_str, &offset);
+  if (offset < 0)
+    return E_INVALIDARG;
+
+  LONG text_len = text_str.length();
+  if (offset > text_len)
+    return E_INVALIDARG;
+
   // The IAccessible2 spec says we don't have to implement the "sentence"
   // boundary type, we can just let the screenreader handle it.
   if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
@@ -2100,7 +2109,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
     return S_FALSE;
   }
 
-  const base::string16& text_str = TextForIAccessibleText();
+  // According to the IA2 Spec, only line boundaries should succeed when
+  // the offset is one past the end of the text.
+  if (offset == text_len && boundary_type != IA2_TEXT_BOUNDARY_LINE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = nullptr;
+    return S_FALSE;
+  }
 
   *start_offset = FindBoundary(
       text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
@@ -3560,6 +3576,11 @@ LONG BrowserAccessibilityWin::FindBoundary(
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
   HandleSpecialTextOffset(text, &start_offset);
+  if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD &&
+      GetRole() == ui::AX_ROLE_TEXT_FIELD) {
+    return GetWordStartBoundary(static_cast<int>(start_offset), direction);
+  }
+
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   const std::vector<int32>& line_breaks = GetIntListAttribute(
       ui::AX_ATTR_LINE_BREAKS);
