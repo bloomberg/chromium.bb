@@ -25,7 +25,7 @@ public:
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}});
     {% endfor %}
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 private:
     Page* m_page;
