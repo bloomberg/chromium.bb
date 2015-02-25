@@ -21,14 +21,19 @@ class PrivetHTTPClient;
 
 class PrivetHTTPResolution {
  public:
+  using ResultCallback = base::Callback<void(scoped_ptr<PrivetHTTPClient>)>;
+
   virtual ~PrivetHTTPResolution() {}
-  virtual void Start() = 0;
+
+  virtual void Start(const net::HostPortPair& address,
+                     const ResultCallback& callback) = 0;
+
   virtual const std::string& GetName() = 0;
 };
 
 class PrivetHTTPAsynchronousFactory {
  public:
-  typedef base::Callback<void(scoped_ptr<PrivetHTTPClient>)> ResultCallback;
+  using ResultCallback = PrivetHTTPResolution::ResultCallback;
 
   virtual ~PrivetHTTPAsynchronousFactory() {}
 
@@ -36,9 +41,7 @@ class PrivetHTTPAsynchronousFactory {
       net::URLRequestContextGetter* request_context);
 
   virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
-      const std::string& name,
-      const net::HostPortPair& address,
-      const ResultCallback& callback) = 0;
+      const std::string& service_name) = 0;
 };
 
 }  // namespace local_discovery

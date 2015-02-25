@@ -105,13 +105,11 @@ void PrivetNotificationsListener::DeviceChanged(
 
   if (!device_context->registered) {
     device_context->privet_http_resolution =
-        privet_http_factory_->CreatePrivetHTTP(
-            name,
-            description.address,
-            base::Bind(&PrivetNotificationsListener::CreateInfoOperation,
-                       base::Unretained(this)));
-
-    device_context->privet_http_resolution->Start();
+        privet_http_factory_->CreatePrivetHTTP(name);
+    device_context->privet_http_resolution->Start(
+        description.address,
+        base::Bind(&PrivetNotificationsListener::CreateInfoOperation,
+                   base::Unretained(this)));
   }
 }
 

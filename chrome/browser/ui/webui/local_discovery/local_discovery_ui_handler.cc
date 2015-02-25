@@ -210,11 +210,11 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   }
 
   if (found->second.version < kCloudDevicesPrivetVersion) {
-    privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-        device, found->second.address,
+    privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(device);
+    privet_resolution_->Start(
+        found->second.address,
         base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
                    base::Unretained(this)));
-    privet_resolution_->Start();
   } else {
     OnSetupError();
   }

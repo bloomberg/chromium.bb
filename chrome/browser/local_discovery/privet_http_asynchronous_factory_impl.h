@@ -20,33 +20,31 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
   ~PrivetHTTPAsynchronousFactoryImpl() override;
 
   scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
-      const std::string& name,
-      const net::HostPortPair& address,
-      const ResultCallback& callback) override;
+      const std::string& service_name) override;
 
  private:
   class ResolutionImpl : public PrivetHTTPResolution {
    public:
-    ResolutionImpl(const std::string& name,
-                   const net::HostPortPair& address,
-                   const ResultCallback& callback,
+    ResolutionImpl(const std::string& service_name,
                    net::URLRequestContextGetter* request_context);
     ~ResolutionImpl() override;
 
-    void Start() override;
+    void Start(const net::HostPortPair& address,
+               const ResultCallback& callback) override;
+
     const std::string& GetName() override;
 
    private:
-    void ResolveComplete(bool success,
-                         const net::IPAddressNumber& address_ipv4,
-                         const net::IPAddressNumber& address_ipv6);
+    void DomainResolveComplete(uint16 port,
+                               const ResultCallback& callback,
+                               bool success,
+                               const net::IPAddressNumber& address_ipv4,
+                               const net::IPAddressNumber& address_ipv6);
 
     std::string name_;
-    scoped_ptr<LocalDomainResolver> resolver_;
-    net::HostPortPair hostport_;
-    ResultCallback callback_;
     scoped_refptr<net::URLRequestContextGetter> request_context_;
     scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
+    scoped_ptr<LocalDomainResolver> domain_resolver_;
   };
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;

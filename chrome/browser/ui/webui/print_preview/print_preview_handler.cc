@@ -1622,9 +1622,8 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
   privet_http_factory_ =
       local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
           Profile::FromWebUI(web_ui())->GetRequestContext());
-  privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-      name, device_description->address, callback);
-  privet_http_resolution_->Start();
+  privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
+  privet_http_resolution_->Start(device_description->address, callback);
 
   return true;
 }
