@@ -49,23 +49,12 @@ FileGrid.decorate = function(
   self.scrollBar_ = new ScrollBar();
   self.scrollBar_.initialize(self.parentElement, self);
 
-  /**
-   * Map of URL and ListItem generated at the previous update time.
-   * This is used for updating existing item synchronously.
-   * @type {Object.<string, !FileGrid.Item>}
-   * @private
-   * @const
-   */
-  self.previousItems_ = {};
-
   self.itemConstructor = function(entry) {
     var item = self.ownerDocument.createElement('li');
     FileGrid.Item.decorate(
         item,
         entry,
-        /** @type {FileGrid} */ (self),
-        self.previousItems_[entry.toURL()]);
-    self.previousItems_[entry.toURL()] = /** @type {!FileGrid.Item} */ (item);
+        /** @type {FileGrid} */ (self));
     return item;
   };
 
@@ -105,7 +94,9 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
     var box = listItem.querySelector('.img-container');
     if (box) {
       FileGrid.setThumbnailImage_(
-          assertInstanceof(box, HTMLDivElement), event.dataUrl);
+          assertInstanceof(box, HTMLDivElement),
+          event.dataUrl,
+          /* should animate */ true);
     }
   }
 };
@@ -121,12 +112,6 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
   this.endIndex_ = endIndex;
   if (this.listThumbnailLoader_ !== null)
     this.listThumbnailLoader_.setHighPriorityRange(beginIndex, endIndex);
-
-  // Update item cache.
-  for (var url in this.previousItems_) {
-    if (this.getIndexOfListItem(this.previousItems_[url]) === -1)
-      delete this.previousItems_[url];
-  }
 };
 
 /**
@@ -179,10 +164,6 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
- * @param {FileGrid.Item} previousItem Existing grid item. Usually it is the
- *     item used for the same entry before calling redraw() method. If it is
- *     non-null, the item show the thumbnail immediately until the new thumbanil
- *     is loaded.
  * @private
  */
 FileGrid.decorateThumbnail_ = function(
@@ -191,8 +172,7 @@ FileGrid.decorateThumbnail_ = function(
     fileSystemMetadata,
     volumeManager,
     historyLoader,
-    listThumbnailLoader,
-    previousItem) {
+    listThumbnailLoader) {
   li.className = 'thumbnail-item';
   if (entry)
     filelist.decorateListItem(li, entry, fileSystemMetadata);
@@ -201,26 +181,8 @@ FileGrid.decorateThumbnail_ = function(
   frame.className = 'thumbnail-frame';
   li.appendChild(frame);
 
-  // TODO(yawano) Most of following codes seems to be unnecessary anymore.
-  // Investigate it, and make this simple.
-  var previousBox =
-      previousItem ? previousItem.querySelector('.img-container') : null;
-  var box;
-  var shouldLoadThumbnail;
-  if (previousItem) {
-    box = previousBox;
-    var previousImage = box.querySelector('img');
-    if (previousImage) {
-      previousImage.classList.add('cached');
-      shouldLoadThumbnail = !!entry;
-    } else {
-      shouldLoadThumbnail = false;
-    }
-  } else {
-    box = li.ownerDocument.createElement('div');
-    shouldLoadThumbnail = !!entry;
-  }
-  if (shouldLoadThumbnail) {
+  var box = li.ownerDocument.createElement('div');
+  if (entry) {
     FileGrid.decorateThumbnailBox_(
         assertInstanceof(box, HTMLDivElement),
         entry,
@@ -290,7 +252,8 @@ FileGrid.decorateThumbnailBox_ = function(
       listThumbnailLoader.getThumbnailFromCache(entry)) {
     FileGrid.setThumbnailImage_(
         box,
-        listThumbnailLoader.getThumbnailFromCache(entry).dataUrl);
+        listThumbnailLoader.getThumbnailFromCache(entry).dataUrl,
+        /* should not animate */ false);
   } else {
     var mediaType = FileType.getMediaType(entry);
     box.setAttribute('generic-thumbnail', mediaType);
@@ -301,9 +264,11 @@ FileGrid.decorateThumbnailBox_ = function(
  * Sets thumbnail image to the box.
  * @param {!HTMLDivElement} box A div element to hold thumbnails.
  * @param {string} dataUrl Data url of thumbnail.
+ * @param {boolean} shouldAnimate Whether the thumbanil is shown with animation
+ *     or not.
  * @private
  */
-FileGrid.setThumbnailImage_ = function(box, dataUrl) {
+FileGrid.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
   var oldThumbnails = box.querySelectorAll('.thumbnail');
 
   var thumbnail = box.ownerDocument.createElement('div');
@@ -319,8 +284,8 @@ FileGrid.setThumbnailImage_ = function(box, dataUrl) {
         box.removeChild(oldThumbnails[i]);
     }
   });
-  thumbnail.classList.add('animate');
-
+  if (shouldAnimate)
+    thumbnail.classList.add('animate');
   box.appendChild(thumbnail);
 };
 
@@ -389,12 +354,8 @@ Object.defineProperty(FileGrid.Item.prototype, 'label', {
  * @param {Element} li List item element.
  * @param {!Entry} entry File entry.
  * @param {FileGrid} grid Owner.
- * @param {FileGrid.Item} previousItem Existing grid item. Usually it is the
- *     item used for the same entry before calling redraw() method. If it is
- *     non-null, the item show the thumbnail immediately until the new thumbanil
- *     is loaded.
  */
-FileGrid.Item.decorate = function(li, entry, grid, previousItem) {
+FileGrid.Item.decorate = function(li, entry, grid) {
   li.__proto__ = FileGrid.Item.prototype;
   li = /** @type {!FileGrid.Item} */ (li);
   // TODO(mtomasz): Pass the metadata cache and the volume manager directly
@@ -405,8 +366,7 @@ FileGrid.Item.decorate = function(li, entry, grid, previousItem) {
       grid.fileSystemMetadata_,
       grid.volumeManager_,
       grid.historyLoader_,
-      grid.listThumbnailLoader_,
-      previousItem);
+      grid.listThumbnailLoader_);
 
   // Override the default role 'listitem' to 'option' to match the parent's
   // role (listbox).
