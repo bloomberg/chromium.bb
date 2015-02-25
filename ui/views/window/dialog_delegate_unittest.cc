@@ -26,6 +26,11 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
         last_pressed_button_(NULL) {}
   ~TestDialog() override {}
 
+  // WidgetDelegate overrides:
+  bool ShouldShowWindowTitle() const override {
+    return !title_.empty();
+  }
+
   // DialogDelegateView overrides:
   bool Cancel() override {
     canceled_ = true;
@@ -183,8 +188,8 @@ TEST_F(DialogTest, RemoveDefaultButton) {
   delete dialog()->GetDialogClientView()->cancel_button();
 }
 
-TEST_F(DialogTest, HitTest) {
-  // Ensure that the new style's BubbleFrameView hit-tests as expected.
+TEST_F(DialogTest, HitTest_HiddenTitle) {
+  // Ensure that BubbleFrameView hit-tests as expected when the title is hidden.
   const NonClientView* view = dialog()->GetWidget()->non_client_view();
   BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
   const int border = frame->bubble_border()->GetBorderThickness();
@@ -195,9 +200,36 @@ TEST_F(DialogTest, HitTest) {
   } cases[] = {
     { border,      HTSYSMENU },
     { border + 10, HTSYSMENU },
-    { border + 20, HTCAPTION },
-    { border + 40, HTCLIENT  },
+    { border + 20, HTCLIENT  },
     { border + 50, HTCLIENT  },
+    { border + 60, HTCLIENT  },
+    { 1000,        HTNOWHERE },
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    gfx::Point point(cases[i].point, cases[i].point);
+    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
+        << " with border: " << border << ", at point " << cases[i].point;
+  }
+}
+
+TEST_F(DialogTest, HitTest_WithTitle) {
+  // Ensure that BubbleFrameView hit-tests as expected when the title is shown.
+  const NonClientView* view = dialog()->GetWidget()->non_client_view();
+  dialog()->set_title(base::ASCIIToUTF16("Title"));
+  dialog()->GetWidget()->UpdateWindowTitle();
+  BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
+  const int border = frame->bubble_border()->GetBorderThickness();
+
+  struct {
+    const int point;
+    const int hit;
+  } cases[] = {
+    { border,      HTSYSMENU },
+    { border + 10, HTSYSMENU },
+    { border + 20, HTCAPTION },
+    { border + 50, HTCLIENT  },
+    { border + 60, HTCLIENT  },
     { 1000,        HTNOWHERE },
   };
 

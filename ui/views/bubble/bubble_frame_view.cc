@@ -15,6 +15,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -26,6 +27,9 @@ const int kTitleTopInset = 12;
 const int kTitleLeftInset = 19;
 const int kTitleBottomInset = 12;
 const int kTitleRightInset = 7;
+
+// The horizontal padding between the title and the icon.
+const int kTitleHorizontalPadding = 5;
 
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.
@@ -58,15 +62,20 @@ namespace views {
 const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
 BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
-    : bubble_border_(NULL),
+    : bubble_border_(nullptr),
       content_margins_(content_margins),
-      title_(NULL),
-      close_(NULL),
-      titlebar_extra_view_(NULL) {
+      title_icon_(new views::ImageView()),
+      title_(nullptr),
+      close_(nullptr),
+      titlebar_extra_view_(nullptr) {
+  AddChildView(title_icon_);
+
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new Label(base::string16(),
                      rb.GetFontList(ui::ResourceBundle::MediumFont));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_->set_collapse_when_hidden(true);
+  title_->SetVisible(false);
   AddChildView(title_);
 
   close_ = CreateCloseButton(this);
@@ -161,13 +170,17 @@ void BubbleFrameView::ResetWindowControls() {
   close_->SetVisible(GetWidget()->widget_delegate()->ShouldShowCloseButton());
 }
 
-void BubbleFrameView::UpdateWindowIcon() {}
+void BubbleFrameView::UpdateWindowIcon() {
+  gfx::ImageSkia image;
+  if (GetWidget()->widget_delegate()->ShouldShowWindowIcon())
+    image = GetWidget()->widget_delegate()->GetWindowIcon();
+  title_icon_->SetImage(&image);
+}
+
 
 void BubbleFrameView::UpdateWindowTitle() {
-  title_->SetText(GetWidget()->widget_delegate()->ShouldShowWindowTitle() ?
-      GetWidget()->widget_delegate()->GetWindowTitle() : base::string16());
-  // Update the close button visibility too, otherwise it's not intialized.
-  ResetWindowControls();
+  title_->SetText(GetWidget()->widget_delegate()->GetWindowTitle());
+  title_->SetVisible(GetWidget()->widget_delegate()->ShouldShowWindowTitle());
 }
 
 void BubbleFrameView::SizeConstraintsChanged() {}
@@ -178,8 +191,12 @@ void BubbleFrameView::SetTitleFontList(const gfx::FontList& font_list) {
 
 gfx::Insets BubbleFrameView::GetInsets() const {
   gfx::Insets insets = content_margins_;
-  const int title_height = title_->text().empty() ? 0 :
-      title_->GetPreferredSize().height() + kTitleTopInset + kTitleBottomInset;
+
+  const int icon_height = title_icon_->GetPreferredSize().height();
+  const int label_height = title_->GetPreferredSize().height();
+  const bool has_title = icon_height > 0 || label_height > 0;
+  const int title_padding = has_title ? kTitleTopInset + kTitleBottomInset : 0;
+  const int title_height = std::max(icon_height, label_height) + title_padding;
   const int close_height = close_->visible() ? close_->height() : 0;
   insets += gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
   return insets;
@@ -203,14 +220,34 @@ void BubbleFrameView::Layout() {
   close_->SetPosition(gfx::Point(bounds.right() - close_->width(),
                                  bounds.y() - 5));
 
-  gfx::Size title_size(title_->GetPreferredSize());
-  const int title_width = std::max(0, close_->x() - bounds.x());
-  title_size.SetToMin(gfx::Size(title_width, title_size.height()));
-  bounds.set_size(title_size);
-  title_->SetBoundsRect(bounds);
+  gfx::Size title_icon_size(title_icon_->GetPreferredSize());
+  gfx::Size title_label_size(title_->GetPreferredSize());
+  int padding = 0;
+  if (title_icon_size.width() > 0 && title_label_size.width() > 0)
+    padding = kTitleHorizontalPadding;
+  const int title_height = std::max(title_icon_size.height(),
+                                    title_label_size.height());
+
+  const int title_icon_width = std::max(0, close_->x() - bounds.x());
+  title_icon_size.SetToMin(gfx::Size(title_icon_width, title_height));
+  gfx::Rect title_icon_bounds(
+      bounds.x(), bounds.y(), title_icon_size.width(), title_height);
+  title_icon_->SetBoundsRect(title_icon_bounds);
+
+  const int title_label_x = title_icon_->bounds().right() + padding;
+  const int title_label_width = std::max(0, close_->x() - title_label_x);
+  title_label_size.SetToMin(gfx::Size(title_label_width,
+                                      title_label_size.height()));
+  gfx::Rect title_label_bounds(
+      title_label_x, bounds.y(), title_label_size.width(), title_height);
+  title_->SetBoundsRect(title_label_bounds);
+
+  bounds.set_width(
+      title_icon_size.width() + title_label_size.width() + padding);
+  bounds.set_height(title_height);
 
   if (titlebar_extra_view_) {
-    const int extra_width = close_->x() - title_->bounds().right();
+    const int extra_width = close_->x() - bounds.right();
     gfx::Size size = titlebar_extra_view_->GetPreferredSize();
     size.SetToMin(gfx::Size(std::max(0, extra_width), size.height()));
     gfx::Rect titlebar_extra_view_bounds(
@@ -371,8 +408,14 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
     const gfx::Size& client_size) const {
   // Accommodate the width of the title bar elements.
   int title_bar_width = GetInsets().width() + border()->GetInsets().width();
-  if (!title_->text().empty())
-    title_bar_width += kTitleLeftInset + title_->GetPreferredSize().width();
+  gfx::Size title_icon_size = title_icon_->GetPreferredSize();
+  gfx::Size title_label_size = title_->GetPreferredSize();
+  if (title_icon_size.width() > 0 || title_label_size.width() > 0)
+    title_bar_width += kTitleLeftInset;
+  if (title_icon_size.width() > 0 && title_label_size.width() > 0)
+    title_bar_width += kTitleHorizontalPadding;
+  title_bar_width += title_icon_size.width();
+  title_bar_width += title_label_size.width();
   if (close_->visible())
     title_bar_width += close_->width() + 1;
   if (titlebar_extra_view_ != NULL)

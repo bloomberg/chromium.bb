@@ -29,6 +29,9 @@ class GlobalErrorBubbleView : public views::ButtonListener,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetDelegate implementation.
+  base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
 
   // views::BubbleDelegateView implementation.

@@ -294,7 +294,8 @@ void OpaqueBrowserFrameView::ResetWindowControls() {
 }
 
 void OpaqueBrowserFrameView::UpdateWindowIcon() {
-  window_icon_->SchedulePaint();
+  if (window_icon_)
+    window_icon_->SchedulePaint();
 }
 
 void OpaqueBrowserFrameView::UpdateWindowTitle() {

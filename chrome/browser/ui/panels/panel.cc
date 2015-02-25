@@ -772,7 +772,7 @@ base::string16 Panel::GetWindowTitle() const {
 }
 
 gfx::Image Panel::GetCurrentPageIcon() const {
-  return panel_host_->GetPageIcon();
+  return panel_host_.get() ? panel_host_->GetPageIcon() : gfx::Image();
 }
 
 void Panel::UpdateTitleBar() {
