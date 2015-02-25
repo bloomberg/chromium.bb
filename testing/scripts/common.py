@@ -30,7 +30,12 @@ def run_script(argv, funcs):
   # TODO(phajdan.jr): Make build-config-fs required after passing it in recipe.
   parser.add_argument('--build-config-fs')
   parser.add_argument('--paths', type=parse_json, default={})
+  # Properties describe the environment of the build, and are the same per
+  # script invocation.
   parser.add_argument('--properties', type=parse_json, default={})
+  # Args contains per-invocation arguments that potentially change the
+  # behavior of the script.
+  parser.add_argument('--args', type=parse_json, default=[])
 
   subparsers = parser.add_subparsers()
 
