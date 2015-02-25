@@ -2,6 +2,7 @@ include_rules = [
   "+crypto",
   "+gin",
   "+jni",
+  "+mojo/common",
   "+third_party/apple_apsl",
   "+third_party/libevent",
   "+third_party/mojo/src/mojo/public",

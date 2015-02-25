@@ -711,11 +711,13 @@
             'dependencies': [
               'net_with_v8',
               'net_browser_services',
+              'net_utility_services',
               '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             ],
           }, {  # else
             'sources!': [
               'dns/mojo_host_resolver_impl_unittest.cc',
+              'proxy/mojo_proxy_resolver_impl_unittest.cc',
             ],
           },
         ],
@@ -1275,12 +1277,30 @@
           ],
         },
         {
+          # GN version: //net:net_utility_services
+          'target_name': 'net_utility_services',
+          'type': 'static_library',
+          'sources': [
+            'proxy/mojo_proxy_resolver_impl.cc',
+            'proxy/mojo_proxy_resolver_impl.h',
+          ],
+          'dependencies': [
+            'mojo_type_converters',
+            'net',
+            'net_interfaces',
+            '../mojo/mojo_base.gyp:mojo_common_lib',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
+        },
+        {
           # GN version: //net:mojo_type_converters
           'target_name': 'mojo_type_converters',
           'type': 'static_library',
           'sources': [
             'dns/mojo_type_converters.cc',
             'dns/mojo_type_converters.h',
+            'proxy/mojo_type_converters.cc',
+            'proxy/mojo_type_converters.h',
           ],
           'dependencies': [
             'net',

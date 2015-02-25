@@ -1436,6 +1436,7 @@
       'proxy/dhcp_proxy_script_adapter_fetcher_win_unittest.cc',
       'proxy/dhcp_proxy_script_fetcher_factory_unittest.cc',
       'proxy/dhcp_proxy_script_fetcher_win_unittest.cc',
+      'proxy/mojo_proxy_resolver_impl_unittest.cc',
       'proxy/multi_threaded_proxy_resolver_unittest.cc',
       'proxy/network_delegate_error_observer_unittest.cc',
       'proxy/proxy_bypass_rules_unittest.cc',

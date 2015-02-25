@@ -23,7 +23,9 @@ enum ProxyScheme {
 // Mirror of net::ProxyServer.
 struct ProxyServer {
   ProxyScheme scheme;
-  string host;
+
+  // |host| and |port| are only valid if |scheme| is not INVALID or DIRECT.
+  string? host;
   uint16 port;
 };
 

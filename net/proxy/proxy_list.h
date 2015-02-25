@@ -63,6 +63,9 @@ class NET_EXPORT_PRIVATE ProxyList {
   // this if !IsEmpty().
   const ProxyServer& Get() const;
 
+  // Returns all proxy servers in the list.
+  const std::vector<ProxyServer>& GetAll() const;
+
   // Sets the list by parsing the pac result |pac_string|.
   // Some examples for |pac_string|:
   //   "DIRECT"

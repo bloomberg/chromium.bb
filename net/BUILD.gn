@@ -808,10 +808,27 @@ if (use_v8_in_net && !is_android) {
     sources = [
       "dns/mojo_type_converters.cc",
       "dns/mojo_type_converters.h",
+      "proxy/mojo_type_converters.cc",
+      "proxy/mojo_type_converters.h",
     ]
 
     public_deps = [
       ":net",
+      "//net/interfaces",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
+  }
+
+  source_set("net_utility_services") {
+    sources = [
+      "proxy/mojo_proxy_resolver_impl.cc",
+      "proxy/mojo_proxy_resolver_impl.h",
+    ]
+
+    public_deps = [
+      ":mojo_type_converters",
+      ":net",
+      "//mojo/common",
       "//net/interfaces",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
@@ -1369,11 +1386,15 @@ if (!is_android && !is_win && !is_mac) {
     if (use_v8_in_net && !is_android) {
       deps += [
         ":net_browser_services",
+        ":net_utility_services",
         "//mojo/environment:chromium",
         "//third_party/mojo/src/mojo/edk/system",
       ]
     } else {
-      sources -= [ "dns/mojo_host_resolver_impl_unittest.cc" ]
+      sources -= [
+        "dns/mojo_host_resolver_impl_unittest.cc",
+        "proxy/mojo_proxy_resolver_impl_unittest.cc",
+      ]
     }
 
     if (!enable_mdns) {

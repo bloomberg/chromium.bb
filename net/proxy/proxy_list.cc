@@ -109,6 +109,10 @@ const ProxyServer& ProxyList::Get() const {
   return proxies_[0];
 }
 
+const std::vector<ProxyServer>& ProxyList::GetAll() const {
+  return proxies_;
+}
+
 void ProxyList::SetFromPacString(const std::string& pac_string) {
   base::StringTokenizer entry_tok(pac_string, ";");
   proxies_.clear();
