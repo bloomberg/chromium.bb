@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -146,8 +147,25 @@ bool ParseCellularScanResults(const base::ListValue& list,
 scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
     const NetworkState* network) {
   // Get the properties from the NetworkState.
-  base::DictionaryValue shill_dictionary;
-  network->GetStateProperties(&shill_dictionary);
+  scoped_ptr<base::DictionaryValue> shill_dictionary(new base::DictionaryValue);
+  network->GetStateProperties(shill_dictionary.get());
+
+  // Get any Device properties required to translate state.
+  if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
+    // We need to set Device[Cellular.ProviderRequiresRoaming] so that
+    // Cellular[RoamingState] can be set correctly for badging network icons.
+    const DeviceState* device =
+        NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+            network->device_path());
+    if (device) {
+      scoped_ptr<base::DictionaryValue> device_dict(new base::DictionaryValue);
+      device_dict->SetBooleanWithoutPathExpansion(
+          shill::kProviderRequiresRoamingProperty,
+          device->provider_requires_roaming());
+      shill_dictionary->SetWithoutPathExpansion(shill::kDeviceProperty,
+                                                device_dict.release());
+    }
+  }
 
   // NetworkState is always associated with the primary user profile, regardless
   // of what profile is associated with the page that calls this method. We do
@@ -160,7 +178,7 @@ scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
       ->FindPolicyByGUID(user_id_hash, network->guid(), &onc_source);
 
   scoped_ptr<base::DictionaryValue> onc_dictionary =
-      TranslateShillServiceToONCPart(shill_dictionary, onc_source,
+      TranslateShillServiceToONCPart(*shill_dictionary, onc_source,
                                      &onc::kNetworkWithStateSignature);
   return onc_dictionary.Pass();
 }

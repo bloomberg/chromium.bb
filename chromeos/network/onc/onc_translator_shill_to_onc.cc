@@ -343,9 +343,6 @@ void ShillToONCTranslator::TranslateCellularWithState() {
   TranslateWithTableAndSet(shill::kActivationStateProperty,
                            kActivationStateTable,
                            ::onc::cellular::kActivationState);
-  TranslateWithTableAndSet(shill::kRoamingStateProperty,
-                           kRoamingStateTable,
-                           ::onc::cellular::kRoamingState);
   const base::DictionaryValue* dictionary = NULL;
   if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
         shill::kServingOperatorProperty, &dictionary)) {
@@ -359,20 +356,31 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         shill::kCellularLastGoodApnProperty, &dictionary)) {
     TranslateAndAddNestedObject(::onc::cellular::kLastGoodAPN, *dictionary);
   }
-  // Merge the Device dictionary with this one (Cellular) using the
-  // CellularDevice signature.
   const base::DictionaryValue* device_dictionary = NULL;
-  if (!shill_dictionary_->GetDictionaryWithoutPathExpansion(
-          shill::kDeviceProperty, &device_dictionary)) {
-    return;
+  bool requires_roaming = false;
+  shill_dictionary_->GetDictionaryWithoutPathExpansion(shill::kDeviceProperty,
+                                                       &device_dictionary);
+  if (device_dictionary) {
+    // Merge the Device dictionary with this one (Cellular) using the
+    // CellularDevice signature.
+    ShillToONCTranslator nested_translator(*device_dictionary, onc_source_,
+                                           kCellularWithStateSignature,
+                                           kCellularDeviceTable);
+    scoped_ptr<base::DictionaryValue> nested_object =
+        nested_translator.CreateTranslatedONCObject();
+    onc_object_->MergeDictionary(nested_object.get());
+
+    /// Get the requires_roaming from the Device dictionary.
+    device_dictionary->GetBooleanWithoutPathExpansion(
+        shill::kProviderRequiresRoamingProperty, &requires_roaming);
   }
-  ShillToONCTranslator nested_translator(*device_dictionary,
-                                         onc_source_,
-                                         kCellularWithStateSignature,
-                                         kCellularDeviceTable);
-  scoped_ptr<base::DictionaryValue> nested_object =
-      nested_translator.CreateTranslatedONCObject();
-  onc_object_->MergeDictionary(nested_object.get());
+  if (requires_roaming) {
+    onc_object_->SetStringWithoutPathExpansion(
+        ::onc::cellular::kRoamingState, ::onc::cellular::kRoamingRequired);
+  } else {
+    TranslateWithTableAndSet(shill::kRoamingStateProperty, kRoamingStateTable,
+                             ::onc::cellular::kRoamingState);
+  }
 }
 
 void ShillToONCTranslator::TranslateCellularDevice() {

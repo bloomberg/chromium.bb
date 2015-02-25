@@ -320,8 +320,8 @@ const StringTranslationEntry kActivationStateTable[] = {
     {NULL}};
 
 const StringTranslationEntry kRoamingStateTable[] = {
-    { ::onc::cellular::kHome, shill::kRoamingStateHome},
-    { ::onc::cellular::kRoaming, shill::kRoamingStateRoaming},
+    { ::onc::cellular::kRoamingHome, shill::kRoamingStateHome},
+    { ::onc::cellular::kRoamingRoaming, shill::kRoamingStateRoaming},
     {NULL}};
 
 // This must contain only Shill Device properties and no Service properties.
@@ -347,8 +347,6 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     { ::onc::cellular::kMIN, shill::kMinProperty},
     { ::onc::cellular::kModelID, shill::kModelIDProperty},
     { ::onc::cellular::kPRLVersion, shill::kPRLVersionProperty},
-    { ::onc::cellular::kProviderRequiresRoaming,
-      shill::kProviderRequiresRoamingProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
     { ::onc::cellular::kSIMPresent, shill::kSIMPresentProperty},

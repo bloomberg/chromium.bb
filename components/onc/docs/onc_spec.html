@@ -2287,21 +2287,17 @@
       The revision of the Preferred Roaming List that is loaded in the modem.
     </dd>
 
-    <dt class="field">ProviderRequiresRoaming</dt>
-    <dd>
-      <span class="field_meta">(optional, read-only)
-        <span class="type">boolean</span>
-      </span>
-      Indicates that the cellular provider (determined based on IMSI and SPN)
-      requires roaming.
-    </dd>
-
     <dt class="field">RoamingState</dt>
     <dd>
       <span class="field_meta">(optional, read-only)
         <span class="type">string</span>
       </span>
       The roaming status of the cellular modem on the current network.
+      <span class="rule"><span class="rule_id"></span>
+        Allowed values are <span class="value">Home</span>,
+        <span class="value">Roaming</span>, or if the provider has no home
+        network, <span class="value">Required</span>.
+      </span>
     </dd>
 
     <dt class="field">ServingOperator</dt>

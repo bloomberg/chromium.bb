@@ -109,6 +109,7 @@ const char* kTechnologyUnavailable = "unavailable";
 const char* kNetworkActivated = "activated";
 const char* kNetworkDisabled = "disabled";
 const char* kCellularServicePath = "/service/cellular1";
+const char* kRoamingRequired = "required";
 
 }  // namespace
 
@@ -769,6 +770,11 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->SetDeviceProperty("/device/cellular1",
                                shill::kSupportedCarriersProperty,
                                carrier_list);
+    if (roaming_state_ == kRoamingRequired) {
+      devices->SetDeviceProperty("/device/cellular1",
+                                 shill::kProviderRequiresRoamingProperty,
+                                 base::FundamentalValue(true));
+    }
 
     services->AddService(kCellularServicePath,
                          "cellular1_guid",
@@ -799,9 +805,16 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
           base::StringValue(shill::kActivationStateNotActivated));
     }
 
+    std::string shill_roaming_state;
+    if (roaming_state_ == kRoamingRequired)
+      shill_roaming_state = shill::kRoamingStateRoaming;
+    else if (roaming_state_.empty())
+      shill_roaming_state = shill::kRoamingStateHome;
+    else  // |roaming_state_| is expected to be a valid Shill state.
+      shill_roaming_state = roaming_state_;
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kRoamingStateProperty,
-                                 base::StringValue(shill::kRoamingStateHome));
+                                 base::StringValue(shill_roaming_state));
     profiles->AddService(shared_profile, kCellularServicePath);
   }
 
@@ -1047,6 +1060,10 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
       base::StringToInt(arg1, &s_tdls_busy_count);
     else
       s_tdls_busy_count = 1;
+    return true;
+  } else if (arg0 == "roaming") {
+    // "home", "roaming", or "required"
+    roaming_state_ = arg1;
     return true;
   }
   return SetInitialNetworkState(arg0, arg1);

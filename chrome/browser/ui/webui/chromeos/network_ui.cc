@@ -155,6 +155,7 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("normalFormatOption", IDS_NETWORK_UI_FORMAT_NORMAL);
   html->AddLocalizedString("managedFormatOption",
                            IDS_NETWORK_UI_FORMAT_MANAGED);
+  html->AddLocalizedString("stateFormatOption", IDS_NETWORK_UI_FORMAT_STATE);
   html->AddLocalizedString("shillFormatOption", IDS_NETWORK_UI_FORMAT_SHILL);
 
   html->AddLocalizedString("visibleNetworksLabel",

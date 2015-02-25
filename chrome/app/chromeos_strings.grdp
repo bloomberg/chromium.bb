@@ -5880,6 +5880,9 @@ All users must sign out to continue.
   <message name="IDS_NETWORK_UI_FORMAT_MANAGED" desc="Label in network property format dropdown for managed ONC properties">
     Managed ONC
   </message>
+  <message name="IDS_NETWORK_UI_FORMAT_STATE" desc="Label in network property format dropdown for ONC State properties">
+    ONC State
+  </message>
   <message name="IDS_NETWORK_UI_FORMAT_SHILL" desc="Label in network property format dropdown for Shill properties">
     Shill
   </message>

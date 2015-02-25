@@ -222,6 +222,9 @@ var NetworkUI = (function() {
     var selectedId = $('get-property-format').options[selected].value;
     if (selectedId == 'shill') {
       chrome.send('getShillProperties', [guid]);
+    } else if (selectedId == 'state') {
+      chrome.networkingPrivate.getState(guid, function(properties) {
+        showDetail(properties, chrome.runtime.lastError); });
     } else if (selectedId == 'managed') {
       chrome.networkingPrivate.getManagedProperties(guid, function(properties) {
         showDetail(properties, chrome.runtime.lastError); });
