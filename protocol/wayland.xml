@@ -1389,7 +1389,7 @@
       <arg name="id" type="new_id" interface="wl_touch"/>
     </request>
 
-    <!-- Version 2 of additions -->
+    <!-- Version 2 additions -->
 
     <event name="name" since="2">
       <description summary="unique identifier for this seat">
