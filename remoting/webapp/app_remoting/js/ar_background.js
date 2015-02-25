@@ -28,7 +28,7 @@ function createWindow(opt_launchData) {
 
   var windowAttributes = {
     resizable: false,
-    frame: 'none',
+    frame: remoting.platformIsMac() ? 'chrome' : 'none',
     bounds: {
       width: typed_screen.availWidth,
       height: typed_screen.availHeight
