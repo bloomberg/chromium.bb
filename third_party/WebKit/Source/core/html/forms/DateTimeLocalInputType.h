@@ -57,6 +57,7 @@ private:
     StepRange createStepRange(AnyStepHandling) const override;
     bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
     bool setMillisecondToDateComponents(double, DateComponents*) const override;
+    String localizeValue(const String&) const override;
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // BaseMultipleFieldsDateAndTimeInputType functions

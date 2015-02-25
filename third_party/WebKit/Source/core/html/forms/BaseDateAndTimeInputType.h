@@ -53,6 +53,7 @@ protected:
     String serializeWithComponents(const DateComponents&) const;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
     String visibleValue() const override;
+    bool shouldHaveSecondField(const DateComponents&) const;
 
 private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;

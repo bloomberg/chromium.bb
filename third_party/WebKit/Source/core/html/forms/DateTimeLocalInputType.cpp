@@ -97,6 +97,17 @@ bool DateTimeLocalInputType::setMillisecondToDateComponents(double value, DateCo
     return date->setMillisecondsSinceEpochForDateTimeLocal(value);
 }
 
+String DateTimeLocalInputType::localizeValue(const String& proposedValue) const
+{
+    DateComponents date;
+    if (!parseToDateComponents(proposedValue, &date))
+        return proposedValue;
+
+    Locale::FormatType formatType = shouldHaveSecondField(date) ? Locale::FormatTypeMedium : Locale::FormatTypeShort;
+    String localized = element().locale().formatDateTime(date, formatType);
+    return localized.isEmpty() ? proposedValue : localized;
+}
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 // FIXME: It is better to share code for DateTimeInputType::formatDateTimeFieldsState()
 // and DateTimeInputLocalType::formatDateTimeFieldsState().

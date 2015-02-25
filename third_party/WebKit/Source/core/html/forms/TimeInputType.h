@@ -55,8 +55,8 @@ private:
     bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
     bool setMillisecondToDateComponents(double, DateComponents*) const override;
     void warnIfValueIsInvalid(const String&) const override;
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String localizeValue(const String&) const override;
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
     // BaseMultipleFieldsDateAndTimeInputType functions
     String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;

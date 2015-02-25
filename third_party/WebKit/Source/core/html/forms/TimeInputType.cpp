@@ -110,8 +110,6 @@ void TimeInputType::warnIfValueIsInvalid(const String& value) const
     }
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-
 String TimeInputType::localizeValue(const String& proposedValue) const
 {
     DateComponents date;
@@ -123,6 +121,8 @@ String TimeInputType::localizeValue(const String& proposedValue) const
     String localized = element().locale().formatDateTime(date, formatType);
     return localized.isEmpty() ? proposedValue : localized;
 }
+
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
 String TimeInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
 {

@@ -1710,7 +1710,6 @@ crbug.com/417782 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickm
 crbug.com/428145 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsManualRebaseline ]
 crbug.com/428145 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
 crbug.com/428145 [ Linux Android ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/428145 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsManualRebaseline ]
 crbug.com/428145 fast/text/international/thai-line-breaks.html [ NeedsManualRebaseline ]
 crbug.com/428145 virtual/slimmingpaint/fast/text/international/thai-line-breaks.html [ NeedsManualRebaseline ]
 crbug.com/428145 [ Win Mac ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsManualRebaseline ]
@@ -1883,6 +1882,9 @@ crbug.com/457157 http/tests/fetch/workers/fetch-access-control-redirect-nocors-b
 crbug.com/457157 http/tests/fetch/workers/fetch-access-control-redirect-nocors-other-https.html [ Failure ]
 crbug.com/457157 http/tests/fetch/workers/fetch-access-control-redirect-nocors.html [ Failure ]
 
+crbug.com/459966 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-rtl.html [ NeedsRebaseline ]
+crbug.com/459966 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
+crbug.com/459966 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsRebaseline ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-other-https.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-base-https-other-https.html [ Slow ]
