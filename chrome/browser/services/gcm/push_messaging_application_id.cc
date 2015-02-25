@@ -10,6 +10,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -50,11 +51,20 @@ PushMessagingApplicationId PushMessagingApplicationId::Generate(
 // static
 PushMessagingApplicationId PushMessagingApplicationId::Get(
     Profile* profile, const std::string& app_id_guid) {
+  // Workaround crbug.com/461867 in GCM where it converts subtypes to lowercase.
+  // TODO(johnme): Remove this when obsolete
+  const size_t prefix_len = strlen(kPushMessagingApplicationIdPrefix);
+  if (app_id_guid.size() < prefix_len)
+    return PushMessagingApplicationId();
+  std::string uppercase_app_id =
+      app_id_guid.substr(0, prefix_len) +
+      StringToUpperASCII(app_id_guid.substr(prefix_len, std::string::npos));
+
   const base::DictionaryValue* map =
       profile->GetPrefs()->GetDictionary(prefs::kPushMessagingApplicationIdMap);
 
   std::string origin_and_sw_id;
-  if (!map->GetStringWithoutPathExpansion(app_id_guid, &origin_and_sw_id))
+  if (!map->GetStringWithoutPathExpansion(uppercase_app_id, &origin_and_sw_id))
     return PushMessagingApplicationId();
 
   std::vector<std::string> parts;
@@ -68,7 +78,7 @@ PushMessagingApplicationId PushMessagingApplicationId::Get(
   if (!base::StringToInt64(parts[1], &service_worker_registration_id))
     return PushMessagingApplicationId();
 
-  PushMessagingApplicationId application_id(app_id_guid, origin,
+  PushMessagingApplicationId application_id(uppercase_app_id, origin,
                                             service_worker_registration_id);
   DCHECK(application_id.IsValid());
   return application_id;
