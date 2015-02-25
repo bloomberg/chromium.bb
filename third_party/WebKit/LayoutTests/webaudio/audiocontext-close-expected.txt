@@ -29,6 +29,7 @@ PASS osc.connect(gain) threw exception InvalidStateError: Failed to execute 'con
 PASS gain.disconnect() did not throw exception.
 PASS Attempt to resume a closed context was correctly rejected
 PASS Closing context again correctly rejected promise.
+PASS context.destination is null
 PASS offline = new OfflineAudioContext(1, 1000, 48000) did not throw exception.
 PASS offline.state is "suspended"
 PASS Closing offline context correctly rejected

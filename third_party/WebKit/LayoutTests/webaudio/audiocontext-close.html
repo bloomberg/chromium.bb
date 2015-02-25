@@ -20,13 +20,13 @@
     var promise2;
     var offlinePromise;
     var wave = new Float32Array(1);
-    
+
     var audit = Audit.createTaskRunner();
 
     // Task: test online context (1).
     audit.defineTask('test-online-context-1', function (done) {
 
-      // Create a context and verify that the various states are correct and 
+      // Create a context and verify that the various states are correct and
       // that close() exists.
       shouldNotThrow("context = new AudioContext()");
       shouldBeEqualToString("context.state", "running");
@@ -41,7 +41,7 @@
       context.close().then(
         function () {
           testPassed("context.close() was correctly resolved");
-        }, 
+        },
         function () {
           testFailed("context.close() was erroneously rejected");
         }
@@ -52,14 +52,14 @@
     // Task: test online context (2).
     audit.defineTask('test-online-context-2', function (done) {
 
-      // Context is closed, so verify that we cannot create any more nodes, 
+      // Context is closed, so verify that we cannot create any more nodes,
       // nor connect any.
       shouldThrow("context.createAnalyser()");
       shouldThrow("context.createBiquadFilter()");
 
-      // createBuffer is an exception because it's not really tied in any way 
-      // to an audio context. And it's useful to be able to create a buffer 
-      // inside the oncomplete event of an offline context to use for testing 
+      // createBuffer is an exception because it's not really tied in any way
+      // to an audio context. And it's useful to be able to create a buffer
+      // inside the oncomplete event of an offline context to use for testing
       // purposes.
       shouldNotThrow("context.createBuffer(1, 1, 48000)");
 
@@ -93,7 +93,7 @@
 
     // Task: test online context (3).
     audit.defineTask('test-online-context-3', function (done) {
-      
+
       // Try closing the context again. The promise should be rejected.
       context.close().then(
         function () {
@@ -101,25 +101,17 @@
         },
         function () {
           testPassed("Closing context again correctly rejected promise.");
-
-          // Finally, run GC. The context should be gone, but this seems 
-          // difficult to verify.
-          if (window.hasOwnProperty('GCController')) {
-            asyncGC(function () {
-              shouldBeNull("context.destination");
-            });
-          } else {
-            shouldBeNull("context.destination");
-            testFailed("asyncGC test not run");
-          }
+          // Finally, run GC. The context should be gone, but this seems difficult to verify.
+          gc();
+          shouldBeNull("context.destination");
         }
       ).then(done);
     });
 
     // Task: test offline context (1).
     audit.defineTask('test-offline-context-1', function (done) {
-      
-      // For an offline context, just check that if we try to close the context, 
+
+      // For an offline context, just check that if we try to close the context,
       // nothing happens except that the promise returned by close() is rejected.
       shouldNotThrow("offline = new OfflineAudioContext(1, 1000, 48000)");
       shouldBeEqualToString("offline.state", "suspended");
@@ -135,12 +127,12 @@
 
     // Task: test offline context (2).
     audit.defineTask('test-offline-context-2', function (done) {
-      
+
       // Try closing again
       offline.close().then(
         function () {
           testFailed("Closing offline context again erroneously resolved");
-        }, 
+        },
         function () {
           testPassed("Closing offline context again correctly rejected");
         }
@@ -164,14 +156,14 @@
     });
 
     audit.runTasks(
-      'test-online-context-1', 
-      'test-online-context-2', 
+      'test-online-context-1',
+      'test-online-context-2',
       'test-online-context-3',
-      'test-offline-context-1', 
+      'test-offline-context-1',
       'test-offline-context-2',
       'finish-test'
     );
-    
+
     successfullyParsed = true;
   </script>
 </body>
