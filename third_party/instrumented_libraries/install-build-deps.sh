@@ -79,13 +79,13 @@ else
   packages="$common_packages $trusty_specific_packages"
 fi
 
-sudo apt-get build-dep -y $packages
-
 # Extra build deps for pulseaudio, which apt-get build-dep may fail to install
 # for reasons which are not entirely clear. 
 sudo apt-get install libltdl3-dev libjson0-dev \
-         libsndfile1-dev libspeexdsp-dev \
+         libsndfile1-dev libspeexdsp-dev libjack0 \
          chrpath -y  # Chrpath is required by fix_rpaths.sh.
+
+sudo apt-get build-dep -y $packages
 
 if test "$ubuntu_release" = "trusty" ; then
   # On Trusty, build deps for some of the instrumented packages above conflict
