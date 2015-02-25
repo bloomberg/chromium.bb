@@ -106,7 +106,7 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       script_url_(script_url),
       worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
-      main_thread_proxy_(base::MessageLoopProxy::current()),
+      main_thread_task_runner_(RenderThreadImpl::current()->GetTaskRunner()),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "EmbeddedWorkerContextClient::StartingWorkerContext",
@@ -180,7 +180,7 @@ void EmbeddedWorkerContextClient::workerReadyForInspection() {
 }
 
 void EmbeddedWorkerContextClient::workerContextFailedToStart() {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!script_context_);
 
   Send(new EmbeddedWorkerHostMsg_WorkerScriptLoadFailed(embedded_worker_id_));
@@ -243,7 +243,7 @@ void EmbeddedWorkerContextClient::workerContextDestroyed() {
 
   // Now we should be able to free the WebEmbeddedWorker container on the
   // main thread.
-  main_thread_proxy_->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CallWorkerContextDestroyedOnMainThread,
                  embedded_worker_id_));
@@ -355,7 +355,7 @@ void EmbeddedWorkerContextClient::didHandleCrossOriginConnectEvent(
 blink::WebServiceWorkerNetworkProvider*
 EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
     blink::WebDataSource* data_source) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
 
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
@@ -380,7 +380,7 @@ EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
 
 blink::WebServiceWorkerProvider*
 EmbeddedWorkerContextClient::createServiceWorkerProvider() {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(provider_context_);
 
   // Blink is responsible for deleting the returned object.

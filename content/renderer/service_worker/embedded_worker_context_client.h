@@ -14,7 +14,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
@@ -130,8 +130,8 @@ class EmbeddedWorkerContextClient
   // TODO: Implement DevTools related method overrides.
 
   int embedded_worker_id() const { return embedded_worker_id_; }
-  base::MessageLoopProxy* main_thread_proxy() const {
-    return main_thread_proxy_.get();
+  base::SingleThreadTaskRunner* main_thread_task_runner() const {
+    return main_thread_task_runner_.get();
   }
   ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
 
@@ -148,7 +148,7 @@ class EmbeddedWorkerContextClient
   const GURL script_url_;
   const int worker_devtools_agent_route_id_;
   scoped_refptr<ThreadSafeSender> sender_;
-  scoped_refptr<base::MessageLoopProxy> main_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   scoped_ptr<ServiceWorkerScriptContext> script_context_;
