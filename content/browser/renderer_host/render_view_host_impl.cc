@@ -1395,6 +1395,14 @@ void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
 }
 
 void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
+  // Do not allow messages with absolute paths in them as this can permit a
+  // renderer to coerce the browser to perform I/O on a renderer controlled
+  // path.
+  if (params.default_file_name != params.default_file_name.BaseName()) {
+    GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
   delegate_->RunFileChooser(this, params);
 }
 
