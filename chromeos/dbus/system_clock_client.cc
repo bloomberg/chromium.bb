@@ -5,7 +5,6 @@
 #include "chromeos/dbus/system_clock_client.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

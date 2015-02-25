@@ -8,10 +8,8 @@
 #include <iterator>
 
 #include "base/bind.h"
-#include "base/time/time.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
 
 namespace chromeos {
 

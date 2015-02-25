@@ -12,9 +12,7 @@
 #include "chromeos/dbus/bluetooth_media_transport_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_media_endpoint_service_provider.h"
-#include "dbus/bus.h"
 #include "dbus/exported_object.h"
-#include "dbus/message.h"
 
 namespace {
 

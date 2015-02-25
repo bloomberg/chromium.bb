@@ -9,7 +9,6 @@
 #include <pk11pub.h>
 
 #include <algorithm>
-#include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -17,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"

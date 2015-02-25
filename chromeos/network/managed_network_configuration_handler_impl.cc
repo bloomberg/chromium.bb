@@ -4,7 +4,6 @@
 
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 
-#include <set>
 #include <vector>
 
 #include "base/bind.h"

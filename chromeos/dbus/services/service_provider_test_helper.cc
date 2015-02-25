@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ::testing::_;

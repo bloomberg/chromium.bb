@@ -5,7 +5,6 @@
 #include "chromeos/login/auth/test_attempt_state.h"
 
 #include "components/user_manager/user_type.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace chromeos {
 

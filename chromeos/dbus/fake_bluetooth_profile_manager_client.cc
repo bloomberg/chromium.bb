@@ -4,16 +4,12 @@
 
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 
-#include <map>
-#include <string>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

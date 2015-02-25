@@ -4,7 +4,6 @@
 
 #include "chromeos/process_proxy/process_proxy.h"
 
-#include <fcntl.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 
@@ -16,7 +15,6 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/threading/thread.h"
-#include "chromeos/process_proxy/process_output_watcher.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace {

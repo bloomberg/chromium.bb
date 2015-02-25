@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "dbus/message.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 

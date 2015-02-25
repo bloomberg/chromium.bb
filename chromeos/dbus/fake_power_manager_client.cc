@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager/policy.pb.h"
 
 namespace chromeos {
 

@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)

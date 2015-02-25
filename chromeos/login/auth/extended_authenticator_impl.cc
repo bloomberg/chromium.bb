@@ -19,7 +19,6 @@
 #include "chromeos/login_event_recorder.h"
 #include "crypto/sha2.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 

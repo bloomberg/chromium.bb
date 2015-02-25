@@ -6,7 +6,6 @@
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
-#include "dbus/object_path.h"
 
 namespace chromeos {
 

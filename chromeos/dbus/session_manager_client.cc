@@ -5,7 +5,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"

@@ -17,11 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/shill_property_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

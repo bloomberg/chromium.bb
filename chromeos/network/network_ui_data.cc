@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 

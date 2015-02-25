@@ -20,7 +20,6 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
-#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace {
 

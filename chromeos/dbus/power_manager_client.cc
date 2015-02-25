@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -19,7 +18,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"

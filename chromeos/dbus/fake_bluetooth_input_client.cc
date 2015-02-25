@@ -12,7 +12,6 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

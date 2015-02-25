@@ -5,7 +5,6 @@
 #include "chromeos/dbus/permission_broker_client.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

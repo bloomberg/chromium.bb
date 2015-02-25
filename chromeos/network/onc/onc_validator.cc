@@ -5,7 +5,6 @@
 #include "chromeos/network/onc/onc_validator.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -13,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
-#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 namespace onc {

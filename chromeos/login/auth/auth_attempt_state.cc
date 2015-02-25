@@ -4,10 +4,7 @@
 
 #include "chromeos/login/auth/auth_attempt_state.h"
 
-#include <string>
 
-#include "google_apis/gaia/gaia_auth_consumer.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
 
 namespace chromeos {
 

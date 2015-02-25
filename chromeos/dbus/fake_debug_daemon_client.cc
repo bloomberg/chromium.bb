@@ -6,7 +6,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"

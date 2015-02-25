@@ -5,7 +5,6 @@
 #include "chromeos/dbus/leadership_daemon_manager_client.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"

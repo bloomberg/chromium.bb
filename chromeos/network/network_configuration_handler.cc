@@ -4,8 +4,6 @@
 
 #include "chromeos/network/network_configuration_handler.h"
 
-#include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -13,7 +11,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

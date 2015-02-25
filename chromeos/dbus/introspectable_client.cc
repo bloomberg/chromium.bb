@@ -4,14 +4,11 @@
 
 #include "chromeos/dbus/introspectable_client.h"
 
-#include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 

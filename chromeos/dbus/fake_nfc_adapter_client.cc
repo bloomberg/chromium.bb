@@ -8,7 +8,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
-#include "chromeos/dbus/nfc_client_helpers.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

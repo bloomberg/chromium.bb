@@ -4,10 +4,8 @@
 
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/fake_bluetooth_agent_service_provider.h"
-#include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

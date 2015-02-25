@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/power_monitor/power_monitor.h"
@@ -22,8 +21,6 @@
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_provider.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
 
 namespace chromeos {
 

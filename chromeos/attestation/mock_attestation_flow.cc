@@ -5,7 +5,6 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
 using testing::DefaultValue;

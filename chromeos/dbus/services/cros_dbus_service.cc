@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
-#include "base/threading/platform_thread.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"

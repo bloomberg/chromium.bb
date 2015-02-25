@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/thread_task_runner_handle.h"
 #include "dbus/bus.h"
-#include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

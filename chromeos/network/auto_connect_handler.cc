@@ -4,7 +4,6 @@
 
 #include "chromeos/network/auto_connect_handler.h"
 
-#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

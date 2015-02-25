@@ -4,7 +4,6 @@
 
 #include "chromeos/disks/disk_mount_manager.h"
 
-#include <map>
 #include <set>
 
 #include "base/bind.h"

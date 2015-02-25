@@ -4,7 +4,6 @@
 
 #include "chromeos/dbus/bluetooth_profile_service_provider.h"
 
-#include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -12,10 +11,8 @@
 #include "base/threading/platform_thread.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
-#include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
