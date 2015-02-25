@@ -90,6 +90,7 @@ class MetricsStateManager {
     ENTROPY_SOURCE_NONE,
     ENTROPY_SOURCE_LOW,
     ENTROPY_SOURCE_HIGH,
+    ENTROPY_SOURCE_ENUM_SIZE,
   };
 
   // Creates the MetricsStateManager with the given |local_state|. Calls
@@ -115,6 +116,10 @@ class MetricsStateManager {
   // that is non-identifying amongst browser clients. This method will
   // generate the entropy source value if it has not been called before.
   int GetLowEntropySource();
+
+  // Updates |entropy_source_returned_| with |type| iff the current value is
+  // ENTROPY_SOURCE_NONE and logs the new value in a histogram.
+  void UpdateEntropySourceReturnedValue(EntropySourceType type);
 
   // Returns the first entropy source that was returned by this service since
   // start up, or NONE if neither was returned yet. This is exposed for testing
