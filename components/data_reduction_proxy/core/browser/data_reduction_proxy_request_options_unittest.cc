@@ -158,15 +158,16 @@ void SetHeaderExpectations(const std::string& session,
 class DataReductionProxyRequestOptionsTest : public testing::Test {
  public:
   DataReductionProxyRequestOptionsTest() {
-    test_context_.reset(
-        new DataReductionProxyTestContext(
-            DataReductionProxyParams::kAllowed |
-                DataReductionProxyParams::kFallbackAllowed |
-                DataReductionProxyParams::kPromoAllowed,
-            TestDataReductionProxyParams::HAS_EVERYTHING &
-                ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                                 DataReductionProxyParams::kFallbackAllowed |
+                                 DataReductionProxyParams::kPromoAllowed)
+            .WithParamsDefinitions(
+                TestDataReductionProxyParams::HAS_EVERYTHING &
+                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+            .Build();
   }
 
   void CreateRequestOptions(const std::string& version) {

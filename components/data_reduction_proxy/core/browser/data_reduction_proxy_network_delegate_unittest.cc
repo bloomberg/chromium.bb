@@ -77,24 +77,24 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                                      test_job_interceptor_));
     context_.set_job_factory(&test_job_factory_);
 
-    test_context_.reset(
-        new DataReductionProxyTestContext(
-            DataReductionProxyParams::kAllowed |
-                DataReductionProxyParams::kFallbackAllowed |
-                DataReductionProxyParams::kPromoAllowed,
-            TestDataReductionProxyParams::HAS_EVERYTHING &
-                ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS,
-            &context_));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                                 DataReductionProxyParams::kFallbackAllowed |
+                                 DataReductionProxyParams::kPromoAllowed)
+            .WithParamsDefinitions(
+                TestDataReductionProxyParams::HAS_EVERYTHING &
+                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)\
+            .WithClient(kClient)
+            .WithURLRequestContext(&context_)
+            .Build();
 
-    request_options_.reset(
-        new DataReductionProxyRequestOptions(
-            kClient, config(), test_context_->task_runner()));
     data_reduction_proxy_network_delegate_.reset(
         new DataReductionProxyNetworkDelegate(
             scoped_ptr<net::NetworkDelegate>(new TestNetworkDelegate()),
-            config(), request_options_.get(), test_context_->configurator()));
+            config(), test_context_->io_data()->request_options(),
+            test_context_->configurator()));
   }
 
   const net::ProxyConfig& GetProxyConfig() const {
@@ -155,7 +155,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return test_context_->data_reduction_proxy_service()->statistics_prefs();
   }
 
-  scoped_ptr<DataReductionProxyRequestOptions> request_options_;
   scoped_ptr<DataReductionProxyNetworkDelegate>
       data_reduction_proxy_network_delegate_;
 

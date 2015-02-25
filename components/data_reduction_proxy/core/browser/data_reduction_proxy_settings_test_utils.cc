@@ -41,16 +41,19 @@ DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
 
 // testing::Test implementation:
 void DataReductionProxySettingsTestBase::SetUp() {
-  test_context_.reset(new DataReductionProxyTestContext(
-      DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-      DataReductionProxyTestContext::USE_MOCK_CONFIG |
-          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION |
-          DataReductionProxyTestContext::USE_MOCK_SERVICE));
+  test_context_ =
+      DataReductionProxyTestContext::Builder()
+          .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                           DataReductionProxyParams::kFallbackAllowed |
+                           DataReductionProxyParams::kPromoAllowed)
+          .WithParamsDefinitions(
+              TestDataReductionProxyParams::HAS_EVERYTHING &
+                  ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                  ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+          .WithMockConfig()
+          .WithMockDataReductionProxyService()
+          .SkipSettingsInitialization()
+          .Build();
 
   TestingPrefServiceSimple* pref_service = test_context_->pref_service();
   pref_service->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);

@@ -182,13 +182,15 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     ASSERT_TRUE(proxy_.InitializeAndWaitUntilReady());
     ASSERT_TRUE(direct_.InitializeAndWaitUntilReady());
 
-    test_context_.reset(new DataReductionProxyTestContext(
-        DataReductionProxyParams::kAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-        DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS,
-        &context_));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed)
+            .WithParamsDefinitions(
+                TestDataReductionProxyParams::HAS_EVERYTHING &
+                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+            .WithURLRequestContext(&context_)
+            .Build();
     std::string spec;
     base::TrimString(proxy_.GetURL("/").spec(), "/", &spec);
     test_context_->config()->test_params()->set_origin(

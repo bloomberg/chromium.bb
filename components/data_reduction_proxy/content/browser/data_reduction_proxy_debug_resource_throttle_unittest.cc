@@ -65,10 +65,11 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
 
     context_.set_job_factory(&test_job_factory_);
 
-    test_context_.reset(new DataReductionProxyTestContext(
-        DataReductionProxyParams::kAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING,
-        DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed)
+            .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
+            .Build();
     request_ = context_.CreateRequest(GURL("http://www.google.com/"), net::IDLE,
                                       &delegate_, NULL);
     ui_service_.reset(new ContentDataReductionProxyDebugUIService(

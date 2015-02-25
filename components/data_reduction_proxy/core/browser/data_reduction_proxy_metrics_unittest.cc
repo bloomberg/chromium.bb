@@ -673,9 +673,10 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardTwoDays) {
 TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
        GetDataReductionProxyRequestType) {
   scoped_ptr<DataReductionProxyTestContext> test_context =
-      make_scoped_ptr(new DataReductionProxyTestContext(
-          DataReductionProxyParams::kAllowed,
-          TestDataReductionProxyParams::HAS_ORIGIN, 0));
+      DataReductionProxyTestContext::Builder()
+          .WithParamsFlags(DataReductionProxyParams::kAllowed)
+          .WithParamsDefinitions(TestDataReductionProxyParams::HAS_ORIGIN)
+          .Build();
   TestDataReductionProxyParams* params = test_context->config()->test_params();
 
   net::ProxyConfig data_reduction_proxy_config;

@@ -180,26 +180,29 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndProbe) {
   for (const TestCase& test_case : kTestCases) {
     net::TestURLRequestContext context(true);
 
-    DataReductionProxyTestContext drp_test_context(
-        DataReductionProxyParams::kAllowed |
-            DataReductionProxyParams::kFallbackAllowed |
-            DataReductionProxyParams::kPromoAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-        DataReductionProxyTestContext::USE_TEST_CONFIGURATOR |
-            DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION,
-        &context);
+    scoped_ptr<DataReductionProxyTestContext> drp_test_context =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                             DataReductionProxyParams::kFallbackAllowed |
+                             DataReductionProxyParams::kPromoAllowed)
+            .WithParamsDefinitions(
+                TestDataReductionProxyParams::HAS_EVERYTHING &
+                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+            .WithURLRequestContext(&context)
+            .WithTestConfigurator()
+            .SkipSettingsInitialization()
+            .Build();
 
-    context.set_net_log(drp_test_context.net_log());
+    context.set_net_log(drp_test_context->net_log());
     net::MockClientSocketFactory mock_socket_factory;
     context.set_client_socket_factory(&mock_socket_factory);
     context.Init();
 
     // Start with the Data Reduction Proxy disabled.
-    drp_test_context.pref_service()->SetBoolean(
+    drp_test_context->pref_service()->SetBoolean(
         prefs::kDataReductionProxyEnabled, false);
-    drp_test_context.InitSettings();
+    drp_test_context->InitSettings();
 
     net::MockRead mock_reads[] = {
         net::MockRead(test_case.response_headers),
@@ -211,43 +214,46 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndProbe) {
     mock_socket_factory.AddSocketDataProvider(&socket_data_provider);
 
     // Toggle the pref to trigger the probe.
-    drp_test_context.pref_service()->SetBoolean(
+    drp_test_context->pref_service()->SetBoolean(
             prefs::kDataReductionProxyEnabled, true);
-    drp_test_context.RunUntilIdle();
+    drp_test_context->RunUntilIdle();
 
     EXPECT_EQ(test_case.expected_restricted,
-              drp_test_context.test_configurator()->restricted());
+              drp_test_context->test_configurator()->restricted());
   }
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
-  DataReductionProxyTestContext drp_test_context(
-      DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-      DataReductionProxyTestContext::USE_MOCK_CONFIG |
-          DataReductionProxyTestContext::USE_TEST_CONFIGURATOR |
-          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION |
-          DataReductionProxyTestContext::USE_MOCK_SERVICE);
+  scoped_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                           DataReductionProxyParams::kFallbackAllowed |
+                           DataReductionProxyParams::kPromoAllowed)
+          .WithParamsDefinitions(
+              TestDataReductionProxyParams::HAS_EVERYTHING &
+                  ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                  ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+          .WithMockConfig()
+          .WithTestConfigurator()
+          .WithMockDataReductionProxyService()
+          .SkipSettingsInitialization()
+          .Build();
 
   // The proxy is enabled initially.
-  drp_test_context.config()->SetStateForTest(true, false, false, true);
-  drp_test_context.InitSettings();
+  drp_test_context->config()->SetStateForTest(true, false, false, true);
+  drp_test_context->InitSettings();
 
   // The pref is disabled, so correspondingly should be the proxy.
-  EXPECT_CALL(*drp_test_context.mock_config(),
+  EXPECT_CALL(*drp_test_context->mock_config(),
               SetProxyPrefs(false, false, false));
-  drp_test_context.pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
-                                              false);
+  drp_test_context->pref_service()->SetBoolean(
+      prefs::kDataReductionProxyEnabled, false);
 
   // The pref is enabled, so correspondingly should be the proxy.
-  EXPECT_CALL(*drp_test_context.mock_config(),
+  EXPECT_CALL(*drp_test_context->mock_config(),
               SetProxyPrefs(true, false, false));
-  drp_test_context.pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
-                                              true);
+  drp_test_context->pref_service()->SetBoolean(
+      prefs::kDataReductionProxyEnabled, true);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {

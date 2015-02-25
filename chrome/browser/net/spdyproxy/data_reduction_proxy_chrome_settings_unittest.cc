@@ -23,30 +23,33 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
   void SetUp() override {
     drp_chrome_settings_ =
         make_scoped_ptr(new DataReductionProxyChromeSettings());
-    test_context_.reset(new data_reduction_proxy::DataReductionProxyTestContext(
-        data_reduction_proxy::DataReductionProxyParams::kAllowed |
-            data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
-            data_reduction_proxy::DataReductionProxyParams::kPromoAllowed,
-        data_reduction_proxy::TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~data_reduction_proxy::TestDataReductionProxyParams::
-                HAS_DEV_ORIGIN &
-            ~data_reduction_proxy::TestDataReductionProxyParams::
-                HAS_DEV_FALLBACK_ORIGIN,
-        data_reduction_proxy::DataReductionProxyTestContext::USE_MOCK_CONFIG |
-            data_reduction_proxy::DataReductionProxyTestContext::
-                SKIP_SETTINGS_INITIALIZATION));
+    test_context_ =
+        data_reduction_proxy::DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(
+                data_reduction_proxy::DataReductionProxyParams::kAllowed |
+                data_reduction_proxy::DataReductionProxyParams::
+                    kFallbackAllowed |
+                data_reduction_proxy::DataReductionProxyParams::kPromoAllowed)
+            .WithParamsDefinitions(
+                data_reduction_proxy::TestDataReductionProxyParams::
+                    HAS_EVERYTHING &
+                ~data_reduction_proxy::TestDataReductionProxyParams::
+                    HAS_DEV_ORIGIN &
+                ~data_reduction_proxy::TestDataReductionProxyParams::
+                    HAS_DEV_FALLBACK_ORIGIN)
+            .WithMockConfig()
+            .SkipSettingsInitialization()
+            .Build();
     config_ = test_context_->mock_config();
     drp_chrome_settings_->ResetConfigForTest(config_);
     dict_ = make_scoped_ptr(new base::DictionaryValue());
-    mock_pref_service_ = make_scoped_ptr(new TestingPrefServiceSimple());
 
-    PrefRegistrySimple* registry = mock_pref_service_->registry();
+    PrefRegistrySimple* registry = test_context_->pref_service()->registry();
     registry->RegisterDictionaryPref(prefs::kProxy);
   }
 
   scoped_ptr<DataReductionProxyChromeSettings> drp_chrome_settings_;
   scoped_ptr<base::DictionaryValue> dict_;
-  scoped_ptr<TestingPrefServiceSimple> mock_pref_service_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyTestContext> test_context_;
   data_reduction_proxy::MockDataReductionProxyConfig* config_;
 };
@@ -54,47 +57,48 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateEmptyProxy) {
   EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-      mock_pref_service_.get());
+      test_context_->pref_service());
 
-  EXPECT_EQ(NULL, mock_pref_service_->GetUserPref(prefs::kProxy));
+  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
 }
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateSystemProxy) {
   dict_->SetString("mode", "system");
-  mock_pref_service_->Set(prefs::kProxy, *dict_.get());
+  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
   EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
 
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-      mock_pref_service_.get());
+      test_context_->pref_service());
 
-  EXPECT_EQ(NULL, mock_pref_service_->GetUserPref(prefs::kProxy));
+  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
 }
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateDataReductionProxy) {
   dict_->SetString("mode", "fixed_servers");
   dict_->SetString("server", "http=https://proxy.googlezip.net");
-  mock_pref_service_->Set(prefs::kProxy, *dict_.get());
+  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
   EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(1)
     .WillOnce(Return(true));
 
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-      mock_pref_service_.get());
+      test_context_->pref_service());
 
-  EXPECT_EQ(NULL, mock_pref_service_->GetUserPref(prefs::kProxy));
+  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
 }
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
   dict_->SetString("mode", "fixed_servers");
   dict_->SetString("server", "http=https://youtube.com");
-  mock_pref_service_->Set(prefs::kProxy, *dict_.get());
+  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
   EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(1)
     .WillOnce(Return(false));
 
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-      mock_pref_service_.get());
+      test_context_->pref_service());
 
   base::DictionaryValue* value =
-      (base::DictionaryValue*)mock_pref_service_->GetUserPref(prefs::kProxy);
+      (base::DictionaryValue*)test_context_->pref_service()->GetUserPref(
+          prefs::kProxy);
   std::string mode;
   EXPECT_TRUE(value->GetString("mode", &mode));
   EXPECT_EQ("fixed_servers", mode);

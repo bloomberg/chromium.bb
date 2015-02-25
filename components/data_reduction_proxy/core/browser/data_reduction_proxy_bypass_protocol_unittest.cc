@@ -90,14 +90,16 @@ class DataReductionProxyProtocolTest : public testing::Test {
   }
 
   void SetUp() override {
-    test_context_.reset(new DataReductionProxyTestContext(
-        DataReductionProxyParams::kAllowed |
-            DataReductionProxyParams::kFallbackAllowed |
-            DataReductionProxyParams::kPromoAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-        DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                             DataReductionProxyParams::kFallbackAllowed |
+                             DataReductionProxyParams::kPromoAllowed)
+            .WithParamsDefinitions(
+                TestDataReductionProxyParams::HAS_EVERYTHING &
+                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+            .Build();
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
     test_context_->RunUntilIdle();

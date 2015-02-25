@@ -90,15 +90,16 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
 
     context_.set_job_factory(&test_job_factory_);
 
-    test_context_.reset(
-        new DataReductionProxyTestContext(
-            DataReductionProxyParams::kAllowed |
-                DataReductionProxyParams::kFallbackAllowed |
-                DataReductionProxyParams::kPromoAllowed,
-            TestDataReductionProxyParams::HAS_EVERYTHING &
-                ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
-            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                             DataReductionProxyParams::kFallbackAllowed |
+                             DataReductionProxyParams::kPromoAllowed)
+            .WithParamsDefinitions(
+                TestDataReductionProxyParams::HAS_EVERYTHING &
+                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
+            .Build();
     mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
                                                NULL);
     scoped_ptr<DataReductionProxyParamsMock> mock_params =
@@ -590,11 +591,13 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     // test bypassed bytes due to proxy fallbacks. This way, a test just needs
     // to cause one proxy fallback in order for the data reduction proxy to be
     // fully bypassed.
-    test_context_.reset(new DataReductionProxyTestContext(
-        DataReductionProxyParams::kAllowed,
-        TestDataReductionProxyParams::HAS_ORIGIN,
-        DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION,
-        &context_));
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed)
+            .WithParamsDefinitions(TestDataReductionProxyParams::HAS_ORIGIN)
+            .WithURLRequestContext(&context_)
+            .SkipSettingsInitialization()
+            .Build();
     test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                               true);
     test_context_->InitSettings();
