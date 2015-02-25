@@ -21,43 +21,17 @@ module('XmppLoginHandler', {
     sendMessage = sinon.spy();
     startTls = sinon.spy();
     onHandshakeDone = sinon.spy();
-    onStanzaStr = sinon.spy();
     onError = sinon.spy();
-    function onStanza(stanza) {
-      onStanzaStr(new XMLSerializer().serializeToString(stanza));
-    }
     loginHandler = new remoting.XmppLoginHandler(
-        'google.com', testUsername, testToken, sendMessage, startTls,
-        onHandshakeDone, onError);
+        'google.com', testUsername, testToken, false, sendMessage,
+        startTls, onHandshakeDone, onError);
   }
 });
 
 // Executes handshake base.
 function handshakeBase() {
   loginHandler.start();
-  sinon.assert.calledWith(
-      sendMessage,
-      '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
-          'xmlns:stream="http://etherx.jabber.org/streams">' +
-          '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
-  sendMessage.reset();
 
-  loginHandler.onDataReceived(base.encodeUtf8(
-      '<stream:stream from="google.com" id="78A87C70559EF28A" version="1.0" ' +
-          'xmlns:stream="http://etherx.jabber.org/streams"' +
-          'xmlns="jabber:client">' +
-        '<stream:features>' +
-          '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls">' +
-            '<required/>' +
-          '</starttls>' +
-          '<mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
-            '<mechanism>X-OAUTH2</mechanism>' +
-            '<mechanism>X-GOOGLE-TOKEN</mechanism>' +
-          '</mechanisms>' +
-        '</stream:features>'));
-
-  loginHandler.onDataReceived(
-      base.encodeUtf8('<proceed xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>'));
   sinon.assert.calledWith(startTls);
   startTls.reset();
 
@@ -125,6 +99,39 @@ test('should authenticate', function() {
   sinon.assert.calledWith(onHandshakeDone);
 });
 
+test('use <starttls> handshake', function() {
+  loginHandler = new remoting.XmppLoginHandler(
+      'google.com', testUsername, testToken, true, sendMessage,
+      startTls, onHandshakeDone, onError);
+  loginHandler.start();
+
+  sinon.assert.calledWith(
+      sendMessage,
+      '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
+          'xmlns:stream="http://etherx.jabber.org/streams">' +
+          '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
+  sendMessage.reset();
+
+  loginHandler.onDataReceived(base.encodeUtf8(
+      '<stream:stream from="google.com" id="78A87C70559EF28A" version="1.0" ' +
+          'xmlns:stream="http://etherx.jabber.org/streams"' +
+          'xmlns="jabber:client">' +
+        '<stream:features>' +
+          '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls">' +
+            '<required/>' +
+          '</starttls>' +
+          '<mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
+            '<mechanism>X-OAUTH2</mechanism>' +
+            '<mechanism>X-GOOGLE-TOKEN</mechanism>' +
+          '</mechanisms>' +
+        '</stream:features>'));
+
+  loginHandler.onDataReceived(
+      base.encodeUtf8('<proceed xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>'));
+
+  sinon.assert.calledWith(startTls);
+});
+
 test('should return AUTHENTICATION_FAILED error when failed to authenticate',
      function() {
   handshakeBase();
@@ -137,7 +144,7 @@ test('should return AUTHENTICATION_FAILED error when failed to authenticate',
 
 test('should return UNEXPECTED error when failed to parse stream',
      function() {
-  loginHandler.start();
+  handshakeBase();
   loginHandler.onDataReceived(
       base.encodeUtf8('BAD DATA'));
   sinon.assert.calledWith(onError, remoting.Error.UNEXPECTED);

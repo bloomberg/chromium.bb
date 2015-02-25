@@ -18,6 +18,8 @@ var remoting = remoting || {};
  * @param {string} server Domain name of the server we are connecting to.
  * @param {string} username Username.
  * @param {string} authToken OAuth2 token.
+ * @param {boolean} needHandshakeBeforeTls Set to true when <starttls> handshake
+ *     is required before starting TLS. Otherwise TLS can be started right away.
  * @param {function(string):void} sendMessageCallback Callback to call to send
  *     a message.
  * @param {function():void} startTlsCallback Callback to call to start TLS on
@@ -32,6 +34,7 @@ var remoting = remoting || {};
 remoting.XmppLoginHandler = function(server,
                                      username,
                                      authToken,
+                                     needHandshakeBeforeTls,
                                      sendMessageCallback,
                                      startTlsCallback,
                                      onHandshakeDoneCallback,
@@ -42,6 +45,8 @@ remoting.XmppLoginHandler = function(server,
   this.username_ = username;
   /** @private */
   this.authToken_ = authToken;
+  /** @private */
+  this.needHandshakeBeforeTls_ = needHandshakeBeforeTls;
   /** @private */
   this.sendMessageCallback_ = sendMessageCallback;
   /** @private */
@@ -111,8 +116,14 @@ remoting.XmppLoginHandler.State = {
 };
 
 remoting.XmppLoginHandler.prototype.start = function() {
-  this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER;
-  this.startStream_('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
+  if (this.needHandshakeBeforeTls_) {
+    this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER;
+    this.startStream_('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
+  } else {
+    // If <starttls> handshake is not required then start TLS right away.
+    this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
+    this.startTlsCallback_();
+  }
 }
 
 /** @param {ArrayBuffer} data */

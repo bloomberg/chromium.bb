@@ -47,52 +47,7 @@ remoting.XmppConnection = function() {
   this.jid_ = '';
   /** @private */
   this.error_ = remoting.Error.NONE;
-  /** @private */
-  this.fakeSslHandshake_ = false;
-  /** @private */
-  this.fakeSslHandshakeBytesRead_ = 0;
-  /** @private */
-  this.fakeSslHandshakeResponse_ =
-      new Uint8Array(remoting.XmppConnection.FAKE_SSL_RESPONSE_.length);
 };
-
-/** @private */
-remoting.XmppConnection.FAKE_SSL_HELLO_ = [
-  0x80, 0x46,                                            // msg len
-  0x01,                                                  // CLIENT_HELLO
-  0x03, 0x01,                                            // SSL 3.1
-  0x00, 0x2d,                                            // ciphersuite len
-  0x00, 0x00,                                            // session id len
-  0x00, 0x10,                                            // challenge len
-  0x01, 0x00, 0x80, 0x03, 0x00, 0x80, 0x07, 0x00, 0xc0,  // ciphersuites
-  0x06, 0x00, 0x40, 0x02, 0x00, 0x80, 0x04, 0x00, 0x80,  //
-  0x00, 0x00, 0x04, 0x00, 0xfe, 0xff, 0x00, 0x00, 0x0a,  //
-  0x00, 0xfe, 0xfe, 0x00, 0x00, 0x09, 0x00, 0x00, 0x64,  //
-  0x00, 0x00, 0x62, 0x00, 0x00, 0x03, 0x00, 0x00, 0x06,  //
-  0x1f, 0x17, 0x0c, 0xa6, 0x2f, 0x00, 0x78, 0xfc,        // challenge
-  0x46, 0x55, 0x2e, 0xb1, 0x83, 0x39, 0xf1, 0xea         //
-];
-
-/** @private */
-remoting.XmppConnection.FAKE_SSL_RESPONSE_ = [
-  0x16,                                            // handshake message
-  0x03, 0x01,                                      // SSL 3.1
-  0x00, 0x4a,                                      // message len
-  0x02,                                            // SERVER_HELLO
-  0x00, 0x00, 0x46,                                // handshake len
-  0x03, 0x01,                                      // SSL 3.1
-  0x42, 0x85, 0x45, 0xa7, 0x27, 0xa9, 0x5d, 0xa0,  // server random
-  0xb3, 0xc5, 0xe7, 0x53, 0xda, 0x48, 0x2b, 0x3f,  //
-  0xc6, 0x5a, 0xca, 0x89, 0xc1, 0x58, 0x52, 0xa1,  //
-  0x78, 0x3c, 0x5b, 0x17, 0x46, 0x00, 0x85, 0x3f,  //
-  0x20,                                            // session id len
-  0x0e, 0xd3, 0x06, 0x72, 0x5b, 0x5b, 0x1b, 0x5f,  // session id
-  0x15, 0xac, 0x13, 0xf9, 0x88, 0x53, 0x9d, 0x9b,  //
-  0xe8, 0x3d, 0x7b, 0x0c, 0x30, 0x32, 0x6e, 0x38,  //
-  0x4d, 0xa2, 0x75, 0x57, 0x41, 0x6c, 0x34, 0x5c,  //
-  0x00, 0x04,                                      // RSA/RC4-128/MD5
-  0x00                                             // null compression
-];
 
 /**
  * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
@@ -140,13 +95,15 @@ remoting.XmppConnection.prototype.connect =
   if (xmppServer == 'talk.google.com')
     xmppServer = 'google.com';
 
+  // <starttls> handshake before starting TLS is not needed when connecting on
+  // the HTTPS port.
+  var needHandshakeBeforeTls = this.port_ != 443;
+
   /** @type {remoting.XmppLoginHandler} */
-  this.loginHandler_ =
-      new remoting.XmppLoginHandler(xmppServer, username, authToken,
-                                    this.sendString_.bind(this),
-                                    this.startTls_.bind(this),
-                                    this.onHandshakeDone_.bind(this),
-                                    this.onError_.bind(this));
+  this.loginHandler_ = new remoting.XmppLoginHandler(
+      xmppServer, username, authToken, needHandshakeBeforeTls,
+      this.sendString_.bind(this), this.startTls_.bind(this),
+      this.onHandshakeDone_.bind(this), this.onError_.bind(this));
   chrome.socket.create("tcp", {}, this.onSocketCreated_.bind(this));
   this.setState_(remoting.SignalStrategy.State.CONNECTING);
 };
@@ -226,18 +183,11 @@ remoting.XmppConnection.prototype.onSocketConnected_ = function(result) {
   }
 
   this.setState_(remoting.SignalStrategy.State.HANDSHAKE);
+  this.loginHandler_.start();
 
-  // Initiate fake SSL handshake if we are on port 443. It's used to bypass
-  // firewalls that block port 5222, but allow HTTPS traffic.
-  this.fakeSslHandshake_ = (this.port_ == 443);
-  if (this.fakeSslHandshake_) {
-    this.sendBuffer_(
-        new Uint8Array(remoting.XmppConnection.FAKE_SSL_HELLO_).buffer);
-  } else {
-    this.loginHandler_.start();
+  if (!this.startTlsPending_) {
+    this.tryRead_();
   }
-
-  this.tryRead_();
 };
 
 /**
@@ -274,53 +224,7 @@ remoting.XmppConnection.prototype.onRead_ = function(readInfo) {
   }
 
   if (this.state_ == remoting.SignalStrategy.State.HANDSHAKE) {
-    var data = readInfo.data;
-
-    if (this.fakeSslHandshake_) {
-      var bytesExpected = remoting.XmppConnection.FAKE_SSL_RESPONSE_.length -
-                          this.fakeSslHandshakeBytesRead_;
-      var bytesConsumed = Math.min(bytesExpected, readInfo.data.byteLength);
-      this.fakeSslHandshakeResponse_.set(
-          new Uint8Array(data.slice(0, bytesConsumed)),
-          this.fakeSslHandshakeBytesRead_);
-      this.fakeSslHandshakeBytesRead_ += bytesConsumed;
-      data = data.slice(bytesConsumed);
-
-      // Check if we are finished with the fake SSL handshake.
-      if (this.fakeSslHandshakeBytesRead_ ==
-          remoting.XmppConnection.FAKE_SSL_RESPONSE_.length) {
-        this.fakeSslHandshake_ = false;
-        this.loginHandler_.start();
-
-        // Compare the response to what's expected and log an error if they
-        // don't match.
-        var responseMatches = true;
-        for (var i = 0; i < this.fakeSslHandshakeResponse_.length; ++i) {
-          if (this.fakeSslHandshakeResponse_[i] !=
-              remoting.XmppConnection.FAKE_SSL_RESPONSE_[i]) {
-            responseMatches = false;
-            break;
-          }
-        }
-
-        if (!responseMatches) {
-          var formatted = "";
-          for (var i = 0; i < this.fakeSslHandshakeResponse_.length; ++i) {
-            var x = /** @type {number} */ (this.fakeSslHandshakeResponse_[i]);
-            formatted += " 0x" + x.toString(16);
-          };
-          console.error(
-              "XmppConnection: Fake SSL response didn't match what was " +
-              "expected. Trying to continue anyway. Received response: [" +
-              formatted + "]");
-        }
-      }
-    }
-
-    // Once fake SSL handshake is finished pass the data to the login handler.
-    if (!this.fakeSslHandshake_ && data.byteLength > 0) {
-      this.loginHandler_.onDataReceived(data);
-    }
+    this.loginHandler_.onDataReceived(readInfo.data);
   } else if (this.state_ == remoting.SignalStrategy.State.CONNECTED) {
     this.streamParser_.appendData(readInfo.data);
   }
