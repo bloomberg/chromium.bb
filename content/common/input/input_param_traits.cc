@@ -70,6 +70,10 @@ void ParamTraits<content::SyntheticGesturePacket>::Write(Message* m,
       WriteParam(m, *content::SyntheticTapGestureParams::Cast(
           p.gesture_params()));
       break;
+    // TODO(ssid): When API and IPC messages are set up, implement this.
+    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+      NOTIMPLEMENTED();
+      break;
   }
 }
 
@@ -121,6 +125,10 @@ void ParamTraits<content::SyntheticGesturePacket>::Log(const param_type& p,
       LogParam(
           *content::SyntheticTapGestureParams::Cast(p.gesture_params()),
           l);
+      break;
+    // TODO(ssid): When API and IPC messages are set up, implement this.
+    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+      NOTIMPLEMENTED();
       break;
   }
 }

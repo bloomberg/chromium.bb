@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_drag_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 
@@ -32,6 +33,9 @@ scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
     case SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
       return CreateGesture<SyntheticSmoothScrollGesture,
                            SyntheticSmoothScrollGestureParams>(gesture_params);
+    case SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+      return CreateGesture<SyntheticSmoothDragGesture,
+                           SyntheticSmoothDragGestureParams>(gesture_params);
     case SyntheticGestureParams::PINCH_GESTURE:
       return CreateGesture<SyntheticPinchGesture,
                            SyntheticPinchGestureParams>(gesture_params);

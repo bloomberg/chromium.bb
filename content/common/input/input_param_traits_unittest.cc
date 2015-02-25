@@ -7,6 +7,7 @@
 #include "content/common/input/input_event.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input_messages.h"
 #include "ipc/ipc_message.h"
@@ -43,8 +44,18 @@ class InputParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->anchor, b->anchor);
     EXPECT_EQ(a->distances.size(), b->distances.size());
     for (size_t i = 0; i < a->distances.size(); i++)
-        EXPECT_EQ(a->distances[i], b->distances[i]);
+      EXPECT_EQ(a->distances[i], b->distances[i]);
     EXPECT_EQ(a->prevent_fling, b->prevent_fling);
+    EXPECT_EQ(a->speed_in_pixels_s, b->speed_in_pixels_s);
+  }
+
+  static void Compare(const SyntheticSmoothDragGestureParams* a,
+                      const SyntheticSmoothDragGestureParams* b) {
+    EXPECT_EQ(a->gesture_source_type, b->gesture_source_type);
+    EXPECT_EQ(a->start_point, b->start_point);
+    EXPECT_EQ(a->distances.size(), b->distances.size());
+    for (size_t i = 0; i < a->distances.size(); i++)
+      EXPECT_EQ(a->distances[i], b->distances[i]);
     EXPECT_EQ(a->speed_in_pixels_s, b->speed_in_pixels_s);
   }
 
@@ -76,6 +87,10 @@ class InputParamTraitsTest : public testing::Test {
       case SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
         Compare(SyntheticSmoothScrollGestureParams::Cast(a->gesture_params()),
                 SyntheticSmoothScrollGestureParams::Cast(b->gesture_params()));
+        break;
+      case SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+        Compare(SyntheticSmoothDragGestureParams::Cast(a->gesture_params()),
+                SyntheticSmoothDragGestureParams::Cast(b->gesture_params()));
         break;
       case SyntheticGestureParams::PINCH_GESTURE:
         Compare(SyntheticPinchGestureParams::Cast(a->gesture_params()),
