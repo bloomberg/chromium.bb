@@ -513,7 +513,7 @@
       'enable_webrtc%': 1,
 
       # Media router support is enabled by default. Set to 0 to disable.
-      'enable_media_router%': 1,      
+      'enable_media_router%': 1,
 
       # Enables use of the session service, which is enabled by default.
       # Support for disabling depends on the platform.
@@ -1935,7 +1935,7 @@
             # Turn on multiple dll by default on Windows when in static_library.
             'chrome_multiple_dll%': 1,
           }],
-          ['asan==1', {
+          ['asan==1 or syzyasan==1', {
             'win_use_allocator_shim%': 0,
           }],
           ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
