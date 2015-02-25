@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <termios.h>  /* Needed for struct winsize in bionic */
 #include <unistd.h>
 
 #include <ppapi/c/pp_errors.h>
