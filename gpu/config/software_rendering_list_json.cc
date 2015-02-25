@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.17",
+  "version": "9.18",
   "entries": [
     {
       "id": 1,
@@ -1164,6 +1164,19 @@ LONG_STRING_CONST(
         }
       },
       "gl_renderer": "PowerVR Rogue.*",
+      "features": [
+        "accelerated_2d_canvas",
+        "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 105,
+      "description": "GPU raster broken on PowerVR SGX even on Lollipop",
+      "cr_bugs": [461456],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "PowerVR SGX.*",
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"
