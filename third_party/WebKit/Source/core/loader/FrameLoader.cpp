@@ -129,7 +129,7 @@ FrameLoader::~FrameLoader()
     ASSERT(!m_progressTracker);
 }
 
-void FrameLoader::trace(Visitor* visitor)
+DEFINE_TRACE(FrameLoader)
 {
     visitor->trace(m_frame);
     visitor->trace(m_progressTracker);

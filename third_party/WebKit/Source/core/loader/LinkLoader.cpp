@@ -201,7 +201,7 @@ void LinkLoader::released()
     }
 }
 
-void LinkLoader::trace(Visitor* visitor)
+DEFINE_TRACE(LinkLoader)
 {
     visitor->trace(m_prerender);
 }

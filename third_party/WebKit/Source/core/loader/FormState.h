@@ -46,7 +46,7 @@ namespace blink {
     class FormState final : public RefCountedWillBeGarbageCollected<FormState> {
     public:
         static PassRefPtrWillBeRawPtr<FormState> create(HTMLFormElement&, FormSubmissionTrigger);
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         HTMLFormElement* form() const { return m_form.get(); }
         Document* sourceDocument() const { return m_sourceDocument.get(); }

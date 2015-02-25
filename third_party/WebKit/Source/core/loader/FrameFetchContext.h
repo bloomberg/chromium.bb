@@ -67,7 +67,7 @@ public:
     virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&, bool isInternalRequest) override;
     virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit FrameFetchContext(LocalFrame*);

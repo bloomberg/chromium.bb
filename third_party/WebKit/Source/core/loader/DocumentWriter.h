@@ -46,7 +46,7 @@ public:
     static PassRefPtrWillBeRawPtr<DocumentWriter> create(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType = emptyAtom, const AtomicString& encoding = emptyAtom);
 
     ~DocumentWriter();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void end();
 

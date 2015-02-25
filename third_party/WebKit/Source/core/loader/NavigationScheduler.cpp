@@ -378,7 +378,7 @@ void NavigationScheduler::cancel()
     m_redirect.clear();
 }
 
-void NavigationScheduler::trace(Visitor* visitor)
+DEFINE_TRACE(NavigationScheduler)
 {
     visitor->trace(m_frame);
 }

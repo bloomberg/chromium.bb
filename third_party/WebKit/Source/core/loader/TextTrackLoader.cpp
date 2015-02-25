@@ -163,7 +163,7 @@ void TextTrackLoader::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegio
         m_cueParser->getNewRegions(outputRegions);
 }
 
-void TextTrackLoader::trace(Visitor* visitor)
+DEFINE_TRACE(TextTrackLoader)
 {
     visitor->trace(m_cueParser);
     visitor->trace(m_document);

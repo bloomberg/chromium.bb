@@ -46,7 +46,7 @@ PassRefPtrWillBeRawPtr<FormState> FormState::create(HTMLFormElement& form, FormS
     return adoptRefWillBeNoop(new FormState(form, formSubmissionTrigger));
 }
 
-void FormState::trace(Visitor* visitor)
+DEFINE_TRACE(FormState)
 {
     visitor->trace(m_form);
     visitor->trace(m_sourceDocument);

@@ -178,7 +178,7 @@ public:
 
     void restoreScrollPositionAndViewState();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     void checkTimerFired(Timer<FrameLoader>*);
@@ -242,7 +242,7 @@ private:
 
         bool isValid() { return m_item; }
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_item);
         }

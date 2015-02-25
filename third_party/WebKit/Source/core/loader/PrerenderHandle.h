@@ -58,7 +58,7 @@ public:
     // From DocumentLifecycleObserver:
     virtual void documentWasDetached() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     PrerenderHandle(Document&, PassRefPtr<Prerender>);

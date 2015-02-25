@@ -85,7 +85,7 @@ public:
     void startTimer();
     void cancel();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     bool shouldScheduleReload() const;

@@ -44,7 +44,7 @@ public:
     // Determines whether the observed ImageResource should have higher priority in the decoded resources cache.
     virtual bool requestsHighLiveResourceCachePriority() { return false; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     ImageLoaderClient() { }
@@ -61,7 +61,7 @@ class ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, p
 public:
     explicit ImageLoader(Element*);
     virtual ~ImageLoader();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     enum UpdateFromElementBehavior {
         // This should be the update behavior when the element is attached to a document, or when DOM mutations trigger a new load.

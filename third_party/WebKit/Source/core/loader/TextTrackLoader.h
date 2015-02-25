@@ -66,7 +66,7 @@ public:
     void getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& outputCues);
     void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& outputRegions);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     // RawResourceClient

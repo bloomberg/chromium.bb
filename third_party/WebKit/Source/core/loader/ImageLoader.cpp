@@ -156,7 +156,7 @@ ImageLoader::~ImageLoader()
         errorEventSender().cancelEvent(this);
 }
 
-void ImageLoader::trace(Visitor* visitor)
+DEFINE_TRACE(ImageLoader)
 {
     visitor->trace(m_element);
 }

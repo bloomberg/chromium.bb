@@ -78,7 +78,7 @@ public:
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ApplicationCache(LocalFrame*);

@@ -48,7 +48,7 @@ public:
     static PassOwnPtrWillBeRawPtr<ProgressTracker> create(LocalFrame*);
 
     ~ProgressTracker();
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void dispose();
 
     double estimatedProgress() const;

@@ -44,7 +44,7 @@ ApplicationCache::ApplicationCache(LocalFrame* frame)
         cacheHost->setApplicationCache(this);
 }
 
-void ApplicationCache::trace(Visitor* visitor)
+DEFINE_TRACE(ApplicationCache)
 {
     EventTargetWithInlineData::trace(visitor);
     DOMWindowProperty::trace(visitor);

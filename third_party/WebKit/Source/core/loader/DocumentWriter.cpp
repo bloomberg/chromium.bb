@@ -67,7 +67,7 @@ DocumentWriter::~DocumentWriter()
 {
 }
 
-void DocumentWriter::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentWriter)
 {
     visitor->trace(m_document);
     visitor->trace(m_parser);

@@ -110,7 +110,7 @@ void PrerenderHandle::detach()
     m_prerender.clear();
 }
 
-void PrerenderHandle::trace(Visitor* visitor)
+DEFINE_TRACE(PrerenderHandle)
 {
     DocumentLifecycleObserver::trace(visitor);
 }

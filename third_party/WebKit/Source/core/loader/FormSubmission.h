@@ -89,7 +89,7 @@ public:
     };
 
     static PassRefPtrWillBeRawPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, PassRefPtrWillBeRawPtr<Event>, FormSubmissionTrigger);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void populateFrameLoadRequest(FrameLoadRequest&);
 

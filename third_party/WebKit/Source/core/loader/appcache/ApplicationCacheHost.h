@@ -131,7 +131,7 @@ namespace blink {
         void fillResourceList(ResourceInfoList*);
         CacheInfo applicationCacheInfo();
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         explicit ApplicationCacheHost(DocumentLoader*);

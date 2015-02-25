@@ -84,7 +84,7 @@ ProgressTracker::~ProgressTracker()
 {
 }
 
-void ProgressTracker::trace(Visitor* visitor)
+DEFINE_TRACE(ProgressTracker)
 {
     visitor->trace(m_frame);
 }

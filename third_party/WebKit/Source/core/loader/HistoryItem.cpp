@@ -217,7 +217,7 @@ bool HistoryItem::isCurrentDocument(Document* doc) const
     return equalIgnoringFragmentIdentifier(url(), doc->url());
 }
 
-void HistoryItem::trace(Visitor* visitor)
+DEFINE_TRACE(HistoryItem)
 {
     visitor->trace(m_documentState);
 }

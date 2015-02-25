@@ -103,7 +103,7 @@ public:
 
     bool isCurrentDocument(Document*) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     HistoryItem();

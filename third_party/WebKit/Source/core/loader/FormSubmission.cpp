@@ -246,7 +246,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
     return adoptRefWillBeNoop(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, FormState::create(*form, trigger), formData.release(), boundary, event));
 }
 
-void FormSubmission::trace(Visitor* visitor)
+DEFINE_TRACE(FormSubmission)
 {
     visitor->trace(m_formState);
     visitor->trace(m_event);

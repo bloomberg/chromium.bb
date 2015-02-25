@@ -72,7 +72,7 @@ public:
     static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
     static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     PingLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
