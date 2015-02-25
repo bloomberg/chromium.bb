@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/perftests/measurements.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,10 +32,11 @@ const int kUploadPerfTestRuns = 100;
 const char kVertexShader[] =
 SHADER(
   attribute vec2 a_position;
+  attribute vec2 a_texCoord;
   varying vec2 v_texCoord;
   void main() {
     gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
-    v_texCoord = vec2((a_position.x + 1.0) * 0.5, (a_position.y + 1.0) * 0.5);
+    v_texCoord = a_texCoord;
   }
 );
 const char kFragmentShader[] =
@@ -42,7 +44,7 @@ SHADER(
   uniform sampler2D a_texture;
   varying vec2 v_texCoord;
   void main() {
-    gl_FragColor = texture2D(a_texture, v_texCoord.xy);
+    gl_FragColor = texture2D(a_texture, v_texCoord);
   }
 );
 // clang-format on
@@ -81,8 +83,8 @@ void GenerateTextureData(const gfx::Size& size,
   for (int y = 0; y < size.height(); ++y) {
     for (int x = 0; x < size.width(); ++x) {
       const size_t offset = (y * size.width() + x) * 4;
-      pixels->at(offset) = (y + seed) % 256;
-      pixels->at(offset + 1) = (x + seed) % 256;
+      pixels->at(offset) = (y + seed) % 64;
+      pixels->at(offset + 1) = (x + seed) % 128;
       pixels->at(offset + 2) = (y + x + seed) % 256;
       pixels->at(offset + 3) = 255;
     }
@@ -93,7 +95,7 @@ void GenerateTextureData(const gfx::Size& size,
 // on different platforms.
 class TextureUploadPerfTest : public testing::Test {
  public:
-  TextureUploadPerfTest() : size_(512, 512) {}
+  TextureUploadPerfTest() : fbo_size_(1024, 1024) {}
 
   // Overridden from testing::Test
   void SetUp() override {
@@ -110,8 +112,8 @@ class TextureUploadPerfTest : public testing::Test {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.width(), size_.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fbo_size_.width(),
+                 fbo_size_.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
     glGenFramebuffersEXT(1, &framebuffer_object_);
     glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
@@ -121,7 +123,7 @@ class TextureUploadPerfTest : public testing::Test {
     DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
               glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
 
-    glViewport(0, 0, size_.width(), size_.height());
+    glViewport(0, 0, fbo_size_.width(), fbo_size_.height());
 
     if (gpu_timing_.Initialize(gl_context_.get())) {
       LOG(INFO) << "Gpu timing initialized with timer type: "
@@ -141,6 +143,7 @@ class TextureUploadPerfTest : public testing::Test {
     glAttachShader(program_object_, vertex_shader_);
     glAttachShader(program_object_, fragment_shader_);
     glBindAttribLocation(program_object_, 0, "a_position");
+    glBindAttribLocation(program_object_, 1, "a_texCoord");
     glLinkProgram(program_object_);
 
     GLint linked = -1;
@@ -152,11 +155,29 @@ class TextureUploadPerfTest : public testing::Test {
 
     glGenBuffersARB(1, &vertex_buffer_);
     CHECK_NE(0u, vertex_buffer_);
+    CheckNoGlError();
+  }
+
+  void GenerateVertexBuffer(const gfx::Size& size) {
+    DCHECK_NE(0u, vertex_buffer_);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-    static GLfloat positions[] = {
-        -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-    };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    // right and top are in clipspace
+    float right = -1.f + 2.f * size.width() / fbo_size_.width();
+    float top = -1.f + 2.f * size.height() / fbo_size_.height();
+    // Four vertexes, one per line. Each vertex has two components per
+    // position and two per texcoord.
+    // It represents a quad formed by two triangles if interpreted
+    // as a tristrip.
+
+    // clang-format off
+    GLfloat data[16] = {
+      -1.f, -1.f,    0.f, 0.f,
+      right, -1.f,   1.f, 0.f,
+      -1.f, top,     0.f, 1.f,
+      right, top,    1.f, 1.f};
+    // clang-format on
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
     CheckNoGlError();
   }
 
@@ -165,11 +186,12 @@ class TextureUploadPerfTest : public testing::Test {
     glDeleteProgram(program_object_);
     glDeleteShader(vertex_shader_);
     glDeleteShader(fragment_shader_);
-    glDeleteShader(vertex_buffer_);
+    glDeleteBuffersARB(1, &vertex_buffer_);
 
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffersEXT(1, &framebuffer_object_);
     glDeleteTextures(1, &color_texture_);
+    CheckNoGlError();
 
     gl_context_ = nullptr;
     surface_ = nullptr;
@@ -179,13 +201,10 @@ class TextureUploadPerfTest : public testing::Test {
   // Upload and draw on the offscren surface.
   // Return a list of pair. Each pair describe a gl operation and the wall
   // time elapsed in milliseconds.
-  std::vector<Measurement> UploadAndDraw(const std::vector<uint8>& pixels,
+  std::vector<Measurement> UploadAndDraw(const gfx::Size& size,
+                                         const std::vector<uint8>& pixels,
                                          const GLenum format,
                                          const GLenum type) {
-    ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
-    DCHECK_NE(0u, framebuffer_object_);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
-
     MeasurementTimers total_timers(&gpu_timing_);
     GLuint texture_id = 0;
 
@@ -194,7 +213,7 @@ class TextureUploadPerfTest : public testing::Test {
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, size_.width(), size_.height(), 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0,
                  format, type, &pixels[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -207,9 +226,13 @@ class TextureUploadPerfTest : public testing::Test {
     glUseProgram(program_object_);
     glUniform1i(sampler_location_, 0);
 
+    DCHECK_NE(0u, vertex_buffer_);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4, 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4,
+                          reinterpret_cast<void*>(sizeof(GLfloat) * 2));
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     draw_timers.Record();
@@ -222,8 +245,8 @@ class TextureUploadPerfTest : public testing::Test {
 
     glDeleteTextures(1, &texture_id);
 
-    std::vector<uint8> pixels_rendered(size_.GetArea() * 4);
-    glReadPixels(0, 0, size_.width(), size_.height(), GL_RGBA, type,
+    std::vector<uint8> pixels_rendered(size.GetArea() * 4);
+    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, type,
                  &pixels_rendered[0]);
     CheckNoGlError();
 
@@ -244,7 +267,35 @@ class TextureUploadPerfTest : public testing::Test {
     return measurements;
   }
 
-  const gfx::Size size_;  // for the fbo and the texture
+  void RunUploadAndDrawMultipleTimes(const gfx::Size& size) {
+    std::vector<uint8> pixels;
+    base::SmallMap<std::map<std::string, Measurement>>
+        aggregates;  // indexed by name
+    int successful_runs = 0;
+    for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
+      GenerateTextureData(size, i + 1, &pixels);
+      auto run = UploadAndDraw(size, pixels, GL_RGBA, GL_UNSIGNED_BYTE);
+      if (i < kUploadPerfWarmupRuns || !run.size()) {
+        continue;
+      }
+      successful_runs++;
+      for (const Measurement& measurement : run) {
+        auto& aggregate = aggregates[measurement.name];
+        aggregate.name = measurement.name;
+        aggregate.Increment(measurement);
+      }
+    }
+    if (successful_runs) {
+      for (const auto& entry : aggregates) {
+        const auto m = entry.second.Divide(successful_runs);
+        m.PrintResult(base::StringPrintf("_%d", size.width()));
+      }
+    }
+    perf_test::PrintResult("sample_runs", "", "",
+                           static_cast<size_t>(successful_runs), "laps", true);
+  }
+
+  const gfx::Size fbo_size_;  // for the fbo
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> surface_;
   GPUTiming gpu_timing_;
@@ -261,32 +312,20 @@ class TextureUploadPerfTest : public testing::Test {
 // Perf test that generates, uploads and draws a texture on a surface repeatedly
 // and prints out aggregated measurements for all the runs.
 TEST_F(TextureUploadPerfTest, glTexImage2d) {
-  std::vector<uint8> pixels;
-  base::SmallMap<std::map<std::string, Measurement>>
-      aggregates;  // indexed by name
-  int successful_runs = 0;
-  for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
-    GenerateTextureData(size_, i + 1, &pixels);
-    auto run = UploadAndDraw(pixels, GL_RGBA, GL_UNSIGNED_BYTE);
-    if (i < kUploadPerfWarmupRuns || !run.size()) {
-      continue;
-    }
-    successful_runs++;
-    for (const Measurement& measurement : run) {
-      auto& aggregate = aggregates[measurement.name];
-      aggregate.name = measurement.name;
-      aggregate.Increment(measurement);
-    }
-  }
+  int sizes[] = {128, 256, 512, 1024};
+  for (int side : sizes) {
+    ASSERT_GE(fbo_size_.width(), side);
+    ASSERT_GE(fbo_size_.height(), side);
 
-  if (successful_runs) {
-    for (const auto& entry : aggregates) {
-      const auto m = entry.second.Divide(successful_runs);
-      m.PrintResult();
-    }
+    gfx::Size size(side, side);
+    ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
+    GenerateVertexBuffer(size);
+
+    DCHECK_NE(0u, framebuffer_object_);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
+
+    RunUploadAndDrawMultipleTimes(size);
   }
-  perf_test::PrintResult("sample_runs", "", "",
-                         static_cast<size_t>(successful_runs), "laps", true);
 }
 
 }  // namespace

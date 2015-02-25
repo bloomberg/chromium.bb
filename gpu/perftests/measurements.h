@@ -22,7 +22,7 @@ struct Measurement {
               const base::TimeDelta gpu_time);
   ~Measurement();
 
-  void PrintResult() const;
+  void PrintResult(const std::string& suffix) const;
   Measurement& Increment(const Measurement& m);
   Measurement Divide(int a) const;
 
