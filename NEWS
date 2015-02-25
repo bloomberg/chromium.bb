@@ -7,6 +7,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Bug fixes
 - Fix for emphasis bug, thanks to Michael Gray
 
+** Braille table improvements
+- Correction to comments in Norwegian generic tables, thanks to  Lars Bjørndal 
+
 * Noteworthy changes in release 2.6.1 (2014-12-01)
 This release focuses on table and documentation improvements. The
 documentation has been restructured to cater to people starting with
