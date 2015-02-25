@@ -845,9 +845,11 @@ void WrenchMenuModel::Build() {
   if (ShouldShowNewIncognitoWindowMenuItem())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 
-  bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
-  AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
-                         bookmark_sub_menu_model_.get());
+  if (!browser_->profile()->IsGuestSession()) {
+    bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
+    AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
+                           bookmark_sub_menu_model_.get());
+  }
 
   if (!browser_->profile()->IsOffTheRecord()) {
     recent_tabs_sub_menu_model_.reset(new RecentTabsSubMenuModel(provider_,

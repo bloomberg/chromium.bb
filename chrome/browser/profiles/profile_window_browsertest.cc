@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -67,6 +69,15 @@ void WaitForHistoryBackendToRun(Profile* profile) {
   history->HistoryService::ScheduleDBTask(task.Pass(), &task_tracker);
   content::RunMessageLoop();
 }
+
+class EmptyAcceleratorHandler : public ui::AcceleratorProvider {
+ public:
+  // Don't handle accelerators.
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
+    return false;
+  }
+};
 
 }  // namespace
 
@@ -186,6 +197,18 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestCannotSignin) {
 
   // Guest profiles can't sign in without a SigninManager.
   ASSERT_FALSE(signin_manager);
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestWrenchLacksBookmarks) {
+  EmptyAcceleratorHandler accelerator_handler;
+  // Verify the normal browser has a bookmark menu.
+  WrenchMenuModel model_normal_profile(&accelerator_handler, browser());
+  EXPECT_NE(-1, model_normal_profile.GetIndexOfCommandId(IDC_BOOKMARKS_MENU));
+
+  // Guest browser has no bookmark menu.
+  Browser* guest_browser = OpenGuestBrowser();
+  WrenchMenuModel model_guest_profile(&accelerator_handler, guest_browser);
+  EXPECT_EQ(-1, model_guest_profile.GetIndexOfCommandId(IDC_BOOKMARKS_MENU));
 }
 
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
