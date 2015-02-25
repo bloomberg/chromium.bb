@@ -22,7 +22,7 @@ public:
     }
 
     // Base agent methods.
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Protocol methods.
     void getAXNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Accessibility::AXNode>& accessibilityNode) override;

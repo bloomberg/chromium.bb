@@ -263,7 +263,7 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
     accessibilityNode = nodeObject.release();
 }
 
-void InspectorAccessibilityAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorAccessibilityAgent)
 {
     visitor->trace(m_page);
     InspectorBaseAgent::trace(visitor);
