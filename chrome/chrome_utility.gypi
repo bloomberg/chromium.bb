@@ -120,6 +120,19 @@
         '<@(chrome_utility_sources)',
       ],
       'conditions': [
+        ['OS=="win"', {
+          'link_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  # Prevent wininet from loading in the renderer.
+                  # http://crbug.com/460679
+                  'wininet.dll',
+                ],
+              },
+            },
+          },
+        }],
         ['OS!="win" and OS!="mac" and use_openssl==1', {
           'sources!': [
             'utility/importer/nss_decryptor.cc',

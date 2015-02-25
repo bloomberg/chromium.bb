@@ -48,6 +48,11 @@ static_library("utility") {
     sources +=
         rebase_path(gypi_values.chrome_utility_shared_media_sources, ".", "..")
 
+    # Prevent wininet from loading in the renderer. http://crbug.com/460679
+    if (is_win) {
+      ldflags = [ "/DELAYLOAD:wininet.dll" ]
+    }
+
     if (is_win || is_mac) {
       sources +=
           rebase_path(gypi_values.chrome_utility_win_mac_media_gallery_sources,
