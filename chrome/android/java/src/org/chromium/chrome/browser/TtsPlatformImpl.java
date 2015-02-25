@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 
@@ -61,13 +62,13 @@ class TtsPlatformImpl {
     }
 
     private long mNativeTtsPlatformImplAndroid;
-    private final TextToSpeech mTextToSpeech;
+    protected final TextToSpeech mTextToSpeech;
     private boolean mInitialized;
     private ArrayList<TtsVoice> mVoices;
     private String mCurrentLanguage;
     private PendingUtterance mPendingUtterance;
 
-    private TtsPlatformImpl(long nativeTtsPlatformImplAndroid, Context context) {
+    protected TtsPlatformImpl(long nativeTtsPlatformImplAndroid, Context context) {
         mInitialized = false;
         mNativeTtsPlatformImplAndroid = nativeTtsPlatformImplAndroid;
         mTextToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
@@ -83,46 +84,7 @@ class TtsPlatformImpl {
                     }
                 }
             });
-        mTextToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-                @Override
-                public void onDone(final String utteranceId) {
-                    ThreadUtils.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mNativeTtsPlatformImplAndroid != 0) {
-                                nativeOnEndEvent(mNativeTtsPlatformImplAndroid,
-                                                 Integer.parseInt(utteranceId));
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(final String utteranceId) {
-                    ThreadUtils.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mNativeTtsPlatformImplAndroid != 0) {
-                                nativeOnErrorEvent(mNativeTtsPlatformImplAndroid,
-                                                   Integer.parseInt(utteranceId));
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onStart(final String utteranceId) {
-                    ThreadUtils.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mNativeTtsPlatformImplAndroid != 0) {
-                                nativeOnStartEvent(mNativeTtsPlatformImplAndroid,
-                                                   Integer.parseInt(utteranceId));
-                            }
-                        }
-                    });
-                }
-            });
+        addOnUtteranceProgressListener();
     }
 
     /**
@@ -135,7 +97,11 @@ class TtsPlatformImpl {
     @CalledByNative
     private static TtsPlatformImpl create(long nativeTtsPlatformImplAndroid,
                                           Context context) {
-        return new TtsPlatformImpl(nativeTtsPlatformImplAndroid, context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return new LollipopTtsPlatformImpl(nativeTtsPlatformImplAndroid, context);
+        } else {
+            return new TtsPlatformImpl(nativeTtsPlatformImplAndroid, context);
+        }
     }
 
     /**
@@ -213,12 +179,8 @@ class TtsPlatformImpl {
 
         mTextToSpeech.setSpeechRate(rate);
         mTextToSpeech.setPitch(pitch);
-        HashMap<String, String> params = new HashMap<String, String>();
-        if (volume != 1.0) {
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Double.toString(volume));
-        }
-        params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, Integer.toString(utteranceId));
-        int result = mTextToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, params);
+
+        int result = callSpeak(text, volume, utteranceId);
         return (result == TextToSpeech.SUCCESS);
     }
 
@@ -229,6 +191,89 @@ class TtsPlatformImpl {
     private void stop() {
         if (mInitialized) mTextToSpeech.stop();
         if (mPendingUtterance != null) mPendingUtterance = null;
+    }
+
+    /**
+     * Post a task to the UI thread to send the TTS "end" event.
+     */
+    protected void sendEndEventOnUiThread(final String utteranceId) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mNativeTtsPlatformImplAndroid != 0) {
+                    nativeOnEndEvent(mNativeTtsPlatformImplAndroid, Integer.parseInt(utteranceId));
+                }
+            }
+        });
+    }
+
+    /**
+     * Post a task to the UI thread to send the TTS "error" event.
+     */
+    protected void sendErrorEventOnUiThread(final String utteranceId) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mNativeTtsPlatformImplAndroid != 0) {
+                    nativeOnErrorEvent(mNativeTtsPlatformImplAndroid,
+                            Integer.parseInt(utteranceId));
+                }
+            }
+        });
+    }
+
+    /**
+     * Post a task to the UI thread to send the TTS "start" event.
+     */
+    protected void sendStartEventOnUiThread(final String utteranceId) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mNativeTtsPlatformImplAndroid != 0) {
+                    nativeOnStartEvent(mNativeTtsPlatformImplAndroid,
+                            Integer.parseInt(utteranceId));
+                }
+            }
+        });
+    }
+
+    /**
+     * This is overridden by LollipopTtsPlatformImpl because the API changed.
+     */
+    @SuppressWarnings("deprecation")
+    protected void addOnUtteranceProgressListener() {
+        mTextToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onDone(final String utteranceId) {
+                sendEndEventOnUiThread(utteranceId);
+            }
+
+            // This is deprecated in Lollipop and higher but we still need to catch it
+            // on pre-Lollipop builds.
+            @Override
+            @SuppressWarnings("deprecation")
+            public void onError(final String utteranceId) {
+                sendErrorEventOnUiThread(utteranceId);
+            }
+
+            @Override
+            public void onStart(final String utteranceId) {
+                sendStartEventOnUiThread(utteranceId);
+            }
+        });
+    }
+
+    /**
+     * This is overridden by LollipopTtsPlatformImpl because the API changed.
+     */
+    @SuppressWarnings("deprecation")
+    protected int callSpeak(String text, float volume, int utteranceId) {
+        HashMap<String, String> params = new HashMap<String, String>();
+        if (volume != 1.0) {
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Double.toString(volume));
+        }
+        params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, Integer.toString(utteranceId));
+        return mTextToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, params);
     }
 
     /**
