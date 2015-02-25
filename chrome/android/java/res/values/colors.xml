@@ -41,6 +41,7 @@
     <color name="url_emphasis_domain_and_registry">#333333</color>
     <color name="url_emphasis_light_domain_and_registry">#ffffff</color>
     <color name="url_emphasis_default_text">#333333</color>
+    <!--suppress UnusedResources -->
     <color name="url_emphasis_light_default_text">#ffffff</color>
 
     <!--  Distilled Page Prefs colors -->

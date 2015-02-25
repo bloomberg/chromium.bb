@@ -41,6 +41,20 @@ Still reading?
   <issue id="HandlerLeak">
     <ignore path="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java"/>
   </issue>
+  <issue id="IconDensities">
+    <!-- crbug.com/457918 is tracking missing assets -->
+    <ignore path="content/public/android/java/res/drawable-xxhdpi"/>
+    <ignore path="content/public/android/java/res/drawable-xxxhdpi"/>
+    <ignore path="chrome/android/java/res/drawable-xxhdpi"/>
+    <ignore path="chrome/android/java/res/drawable-xxxhdpi"/>
+    <ignore path="ui/android/java/res/drawable-xxhdpi"/>
+    <ignore path="ui/android/java/res/drawable-xxxhdpi"/>
+  </issue>
+  <!-- It is OK for content_shell_apk and chrome_shell_apk to have missing assets. -->
+  <issue id="IconLocation">
+    <ignore path="content/shell/android/java/res/"/>
+    <ignore path="chrome/android/shell/res/"/>
+  </issue>
   <issue id="MissingApplicationIcon" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingVersion">
@@ -52,12 +66,23 @@ Still reading?
   <issue id="OldTargetApi">
     <ignore path="AndroidManifest.xml"/>
   </issue>
+  <issue id="Overdraw" severity="ignore"/>
   <issue id="Recycle" severity="ignore"/>
   <issue id="Registered" severity="ignore"/>
+  <issue id="RtlEnabled" severity="ignore"/>
   <issue id="SdCardPath">
     <ignore path="content/public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java"/>
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
+  <issue id="UnusedResources">
+    <!-- TODO(aurimas): remove suppression once crbug.com/458328 is fixed. -->
+    <ignore path="content/public/android/java/res/layout/validation_message_bubble.xml" />
+
+    <!-- These files are used by chrome_shell_apk and chrome_apk targets. -->
+    <ignore path="chrome/android/java/res/layout/accessibility_tab_switcher.xml" />
+    <ignore path="chrome/android/java/res/drawable/btn_back.xml" />
+    <ignore path="chrome/android/java/res/drawable/btn_forward.xml" />
+  </issue>
   <issue id="ViewConstructor" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
 </lint>

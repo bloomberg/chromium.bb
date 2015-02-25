@@ -12,7 +12,8 @@
         android:id="@+id/website_settings_permission_icon"
         android:layout_width="@dimen/website_settings_popup_permission_icon_size"
         android:layout_height="@dimen/website_settings_popup_permission_icon_size"
-        android:layout_marginEnd="16dp" />
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/website_settings_permission_name"
