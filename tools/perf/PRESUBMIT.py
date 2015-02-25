@@ -31,8 +31,34 @@ def _CommonChecks(input_api, output_api):
         black_list=PYLINT_BLACKLIST,
         disabled_warnings=PYLINT_DISABLED_WARNINGS))
     results.extend(_CheckJson(input_api, output_api))
+    results.extend(_CheckWprShaFiles(input_api, output_api))
   finally:
     sys.path = old_sys_path
+  return results
+
+
+def _CheckWprShaFiles(input_api, output_api):
+  """Check whether the wpr sha files have matching URLs."""
+  from telemetry.util import cloud_storage
+  results = []
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    filename = affected_file.AbsoluteLocalPath()
+    if not filename.endswith('wpr.sha1'):
+      continue
+    expected_hash = cloud_storage.ReadHash(filename)
+    is_wpr_file_uploaded = any(
+        cloud_storage.Exists(bucket, expected_hash)
+        for bucket in cloud_storage.BUCKET_ALIASES.itervalues())
+    if not is_wpr_file_uploaded:
+      wpr_filename = filename[:-5]
+      results.append(output_api.PresubmitError(
+          'There is no URLs matched for wpr sha file %s.\n'
+          'You can upload your new wpr archive file with the command:\n'
+          'depot_tools/upload_to_google_storage.py --bucket '
+          '<Your pageset\'s bucket> %s.\nFor more info: see '
+          'http://www.chromium.org/developers/telemetry/'
+          'record_a_page_set#TOC-Upload-the-recording-to-Cloud-Storage' %
+          (filename, wpr_filename)))
   return results
 
 
