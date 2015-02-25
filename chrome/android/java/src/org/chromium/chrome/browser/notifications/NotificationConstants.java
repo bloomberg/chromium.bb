@@ -15,6 +15,7 @@ public class NotificationConstants {
             "org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION";
 
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
+    public static final String EXTRA_NOTIFICATION_TAG = "notification_tag";
 
     // TODO(peter): Remove these extras once Notifications are powered by a database on the
     // native side, that contains all the additional information.
@@ -30,4 +31,10 @@ public class NotificationConstants {
      * Unique identifier for the "Signed in to Chrome" notification.
      */
     public static final int NOTIFICATION_ID_SIGNED_IN = 2;
+
+    /**
+     * Separator used to separate the notification origin from additional data such as the
+     * developer specified tag.
+     */
+    public static final String NOTIFICATION_TAG_SEPARATOR = ";";
 }

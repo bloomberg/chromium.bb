@@ -39,7 +39,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // Website object. If EXTRA_ADDRESS is present, the fragment will find all
     // permissions for that website address and display those.
     public static final String EXTRA_SITE = "org.chromium.chrome.preferences.site";
-    public static final String EXTRA_ADDRESS = "org.chromium.chrome.preferences.address";
+    public static final String EXTRA_ORIGIN = "org.chromium.chrome.preferences.origin";
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
@@ -103,8 +103,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // TODO(mvanouwerkerk): Define a pure getOrigin method in UrlUtilities that is the
         // equivalent of the call below, because this is perfectly fine for non-display purposes.
         String origin = UrlUtilities.getOriginForDisplay(URI.create(url), true /*  schowScheme */);
-        fragmentArgs.putSerializable(
-                SingleWebsitePreferences.EXTRA_ADDRESS, WebsiteAddress.create(origin));
+        fragmentArgs.putString(SingleWebsitePreferences.EXTRA_ORIGIN, origin);
         return fragmentArgs;
     }
 
@@ -112,13 +111,13 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public void onActivityCreated(Bundle savedInstanceState) {
         getActivity().setTitle(R.string.prefs_content_settings);
         Object extraSite = getArguments().getSerializable(EXTRA_SITE);
-        Object extraAddress = getArguments().getSerializable(EXTRA_ADDRESS);
+        Object extraOrigin = getArguments().getSerializable(EXTRA_ORIGIN);
 
-        if (extraSite != null && extraAddress == null) {
+        if (extraSite != null && extraOrigin == null) {
             mSite = (Website) extraSite;
             displaySitePermissions();
-        } else if (extraAddress != null && extraSite == null) {
-            mSiteAddress = (WebsiteAddress) extraAddress;
+        } else if (extraOrigin != null && extraSite == null) {
+            mSiteAddress = WebsiteAddress.create((String) extraOrigin);
             WebsitePermissionsFetcher fetcher =
                     new WebsitePermissionsFetcher(new SingleWebsitePermissionsPopulator());
             fetcher.fetchAllPreferences();

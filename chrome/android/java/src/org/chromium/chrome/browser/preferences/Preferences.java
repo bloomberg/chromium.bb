@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
-import android.app.Notification;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -28,8 +27,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferences;
-import org.chromium.chrome.browser.preferences.website.WebsiteSettingsCategoryFilter;
 
 /**
  * The Chrome settings activity.
@@ -138,23 +135,6 @@ public abstract class Preferences extends ActionBarActivity implements
         String initialFragment = getIntent().getStringExtra(EXTRA_SHOW_FRAGMENT);
         Bundle initialArguments = getIntent().getBundleExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS);
         boolean displayHomeAsUp = getIntent().getBooleanExtra(EXTRA_DISPLAY_HOME_AS_UP, true);
-
-        // The notification settings cog on the flipped side of Notifications and in the Android
-        // Settings "App Notifications" view will open us with a specific category rather than
-        // the default intent extras which are commonly used to open specific views.
-        if (getIntent().hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
-            Bundle arguments = new Bundle();
-            arguments.putString(WebsitePreferences.EXTRA_CATEGORY,
-                    WebsiteSettingsCategoryFilter.FILTER_PUSH_NOTIFICATIONS);
-            arguments.putString(WebsitePreferences.EXTRA_TITLE,
-                    getResources().getString(R.string.push_notifications_permission_title));
-
-            // TODO(peter): Open the appropriate page for the origin in the Website Settings.
-
-            initialFragment = WebsitePreferences.class.getName();
-            initialArguments = arguments;
-            displayHomeAsUp = false;
-        }
 
         if (displayHomeAsUp) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 

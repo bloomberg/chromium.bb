@@ -6,6 +6,7 @@ package org.chromium.chrome.shell;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.Notification;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Browser;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
+import org.chromium.chrome.browser.notifications.NotificationUIManager;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
@@ -209,6 +211,12 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
                 return tab.getUrl();
             }
         });
+
+        // The notification settings cog on the flipped side of Notifications and in the Android
+        // Settings "App Notifications" view will open us with a specific category.
+        if (getIntent().hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
+            NotificationUIManager.launchNotificationPreferences(this, getIntent());
+        }
     }
 
     @Override

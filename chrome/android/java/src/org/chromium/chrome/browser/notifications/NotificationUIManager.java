@@ -12,7 +12,9 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -20,6 +22,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferences;
+import org.chromium.chrome.browser.preferences.website.WebsiteSettingsCategoryFilter;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
@@ -121,6 +125,59 @@ public class NotificationUIManager {
         return false;
     }
 
+    /**
+     * Launches the notifications preferences screen. If the received intent indicates it came
+     * from the gear button on a flipped notification, this launches the site specific preferences
+     * screen.
+     *
+     * @param context The context that received the intent.
+     * @param incomingIntent The received intent.
+     */
+    public static void launchNotificationPreferences(Context context, Intent incomingIntent) {
+        // Use the application context because it lives longer. When using he given context, it
+        // may be stopped before the preferences intent is handled.
+        Context applicationContext = context.getApplicationContext();
+
+        // If the user touched the settings cog on a flipped notification there will be a
+        // notification tag extra. From the tag we can read the origin of the notification, and use
+        // that to open the settings screen for that specific origin.
+        String notificationTag =
+                incomingIntent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_TAG);
+        boolean launchSingleWebsitePreferences = notificationTag != null;
+
+        String fragmentName = launchSingleWebsitePreferences
+                ? SingleWebsitePreferences.class.getName()
+                : WebsitePreferences.class.getName();
+        Intent preferencesIntent =
+                PreferencesLauncher.createIntentForSettingsPage(applicationContext, fragmentName);
+
+        Bundle fragmentArguments;
+        if (launchSingleWebsitePreferences) {
+            // All preferences for a specific origin.
+            String[] tagParts =
+                    notificationTag.split(NotificationConstants.NOTIFICATION_TAG_SEPARATOR);
+            assert tagParts.length >= 2;
+            String origin = tagParts[0];
+            fragmentArguments = SingleWebsitePreferences.createFragmentArgsForSite(origin);
+        } else {
+            // Notification preferences for all origins.
+            fragmentArguments = new Bundle();
+            fragmentArguments.putString(WebsitePreferences.EXTRA_CATEGORY,
+                    WebsiteSettingsCategoryFilter.FILTER_PUSH_NOTIFICATIONS);
+            fragmentArguments.putString(WebsitePreferences.EXTRA_TITLE,
+                    applicationContext.getResources().getString(
+                            R.string.push_notifications_permission_title));
+        }
+        preferencesIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
+
+        // When coming from the gear on a flipped notification, we need to ensure that no existing
+        // preference tasks are being re-used in order for it to appear on top.
+        if (launchSingleWebsitePreferences)
+            preferencesIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        applicationContext.startActivity(preferencesIntent);
+    }
+
     private PendingIntent getPendingIntent(String action, String notificationId, int platformId,
                                            byte[] notificationData) {
         Intent intent = new Intent(action);
@@ -133,9 +190,19 @@ public class NotificationUIManager {
                 PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    private static String makePlatformTag(String tag, int platformId, String origin) {
+        // The given tag may contain the separator character, so add it last to make reading the
+        // preceding origin token reliable. If no tag was specified (it is the default empty
+        // string), make the platform tag unique by appending the platform id.
+        String platformTag = origin + NotificationConstants.NOTIFICATION_TAG_SEPARATOR + tag;
+        if (TextUtils.isEmpty(tag)) platformTag += platformId;
+        return platformTag;
+    }
+
     /**
      * Displays a notification with the given |notificationId|, |title|, |body| and |icon|.
      *
+     * @param tag A string identifier for this notification.
      * @param notificationId Unique id provided by the Chrome Notification system.
      * @param title Title to be displayed in the notification.
      * @param body Message to be displayed in the notification. Will be trimmed to one line of
@@ -147,8 +214,8 @@ public class NotificationUIManager {
      * @return The id using which the notification can be identified.
      */
     @CalledByNative
-    private int displayNotification(String notificationId, String title, String body, Bitmap icon,
-                                    String origin, byte[] notificationData) {
+    private int displayNotification(String tag, String notificationId, String title, String body,
+            Bitmap icon, String origin, byte[] notificationData) {
         if (icon == null || icon.getWidth() == 0) {
             icon = getIconGenerator().generateIconForUrl(origin, true);
         }
@@ -181,7 +248,8 @@ public class NotificationUIManager {
                            pendingSettingsIntent)
                 .setSubText(origin);
 
-        mNotificationManager.notify(mLastNotificationId, notificationBuilder.build());
+        String platformTag = makePlatformTag(tag, mLastNotificationId, origin);
+        mNotificationManager.notify(platformTag, mLastNotificationId, notificationBuilder.build());
 
         return mLastNotificationId++;
     }
@@ -213,11 +281,12 @@ public class NotificationUIManager {
     }
 
     /**
-     * Closes the notification identified by |platformId|.
+     * Closes the notification identified by |tag|, |platformId|, and |origin|.
      */
     @CalledByNative
-    private void closeNotification(int platformId) {
-        mNotificationManager.cancel(platformId);
+    private void closeNotification(String tag, int platformId, String origin) {
+        String platformTag = makePlatformTag(tag, platformId, origin);
+        mNotificationManager.cancel(platformTag, platformId);
     }
 
     private boolean onNotificationClicked(String notificationId, int platformId,

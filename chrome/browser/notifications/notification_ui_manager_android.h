@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
 class ProfileNotification;
@@ -52,6 +53,17 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   static bool RegisterNotificationUIManager(JNIEnv* env);
 
  private:
+  // Holds all information required to show or close a platform notification.
+  struct RegeneratedNotificationInfo {
+    RegeneratedNotificationInfo(const base::string16& tag,
+                                int platform_id,
+                                const std::string& origin)
+        : tag(tag), platform_id(platform_id), origin(origin) {}
+    base::string16 tag;
+    int platform_id;
+    std::string origin;
+  };
+
   // Closes the Notification as displayed on the Android system.
   void PlatformCloseNotification(const std::string& notification_id);
 
@@ -67,8 +79,9 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   // Map from a notification id to the associated ProfileNotification*.
   std::map<std::string, ProfileNotification*> profile_notifications_;
 
-  // Map from notification id to the associated platform Id.
-  std::map<std::string, int> platform_notifications_;
+  // Map from notification id to RegeneratedNotificationInfo.
+  std::map<std::string, RegeneratedNotificationInfo>
+      regenerated_notification_infos_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 

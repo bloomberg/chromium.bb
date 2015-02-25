@@ -4,11 +4,12 @@
 
 #include "chrome/browser/notifications/notification_ui_manager_android.h"
 
+#include <utility>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -185,8 +186,11 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
     return false;
   }
 
-  // Store the platform Id of this notification so that it can be closed.
-  platform_notifications_[id] = platform_id;
+  // Store the platform id, tag, and origin of this notification so that it can
+  // be closed.
+  RegeneratedNotificationInfo notification_info(notification_data.tag,
+                                                platform_id, origin.spec());
+  regenerated_notification_infos_.insert(std::make_pair(id, notification_info));
 
   PlatformNotificationServiceImpl* service =
       PlatformNotificationServiceImpl::GetInstance();
@@ -231,6 +235,8 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
 
   JNIEnv* env = AttachCurrentThread();
 
+  ScopedJavaLocalRef<jstring> tag =
+      ConvertUTF16ToJavaString(env, notification.replace_id());
   ScopedJavaLocalRef<jstring> id = ConvertUTF8ToJavaString(
       env, profile_notification->notification().id());
   ScopedJavaLocalRef<jstring> title = ConvertUTF16ToJavaString(
@@ -267,11 +273,14 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   }
 
   int platform_id = Java_NotificationUIManager_displayNotification(
-      env, java_object_.obj(), id.obj(), title.obj(), body.obj(), icon.obj(),
-      origin.obj(), notification_data.obj());
+      env, java_object_.obj(), tag.obj(), id.obj(), title.obj(), body.obj(),
+      icon.obj(), origin.obj(), notification_data.obj());
 
-  std::string notification_id = profile_notification->notification().id();
-  platform_notifications_[notification_id] = platform_id;
+  RegeneratedNotificationInfo notification_info(
+      notification.replace_id(), platform_id,
+      notification.origin_url().GetOrigin().spec());
+  regenerated_notification_infos_.insert(std::make_pair(
+      profile_notification->notification().id(), notification_info));
 
   notification.delegate()->Display();
 }
@@ -406,16 +415,23 @@ bool NotificationUIManagerAndroid::RegisterNotificationUIManager(JNIEnv* env) {
 
 void NotificationUIManagerAndroid::PlatformCloseNotification(
     const std::string& notification_id) {
-  auto iterator = platform_notifications_.find(notification_id);
-  if (iterator == platform_notifications_.end())
+  auto iterator = regenerated_notification_infos_.find(notification_id);
+  if (iterator == regenerated_notification_infos_.end())
     return;
 
-  int platform_id = iterator->second;
-  platform_notifications_.erase(notification_id);
+  RegeneratedNotificationInfo notification_info = iterator->second;
+  int platform_id = notification_info.platform_id;
+  JNIEnv* env = AttachCurrentThread();
 
-  Java_NotificationUIManager_closeNotification(AttachCurrentThread(),
-                                               java_object_.obj(),
-                                               platform_id);
+  ScopedJavaLocalRef<jstring> tag =
+      ConvertUTF16ToJavaString(env, notification_info.tag);
+  ScopedJavaLocalRef<jstring> origin =
+      ConvertUTF8ToJavaString(env, notification_info.origin);
+
+  regenerated_notification_infos_.erase(notification_id);
+
+  Java_NotificationUIManager_closeNotification(
+      env, java_object_.obj(), tag.obj(), platform_id, origin.obj());
 }
 
 void NotificationUIManagerAndroid::AddProfileNotification(

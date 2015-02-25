@@ -5,9 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.Instrumentation;
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.Preference;
@@ -18,7 +16,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferences;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -125,25 +122,8 @@ public class PreferencesTest extends ChromeShellTestBase {
         });
     }
 
-    /**
-     * Starts the preference activity as if it's been opened from the App Notification settings
-     * screen to verify that it opens the Notifications Site Settings screen.
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testNotificationSettingsCategoryIntent() throws Exception {
-        Instrumentation instrumentation = getInstrumentation();
-
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                instrumentation.getTargetContext(), null);
-        intent.addCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES);
-
-        Activity activity = instrumentation.startActivitySync(intent);
-        assertTrue(activity instanceof Preferences);
-
-        Fragment fragment = ((Preferences) activity).getFragmentForTest();
-        assertTrue(fragment instanceof WebsitePreferences);
-    }
+    // TODO(mvanouwerkerk): Write new preference intent tests for notification settings.
+    // https://crbug.com/461885
 
     /**
      * Tests setting FontScaleFactor and ForceEnableZoom in AccessibilityPreferences and ensures
