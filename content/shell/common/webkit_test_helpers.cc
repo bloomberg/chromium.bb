@@ -110,6 +110,8 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->text_autosizing_enabled = false;
 #endif
   prefs->viewport_enabled = false;
+  prefs->default_minimum_page_scale_factor = 1.f;
+  prefs->default_maximum_page_scale_factor = 4.f;
 }
 
 base::FilePath GetWebKitRootDirFilePath() {
