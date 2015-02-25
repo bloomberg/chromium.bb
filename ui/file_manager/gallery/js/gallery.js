@@ -7,6 +7,7 @@
  * @type {string}
  */
 ContentProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
+ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 
 /**
  * Gallery for viewing and editing image files.
@@ -51,12 +52,19 @@ function Gallery(volumeManager) {
   this.document_ = document;
   this.metadataCache_ = this.context_.metadataCache;
   this.volumeManager_ = volumeManager;
+  /**
+   * @private {!FileSystemMetadata}
+   * @const
+   */
+  this.fileSystemMetadata_ = FileSystemMetadata.create(
+      new MetadataProviderCache(), volumeManager);
   this.selectedEntry_ = null;
   this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
 
   this.dataModel_ = new GalleryDataModel(
-      this.context_.metadataCache);
+      this.context_.metadataCache,
+      this.fileSystemMetadata_);
   var downloadVolumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS);
   downloadVolumeInfo.resolveDisplayRoot().then(function(entry) {
@@ -371,6 +379,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
             locationInfo,
             clonedMetadata,
             self.metadataCache_,
+            self.fileSystemMetadata_,
             /* original */ true));
       });
       self.dataModel_.push.apply(self.dataModel_, items);

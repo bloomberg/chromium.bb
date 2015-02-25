@@ -9,12 +9,14 @@
  * @param {!EntryLocation} locationInfo Entry location information.
  * @param {!Object} metadata Metadata for the entry.
  * @param {!MetadataCache} metadataCache Metadata cache instance.
+ * @param {!FileSystemMetadata} fileSystemMetadata File system metadata.
  * @param {boolean} original Whether the entry is original or edited.
  * @constructor
  * @struct
  */
 Gallery.Item = function(
-    entry, locationInfo, metadata, metadataCache, original) {
+    entry, locationInfo, metadata, metadataCache, fileSystemMetadata,
+    original) {
   /**
    * @type {!FileEntry}
    * @private
@@ -39,6 +41,13 @@ Gallery.Item = function(
    * @const
    */
   this.metadataCache_ = metadataCache;
+
+  /**
+   * @type {!FileSystemMetadata}
+   * @private
+   * @const
+   */
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   // TODO(yawano): Change this.contentImage and this.screenImage to private
   // fields and provide utility methods for them (e.g. revokeFullImageCache).
@@ -262,6 +271,7 @@ Gallery.Item.prototype.saveToFile = function(
               opt_callback(false);
           }
         }.bind(this));
+    this.fileSystemMetadata_.notifyEntriesChanged([this.entry_]);
   }.bind(this);
 
   var onError = function(error) {

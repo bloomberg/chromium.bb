@@ -9,7 +9,10 @@ var item;
 
 function setUp() {
   var metadataCache = new MockMetadataCache();
-  model = new GalleryDataModel(metadataCache, /* Mock EntryListWatcher */{});
+  model = new GalleryDataModel(
+      metadataCache,
+      /* Mock FileSystemMetadata */{},
+      /* Mock EntryListWatcher */{});
   fileSystem = new MockFileSystem('volumeId');
   item = new Gallery.Item(
       new MockEntry(fileSystem, '/test.jpg'),

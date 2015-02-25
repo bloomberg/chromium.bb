@@ -7,7 +7,7 @@
  * @param {!FileSystemMetadataProvider} fileSystemMetadataProvider
  * @param {!ExternalMetadataProvider} externalMetadataProvider
  * @param {!ContentMetadataProvider} contentMetadataProvider
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
  * @constructor
  * @struct
  */
@@ -42,7 +42,7 @@ function FileSystemMetadata(
   this.contentMetadataProvider_ = contentMetadataProvider;
 
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManagerCommon.VolumeInfoProvider}
    * @const
    */
   this.volumeManager_ = volumeManager;
@@ -50,7 +50,7 @@ function FileSystemMetadata(
 
 /**
  * @param {!MetadataProviderCache} cache
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
  * @return {!FileSystemMetadata}
  */
 FileSystemMetadata.create = function(cache, volumeManager) {

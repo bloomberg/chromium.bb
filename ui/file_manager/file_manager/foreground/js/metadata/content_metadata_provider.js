@@ -65,7 +65,7 @@ ContentMetadataProvider.PROPERTY_NAMES = [
 
 /**
  * Path of a worker script.
- * @const {string}
+ * @public {string}
  */
 ContentMetadataProvider.WORKER_SCRIPT =
     'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
