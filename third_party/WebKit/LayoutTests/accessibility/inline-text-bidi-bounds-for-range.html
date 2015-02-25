@@ -46,10 +46,10 @@ one two אחתשתיים three four שלושהארבעה
             window.rangeBounds = range.getBoundingClientRect();
 
             // Make sure they're the same.
-            shouldBeCloseTo("axBounds.x", rangeBounds.left, 2);
-            shouldBeCloseTo("axBounds.y", rangeBounds.top, 2);
-            shouldBeCloseTo("axBounds.width", rangeBounds.width, 2);
-            shouldBeCloseTo("axBounds.height", rangeBounds.height, 2);
+            shouldBeCloseTo("axBounds.x", "rangeBounds.left", 2);
+            shouldBeCloseTo("axBounds.y", "rangeBounds.top", 2);
+            shouldBeCloseTo("axBounds.width", "rangeBounds.width", 2);
+            shouldBeCloseTo("axBounds.height", "rangeBounds.height", 2);
         }
 
         testWord('horizontalParagraph', 'one');
