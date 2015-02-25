@@ -377,8 +377,10 @@ test.util.registerRemoteTestUtils = function() {
       function(request, sender, sendResponse) {
     // Check the sender.
     if (test.util.TESTING_EXTENSION_IDS.indexOf(sender.id) === -1) {
-      console.error('The testing extension must be white-listed.');
-      return false;
+      // Silently return.  Don't return false; that short-circuits the
+      // propagation of messages, and there are now other listeners that want to
+      // handle external messages.
+      return;
     }
     // Set a global flag that we are in tests, so other components are aware
     // of it.

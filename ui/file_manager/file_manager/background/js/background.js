@@ -183,7 +183,7 @@ FileBrowserBackground.prototype.handleViewEvent_ =
               var volume = volumeManager.volumeInfoList.findByDevicePath(
                   event.devicePath);
               if (volume) {
-                this.navigateToVolume_(volume);
+                this.navigateToVolume_(volume, event.filePath);
               } else {
                 console.error('Got view event with invalid volume id.');
               }

@@ -529,6 +529,12 @@ DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
     var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
     event.devicePath = devicePath;
     this.dispatchEvent(event);
+  } else if (type === 'deviceImport') {
+    chrome.notifications.clear(id, function() {});
+    var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
+    event.devicePath = devicePath;
+    event.filePath = 'DCIM';
+    this.dispatchEvent(event);
   }
 };
 
