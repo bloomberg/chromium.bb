@@ -521,6 +521,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_AddStyleSheetByURL, std::string)
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
                     AccessibilityMode)
 
+// Dispatch a load event in the iframe element containing this frame.
+IPC_MESSAGE_ROUTED0(FrameMsg_DispatchLoad)
+
 #if defined(OS_ANDROID)
 
 // External popup menus.
@@ -860,6 +863,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_BeforeUnloadHandlersPresent,
                     bool /* present */)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UnloadHandlersPresent,
                     bool /* present */)
+
+// Dispatch a load event for this frame in the iframe element of an
+// out-of-process parent frame.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 

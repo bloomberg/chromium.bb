@@ -2768,6 +2768,10 @@ void RenderFrameImpl::didChangeThemeColor() {
       routing_id_, frame_->document().themeColor()));
 }
 
+void RenderFrameImpl::dispatchLoad() {
+  Send(new FrameHostMsg_DispatchLoad(routing_id_));
+}
+
 void RenderFrameImpl::requestNotificationPermission(
     const blink::WebSecurityOrigin& origin,
     blink::WebNotificationPermissionCallback* callback) {

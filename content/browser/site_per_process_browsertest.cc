@@ -1353,4 +1353,38 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(node3->current_frame_host()->IsRenderFrameLive());
 }
 
+// Verify that load events for iframe elements work when the child frame is
+// out-of-process.  In such cases, the load event is forwarded from the child
+// frame to the parent frame via the browser process.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, LoadEventForwarding) {
+  // Load a page with a cross-site frame.  The parent page has an onload
+  // handler in the iframe element that appends "LOADED" to the document title.
+  {
+    GURL main_url(
+        embedded_test_server()->GetURL("/frame_with_load_event.html"));
+    base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), expected_title);
+  }
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Load another cross-site page into the iframe and check that the load event
+  // is fired.
+  {
+    GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+    base::string16 expected_title(base::UTF8ToUTF16("LOADEDLOADED"));
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    TestNavigationObserver observer(shell()->web_contents());
+    NavigateFrameToURL(root->child_at(0), foo_url);
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(foo_url, observer.last_navigation_url());
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), expected_title);
+  }
+}
+
 }  // namespace content

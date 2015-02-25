@@ -423,6 +423,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void addNavigationTransitionData(
       const blink::WebTransitionElementData& data);
   virtual void didChangeThemeColor();
+  virtual void dispatchLoad();
   virtual void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,
       blink::WebNotificationPermissionCallback* callback);

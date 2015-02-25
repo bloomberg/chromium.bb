@@ -501,6 +501,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnBeginNavigation(const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params,
                          scoped_refptr<ResourceRequestBody> body);
+  void OnDispatchLoad();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params,
       int reset_token);

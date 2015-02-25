@@ -185,6 +185,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
+    IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -260,6 +261,10 @@ void RenderFrameProxy::OnDidStopLoading() {
     return;
 
   web_frame_->didStopLoading();
+}
+
+void RenderFrameProxy::OnDispatchLoad() {
+  web_frame_->DispatchLoadEventForFrameOwner();
 }
 
 void RenderFrameProxy::frameDetached() {
