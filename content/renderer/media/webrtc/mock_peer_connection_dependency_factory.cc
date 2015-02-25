@@ -218,6 +218,13 @@ void MockVideoSource::RemoveSink(cricket::VideoRenderer* output) {
   NOTIMPLEMENTED();
 }
 
+void MockVideoSource::Stop() {
+  NOTIMPLEMENTED();
+}
+void MockVideoSource::Restart() {
+  NOTIMPLEMENTED();
+}
+
 cricket::VideoRenderer* MockVideoSource::FrameInput() {
   return &renderer_;
 }

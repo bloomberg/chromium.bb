@@ -48,6 +48,8 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   void RemoveSink(cricket::VideoRenderer* output) override;
   cricket::VideoRenderer* FrameInput() override;
   const cricket::VideoOptions* options() const override;
+  void Stop() override;
+  void Restart() override;
 
   // Changes the state of the source to live and notifies the observer.
   void SetLive();
