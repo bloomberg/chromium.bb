@@ -496,7 +496,7 @@ importer.RuntimeCommandWidget = function() {
 };
 
 /**
- * Handle document scoped key-down events.
+ * Handles document scoped key-down events.
  * @param {Event} event Key event.
  * @private
  */
