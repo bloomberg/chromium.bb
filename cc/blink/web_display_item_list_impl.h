@@ -50,8 +50,13 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   virtual void appendTransparencyItem(float opacity,
                                       blink::WebBlendMode blend_mode);
   virtual void appendEndTransparencyItem();
+  // TODO(pdr): Remove this once the blink-side callers have been removed.
   virtual void appendCompositingItem(float opacity,
                                      SkXfermode::Mode,
+                                     SkColorFilter*);
+  virtual void appendCompositingItem(float opacity,
+                                     SkXfermode::Mode,
+                                     SkRect* bounds,
                                      SkColorFilter*);
   virtual void appendEndCompositingItem();
   virtual void appendFilterItem(const blink::WebFilterOperations& filters,

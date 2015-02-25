@@ -15,8 +15,14 @@ namespace cc {
 
 CompositingDisplayItem::CompositingDisplayItem(float opacity,
                                                SkXfermode::Mode xfermode,
+                                               SkRect* bounds,
                                                skia::RefPtr<SkColorFilter> cf)
-    : opacity_(opacity), xfermode_(xfermode), color_filter_(cf) {
+    : opacity_(opacity),
+      xfermode_(xfermode),
+      has_bounds_(!!bounds),
+      color_filter_(cf) {
+  if (bounds)
+    bounds_ = SkRect(*bounds);
 }
 
 CompositingDisplayItem::~CompositingDisplayItem() {
@@ -28,7 +34,7 @@ void CompositingDisplayItem::Raster(SkCanvas* canvas,
   paint.setXfermodeMode(xfermode_);
   paint.setAlpha(opacity_ * 255);
   paint.setColorFilter(color_filter_.get());
-  canvas->saveLayer(NULL, &paint);
+  canvas->saveLayer(has_bounds_ ? &bounds_ : nullptr, &paint);
 }
 
 bool CompositingDisplayItem::IsSuitableForGpuRasterization() const {
@@ -41,13 +47,19 @@ int CompositingDisplayItem::ApproximateOpCount() const {
 
 size_t CompositingDisplayItem::PictureMemoryUsage() const {
   // TODO(pdr): Include color_filter's memory here.
-  return sizeof(float) + sizeof(SkXfermode::Mode);
+  return sizeof(float) + sizeof(bool) + sizeof(SkRect) +
+         sizeof(SkXfermode::Mode);
 }
 
 void CompositingDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf(
       "CompositingDisplayItem opacity: %f, xfermode: %d", opacity_, xfermode_));
+  if (has_bounds_)
+    array->AppendString(base::StringPrintf(
+        ", bounds: [%f, %f, %f, %f]", static_cast<float>(bounds_.x()),
+        static_cast<float>(bounds_.y()), static_cast<float>(bounds_.width()),
+        static_cast<float>(bounds_.height())));
 }
 
 EndCompositingDisplayItem::EndCompositingDisplayItem() {

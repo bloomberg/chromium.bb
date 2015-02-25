@@ -98,12 +98,21 @@ void WebDisplayItemListImpl::appendEndTransparencyItem() {
   display_item_list_->AppendItem(cc::EndTransparencyDisplayItem::Create());
 }
 
+// TODO(pdr): Remove this once the blink-side callers have been removed.
 void WebDisplayItemListImpl::appendCompositingItem(
     float opacity,
     SkXfermode::Mode xfermode,
     SkColorFilter* color_filter) {
+  appendCompositingItem(opacity, xfermode, nullptr, color_filter);
+}
+
+void WebDisplayItemListImpl::appendCompositingItem(
+    float opacity,
+    SkXfermode::Mode xfermode,
+    SkRect* bounds,
+    SkColorFilter* color_filter) {
   display_item_list_->AppendItem(cc::CompositingDisplayItem::Create(
-      opacity, xfermode, skia::SharePtr(color_filter)));
+      opacity, xfermode, bounds, skia::SharePtr(color_filter)));
 }
 
 void WebDisplayItemListImpl::appendEndCompositingItem() {

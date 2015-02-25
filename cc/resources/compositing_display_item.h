@@ -10,6 +10,7 @@
 #include "cc/resources/display_item.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -25,9 +26,10 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   static scoped_ptr<CompositingDisplayItem> Create(
       float opacity,
       SkXfermode::Mode xfermode,
+      SkRect* bounds,
       skia::RefPtr<SkColorFilter> color_filter) {
     return make_scoped_ptr(
-        new CompositingDisplayItem(opacity, xfermode, color_filter));
+        new CompositingDisplayItem(opacity, xfermode, bounds, color_filter));
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
@@ -40,11 +42,14 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
  protected:
   CompositingDisplayItem(float opacity,
                          SkXfermode::Mode,
+                         SkRect* bounds,
                          skia::RefPtr<SkColorFilter>);
 
  private:
   float opacity_;
   SkXfermode::Mode xfermode_;
+  bool has_bounds_;
+  SkRect bounds_;
   skia::RefPtr<SkColorFilter> color_filter_;
 };
 
