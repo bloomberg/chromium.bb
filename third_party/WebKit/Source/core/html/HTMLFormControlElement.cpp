@@ -58,6 +58,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_willValidateInitialized(false)
     , m_willValidate(true)
     , m_isValid(true)
+    , m_validityIsDirty(false)
     , m_wasChangedSinceLastFormControlChangeEvent(false)
     , m_wasFocusedByMouse(false)
 {
@@ -283,28 +284,31 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
 void HTMLFormControlElement::willChangeForm()
 {
     FormAssociatedElement::willChangeForm();
-    formOwnerSetNeedsValidityCheck(ElementRemoval, isValidElement());
+    formOwnerSetNeedsValidityCheck();
 }
 
 void HTMLFormControlElement::didChangeForm()
 {
     FormAssociatedElement::didChangeForm();
-    formOwnerSetNeedsValidityCheck(ElementAddition, isValidElement());
+    formOwnerSetNeedsValidityCheck();
 }
 
-void HTMLFormControlElement::formOwnerSetNeedsValidityCheck(ValidityRecalcReason reason, bool isValid)
+void HTMLFormControlElement::formOwnerSetNeedsValidityCheck()
 {
-    HTMLFormElement* form = formOwner();
-    if (form)
-        form->setNeedsValidityCheck(reason, isValid);
+    if (HTMLFormElement* form = formOwner()) {
+        form->pseudoStateChanged(CSSSelector::PseudoValid);
+        form->pseudoStateChanged(CSSSelector::PseudoInvalid);
+    }
 }
 
 void HTMLFormControlElement::fieldSetAncestorsSetNeedsValidityCheck(Node* node)
 {
     if (!node)
         return;
-    for (HTMLFieldSetElement* fieldSet = Traversal<HTMLFieldSetElement>::firstAncestorOrSelf(*node); fieldSet; fieldSet = Traversal<HTMLFieldSetElement>::firstAncestor(*fieldSet))
-        fieldSet->setNeedsValidityCheck();
+    for (HTMLFieldSetElement* fieldSet = Traversal<HTMLFieldSetElement>::firstAncestorOrSelf(*node); fieldSet; fieldSet = Traversal<HTMLFieldSetElement>::firstAncestor(*fieldSet)) {
+        fieldSet->pseudoStateChanged(CSSSelector::PseudoValid);
+        fieldSet->pseudoStateChanged(CSSSelector::PseudoInvalid);
+    }
 }
 
 void HTMLFormControlElement::setChangedSinceLastFormControlChangeEvent(bool changed)
@@ -508,7 +512,7 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
 
 bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
-    if (!willValidate() || isValidElement())
+    if (isValidElement())
         return true;
     if (eventBehavior != CheckValidityDispatchInvalidEvent)
         return false;
@@ -559,21 +563,23 @@ bool HTMLFormControlElement::matchesValidityPseudoClasses() const
 
 bool HTMLFormControlElement::isValidElement()
 {
-    // If the following assertion fails, setNeedsValidityCheck() is not called
-    // correctly when something which changes validity is updated.
-    ASSERT(m_isValid == valid());
+    if (m_validityIsDirty) {
+        m_isValid = !willValidate() || valid();
+        m_validityIsDirty = false;
+    } else {
+        // If the following assertion fails, setNeedsValidityCheck() is not
+        // called correctly when something which changes validity is updated.
+        ASSERT(m_isValid == (!willValidate() || valid()));
+    }
     return m_isValid;
 }
 
 void HTMLFormControlElement::setNeedsValidityCheck()
 {
-    bool newIsValid = valid();
-    bool changed = newIsValid != m_isValid;
-    m_isValid = newIsValid;
-    if (changed) {
-        formOwnerSetNeedsValidityCheck(ElementModification, newIsValid);
+    if (!m_validityIsDirty) {
+        m_validityIsDirty = true;
+        formOwnerSetNeedsValidityCheck();
         fieldSetAncestorsSetNeedsValidityCheck(parentNode());
-        // Update style for pseudo classes such as :valid :invalid.
         pseudoStateChanged(CSSSelector::PseudoValid);
         pseudoStateChanged(CSSSelector::PseudoInvalid);
     }

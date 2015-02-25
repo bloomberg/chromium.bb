@@ -34,7 +34,6 @@ class HTMLFormElement;
 class ValidationMessageClient;
 
 enum CheckValidityEventBehavior { CheckValidityDispatchNoEvent, CheckValidityDispatchInvalidEvent };
-enum ValidityRecalcReason { ElementAddition, ElementRemoval, ElementModification };
 
 // HTMLFormControlElement is the default implementation of FormAssociatedElement,
 // and form-associated element implementations should use HTMLFormControlElement
@@ -170,9 +169,7 @@ private:
     ValidationMessageClient* validationMessageClient() const;
 
     // Requests validity recalc for the form owner, if one exists.
-    // In case of removal, isValid specifies element validity upon removal.
-    // In case of addition and modification, it specifies new validity.
-    void formOwnerSetNeedsValidityCheck(ValidityRecalcReason, bool isValid);
+    void formOwnerSetNeedsValidityCheck();
     // Requests validity recalc for all ancestor fieldsets, if exist.
     void fieldSetAncestorsSetNeedsValidityCheck(Node*);
 
@@ -194,8 +191,8 @@ private:
     mutable bool m_willValidate : 1;
 
     // Cache of valid().
-    // But "candidate for constraint validation" doesn't affect m_isValid.
     bool m_isValid : 1;
+    bool m_validityIsDirty : 1;
 
     bool m_wasChangedSinceLastFormControlChangeEvent : 1;
     bool m_wasFocusedByMouse : 1;

@@ -18,7 +18,9 @@ PASS valueMissingFor("select-fake-placeholder-selected-size2-multiple") is false
 PASS valueMissingFor("select-without-fake-placeholder-size2-multiple") is false
 PASS valueMissingFor("select-optgroup") is false
 PASS valueMissingFor("select-disabled-option") is true
+PASS valueMissingFor("select-disabled-option-2") is false
+PASS document.getElementById("select-disabled-option-2").selectedIndex is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
-              
+               

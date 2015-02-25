@@ -61,6 +61,10 @@
   <option value="" disabled selected />
   <option value="X">X</option>
 </select>
+<select id="select-disabled-option-2" name="victim" required>
+  <option value="" disabled />
+  <option value="X">X</option>
+</select>
 <script language="JavaScript" type="text/javascript">
     function valueMissingFor(id) {
         return document.getElementById(id).validity.valueMissing;
@@ -85,6 +89,8 @@
     shouldBeFalse('valueMissingFor("select-without-fake-placeholder-size2-multiple")');
     shouldBeFalse('valueMissingFor("select-optgroup")');
     shouldBeTrue('valueMissingFor("select-disabled-option")');
+    shouldBeFalse('valueMissingFor("select-disabled-option-2")');
+    shouldBe('document.getElementById("select-disabled-option-2").selectedIndex', '1');
 </script>
 </body>
 </html>
