@@ -117,6 +117,9 @@ bool IsCellularEnabledByExperiment() {
 
 }  // namespace
 
+ProfilerMetricsProvider::ProfilerMetricsProvider() : has_profiler_data_(false) {
+}
+
 ProfilerMetricsProvider::ProfilerMetricsProvider(
     const base::Callback<void(bool*)>& cellular_callback)
     : has_profiler_data_(false), cellular_callback_(cellular_callback) {
@@ -158,7 +161,8 @@ void ProfilerMetricsProvider::RecordProfilerData(
 
 bool ProfilerMetricsProvider::IsCellularConnection() {
   bool is_cellular = false;
-  // For android get current connection type from NetworkMetricsProvider.
+// For android get current connection type from NetworkMetricsProvider if the
+// callback exists.
 #if defined(OS_ANDROID)
   if (!cellular_callback_.is_null())
     cellular_callback_.Run(&is_cellular);

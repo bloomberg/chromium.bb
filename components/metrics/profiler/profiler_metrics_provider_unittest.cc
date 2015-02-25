@@ -15,17 +15,13 @@ using tracked_objects::TaskSnapshot;
 
 namespace metrics {
 
-  void MockIsCellular(bool* is_cellular_out) {
-    *is_cellular_out = false;
-  }
-
 TEST(ProfilerMetricsProviderTest, RecordData) {
   // WARNING: If you broke the below check, you've modified how
   // HashMetricName works. Please also modify all server-side code that
   // relies on the existing way of hashing.
   EXPECT_EQ(GG_UINT64_C(1518842999910132863), HashMetricName("birth_thread*"));
 
-  ProfilerMetricsProvider profiler_metrics_provider(base::Bind(MockIsCellular));
+  ProfilerMetricsProvider profiler_metrics_provider;
 
   {
     // Add data from the browser process.

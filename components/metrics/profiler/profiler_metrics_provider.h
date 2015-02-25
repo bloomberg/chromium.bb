@@ -22,6 +22,8 @@ class ProfilerMetricsProvider : public MetricsProvider {
  public:
   explicit ProfilerMetricsProvider(
       const base::Callback<void(bool*)>& cellular_callback);
+  // Creates profiler metrics provider with a null callback.
+  ProfilerMetricsProvider();
   ~ProfilerMetricsProvider() override;
 
   // MetricsDataProvider:
