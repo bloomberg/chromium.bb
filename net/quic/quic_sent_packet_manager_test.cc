@@ -179,7 +179,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     return SerializedPacket(
         sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER, packets_.back(), 0u,
-        retransmittable ? new RetransmittableFrames() : nullptr);
+        retransmittable ? new RetransmittableFrames(ENCRYPTION_NONE) : nullptr);
   }
 
   SerializedPacket CreateFecPacket(QuicPacketSequenceNumber sequence_number) {
@@ -208,7 +208,6 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     SerializedPacket packet(CreateDataPacket(sequence_number));
     packet.retransmittable_frames->AddStreamFrame(
         new QuicStreamFrame(1, false, 0, IOVector()));
-    packet.retransmittable_frames->set_encryption_level(ENCRYPTION_NONE);
     manager_.OnPacketSent(&packet, 0, clock_.Now(),
                           packet.packet->length(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
@@ -832,9 +831,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
 
   // Ensure the RTO is set based on the correct packet.
-  if (FLAGS_quic_rto_uses_last_sent) {
-    rto_packet_time = clock_.Now();
-  }
+  rto_packet_time = clock_.Now();
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay())
       .WillOnce(Return(QuicTime::Delta::FromSeconds(1)));
   EXPECT_EQ(rto_packet_time.Add(QuicTime::Delta::FromSeconds(1)),
@@ -843,36 +840,29 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   // Advance the time enough to ensure all packets are RTO'd.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
 
-  if (!FLAGS_quic_use_new_rto) {
-    // The final RTO abandons all of them.
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  }
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_EQ(2u, stats_.tlp_count);
   EXPECT_EQ(1u, stats_.rto_count);
 
   // Send and Ack the RTO and ensure OnRetransmissionTimeout is called.
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(102 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+  EXPECT_EQ(102 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
 
-    RetransmitNextPacket(103);
-    QuicAckFrame ack_frame;
-    ack_frame.largest_observed = 103;
-    for (int i = 0; i < 103; ++i) {
-      ack_frame.missing_packets.insert(i);
-    }
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*send_algorithm_,
-                OnCongestionEvent(true, _, ElementsAre(Pair(103, _)), _));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-    EXPECT_CALL(*network_change_visitor_, OnRttChange());
-    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
-    // All packets before 103 should be lost.
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+  RetransmitNextPacket(103);
+  QuicAckFrame ack_frame;
+  ack_frame.largest_observed = 103;
+  for (int i = 0; i < 103; ++i) {
+    ack_frame.missing_packets.insert(i);
   }
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(true, _, ElementsAre(Pair(103, _)), _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
+  EXPECT_CALL(*network_change_visitor_, OnRttChange());
+  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  // All packets before 103 should be lost.
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
 }
 
 TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
@@ -1103,27 +1093,14 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
     SendDataPacket(i);
   }
 
-  if (!FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  }
   EXPECT_FALSE(manager_.MaybeRetransmitTailLossProbe());
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(100 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    // Ensure all are abandoned when the RTO fires.
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  EXPECT_EQ(100 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   RetransmitNextPacket(101);
   RetransmitNextPacket(102);
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_FALSE(manager_.HasPendingRetransmissions());
-  } else {
-    EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  }
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Ack a retransmission.
   QuicAckFrame ack_frame;
@@ -1138,14 +1115,11 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
                                 /*lost_packets=*/IsEmpty()));
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  }
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 }
 
 TEST_F(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_use_new_rto, true);
   QuicConfig client_config;
   QuicTagVector options;
   options.push_back(kNRTO);
@@ -1194,105 +1168,56 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   // Send 1 packet.
   SendDataPacket(1);
 
-  if (!FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  }
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    // Ensure all are abandoned when the RTO fires.
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  EXPECT_EQ(kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   RetransmitNextPacket(2);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Rto a second time.
-  if (!FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  }
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(2 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    // Ensure all are abandoned when the RTO fires.
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  EXPECT_EQ(2 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   RetransmitNextPacket(3);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Ack a retransmission and ensure OnRetransmissionTimeout is called.
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  }
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   QuicAckFrame ack_frame;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.largest_observed = 2;
   ack_frame.missing_packets.insert(1);
-  if (FLAGS_quic_use_new_rto) {
-    ExpectAck(2);
-  } else {
-    ExpectUpdatedRtt(2);
-  }
+  ExpectAck(2);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
-  if (FLAGS_quic_use_new_rto) {
-    // The original packet and newest should be outstanding.
-    EXPECT_EQ(2 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    EXPECT_EQ(kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  // The original packet and newest should be outstanding.
+  EXPECT_EQ(2 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
 }
 
 TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   // Send 1 packet.
   SendDataPacket(1);
 
-  if (!FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  }
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    // Ensure all are abandoned when the RTO fires.
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  EXPECT_EQ(kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   RetransmitNextPacket(2);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Rto a second time.
-  if (!FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  }
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(2 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    // Ensure all are abandoned when the RTO fires.
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  EXPECT_EQ(2 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   RetransmitNextPacket(3);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Ack a retransmission and ensure OnRetransmissionTimeout is called.
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  }
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   QuicAckFrame ack_frame;
   ack_frame.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.largest_observed = 3;
@@ -1301,13 +1226,9 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   ExpectAck(3);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
-  if (FLAGS_quic_use_new_rto) {
-    // The first two packets should still be outstanding.
-    EXPECT_EQ(2 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  // The first two packets should still be outstanding.
+  EXPECT_EQ(2 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
 }
 
 TEST_F(QuicSentPacketManagerTest, GetTransmissionTime) {
@@ -1397,60 +1318,34 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeSpuriousRTO) {
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
   // Retransmit the packet by invoking the retransmission timeout.
-  if (!FLAGS_quic_use_new_rto) {
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  }
   clock_.AdvanceTime(expected_rto_delay);
   manager_.OnRetransmissionTimeout();
-  if (FLAGS_quic_use_new_rto) {
-    // All packets are still considered inflight.
-    EXPECT_EQ(4 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  // All packets are still considered inflight.
+  EXPECT_EQ(4 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   RetransmitNextPacket(5);
   RetransmitNextPacket(6);
-  if (FLAGS_quic_use_new_rto) {
-    // All previous packets are inflight, plus two rto retransmissions.
-    EXPECT_EQ(6 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-    EXPECT_FALSE(manager_.HasPendingRetransmissions());
-  } else {
-    EXPECT_EQ(2 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-    EXPECT_TRUE(manager_.HasPendingRetransmissions());
-  }
+  // All previous packets are inflight, plus two rto retransmissions.
+  EXPECT_EQ(6 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // The delay should double the second time.
   expected_time = clock_.Now().Add(expected_rto_delay).Add(expected_rto_delay);
   // Once we always base the timer on the right edge, leaving the older packets
   // in flight doesn't change the timeout.
-  if (!FLAGS_quic_use_new_rto || FLAGS_quic_rto_uses_last_sent) {
-    EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
-  }
+  EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
   // Ack a packet before the first RTO and ensure the RTO timeout returns to the
   // original value and OnRetransmissionTimeout is not called or reverted.
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
   ack_frame.missing_packets.insert(1);
-  if (FLAGS_quic_use_new_rto) {
-    ExpectAck(2);
-  } else {
-    ExpectUpdatedRtt(2);
-    EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
-  }
+  ExpectAck(2);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
-  if (FLAGS_quic_use_new_rto) {
-    EXPECT_EQ(5 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  } else {
-    EXPECT_EQ(4 * kDefaultLength,
-              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
-  }
+  EXPECT_EQ(5 * kDefaultLength,
+            QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
 
   // Wait 2RTTs from now for the RTO, since it's the max of the RTO time
   // and the TLP time.  In production, there would always be two TLP's first.
@@ -1459,9 +1354,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeSpuriousRTO) {
   expected_time = clock_.Now().Add(QuicTime::Delta::FromMilliseconds(1000));
   // Once we always base the timer on the right edge, leaving the older packets
   // in flight doesn't change the timeout.
-  if (!FLAGS_quic_use_new_rto || FLAGS_quic_rto_uses_last_sent) {
-    EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
-  }
+  EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 
 TEST_F(QuicSentPacketManagerTest, GetTransmissionDelayMin) {
@@ -1476,10 +1369,6 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelayMin) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
     delay = delay.Add(delay);
-    if (!FLAGS_quic_use_new_rto) {
-      EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-      EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    }
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
   }
@@ -1504,10 +1393,6 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelay) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
     delay = delay.Add(delay);
-    if (!FLAGS_quic_use_new_rto) {
-      EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-      EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-    }
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
   }

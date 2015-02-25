@@ -118,11 +118,6 @@ void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
   SendQueuedFrames(false);
 }
 
-void QuicPacketGenerator::SetShouldSendStopWaiting() {
-  should_send_stop_waiting_ = true;
-  SendQueuedFrames(false);
-}
-
 void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
   queued_control_frames_.push_back(frame);
   SendQueuedFrames(false);

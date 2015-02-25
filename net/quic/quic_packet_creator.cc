@@ -450,13 +450,6 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   return serialized;
 }
 
-SerializedPacket QuicPacketCreator::SerializeConnectionClose(
-    QuicConnectionCloseFrame* close_frame) {
-  QuicFrames frames;
-  frames.push_back(QuicFrame(close_frame));
-  return SerializeAllFrames(frames);
-}
-
 QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
     const QuicVersionVector& supported_versions) {
   DCHECK(framer_->is_server());
@@ -514,7 +507,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 
   if (save_retransmittable_frames && ShouldRetransmit(frame)) {
     if (queued_retransmittable_frames_.get() == nullptr) {
-      queued_retransmittable_frames_.reset(new RetransmittableFrames());
+      queued_retransmittable_frames_.reset(
+          new RetransmittableFrames(encryption_level_));
     }
     if (frame.type == STREAM_FRAME) {
       queued_frames_.push_back(

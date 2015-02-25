@@ -1584,9 +1584,6 @@ void QuicConnection::OnSerializedPacket(
     return;
   }
   if (serialized_packet.retransmittable_frames) {
-    serialized_packet.retransmittable_frames->
-        set_encryption_level(encryption_level_);
-
     sent_packet_manager_.OnSerializedPacket(serialized_packet);
   }
   if (serialized_packet.is_fec_packet && fec_alarm_->IsSet()) {

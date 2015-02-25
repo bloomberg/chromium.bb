@@ -28,9 +28,27 @@ void QuicPacketCreatorPeer::SetSequenceNumberLength(
 }
 
 // static
+void QuicPacketCreatorPeer::SetNextSequenceNumberLength(
+    QuicPacketCreator* creator,
+    QuicSequenceNumberLength next_sequence_number_length) {
+  creator->next_sequence_number_length_ = next_sequence_number_length;
+}
+
+// static
+QuicSequenceNumberLength QuicPacketCreatorPeer::NextSequenceNumberLength(
+    QuicPacketCreator* creator) {
+  return creator->next_sequence_number_length_;
+}
+
+// static
 QuicSequenceNumberLength QuicPacketCreatorPeer::GetSequenceNumberLength(
     QuicPacketCreator* creator) {
   return creator->sequence_number_length_;
+}
+
+void QuicPacketCreatorPeer::SetSequenceNumber(QuicPacketCreator* creator,
+                                              QuicPacketSequenceNumber s) {
+  creator->sequence_number_ = s;
 }
 
 }  // namespace test

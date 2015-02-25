@@ -615,9 +615,10 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
   size_t length =
       NullEncrypter().GetCiphertextSize(0) +
-      GetPacketHeaderSize(creator_->connection_id_length(), true,
-                          creator_->next_sequence_number_length(),
-                          NOT_IN_FEC_GROUP) +
+      GetPacketHeaderSize(
+          creator_->connection_id_length(), true,
+          QuicPacketCreatorPeer::NextSequenceNumberLength(creator_),
+          NOT_IN_FEC_GROUP) +
       // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
       // than the GetMinStreamFrameSize.
       QuicFramer::GetMinStreamFrameSize(1, 0, false, NOT_IN_FEC_GROUP) + 3 +

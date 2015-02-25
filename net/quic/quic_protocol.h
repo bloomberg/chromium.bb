@@ -965,7 +965,7 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
 
 class NET_EXPORT_PRIVATE RetransmittableFrames {
  public:
-  RetransmittableFrames();
+  explicit RetransmittableFrames(EncryptionLevel level);
   ~RetransmittableFrames();
 
   // Allocates a local copy of the referenced StringPiece has QuicStreamFrame
@@ -980,14 +980,13 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
     return has_crypto_handshake_;
   }
 
-  void set_encryption_level(EncryptionLevel level);
   EncryptionLevel encryption_level() const {
     return encryption_level_;
   }
 
  private:
   QuicFrames frames_;
-  EncryptionLevel encryption_level_;
+  const EncryptionLevel encryption_level_;
   IsHandshake has_crypto_handshake_;
   // Data referenced by the StringPiece of a QuicStreamFrame.
   std::vector<std::string*> stream_data_;

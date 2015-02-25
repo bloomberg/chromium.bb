@@ -37,7 +37,8 @@ class TcpLossAlgorithmTest : public ::testing::Test {
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0, new RetransmittableFrames());
+                            packets_.back(), 0,
+                            new RetransmittableFrames(ENCRYPTION_NONE));
     unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),
                                    1000, true);
   }

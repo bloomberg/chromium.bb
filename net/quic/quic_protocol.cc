@@ -556,9 +556,8 @@ StringPiece QuicPacket::Plaintext() const {
                      length() - start_of_encrypted_data);
 }
 
-RetransmittableFrames::RetransmittableFrames()
-    : encryption_level_(NUM_ENCRYPTION_LEVELS),
-      has_crypto_handshake_(NOT_HANDSHAKE) {
+RetransmittableFrames::RetransmittableFrames(EncryptionLevel level)
+    : encryption_level_(level), has_crypto_handshake_(NOT_HANDSHAKE) {
 }
 
 RetransmittableFrames::~RetransmittableFrames() {
@@ -621,10 +620,6 @@ const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
   DCHECK_NE(frame.type, STREAM_FRAME);
   frames_.push_back(frame);
   return frames_.back();
-}
-
-void RetransmittableFrames::set_encryption_level(EncryptionLevel level) {
-  encryption_level_ = level;
 }
 
 SerializedPacket::SerializedPacket(

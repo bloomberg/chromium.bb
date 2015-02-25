@@ -32,7 +32,8 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
       QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0, new RetransmittableFrames());
+                            packets_.back(), 0,
+                            new RetransmittableFrames(ENCRYPTION_NONE));
   }
 
   SerializedPacket CreateNonRetransmittablePacket(

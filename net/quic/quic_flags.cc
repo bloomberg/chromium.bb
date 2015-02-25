@@ -45,16 +45,9 @@ bool FLAGS_quic_enable_pacing = true;
 // store multiple addresses.
 bool FLAGS_quic_use_multiple_address_in_source_tokens = false;
 
-// If true, uses the last sent packet for the RTO timer instead of the earliest.
-bool FLAGS_quic_rto_uses_last_sent = true;
-
 // If true, attach QuicAckNotifiers to packets rather than individual stream
 // frames.
 bool FLAGS_quic_attach_ack_notifiers_to_packets = true;
-
-// If true, QUIC will use the new RTO that waits until an ack arrives to adjust
-// the congestion window.
-bool FLAGS_quic_use_new_rto = true;
 
 // Time period for which a given connection_id should live in the time-wait
 // state.

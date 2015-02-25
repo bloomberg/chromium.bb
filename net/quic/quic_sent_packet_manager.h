@@ -267,12 +267,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
 
-  // Called when a packet is retransmitted with a new sequence number.
-  // Replaces the old entry in the unacked packet map with the new
-  // sequence number.
-  void OnRetransmittedPacket(QuicPacketSequenceNumber old_sequence_number,
-                             QuicPacketSequenceNumber new_sequence_number);
-
   // Updates the least_packet_awaited_by_peer.
   void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& ack_frame);
 
@@ -288,9 +282,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Retransmits two packets for an RTO and removes any non-retransmittable
   // packets from flight.
   void RetransmitRtoPackets();
-
-  // Retransmits all the packets and abandons by invoking a full RTO.
-  void RetransmitAllPackets();
 
   // Returns the timer for retransmitting crypto handshake packets.
   const QuicTime::Delta GetCryptoRetransmissionDelay() const;

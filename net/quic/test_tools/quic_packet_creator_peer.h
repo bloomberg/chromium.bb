@@ -23,6 +23,13 @@ class QuicPacketCreatorPeer {
       QuicSequenceNumberLength sequence_number_length);
   static QuicSequenceNumberLength GetSequenceNumberLength(
       QuicPacketCreator* creator);
+  static void SetNextSequenceNumberLength(
+      QuicPacketCreator* creator,
+      QuicSequenceNumberLength next_sequence_number_length);
+  static QuicSequenceNumberLength NextSequenceNumberLength(
+      QuicPacketCreator* creator);
+  static void SetSequenceNumber(QuicPacketCreator* creator,
+                                QuicPacketSequenceNumber s);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);
