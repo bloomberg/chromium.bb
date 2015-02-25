@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
@@ -577,5 +578,51 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
 }
 
 #endif
+
+#if defined(OS_LINUX)
+
+const base::ProcessId kMagicChildId = 54321;
+
+class ListenerThatVerifiesPeerPid : public IPC::Listener {
+ public:
+  void OnChannelConnected(int32 peer_pid) override {
+    EXPECT_EQ(peer_pid, kMagicChildId);
+    base::MessageLoop::current()->Quit();
+  }
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    NOTREACHED();
+    return true;
+  }
+};
+
+TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
+  Init("IPCChannelMojoTestVerifyGlobalPidClient");
+
+  ListenerThatVerifiesPeerPid listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
+
+  base::MessageLoop::current()->Run();
+  this->channel()->Close();
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestVerifyGlobalPidClient) {
+  IPC::Channel::SetGlobalPid(kMagicChildId);
+  ListenerThatQuits listener;
+  ChannelClient client(&listener,
+                       "IPCChannelMojoTestVerifyGlobalPidClient");
+  client.Connect();
+
+  base::MessageLoop::current()->Run();
+
+  return 0;
+}
+
+#endif // OS_LINUX
 
 }  // namespace

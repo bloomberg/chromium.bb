@@ -46,6 +46,9 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   // Start the handshake over the underlying platform channel.
   bool Connect();
 
+  // GetSelfPID returns the PID associated with |channel_|.
+  base::ProcessId GetSelfPID() const;
+
   // Each client should call this once the process handle becomes known.
   virtual void OnClientLaunched(base::ProcessHandle process) = 0;
 

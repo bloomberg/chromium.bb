@@ -327,7 +327,7 @@ base::ProcessId ChannelMojo::GetPeerPID() const {
 }
 
 base::ProcessId ChannelMojo::GetSelfPID() const {
-  return base::GetCurrentProcId();
+  return bootstrap_->GetSelfPID();
 }
 
 void ChannelMojo::OnClientLaunched(base::ProcessHandle handle) {

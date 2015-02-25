@@ -200,6 +200,10 @@ bool MojoBootstrap::Connect() {
   return channel_->Connect();
 }
 
+base::ProcessId MojoBootstrap::GetSelfPID() const {
+  return channel_->GetSelfPID();
+}
+
 void MojoBootstrap::OnBadMessageReceived(const Message& message) {
   Fail();
 }
