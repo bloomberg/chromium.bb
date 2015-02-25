@@ -1752,6 +1752,44 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetSynciv(uint32_t immediate_data_size,
+                                               const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetSynciv& c =
+      *static_cast<const gles2::cmds::GetSynciv*>(cmd_data);
+  (void)c;
+  GLuint sync = static_cast<GLuint>(c.sync);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  typedef cmds::GetSynciv::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.values_shm_id, c.values_shm_offset, Result::ComputeSize(num_values));
+  GLint* values = result ? result->GetData() : NULL;
+  if (values == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetSynciv");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  GLsync service_sync = 0;
+  if (!group_->GetSyncServiceId(sync, &service_sync)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetSynciv", "invalid sync id");
+    return error::kNoError;
+  }
+  glGetSynciv(service_sync, pname, num_values, nullptr, values);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetSynciv", "");
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
     uint32_t immediate_data_size,
     const void* cmd_data) {

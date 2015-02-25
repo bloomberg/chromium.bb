@@ -462,6 +462,13 @@ static const GLbitfield valid_sync_flush_flags_table[] = {
     0,
 };
 
+static const GLenum valid_sync_parameter_table[] = {
+    GL_SYNC_STATUS,
+    GL_OBJECT_TYPE,
+    GL_SYNC_CONDITION,
+    GL_SYNC_FLAGS,
+};
+
 static const GLenum valid_texture_3_d_target_table[] = {
     GL_TEXTURE_3D,
     GL_TEXTURE_2D_ARRAY,
@@ -695,6 +702,8 @@ Validators::Validators()
                           arraysize(valid_subscription_target_table)),
       sync_flush_flags(valid_sync_flush_flags_table,
                        arraysize(valid_sync_flush_flags_table)),
+      sync_parameter(valid_sync_parameter_table,
+                     arraysize(valid_sync_parameter_table)),
       texture_3_d_target(valid_texture_3_d_target_table,
                          arraysize(valid_texture_3_d_target_table)),
       texture_bind_target(valid_texture_bind_target_table,

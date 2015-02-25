@@ -329,6 +329,16 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_CURRENT_VERTEX_ATTRIB:
       return 4;
 
+    // -- glGetSynciv
+    case GL_OBJECT_TYPE:
+      return 1;
+    case GL_SYNC_STATUS:
+      return 1;
+    case GL_SYNC_CONDITION:
+      return 1;
+    case GL_SYNC_FLAGS:
+      return 1;
+
     // -- glHint with GL_OES_standard_derivatives
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:
       return 1;

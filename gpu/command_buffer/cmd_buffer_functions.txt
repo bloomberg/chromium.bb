@@ -101,6 +101,7 @@ GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLidShader shader, GLsiz
 GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenumShaderType shadertype, GLenumShaderPrecision precisiontype, GLint* range, GLint* precision);
 GL_APICALL void         GL_APIENTRY glGetShaderSource (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* source);
 GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenumStringType name);
+GL_APICALL void         GL_APIENTRY glGetSynciv (GLsync sync, GLenumSyncParameter pname, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* values);
 GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenumGetTexParamTarget target, GLenumTextureParameter pname, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenumGetTexParamTarget target, GLenumTextureParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetTransformFeedbackVarying (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLsizei* size, GLenum* type, char* name);

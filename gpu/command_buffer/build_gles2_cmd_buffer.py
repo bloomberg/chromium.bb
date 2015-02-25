@@ -1431,13 +1431,24 @@ _NAMED_TYPE_INFO = {
   },
   'SyncFlushFlags': {
     'type': 'GLbitfield',
-    'is_complete': True,
     'valid': [
       'GL_SYNC_FLUSH_COMMANDS_BIT',
       '0',
     ],
     'invalid': [
       '0xFFFFFFFF',
+    ],
+  },
+  'SyncParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_SYNC_STATUS',  # This needs to be the 1st; all others are cached.
+      'GL_OBJECT_TYPE',
+      'GL_SYNC_CONDITION',
+      'GL_SYNC_FLAGS',
+    ],
+    'invalid': [
+      'GL_SYNC_FENCE',
     ],
   },
 }
@@ -2256,11 +2267,18 @@ _FUNCTION_INFO = {
     'get_len_enum': 'GL_SHADER_SOURCE_LENGTH',
     'unit_test': False,
     'client_test': False,
-    },
+  },
   'GetString': {
     'type': 'Custom',
     'client_test': False,
     'cmd_args': 'GLenumStringType name, uint32_t bucket_id',
+  },
+  'GetSynciv': {
+    'type': 'GETn',
+    'cmd_args': 'GLuint sync, GLenumSyncParameter pname, void* values',
+    'result': ['SizedResult<GLint>'],
+    'id_mapping': ['Sync'],
+    'unsafe': True,
   },
   'GetTexParameterfv': {
     'type': 'GETn',
@@ -3540,35 +3558,53 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WriteHandlerImplementation(self, func, file):
     """Writes the handler implementation for this command."""
     if func.IsUnsafe() and func.GetInfo('id_mapping'):
-      code_no_gen = """  if (!group_->Get%(type)sServiceId(%(var)s, &%(var)s)) {
+      code_no_gen = """  if (!group_->Get%(type)sServiceId(
+        %(var)s, &%(service_var)s)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "%(func)s", "invalid %(var)s id");
     return error::kNoError;
   }
 """
-      code_gen = """  if (!group_->Get%(type)sServiceId(%(var)s, &%(var)s)) {
+      code_gen = """  if (!group_->Get%(type)sServiceId(
+        %(var)s, &%(service_var)s)) {
     if (!group_->bind_generates_resource()) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION, "%(func)s", "invalid %(var)s id");
       return error::kNoError;
     }
     GLuint client_id = %(var)s;
-    gl%(gen_func)s(1, &%(var)s);
-    Create%(type)s(client_id, %(var)s);
+    gl%(gen_func)s(1, &%(service_var)s);
+    Create%(type)s(client_id, %(service_var)s);
   }
 """
       gen_func = func.GetInfo('gen_func')
       for id_type in func.GetInfo('id_mapping'):
+        service_var = id_type.lower()
+        if id_type == 'Sync':
+          service_var = "service_%s" % service_var
+          file.Write("  GLsync %s = 0;\n" % service_var)
         if gen_func and id_type in gen_func:
           file.Write(code_gen % { 'type': id_type,
                                   'var': id_type.lower(),
+                                  'service_var': service_var,
                                   'func': func.GetGLFunctionName(),
                                   'gen_func': gen_func })
         else:
           file.Write(code_no_gen % { 'type': id_type,
                                      'var': id_type.lower(),
+                                     'service_var': service_var,
                                      'func': func.GetGLFunctionName() })
+    args = []
+    for arg in func.GetOriginalArgs():
+      if arg.type == "GLsync":
+        args.append("service_%s" % arg.name)
+      elif arg.name.endswith("size") and arg.type == "GLsizei":
+        args.append("num_%s" % func.GetLastOriginalArg().name)
+      elif arg.name == "length":
+        args.append("nullptr")
+      else:
+        args.append(arg.name)
     file.Write("  %s(%s);\n" %
-               (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+               (func.GetGLFunctionName(), ", ".join(args)))
 
   def WriteCmdSizeTest(self, func, file):
     """Writes the size test for a command."""
@@ -5650,8 +5686,8 @@ class GETnHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     self.WriteServiceHandlerFunctionHeader(func, file)
     last_arg = func.GetLastOriginalArg()
-
-    all_but_last_args = func.GetOriginalArgs()[:-1]
+    # All except shm_id and shm_offset.
+    all_but_last_args = func.GetCmdArgs()[:-2]
     for arg in all_but_last_args:
       arg.WriteGetCode(file)
 
@@ -5659,11 +5695,13 @@ class GETnHandler(TypeHandler):
   GLsizei num_values = 0;
   GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  %(last_arg_type)s params = result ? result->GetData() : NULL;
+      c.%(last_arg_name)s_shm_id, c.%(last_arg_name)s_shm_offset,
+      Result::ComputeSize(num_values));
+  %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : NULL;
 """
     file.Write(code % {
         'last_arg_type': last_arg.type,
+        'last_arg_name': last_arg.name,
         'func_name': func.name,
       })
     func.WriteHandlerValidation(file)
@@ -5708,8 +5746,19 @@ class GETnHandler(TypeHandler):
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       all_but_last_args = func.GetOriginalArgs()[:-1]
-      arg_string = (
-          ", ".join(["%s" % arg.name for arg in all_but_last_args]))
+      args = []
+      has_length_arg = False
+      for arg in all_but_last_args:
+        if arg.type == 'GLsync':
+          args.append('ToGLuint(%s)' % arg.name)
+        elif arg.name.endswith('size') and arg.type == 'GLsizei':
+          continue
+        elif arg.name == 'length':
+          has_length_arg = True
+          continue
+        else:
+          args.append(arg.name)
+      arg_string = ", ".join(args)
       all_arg_string = (
           ", ".join([
             "%s" % arg.name
@@ -5727,12 +5776,18 @@ class GETnHandler(TypeHandler):
   helper_->%(func_name)s(%(arg_string)s,
       GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  result->CopyResult(params);
+  result->CopyResult(%(last_arg_name)s);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (int32_t i = 0; i < result->GetNumResults(); ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
-  });
+  });"""
+      if has_length_arg:
+        code += """
+  if (length) {
+    *length = result->GetNumResults();
+  }"""
+      code += """
   CheckGLError();
 }
 """
@@ -5740,6 +5795,7 @@ class GETnHandler(TypeHandler):
           'func_name': func.name,
           'arg_string': arg_string,
           'all_arg_string': all_arg_string,
+          'last_arg_name': func.GetLastOriginalArg().name,
         })
 
   def WriteGLES2ImplementationUnitTest(self, func, file):
@@ -5766,7 +5822,9 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     if not first_cmd_arg:
       return
 
-    first_gl_arg = func.GetCmdArgs()[0].GetValidNonCachedClientSideArg(func)
+    first_gl_arg = func.GetOriginalArgs()[0].GetValidNonCachedClientSideArg(
+        func)
+
     cmd_arg_strings = [first_cmd_arg]
     for arg in func.GetCmdArgs()[1:-2]:
       cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func))
@@ -5794,7 +5852,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(local_gl_args)s));
   result->size = 0;
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);"""
+  cmd.Init(%(cmd_args)s);"""
     if func.IsUnsafe():
       valid_test += """
   decoder_->set_unsafe_es3_apis_enabled(true);"""
@@ -5812,19 +5870,38 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 }
 """
     gl_arg_strings = []
+    cmd_arg_strings = []
     valid_pname = ''
     for arg in func.GetOriginalArgs()[:-1]:
-      arg_value = arg.GetValidGLArg(func)
-      gl_arg_strings.append(arg_value)
+      if arg.name == 'length':
+        gl_arg_value = 'nullptr'
+      elif arg.name.endswith('size'):
+        gl_arg_value = ("decoder_->GetGLES2Util()->GLGetNumValuesReturned(%s)" %
+            valid_pname)
+      elif arg.type == 'GLsync':
+        gl_arg_value = 'reinterpret_cast<GLsync>(kServiceSyncId)'
+      else:
+        gl_arg_value = arg.GetValidGLArg(func)
+      gl_arg_strings.append(gl_arg_value)
       if arg.name == 'pname':
-        valid_pname = arg_value
+        valid_pname = gl_arg_value
+      if arg.name.endswith('size') or arg.name == 'length':
+        continue
+      if arg.type == 'GLsync':
+        arg_value = 'client_sync_id_'
+      else:
+        arg_value = arg.GetValidArg(func)
+      cmd_arg_strings.append(arg_value)
     if func.GetInfo('gl_test_func') == 'glGetIntegerv':
       gl_arg_strings.append("_")
     else:
       gl_arg_strings.append("result->GetData()")
+    cmd_arg_strings.append("shared_memory_id_")
+    cmd_arg_strings.append("shared_memory_offset_")
 
     self.WriteValidUnitTest(func, file, valid_test, {
         'local_gl_args': ", ".join(gl_arg_strings),
+        'cmd_args': ", ".join(cmd_arg_strings),
         'valid_pname': valid_pname,
       }, *extras)
 
@@ -7506,6 +7583,8 @@ class Argument(object):
     if valid_arg != None:
       return valid_arg
 
+    if self.IsPointer():
+      return 'nullptr'
     index = func.GetOriginalArgs().index(self)
     if self.type == 'GLsync':
       return ("reinterpret_cast<GLsync>(%d)" % (index + 1))
@@ -7535,7 +7614,10 @@ class Argument(object):
     """Returns a valid value for this argument in a GL call.
     Using the value will produce a command buffer service invocation.
     Returns None if there is no such value."""
-    return '123'
+    value = '123'
+    if self.type == 'GLsync':
+      return ("reinterpret_cast<GLsync>(%s)" % value)
+    return value
 
   def GetValidNonCachedClientSideCmdArg(self, func):
     """Returns a valid value for this argument in a command buffer command.
@@ -7893,6 +7975,8 @@ class ImmediatePointerArgument(Argument):
 
   def WriteValidationCode(self, file, func):
     """Overridden from Argument."""
+    if self.optional:
+      return
     file.Write("  if (%s == NULL) {\n" % self.name)
     file.Write("    return error::kOutOfBounds;\n")
     file.Write("  }\n")
@@ -7978,6 +8062,8 @@ class PointerArgument(Argument):
 
   def WriteValidationCode(self, file, func):
     """Overridden from Argument."""
+    if self.optional:
+      return
     file.Write("  if (%s == NULL) {\n" % self.name)
     file.Write("    return error::kOutOfBounds;\n")
     file.Write("  }\n")

@@ -253,6 +253,11 @@ virtual void GetShaderSource(GLuint shader,
                              GLsizei* length,
                              char* source) = 0;
 virtual const GLubyte* GetString(GLenum name) = 0;
+virtual void GetSynciv(GLsync sync,
+                       GLenum pname,
+                       GLsizei bufsize,
+                       GLsizei* length,
+                       GLint* values) = 0;
 virtual void GetTexParameterfv(GLenum target,
                                GLenum pname,
                                GLfloat* params) = 0;

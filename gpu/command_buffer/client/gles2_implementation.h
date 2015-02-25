@@ -240,6 +240,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetActiveUniformsivHelper(
       GLuint program, GLsizei count, const GLuint* indices,
       GLenum pname, GLint* params);
+  bool GetSyncivHelper(
+      GLsync sync, GLenum pname, GLsizei bufsize, GLsizei* length,
+      GLint* values);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

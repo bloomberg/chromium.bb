@@ -4660,6 +4660,60 @@ static_assert(offsetof(GetString, name) == 4,
 static_assert(offsetof(GetString, bucket_id) == 8,
               "offset of GetString bucket_id should be 8");
 
+struct GetSynciv {
+  typedef GetSynciv ValueType;
+  static const CommandId kCmdId = kGetSynciv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sync,
+            GLenum _pname,
+            uint32_t _values_shm_id,
+            uint32_t _values_shm_offset) {
+    SetHeader();
+    sync = _sync;
+    pname = _pname;
+    values_shm_id = _values_shm_id;
+    values_shm_offset = _values_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sync,
+            GLenum _pname,
+            uint32_t _values_shm_id,
+            uint32_t _values_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sync, _pname, _values_shm_id, _values_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sync;
+  uint32_t pname;
+  uint32_t values_shm_id;
+  uint32_t values_shm_offset;
+};
+
+static_assert(sizeof(GetSynciv) == 20, "size of GetSynciv should be 20");
+static_assert(offsetof(GetSynciv, header) == 0,
+              "offset of GetSynciv header should be 0");
+static_assert(offsetof(GetSynciv, sync) == 4,
+              "offset of GetSynciv sync should be 4");
+static_assert(offsetof(GetSynciv, pname) == 8,
+              "offset of GetSynciv pname should be 8");
+static_assert(offsetof(GetSynciv, values_shm_id) == 12,
+              "offset of GetSynciv values_shm_id should be 12");
+static_assert(offsetof(GetSynciv, values_shm_offset) == 16,
+              "offset of GetSynciv values_shm_offset should be 16");
+
 struct GetTexParameterfv {
   typedef GetTexParameterfv ValueType;
   static const CommandId kCmdId = kGetTexParameterfv;

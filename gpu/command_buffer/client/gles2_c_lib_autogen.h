@@ -450,6 +450,13 @@ void GLES2GetShaderSource(GLuint shader,
 const GLubyte* GLES2GetString(GLenum name) {
   return gles2::GetGLContext()->GetString(name);
 }
+void GLES2GetSynciv(GLsync sync,
+                    GLenum pname,
+                    GLsizei bufsize,
+                    GLsizei* length,
+                    GLint* values) {
+  gles2::GetGLContext()->GetSynciv(sync, pname, bufsize, length, values);
+}
 void GLES2GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   gles2::GetGLContext()->GetTexParameterfv(target, pname, params);
 }
@@ -1706,6 +1713,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetString",
      reinterpret_cast<GLES2FunctionPointer>(glGetString),
+    },
+    {
+     "glGetSynciv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetSynciv),
     },
     {
      "glGetTexParameterfv",

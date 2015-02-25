@@ -5109,6 +5109,17 @@ std::string GLES2Util::GetStringSyncCondition(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringSyncParameter(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_SYNC_STATUS, "GL_SYNC_STATUS"},
+      {GL_OBJECT_TYPE, "GL_OBJECT_TYPE"},
+      {GL_SYNC_CONDITION, "GL_SYNC_CONDITION"},
+      {GL_SYNC_FLAGS, "GL_SYNC_FLAGS"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringTexture3DTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_3D, "GL_TEXTURE_3D"},

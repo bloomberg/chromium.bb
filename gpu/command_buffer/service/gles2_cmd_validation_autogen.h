@@ -65,6 +65,7 @@ ValueValidator<GLenum> stencil_op;
 ValueValidator<GLenum> string_type;
 ValueValidator<GLenum> subscription_target;
 ValueValidator<GLbitfield> sync_flush_flags;
+ValueValidator<GLenum> sync_parameter;
 ValueValidator<GLenum> texture_3_d_target;
 ValueValidator<GLenum> texture_bind_target;
 ValueValidator<GLenum> texture_format;

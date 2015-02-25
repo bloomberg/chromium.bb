@@ -954,6 +954,24 @@ TEST_F(GLES2ImplementationTest, GetShaderiv) {
 // TODO(zmo): Implement unit test for GetShaderInfoLog
 // TODO(zmo): Implement unit test for GetShaderPrecisionFormat
 
+TEST_F(GLES2ImplementationTest, GetSynciv) {
+  struct Cmds {
+    cmds::GetSynciv cmd;
+  };
+  typedef cmds::GetSynciv::Result Result;
+  Result::Type result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_SYNC_STATUS, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .RetiresOnSaturation();
+  gl_->GetSynciv(reinterpret_cast<GLsync>(123), GL_SYNC_STATUS, 3, nullptr,
+                 &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<Result::Type>(1), result);
+}
+
 TEST_F(GLES2ImplementationTest, GetTexParameterfv) {
   struct Cmds {
     cmds::GetTexParameterfv cmd;

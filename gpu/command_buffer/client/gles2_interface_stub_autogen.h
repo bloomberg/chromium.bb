@@ -248,6 +248,11 @@ void GetShaderSource(GLuint shader,
                      GLsizei* length,
                      char* source) override;
 const GLubyte* GetString(GLenum name) override;
+void GetSynciv(GLsync sync,
+               GLenum pname,
+               GLsizei bufsize,
+               GLsizei* length,
+               GLint* values) override;
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) override;
 void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) override;
 void GetTransformFeedbackVarying(GLuint program,

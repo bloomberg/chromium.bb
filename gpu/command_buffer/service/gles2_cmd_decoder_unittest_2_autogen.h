@@ -14,6 +14,32 @@
 
 // TODO(gman): GetString
 
+TEST_P(GLES2DecoderTest2, GetSyncivValidArgs) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  SpecializedSetup<cmds::GetSynciv, 0>(true);
+  typedef cmds::GetSynciv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(
+      *gl_, GetSynciv(reinterpret_cast<GLsync>(kServiceSyncId), GL_SYNC_STATUS,
+                      decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                          GL_SYNC_STATUS),
+                      nullptr, result->GetData()));
+  result->size = 0;
+  cmds::GetSynciv cmd;
+  cmd.Init(client_sync_id_, GL_SYNC_STATUS, shared_memory_id_,
+           shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_SYNC_STATUS),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest2, GetTexParameterfvValidArgs) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1572,15 +1598,6 @@ TEST_P(GLES2DecoderTest2, VertexAttrib1fvImmediateValidArgs) {
   EXPECT_CALL(*gl_, VertexAttrib1fv(1, reinterpret_cast<GLfloat*>(
                                            ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttrib2fValidArgs) {
-  EXPECT_CALL(*gl_, VertexAttrib2f(1, 2, 3));
-  SpecializedSetup<cmds::VertexAttrib2f, 0>(true);
-  cmds::VertexAttrib2f cmd;
-  cmd.Init(1, 2, 3);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

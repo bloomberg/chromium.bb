@@ -949,6 +949,16 @@ void GetString(GLenum name, uint32_t bucket_id) {
   }
 }
 
+void GetSynciv(GLuint sync,
+               GLenum pname,
+               uint32_t values_shm_id,
+               uint32_t values_shm_offset) {
+  gles2::cmds::GetSynciv* c = GetCmdSpace<gles2::cmds::GetSynciv>();
+  if (c) {
+    c->Init(sync, pname, values_shm_id, values_shm_offset);
+  }
+}
+
 void GetTexParameterfv(GLenum target,
                        GLenum pname,
                        uint32_t params_shm_id,
