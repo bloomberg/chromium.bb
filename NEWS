@@ -8,7 +8,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Fix for emphasis bug, thanks to Michael Gray
 
 ** Braille table improvements
-- Correction to comments in Norwegian generic tables, thanks to  Lars Bjørndal 
+- Correction to comments in Norwegian generic tables, thanks to Lars Bjørndal 
+- Corrections to dot patterns in no-no-g0.utb thanks to Lars Bjørndal 
 
 * Noteworthy changes in release 2.6.1 (2014-12-01)
 This release focuses on table and documentation improvements. The
