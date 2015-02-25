@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_writer_impl.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/blob/file_stream_reader.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 

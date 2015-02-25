@@ -31,7 +31,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_status.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/data_element.h"

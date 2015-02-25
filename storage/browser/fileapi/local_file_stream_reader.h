@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {

@@ -18,7 +18,7 @@
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
 

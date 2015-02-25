@@ -25,7 +25,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/common/fileapi/file_system_util.h"

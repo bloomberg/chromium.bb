@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "net/base/net_errors.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 

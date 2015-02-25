@@ -14,7 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 namespace net {

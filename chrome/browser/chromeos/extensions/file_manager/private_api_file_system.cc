@@ -37,7 +37,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
-#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
