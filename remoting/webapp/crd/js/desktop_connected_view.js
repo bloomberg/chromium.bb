@@ -307,8 +307,10 @@ remoting.DesktopConnectedView.prototype.updateClientSessionUi_ = function(
     document.body.classList.add('connected');
     this.container_.addEventListener(
         'mousemove', this.updateMouseCursorPosition_, true);
+
     // Activate full-screen related UX.
     remoting.fullscreen.addListener(this.callOnFullScreenChanged_);
+    this.onFullScreenChanged_(remoting.fullscreen.isActive());
     this.setFocusHandlers_();
   }
 };
