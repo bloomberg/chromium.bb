@@ -422,7 +422,7 @@ void LayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext* cont
         if (!child->layer()->isPaginated())
             childPainter.paintLayer(context, paintingInfo, paintFlags);
         else
-            childPainter.paintPaginatedChildLayer(child->layer(), context, paintingInfo, paintFlags);
+            childPainter.paintPaginatedChildLayer(context, paintingInfo, paintFlags);
     }
 }
 
@@ -489,13 +489,13 @@ static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* rendere
     return true;
 }
 
-void LayerPainter::paintPaginatedChildLayer(Layer* childLayer, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+void LayerPainter::paintPaginatedChildLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     // We need to do multiple passes, breaking up our child layer into strips.
     Vector<Layer*> columnLayers;
     LayerStackingNode* ancestorNode = m_renderLayer.stackingNode()->isNormalFlowOnly() ? m_renderLayer.parent()->stackingNode() : m_renderLayer.stackingNode()->ancestorStackingContextNode();
-    for (Layer* curr = childLayer->parent(); curr; curr = curr->parent()) {
-        if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(childLayer->renderer(), curr->layoutBox()))
+    for (Layer* curr = m_renderLayer.parent(); curr; curr = curr->parent()) {
+        if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(m_renderLayer.renderer(), curr->layoutBox()))
             columnLayers.append(curr);
         if (curr->stackingNode() == ancestorNode)
             break;
@@ -508,10 +508,10 @@ void LayerPainter::paintPaginatedChildLayer(Layer* childLayer, GraphicsContext* 
     if (!columnLayers.size())
         return;
 
-    paintChildLayerIntoColumns(childLayer, context, paintingInfo, paintFlags, columnLayers, columnLayers.size() - 1);
+    paintChildLayerIntoColumns(context, paintingInfo, paintFlags, columnLayers, columnLayers.size() - 1);
 }
 
-void LayerPainter::paintChildLayerIntoColumns(Layer* childLayer, GraphicsContext* context, const LayerPaintingInfo& paintingInfo,
+void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const LayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags, const Vector<Layer*>& columnLayers, size_t colIndex)
 {
     RenderBlock* columnBlock = toRenderBlock(columnLayers[colIndex]->renderer());
@@ -561,22 +561,22 @@ void LayerPainter::paintChildLayerIntoColumns(Layer* childLayer, GraphicsContext
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.
                 TransformationMatrix oldTransform;
-                bool oldHasTransform = childLayer->transform();
+                bool oldHasTransform = m_renderLayer.transform();
                 if (oldHasTransform)
-                    oldTransform = *childLayer->transform();
+                    oldTransform = *m_renderLayer.transform();
                 TransformationMatrix newTransform(oldTransform);
                 newTransform.translateRight(roundToInt(offset.width()), roundToInt(offset.height()));
 
-                childLayer->setTransform(adoptPtr(new TransformationMatrix(newTransform)));
+                m_renderLayer.setTransform(adoptPtr(new TransformationMatrix(newTransform)));
 
                 LayerPaintingInfo localPaintingInfo(paintingInfo);
                 localPaintingInfo.paintDirtyRect = localDirtyRect;
-                LayerPainter(*childLayer).paintLayer(context, localPaintingInfo, paintFlags);
+                paintLayer(context, localPaintingInfo, paintFlags);
 
                 if (oldHasTransform)
-                    childLayer->setTransform(adoptPtr(new TransformationMatrix(oldTransform)));
+                    m_renderLayer.setTransform(adoptPtr(new TransformationMatrix(oldTransform)));
                 else
-                    childLayer->clearTransform();
+                    m_renderLayer.clearTransform();
             } else {
                 // Adjust the transform such that the renderer's upper left corner will paint at (0,0) in user space.
                 // This involves subtracting out the position of the layer in our current coordinate space.
@@ -591,7 +591,7 @@ void LayerPainter::paintChildLayerIntoColumns(Layer* childLayer, GraphicsContext
                 LayerPaintingInfo columnPaintingInfo(paintingInfo);
                 columnPaintingInfo.rootLayer = columnLayers[colIndex - 1];
                 columnPaintingInfo.paintDirtyRect = transform.inverse().mapRect(localDirtyRect);
-                paintChildLayerIntoColumns(childLayer, context, columnPaintingInfo, paintFlags, columnLayers, colIndex - 1);
+                paintChildLayerIntoColumns(context, columnPaintingInfo, paintFlags, columnLayers, colIndex - 1);
             }
         }
 

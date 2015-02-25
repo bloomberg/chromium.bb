@@ -38,8 +38,8 @@ private:
     void paintFragmentByApplyingTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& fragmentTranslation);
 
     void paintChildren(unsigned childrenToVisit, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintPaginatedChildLayer(Layer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintChildLayerIntoColumns(Layer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const Vector<Layer*>& columnLayers, size_t columnIndex);
+    void paintPaginatedChildLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
+    void paintChildLayerIntoColumns(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const Vector<Layer*>& columnLayers, size_t columnIndex);
     bool atLeastOneFragmentIntersectsDamageRect(LayerFragments&, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& offsetFromRoot);
     void paintFragmentWithPhase(PaintPhase, const LayerFragment&, GraphicsContext*, const ClipRect&, const LayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags, ClipState);
     void paintBackgroundForFragments(const LayerFragments&, GraphicsContext*,
