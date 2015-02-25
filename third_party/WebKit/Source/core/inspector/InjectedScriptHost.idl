@@ -63,9 +63,7 @@
 
     // Accessors to InjectedScriptNative
     [NotEnumerable, Unforgeable, Custom] long bind(any value, DOMString groupName);
-    [NotEnumerable, Unforgeable, Custom] void unbind(long id);
     [NotEnumerable, Unforgeable, Custom] any objectForId(long id);
 
     [NotEnumerable, Unforgeable, Custom] DOMString idToObjectGroupName(long id);
-    [NotEnumerable, Unforgeable, Custom] void releaseObjectGroup(DOMString groupName);
 };

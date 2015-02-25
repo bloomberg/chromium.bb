@@ -35,6 +35,7 @@
 
 #include "bindings/core/v8/ScriptFunctionCall.h"
 #include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
 
@@ -257,10 +258,16 @@ Node* InjectedScript::nodeForObjectId(const String& objectId)
 
 void InjectedScript::releaseObject(const String& objectId)
 {
-    ScriptFunctionCall function(injectedScriptObject(), "releaseObject");
-    function.appendArgument(objectId);
-    RefPtr<JSONValue> result;
-    makeCall(function, &result);
+    RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
+    if (!parsedObjectId)
+        return;
+    RefPtr<JSONObject> object;
+    if (!parsedObjectId->asObject(&object))
+        return;
+    int boundId = 0;
+    if (!object->getNumber("id", &boundId))
+        return;
+    m_native->unbind(boundId);
 }
 
 PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& callFrames, int asyncOrdinal)
@@ -341,11 +348,13 @@ void InjectedScript::inspectNode(Node* node)
 void InjectedScript::releaseObjectGroup(const String& objectGroup)
 {
     ASSERT(!isEmpty());
-    ScriptFunctionCall releaseFunction(injectedScriptObject(), "releaseObjectGroup");
-    releaseFunction.appendArgument(objectGroup);
-    bool hadException = false;
-    callFunctionWithEvalEnabled(releaseFunction, hadException);
-    ASSERT(!hadException);
+    m_native->releaseObjectGroup(objectGroup);
+    if (objectGroup == "console") {
+        ScriptFunctionCall releaseFunction(injectedScriptObject(), "clearLastEvaluationResult");
+        bool hadException = false;
+        callFunctionWithEvalEnabled(releaseFunction, hadException);
+        ASSERT(!hadException);
+    }
 }
 
 ScriptValue InjectedScript::nodeAsScriptValue(Node* node)

@@ -122,8 +122,13 @@ void InspectorCanvasAgent::disable(ErrorString*)
 void InspectorCanvasAgent::dropTraceLog(ErrorString* errorString, const TraceLogId& traceLogId)
 {
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, traceLogId);
-    if (!module.isEmpty())
-        module.dropTraceLog(errorString, traceLogId);
+    if (module.isEmpty())
+        return;
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(traceLogId);
+    if (injectedScript.isEmpty())
+        return;
+    injectedScript.releaseObjectGroup(traceLogId);
+    module.dropTraceLog(errorString, traceLogId);
 }
 
 void InspectorCanvasAgent::hasUninstrumentedCanvases(ErrorString* errorString, bool* result)
@@ -176,8 +181,13 @@ void InspectorCanvasAgent::getTraceLog(ErrorString* errorString, const TraceLogI
 void InspectorCanvasAgent::replayTraceLog(ErrorString* errorString, const TraceLogId& traceLogId, int stepNo, RefPtr<ResourceState>& result, double* replayTime)
 {
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, traceLogId);
-    if (!module.isEmpty())
-        module.replayTraceLog(errorString, traceLogId, stepNo, &result, replayTime);
+    if (module.isEmpty())
+        return;
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(traceLogId);
+    if (injectedScript.isEmpty())
+        return;
+    injectedScript.releaseObjectGroup(traceLogId);
+    module.replayTraceLog(errorString, traceLogId, stepNo, &result, replayTime);
 }
 
 void InspectorCanvasAgent::getResourceState(ErrorString* errorString, const TraceLogId& traceLogId, const ResourceId& resourceId, RefPtr<ResourceState>& result)

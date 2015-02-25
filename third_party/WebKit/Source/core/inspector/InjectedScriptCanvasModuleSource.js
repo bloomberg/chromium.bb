@@ -3571,7 +3571,8 @@ CallFormatter.prototype = {
             };
         }
 
-        var remoteObject = injectedScript.wrapObject(value, objectGroup || "", true, false);
+        var doNotBind = !objectGroup;
+        var remoteObject = injectedScript.wrapObjectForModule(value, objectGroup || "", doNotBind);
         var description = remoteObject.description || ("" + value);
 
         var result = {
@@ -3580,12 +3581,8 @@ CallFormatter.prototype = {
         };
         if (remoteObject.subtype)
             result.subtype = /** @type {!CanvasAgent.CallArgumentSubtype} */ (remoteObject.subtype);
-        if (remoteObject.objectId) {
-            if (objectGroup)
-                result.remoteObject = remoteObject;
-            else
-                injectedScript.releaseObject(remoteObject.objectId);
-        }
+        if (remoteObject.objectId && !doNotBind)
+            result.remoteObject = remoteObject;
         return result;
     },
 
@@ -4396,7 +4393,6 @@ InjectedCanvasModule.prototype = {
             this._manager.dropTraceLog(traceLog);
         delete this._traceLogs[id];
         delete this._traceLogPlayers[id];
-        injectedScript.releaseObjectGroup(id);
     },
 
     /**
@@ -4468,7 +4464,6 @@ InjectedCanvasModule.prototype = {
         if (!traceLog)
             return "Error: Trace log with the given ID not found.";
         this._traceLogPlayers[traceLogId] = this._traceLogPlayers[traceLogId] || new TraceLogPlayer(traceLog);
-        injectedScript.releaseObjectGroup(traceLogId);
 
         var replayResult = this._traceLogPlayers[traceLogId].stepTo(stepNo);
         var resource = replayResult.lastCall.resource();
@@ -4544,7 +4539,7 @@ InjectedCanvasModule.prototype = {
             return { resourceState: resourceState };
         }
 
-        var remoteObject = injectedScript.wrapObject(value, objectGroup, true, false);
+        var remoteObject = injectedScript.wrapObjectForModule(value, objectGroup);
         return { result: remoteObject };
     },
 

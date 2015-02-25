@@ -247,6 +247,17 @@ InjectedScript.prototype = {
 
     /**
      * @param {*} object
+     * @param {string} groupName
+     * @param {boolean=} doNotBind
+     * @return {!RuntimeAgent.RemoteObject}
+     */
+    wrapObjectForModule: function(object, groupName, doNotBind)
+    {
+        return this._wrapObject(object, groupName, false, false, null, false, doNotBind);
+    },
+
+    /**
+     * @param {*} object
      * @return {!RuntimeAgent.RemoteObject}
      */
     _fallbackWrapper: function(object)
@@ -313,13 +324,14 @@ InjectedScript.prototype = {
      * @param {boolean=} generatePreview
      * @param {?Array.<string>=} columnNames
      * @param {boolean=} isTable
+     * @param {boolean=} doNotBind
      * @return {!RuntimeAgent.RemoteObject}
      * @suppress {checkTypes}
      */
-    _wrapObject: function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable)
+    _wrapObject: function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable, doNotBind)
     {
         try {
-            return new InjectedScript.RemoteObject(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable, undefined);
+            return new InjectedScript.RemoteObject(object, objectGroupName, doNotBind, forceValueType, generatePreview, columnNames, isTable, undefined);
         } catch (e) {
             try {
                 var description = injectedScript._describe(e);
@@ -350,14 +362,9 @@ InjectedScript.prototype = {
         return nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + objectId + ")")));
     },
 
-    /**
-     * @param {string} objectGroupName
-     */
-    releaseObjectGroup: function(objectGroupName)
+    clearLastEvaluationResult: function()
     {
-        if (objectGroupName === "console")
-            delete this._lastResult;
-        InjectedScriptHost.releaseObjectGroup(objectGroupName);
+        delete this._lastResult;
     },
 
     /**
@@ -514,15 +521,6 @@ InjectedScript.prototype = {
             entries[i] = entry;
         }
         return entries;
-    },
-
-    /**
-     * @param {string} objectId
-     */
-    releaseObject: function(objectId)
-    {
-        var parsedObjectId = this._parseObjectId(objectId);
-        InjectedScriptHost.unbind(parsedObjectId.id);
     },
 
     /**
@@ -1196,13 +1194,14 @@ var injectedScript = new InjectedScript();
  * @constructor
  * @param {*} object
  * @param {string=} objectGroupName
+ * @param {boolean=} doNotBind
  * @param {boolean=} forceValueType
  * @param {boolean=} generatePreview
  * @param {?Array.<string>=} columnNames
  * @param {boolean=} isTable
  * @param {boolean=} skipEntriesPreview
  */
-InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable, skipEntriesPreview)
+InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, forceValueType, generatePreview, columnNames, isTable, skipEntriesPreview)
 {
     this.type = typeof object;
     if (this.type === "undefined" && injectedScript._isHTMLAllCollection(object))
@@ -1236,7 +1235,8 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
 
     object = /** @type {!Object} */ (object);
 
-    this.objectId = injectedScript._bind(object, objectGroupName);
+    if (!doNotBind)
+        this.objectId = injectedScript._bind(object, objectGroupName);
     var subtype = injectedScript._subtype(object);
     if (subtype)
         this.subtype = subtype;
@@ -1482,10 +1482,8 @@ InjectedScript.RemoteObject.prototype = {
          */
         function generateValuePreview(value)
         {
-            var remoteObject = new InjectedScript.RemoteObject(value, undefined, undefined, true, undefined, undefined, true);
+            var remoteObject = new InjectedScript.RemoteObject(value, undefined, true, undefined, true, undefined, undefined, true);
             var valuePreview = remoteObject.preview || remoteObject._createEmptyPreview();
-            if (remoteObject.objectId)
-                injectedScript.releaseObject(remoteObject.objectId);
             if (!valuePreview.lossless)
                 preview.lossless = false;
             return valuePreview;

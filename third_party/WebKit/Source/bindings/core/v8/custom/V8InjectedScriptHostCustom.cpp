@@ -565,17 +565,6 @@ void V8InjectedScriptHost::bindMethodCustom(const v8::FunctionCallbackInfo<v8::V
     info.GetReturnValue().Set(id);
 }
 
-void V8InjectedScriptHost::unbindMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1 || !info[0]->IsInt32())
-        return;
-    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
-    if (!injectedScriptNative)
-        return;
-    int id = info[0]->ToInt32(info.GetIsolate())->Value();
-    injectedScriptNative->unbind(id);
-}
-
 void V8InjectedScriptHost::objectForIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -600,18 +589,6 @@ void V8InjectedScriptHost::idToObjectGroupNameMethodCustom(const v8::FunctionCal
     String groupName = injectedScriptNative->groupName(id);
     if (!groupName.isEmpty())
         info.GetReturnValue().Set(v8String(info.GetIsolate(), groupName));
-}
-
-void V8InjectedScriptHost::releaseObjectGroupMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1 || !info[0]->IsString())
-        return;
-    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
-    if (!injectedScriptNative)
-        return;
-    v8::Handle<v8::String> v8groupName = info[0]->ToString(info.GetIsolate());
-    String groupName = toCoreStringWithUndefinedOrNullCheck(v8groupName);
-    injectedScriptNative->releaseObjectGroup(groupName);
 }
 
 } // namespace blink
