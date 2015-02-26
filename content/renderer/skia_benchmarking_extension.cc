@@ -23,9 +23,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
-#include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "v8/include/v8.h"
@@ -57,6 +56,19 @@ scoped_refptr<cc::Picture> ParsePictureHash(v8::Isolate* isolate,
     return NULL;
   return cc::Picture::CreateFromValue(picture_value.get());
 }
+
+class PicturePlaybackController : public SkPicture::AbortCallback {
+ public:
+  PicturePlaybackController(const skia::BenchmarkingCanvas& canvas,
+                            size_t count)
+      : canvas_(canvas), playback_count_(count) {}
+
+  bool abort() override { return canvas_.CommandCount() > playback_count_; }
+
+ private:
+  const skia::BenchmarkingCanvas& canvas_;
+  size_t playback_count_;
+};
 
 }  // namespace
 
@@ -163,19 +175,13 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   canvas.scale(scale, scale);
   canvas.translate(picture->LayerRect().x(), picture->LayerRect().y());
 
-  // First, build a debug canvas for the given picture.
-  SkDebugCanvas debug_canvas(picture->LayerRect().width(),
-                             picture->LayerRect().height());
-  picture->Replay(&debug_canvas);
-
-  // Raster the requested command subset into the bitmap-backed canvas.
-  int last_index = debug_canvas.getSize() - 1;
-  if (last_index >= 0) {
-    debug_canvas.setOverdrawViz(overdraw);
-    debug_canvas.drawTo(
-        &canvas,
-        stop_index < 0 ? last_index : std::min(last_index, stop_index));
-  }
+  skia::BenchmarkingCanvas benchmarking_canvas(
+      &canvas,
+      overdraw ? skia::BenchmarkingCanvas::kOverdrawVisualization_Flag : 0);
+  size_t playback_count =
+      (stop_index < 0) ? std::numeric_limits<size_t>::max() : stop_index;
+  PicturePlaybackController controller(benchmarking_canvas, playback_count);
+  picture->Replay(&benchmarking_canvas, &controller);
 
   blink::WebArrayBuffer buffer =
       blink::WebArrayBuffer::create(bitmap.getSize(), 1);
@@ -213,36 +219,15 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
   if (!picture.get())
     return;
 
-  gfx::Rect bounds = picture->LayerRect();
-  SkDebugCanvas canvas(bounds.width(), bounds.height());
-  picture->Replay(&canvas);
+  SkCanvas canvas(picture->LayerRect().width(), picture->LayerRect().height());
+  skia::BenchmarkingCanvas benchmarking_canvas(&canvas);
+  picture->Replay(&benchmarking_canvas);
 
-  v8::Handle<v8::Array> result = v8::Array::New(isolate, canvas.getSize());
-  for (int i = 0; i < canvas.getSize(); ++i) {
-    SkDrawCommand::OpType cmd_type = canvas.getDrawCommandAt(i)->getType();
-    v8::Handle<v8::Object> cmd = v8::Object::New(isolate);
-    cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_type"),
-             v8::Integer::New(isolate, cmd_type));
-    cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_string"),
-             v8::String::NewFromUtf8(
-                 isolate, SkDrawCommand::GetCommandString(cmd_type)));
+  v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+  scoped_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
 
-    const SkTDArray<SkString*>* info = canvas.getCommandInfo(i);
-    DCHECK(info);
-
-    v8::Local<v8::Array> v8_info = v8::Array::New(isolate, info->count());
-    for (int j = 0; j < info->count(); ++j) {
-      const SkString* info_str = (*info)[j];
-      DCHECK(info_str);
-      v8_info->Set(j, v8::String::NewFromUtf8(isolate, info_str->c_str()));
-    }
-
-    cmd->Set(v8::String::NewFromUtf8(isolate, "info"), v8_info);
-
-    result->Set(i, cmd);
-  }
-
-  args->Return(result.As<v8::Object>());
+  args->Return(converter->ToV8Value(&benchmarking_canvas.Commands(), context));
 }
 
 void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
@@ -268,13 +253,16 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
   base::TimeDelta total_time = base::TimeTicks::Now() - t0;
 
   // Gather per-op timing info by drawing into a BenchmarkingCanvas.
-  skia::BenchmarkingCanvas benchmarking_canvas(bounds.width(), bounds.height());
+  SkCanvas canvas(bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+  skia::BenchmarkingCanvas benchmarking_canvas(&canvas);
   picture->Replay(&benchmarking_canvas);
 
   v8::Local<v8::Array> op_times =
       v8::Array::New(isolate, benchmarking_canvas.CommandCount());
-  for (size_t i = 0; i < benchmarking_canvas.CommandCount(); ++i)
+  for (size_t i = 0; i < benchmarking_canvas.CommandCount(); ++i) {
     op_times->Set(i, v8::Number::New(isolate, benchmarking_canvas.GetTime(i)));
+  }
 
   v8::Handle<v8::Object> result = v8::Object::New(isolate);
   result->Set(v8::String::NewFromUtf8(isolate, "total_time"),

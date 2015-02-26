@@ -287,7 +287,7 @@ void Picture::GatherPixelRefs(const gfx::Size& tile_grid_size) {
 }
 
 int Picture::Raster(SkCanvas* canvas,
-                    SkDrawPictureCallback* callback,
+                    SkPicture::AbortCallback* callback,
                     const Region& negated_content_region,
                     float contents_scale) const {
   TRACE_EVENT_BEGIN1(
@@ -323,10 +323,10 @@ int Picture::Raster(SkCanvas* canvas,
   return bounds.width() * bounds.height();
 }
 
-void Picture::Replay(SkCanvas* canvas) {
+void Picture::Replay(SkCanvas* canvas, SkPicture::AbortCallback* callback) {
   TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
   DCHECK(picture_);
-  picture_->playback(canvas);
+  picture_->playback(canvas, callback);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   TRACE_EVENT_END1("cc", "Picture::Replay",

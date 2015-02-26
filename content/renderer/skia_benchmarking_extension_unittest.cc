@@ -4,45 +4,42 @@
 
 #include "content/renderer/skia_benchmarking_extension.h"
 
+#include "base/values.h"
+#include "skia/ext/benchmarking_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
-#include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
 
 namespace {
 
-testing::AssertionResult HasInfoField(SkDebugCanvas& canvas, int index,
-                                      const char* field) {
+testing::AssertionResult HasArg(const base::ListValue* args,
+                                const char name[]) {
+  const base::DictionaryValue* arg;
 
-  const SkTDArray<SkString*>* info = canvas.getCommandInfo(index);
-  if (info == NULL)
-    return testing::AssertionFailure() << " command info not found for index "
-                                       << index;
+  for (size_t i = 0; i < args->GetSize(); ++i) {
+    if (!args->GetDictionary(i, &arg) || arg->size() != 1)
+      return testing::AssertionFailure() << " malformed argument for index "
+                                         << i;
 
-  for (int i = 0; i < info->count(); ++i) {
-    const SkString* info_str = (*info)[i];
-    if (info_str == NULL)
-      return testing::AssertionFailure() << " NULL info string for index "
-                                         << index;
-
-    // FIXME: loose info paramter test.
-    if (strstr(info_str->c_str(), field) != NULL)
-      return testing::AssertionSuccess() << field << " found";
+    if (arg->HasKey(name))
+      return testing::AssertionSuccess() << " argument '" << name
+                                         << "' found at index " << i;
   }
 
-  return testing::AssertionFailure() << field << " not found";
+  return testing::AssertionFailure() << "argument not found: '" << name << "'";
 }
 
 }
 
 namespace content {
 
-TEST(SkiaBenchmarkingExtensionTest, SkDebugCanvas) {
+TEST(SkiaBenchmarkingExtensionTest, BenchmarkingCanvas) {
   SkGraphics::Init();
 
   // Prepare canvas and resources.
-  SkDebugCanvas canvas(100, 100);
+  SkCanvas canvas(100, 100);
+  skia::BenchmarkingCanvas benchmarking_canvas(&canvas);
+
   SkPaint red_paint;
   red_paint.setColor(SkColorSetARGB(255, 255, 0, 0));
   SkRect fullRect = SkRect::MakeWH(SkIntToScalar(100), SkIntToScalar(100));
@@ -53,45 +50,56 @@ TEST(SkiaBenchmarkingExtensionTest, SkDebugCanvas) {
   trans.setTranslate(SkIntToScalar(10), SkIntToScalar(10));
 
   // Draw a trivial scene.
-  canvas.save();
-  canvas.clipRect(fullRect, SkRegion::kIntersect_Op, false);
-  canvas.setMatrix(trans);
-  canvas.drawRect(fillRect, red_paint);
-  canvas.restore();
+  benchmarking_canvas.save();
+  benchmarking_canvas.clipRect(fullRect, SkRegion::kIntersect_Op, false);
+  benchmarking_canvas.setMatrix(trans);
+  benchmarking_canvas.drawRect(fillRect, red_paint);
+  benchmarking_canvas.restore();
 
   // Verify the recorded commands.
-  SkDrawCommand::OpType cmd;
-  int idx = 0;
-  ASSERT_EQ(canvas.getSize(), 5);
+  const base::ListValue& ops = benchmarking_canvas.Commands();
+  ASSERT_EQ(ops.GetSize(), static_cast<size_t>(5));
 
-  ASSERT_TRUE(canvas.getDrawCommandAt(idx) != NULL);
-  cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SkDrawCommand::kSave_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Save");
+  size_t index = 0;
+  const base::DictionaryValue* op;
+  const base::ListValue* op_args;
+  std::string op_name;
 
-  ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
-  cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SkDrawCommand::kClipRect_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "ClipRect");
-  EXPECT_TRUE(HasInfoField(canvas, idx, "SkRect"));
-  EXPECT_TRUE(HasInfoField(canvas, idx, "Op"));
-  EXPECT_TRUE(HasInfoField(canvas, idx, "doAA"));
+  ASSERT_TRUE(ops.GetDictionary(index++, &op));
+  EXPECT_TRUE(op->GetString("cmd_string", &op_name));
+  EXPECT_EQ(op_name, "Save");
+  ASSERT_TRUE(op->GetList("info", &op_args));
+  EXPECT_EQ(op_args->GetSize(), static_cast<size_t>(0));
 
-  ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
-  cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SkDrawCommand::kSetMatrix_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "SetMatrix");
+  ASSERT_TRUE(ops.GetDictionary(index++, &op));
+  EXPECT_TRUE(op->GetString("cmd_string", &op_name));
+  EXPECT_EQ(op_name, "ClipRect");
+  ASSERT_TRUE(op->GetList("info", &op_args));
+  EXPECT_EQ(op_args->GetSize(), static_cast<size_t>(3));
+  EXPECT_TRUE(HasArg(op_args, "rect"));
+  EXPECT_TRUE(HasArg(op_args, "op"));
+  EXPECT_TRUE(HasArg(op_args, "anti-alias"));
 
-  ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
-  cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SkDrawCommand::kDrawRect_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "DrawRect");
-  EXPECT_TRUE(HasInfoField(canvas, idx, "SkRect"));
+  ASSERT_TRUE(ops.GetDictionary(index++, &op));
+  EXPECT_TRUE(op->GetString("cmd_string", &op_name));
+  EXPECT_EQ(op_name, "SetMatrix");
+  ASSERT_TRUE(op->GetList("info", &op_args));
+  EXPECT_EQ(op_args->GetSize(), static_cast<size_t>(1));
+  EXPECT_TRUE(HasArg(op_args, "matrix"));
 
-  ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
-  cmd = canvas.getDrawCommandAt(idx)->getType();
-  EXPECT_EQ(cmd, SkDrawCommand::kRestore_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Restore");
+  ASSERT_TRUE(ops.GetDictionary(index++, &op));
+  EXPECT_TRUE(op->GetString("cmd_string", &op_name));
+  EXPECT_EQ(op_name, "DrawRect");
+  ASSERT_TRUE(op->GetList("info", &op_args));
+  EXPECT_EQ(op_args->GetSize(), static_cast<size_t>(2));
+  EXPECT_TRUE(HasArg(op_args, "rect"));
+  EXPECT_TRUE(HasArg(op_args, "paint"));
+
+  ASSERT_TRUE(ops.GetDictionary(index++, &op));
+  EXPECT_TRUE(op->GetString("cmd_string", &op_name));
+  EXPECT_EQ(op_name, "Restore");
+  ASSERT_TRUE(op->GetList("info", &op_args));
+  EXPECT_EQ(op_args->GetSize(), static_cast<size_t>(0));
 }
 
 } // namespace content

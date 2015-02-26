@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
-class SkDrawPictureCallback;
 class SkPixelRef;
 
 namespace base {
@@ -70,13 +69,13 @@ class CC_EXPORT Picture
   // raster operation, i.e., the parts of the canvas which will not get drawn
   // to.
   int Raster(SkCanvas* canvas,
-             SkDrawPictureCallback* callback,
+             SkPicture::AbortCallback* callback,
              const Region& negated_content_region,
              float contents_scale) const;
 
   // Draw the picture directly into the given canvas, without applying any
   // clip/scale/layer transformations.
-  void Replay(SkCanvas* canvas);
+  void Replay(SkCanvas* canvas, SkPicture::AbortCallback* callback = NULL);
 
   scoped_ptr<base::Value> AsValue() const;
 

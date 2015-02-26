@@ -5,45 +5,86 @@
 #ifndef SKIA_EXT_BENCHMARKING_CANVAS_H_
 #define SKIA_EXT_BENCHMARKING_CANVAS_H_
 
-#include "base/compiler_specific.h"
-#include "skia/ext/refptr.h"
+#include "base/values.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
-#include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
 
 namespace skia {
 
-class TimingCanvas;
-
 class SK_API BenchmarkingCanvas : public SkNWayCanvas {
 public:
-  BenchmarkingCanvas(int width, int height);
+  BenchmarkingCanvas(SkCanvas* canvas, unsigned flags = 0);
   ~BenchmarkingCanvas() override;
+
+  enum Flags {
+      // TODO(fmalita): add overdraw visualization support
+      // (http://crbug.com/461534)
+      kOverdrawVisualization_Flag = 0x01,
+  };
 
   // Returns the number of draw commands executed on this canvas.
   size_t CommandCount() const;
 
-  // Get draw command info for a given index.
-  SkDrawCommand* GetCommand(size_t index);
+  // Returns the list of executed draw commands.
+  const base::ListValue& Commands() const;
 
   // Return the recorded render time (milliseconds) for a draw command index.
   double GetTime(size_t index);
 
-private:
-  // In order to avoid introducing a Skia version dependency, this
-  // implementation dispatches draw commands in lock-step to two distinct
-  // canvases:
-  //   * a SkDebugCanvas used for gathering command info and tracking
-  //     the current command index
-  //   * a SkiaTimingCanvas used for measuring raster paint times (and relying
-  //     on the former for tracking the current command index).
-  //
-  // This way, if the SkCanvas API is extended, we don't need to worry about
-  // updating content::SkiaTimingCanvas to accurately override all new methods
-  // (to avoid timing info indices from getting out of sync), as SkDebugCanvas
-  // already does that for us.
+protected:
+  // SkCanvas overrides
+  void willSave() override;
+  SaveLayerStrategy willSaveLayer(const SkRect*,
+                                  const SkPaint*,
+                                  SaveFlags) override;
+  void willRestore() override;
 
-  skia::RefPtr<SkDebugCanvas> debug_canvas_;
-  skia::RefPtr<TimingCanvas> timing_canvas_;
+  void didConcat(const SkMatrix&) override;
+  void didSetMatrix(const SkMatrix&) override;
+
+  void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override;
+  void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override;
+  void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override;
+  void onClipRegion(const SkRegion&, SkRegion::Op) override;
+
+  void onDrawPaint(const SkPaint&) override;
+  void onDrawPoints(PointMode, size_t count, const SkPoint pts[],
+                    const SkPaint&) override;
+  void onDrawRect(const SkRect&, const SkPaint&) override;
+  void onDrawOval(const SkRect&, const SkPaint&) override;
+  void onDrawRRect(const SkRRect&, const SkPaint&) override;
+  void onDrawDRRect(const SkRRect&, const SkRRect&, const SkPaint&) override;
+  void onDrawPath(const SkPath&, const SkPaint&) override;
+
+  void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
+
+  void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override;
+  void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst,
+                        const SkPaint*, DrawBitmapRectFlags flags) override;
+  void onDrawImage(const SkImage*, SkScalar left, SkScalar top, const SkPaint*) override;
+  void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst,
+                       const SkPaint*) override;
+  void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst,
+                        const SkPaint*) override;
+  void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
+
+  void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
+                  const SkPaint&) override;
+  void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[],
+                     const SkPaint&) override;
+  void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[],
+                      SkScalar constY, const SkPaint&) override;
+  void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath& path,
+                        const SkMatrix* matrix, const SkPaint&) override;
+  void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
+                      const SkPaint& paint) override;
+
+private:
+  typedef SkNWayCanvas INHERITED;
+
+  class AutoOp;
+
+  base::ListValue op_records_;
+  unsigned flags_;
 };
 
 }
