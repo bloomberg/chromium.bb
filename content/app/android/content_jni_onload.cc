@@ -31,16 +31,13 @@ bool Init() {
 
 bool OnJNIOnLoadRegisterJNI(
     JavaVM* vm,
-    base::android::RegisterCallback callback) {
-  std::vector<base::android::RegisterCallback> callbacks;
-  callbacks.push_back(callback);
+    std::vector<base::android::RegisterCallback> callbacks) {
   callbacks.push_back(base::Bind(&RegisterJNI));
   return base::android::OnJNIOnLoadRegisterJNI(vm, callbacks);
 }
 
-bool OnJNIOnLoadInit(base::android::InitCallback callback) {
-  std::vector<base::android::InitCallback> callbacks;
-  callbacks.push_back(callback);
+bool OnJNIOnLoadInit(
+    std::vector<base::android::InitCallback> callbacks) {
   callbacks.push_back(base::Bind(&Init));
   return base::android::OnJNIOnLoadInit(callbacks);
 }

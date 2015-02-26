@@ -29,10 +29,13 @@ bool Init() {
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  if (!content::android::OnJNIOnLoadRegisterJNI(
-          vm, base::Bind(&RegisterJNI)) ||
-      !content::android::OnJNIOnLoadInit(base::Bind(&Init)))
+  std::vector<base::android::RegisterCallback> register_callbacks;
+  register_callbacks.push_back(base::Bind(&RegisterJNI));
+  std::vector<base::android::InitCallback> init_callbacks;
+  init_callbacks.push_back(base::Bind(&Init));
+  if (!content::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
+      !content::android::OnJNIOnLoadInit(init_callbacks)) {
     return -1;
-
+  }
   return JNI_VERSION_1_4;
 }

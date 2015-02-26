@@ -14,9 +14,12 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // improve startup peformance.
   base::android::DisableManualJniRegistration();
 
-  if (!content::android::OnJNIOnLoadRegisterJNI(
-          vm, base::Bind(&android_webview::RegisterJNI)) ||
-      !content::android::OnJNIOnLoadInit(base::Bind(&android_webview::Init))) {
+  std::vector<base::android::RegisterCallback> register_callbacks;
+  register_callbacks.push_back(base::Bind(&android_webview::RegisterJNI));
+  std::vector<base::android::InitCallback> init_callbacks;
+  init_callbacks.push_back(base::Bind(&android_webview::Init));
+  if (!content::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
+      !content::android::OnJNIOnLoadInit(init_callbacks)) {
     return -1;
   }
   return JNI_VERSION_1_4;
