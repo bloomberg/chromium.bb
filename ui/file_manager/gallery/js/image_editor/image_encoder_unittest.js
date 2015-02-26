@@ -31,9 +31,7 @@ function testPngImage(callback) {
   var canvas = getSampleCanvas();
 
   var metadata = {
-    media: {
-      mimeType: 'image/png',
-    }
+    mediaMimeType: 'image/png'
   };
 
   reportPromise(encodeAnImageAsDataURL(canvas, metadata, 0.9).then(
@@ -51,9 +49,7 @@ function testJpegImage(callback) {
   var canvas = getSampleCanvas();
 
   var metadata = {
-    media: {
-      mimeType: 'image/jpeg',
-    }
+    mediaMimeType: 'image/jpeg'
   };
 
   reportPromise(encodeAnImageAsDataURL(canvas, metadata, 0.9).then(
@@ -72,9 +68,7 @@ function testWebpImage(callback) {
   var canvas = getSampleCanvas();
 
   var metadata = {
-    media: {
-      mimeType: 'image/webp'
-    }
+    mediaMimeType: 'image/webp'
   };
 
   reportPromise(encodeAnImageAsDataURL(canvas, metadata, 0.9).then(
@@ -90,9 +84,7 @@ function testWithBrokenMetadata() {
   var canvas = getSampleCanvas();
 
   var metadata = {
-    media: {
-      // No mimetype field.
-    }
+    // No mimetype field.
   };
 
   // An exception should be thrown if metadata is broken.

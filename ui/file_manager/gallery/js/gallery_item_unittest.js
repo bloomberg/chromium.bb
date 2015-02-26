@@ -63,6 +63,13 @@ function testSaveToFile(callback) {
       {isReadOnly: false},
       {name: 'oldMetadata'},
       metadataCache,
+      // Mock of FileSystemMetadata.
+      {
+        get: function() {
+          return Promise.resolve([{}]);
+        },
+        notifyEntriesChanged: function() {}
+      },
       /* original */ true);
   assertEquals('oldMetadata', item.getMetadata().name);
   assertFalse(fetchedMediaCleared);

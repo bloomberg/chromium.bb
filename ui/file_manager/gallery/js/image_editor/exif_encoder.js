@@ -5,18 +5,35 @@
 /**
  * The Exif metadata encoder.
  * Uses the metadata format as defined by ExifParser.
- * @param {!Object} originalMetadata Metadata to encode.
+ * @param {!MetadataItem} originalMetadata Metadata to encode.
  * @constructor
  * @extends {ImageEncoder.MetadataEncoder}
  * @struct
  */
 function ExifEncoder(originalMetadata) {
   ImageEncoder.MetadataEncoder.apply(this, arguments);
+  /**
+   * Image File Directory obtained from EXIF header.
+   * @private {!Object}
+   * @const
+   */
+  this.ifd_ = /** @type {!Object} */(
+      JSON.parse(JSON.stringify(originalMetadata.ifd || {})));
 
-  if (this.metadata_.media && this.metadata_.media.ifd)
-    this.ifd_ = this.metadata_.media.ifd;
-  else
-    this.ifd_ = {};
+  /**
+   * Note use little endian if the original metadata does not have the
+   * information.
+   * @private {boolean}
+   * @const
+   */
+  this.exifLittleEndian_ = !!originalMetadata.exifLittleEndian;
+
+  /**
+   * Modification time to be stored in EXIF header.
+   * @private {!Date}
+   * @const
+   */
+  this.modificationTime_ = assert(originalMetadata.modificationTime);
 }
 
 ExifEncoder.prototype = {__proto__: ImageEncoder.MetadataEncoder.prototype};
@@ -32,11 +49,11 @@ ExifEncoder.SOFTWARE = 'Chrome OS Gallery App\0';
 
 /**
  * @param {!HTMLCanvasElement} canvas
- * @param {Date=} opt_modificationDateTime
  * @override
  */
-ExifEncoder.prototype.setImageData =
-    function(canvas, opt_modificationDateTime) {
+ExifEncoder.prototype.setImageData = function(canvas) {
+  ImageEncoder.MetadataEncoder.prototype.setImageData.call(this, canvas);
+
   var image = this.ifd_.image;
   if (!image)
     image = this.ifd_.image = {};
@@ -54,11 +71,7 @@ ExifEncoder.prototype.setImageData =
   ExifEncoder.findOrCreateTag(exif, Exif.Tag.X_DIMENSION).value = canvas.width;
   ExifEncoder.findOrCreateTag(exif, Exif.Tag.Y_DIMENSION).value = canvas.height;
 
-  this.metadata_.width = canvas.width;
-  this.metadata_.height = canvas.height;
-
   // Always save in default orientation.
-  delete this.metadata_['imageTransform'];
   ExifEncoder.findOrCreateTag(image, Exif.Tag.ORIENTATION).value = 1;
 
   // Update software name.
@@ -75,15 +88,14 @@ ExifEncoder.prototype.setImageData =
     return str;
   };
 
-  var modificationDateTime = opt_modificationDateTime || new Date();
   var dateTimeTag = ExifEncoder.findOrCreateTag(image, Exif.Tag.DATETIME, 2);
   dateTimeTag.value =
-      padNumWithZero(modificationDateTime.getFullYear(), 4) + ':' +
-      padNumWithZero(modificationDateTime.getMonth() + 1, 2) + ':' +
-      padNumWithZero(modificationDateTime.getDate(), 2) + ' ' +
-      padNumWithZero(modificationDateTime.getHours(), 2) + ':' +
-      padNumWithZero(modificationDateTime.getMinutes(), 2) + ':' +
-      padNumWithZero(modificationDateTime.getSeconds(), 2) + '\0';
+      padNumWithZero(this.modificationTime_.getFullYear(), 4) + ':' +
+      padNumWithZero(this.modificationTime_.getMonth() + 1, 2) + ':' +
+      padNumWithZero(this.modificationTime_.getDate(), 2) + ' ' +
+      padNumWithZero(this.modificationTime_.getHours(), 2) + ':' +
+      padNumWithZero(this.modificationTime_.getMinutes(), 2) + ':' +
+      padNumWithZero(this.modificationTime_.getSeconds(), 2) + '\0';
   dateTimeTag.componentCount = 20;
 };
 
@@ -91,24 +103,28 @@ ExifEncoder.prototype.setImageData =
  * @override
  */
 ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
-  // Empirical formula with reasonable behavior:
-  // 10K for 1Mpix, 30K for 5Mpix, 50K for 9Mpix and up.
-  var pixelCount = this.metadata_.width * this.metadata_.height;
-  var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
-
-  var DATA_URL_PREFIX = 'data:' + this.metadata_.media.mimeType + ';base64,';
-  var BASE64_BLOAT = 4 / 3;
-  var maxDataURLLength =
-      DATA_URL_PREFIX.length + Math.ceil(maxEncodedSize * BASE64_BLOAT);
-
-  for (;; quality *= 0.8) {
-    ImageEncoder.MetadataEncoder.prototype.setThumbnailData.call(
-        this, canvas, quality);
-    if (this.metadata_.thumbnailURL.length <= maxDataURLLength || quality < 0.2)
+  if (canvas) {
+    // Empirical formula with reasonable behavior:
+    // 10K for 1Mpix, 30K for 5Mpix, 50K for 9Mpix and up.
+    var pixelCount = this.imageWidth * this.imageHeight;
+    var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
+    var DATA_URL_PREFIX = 'data:image/jpeg;base64,';
+    var BASE64_BLOAT = 4 / 3;
+    var maxDataURLLength =
+        DATA_URL_PREFIX.length + Math.ceil(maxEncodedSize * BASE64_BLOAT);
+    for (; quality > 0.2; quality *= 0.8) {
+      ImageEncoder.MetadataEncoder.prototype.setThumbnailData.call(
+          this, canvas, quality);
+      // If the obtained thumbnail URL is too long, reset the URL and try again
+      // with less quality value.
+      if (this.thumbnailDataUrl.length > maxDataURLLength) {
+        this.thumbnailDataUrl = '';
+        continue;
+      }
       break;
+    }
   }
-
-  if (canvas && this.metadata_.thumbnailURL.length <= maxDataURLLength) {
+  if (this.thumbnailDataUrl) {
     var thumbnail = this.ifd_.thumbnail;
     if (!thumbnail)
       thumbnail = this.ifd_.thumbnail = {};
@@ -130,13 +146,8 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
     ExifEncoder.findOrCreateTag(this.ifd_.image, Exif.Tag.COMPRESSION).value =
         6;
   } else {
-    console.warn(
-        'Thumbnail URL too long: ' + this.metadata_.thumbnailURL.length);
-    // Delete thumbnail ifd so that it is not written out to a file, but
-    // keep thumbnailURL for display purposes.
-    if (this.ifd_.thumbnail) {
+    if (this.ifd_.thumbnail)
       delete this.ifd_.thumbnail;
-    }
   }
 };
 
@@ -207,7 +218,7 @@ ExifEncoder.prototype.encode = function() {
   // can be directly mapped to offsets as encoded in the dictionaries.
   var bw = new ByteWriter(bytes.buffer, HEADER_SIZE);
 
-  if (this.metadata_.littleEndian) {
+  if (this.exifLittleEndian_) {
     bw.setByteOrder(ByteWriter.ByteOrder.LITTLE_ENDIAN);
     bw.writeScalar(Exif.Align.LITTLE, 2);
   } else {
@@ -246,8 +257,7 @@ ExifEncoder.prototype.encode = function() {
         this.ifd_.thumbnail,
         [Exif.Tag.JPG_THUMB_OFFSET, Exif.Tag.JPG_THUMB_LENGTH]);
 
-    var thumbnailDecoded =
-        ImageEncoder.decodeDataURL(this.metadata_.thumbnailURL);
+    var thumbnailDecoded = ImageEncoder.decodeDataURL(this.thumbnailDataUrl);
     bw.resolveOffset(Exif.Tag.JPG_THUMB_OFFSET);
     bw.resolve(Exif.Tag.JPG_THUMB_LENGTH, thumbnailDecoded.length);
     bw.writeString(thumbnailDecoded);

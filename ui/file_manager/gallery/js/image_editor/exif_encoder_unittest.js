@@ -11,56 +11,54 @@ function testExifEncodeAndDecode() {
   var data = canvas.toDataURL('image/jpeg');
 
   var metadata = {
-    media: {
-      mimeType: 'image/jpeg',
-      ifd: {
-        image: {
-          // Manufacture
-          271: {
-            id: 0x10f,
-            format: 2,
-            componentCount: 12,
-            value: 'Manufacture\0'
-          },
-          // Device model
-          272: {
-            id: 0x110,
-            format: 2,
-            componentCount: 12,
-            value: 'DeviceModel\0'
-          },
-          // GPS Pointer
-          34853: {
-            id: 0x8825,
-            format: 4,
-            componentCount: 1,
-            value: 0 // The value is set by the encoder.
-          }
+    mediaMimeType: 'image/jpeg',
+    modificationTime: new Date(2015, 0, 7, 15, 30, 6),
+    ifd: {
+      image: {
+        // Manufacture
+        271: {
+          id: 0x10f,
+          format: 2,
+          componentCount: 12,
+          value: 'Manufacture\0'
         },
-        exif: {
-          // Lens model
-          42036: {
-            id: 0xa434,
-            format: 2,
-            componentCount: 10,
-            value: 'LensModel\0'
-          }
+        // Device model
+        272: {
+          id: 0x110,
+          format: 2,
+          componentCount: 12,
+          value: 'DeviceModel\0'
         },
-        gps: {
-          // GPS latitude ref
-          1: {
-            id: 0x1,
-            format: 2,
-            componentCount: 2,
-            value: 'N\0'
-          }
+        // GPS Pointer
+        34853: {
+          id: 0x8825,
+          format: 4,
+          componentCount: 1,
+          value: 0 // The value is set by the encoder.
+        }
+      },
+      exif: {
+        // Lens model
+        42036: {
+          id: 0xa434,
+          format: 2,
+          componentCount: 10,
+          value: 'LensModel\0'
+        }
+      },
+      gps: {
+        // GPS latitude ref
+        1: {
+          id: 0x1,
+          format: 2,
+          componentCount: 2,
+          value: 'N\0'
         }
       }
     }
   };
 
-  var encoder = ImageEncoder.encodeMetadata(metadata, canvas, 1,
-      new Date(2015, 0, 7, 15, 30, 6));
+  var encoder = ImageEncoder.encodeMetadata(metadata, canvas, 1);
 
   // Assert that ExifEncoder is returned.
   assertTrue(encoder instanceof ExifEncoder);
@@ -107,6 +105,6 @@ function testExifEncodeAndDecode() {
   assertEquals('2015:01:07 15:30:06\0', parsedMetadata.ifd.image[0x132].value);
 
   // Thumbnail image
-  assert(parsedMetadata.thumbnailTransform);
-  assert(parsedMetadata.thumbnailURL);
+  assertTrue(!!parsedMetadata.thumbnailTransform);
+  assertTrue(!!parsedMetadata.thumbnailURL);
 }
