@@ -124,6 +124,7 @@ private:
     void setFontFeatures();
 
     bool createHarfBuzzRuns();
+    bool createHarfBuzzRunsForSingleCharacter();
     bool shapeHarfBuzzRuns();
     bool fillGlyphBuffer(GlyphBuffer*);
     float fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
