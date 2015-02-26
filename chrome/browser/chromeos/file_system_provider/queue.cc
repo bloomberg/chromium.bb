@@ -26,7 +26,7 @@ Queue::Queue(size_t max_in_parallel)
     : max_in_parallel_(max_in_parallel),
       next_token_(1),
       weak_ptr_factory_(this) {
-  DCHECK_LT(0u, max_in_parallel);
+  CHECK_LT(0u, max_in_parallel);
 }
 
 Queue::~Queue() {
@@ -38,9 +38,9 @@ size_t Queue::NewToken() {
 
 void Queue::Enqueue(size_t token, const AbortableCallback& callback) {
 #if !NDEBUG
-  DCHECK(executed_.find(token) == executed_.end());
+  CHECK(executed_.find(token) == executed_.end());
   for (auto& task : pending_) {
-    DCHECK(token != task.token);
+    CHECK(token != task.token);
   }
 #endif
   pending_.push_back(Task(token, callback));
@@ -50,7 +50,7 @@ void Queue::Enqueue(size_t token, const AbortableCallback& callback) {
 
 void Queue::Complete(size_t token) {
   const auto it = executed_.find(token);
-  DCHECK(it != executed_.end());
+  CHECK(it != executed_.end());
   completed_[token] = it->second;
   executed_.erase(it);
 }
@@ -67,7 +67,7 @@ void Queue::Remove(size_t token) {
 
   // If not completed, then it must have been aborted.
   const auto aborted_it = aborted_.find(token);
-  DCHECK(aborted_it != aborted_.end());
+  CHECK(aborted_it != aborted_.end());
   aborted_.erase(aborted_it);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -80,7 +80,7 @@ void Queue::MaybeRun() {
     return;
   }
 
-  DCHECK_GT(max_in_parallel_, executed_.size() + completed_.size());
+  CHECK_GT(max_in_parallel_, executed_.size() + completed_.size());
   Task task = pending_.front();
   pending_.pop_front();
 
@@ -101,7 +101,7 @@ void Queue::Abort(size_t token) {
     Task task = it->second;
     aborted_[token] = task;
     executed_.erase(it);
-    DCHECK(!task.abort_callback.is_null());
+    CHECK(!task.abort_callback.is_null());
     task.abort_callback.Run();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
