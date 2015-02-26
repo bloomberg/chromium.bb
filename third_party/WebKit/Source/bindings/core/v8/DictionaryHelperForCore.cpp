@@ -105,10 +105,13 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, doub
     }
 
     hasValue = true;
-    TONATIVE_DEFAULT(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(dictionary.isolate()), false);
-    if (v8Number.IsEmpty())
+
+    v8::TryCatch block;
+    value = v8Value->NumberValue();
+    if (UNLIKELY(block.HasCaught())) {
+        block.ReThrow();
         return false;
-    value = v8Number->Value();
+    }
     return true;
 }
 
@@ -139,7 +142,9 @@ bool getStringType(const Dictionary& dictionary, const String& key, StringType& 
     if (!dictionary.get(key, v8Value))
         return false;
 
-    TOSTRING_DEFAULT(V8StringResource<>, stringValue, v8Value, false);
+    V8StringResource<> stringValue(v8Value);
+    if (!stringValue.prepare())
+        return false;
     value = stringValue;
     return true;
 }
@@ -165,7 +170,9 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    TOSTRING_DEFAULT(V8StringResource<>, stringValue, v8Value, false);
+    V8StringResource<> stringValue(v8Value);
+    if (!stringValue.prepare())
+        return false;
     value = stringValue;
     return true;
 }
@@ -243,10 +250,12 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsi
     if (!dictionary.get(key, v8Value))
         return false;
 
-    TONATIVE_DEFAULT(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(dictionary.isolate()), false);
-    if (v8Number.IsEmpty())
+    v8::TryCatch block;
+    double d = v8Value->NumberValue();
+    if (UNLIKELY(block.HasCaught())) {
+        block.ReThrow();
         return false;
-    double d = v8Number->Value();
+    }
     doubleToInteger(d, value);
     return true;
 }
@@ -262,49 +271,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
     // exists on a prototype chain of v8Value.
     value = toDOMWindow(dictionary.isolate(), v8Value);
     return true;
-}
-
-template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, HashSet<AtomicString>& value)
-{
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return false;
-
-    // FIXME: Support array-like objects
-    if (!v8Value->IsArray())
-        return false;
-
-    ASSERT(dictionary.isolate());
-    ASSERT(dictionary.isolate() == v8::Isolate::GetCurrent());
-    v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
-    for (size_t i = 0; i < v8Array->Length(); ++i) {
-        v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Integer::New(dictionary.isolate(), i));
-        TOSTRING_DEFAULT(V8StringResource<>, stringValue, indexedValue, false);
-        value.add(stringValue);
-    }
-
-    return true;
-}
-
-template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, HashSet<AtomicString>& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
-        return true;
-
-    if (!v8Value->IsArray()) {
-        context.throwTypeError(ExceptionMessages::notASequenceTypeProperty(key));
-        return false;
-    }
-
-    return DictionaryHelper::get(dictionary, key, value);
 }
 
 template <>
@@ -457,45 +423,7 @@ struct DictionaryHelperTraits<DOMUint8Array> {
     typedef V8Uint8Array type;
 };
 
-template <>
-struct DictionaryHelperTraits<DOMArrayBufferView> {
-    typedef V8ArrayBufferView type;
-};
-
-template <>
-struct DictionaryHelperTraits<MediaKeyError> {
-    typedef V8MediaKeyError type;
-};
-
-template <>
-struct DictionaryHelperTraits<DOMError> {
-    typedef V8DOMError type;
-};
-
-template <>
-struct DictionaryHelperTraits<Storage> {
-    typedef V8Storage type;
-};
-
-template <>
-struct DictionaryHelperTraits<Element> {
-    typedef V8Element type;
-};
-
-template <>
-struct DictionaryHelperTraits<Path2D> {
-    typedef V8Path2D type;
-};
-
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMUint8Array>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMArrayBufferView>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<MediaKeyError>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<DOMError>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Storage>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Element>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Element>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Path2D>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Path2D>& value);
 
 template <typename T>
 struct IntegralTypeTraits {
@@ -618,46 +546,6 @@ template bool DictionaryHelper::convert(const Dictionary&, Dictionary::Conversio
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, long long& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, unsigned long long& value);
 
-template<typename T>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, Nullable<T>& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    if (context.isNullable() && blink::isUndefinedOrNull(v8Value)) {
-        value = nullptr;
-        return true;
-    }
-
-    T converted = IntegralTypeTraits<T>::toIntegral(v8Value, NormalConversion, context.exceptionState());
-
-    if (context.exceptionState().throwIfNeeded())
-        return false;
-
-    value = Nullable<T>(converted);
-    return true;
-}
-
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<uint8_t>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<int8_t>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<unsigned short>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<short>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<unsigned>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<unsigned long>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<int>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<long>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<long long>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<unsigned long long>& value);
-
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<DOMWindow>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<Storage>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtr<DOMUint8Array>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtr<DOMArrayBufferView>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<MediaKeyError>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<TrackBase>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<EventTarget>& value);
 
 template <>
