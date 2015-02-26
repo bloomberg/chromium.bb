@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "screen_orientation_dispatcher.h"
+#include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 
 #include <list>
 
@@ -23,8 +23,7 @@ namespace content {
 // callback is resolved, it will be killed so we use the
 // LockOrientationResultHolder to know in which state the callback object is at
 // any time.
-class MockLockOrientationCallback :
-    public blink::WebLockOrientationCallback {
+class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
  public:
   struct LockOrientationResultHolder {
     LockOrientationResultHolder()
