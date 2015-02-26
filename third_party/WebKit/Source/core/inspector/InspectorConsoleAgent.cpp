@@ -56,7 +56,6 @@
 namespace blink {
 
 namespace ConsoleAgentState {
-static const char monitoringXHR[] = "monitoringXHR";
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
@@ -144,21 +143,6 @@ void InspectorConsoleAgent::consoleMessagesCleared()
 {
     m_injectedScriptManager->releaseObjectGroup("console");
     m_frontend->messagesCleared();
-}
-
-void InspectorConsoleAgent::didFinishXHRLoading(ExecutionContext* context, XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url)
-{
-    if (m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
-        String message = "XHR finished loading: " + method + " \"" + url + "\".";
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
-        consoleMessage->setRequestIdentifier(requestIdentifier);
-        messageStorage()->reportMessage(context, consoleMessage.release());
-    }
-}
-
-void InspectorConsoleAgent::setMonitoringXHREnabled(ErrorString*, bool enabled)
-{
-    m_state->setBoolean(ConsoleAgentState::monitoringXHR, enabled);
 }
 
 static TypeBuilder::Console::ConsoleMessage::Source::Enum messageSourceValue(MessageSource source)

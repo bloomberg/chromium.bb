@@ -70,10 +70,8 @@ public:
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();
 
-    void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url);
     void addProfileFinishedMessageToConsole(PassRefPtrWillBeRawPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
-    virtual void setMonitoringXHREnabled(ErrorString*, bool enabled) override;
     virtual void addInspectedNode(ErrorString*, int nodeId) = 0;
     virtual void addInspectedHeapObject(ErrorString*, int inspectedHeapObjectId) override;
 

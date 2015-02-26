@@ -43,8 +43,11 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -84,6 +87,7 @@ static const char resourceAgentEnabled[] = "resourceAgentEnabled";
 static const char extraRequestHeaders[] = "extraRequestHeaders";
 static const char cacheDisabled[] = "cacheDisabled";
 static const char userAgentOverride[] = "userAgentOverride";
+static const char monitoringXHR[] = "monitoringXHR";
 }
 
 namespace {
@@ -623,12 +627,19 @@ void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLo
     delayedRemoveReplayXHR(xhr);
 }
 
-void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&)
+void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url)
 {
     m_pendingXHRReplayData.remove(client);
 
     // See comments on |didFailXHRLoading| for why we are delaying delete.
     delayedRemoveReplayXHR(xhr);
+
+    if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
+        String message = "XHR finished loading: " + method + " \"" + url + "\".";
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
+        consoleMessage->setRequestIdentifier(identifier);
+        m_pageAgent->frameHost()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
+    }
 }
 
 void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* eventSource)
@@ -887,6 +898,11 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
 
     m_replayXHRs.add(xhr);
+}
+
+void InspectorResourceAgent::setMonitoringXHREnabled(ErrorString*, bool enabled)
+{
+    m_state->setBoolean(ResourceAgentState::monitoringXHR, enabled);
 }
 
 void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)

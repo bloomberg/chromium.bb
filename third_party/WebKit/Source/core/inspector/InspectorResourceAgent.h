@@ -133,6 +133,7 @@ public:
     virtual void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
 
     virtual void replayXHR(ErrorString*, const String& requestId) override;
+    virtual void setMonitoringXHREnabled(ErrorString*, bool) override;
 
     virtual void canClearBrowserCache(ErrorString*, bool*) override;
     virtual void canClearBrowserCookies(ErrorString*, bool*) override;

@@ -20,7 +20,7 @@ function test()
             makeRequest(step2);
         }
 
-        InspectorTest.ConsoleAgent.setMonitoringXHREnabled(true, callback);
+        InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, callback);
     }
 
     function step2()
@@ -30,7 +30,7 @@ function test()
             makeRequest(step3);
         }
 
-        InspectorTest.ConsoleAgent.setMonitoringXHREnabled(false, callback);
+        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, callback);
     }
 
     function step3()

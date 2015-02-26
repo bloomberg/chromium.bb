@@ -284,7 +284,7 @@ interface InspectorInstrumentation {
     [Resource]
     void didFailXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client);
 
-    [Console, Resource]
+    [Resource]
     void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url);
 
     [Resource]

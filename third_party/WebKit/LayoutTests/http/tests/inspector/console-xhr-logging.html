@@ -33,7 +33,7 @@ function test()
         {
             InspectorTest.evaluateInPage("makeRequests()", step2);
         }
-        InspectorTest.ConsoleAgent.setMonitoringXHREnabled(true, callback);
+        InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, callback);
     }
 
     function step2()
@@ -42,7 +42,7 @@ function test()
         {
             InspectorTest.evaluateInPage("makeRequests()", step3);
         }
-        InspectorTest.ConsoleAgent.setMonitoringXHREnabled(false, callback);
+        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, callback);
     }
 
     function step3()
