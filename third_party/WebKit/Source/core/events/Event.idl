@@ -22,6 +22,7 @@
 [
     WillBeGarbageCollected,
     EventConstructor,
+    Exposed=(Window,Worker)
 ] interface Event {
 
     // DOM PhaseType

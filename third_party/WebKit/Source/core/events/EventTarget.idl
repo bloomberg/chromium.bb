@@ -22,6 +22,7 @@
     CheckSecurity=Window,
     Custom=ToV8,
     WillBeGarbageCollected,
+    Exposed=(Window,Worker)
 ] interface EventTarget {
     // FIXME: first 2 args should be required, but throwing TypeError breaks
     // legacy content.  http://crbug.com/353484

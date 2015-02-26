@@ -18,15 +18,13 @@ class EventDispatchForbiddenScope {
 public:
     EventDispatchForbiddenScope()
     {
-        if (!isMainThread())
-            return;
+        ASSERT(isMainThread());
         ++s_count;
     }
 
     ~EventDispatchForbiddenScope()
     {
-        if (!isMainThread())
-            return;
+        ASSERT(isMainThread());
         ASSERT(s_count);
         --s_count;
     }
@@ -43,6 +41,7 @@ public:
         AllowUserAgentEvents()
             : m_change(s_count, 0)
         {
+            ASSERT(isMainThread());
         }
 
         ~AllowUserAgentEvents()
