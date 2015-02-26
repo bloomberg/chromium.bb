@@ -249,7 +249,7 @@
     "contexts": ["blessed_extension"]
   }],
   "developerPrivate": [{
-    "dependencies": ["permission:developerPrivate"],
+    "dependencies": ["permission:developerPrivate", "permission:management"],
     "contexts": ["blessed_extension"]
   }, {
     "channel": "stable",

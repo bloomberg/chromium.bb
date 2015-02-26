@@ -287,29 +287,6 @@ class DeveloperPrivateShowPermissionsDialogFunction
   std::string extension_id_;
 };
 
-class DeveloperPrivateEnableFunction
-    : public ChromeSyncExtensionFunction,
-      public base::SupportsWeakPtr<DeveloperPrivateEnableFunction> {
- public:
-  DECLARE_EXTENSION_FUNCTION("developerPrivate.enable",
-                             DEVELOPERPRIVATE_ENABLE);
-
-  DeveloperPrivateEnableFunction();
-
- protected:
-  ~DeveloperPrivateEnableFunction() override;
-
-  // Callback for requirements checker.
-  void OnRequirementsChecked(
-      const std::string& extension_id,
-      const std::vector<std::string>& requirements_errors);
-  // ExtensionFunction:
-  bool RunSync() override;
-
- private:
-  scoped_ptr<RequirementsChecker> requirements_checker_;
-};
-
 class DeveloperPrivateChooseEntryFunction : public ChromeAsyncExtensionFunction,
                                             public EntryPickerClient {
  protected:

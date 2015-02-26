@@ -165,11 +165,6 @@ namespace developerPrivate {
     // Reloads a given item with |itemId|.
     static void reload(DOMString itemId, optional VoidCallback callback);
 
-    // Enable / Disable a given item with id |itemId|.
-    static void enable(DOMString itemId,
-                       boolean enable,
-                       optional VoidCallback callback);
-
     // Allow / Disallow item with |item_id| in incognito mode.
     static void allowIncognito(DOMString item_id,
                                boolean allow,

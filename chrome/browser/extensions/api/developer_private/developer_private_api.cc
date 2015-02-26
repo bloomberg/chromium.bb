@@ -163,7 +163,6 @@ void BroadcastItemStateChanged(content::BrowserContext* browser_context,
 namespace AllowFileAccess = api::developer_private::AllowFileAccess;
 namespace AllowIncognito = api::developer_private::AllowIncognito;
 namespace ChoosePath = api::developer_private::ChoosePath;
-namespace Enable = api::developer_private::Enable;
 namespace GetItemsInfo = api::developer_private::GetItemsInfo;
 namespace Inspect = api::developer_private::Inspect;
 namespace PackDirectory = api::developer_private::PackDirectory;
@@ -796,77 +795,6 @@ DeveloperPrivateShowPermissionsDialogFunction::
 
 DeveloperPrivateShowPermissionsDialogFunction::
     ~DeveloperPrivateShowPermissionsDialogFunction() {}
-
-DeveloperPrivateEnableFunction::DeveloperPrivateEnableFunction() {}
-
-bool DeveloperPrivateEnableFunction::RunSync() {
-  scoped_ptr<Enable::Params> params(Enable::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  const std::string& extension_id = params->item_id;
-
-  const Extension* extension =
-      ExtensionRegistry::Get(GetProfile())->GetExtensionById(
-          extension_id, ExtensionRegistry::EVERYTHING);
-  if (!extension) {
-    LOG(ERROR) << "Did not find extension with id " << extension_id;
-    return false;
-  }
-  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
-  ManagementPolicy* policy = system->management_policy();
-  bool enable = params->enable;
-  if (!policy->UserMayModifySettings(extension, nullptr) ||
-      (!enable && policy->MustRemainEnabled(extension, nullptr)) ||
-      (enable && policy->MustRemainDisabled(extension, nullptr, nullptr))) {
-    LOG(ERROR) << "Attempt to change enable state denied by management policy. "
-               << "Extension id: " << extension_id;
-    return false;
-  }
-
-  ExtensionService* service = system->extension_service();
-  if (enable) {
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
-    if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      // If the extension escalated permissions, we have to show a dialog.
-      content::WebContents* web_contents = GetSenderWebContents();
-      if (!web_contents)
-        return false;
-
-      ShowExtensionDisabledDialog(service, web_contents, extension);
-    } else if ((prefs->GetDisableReasons(extension_id) &
-                    Extension::DISABLE_UNSUPPORTED_REQUIREMENT)) {
-      // Recheck the requirements.
-      requirements_checker_.reset(new ChromeRequirementsChecker());
-      AddRef();  // Released in OnRequirementsChecked.
-      // TODO(devlin): Uh... asynchronous code in a sync extension function?
-      requirements_checker_->Check(
-          make_scoped_refptr(extension),
-          base::Bind(&DeveloperPrivateEnableFunction::OnRequirementsChecked,
-                     this, extension_id));
-    } else {
-      // Otherwise, we're good to re-enable the extension.
-      service->EnableExtension(extension_id);
-    }
-  } else {  // !enable (i.e., disable)
-    service->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
-  }
-  return true;
-}
-
-void DeveloperPrivateEnableFunction::OnRequirementsChecked(
-    const std::string& extension_id,
-    const std::vector<std::string>& requirements_errors) {
-  if (requirements_errors.empty()) {
-    GetExtensionService(GetProfile())->EnableExtension(extension_id);
-  } else {
-    ExtensionErrorReporter::GetInstance()->ReportError(
-        base::UTF8ToUTF16(JoinString(requirements_errors, ' ')),
-        true);  // Be noisy.
-  }
-  Release();
-}
-
-DeveloperPrivateEnableFunction::~DeveloperPrivateEnableFunction() {}
 
 bool DeveloperPrivateInspectFunction::RunSync() {
   scoped_ptr<developer::Inspect::Params> params(
