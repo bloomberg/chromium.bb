@@ -33,6 +33,14 @@
 #define MAYBE(x) x
 #endif
 
+// In-process windowless plugin tests that create canvas break on Windows since
+// Win32k Renderer Lockdown was enabled in M42.
+#if defined(OS_WIN)
+#define MAYBE_INPROC_WINDOWLESS(x) DISABLED_##x
+#else
+#define MAYBE_INPROC_WINDOWLESS(x) x
+#endif
+
 using base::ASCIIToUTF16;
 
 namespace content {
@@ -167,8 +175,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NPObjectSetException)) {
 // a synchronous mouseup works correctly.
 // This was never ported to Mac. The only thing remaining is to make
 // SimulateMouseClick get to Mac plugins, currently it doesn't work.
-IN_PROC_BROWSER_TEST_F(PluginTest,
-                       MAYBE(SelfDeletePluginInvokeInSynchronousMouseUp)) {
+IN_PROC_BROWSER_TEST_F(
+    PluginTest,
+    MAYBE_INPROC_WINDOWLESS(SelfDeletePluginInvokeInSynchronousMouseUp)) {
   NavigateToURL(shell(), GetURL("execute_script_delete_in_mouse_up.html"));
 
   base::string16 expected_title(ASCIIToUTF16("OK"));
@@ -265,8 +274,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NPObjectProxy)) {
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
 // http://crbug.com/44960
-IN_PROC_BROWSER_TEST_F(PluginTest,
-                       MAYBE(SelfDeletePluginInvokeInSynchronousPaint)) {
+IN_PROC_BROWSER_TEST_F(
+    PluginTest,
+    MAYBE_INPROC_WINDOWLESS(SelfDeletePluginInvokeInSynchronousPaint)) {
   LoadAndWait(GetURL("execute_script_delete_in_paint.html"));
 }
 #endif
@@ -274,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 // Tests that if a plugin executes a self resizing script in the context of a
 // synchronous paint, the plugin doesn't use deallocated memory.
 // http://crbug.com/139462
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(ResizeDuringPaint)) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_INPROC_WINDOWLESS(ResizeDuringPaint)) {
   LoadAndWait(GetURL("resize_during_paint.html"));
 }
 
@@ -321,12 +331,14 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NewFails)) {
   LoadAndWait(GetURL("new_fails.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInNPNEvaluate)) {
+IN_PROC_BROWSER_TEST_F(PluginTest,
+                       MAYBE_INPROC_WINDOWLESS(SelfDeletePluginInNPNEvaluate)) {
   LoadAndWait(GetURL("execute_script_delete_in_npn_evaluate.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest,
-                       MAYBE(SelfDeleteCreatePluginInNPNEvaluate)) {
+IN_PROC_BROWSER_TEST_F(
+    PluginTest,
+    MAYBE_INPROC_WINDOWLESS(SelfDeleteCreatePluginInNPNEvaluate)) {
   LoadAndWait(GetURL("npn_plugin_delete_create_in_evaluate.html"));
 }
 

@@ -35,14 +35,7 @@ namespace {
     RunTest(STRIP_PREFIXES(test_name)); \
   }
 
-TEST_PPAPI_IN_PROCESS(BrowserFont)
-// crbug.com/308949
-#if defined(OS_WIN)
-#define MAYBE_OUT_BrowserFont DISABLED_BrowserFont
-#else
-#define MAYBE_OUT_BrowserFont BrowserFont
-#endif
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_OUT_BrowserFont)
+TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
 
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)

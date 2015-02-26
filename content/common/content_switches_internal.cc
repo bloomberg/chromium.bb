@@ -50,7 +50,7 @@ bool IsWin32kRendererLockdownEnabled() {
   if (cmd_line->HasSwitch(switches::kDisableWin32kRendererLockDown))
     return false;
   // Default.
-  return group_name == "Enabled";
+  return group_name != "Disabled";
 }
 #endif
 
