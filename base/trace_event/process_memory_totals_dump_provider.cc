@@ -15,6 +15,9 @@ namespace trace_event {
 uint64 ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 0;
 
 namespace {
+
+const char kDumperFriendlyName[] = "ProcessMemoryTotals";
+
 ProcessMetrics* CreateProcessMetricsForCurrentProcess() {
 #if !defined(OS_MACOSX) || defined(OS_IOS)
   return ProcessMetrics::CreateProcessMetrics(GetCurrentProcessHandle());
@@ -41,12 +44,22 @@ ProcessMemoryTotalsDumpProvider::~ProcessMemoryTotalsDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
 // the current process.
-void ProcessMemoryTotalsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
+bool ProcessMemoryTotalsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   const uint64 rss_bytes = rss_bytes_for_testing
                                ? rss_bytes_for_testing
                                : process_metrics_->GetWorkingSetSize();
-  pmd->process_totals()->set_resident_set_bytes(rss_bytes);
-  pmd->set_has_process_totals();
+
+  if (rss_bytes > 0) {
+    pmd->process_totals()->set_resident_set_bytes(rss_bytes);
+    pmd->set_has_process_totals();
+    return true;
+  }
+
+  return false;
+}
+
+const char* ProcessMemoryTotalsDumpProvider::GetFriendlyName() const {
+  return kDumperFriendlyName;
 }
 
 }  // namespace trace_event

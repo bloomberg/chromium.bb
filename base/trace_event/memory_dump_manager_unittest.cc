@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Return;
 
 namespace base {
 namespace trace_event {
@@ -48,7 +49,9 @@ class MemoryDumpManagerTest : public testing::Test {
 
 class MockDumpProvider : public MemoryDumpProvider {
  public:
-  MOCK_METHOD1(DumpInto, void(ProcessMemoryDump* pmd));
+  MOCK_METHOD1(DumpInto, bool(ProcessMemoryDump* pmd));
+
+  const char* GetFriendlyName() const override { return "MockDumpProvider"; }
 };
 
 TEST_F(MemoryDumpManagerTest, SingleDumper) {
@@ -64,7 +67,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   // Now repeat enabling the memory category and check that the dumper is
   // invoked this time.
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp, DumpInto(_)).Times(3);
+  EXPECT_CALL(mdp, DumpInto(_)).Times(3).WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i)
     mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
   DisableTracing();
@@ -83,7 +86,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileTracing) {
   mdm_->RegisterDumpProvider(&mdp);
 
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp, DumpInto(_)).Times(1);
+  EXPECT_CALL(mdp, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
 
   mdm_->UnregisterDumpProvider(&mdp);
@@ -100,7 +103,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   // Enable only mdp1.
   mdm_->RegisterDumpProvider(&mdp1);
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(1);
+  EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(mdp2, DumpInto(_)).Times(0);
   mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
   DisableTracing();
@@ -110,16 +113,38 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   mdm_->RegisterDumpProvider(&mdp2);
   EnableTracing(kTraceCategory);
   EXPECT_CALL(mdp1, DumpInto(_)).Times(0);
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(1);
+  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   // Enable both mdp1 and mdp2.
   mdm_->RegisterDumpProvider(&mdp1);
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(1);
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(1);
+  EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  DisableTracing();
+}
+
+// Enable both dump providers, make mdp1 fail and assert that only mdp2 is
+// invoked the 2nd time.
+// FIXME(primiano): remove once crbug.com/461788 gets fixed.
+TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
+  MockDumpProvider mdp1;
+  MockDumpProvider mdp2;
+
+  mdm_->RegisterDumpProvider(&mdp1);
+  mdm_->RegisterDumpProvider(&mdp2);
+  EnableTracing(kTraceCategory);
+
+  EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
+  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
+  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+
+  EXPECT_CALL(mdp1, DumpInto(_)).Times(0);
+  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
+  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+
   DisableTracing();
 }
 

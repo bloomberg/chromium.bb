@@ -17,7 +17,10 @@ class ProcessMemoryDump;
 class BASE_EXPORT MemoryDumpProvider {
  public:
   // Called by the MemoryDumpManager when generating dump points.
-  virtual void DumpInto(ProcessMemoryDump* pmd) = 0;
+  // Returns: true if the |pmd| was successfully populated, false otherwise.
+  virtual bool DumpInto(ProcessMemoryDump* pmd) = 0;
+
+  virtual const char* GetFriendlyName() const = 0;
 
  protected:
   MemoryDumpProvider() {}

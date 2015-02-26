@@ -15,6 +15,10 @@
 namespace base {
 namespace trace_event {
 
+namespace {
+const char kDumperFriendlyName[] = "ProcessMemoryMaps";
+}
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 // static
 std::istream* ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = nullptr;
@@ -104,10 +108,9 @@ uint32 ParseSmapsCounter(std::istream* smaps,
 }
 
 uint32 ReadLinuxProcSmapsFile(std::istream* smaps, ProcessMemoryMaps* pmm) {
-  if (!smaps->good()) {
-    LOG(ERROR) << "Could not read smaps file.";
+  if (!smaps->good())
     return 0;
-  }
+
   const uint32 kNumExpectedCountersPerRegion = 2;
   uint32 counters_parsed_for_current_region = 0;
   uint32 num_valid_regions = 0;
@@ -154,7 +157,7 @@ ProcessMemoryMapsDumpProvider::~ProcessMemoryMapsDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot the memory maps for the
 // current process.
-void ProcessMemoryMapsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
+bool ProcessMemoryMapsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   uint32 res = 0;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -168,8 +171,16 @@ void ProcessMemoryMapsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   LOG(ERROR) << "ProcessMemoryMaps dump provider is supported only on Linux";
 #endif
 
-  if (res > 0)
+  if (res > 0) {
     pmd->set_has_process_mmaps();
+    return true;
+  }
+
+  return false;
+}
+
+const char* ProcessMemoryMapsDumpProvider::GetFriendlyName() const {
+  return kDumperFriendlyName;
 }
 
 }  // namespace trace_event

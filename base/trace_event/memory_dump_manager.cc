@@ -92,11 +92,27 @@ void MemoryDumpManager::BroadcastDumpRequest() {
 // Creates a dump point for the current process and appends it to the trace.
 void MemoryDumpManager::CreateLocalDumpPoint() {
   AutoLock lock(lock_);
+  bool did_any_provider_dump = false;
   scoped_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump());
 
-  for (MemoryDumpProvider* dump_provider : dump_providers_enabled_) {
-    dump_provider->DumpInto(pmd.get());
+  for (auto it = dump_providers_enabled_.begin();
+       it != dump_providers_enabled_.end();) {
+    MemoryDumpProvider* dump_provider = *it;
+    if (!dump_provider->DumpInto(pmd.get())) {
+      LOG(ERROR) << "The memory dumper " << dump_provider->GetFriendlyName()
+                 << " failed, possibly due to sandboxing (crbug.com/461788), "
+                    "disabling it for current process. Try restarting chrome "
+                    "with the --no-sandbox switch.";
+      it = dump_providers_enabled_.erase(it);
+    } else {
+      did_any_provider_dump = true;
+      ++it;
+    }
   }
+
+  // Don't create a dump point if all the dumpers failed.
+  if (!did_any_provider_dump)
+    return;
 
   scoped_refptr<TracedValue> value(new TracedValue());
   pmd->AsValueInto(value.get());

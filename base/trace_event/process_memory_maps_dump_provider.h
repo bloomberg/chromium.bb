@@ -20,7 +20,8 @@ class BASE_EXPORT ProcessMemoryMapsDumpProvider : public MemoryDumpProvider {
   static ProcessMemoryMapsDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.
-  void DumpInto(ProcessMemoryDump* pmd) override;
+  bool DumpInto(ProcessMemoryDump* pmd) override;
+  const char* GetFriendlyName() const override;
 
  private:
   friend struct DefaultSingletonTraits<ProcessMemoryMapsDumpProvider>;
