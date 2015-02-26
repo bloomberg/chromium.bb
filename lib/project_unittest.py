@@ -41,8 +41,8 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
                'bar': 'foo'}
     self.project._WriteLayoutConf(content)
 
-    layout_conf = osutils.ReadFile(os.path.join(self.tempdir, 'metadata',
-                                                'layout.conf')).split('\n')
+    path = os.path.join(self.tempdir, 'packages', 'metadata', 'layout.conf')
+    layout_conf = osutils.ReadFile(path).split('\n')
 
     expected_lines = ['repo-name = hello',
                       'bar = foo',
@@ -57,8 +57,8 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
                'foo:bar']
 
     self.project._WriteParents(parents)
-    parents_content = osutils.ReadFile(os.path.join(self.tempdir, 'profiles',
-                                                    'base', 'parent'))
+    path = os.path.join(self.tempdir, 'packages', 'profiles', 'base', 'parent')
+    parents_content = osutils.ReadFile(path)
 
     self.assertEqual('hello:bonjour\nfoo:bar\n', parents_content)
 
@@ -70,13 +70,14 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
 
     self.project.UpdateConfig(sample_config)
 
-    self.assertExists(os.path.join(self.tempdir, 'profiles', 'base', 'parent'))
-    self.assertExists(os.path.join(self.tempdir, 'metadata', 'layout.conf'))
+    self.assertExists(os.path.join(self.tempdir, 'packages', 'profiles', 'base',
+                                   'parent'))
+    self.assertExists(self.project._LayoutConfPath())
 
   def testFindProjectInPath(self):
     """Test that we can infer the current project from the current directory."""
     self.CreateNewProject()
-    os.remove(os.path.join(self.tempdir, 'project.json'))
+    os.remove(os.path.join(self.tempdir, 'config.json'))
     project_dir = os.path.join(self.tempdir, 'foo', 'bar', 'project')
     content = {'name': 'hello'}
     project.Project(project_dir, initial_config={'name': 'hello'})
@@ -178,4 +179,4 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
   def testOverlayDir(self):
     """Tests that overlay directory is returned correctly."""
     self.CreateNewProject()
-    self.assertEquals(self.project.project_dir, self.project.OverlayDir())
+    self.assertExists(os.path.join(self.project.OverlayDir(), 'profiles'))

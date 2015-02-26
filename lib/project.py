@@ -17,7 +17,7 @@ _DEFAULT_LAYOUT_CONF = {'profile-formats': 'portage-2',
                         'thin-manifests': 'true',
                         'use-manifests': 'true'}
 
-_PROJECT_JSON = 'project.json'
+_CONFIG_JSON = 'config.json'
 
 
 class ProjectAlreadyExists(Exception):
@@ -52,9 +52,9 @@ class Project(object):
     self.project_dir = project_dir
     self.config = None
     self.legacy = False
-    project_json = os.path.join(project_dir, _PROJECT_JSON)
+    config_json = os.path.join(project_dir, _CONFIG_JSON)
 
-    if not os.path.exists(project_json):
+    if not os.path.exists(config_json):
       if initial_config:
         self.UpdateConfig(initial_config)
       elif allow_legacy:
@@ -67,13 +67,15 @@ class Project(object):
       if self.config is None:
         raise ProjectNotFound(self.project_dir)
     elif initial_config is None:
-      self.config = json.loads(osutils.ReadFile(project_json))
+      self.config = json.loads(osutils.ReadFile(config_json))
     else:
       raise ProjectAlreadyExists(self.project_dir)
 
   def _LayoutConfPath(self):
     """Returns the path to the layout.conf file."""
-    return os.path.join(self.project_dir, 'metadata', 'layout.conf')
+    if self.legacy:
+      return os.path.join(self.project_dir, 'metadata', 'layout.conf')
+    return os.path.join(self.project_dir, 'packages', 'metadata', 'layout.conf')
 
   def _WriteLayoutConf(self, content):
     """Writes layout.conf.
@@ -106,9 +108,12 @@ class Project(object):
     Args:
       parents: list of overlay names
     """
-    osutils.WriteFile(
-        os.path.join(self.project_dir, 'profiles', 'base', 'parent'),
-        ''.join([p + '\n' for p in parents]), makedirs=True)
+    if self.legacy:
+      raise ProjectFeatureNotSupported()
+
+    osutils.WriteFile(os.path.join(self.project_dir, 'packages', 'profiles',
+                                   'base', 'parent'),
+                      ''.join([p + '\n' for p in parents]), makedirs=True)
 
   def UpdateConfig(self, config, regenerate=True):
     """Updates the project's configuration.
@@ -128,7 +133,7 @@ class Project(object):
     self.config = config
     formatted_config = json.dumps(config, sort_keys=True, indent=4,
                                   separators=(',', ': '))
-    osutils.WriteFile(os.path.join(self.project_dir, _PROJECT_JSON),
+    osutils.WriteFile(os.path.join(self.project_dir, _CONFIG_JSON),
                       formatted_config, makedirs=True)
 
     if regenerate:
@@ -176,7 +181,7 @@ class Project(object):
 
   def OverlayDir(self):
     """Returns the project's overlay directory."""
-    return self.project_dir
+    return os.path.join(self.project_dir, 'packages')
 
 
 def _FindProjectInOverlays(name, base=None):
