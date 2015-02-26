@@ -108,6 +108,26 @@ void MapperDualshock4(const blink::WebGamepad& input,
   mapped->axesLength = AXIS_INDEX_COUNT;
 }
 
+void MapperIBuffalo(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[1]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[1]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[0]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[0]);
+  mapped->buttonsLength = BUTTON_INDEX_COUNT - 1; /* no meta */
+  mapped->axesLength = 2;
+}
+
+
 void MapperXGEAR(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[2];
@@ -202,12 +222,13 @@ struct MappingData {
       {"046d", "c21f", MapperXInputStyleGamepad},  // Logitech F710
       {"054c", "0268", MapperPlaystationSixAxis},  // Playstation SIXAXIS
       {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
+      {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
       {"0925", "0005", MapperLakeviewResearch},    // SmartJoy PLUS Adapter
       {"0925", "8866", MapperLakeviewResearch},    // WiseGroup MP-8866
       {"0e8f", "0003", MapperXGEAR},           // XFXforce XGEAR PS2 Controller
+      {"18d1", "2c40", MapperADT1},            // ADT-1 Controller
       {"2378", "1008", MapperOnLiveWireless},  // OnLive Controller (Bluetooth)
       {"2378", "100a", MapperOnLiveWireless},  // OnLive Controller (Wired)
-      {"18d1", "2c40", MapperADT1},            // ADT-1 Controller
 };
 
 }  // namespace
