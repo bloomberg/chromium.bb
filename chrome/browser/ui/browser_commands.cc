@@ -568,8 +568,7 @@ void CloseTab(Browser* browser) {
 bool CanZoomIn(content::WebContents* contents) {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(contents);
-  return zoom_controller->GetZoomPercent() !=
-      contents->GetMaximumZoomPercent() + 1;
+  return zoom_controller->GetZoomPercent() != contents->GetMaximumZoomPercent();
 }
 
 bool CanZoomOut(content::WebContents* contents) {
@@ -579,10 +578,10 @@ bool CanZoomOut(content::WebContents* contents) {
       contents->GetMinimumZoomPercent();
 }
 
-bool ActualSize(content::WebContents* contents) {
+bool IsAtDefaultZoom(content::WebContents* contents) {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(contents);
-  return zoom_controller->GetZoomPercent() != 100.0f;
+  return zoom_controller->IsAtDefaultZoom();
 }
 
 TabStripModelDelegate::RestoreTabType GetRestoreTabType(

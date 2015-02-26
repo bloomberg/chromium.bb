@@ -276,6 +276,7 @@ class TestingProfile : public Profile {
 
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
+  chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
 
   net::URLRequestContextGetter* GetMediaRequestContext() override;
   net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(

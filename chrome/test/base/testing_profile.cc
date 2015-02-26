@@ -44,6 +44,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -64,6 +65,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "content/public/browser/browser_thread.h"
@@ -71,6 +73,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/zoom_level_delegate.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
@@ -679,7 +682,9 @@ base::FilePath TestingProfile::GetPath() const {
 
 scoped_ptr<content::ZoomLevelDelegate> TestingProfile::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return nullptr;
+  return make_scoped_ptr(new chrome::ChromeZoomLevelPrefs(
+      GetPrefs(), GetPath(), partition_path,
+      ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
 
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
@@ -827,6 +832,11 @@ PrefService* TestingProfile::GetPrefs() {
 const PrefService* TestingProfile::GetPrefs() const {
   DCHECK(prefs_);
   return prefs_.get();
+}
+
+chrome::ChromeZoomLevelPrefs* TestingProfile::GetZoomLevelPrefs() {
+  return static_cast<chrome::ChromeZoomLevelPrefs*>(
+      GetDefaultStoragePartition(this)->GetZoomLevelDelegate());
 }
 
 DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {

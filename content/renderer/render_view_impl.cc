@@ -3719,9 +3719,11 @@ blink::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {
 
 void RenderViewImpl::zoomLimitsChanged(double minimum_level,
                                        double maximum_level) {
-  int minimum_percent = static_cast<int>(
+  // Round the double to avoid returning incorrect minimum/maximum zoom
+  // percentages.
+  int minimum_percent = round(
       ZoomLevelToZoomFactor(minimum_level) * 100);
-  int maximum_percent = static_cast<int>(
+  int maximum_percent = round(
       ZoomLevelToZoomFactor(maximum_level) * 100);
 
   Send(new ViewHostMsg_UpdateZoomLimits(

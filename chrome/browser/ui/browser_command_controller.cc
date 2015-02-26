@@ -1142,9 +1142,12 @@ void BrowserCommandController::UpdateCommandsForZoomState() {
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
     return;
-  command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, CanZoomIn(contents));
-  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL, ActualSize(contents));
-  command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, CanZoomOut(contents));
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS,
+                                        CanZoomIn(contents));
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL,
+                                        !IsAtDefaultZoom(contents));
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS,
+                                        CanZoomOut(contents));
 }
 
 void BrowserCommandController::UpdateCommandsForContentRestrictionState() {
