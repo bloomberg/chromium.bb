@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,57) size 26x18
           text run at (0,57) width 26: "file "
         LayoutFileUploadControl {INPUT} at (25.31,58) size 237x18 "No file chosen"
-          RenderButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
             RenderBlock (anonymous) at (8,2) size 61.56x13
               RenderText {#text} at (0,0) size 62x13
                 text run at (0,0) width 62: "Choose File"
@@ -50,7 +50,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,116) size 40x18
           text run at (0,116) width 40: "range "
         LayoutSlider {INPUT} at (41.53,115) size 129x15 [color=#909090] [bgcolor=#FFFFFF]
-          RenderFlexibleBox {DIV} at (0,0) size 129x15
+          LayoutFlexibleBox {DIV} at (0,0) size 129x15
             RenderBlock {DIV} at (0,0) size 129x15
               RenderBlock {DIV} at (57,0) size 15x15
         RenderText {#text} at (172,116) size 5x18
@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (176,130) size 1x0
         RenderText {#text} at (0,134) size 35x18
           text run at (0,134) width 35: "reset "
-        RenderButton {INPUT} at (34.20,135) size 44.94x18 [bgcolor=#C0C0C0]
+        LayoutButton {INPUT} at (34.20,135) size 44.94x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2) size 28.94x13
             RenderText {#text} at (0,0) size 29x13
               text run at (0,0) width 29: "Reset"
@@ -67,7 +67,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (83,148) size 1x0
         RenderText {#text} at (0,153) size 48x18
           text run at (0,153) width 48: "submit "
-        RenderButton {INPUT} at (47.56,154) size 53.25x18 [bgcolor=#C0C0C0]
+        LayoutButton {INPUT} at (47.56,154) size 53.25x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2) size 37.25x13
             RenderText {#text} at (0,0) size 38x13
               text run at (0,0) width 38: "Submit"
@@ -89,7 +89,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,210) size 45x18
           text run at (0,210) width 45: "search "
         LayoutTextControl {INPUT} at (44.86,210) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (0,0) size 0x0

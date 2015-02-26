@@ -22,7 +22,7 @@ layer at (18,266) size 302x152 clip at (19,267) size 285x150 scrollY 24.00 scrol
       RenderText {#text} at (0,101) size 64x37
         text run at (0,101) width 64: "here."
 layer at (19,51) size 300x200
-  RenderFlexibleBox {DIV} at (0,0) size 300x200
+  LayoutFlexibleBox {DIV} at (0,0) size 300x200
     RenderBlock {DIV} at (0,165) size 300x35
 layer at (19,51) size 300x165
-  RenderFlexibleBox {DIV} at (0,0) size 300x165
+  LayoutFlexibleBox {DIV} at (0,0) size 300x165

@@ -5,45 +5,45 @@ layer at (0,0) size 800x320
     RenderBody {BODY} at (8,16) size 784x288
       RenderBlock {P} at (0,0) size 784x22
         LayoutTextControl {INPUT} at (630,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (15,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,38) size 784x22
         LayoutTextControl {INPUT} at (630,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (15,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,76) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (15,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,114) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (15,0) size 135x16
             RenderBlock {DIV} at (0,0) size 15x16
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,152) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (0,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,190) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (0,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,228) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (15,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,266) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (2,3) size 150x16
+          LayoutFlexibleBox {DIV} at (2,3) size 150x16
             RenderBlock {DIV} at (15,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

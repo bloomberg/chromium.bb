@@ -15,42 +15,42 @@ layer at (0,0) size 800x417
         RenderText {#text} at (726,28) size 4x19
           text run at (726,28) width 4: "."
 layer at (24,74) size 752x41
-  RenderFlexibleBox {DIV} at (16,66) size 752x41 [bgcolor=#D3D3D3]
+  LayoutFlexibleBox {DIV} at (16,66) size 752x41 [bgcolor=#D3D3D3]
     RenderBlock {SPAN} at (16,12.50) size 16x16 [bgcolor=#000000]
     RenderBlock {SPAN} at (40,8) size 59x25
       RenderInline {SPAN} at (0,0) size 59x19
         RenderText {#text} at (0,3) size 59x19
           text run at (0,3) width 59: "38FGKX"
 layer at (24,131) size 752x41
-  RenderFlexibleBox {DIV} at (16,123) size 752x41 [bgcolor=#D3D3D3]
+  LayoutFlexibleBox {DIV} at (16,123) size 752x41 [bgcolor=#D3D3D3]
     RenderBlock {SPAN} at (16,12.50) size 16x16 [bgcolor=#000000]
     RenderBlock {SPAN} at (40,8) size 62x25
       RenderInline {SPAN} at (0,0) size 62x18
         RenderText {#text} at (0,3) size 62x18
           text run at (0,3) width 62: "38FGKX"
 layer at (24,188) size 752x41
-  RenderFlexibleBox {DIV} at (16,180) size 752x41 [bgcolor=#D3D3D3]
+  LayoutFlexibleBox {DIV} at (16,180) size 752x41 [bgcolor=#D3D3D3]
     RenderBlock {SPAN} at (16,12.50) size 16x16 [bgcolor=#000000]
     RenderBlock {SPAN} at (40,8) size 59x25
       RenderInline {SPAN} at (0,0) size 59x19
         RenderText {#text} at (0,3) size 59x19
           text run at (0,3) width 59: "38FGKX"
 layer at (24,245) size 752x42
-  RenderFlexibleBox {DIV} at (16,237) size 752x42 [bgcolor=#D3D3D3]
+  LayoutFlexibleBox {DIV} at (16,237) size 752x42 [bgcolor=#D3D3D3]
     RenderBlock {SPAN} at (16,13) size 16x16 [bgcolor=#000000]
     RenderBlock {SPAN} at (40,8) size 60x26
       RenderInline {SPAN} at (0,0) size 60x18
         RenderText {#text} at (0,4) size 60x18
           text run at (0,4) width 60: "38FGKX"
 layer at (24,303) size 752x41
-  RenderFlexibleBox {DIV} at (16,295) size 752x41 [bgcolor=#D3D3D3]
+  LayoutFlexibleBox {DIV} at (16,295) size 752x41 [bgcolor=#D3D3D3]
     RenderBlock {SPAN} at (16,12.50) size 16x16 [bgcolor=#000000]
     RenderBlock {SPAN} at (40,8) size 59x25
       RenderInline {SPAN} at (0,0) size 59x19
         RenderText {#text} at (0,3) size 59x19
           text run at (0,3) width 59: "38FGKX"
 layer at (24,360) size 752x41
-  RenderFlexibleBox {DIV} at (16,352) size 752x41 [bgcolor=#D3D3D3]
+  LayoutFlexibleBox {DIV} at (16,352) size 752x41 [bgcolor=#D3D3D3]
     RenderBlock {SPAN} at (16,12.50) size 16x16 [bgcolor=#000000]
     RenderBlock {SPAN} at (40,8) size 62x25
       RenderInline {SPAN} at (0,0) size 62x18

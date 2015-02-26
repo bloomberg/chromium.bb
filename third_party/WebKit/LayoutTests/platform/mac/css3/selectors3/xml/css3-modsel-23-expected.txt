@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x73
   RenderBlock {test} at (0,0) size 800x73
     RenderBlock {p} at (0,16) size 800x41
-      RenderButton {button} at (0,0) size 242.69x22 [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
+      LayoutButton {button} at (0,0) size 242.69x22 [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
         RenderBlock (anonymous) at (8,4) size 226.69x13
           RenderText {#text} at (0,0) size 227x13
             text run at (0,0) width 227: "A button (enabled) with green background"

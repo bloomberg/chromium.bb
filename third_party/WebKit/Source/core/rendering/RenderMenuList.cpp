@@ -52,7 +52,7 @@ namespace blink {
 using namespace HTMLNames;
 
 RenderMenuList::RenderMenuList(Element* element)
-    : RenderFlexibleBox(element)
+    : LayoutFlexibleBox(element)
     , m_buttonText(nullptr)
     , m_innerBlock(nullptr)
     , m_optionsChanged(true)
@@ -73,14 +73,14 @@ void RenderMenuList::destroy()
     if (m_popup)
         m_popup->disconnectClient();
     m_popup = nullptr;
-    RenderFlexibleBox::destroy();
+    LayoutFlexibleBox::destroy();
 }
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
 bool RenderMenuList::isChildAllowed(LayoutObject* object, const LayoutStyle&) const
 {
-    return object->isAnonymous() && !object->isRenderFullScreen();
+    return object->isAnonymous() && !object->isLayoutFullScreen();
 }
 
 void RenderMenuList::createInnerBlock()
@@ -95,7 +95,7 @@ void RenderMenuList::createInnerBlock()
     ASSERT(!firstChild());
     m_innerBlock = createAnonymousBlock();
     adjustInnerStyle();
-    RenderFlexibleBox::addChild(m_innerBlock);
+    LayoutFlexibleBox::addChild(m_innerBlock);
 }
 
 void RenderMenuList::adjustInnerStyle()
@@ -144,7 +144,7 @@ void RenderMenuList::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 void RenderMenuList::removeChild(LayoutObject* oldChild)
 {
     if (oldChild == m_innerBlock || !m_innerBlock) {
-        RenderFlexibleBox::removeChild(oldChild);
+        LayoutFlexibleBox::removeChild(oldChild);
         m_innerBlock = nullptr;
     } else
         m_innerBlock->removeChild(oldChild);

@@ -147,7 +147,7 @@ layer at (8,8) size 769x1421 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTextControl {INPUT} at (66,40) size 153x22 [color=#000000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (219,41) size 4x19
                   text run at (219,41) width 4: " "
-                RenderButton {INPUT} at (223,40) size 57x22 [color=#000000] [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (223,40) size 57x22 [color=#000000] [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 41x16
                     RenderText {#text} at (0,0) size 41x16
                       text run at (0,0) width 41: "Submit"

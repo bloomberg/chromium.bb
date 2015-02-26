@@ -37,14 +37,14 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/rendering/RenderFlexibleBox.h"
 
 namespace blink {
 
 LayoutSliderContainer::LayoutSliderContainer(SliderContainerElement* element)
-    : RenderFlexibleBox(element)
+    : LayoutFlexibleBox(element)
 {
 }
 
@@ -120,7 +120,7 @@ void LayoutSliderContainer::layout()
     if (track)
         layoutScope.setChildNeedsLayout(track);
 
-    RenderFlexibleBox::layout();
+    LayoutFlexibleBox::layout();
 
     style()->setDirection(oldTextDirection);
     // These should always exist, unless someone mutates the shadow DOM (e.g., in the inspector).

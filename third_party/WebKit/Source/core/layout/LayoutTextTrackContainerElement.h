@@ -30,7 +30,7 @@
 
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/rendering/RenderFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {
 

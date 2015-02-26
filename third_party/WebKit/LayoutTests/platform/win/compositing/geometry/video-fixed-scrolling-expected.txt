@@ -11,10 +11,10 @@ layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) 
 layer at (8,88) size 400x300
   LayoutVideo {VIDEO} at (0,80) size 400x300
 layer at (8,88) size 400x300
-  RenderFlexibleBox {DIV} at (0,0) size 400x300
+  LayoutFlexibleBox {DIV} at (0,0) size 400x300
     RenderBlock {DIV} at (0,265) size 400x35
 layer at (8,88) size 400x265
-  RenderFlexibleBox {DIV} at (0,0) size 400x265
+  LayoutFlexibleBox {DIV} at (0,0) size 400x265
 layer at (0,50) size 500x60
   RenderBlock (positioned) {DIV} at (0,0) size 500x60 [bgcolor=#0000FFCC]
 scrolled to 0,50

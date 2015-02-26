@@ -29,6 +29,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlowThread.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
@@ -39,7 +40,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -382,9 +382,9 @@ void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
 
     // If we're splitting the inline containing the fullscreened element,
     // |beforeChild| may be the renderer for the fullscreened element. However,
-    // that renderer is wrapped in a RenderFullScreen, so |this| is not its
+    // that renderer is wrapped in a LayoutFullScreen, so |this| is not its
     // parent. Since the splitting logic expects |this| to be the parent, set
-    // |beforeChild| to be the RenderFullScreen.
+    // |beforeChild| to be the LayoutFullScreen.
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document())) {
         const Element* fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
         if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)

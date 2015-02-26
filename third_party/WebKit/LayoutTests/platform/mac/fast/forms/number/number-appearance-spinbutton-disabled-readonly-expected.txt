@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,52) size 784x29
         RenderInline {LABEL} at (0,0) size 303x18
           LayoutTextControl {INPUT} at (0,0) size 216x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            RenderFlexibleBox {DIV} at (3,3) size 210x23
+            LayoutFlexibleBox {DIV} at (3,3) size 210x23
               RenderBlock {DIV} at (0,0) size 197x23
               RenderBlock {DIV} at (197,4) size 13x15
           RenderText {#text} at (216,8) size 87x18
@@ -18,14 +18,14 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,81) size 784x29
         RenderInline {LABEL} at (0,0) size 311x18
           LayoutTextControl {INPUT} at (0,0) size 216x29 [color=#545454] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            RenderFlexibleBox {DIV} at (3,3) size 210x23
+            LayoutFlexibleBox {DIV} at (3,3) size 210x23
               RenderBlock {DIV} at (0,0) size 197x23
           RenderText {#text} at (216,8) size 95x18
             text run at (216,8) width 95: " Disabled state"
       RenderBlock {DIV} at (0,110) size 784x29
         RenderInline {LABEL} at (0,0) size 320x18
           LayoutTextControl {INPUT} at (0,0) size 216x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            RenderFlexibleBox {DIV} at (3,3) size 210x23
+            LayoutFlexibleBox {DIV} at (3,3) size 210x23
               RenderBlock {DIV} at (0,0) size 197x23
           RenderText {#text} at (216,8) size 104x18
             text run at (216,8) width 104: " Read-only state"

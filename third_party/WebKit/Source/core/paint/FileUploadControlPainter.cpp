@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/FileUploadControlPainter.h"
 
+#include "core/layout/LayoutButton.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderButton.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         LayoutUnit textY = 0;
         // We want to match the button's baseline
         // FIXME: Make this work with transforms.
-        if (RenderButton* buttonRenderer = toRenderButton(button->renderer()))
+        if (LayoutButton* buttonRenderer = toLayoutButton(button->renderer()))
             textY = paintOffset.y() + m_renderFileUploadControl.borderTop() + m_renderFileUploadControl.paddingTop() + buttonRenderer->baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
         else
             textY = m_renderFileUploadControl.baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);

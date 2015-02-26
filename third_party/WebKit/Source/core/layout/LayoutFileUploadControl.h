@@ -27,8 +27,8 @@ namespace blink {
 
 class HTMLInputElement;
 
-// Each LayoutFileUploadControl contains a RenderButton (for opening the file chooser), and
-// sufficient space to draw a file icon and filename. The RenderButton has a shadow node
+// Each LayoutFileUploadControl contains a LayoutButton (for opening the file chooser), and
+// sufficient space to draw a file icon and filename. The LayoutButton has a shadow node
 // associated with it to receive click/hover events.
 
 class LayoutFileUploadControl final : public LayoutBlockFlow {

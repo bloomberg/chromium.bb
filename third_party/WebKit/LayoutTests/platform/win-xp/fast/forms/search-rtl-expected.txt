@@ -17,21 +17,21 @@ layer at (0,0) size 800x600
           text run at (752,0) width 4: "."
       RenderBlock {P} at (0,36) size 784x66
         LayoutTextControl {INPUT} at (0,0) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 118x16
         RenderText {#text} at (155,1) size 4x19
           text run at (155,1) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,22) size 215x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 209x16
+          LayoutFlexibleBox {DIV} at (3,3) size 209x16
             RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 178x16
         RenderText {#text} at (215,23) size 4x19
           text run at (215,23) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,44) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 118x16
         RenderText {#text} at (0,0) size 0x0

@@ -42,6 +42,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutInline.h"
@@ -63,7 +64,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderCombineText.h"
-#include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
@@ -818,8 +818,8 @@ void LayoutBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
             LayoutObject* beforeChildAnonymousContainer = beforeChildContainer;
             if (beforeChildAnonymousContainer->isAnonymousBlock()
                 // Full screen renderers and full screen placeholders act as anonymous blocks, not tables:
-                || beforeChildAnonymousContainer->isRenderFullScreen()
-                || beforeChildAnonymousContainer->isRenderFullScreenPlaceholder()
+                || beforeChildAnonymousContainer->isLayoutFullScreen()
+                || beforeChildAnonymousContainer->isLayoutFullScreenPlaceholder()
                 ) {
                 // Insert the child into the anonymous block box instead of here.
                 if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeChild->parent()->slowFirstChild() != beforeChild)
@@ -3295,15 +3295,15 @@ int LayoutBlock::lastLineBoxBaseline(LineDirectionMode lineDirection) const
     return -1;
 }
 
-static inline bool isLayoutBlockFlowOrRenderButton(LayoutObject* layoutObject)
+static inline bool isLayoutBlockFlowOrLayoutButton(LayoutObject* layoutObject)
 {
-    // We include isRenderButton in this check because buttons are implemented
+    // We include isLayoutButton in this check because buttons are implemented
     // using flex box but should still support first-line|first-letter.
     // The flex box and grid specs require that flex box and grid do not
     // support first-line|first-letter, though.
     // FIXME: Remove when buttons are implemented with align-items instead
     // of flex box.
-    return layoutObject->isLayoutBlockFlow() || layoutObject->isRenderButton();
+    return layoutObject->isLayoutBlockFlow() || layoutObject->isLayoutButton();
 }
 
 LayoutBlock* LayoutBlock::firstLineBlock() const
@@ -3317,7 +3317,7 @@ LayoutBlock* LayoutBlock::firstLineBlock() const
         LayoutObject* parentBlock = firstLineBlock->parent();
         if (firstLineBlock->isReplaced() || firstLineBlock->isFloatingOrOutOfFlowPositioned()
             || !parentBlock
-            || !isLayoutBlockFlowOrRenderButton(parentBlock))
+            || !isLayoutBlockFlowOrLayoutButton(parentBlock))
             break;
         ASSERT_WITH_SECURITY_IMPLICATION(parentBlock->isLayoutBlock());
         if (toLayoutBlock(parentBlock)->firstChild() != firstLineBlock)
@@ -3754,7 +3754,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentRendererAndDisplay(const Layo
     EDisplay newDisplay;
     LayoutBlock* newBox = 0;
     if (display == FLEX || display == INLINE_FLEX) {
-        newBox = RenderFlexibleBox::createAnonymous(&parent->document());
+        newBox = LayoutFlexibleBox::createAnonymous(&parent->document());
         newDisplay = FLEX;
     } else {
         newBox = LayoutBlockFlow::createAnonymous(&parent->document());

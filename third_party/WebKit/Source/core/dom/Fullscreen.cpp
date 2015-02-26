@@ -38,10 +38,10 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -437,7 +437,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     }
 
     if (m_fullScreenElement != document()->documentElement())
-        RenderFullScreen::wrapRenderer(renderer, renderer ? renderer->parent() : 0, document());
+        LayoutFullScreen::wrapRenderer(renderer, renderer ? renderer->parent() : 0, document());
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
@@ -484,7 +484,7 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     from(*exitingDocument).m_eventQueueTimer.startOneShot(0, FROM_HERE);
 }
 
-void Fullscreen::setFullScreenRenderer(RenderFullScreen* renderer)
+void Fullscreen::setFullScreenRenderer(LayoutFullScreen* renderer)
 {
     if (renderer == m_fullScreenRenderer)
         return;

@@ -16,23 +16,23 @@ layer at (8,50) size 352x288
 layer at (8,342) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutVideo {VIDEO} at (0,0) size 320x262
 layer at (8,50) size 352x288
-  RenderFlexibleBox {DIV} at (0,0) size 352x288
+  LayoutFlexibleBox {DIV} at (0,0) size 352x288
     RenderBlock {DIV} at (0,253) size 352x35
 layer at (8,50) size 352x253
-  RenderFlexibleBox {DIV} at (0,0) size 352x253
+  LayoutFlexibleBox {DIV} at (0,0) size 352x253
 layer at (26,63) size 30x30
-  RenderButton {INPUT} at (17.59,12.64) size 30x30
+  LayoutButton {INPUT} at (17.59,12.64) size 30x30
 layer at (8,342) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderFlexibleBox {DIV} at (0,0) size 320x262
+  LayoutFlexibleBox {DIV} at (0,0) size 320x262
     RenderBlock {DIV} at (0,227) size 320x35
 layer at (8,342) size 320x227
-  RenderFlexibleBox {DIV} at (0,0) size 320x227
+  LayoutFlexibleBox {DIV} at (0,0) size 320x227
 layer at (24,353) size 30x30
-  RenderButton {INPUT} at (16,11.34) size 30x30
+  LayoutButton {INPUT} at (16,11.34) size 30x30
 layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutVideo {VIDEO} at (8,608) size 320x262
 layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderFlexibleBox {DIV} at (0,0) size 320x262
+  LayoutFlexibleBox {DIV} at (0,0) size 320x262
     RenderBlock {DIV} at (0,227) size 320x35
 layer at (8,608) size 320x227 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderFlexibleBox {DIV} at (0,0) size 320x227
+  LayoutFlexibleBox {DIV} at (0,0) size 320x227

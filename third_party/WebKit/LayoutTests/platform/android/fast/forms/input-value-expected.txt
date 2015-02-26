@@ -80,7 +80,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 212x19
                   text run at (1,1) width 212: "button with value property changed"
               LayoutTableCell {TD} at (370,100) size 240x24 [r=4 c=1 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (1,1) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 25x16
                     RenderText {#text} at (0,0) size 25x16
                       text run at (0,0) width 25: "after"
@@ -192,7 +192,7 @@ layer at (0,0) size 800x600
                   text run at (1,1) width 191: "file with value property changed"
               LayoutTableCell {TD} at (370,324) size 240x24 [r=13 c=1 rs=1 cs=1]
                 LayoutFileUploadControl {INPUT} at (1,1) size 238x22 "No file chosen"
-                  RenderButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                  LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     RenderBlock (anonymous) at (8,3) size 69x16
                       RenderText {#text} at (0,0) size 69x16
                         text run at (0,0) width 69: "Choose File"

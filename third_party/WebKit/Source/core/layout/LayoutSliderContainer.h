@@ -32,7 +32,7 @@
 #ifndef LayoutSliderContainer_h
 #define LayoutSliderContainer_h
 
-#include "core/rendering/RenderFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {
 
@@ -40,7 +40,7 @@ class SliderContainerElement;
 
 // FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
 // http://webkit.org/b/62535
-class LayoutSliderContainer : public RenderFlexibleBox {
+class LayoutSliderContainer : public LayoutFlexibleBox {
 public:
     LayoutSliderContainer(SliderContainerElement*);
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;

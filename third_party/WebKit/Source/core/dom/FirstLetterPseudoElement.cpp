@@ -108,7 +108,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
     if (!parentRenderer
         || !parentRenderer->style()->hasPseudoStyle(FIRST_LETTER)
         || !parentRenderer->canHaveGeneratedChildren()
-        || !(parentRenderer->isLayoutBlockFlow() || parentRenderer->isRenderButton()))
+        || !(parentRenderer->isLayoutBlockFlow() || parentRenderer->isLayoutButton()))
         return nullptr;
 
     // Drill down into our children and look for our first text child.
@@ -136,7 +136,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
                 break;
             }
             firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
-        } else if (firstLetterTextRenderer->isReplaced() || firstLetterTextRenderer->isRenderButton()
+        } else if (firstLetterTextRenderer->isReplaced() || firstLetterTextRenderer->isLayoutButton()
             || firstLetterTextRenderer->isMenuList()) {
             return nullptr;
         } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isLayoutGrid()) {

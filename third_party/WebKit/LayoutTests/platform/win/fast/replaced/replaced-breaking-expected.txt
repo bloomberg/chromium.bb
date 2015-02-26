@@ -10,20 +10,20 @@ layer at (0,0) size 800x600
         LayoutImage {IMG} at (1,45) size 27x27 [border: (1px solid #000000)]
         LayoutImage {IMG} at (1,72) size 27x27 [border: (1px solid #000000)]
         RenderText {#text} at (0,0) size 0x0
-        RenderButton {INPUT} at (1,99) size 44x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (1,99) size 44x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 28x16
             RenderText {#text} at (0,0) size 28x16
               text run at (0,0) width 28: "input"
-        RenderButton {INPUT} at (1,121) size 44x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (1,121) size 44x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 28x16
             RenderText {#text} at (0,0) size 28x16
               text run at (0,0) width 28: "input"
         RenderText {#text} at (0,0) size 0x0
-        RenderButton {BUTTON} at (1,143) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {BUTTON} at (1,143) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 36x16
             RenderText {#text} at (0,0) size 36x16
               text run at (0,0) width 36: "button"
-        RenderButton {BUTTON} at (1,165) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {BUTTON} at (1,165) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 36x16
             RenderText {#text} at (0,0) size 36x16
               text run at (0,0) width 36: "button"

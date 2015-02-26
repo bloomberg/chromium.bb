@@ -4,19 +4,19 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       LayoutTextControl {INPUT} at (0,0) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (4,3) size 117x13
+        LayoutFlexibleBox {DIV} at (4,3) size 117x13
           RenderBlock {DIV} at (0,6.50) size 5x0
           RenderBlock {DIV} at (5,0) size 100x13
       LayoutBR {BR} at (125,14) size 0x0
       LayoutTextControl {INPUT} at (0,19) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (123,33) size 0x0
       LayoutTextControl {INPUT} at (0,38) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (4,3) size 117x13
+        LayoutFlexibleBox {DIV} at (4,3) size 117x13
           RenderBlock {DIV} at (0,6.50) size 5x0
           RenderBlock {DIV} at (5,0) size 100x13
       LayoutBR {BR} at (125,52) size 0x0
       LayoutTextControl {INPUT} at (0,57) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (4,3) size 117x13
+        LayoutFlexibleBox {DIV} at (4,3) size 117x13
           RenderBlock {DIV} at (0,0) size 16x13
           RenderBlock {DIV} at (16,0) size 89x13
       LayoutBR {BR} at (125,71) size 0x0

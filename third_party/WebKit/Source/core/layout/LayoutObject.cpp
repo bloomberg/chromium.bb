@@ -52,6 +52,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutGrid.h"
@@ -77,7 +78,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/RenderFlexibleBox.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -207,7 +207,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
         return new LayoutDeprecatedFlexibleBox(*element);
     case FLEX:
     case INLINE_FLEX:
-        return new RenderFlexibleBox(element);
+        return new LayoutFlexibleBox(element);
     case GRID:
     case INLINE_GRID:
         return new LayoutGrid(element);
@@ -1840,7 +1840,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (blockChildrenOnly && !child->isLayoutBlock())
             continue;
 
-        if (child->isRenderFullScreen() || child->isRenderFullScreenPlaceholder())
+        if (child->isLayoutFullScreen() || child->isLayoutFullScreenPlaceholder())
             continue;
 
         RefPtr<LayoutStyle> newStyle = LayoutStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
@@ -2621,7 +2621,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
     if (renderer->isBeforeOrAfterContent())
         rendererForFirstLineStyle = renderer->parent();
 
-    if (rendererForFirstLineStyle->isLayoutBlockFlow() || rendererForFirstLineStyle->isRenderButton()) {
+    if (rendererForFirstLineStyle->isLayoutBlockFlow() || rendererForFirstLineStyle->isLayoutButton()) {
         if (LayoutBlock* firstLineBlock = rendererForFirstLineStyle->firstLineBlock()) {
             if (type == Cached)
                 return firstLineBlock->getCachedPseudoStyle(FIRST_LINE, style);

@@ -18,24 +18,24 @@
  *
  */
 
-#ifndef RenderButton_h
-#define RenderButton_h
+#ifndef LayoutButton_h
+#define LayoutButton_h
 
 #include "core/html/HTMLInputElement.h"
-#include "core/rendering/RenderFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {
 
-// RenderButtons are just like normal flexboxes except that they will generate an anonymous block child.
+// LayoutButtons are just like normal flexboxes except that they will generate an anonymous block child.
 // For inputs, they will also generate an anonymous RenderText and keep its style and content up
 // to date as the button changes.
-class RenderButton final : public RenderFlexibleBox {
+class LayoutButton final : public LayoutFlexibleBox {
 public:
-    explicit RenderButton(Element*);
-    virtual ~RenderButton();
+    explicit LayoutButton(Element*);
+    virtual ~LayoutButton();
 
-    virtual const char* renderName() const override { return "RenderButton"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderButton || RenderFlexibleBox::isOfType(type); }
+    virtual const char* renderName() const override { return "LayoutButton"; }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutButton || LayoutFlexibleBox::isOfType(type); }
 
     virtual bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
     virtual bool canCollapseAnonymousBlockChild() const override { return true; }
@@ -59,8 +59,8 @@ private:
     LayoutBlock* m_inner;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderButton, isRenderButton());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutButton, isLayoutButton());
 
 } // namespace blink
 
-#endif // RenderButton_h
+#endif // LayoutButton_h

@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
                   LayoutTextControl {INPUT} at (0,0) size 223x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                   RenderText {#text} at (0,0) size 0x0
                 LayoutTableCell {TD} at (373,0) size 95x18 [r=0 c=2 rs=1 cs=1]
-                  RenderButton {INPUT} at (0,0) size 94.66x18 [bgcolor=#C0C0C0]
+                  LayoutButton {INPUT} at (0,0) size 94.66x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 78.66x13
                       RenderText {#text} at (0,0) size 79x13
                         text run at (0,0) width 79: "Search Froogle"

@@ -172,7 +172,7 @@ void FullscreenController::updateSize()
     if (!isFullscreen())
         return;
 
-    RenderFullScreen* renderer = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenRenderer();
+    LayoutFullScreen* renderer = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenRenderer();
     if (renderer)
         renderer->updateStyle();
 }

@@ -14,7 +14,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (123,18) size 4x18
           text run at (123,18) width 4: " "
         LayoutTextControl {INPUT} at (127,18) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (252,18) size 4x18
@@ -23,7 +23,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (379,18) size 4x18
           text run at (379,18) width 4: " "
         LayoutTextControl {INPUT} at (383,18) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (508,18) size 4x18
@@ -34,7 +34,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (123,37) size 4x18
           text run at (123,37) width 4: " "
         LayoutTextControl {INPUT} at (127,37) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (252,37) size 4x18
@@ -43,7 +43,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (379,37) size 4x18
           text run at (379,37) width 4: " "
         LayoutTextControl {INPUT} at (383,37) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (508,37) size 4x18
@@ -58,7 +58,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (123,18) size 4x18
           text run at (123,18) width 4: " "
         LayoutTextControl {INPUT} at (127,18) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (252,18) size 4x18
@@ -67,7 +67,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (379,18) size 4x18
           text run at (379,18) width 4: " "
         LayoutTextControl {INPUT} at (383,18) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (508,18) size 4x18
@@ -78,7 +78,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (123,37) size 4x18
           text run at (123,37) width 4: " "
         LayoutTextControl {INPUT} at (127,37) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (252,37) size 4x18
@@ -87,7 +87,7 @@ layer at (0,0) size 800x266
         RenderText {#text} at (379,37) size 4x18
           text run at (379,37) width 4: " "
         LayoutTextControl {INPUT} at (383,37) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
         RenderText {#text} at (508,37) size 4x18

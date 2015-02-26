@@ -97,13 +97,13 @@ layer at (0,0) size 800x553
                     LayoutTextControl {INPUT} at (0,6) size 145x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,253) size 568x32
-            RenderButton {INPUT} at (0,6) size 60x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+            LayoutButton {INPUT} at (0,6) size 60x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
               RenderBlock (anonymous) at (8,3) size 44x16
                 RenderText {#text} at (0,0) size 44x16
                   text run at (0,0) width 44: "Submit!"
             RenderText {#text} at (60,6) size 6x19
               text run at (60,6) width 6: " "
-            RenderButton {INPUT} at (65.63,6) size 80x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+            LayoutButton {INPUT} at (65.63,6) size 80x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
               RenderBlock (anonymous) at (8,3) size 64x16
                 RenderText {#text} at (0,0) size 64x16
                   text run at (0,0) width 64: "Clear Form"

@@ -32,7 +32,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/rendering/RenderButton.h"
+#include "core/layout/LayoutButton.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -58,7 +58,7 @@ void HTMLButtonElement::setType(const AtomicString& type)
 
 LayoutObject* HTMLButtonElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderButton(this);
+    return new LayoutButton(this);
 }
 
 const AtomicString& HTMLButtonElement::formControlType() const

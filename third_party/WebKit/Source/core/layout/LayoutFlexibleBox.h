@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderFlexibleBox_h
-#define RenderFlexibleBox_h
+#ifndef LayoutFlexibleBox_h
+#define LayoutFlexibleBox_h
 
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
 
 namespace blink {
 
-class RenderFlexibleBox : public LayoutBlock {
+class LayoutFlexibleBox : public LayoutBlock {
 public:
-    RenderFlexibleBox(Element*);
-    virtual ~RenderFlexibleBox();
+    LayoutFlexibleBox(Element*);
+    virtual ~LayoutFlexibleBox();
 
-    static RenderFlexibleBox* createAnonymous(Document*);
+    static LayoutFlexibleBox* createAnonymous(Document*);
 
     virtual const char* renderName() const override;
 
@@ -166,8 +166,8 @@ private:
     int m_numberOfInFlowChildrenOnFirstLine;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFlexibleBox, isFlexibleBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlexibleBox, isFlexibleBox());
 
 } // namespace blink
 
-#endif // RenderFlexibleBox_h
+#endif // LayoutFlexibleBox_h

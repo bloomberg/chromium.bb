@@ -11,6 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
@@ -25,7 +26,6 @@
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/SubtreeRecorder.h"
-#include "core/rendering/RenderFlexibleBox.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -110,7 +110,7 @@ void BlockPainter::paintChild(LayoutBox& child, const PaintInfo& paintInfo, cons
         child.paint(paintInfo, childPoint);
 }
 
-void BlockPainter::paintChildrenOfFlexibleBox(RenderFlexibleBox& renderFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildrenOfFlexibleBox(LayoutFlexibleBox& renderFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (LayoutBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
         BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);

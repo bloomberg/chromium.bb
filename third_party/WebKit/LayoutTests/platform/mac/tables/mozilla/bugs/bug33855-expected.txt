@@ -8,17 +8,17 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (0,0) size 784x24
             LayoutTableRow {TR} at (0,2) size 784x20 [bgcolor=#FFFFFF]
               LayoutTableCell {TD} at (2,2) size 66x20 [r=0 c=0 rs=1 cs=1]
-                RenderButton {INPUT} at (1.48,1) size 63.03x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1.48,1) size 63.03x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 47.03x13
                     RenderText {#text} at (0,0) size 48x13
                       text run at (0,0) width 48: "Select all"
               LayoutTableCell {TD} at (70,2) size 52x20 [r=0 c=1 rs=1 cs=1]
-                RenderButton {INPUT} at (1.03,1) size 49.92x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1.03,1) size 49.92x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 33.92x13
                     RenderText {#text} at (0,0) size 34x13
                       text run at (0,0) width 34: "Delete"
               LayoutTableCell {TD} at (124,2) size 82x20 [r=0 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (1.19,1) size 79.63x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1.19,1) size 79.63x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 63.63x13
                     RenderText {#text} at (0,0) size 64x13
                       text run at (0,0) width 64: "Empty trash"
@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 4x18
                   text run at (1,1) width 4: " "
               LayoutTableCell {TD} at (604,2) size 64x20 [r=0 c=4 rs=1 cs=1]
-                RenderButton {INPUT} at (1.05,1) size 61.89x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1.05,1) size 61.89x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 45.89x13
                     RenderText {#text} at (0,0) size 46x13
                       text run at (0,0) width 46: "Move to:"

@@ -21,7 +21,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         RenderText {#text} at (0,0) size 0x0
-        RenderButton {INPUT} at (10,50) size 200x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (10,50) size 200x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 184x16
             RenderText {#text} at (86,0) size 12x16
               text run at (86,0) width 12: "Hi"
@@ -38,7 +38,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         RenderText {#text} at (0,0) size 0x0
-        RenderButton {INPUT} at (110,30) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (110,30) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 84x16
             RenderText {#text} at (36,0) size 12x16
               text run at (36,0) width 12: "Hi"
@@ -57,7 +57,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderButton {INPUT} at (110,30) size 28x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (110,30) size 28x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 12x16
             RenderText {#text} at (0,0) size 12x16
               text run at (0,0) width 12: "Hi"
@@ -76,7 +76,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderButton {INPUT} at (110,30) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (110,30) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 84x16
             RenderText {#text} at (36,0) size 12x16
               text run at (36,0) width 12: "Hi"

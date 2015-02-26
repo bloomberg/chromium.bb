@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
                 LayoutTextControl {INPUT} at (288.52,1) size 173x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderText {#text} at (461,1) size 5x18
                   text run at (461,1) width 5: " "
-                RenderButton {INPUT} at (465.52,2) size 51.09x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (465.52,2) size 51.09x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 35.09x13
                     RenderText {#text} at (0,0) size 36x13
                       text run at (0,0) width 36: "Search"

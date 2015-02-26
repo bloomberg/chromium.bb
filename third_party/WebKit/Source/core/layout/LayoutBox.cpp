@@ -40,6 +40,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutInline.h"
@@ -57,7 +58,6 @@
 #include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
-#include "core/rendering/RenderFlexibleBox.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
@@ -4130,7 +4130,7 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
         bool hasTopOverflow = !style()->isLeftToRightDirection() && !isHorizontalWritingMode();
         bool hasLeftOverflow = !style()->isLeftToRightDirection() && isHorizontalWritingMode();
         if (isFlexibleBox() && style()->isReverseFlexDirection()) {
-            RenderFlexibleBox* flexibleBox = toRenderFlexibleBox(this);
+            LayoutFlexibleBox* flexibleBox = toLayoutFlexibleBox(this);
             if (flexibleBox->isHorizontalFlow())
                 hasLeftOverflow = true;
             else

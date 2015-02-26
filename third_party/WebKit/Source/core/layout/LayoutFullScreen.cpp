@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderFullScreen.h"
+#include "core/layout/LayoutFullScreen.h"
 
 #include "core/dom/Fullscreen.h"
 #include "core/frame/FrameHost.h"
@@ -36,41 +36,41 @@
 
 using namespace blink;
 
-class RenderFullScreenPlaceholder final : public LayoutBlockFlow {
+class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
 public:
-    RenderFullScreenPlaceholder(RenderFullScreen* owner)
+    LayoutFullScreenPlaceholder(LayoutFullScreen* owner)
         : LayoutBlockFlow(0)
         , m_owner(owner)
     {
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
     virtual void willBeDestroyed() override;
-    RenderFullScreen* m_owner;
+    LayoutFullScreen* m_owner;
 };
 
-void RenderFullScreenPlaceholder::willBeDestroyed()
+void LayoutFullScreenPlaceholder::willBeDestroyed()
 {
     m_owner->setPlaceholder(0);
     LayoutBlockFlow::willBeDestroyed();
 }
 
-RenderFullScreen::RenderFullScreen()
-    : RenderFlexibleBox(0)
+LayoutFullScreen::LayoutFullScreen()
+    : LayoutFlexibleBox(0)
     , m_placeholder(nullptr)
 {
     setReplaced(false);
 }
 
-RenderFullScreen* RenderFullScreen::createAnonymous(Document* document)
+LayoutFullScreen* LayoutFullScreen::createAnonymous(Document* document)
 {
-    RenderFullScreen* renderer = new RenderFullScreen();
+    LayoutFullScreen* renderer = new LayoutFullScreen();
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }
 
-void RenderFullScreen::willBeDestroyed()
+void LayoutFullScreen::willBeDestroyed()
 {
     if (m_placeholder) {
         remove();
@@ -79,16 +79,16 @@ void RenderFullScreen::willBeDestroyed()
         ASSERT(!m_placeholder);
     }
 
-    // LayoutObjects are unretained, so notify the document (which holds a pointer to a RenderFullScreen)
-    // if its RenderFullScreen is destroyed.
+    // LayoutObjects are unretained, so notify the document (which holds a pointer to a LayoutFullScreen)
+    // if its LayoutFullScreen is destroyed.
     Fullscreen& fullscreen = Fullscreen::from(document());
     if (fullscreen.fullScreenRenderer() == this)
         fullscreen.fullScreenRendererDestroyed();
 
-    RenderFlexibleBox::willBeDestroyed();
+    LayoutFlexibleBox::willBeDestroyed();
 }
 
-void RenderFullScreen::updateStyle()
+void LayoutFullScreen::updateStyle()
 {
     RefPtr<LayoutStyle> fullscreenStyle = LayoutStyle::createDefaultStyle();
 
@@ -120,13 +120,13 @@ void RenderFullScreen::updateStyle()
     setStyle(fullscreenStyle);
 }
 
-LayoutObject* RenderFullScreen::wrapRenderer(LayoutObject* object, LayoutObject* parent, Document* document)
+LayoutObject* LayoutFullScreen::wrapRenderer(LayoutObject* object, LayoutObject* parent, Document* document)
 {
     // FIXME: We should not modify the structure of the render tree during
     // layout. crbug.com/370459
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 
-    RenderFullScreen* fullscreenRenderer = RenderFullScreen::createAnonymous(document);
+    LayoutFullScreen* fullscreenRenderer = LayoutFullScreen::createAnonymous(document);
     fullscreenRenderer->updateStyle();
     if (parent && !parent->isChildAllowed(fullscreenRenderer, fullscreenRenderer->styleRef())) {
         fullscreenRenderer->destroy();
@@ -160,7 +160,7 @@ LayoutObject* RenderFullScreen::wrapRenderer(LayoutObject* object, LayoutObject*
     return fullscreenRenderer;
 }
 
-void RenderFullScreen::unwrapRenderer()
+void LayoutFullScreen::unwrapRenderer()
 {
     // FIXME: We should not modify the structure of the render tree during
     // layout. crbug.com/370459
@@ -184,12 +184,12 @@ void RenderFullScreen::unwrapRenderer()
     destroy();
 }
 
-void RenderFullScreen::setPlaceholder(LayoutBlock* placeholder)
+void LayoutFullScreen::setPlaceholder(LayoutBlock* placeholder)
 {
     m_placeholder = placeholder;
 }
 
-void RenderFullScreen::createPlaceholder(PassRefPtr<LayoutStyle> style, const LayoutRect& frameRect)
+void LayoutFullScreen::createPlaceholder(PassRefPtr<LayoutStyle> style, const LayoutRect& frameRect)
 {
     if (style->width().isAuto())
         style->setWidth(Length(frameRect.width(), Fixed));
@@ -197,12 +197,13 @@ void RenderFullScreen::createPlaceholder(PassRefPtr<LayoutStyle> style, const La
         style->setHeight(Length(frameRect.height(), Fixed));
 
     if (!m_placeholder) {
-        m_placeholder = new RenderFullScreenPlaceholder(this);
+        m_placeholder = new LayoutFullScreenPlaceholder(this);
         m_placeholder->setStyle(style);
         if (parent()) {
             parent()->addChild(m_placeholder, this);
             parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         }
-    } else
+    } else {
         m_placeholder->setStyle(style);
+    }
 }

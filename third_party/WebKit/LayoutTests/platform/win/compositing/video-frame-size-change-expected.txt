@@ -16,12 +16,12 @@ layer at (8,50) size 320x180
 layer at (332,50) size 320x180
   LayoutVideo {VIDEO} at (324,0) size 320x180
 layer at (8,50) size 320x180
-  RenderFlexibleBox {DIV} at (0,0) size 320x180
+  LayoutFlexibleBox {DIV} at (0,0) size 320x180
     RenderBlock {DIV} at (0,145) size 320x35
 layer at (8,50) size 320x145
-  RenderFlexibleBox {DIV} at (0,0) size 320x145
+  LayoutFlexibleBox {DIV} at (0,0) size 320x145
 layer at (332,50) size 320x180
-  RenderFlexibleBox {DIV} at (0,0) size 320x180
+  LayoutFlexibleBox {DIV} at (0,0) size 320x180
     RenderBlock {DIV} at (0,145) size 320x35
 layer at (332,50) size 320x145
-  RenderFlexibleBox {DIV} at (0,0) size 320x145
+  LayoutFlexibleBox {DIV} at (0,0) size 320x145

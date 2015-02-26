@@ -29,9 +29,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/VideoPainter.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "public/platform/WebLayer.h"
 
 namespace blink {
@@ -207,7 +207,7 @@ static const LayoutBlock* rendererPlaceholder(const LayoutObject* renderer)
     if (!parent)
         return 0;
 
-    RenderFullScreen* fullScreen = parent->isRenderFullScreen() ? toRenderFullScreen(parent) : 0;
+    LayoutFullScreen* fullScreen = parent->isLayoutFullScreen() ? toLayoutFullScreen(parent) : 0;
     if (!fullScreen)
         return 0;
 

@@ -25,7 +25,7 @@ layer at (0,0) size 800x341
 layer at (8,8) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,8) size 320x240
-  RenderFlexibleBox {DIV} at (0,0) size 320x240
+  LayoutFlexibleBox {DIV} at (0,0) size 320x240
     RenderBlock {DIV} at (0,205) size 320x35
 layer at (8,8) size 320x205
   RenderBlock (relative positioned) {DIV} at (0,0) size 320x205 [color=#FFFFFF]
@@ -60,20 +60,20 @@ layer at (8,175) size 320x15 scrollHeight 17
       RenderText {#text} at (19,0) size 282x15
         text run at (19,0) width 282: "Cue 6: should be on top of bottom positioned cue 5."
 layer at (13,213) size 310x30
-  RenderFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
-    RenderButton {INPUT} at (9,0) size 30x30
+  LayoutFlexibleBox {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
+    LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 74x8
-      RenderFlexibleBox {DIV} at (0,0) size 74x8 [border: (1px solid #E6E6E659)]
+      LayoutFlexibleBox {DIV} at (0,0) size 74x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 86x24
           RenderBlock {DIV} at (-4.77,0) size 32x24
-    RenderFlexibleBox {DIV} at (137,0) size 25x30 [color=#FFFFFF]
+    LayoutFlexibleBox {DIV} at (137,0) size 25x30 [color=#FFFFFF]
       RenderBlock (anonymous) at (0,0) size 25x30
         RenderText {#text} at (0,7) size 25x16
           text run at (0,7) width 25: "0:00"
-    RenderButton {INPUT} at (171,0) size 35x30
+    LayoutButton {INPUT} at (171,0) size 35x30
     LayoutSlider {INPUT} at (212,11) size 15x8
-      RenderFlexibleBox {DIV} at (0,0) size 15x8 [border: (1px solid #E6E6E659)]
+      LayoutFlexibleBox {DIV} at (0,0) size 15x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 27x24
           RenderBlock {DIV} at (-4,0) size 24x24
-    RenderButton {INPUT} at (237,0) size 30x30
-    RenderButton {INPUT} at (271,0) size 30x30
+    LayoutButton {INPUT} at (237,0) size 30x30
+    LayoutButton {INPUT} at (271,0) size 30x30

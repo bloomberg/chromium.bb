@@ -14,7 +14,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (153,21) size 4x19
           text run at (153,21) width 4: " "
         LayoutTextControl {INPUT} at (157,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (312,21) size 4x19
@@ -23,7 +23,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (469,21) size 4x19
           text run at (469,21) width 4: " "
         LayoutTextControl {INPUT} at (473,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
@@ -33,7 +33,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (153,65) size 4x19
           text run at (153,65) width 4: " "
         LayoutTextControl {INPUT} at (157,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (312,65) size 4x19
@@ -42,7 +42,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (469,65) size 4x19
           text run at (469,65) width 4: " "
         LayoutTextControl {INPUT} at (473,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
@@ -56,7 +56,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (153,21) size 4x19
           text run at (153,21) width 4: " "
         LayoutTextControl {INPUT} at (157,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (312,21) size 4x19
@@ -65,7 +65,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (469,21) size 4x19
           text run at (469,21) width 4: " "
         LayoutTextControl {INPUT} at (473,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (0,0) size 0x0
@@ -75,7 +75,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (153,65) size 4x19
           text run at (153,65) width 4: " "
         LayoutTextControl {INPUT} at (157,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (312,65) size 4x19
@@ -84,7 +84,7 @@ layer at (0,0) size 800x380
         RenderText {#text} at (469,65) size 4x19
           text run at (469,65) width 4: " "
         LayoutTextControl {INPUT} at (473,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 149x16
+          LayoutFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (0,2.50) size 1x11
             RenderBlock {DIV} at (1,0) size 135x16
         RenderText {#text} at (0,0) size 0x0

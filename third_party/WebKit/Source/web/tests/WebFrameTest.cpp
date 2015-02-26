@@ -61,6 +61,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentThreadableLoader.h"
@@ -69,7 +70,6 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "core/testing/NullExecutionContext.h"
 #include "core/testing/URLTestHelpers.h"
 #include "modules/mediastream/MediaStream.h"
@@ -6471,7 +6471,7 @@ TEST_F(WebFrameTest, FullscreenLayerSize)
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
 
     // Verify that the element is sized to the viewport.
-    RenderFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
+    LayoutFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
     EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalWidth().toInt());
     EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalHeight().toInt());
 
@@ -6570,7 +6570,7 @@ TEST_F(WebFrameTest, FullscreenSubframe)
     webViewImpl->layout();
 
     // Verify that the element is sized to the viewport.
-    RenderFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
+    LayoutFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
     EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalWidth().toInt());
     EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalHeight().toInt());
 

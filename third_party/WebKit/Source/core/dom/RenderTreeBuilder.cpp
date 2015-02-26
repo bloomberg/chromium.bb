@@ -34,9 +34,9 @@
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderText.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -137,7 +137,7 @@ void RenderTreeBuilderForElement::createRenderer()
     newRenderer->setStyle(&style); // setStyle() can depend on renderer() already being set.
 
     if (Fullscreen::isActiveFullScreenElement(*m_node)) {
-        newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, &m_node->document());
+        newRenderer = LayoutFullScreen::wrapRenderer(newRenderer, parentRenderer, &m_node->document());
         if (!newRenderer)
             return;
     }

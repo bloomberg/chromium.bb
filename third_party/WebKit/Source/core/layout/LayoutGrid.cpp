@@ -1452,7 +1452,7 @@ bool LayoutGrid::allowedToStretchLogicalHeightForChild(const LayoutBox& child) c
     return child.style()->logicalHeight().isAuto() && !child.style()->marginBeforeUsing(style()).isAuto() && !child.style()->marginAfterUsing(style()).isAuto();
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to LayoutBox.
+// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 bool LayoutGrid::needToStretchChildLogicalHeight(const LayoutBox& child) const
 {
     if (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
@@ -1461,7 +1461,7 @@ bool LayoutGrid::needToStretchChildLogicalHeight(const LayoutBox& child) const
     return isHorizontalWritingMode() && child.style()->height().isAuto();
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to LayoutBox.
+// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 LayoutUnit LayoutGrid::childIntrinsicHeight(const LayoutBox& child) const
 {
     if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
@@ -1469,7 +1469,7 @@ LayoutUnit LayoutGrid::childIntrinsicHeight(const LayoutBox& child) const
     return child.size().height();
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to LayoutBox.
+// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 LayoutUnit LayoutGrid::childIntrinsicWidth(const LayoutBox& child) const
 {
     if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
@@ -1477,13 +1477,13 @@ LayoutUnit LayoutGrid::childIntrinsicWidth(const LayoutBox& child) const
     return child.size().width();
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to LayoutBox.
+// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 LayoutUnit LayoutGrid::intrinsicLogicalHeightForChild(const LayoutBox& child) const
 {
     return isHorizontalWritingMode() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to LayoutBox.
+// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 LayoutUnit LayoutGrid::marginLogicalHeightForChild(const LayoutBox& child) const
 {
     return isHorizontalWritingMode() ? child.marginHeight() : child.marginWidth();
@@ -1514,7 +1514,7 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
     return gridAreaBreadthForChild - childLogicalHeight;
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to LayoutBox.
+// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUnit gridAreaBreadthForChild)
 {
     if (LayoutStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)

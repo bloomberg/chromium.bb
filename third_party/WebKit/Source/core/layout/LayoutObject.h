@@ -349,9 +349,9 @@ public:
     bool isMeter() const { return isOfType(LayoutObjectMeter); }
     bool isProgress() const { return isOfType(LayoutObjectProgress); }
     bool isQuote() const { return isOfType(LayoutObjectQuote); }
-    bool isRenderButton() const { return isOfType(LayoutObjectRenderButton); }
-    bool isRenderFullScreen() const { return isOfType(LayoutObjectRenderFullScreen); }
-    bool isRenderFullScreenPlaceholder() const { return isOfType(LayoutObjectRenderFullScreenPlaceholder); }
+    bool isLayoutButton() const { return isOfType(LayoutObjectLayoutButton); }
+    bool isLayoutFullScreen() const { return isOfType(LayoutObjectLayoutFullScreen); }
+    bool isLayoutFullScreenPlaceholder() const { return isOfType(LayoutObjectLayoutFullScreenPlaceholder); }
     bool isLayoutGrid() const { return isOfType(LayoutObjectLayoutGrid); }
     bool isLayoutIFrame() const { return isOfType(LayoutObjectLayoutIFrame); }
     bool isLayoutImage() const { return isOfType(LayoutObjectLayoutImage); }
@@ -508,8 +508,8 @@ public:
         // LayoutBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not LayoutBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
         return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
-            && !isRenderFullScreen()
-            && !isRenderFullScreenPlaceholder();
+            && !isLayoutFullScreen()
+            && !isLayoutFullScreenPlaceholder();
     }
     bool isAnonymousColumnsBlock() const { return style()->specifiesColumns() && isAnonymousBlock(); }
     bool isAnonymousColumnSpanBlock() const { return style()->columnSpan() && isAnonymousBlock(); }
@@ -1086,10 +1086,10 @@ protected:
         LayoutObjectMeter,
         LayoutObjectProgress,
         LayoutObjectQuote,
-        LayoutObjectRenderButton,
+        LayoutObjectLayoutButton,
         LayoutObjectLayoutFlowThread,
-        LayoutObjectRenderFullScreen,
-        LayoutObjectRenderFullScreenPlaceholder,
+        LayoutObjectLayoutFullScreen,
+        LayoutObjectLayoutFullScreenPlaceholder,
         LayoutObjectLayoutGrid,
         LayoutObjectLayoutIFrame,
         LayoutObjectLayoutImage,

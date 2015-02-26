@@ -18,7 +18,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (2,2) size 58x28 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 52x27
-                  RenderButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                  LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     RenderBlock (anonymous) at (8,3) size 36x16
                       RenderText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "button"
@@ -42,7 +42,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,2) size 169x28
             LayoutTableCell {TD} at (2,2) size 58x28 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
-                RenderButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 36x16
                     RenderText {#text} at (0,0) size 36x16
                       text run at (0,0) width 36: "button"
@@ -64,7 +64,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (2,2) size 58x28 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 52x12
-                  RenderButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                  LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     RenderBlock (anonymous) at (8,3) size 36x16
                       RenderText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "button"
@@ -94,7 +94,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (149,2) size 244x28 [r=0 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 242x26 [border: (2px solid #0000FF)]
                 LayoutFileUploadControl {INPUT} at (2,2) size 238x22 "No file chosen"
-                  RenderButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                  LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     RenderBlock (anonymous) at (8,3) size 69x16
                       RenderText {#text} at (0,0) size 69x16
                         text run at (0,0) width 69: "Choose File"
@@ -107,7 +107,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderInline {FONT} at (0,0) size 211x27
           RenderText {#text} at (0,0) size 43x27
             text run at (0,0) width 43: "text "
-          RenderButton {INPUT} at (43,5) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutButton {INPUT} at (43,5) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 36x16
               RenderText {#text} at (0,0) size 36x16
                 text run at (0,0) width 36: "button"
@@ -127,7 +127,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       RenderBlock {DIV} at (0,416.06) size 784x22
         RenderText {#text} at (0,1) size 26x19
           text run at (0,1) width 26: "text "
-        RenderButton {INPUT} at (26,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (26,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 36x16
             RenderText {#text} at (0,0) size 36x16
               text run at (0,0) width 36: "button"
@@ -148,7 +148,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderInline {FONT} at (0,0) size 177x12
           RenderText {#text} at (0,6) size 18x12
             text run at (0,6) width 18: "text "
-          RenderButton {INPUT} at (18,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutButton {INPUT} at (18,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 36x16
               RenderText {#text} at (0,0) size 36x16
                 text run at (0,0) width 36: "button"
@@ -172,7 +172,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderText {#text} at (119,21) size 4x19
           text run at (119,21) width 4: " "
         LayoutFileUploadControl {INPUT} at (123,20) size 238x22 "No file chosen"
-          RenderButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 69x16
               RenderText {#text} at (0,0) size 69x16
                 text run at (0,0) width 69: "Choose File"

@@ -36,7 +36,7 @@ namespace blink {
 const int LayoutSlider::defaultTrackLength = 129;
 
 LayoutSlider::LayoutSlider(HTMLInputElement* element)
-    : RenderFlexibleBox(element)
+    : LayoutFlexibleBox(element)
 {
     // We assume LayoutSlider works only with <input type=range>.
     ASSERT(element->type() == InputTypeNames::range);
@@ -73,7 +73,7 @@ void LayoutSlider::layout()
     if (thumbBox && thumbBox->isSliderThumb())
         toLayoutSliderThumb(thumbBox)->updateAppearance(styleRef());
 
-    RenderFlexibleBox::layout();
+    LayoutFlexibleBox::layout();
 }
 
 bool LayoutSlider::inDragMode() const

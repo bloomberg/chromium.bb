@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (111,2) size 350x21 [r=0 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 348x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (463,2) size 84x20 [r=0 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 54.98x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1,1) size 54.98x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 38.98x13
                     RenderText {#text} at (0,0) size 39x13
                       text run at (0,0) width 39: "Trigger"
@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
                       text run at (8,2) width 73: "a_abortinstall"
                 RenderText {#text} at (0,0) size 0x0
               LayoutTableCell {TD} at (463,25) size 84x20 [r=1 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 81.92x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1,1) size 81.92x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 65.92x13
                     RenderText {#text} at (0,0) size 66x13
                       text run at (0,0) width 66: "Trigger case"

@@ -19,48 +19,49 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderButton.h"
+#include "core/layout/LayoutButton.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-RenderButton::RenderButton(Element* element)
-    : RenderFlexibleBox(element)
+LayoutButton::LayoutButton(Element* element)
+    : LayoutFlexibleBox(element)
     , m_inner(0)
 {
 }
 
-RenderButton::~RenderButton()
+LayoutButton::~LayoutButton()
 {
 }
 
-void RenderButton::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
+void LayoutButton::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (!m_inner) {
         // Create an anonymous block.
         ASSERT(!firstChild());
         m_inner = createAnonymousBlock(style()->display());
-        RenderFlexibleBox::addChild(m_inner);
+        LayoutFlexibleBox::addChild(m_inner);
     }
 
     m_inner->addChild(newChild, beforeChild);
 }
 
-void RenderButton::removeChild(LayoutObject* oldChild)
+void LayoutButton::removeChild(LayoutObject* oldChild)
 {
     // m_inner should be the only child, but checking for direct children who
     // are not m_inner prevents security problems when that assumption is
     // violated.
     if (oldChild == m_inner || !m_inner || oldChild->parent() == this) {
         ASSERT(oldChild == m_inner || !m_inner);
-        RenderFlexibleBox::removeChild(oldChild);
+        LayoutFlexibleBox::removeChild(oldChild);
         m_inner = 0;
-    } else
+    } else {
         m_inner->removeChild(oldChild);
+    }
 }
 
-void RenderButton::updateAnonymousChildStyle(const LayoutObject& child, LayoutStyle& childStyle) const
+void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child, LayoutStyle& childStyle) const
 {
     ASSERT(!m_inner || &child == m_inner);
 
@@ -76,7 +77,7 @@ void RenderButton::updateAnonymousChildStyle(const LayoutObject& child, LayoutSt
     childStyle.setAlignContent(style()->alignContent());
 }
 
-bool RenderButton::canHaveGeneratedChildren() const
+bool LayoutButton::canHaveGeneratedChildren() const
 {
     // Input elements can't have generated children, but button elements can. We'll
     // write the code assuming any other button types that might emerge in the future
@@ -84,7 +85,7 @@ bool RenderButton::canHaveGeneratedChildren() const
     return !isHTMLInputElement(*node());
 }
 
-LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) const
+LayoutRect LayoutButton::controlClipRect(const LayoutPoint& additionalOffset) const
 {
     // Clip to the padding box to at least give content the extra padding space.
     LayoutRect rect(additionalOffset, size());
@@ -92,11 +93,11 @@ LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) co
     return rect;
 }
 
-int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
+int LayoutButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     // We want to call the LayoutBlock version of firstLineBoxBaseline to
-    // avoid RenderFlexibleBox synthesizing a baseline that we don't want.
+    // avoid LayoutFlexibleBox synthesizing a baseline that we don't want.
     // We use this check as a proxy for "are there any line boxes in this button"
     if (!hasLineIfEmpty() && LayoutBlock::firstLineBoxBaseline() == -1) {
         // To ensure that we have a consistent baseline when we have no children,
@@ -107,7 +108,7 @@ int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDi
         }
         return marginRight() + size().width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
     }
-    return RenderFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
+    return LayoutFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
 }
 
 } // namespace blink

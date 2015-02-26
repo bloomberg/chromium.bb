@@ -77,7 +77,7 @@ layer at (0,0) size 785x710 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (508,1) width 66: "Comment: "
             LayoutTextControl {INPUT} at (574,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderText {#text} at (0,0) size 0x0
-          RenderButton {INPUT} at (0,22) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutButton {INPUT} at (0,22) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 41x16
               RenderText {#text} at (0,0) size 41x16
                 text run at (0,0) width 41: "Submit"

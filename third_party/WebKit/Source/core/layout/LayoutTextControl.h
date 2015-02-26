@@ -23,7 +23,7 @@
 #define LayoutTextControl_h
 
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/rendering/RenderFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {
 
@@ -89,13 +89,13 @@ private:
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, isTextControl());
 
 // Renderer for our inner container, for <search> and others.
-// We can't use RenderFlexibleBox directly, because flexboxes have a different
+// We can't use LayoutFlexibleBox directly, because flexboxes have a different
 // baseline definition, and then inputs of different types wouldn't line up
 // anymore.
-class LayoutTextControlInnerContainer final : public RenderFlexibleBox {
+class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
 public:
     explicit LayoutTextControlInnerContainer(Element* element)
-        : RenderFlexibleBox(element)
+        : LayoutFlexibleBox(element)
     { }
     virtual ~LayoutTextControlInnerContainer() { }
 

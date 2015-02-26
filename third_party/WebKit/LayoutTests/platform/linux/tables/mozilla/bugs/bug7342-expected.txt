@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
                             RenderText {#text} at (0,0) size 0x0
                           RenderText {#text} at (0,0) size 0x0
                         LayoutTableCell {TD} at (352,4) size 100x32 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-                          RenderButton {INPUT} at (5,5) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                          LayoutButton {INPUT} at (5,5) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                             RenderBlock (anonymous) at (8,3) size 41x16
                               RenderText {#text} at (0,0) size 41x16
                                 text run at (0,0) width 41: "Search"

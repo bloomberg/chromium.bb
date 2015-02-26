@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (634.95,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (702,2) size 21x17
           text run at (702,2) width 21: "     "
-        RenderButton {INPUT} at (722.95,0) size 43x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (722.95,0) size 43x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 27x16
             RenderText {#text} at (0,0) size 27x16
               text run at (0,0) width 27: "Do It"

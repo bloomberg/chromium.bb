@@ -10,7 +10,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 321x19
           text run at (0,0) width 321: "This button should have the default submit button title:"
       RenderBlock (anonymous) at (0,77.72) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 64x16
             RenderText {#text} at (11,0) size 42x16
               text run at (11,0) width 42: "Submit"
@@ -19,7 +19,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 274x19
           text run at (0,0) width 274: "This button should should have the title \"Foo\":"
       RenderBlock (anonymous) at (0,150.72) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 64x16
             RenderText {#text} at (21,0) size 22x16
               text run at (21,0) width 22: "Foo"
@@ -28,7 +28,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 288x19
           text run at (0,0) width 288: "This button should have a single space in its title:"
       RenderBlock (anonymous) at (0,223.72) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 64x16
             RenderText {#text} at (30,0) size 4x16
               text run at (30,0) width 4: " "
@@ -37,7 +37,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 189x19
           text run at (0,0) width 189: "This button should have no title:"
       RenderBlock (anonymous) at (0,296.72) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {H3} at (0,336.44) size 769x23
         RenderText {#text} at (0,0) size 175x22
@@ -46,7 +46,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 311x19
           text run at (0,0) width 311: "This button should have the default reset button title:"
       RenderBlock (anonymous) at (0,414.16) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 64x16
             RenderText {#text} at (15,0) size 34x16
               text run at (15,0) width 34: "Reset"
@@ -55,7 +55,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 274x19
           text run at (0,0) width 274: "This button should should have the title \"Foo\":"
       RenderBlock (anonymous) at (0,487.16) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 64x16
             RenderText {#text} at (21,0) size 22x16
               text run at (21,0) width 22: "Foo"
@@ -64,7 +64,7 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 288x19
           text run at (0,0) width 288: "This button should have a single space in its title:"
       RenderBlock (anonymous) at (0,560.16) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 64x16
             RenderText {#text} at (30,0) size 4x16
               text run at (30,0) width 4: " "
@@ -73,5 +73,5 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 189x19
           text run at (0,0) width 189: "This button should have no title:"
       RenderBlock (anonymous) at (0,633.16) size 769x21
-        RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
         RenderText {#text} at (0,0) size 0x0

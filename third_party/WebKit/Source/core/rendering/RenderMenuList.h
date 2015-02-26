@@ -25,7 +25,7 @@
 #define RenderMenuList_h
 
 #include "core/html/forms/PopupMenuClient.h"
-#include "core/rendering/RenderFlexibleBox.h"
+#include "core/layout/LayoutFlexibleBox.h"
 #include "platform/PopupMenu.h"
 #include "platform/geometry/LayoutRect.h"
 
@@ -34,7 +34,7 @@ namespace blink {
 class HTMLSelectElement;
 class RenderText;
 
-class RenderMenuList final : public RenderFlexibleBox, private PopupMenuClient {
+class RenderMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
 
 public:
     explicit RenderMenuList(Element*);
@@ -57,7 +57,7 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || RenderFlexibleBox::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type); }
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;

@@ -22,20 +22,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderFullScreen_h
-#define RenderFullScreen_h
+#ifndef LayoutFullScreen_h
+#define LayoutFullScreen_h
 
+#include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/style/StyleInheritedData.h"
-#include "core/rendering/RenderFlexibleBox.h"
 
 namespace blink {
 
-class RenderFullScreen final : public RenderFlexibleBox {
+class LayoutFullScreen final : public LayoutFlexibleBox {
 public:
-    static RenderFullScreen* createAnonymous(Document*);
+    static LayoutFullScreen* createAnonymous(Document*);
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreen || RenderFlexibleBox::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderFullScreen"; }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreen || LayoutFlexibleBox::isOfType(type); }
+    virtual const char* renderName() const override { return "LayoutFullScreen"; }
 
     void setPlaceholder(LayoutBlock*);
     LayoutBlock* placeholder() { return m_placeholder; }
@@ -48,14 +48,14 @@ public:
     void updateStyle();
 
 private:
-    RenderFullScreen();
+    LayoutFullScreen();
     virtual void willBeDestroyed() override;
 
 protected:
     LayoutBlock* m_placeholder;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFullScreen, isRenderFullScreen());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFullScreen, isLayoutFullScreen());
 
 }
 

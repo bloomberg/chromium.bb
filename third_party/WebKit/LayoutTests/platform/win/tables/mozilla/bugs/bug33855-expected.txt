@@ -8,17 +8,17 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (0,0) size 784x28
             LayoutTableRow {TR} at (0,2) size 784x24 [bgcolor=#FFFFFF]
               LayoutTableCell {TD} at (2,2) size 72x24 [r=0 c=0 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 70x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (1,1) size 70x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 54x16
                     RenderText {#text} at (0,0) size 54x16
                       text run at (0,0) width 54: "Select all"
               LayoutTableCell {TD} at (76,2) size 55x24 [r=0 c=1 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 53x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (1,1) size 53x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 37x16
                     RenderText {#text} at (0,0) size 37x16
                       text run at (0,0) width 37: "Delete"
               LayoutTableCell {TD} at (133,2) size 89x24 [r=0 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 87x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (1,1) size 87x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 71x16
                     RenderText {#text} at (0,0) size 71x16
                       text run at (0,0) width 71: "Empty trash"
@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 4x17
                   text run at (1,1) width 4: " "
               LayoutTableCell {TD} at (603,2) size 67x24 [r=0 c=4 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 65x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (1,1) size 65x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 49x16
                     RenderText {#text} at (0,0) size 49x16
                       text run at (0,0) width 49: "Move to:"

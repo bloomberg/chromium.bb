@@ -9,12 +9,12 @@ namespace blink {
 
 struct PaintInfo;
 class InlineBox;
-class LayoutPoint;
-class LayoutRect;
-class RenderFlexibleBox;
 class LayoutBlock;
 class LayoutBox;
+class LayoutFlexibleBox;
 class LayoutObject;
+class LayoutPoint;
+class LayoutRect;
 
 class BlockPainter {
 public:
@@ -31,7 +31,7 @@ public:
     // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.
     // It is expected that the caller will call this function independent of the value of paintInfo.phase.
     static void paintAsInlineBlock(LayoutObject&, const PaintInfo&, const LayoutPoint&);
-    static void paintChildrenOfFlexibleBox(RenderFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
+    static void paintChildrenOfFlexibleBox(LayoutFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
     static void paintInlineBox(InlineBox&, const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:

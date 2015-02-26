@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (2,2) size 780x24
             LayoutTableRow {TR} at (0,0) size 780x24
               LayoutTableCell {TD} at (0,0) size 40x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 38x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (1,1) size 38x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 22x16
                     RenderText {#text} at (0,0) size 22x16
                       text run at (0,0) width 22: "Foo"
@@ -44,7 +44,7 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (2,2) size 780x84
             LayoutTableRow {TR} at (0,0) size 780x84
               LayoutTableCell {TD} at (0,0) size 116x84 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 114x82 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
+                LayoutButton {INPUT} at (1,1) size 114x82 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
                   RenderBlock (anonymous) at (46,41) size 22x16
                     RenderText {#text} at (0,0) size 22x16
                       text run at (0,0) width 22: "Foo"
@@ -53,13 +53,13 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (2,2) size 780x84
             LayoutTableRow {TR} at (0,0) size 780x84
               LayoutTableCell {TD} at (0,0) size 171x84 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 169x82 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
+                LayoutButton {INPUT} at (1,1) size 169x82 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
                   RenderBlock (anonymous) at (46,41) size 77x16
                     RenderText {#text} at (0,0) size 77x16
                       text run at (0,0) width 77: "Submit a bug"
               LayoutTableCell {TD} at (171,41) size 609x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
         RenderBlock (anonymous) at (0,176) size 784x82
-          RenderButton {INPUT} at (0,0) size 114x82 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
+          LayoutButton {INPUT} at (0,0) size 114x82 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
             RenderBlock (anonymous) at (46,41) size 22x16
               RenderText {#text} at (0,0) size 22x16
                 text run at (0,0) width 22: "Foo"
