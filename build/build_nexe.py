@@ -11,6 +11,7 @@ additional arguments, and use them to build.
 
 import hashlib
 import json
+import multiprocessing
 from optparse import OptionParser
 import os
 import re
@@ -20,7 +21,7 @@ import StringIO
 import subprocess
 import sys
 import tempfile
-import threading
+import traceback
 import urllib2
 
 from build_nexe_tools import (CommandRunner, Error, FixPath,
@@ -225,7 +226,7 @@ class Builder(CommandRunner):
     goma_config = self.GetGomaConfig(options.gomadir, arch, toolname)
     self.gomacc = goma_config.get('gomacc', '')
     self.goma_burst = goma_config.get('burst', False)
-    self.goma_threads = goma_config.get('threads', 1)
+    self.goma_processes = goma_config.get('processes', 1)
 
     # Define NDEBUG for Release builds.
     if options.build_config.startswith('Release'):
@@ -445,9 +446,9 @@ class Builder(CommandRunner):
 
     if goma_config:
       goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST')
-      default_threads = 100 if pynacl.platform.IsLinux() else 10
-      goma_config['threads'] = GetIntegerEnv('NACL_GOMA_THREADS',
-                                             default=default_threads)
+      default_processes = 100 if pynacl.platform.IsLinux() else 10
+      goma_config['processes'] = GetIntegerEnv('NACL_GOMA_PROCESSES',
+                                               default=default_processes)
     return goma_config
 
   def NeedsRebuild(self, outd, out, src, rebuilt=False):
@@ -743,6 +744,23 @@ def UpdateBuildArgs(args, filename):
   return True
 
 
+def CompileProcess(build, input_queue, output_queue):
+  try:
+    while True:
+      filename = input_queue.get()
+      if filename is None:
+        return
+      output_queue.put((filename, build.Compile(filename)))
+  except Exception:
+    # Put current exception info to the queue.
+    # Since the exception info contains traceback information, it cannot
+    # be pickled, so it cannot be sent to the parent process via queue.
+    # We stringify the traceback information to send.
+    exctype, value = sys.exc_info()[:2]
+    traceback_str = "".join(traceback.format_exception(*sys.exc_info()))
+    output_queue.put((exctype, value, traceback_str))
+
+
 def Main(argv):
   parser = OptionParser()
   parser.add_option('--empty', dest='empty', default=False,
@@ -877,52 +895,49 @@ def Main(argv):
       build.Translate(list(files)[0])
       return 0
 
-    if build.gomacc and (build.goma_burst or build.goma_threads > 1):
-      returns = Queue.Queue()
+    if build.gomacc and (build.goma_burst or build.goma_processes > 1):
+      inputs = multiprocessing.Queue()
+      returns = multiprocessing.Queue()
 
-      # Push all files into the inputs queue
-      inputs = Queue.Queue()
-      for filename in files:
-        inputs.put(filename)
-
-      def CompileThread(input_queue, output_queue):
-        try:
-          while True:
-            try:
-              filename = input_queue.get_nowait()
-            except Queue.Empty:
-              return
-            output_queue.put((filename, build.Compile(filename)))
-        except Exception:
-          # Put current exception info to the queue.
-          output_queue.put(sys.exc_info())
-
-      # Don't limit number of threads in the burst mode.
+      # Don't limit number of processess in the burst mode.
       if build.goma_burst:
-        num_threads = len(files)
+        num_processes = len(files)
       else:
-        num_threads = min(build.goma_threads, len(files))
+        num_processes = min(build.goma_processes, len(files))
 
       # Start parallel build.
-      build_threads = []
-      for _ in xrange(num_threads):
-        thr = threading.Thread(target=CompileThread, args=(inputs, returns))
-        thr.start()
-        build_threads.append(thr)
+      build_processes = []
+      for _ in xrange(num_processes):
+        process = multiprocessing.Process(target=CompileProcess,
+                                          args=(build, inputs, returns))
+        process.start()
+        build_processes.append(process)
+
+      # Push all files into the inputs queue.
+      # None is also pushed as a terminator. When worker process read None,
+      # the worker process will terminate.
+      for filename in files:
+        inputs.put(filename)
+      for _ in xrange(num_processes):
+        inputs.put(None)
 
       # Wait for results.
       src_to_obj = {}
       for _ in files:
         out = returns.get()
-        # An exception raised in the thread may come through the queue.
+        # An exception raised in the process may come through the queue.
         # Raise it again here.
         if (isinstance(out, tuple) and len(out) == 3 and
             isinstance(out[1], Exception)):
-          raise out[0], out[1], out[2]
+          # TODO(shinyak): out[2] contains stringified traceback. It's just
+          # a string, so we cannot pass it to raise. So, we just log it here,
+          # and pass None as traceback.
+          build.Log(out[2])
+          raise out[0], out[1], None
         elif out and len(out) == 2:
           src_to_obj[out[0]] = out[1]
         else:
-          raise Error('Unexpected element in CompileThread output_queue %s' %
+          raise Error('Unexpected element in CompileProcess output_queue %s' %
                       out)
       # Keep the input files ordering consistent for link phase to ensure
       # determinism.
@@ -932,12 +947,12 @@ def Main(argv):
         if src_to_obj[filename]:
           objs.append(src_to_obj[filename])
 
-      assert inputs.empty()
-
-      # Wait until all threads have stopped and verify that there are no more
+      # Wait until all processes have stopped and verify that there are no more
       # results.
-      for thr in build_threads:
-        thr.join()
+      for process in build_processes:
+        process.join()
+
+      assert inputs.empty()
       assert returns.empty()
 
     else:  # slow path.
