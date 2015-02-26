@@ -51,7 +51,7 @@ base::string16 GetBackingModuleFilePath(PVOID address) {
   DCHECK_NT(g_nt_query_virtual_memory_func);
 
   // We'll start with something close to max_path characters for the name.
-  ULONG buffer_bytes = MAX_PATH * 2;
+  SIZE_T buffer_bytes = MAX_PATH * 2;
   std::vector<BYTE> buffer_data(buffer_bytes);
 
   for (;;) {
@@ -61,7 +61,7 @@ base::string16 GetBackingModuleFilePath(PVOID address) {
     if (!section_name)
       break;
 
-    ULONG returned_bytes;
+    SIZE_T returned_bytes;
     NTSTATUS ret = g_nt_query_virtual_memory_func(
         NtCurrentProcess, address, MemorySectionName, section_name,
         buffer_bytes, &returned_bytes);
