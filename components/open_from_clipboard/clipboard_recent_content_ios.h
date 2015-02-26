@@ -30,12 +30,15 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
 
   ClipboardRecentContentIOS();
   ~ClipboardRecentContentIOS() override;
-  // Loads information from the user defaults about the latest clipboard entry.
+  // Loads information from the user defaults about the latest pasteboard entry.
   void LoadFromUserDefaults();
-  // Saves information to the user defaults about the latest clipboard entry.
+  // Saves information to the user defaults about the latest pasteboard entry.
   void SaveToUserDefaults();
   // Returns the URL contained in the clipboard (if any).
   GURL URLFromPasteboard();
+  // Returns whether the device has restarted since the last time a pasteboard
+  // change was detected.
+  bool DeviceRestartedSincePasteboardChanged();
 
   // The pasteboard's change count. Increases everytime the pasteboard changes.
   NSInteger lastPasteboardChangeCount_;

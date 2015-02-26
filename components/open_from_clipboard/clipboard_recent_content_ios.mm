@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/sys_info.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -116,9 +117,14 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS()
     : ClipboardRecentContent() {
   urlFromPasteboardCache_ = URLFromPasteboard();
   LoadFromUserDefaults();
-  if ([UIPasteboard generalPasteboard].changeCount !=
-      lastPasteboardChangeCount_) {
-    PasteboardChanged();
+  // The pasteboard's changeCount is reset to zero when the device is restarted.
+  // This means that even if |changeCount| hasn't changed, the pasteboard
+  // content could have changed. In order to avoid missing pasteboard changes,
+  // the changeCount is reset if the device has restarted.
+  NSInteger changeCount = [UIPasteboard generalPasteboard].changeCount;
+  if (changeCount != lastPasteboardChangeCount_ ||
+      DeviceRestartedSincePasteboardChanged()) {
+     PasteboardChanged();
   }
   notificationBridge_.reset(
       [[PasteboardNotificationListenerBridge alloc] initWithDelegate:this]);
@@ -159,4 +165,11 @@ void ClipboardRecentContentIOS::SaveToUserDefaults() {
                                              forKey:kPasteboardChangeCountKey];
   [[NSUserDefaults standardUserDefaults] setObject:lastPasteboardChangeDate_
                                             forKey:kPasteboardChangeDateKey];
+}
+
+bool ClipboardRecentContentIOS::DeviceRestartedSincePasteboardChanged() {
+  int64 secondsSincePasteboardChange =
+      -static_cast<int64>([lastPasteboardChangeDate_ timeIntervalSinceNow]);
+  int64 secondsSinceLastDeviceRestart = base::SysInfo::Uptime() / 1000;
+  return secondsSincePasteboardChange > secondsSinceLastDeviceRestart;
 }
