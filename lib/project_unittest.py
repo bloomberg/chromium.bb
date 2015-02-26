@@ -174,3 +174,8 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
                     return_value=[bar_overlay]):
       self.assertTrue(self.project.Inherits('bar'))
       self.assertFalse(self.project.Inherits('baz'))
+
+  def testOverlayDir(self):
+    """Tests that overlay directory is returned correctly."""
+    self.CreateNewProject()
+    self.assertEquals(self.project.project_dir, self.project.OverlayDir())

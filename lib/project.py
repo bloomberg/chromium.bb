@@ -174,6 +174,10 @@ class Project(object):
     main_package = self.config.get('main_package')
     return [main_package] if main_package else []
 
+  def OverlayDir(self):
+    """Returns the project's overlay directory."""
+    return self.project_dir
+
 
 def _FindProjectInOverlays(name, base=None):
   """Returns the parent project of |base| that matches |name|.
