@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessOverflow) {
 }
 
 // Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_ProcessOverflowCommandLine DISABLED_ProcessOverflow
 #else
 #define MAYBE_ProcessOverflowCommandLine ProcessOverflow
