@@ -14,10 +14,10 @@ namespace content {
 class WorkerTaskRunnerTest : public testing::Test {
  public:
   void FakeStart() {
-    task_runner_.OnWorkerRunLoopStarted(blink::WebWorkerRunLoop());
+    task_runner_.OnWorkerRunLoopStarted();
   }
   void FakeStop() {
-    task_runner_.OnWorkerRunLoopStopped(blink::WebWorkerRunLoop());
+    task_runner_.OnWorkerRunLoopStopped();
   }
   WorkerTaskRunner task_runner_;
 

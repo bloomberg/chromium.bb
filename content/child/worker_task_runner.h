@@ -13,7 +13,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebWorkerRunLoop.h"
 
 namespace base {
 class TaskRunner;
@@ -41,8 +40,8 @@ class CONTENT_EXPORT WorkerTaskRunner {
   void AddStopObserver(Observer* observer);
   void RemoveStopObserver(Observer* observer);
 
-  void OnWorkerRunLoopStarted(const blink::WebWorkerRunLoop& loop);
-  void OnWorkerRunLoopStopped(const blink::WebWorkerRunLoop& loop);
+  void OnWorkerRunLoopStarted();
+  void OnWorkerRunLoopStopped();
 
   base::TaskRunner* GetTaskRunnerFor(int worker_id);
 

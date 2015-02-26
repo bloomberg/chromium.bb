@@ -14,8 +14,6 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 
-using blink::WebWorkerRunLoop;
-
 namespace content {
 
 namespace {
@@ -90,7 +88,7 @@ void WorkerTaskRunner::RemoveStopObserver(Observer* obs) {
 WorkerTaskRunner::~WorkerTaskRunner() {
 }
 
-void WorkerTaskRunner::OnWorkerRunLoopStarted(const WebWorkerRunLoop& loop) {
+void WorkerTaskRunner::OnWorkerRunLoopStarted() {
   DCHECK(!current_tls_.Get());
   DCHECK(!base::PlatformThread::CurrentRef().is_null());
   current_tls_.Set(new ThreadLocalState());
@@ -101,7 +99,7 @@ void WorkerTaskRunner::OnWorkerRunLoopStarted(const WebWorkerRunLoop& loop) {
   CHECK(task_runner_map_[id]);
 }
 
-void WorkerTaskRunner::OnWorkerRunLoopStopped(const WebWorkerRunLoop& loop) {
+void WorkerTaskRunner::OnWorkerRunLoopStopped() {
   DCHECK(current_tls_.Get());
   FOR_EACH_OBSERVER(Observer, current_tls_.Get()->stop_observers_,
                     OnWorkerRunLoopStopped());

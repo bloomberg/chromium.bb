@@ -31,6 +31,10 @@ namespace base {
 class MessageLoop;
 }
 
+namespace blink {
+class WebWorkerRunLoop;
+}
+
 namespace content {
 class FlingCurveConfiguration;
 class NotificationDispatcher;
@@ -153,6 +157,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebWorkerRunLoop& runLoop);
   virtual void didStopWorkerRunLoop(
       const blink::WebWorkerRunLoop& runLoop);
+  virtual void didStartWorkerRunLoop();
+  virtual void didStopWorkerRunLoop();
   virtual blink::WebCrypto* crypto();
   virtual blink::WebGeofencingProvider* geofencingProvider();
   virtual blink::WebBluetooth* bluetooth();
