@@ -55451,10 +55451,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="286711" label="PPB_FlashFullscreen;0.1"/>
   <int value="2804066" label="PPB_AudioConfig;1.1"/>
   <int value="8760108" label="PPB_Testing_Private;1.0"/>
+  <int value="10714106" label="PPB_OutputProtection_Private;0.1"/>
+  <int value="11143977" label="PPB_PlatformVerification_Private;0.2"/>
   <int value="12033600" label="PPB_Compositor;0.1"/>
   <int value="13662160" label="PPB_CharSet(Dev);0.4"/>
   <int value="22816901" label="PPB_FileChooser(Dev);0.5"/>
   <int value="28187368" label="PPB_IMEInputEvent(Dev);0.2"/>
+  <int value="36133501" label="PPB_MediaStreamVideoTrack;1.0"/>
   <int value="37307420" label="PPB_Scrollbar(Dev);0.5"/>
   <int value="59327104" label="PPB_Messaging;1.2"/>
   <int value="62905097" label="PPB_TrueTypeFont(Dev);0.1"/>
@@ -55475,6 +55478,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="229560990" label="PPB_Var(Deprecated);0.3"/>
   <int value="250764663" label="PPB_Graphics2D(Dev);0.2"/>
   <int value="320267009" label="PPB_Flash_File_ModuleLocal;3"/>
+  <int value="344923193" label="PPB_CompositorLayer;0.2"/>
   <int value="348907389" label="PPB_TCPSocket_Private;0.4"/>
   <int value="382780521" label="PPB_FileRef;1.2"/>
   <int value="415548516" label="PPB_MessageLoop;1.0"/>
@@ -55482,6 +55486,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="495324603" label="PPB_Widget(Dev);0.4"/>
   <int value="556941117" label="PPB_IMEInputEvent;1.0"/>
   <int value="588532407" label="PPB_Graphics2D;1.1"/>
+  <int value="596770967" label="PPB_X509Certificate_Private;0.1"/>
   <int value="612625164" label="PPB_InputEvent;1.0"/>
   <int value="615811055" label="PPB_Flash_MessageLoop;0.1"/>
   <int value="617438958" label="PPB_VideoDecoder;1.0"/>
@@ -55496,6 +55501,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="714324031" label="PPB_Graphics3D;1.0"/>
   <int value="724664149" label="PPB_Flash_Menu;0.2"/>
   <int value="760024173" label="PPB_FileIO;1.0"/>
+  <int value="760246876" label="PPB_OpenGLES2VertexArrayObject;1.0"/>
   <int value="763746388" label="PPB_NaCl_Private;1.0"/>
   <int value="772423590" label="PPB_TouchInputEvent;1.0"/>
   <int value="780912189" label="PPB_Alarms(Dev);0.1"/>
@@ -55507,13 +55513,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="844787073" label="PPB_TextInput(Dev);0.2"/>
   <int value="856177441" label="PPB_VarArray;1.0"/>
   <int value="857934187" label="PPB_Ext_Socket(Dev);0.1"/>
+  <int value="866907383" label="PPB_View;1.2"/>
   <int value="883046945" label="PPB_OpenGLES2ChromiumMapSub;1.0"/>
   <int value="890225106" label="PPB_FileChooserTrusted;0.6"/>
   <int value="893629850" label="PPB_VarArrayBuffer;1.0"/>
   <int value="897332014" label="PPB_Zoom(Dev);0.2"/>
+  <int value="906618937" label="PPB_Find_Private;0.3"/>
   <int value="910782902" label="PPB_AudioFrame;0.1"/>
   <int value="913922409" label="PPB_NetworkProxy;1.0"/>
   <int value="916446405" label="PPB_URLUtil(Dev);0.6"/>
+  <int value="929640141" label="PPB_VideoDestination_Private;0.1"/>
   <int value="930528031" label="PPB_OpenGLES2DrawBuffers(Dev);1.0"/>
   <int value="930786862" label="PPB_Flash_Clipboard;5.0"/>
   <int value="941275733" label="PPB_Flash;12.6"/>
@@ -55563,6 +55572,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1374976378" label="PPB_OpenGLES2Query;1.0"/>
   <int value="1437724812" label="PPB_AudioConfig;1.0"/>
   <int value="1443771913" label="PPB_NetAddress;1.0"/>
+  <int value="1502481774" label="PPB_OpenGLES2ChromiumMapSub(Dev);1.0"/>
   <int value="1504691399" label="PPB_Flash;13.0"/>
   <int value="1505595424" label="PPB_Crypto(Dev);0.1"/>
   <int value="1508192415" label="PPB_VarDictionary;1.0"/>
@@ -55570,6 +55580,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1520420939" label="PPB_MouseCursor;1.0"/>
   <int value="1528832860" label="PPB_FileChooser(Dev);0.6"/>
   <int value="1577776196" label="PPB_InputEvent_Private;0.1"/>
+  <int value="1616589391" label="PPB_TCPServerSocket_Private;0.2"/>
   <int value="1641037564" label="PPB_VideoSource_Private;0.1"/>
   <int value="1645591549" label="PPB_Widget(Dev);0.3"/>
   <int value="1659973365" label="PPB_ImageCapture_Private;0.1"/>
@@ -55577,6 +55588,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1680873803" label="PPB_Console;1.0"/>
   <int value="1681523535" label="PPB_TCPSocket;1.2"/>
   <int value="1703245231" label="PPB_NetworkList;1.0"/>
+  <int value="1714657156" label="PPB_MediaStreamAudioTrack;0.1"/>
   <int value="1721408268" label="PPB_URLLoader;1.0"/>
   <int value="1735606779" label="PPB_VideoEncoder;0.1"/>
   <int value="1753813390" label="PPB_Flash_Clipboard;4.0"/>
@@ -55585,15 +55597,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1779899536" label="PPB_Flash_Print;1.0"/>
   <int value="1821321578" label="PPB_UMA_Private;0.2"/>
   <int value="1822250569" label="PPB_Trace_Event(Dev);0.1"/>
+  <int value="1827038364" label="PPB_DisplayColorProfile_Private;0.1"/>
   <int value="1838344955" label="PPB_Flash;12.4"/>
+  <int value="1845295664" label="PPB_Ext_CrxFileSystem_Private;0.1"/>
   <int value="1866591098" label="PPB_FileRefPrivate;0.1"/>
   <int value="1870131254" label="PPB_MouseLock;1.0"/>
   <int value="1930785273" label="PPB_Var;1.0"/>
   <int value="1944731926" label="PPB_URLRequestInfo;1.0"/>
+  <int value="1955790313" label="PPB_MediaStreamVideoTrack;0.1"/>
+  <int value="1970082102" label="PPB_TCPServerSocket_Private;0.1"/>
   <int value="1978180250" label="PPB_Flash_Clipboard;5.1"/>
   <int value="1980463089" label="PPB_View;1.1"/>
   <int value="1981643755" label="PPB_FileMapping;0.1"/>
   <int value="1994108724" label="PPB_Flash_File_FileRef;2"/>
+  <int value="1997668256" label="PPB_GLESChromiumTextureMapping(Dev);0.1"/>
   <int value="1998274350" label="PPB_Font(Dev);0.6"/>
   <int value="2001322203" label="PPB_Messaging;1.1"/>
   <int value="2003778556" label="PPB_MouseInputEvent;1.1"/>

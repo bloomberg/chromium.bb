@@ -8,10 +8,20 @@
 //
 // The hashing logic here must match the hashing logic at
 // ppapi/proxy/interface_list.cc.
+//
+// This utility can be used to generate a sorted list of hashes for all current
+// PPB* interfaces by running a script to generate the interface names, e.g.
+// $ grep -r "PPB_" ppapi/c | grep -o "\".*;[0-9]*\.[0-9]*\"" | tr '\n' ' '
+// and then invoking pepper_hash_for_uma on the list. The sorted output hashes
+// can be compared to tools/metrics/histograms/histograms.xml to determine if
+// any interfaces have been left out.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <algorithm>
+#include <vector>
 
 #include "base/hash.h"
 #include "base/macros.h"
@@ -25,13 +35,19 @@ int main(int argc, char **argv) {
             argv[0]);
     return 1;
   }
+  std::vector<std::pair<uint32, char*>> hashes;
   for (int i = 1; i < argc; i++) {
     uint32 data = base::Hash(argv[i], strlen(argv[i]));
 
     // Strip off the signed bit because UMA doesn't support negative values,
     // but takes a signed int as input.
     int hash = static_cast<int>(data & 0x7fffffff);
-    printf("<int value=\"%d\" label=\"%s\"/>\n", hash, argv[i]);
+    hashes.push_back(std::make_pair(hash, argv[i]));
   }
+  std::sort(hashes.begin(), hashes.end());
+  for (const auto& hash : hashes) {
+    printf("<int value=\"%d\" label=\"%s\"/>\n", hash.first, hash.second);
+  }
+
   return 0;
 }
