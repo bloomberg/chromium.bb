@@ -69,6 +69,7 @@ void ConnectivityChecker::Initialize() {
 ConnectivityChecker::~ConnectivityChecker() {
   DCHECK(loop_proxy_.get());
   loop_proxy_->DeleteSoon(FROM_HERE, url_request_context_.release());
+  loop_proxy_->DeleteSoon(FROM_HERE, url_request_.release());
 }
 
 void ConnectivityChecker::AddConnectivityObserver(
@@ -108,7 +109,7 @@ void ConnectivityChecker::Check() {
   if (url_request_.get())
     return;
 
-  VLOG(2) << "Connectivity check: url=" << *connectivity_check_url_;
+  VLOG(1) << "Connectivity check: url=" << *connectivity_check_url_;
   url_request_ = url_request_context_->CreateRequest(
       *connectivity_check_url_, net::MAXIMUM_PRIORITY, this, NULL);
   url_request_->set_method("HEAD");
@@ -139,11 +140,13 @@ void ConnectivityChecker::OnResponseStarted(net::URLRequest* request) {
   url_request_.reset(NULL);  // URLRequest::Cancel() is called in destructor.
 
   if (http_response_code < 400) {
+    VLOG(1) << "Connectivity check succeeded";
     bad_responses_ = 0;
     SetConnectivity(true);
     return;
   }
 
+  VLOG(1) << "Connectivity check failed: " << http_response_code;
   ++bad_responses_;
   if (bad_responses_ > kNumBadResponses) {
     bad_responses_ = kNumBadResponses;

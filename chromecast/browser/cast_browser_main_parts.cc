@@ -29,8 +29,6 @@
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/net/connectivity_checker.h"
-#include "chromecast/net/network_change_notifier_cast.h"
-#include "chromecast/net/network_change_notifier_factory_cast.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/browser_cdm_factory.h"
@@ -167,9 +165,6 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
-#else
-  net::NetworkChangeNotifier::SetFactory(
-      new NetworkChangeNotifierFactoryCast());
 #endif  // defined(OS_ANDROID)
 }
 

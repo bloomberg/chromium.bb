@@ -77,10 +77,6 @@
         'net/connectivity_checker.h',
         'net/net_switches.cc',
         'net/net_switches.h',
-        'net/network_change_notifier_cast.cc',
-        'net/network_change_notifier_cast.h',
-        'net/network_change_notifier_factory_cast.cc',
-        'net/network_change_notifier_factory_cast.h',
       ],
     },
     {
