@@ -290,6 +290,7 @@ void TaskGraphRunner::WaitForTasksToFinishRunning(NamespaceToken token) {
 
   {
     base::AutoLock lock(lock_);
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
 
     TaskNamespaceMap::const_iterator it = namespaces_.find(token.id_);
     if (it == namespaces_.end())

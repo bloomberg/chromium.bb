@@ -22,6 +22,7 @@ class ScopedAllowWaitForLegacyWebViewApi;
 
 namespace cc {
 class CompletionEvent;
+class TaskGraphRunner;
 }
 namespace chromeos {
 class BlockingMethodCaller;
@@ -177,6 +178,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ::HistogramSynchronizer;
   friend class ::ScopedAllowWaitForLegacyWebViewApi;
   friend class cc::CompletionEvent;
+  friend class cc::TaskGraphRunner;
   friend class mojo::common::WatcherThreadManager;
   friend class remoting::AutoThread;
   friend class MessagePumpDefault;
