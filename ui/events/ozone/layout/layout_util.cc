@@ -546,6 +546,10 @@ int ModifierDomKeyToEventFlag(DomKey key) {
       return EF_ALT_DOWN;
     case DomKey::ALT_GRAPH:
       return EF_ALTGR_DOWN;
+    // ChromeOS uses F16 to represent CapsLock before the rewriting stage,
+    // based on the historical X11 implementation.
+    // TODO post-X11: Switch to use CapsLock uniformly.
+    case DomKey::F16:
     case DomKey::CAPS_LOCK:
       return EF_CAPS_LOCK_DOWN;
     case DomKey::CONTROL:

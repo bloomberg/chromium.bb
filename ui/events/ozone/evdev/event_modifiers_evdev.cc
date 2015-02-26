@@ -23,6 +23,7 @@ static const int kEventFlagFromModifiers[] = {
     EF_RIGHT_MOUSE_BUTTON,   // EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON
     EF_COMMAND_DOWN,         // EVDEV_MODIFIER_COMMAND
     EF_ALTGR_DOWN,           // EVDEV_MODIFIER_ALTGR
+    EF_MOD3_DOWN,            // EVDEV_MODIFIER_MOD3
 };
 
 }  // namespace
