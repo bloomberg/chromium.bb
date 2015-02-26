@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -40,7 +40,7 @@ class JsSyncManagerObserverTest : public testing::Test {
   JsSyncManagerObserver js_sync_manager_observer_;
 
   void PumpLoop() {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 };
 

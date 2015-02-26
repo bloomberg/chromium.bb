@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
@@ -88,7 +88,7 @@ class AttachmentStoreTest : public testing::Test {
 
   void ClearAndPumpLoop() {
     Clear();
-    message_loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

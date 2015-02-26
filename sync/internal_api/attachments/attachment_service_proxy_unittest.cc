@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -172,7 +171,7 @@ TEST_F(AttachmentServiceProxyTest, MethodsAreProxied) {
   // time to ensure the stub thread has executed the posted result callbacks.
   WaitForStubThread();
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, count_callback_get_or_download);
   EXPECT_EQ(1, count_callback_drop);
 }
@@ -188,7 +187,7 @@ TEST_F(AttachmentServiceProxyTest, WrappedIsDestroyed) {
   // callbacks.
   WaitForStubThread();
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, count_callback_get_or_download);
 
   // Destroy the stub and call GetOrDownloadAttachments again.
@@ -200,7 +199,7 @@ TEST_F(AttachmentServiceProxyTest, WrappedIsDestroyed) {
   proxy->GetOrDownloadAttachments(AttachmentIdList(), callback_get_or_download);
   WaitForStubThread();
   WaitForStubThread();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, count_callback_get_or_download);
 }
 

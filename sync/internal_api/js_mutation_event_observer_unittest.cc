@@ -5,7 +5,7 @@
 #include "sync/internal_api/js_mutation_event_observer.h"
 
 #include "base/basictypes.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -36,7 +36,7 @@ class JsMutationEventObserverTest : public testing::Test {
   JsMutationEventObserver js_mutation_event_observer_;
 
   void PumpLoop() {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 };
 

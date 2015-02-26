@@ -4,7 +4,7 @@
 
 #include "sync/js/sync_js_controller.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
@@ -22,7 +22,7 @@ using ::testing::StrictMock;
 class SyncJsControllerTest : public testing::Test {
  protected:
   void PumpLoop() {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

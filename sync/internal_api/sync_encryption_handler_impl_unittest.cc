@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/read_node.h"
@@ -122,7 +122,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
 
   void PumpLoop() {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Getters for tests.

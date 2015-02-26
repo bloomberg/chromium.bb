@@ -6,7 +6,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
@@ -1165,12 +1165,12 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
 
   scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
@@ -1197,7 +1197,7 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
   scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // This was supposed to test the scenario where we receive a nudge while a
@@ -1232,7 +1232,7 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests that we don't crash trying to run two canaries at once if we receive

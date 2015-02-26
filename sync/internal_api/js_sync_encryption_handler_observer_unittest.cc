@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
@@ -41,7 +41,7 @@ class JsSyncEncryptionHandlerObserverTest : public testing::Test {
   JsSyncEncryptionHandlerObserver js_sync_encryption_handler_observer_;
 
   void PumpLoop() {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 };
 
