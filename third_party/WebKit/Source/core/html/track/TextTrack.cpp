@@ -294,10 +294,11 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
         return;
     }
 
-    cue->setIsActive(false);
-    cue->removeDisplayTree();
+    // If the cue is active, a timeline needs to be available.
+    ASSERT(!cue->isActive() || cueTimeline());
 
     cue->setTrack(0);
+
     if (cueTimeline())
         cueTimeline()->removeCue(this, cue);
 }
@@ -375,27 +376,29 @@ void TextTrack::removeRegion(VTTRegion* region, ExceptionState &exceptionState)
 
 void TextTrack::cueWillChange(TextTrackCue* cue)
 {
-    if (!cueTimeline())
-        return;
-
     // The cue may need to be repositioned in the media element's interval tree, may need to
     // be re-rendered, etc, so remove it before the modification...
-    cueTimeline()->removeCue(this, cue);
+    if (cueTimeline())
+        cueTimeline()->removeCue(this, cue);
 }
 
 void TextTrack::cueDidChange(TextTrackCue* cue)
 {
-    if (!cueTimeline())
-        return;
-
     // Make sure the TextTrackCueList order is up-to-date.
+    // FIXME: Only need to do this if the change was to any of the timestamps.
     ensureTextTrackCueList()->updateCueIndex(cue);
 
-    // ... and add it back again if the track is enabled.
+    // Since a call to cueDidChange is always preceded by a call to
+    // cueWillChange, the cue should no longer be active when we reach this
+    // point (since it was removed from the timeline in cueWillChange).
+    ASSERT(!cue->isActive());
+
     if (m_mode == disabledKeyword())
         return;
 
-    cueTimeline()->addCue(this, cue);
+    // ... and add it back again if the track is enabled.
+    if (cueTimeline())
+        cueTimeline()->addCue(this, cue);
 }
 
 int TextTrack::trackIndex()

@@ -123,9 +123,6 @@ void TextTrackCueList::updateCueIndex(TextTrackCue* cue)
     if (!remove(cue))
         return;
 
-    cue->setIsActive(false);
-    cue->removeDisplayTree();
-
     // FIXME: If moving the cue such that its index in list increases, then
     // what happens with the cached index on cues in the range [oldIndex,
     // newIndex)? (Some of the indices will be "safe", but there'll be a risk
