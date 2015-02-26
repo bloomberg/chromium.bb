@@ -125,13 +125,16 @@ MutableProfileOAuth2TokenService::AccountInfo::GetAuthStatus() const {
 
 MutableProfileOAuth2TokenService::MutableProfileOAuth2TokenService()
     : web_data_service_request_(0)  {
+  VLOG(1) << "MutablePO2TS::MutablePO2TS";
 }
 
 MutableProfileOAuth2TokenService::~MutableProfileOAuth2TokenService() {
+  VLOG(1) << "MutablePO2TS::~MutablePO2TS";
   DCHECK(server_revokes_.empty());
 }
 
 void MutableProfileOAuth2TokenService::Shutdown() {
+  VLOG(1) << "MutablePO2TS::Shutdown";
   server_revokes_.clear();
   CancelWebTokenFetch();
   CancelAllRequests();
@@ -187,6 +190,8 @@ void MutableProfileOAuth2TokenService::LoadCredentials(
 void MutableProfileOAuth2TokenService::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
     const WDTypedResult* result) {
+  VLOG(1) << "MutablePO2TS::OnWebDataServiceRequestDone. Result type: "
+          << (result == nullptr ? -1 : (int)result->GetType());
   DCHECK_EQ(web_data_service_request_, handle);
   web_data_service_request_ = 0;
 
@@ -231,6 +236,8 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
   {
     ScopedBatchChange batch(this);
 
+    VLOG(1) << "MutablePO2TS::LoadAllCredentialsIntoMemory; "
+            << db_tokens.size() << " Credential(s).";
     for (std::map<std::string, std::string>::const_iterator iter =
              db_tokens.begin();
          iter != db_tokens.end();
@@ -276,6 +283,7 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
 void MutableProfileOAuth2TokenService::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  VLOG(1) << "MutablePO2TS::UpdateAuthError. Error: " << error.state();
   ValidateAccountId(account_id);
 
   // Do not report connection errors as these are not actually auth errors.
@@ -322,6 +330,8 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
     // If token present, and different from the new one, cancel its requests,
     // and clear the entries in cache related to that account.
     if (refresh_token_present) {
+      VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was present. "
+              << "account_id=" << account_id;
       std::string revoke_reason = refresh_token_present ? "token differs" :
                                                           "token is missing";
       LOG(WARNING) << "Revoking refresh token on server. "
@@ -331,6 +341,8 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
       ClearCacheForAccount(account_id);
       refresh_tokens_[account_id]->set_refresh_token(refresh_token);
     } else {
+      VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "
+              << "account_id=" << account_id;
       refresh_tokens_[account_id].reset(
           new AccountInfo(signin_error_controller(),
                           account_id,
@@ -351,6 +363,7 @@ void MutableProfileOAuth2TokenService::RevokeCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (refresh_tokens_.count(account_id) > 0) {
+    VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
     ScopedBatchChange batch(this);
     RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
     CancelRequestsForAccount(account_id);
@@ -366,6 +379,7 @@ void MutableProfileOAuth2TokenService::PersistCredentials(
     const std::string& refresh_token) {
   scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
   if (token_web_data.get()) {
+    VLOG(1) << "MutablePO2TS::PersistCredentials for account_id=" << account_id;
     token_web_data->SetTokenForService(ApplyAccountIdPrefix(account_id),
                                        refresh_token);
   }
@@ -374,8 +388,11 @@ void MutableProfileOAuth2TokenService::PersistCredentials(
 void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
     const std::string& account_id) {
   scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
-  if (token_web_data.get())
+  if (token_web_data.get()) {
+    VLOG(1) << "MutablePO2TS::ClearPersistedCredentials for account_id="
+            << account_id;
     token_web_data->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
+  }
 }
 
 void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
@@ -385,6 +402,7 @@ void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
 
   ScopedBatchChange batch(this);
 
+  VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
   CancelWebTokenFetch();
   CancelAllRequests();
   ClearCache();
