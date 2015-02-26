@@ -1487,7 +1487,7 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
         else
             rectToApply = LayoutRect(clientRect.x(), clientRect.y(), std::max<LayoutUnit>(0, oldClientAfterEdge - clientRect.x()), 1);
         addLayoutOverflow(rectToApply);
-        if (hasRenderOverflow())
+        if (hasOverflowModel())
             m_overflow->setLayoutClientAfterEdge(oldClientAfterEdge);
     }
 
@@ -1622,7 +1622,7 @@ bool RenderBlock::simplifiedLayout()
         // lowestPosition on every relayout so it's not a regression.
         // computeOverflow expects the bottom edge before we clamp our height. Since this information isn't available during
         // simplifiedLayout, we cache the value in m_overflow.
-        LayoutUnit oldClientAfterEdge = hasRenderOverflow() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
+        LayoutUnit oldClientAfterEdge = hasOverflowModel() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
         computeOverflow(oldClientAfterEdge, true);
     }
 
@@ -3881,7 +3881,7 @@ bool RenderBlock::recalcOverflowAfterStyleChange()
     if (needsLayout())
         return false;
 
-    LayoutUnit oldClientAfterEdge = hasRenderOverflow() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
+    LayoutUnit oldClientAfterEdge = hasOverflowModel() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
     computeOverflow(oldClientAfterEdge, true);
 
     if (hasOverflowClip())

@@ -441,7 +441,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
             return false;
         }
     } else if (hasColumns()) {
-        OwnPtr<RenderOverflow> savedOverflow = m_overflow.release();
+        OwnPtr<OverflowModel> savedOverflow = m_overflow.release();
         if (childrenInline())
             addOverflowFromInlineChildren();
         else

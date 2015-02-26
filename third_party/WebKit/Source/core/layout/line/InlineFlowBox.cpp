@@ -163,7 +163,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
                 child->clearKnownToHaveNoOverflow();
         } else if (child->renderer().isReplaced()) {
             LayoutBox& box = toLayoutBox(child->renderer());
-            if (box.hasRenderOverflow() || box.hasSelfPaintingLayer())
+            if (box.hasOverflowModel() || box.hasSelfPaintingLayer())
                 child->clearKnownToHaveNoOverflow();
         } else if (!child->renderer().isBR() && (child->renderer().style(isFirstLineStyle())->boxShadow() || child->boxModelObject()->hasSelfPaintingLayer()
             || (child->renderer().isListMarker() && !toLayoutListMarker(child->renderer()).isInside())
@@ -972,7 +972,7 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, const LayoutRect& 
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(frameBox, frameBox));
+        m_overflow = adoptPtr(new OverflowModel(frameBox, frameBox));
 
     m_overflow->setLayoutOverflow(rect);
 }
@@ -983,7 +983,7 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& 
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(frameBox, frameBox));
+        m_overflow = adoptPtr(new OverflowModel(frameBox, frameBox));
 
     m_overflow->setVisualOverflow(rect);
 }

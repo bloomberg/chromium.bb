@@ -4153,7 +4153,7 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
     }
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(clientBox, borderBoxRect()));
+        m_overflow = adoptPtr(new OverflowModel(clientBox, borderBoxRect()));
 
     m_overflow->addLayoutOverflow(overflowRect);
 }
@@ -4165,7 +4165,7 @@ void LayoutBox::addVisualOverflow(const LayoutRect& rect)
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(noOverflowRect(), borderBox));
+        m_overflow = adoptPtr(new OverflowModel(noOverflowRect(), borderBox));
 
     m_overflow->addVisualOverflow(rect);
 }
@@ -4178,7 +4178,7 @@ void LayoutBox::addContentsVisualOverflow(const LayoutRect& rect)
     }
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(noOverflowRect(), borderBoxRect()));
+        m_overflow = adoptPtr(new OverflowModel(noOverflowRect(), borderBoxRect()));
     m_overflow->addContentsVisualOverflow(rect);
 }
 

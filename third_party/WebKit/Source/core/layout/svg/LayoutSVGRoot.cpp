@@ -341,7 +341,7 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
 
     LayoutRect paintInvalidationRect = enclosingLayoutRect(contentPaintInvalidationRect);
     // If the box is decorated or is overflowing, extend it to include the border-box and overflow.
-    if (m_hasBoxDecorationBackground || hasRenderOverflow()) {
+    if (m_hasBoxDecorationBackground || hasOverflowModel()) {
         // The selectionRect can project outside of the overflowRect, so take their union
         // for paint invalidation to avoid selection painting glitches.
         LayoutRect decoratedPaintInvalidationRect = unionRect(localSelectionRect(false), visualOverflowRect());

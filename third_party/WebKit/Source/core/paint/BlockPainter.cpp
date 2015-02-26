@@ -295,7 +295,7 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& pa
 LayoutRect BlockPainter::overflowRectForPaintRejection() const
 {
     LayoutRect overflowRect = m_renderBlock.visualOverflowRect();
-    if (!m_renderBlock.hasRenderOverflow() || !m_renderBlock.usesCompositedScrolling())
+    if (!m_renderBlock.hasOverflowModel() || !m_renderBlock.usesCompositedScrolling())
         return overflowRect;
 
     overflowRect.unite(m_renderBlock.layoutOverflowRect());

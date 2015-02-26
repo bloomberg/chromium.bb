@@ -24,8 +24,8 @@
 #define LayoutBox_h
 
 #include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/OverflowModel.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/rendering/RenderOverflow.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollableArea.h"
 
@@ -600,7 +600,7 @@ public:
     LayoutRect logicalLayoutOverflowRectForPropagation(const LayoutStyle&) const;
     LayoutRect layoutOverflowRectForPropagation(const LayoutStyle&) const;
 
-    bool hasRenderOverflow() const { return m_overflow; }
+    bool hasOverflowModel() const { return m_overflow; }
     bool hasVisualOverflow() const { return m_overflow && !borderBoxRect().contains(m_overflow->visualOverflowRect()); }
 
     virtual bool needsPreferredWidthsRecalculation() const;
@@ -770,7 +770,7 @@ protected:
     LayoutUnit m_maxPreferredLogicalWidth;
 
     // Our overflow information.
-    OwnPtr<RenderOverflow> m_overflow;
+    OwnPtr<OverflowModel> m_overflow;
 
 private:
     OwnPtr<LayoutBoxRareData> m_rareData;

@@ -22,10 +22,10 @@
 #define InlineFlowBox_h
 
 #include "core/layout/LayoutObjectInlines.h"
+#include "core/layout/OverflowModel.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineBox.h"
 #include "core/layout/style/ShadowData.h"
-#include "core/rendering/RenderOverflow.h"
 
 namespace blink {
 
@@ -304,7 +304,7 @@ private:
     void setVisualOverflow(const LayoutRect&, const LayoutRect&);
 
 protected:
-    OwnPtr<RenderOverflow> m_overflow;
+    OwnPtr<OverflowModel> m_overflow;
 
     virtual bool isInlineFlowBox() const override final { return true; }
 

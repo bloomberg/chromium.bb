@@ -18,14 +18,13 @@
  *
  */
 
-#ifndef RenderOverflow_h
-#define RenderOverflow_h
+#ifndef OverflowModel_h
+#define OverflowModel_h
 
 #include "platform/geometry/LayoutRect.h"
 
-namespace blink
-{
-// RenderOverflow is a class for tracking content that spills out of a box.  This class is used by LayoutBox and
+namespace blink {
+// OverflowModel is a class for tracking content that spills out of a box.  This class is used by LayoutBox and
 // InlineFlowBox.
 //
 // There are two types of overflow: layout overflow (which is expected to be reachable via scrolling mechanisms) and
@@ -37,10 +36,11 @@ namespace blink
 // Examples of visual overflow are shadows, text stroke (and eventually outline and border-image).
 
 // This object is allocated only when some of these fields have non-default values in the owning box.
-class RenderOverflow {
-    WTF_MAKE_NONCOPYABLE(RenderOverflow); WTF_MAKE_FAST_ALLOCATED;
+class OverflowModel {
+    WTF_MAKE_NONCOPYABLE(OverflowModel);
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    RenderOverflow(const LayoutRect& layoutRect, const LayoutRect& visualRect)
+    OverflowModel(const LayoutRect& layoutRect, const LayoutRect& visualRect)
         : m_layoutOverflow(layoutRect)
         , m_visualOverflow(visualRect)
     {
@@ -70,14 +70,14 @@ private:
     LayoutUnit m_layoutClientAfterEdge;
 };
 
-inline void RenderOverflow::move(LayoutUnit dx, LayoutUnit dy)
+inline void OverflowModel::move(LayoutUnit dx, LayoutUnit dy)
 {
     m_layoutOverflow.move(dx, dy);
     m_visualOverflow.move(dx, dy);
     m_contentsVisualOverflow.move(dx, dy);
 }
 
-inline void RenderOverflow::addLayoutOverflow(const LayoutRect& rect)
+inline void OverflowModel::addLayoutOverflow(const LayoutRect& rect)
 {
     LayoutUnit maxX = std::max(rect.maxX(), m_layoutOverflow.maxX());
     LayoutUnit maxY = std::max(rect.maxY(), m_layoutOverflow.maxY());
@@ -90,7 +90,7 @@ inline void RenderOverflow::addLayoutOverflow(const LayoutRect& rect)
     m_layoutOverflow.setY(maxY - m_layoutOverflow.height());
 }
 
-inline void RenderOverflow::addVisualOverflow(const LayoutRect& rect)
+inline void OverflowModel::addVisualOverflow(const LayoutRect& rect)
 {
     LayoutUnit maxX = std::max(rect.maxX(), m_visualOverflow.maxX());
     LayoutUnit maxY = std::max(rect.maxY(), m_visualOverflow.maxY());
@@ -100,16 +100,16 @@ inline void RenderOverflow::addVisualOverflow(const LayoutRect& rect)
     m_visualOverflow.setHeight(maxY - m_visualOverflow.y());
 }
 
-inline void RenderOverflow::setLayoutOverflow(const LayoutRect& rect)
+inline void OverflowModel::setLayoutOverflow(const LayoutRect& rect)
 {
     m_layoutOverflow = rect;
 }
 
-inline void RenderOverflow::setVisualOverflow(const LayoutRect& rect)
+inline void OverflowModel::setVisualOverflow(const LayoutRect& rect)
 {
     m_visualOverflow = rect;
 }
 
 } // namespace blink
 
-#endif // RenderOverflow_h
+#endif // OverflowModel_h
