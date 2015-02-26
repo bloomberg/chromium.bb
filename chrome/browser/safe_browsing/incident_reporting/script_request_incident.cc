@@ -26,11 +26,14 @@ IncidentType ScriptRequestIncident::GetType() const {
 }
 
 std::string ScriptRequestIncident::GetKey() const {
-  return payload()->script_request().script_digest();
+  // Use a static key in addition to a fixed digest below to ensure that only
+  // one incident per user is reported.
+  return "script_request_incident";
 }
 
 uint32_t ScriptRequestIncident::ComputeDigest() const {
-  // Return a constant to ensure that only one incident per digest is reported.
+  // Return a constant in addition to a fixed key above to ensure that only one
+  // incident per user is reported.
   return 42;
 }
 
