@@ -2491,8 +2491,8 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // UpdateSessionHistory and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
-    DCHECK(render_view_->history_list_length_ > 0 ||
-           !navigation_state->should_replace_current_entry());
+    DCHECK_IMPLIES(navigation_state->should_replace_current_entry(),
+                   render_view_->history_list_length_ > 0);
     if (GetLoadingUrl() != GURL(kSwappedOutURL) &&
         !navigation_state->should_replace_current_entry()) {
       // Advance our offset in session history, applying the length limit.

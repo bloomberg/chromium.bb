@@ -1579,7 +1579,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(NavigationEntryImpl* entry,
   DiscardNonCommittedEntriesInternal();
 
   int current_size = static_cast<int>(entries_.size());
-  DCHECK(current_size > 0 || !replace);
+  DCHECK_IMPLIES(replace, current_size > 0);
 
   if (current_size > 0) {
     // Prune any entries which are in front of the current entry.
