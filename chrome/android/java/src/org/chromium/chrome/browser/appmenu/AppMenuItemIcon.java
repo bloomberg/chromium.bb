@@ -11,7 +11,7 @@ import android.widget.ImageView;
 /**
  * A menu icon that supports the checkable state.
  */
-class AppMenuItemIcon extends ImageView {
+public class AppMenuItemIcon extends ImageView {
     private static final int[] CHECKED_STATE_SET = new int[] {android.R.attr.state_checked};
     private boolean mCheckedState;
 

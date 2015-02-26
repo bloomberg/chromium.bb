@@ -42,6 +42,7 @@
         android:singleLine="true"
         android:visibility="gone"
         android:contentDescription="@string/accessibility_js_modal_dialog_prompt"
+        android:inputType="text"
         />
 
     <CheckBox android:id="@+id/suppress_js_modal_dialogs"

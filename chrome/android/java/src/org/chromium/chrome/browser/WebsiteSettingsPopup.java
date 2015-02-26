@@ -74,7 +74,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         }
     }
 
-    private static class ElidedUrlTextView extends TextView {
+    public static class ElidedUrlTextView extends TextView {
         // The number of lines to display when the URL is truncated. This number
         // should still allow the origin to be displayed. NULL before
         // setUrlAfterLayout() is called.

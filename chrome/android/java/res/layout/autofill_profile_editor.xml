@@ -15,6 +15,9 @@
         android:orientation="vertical"
         android:focusableInTouchMode="true" >
 
+        <!-- EditText views in FloatLabelLayout require both hint and contentDescription to be set
+             to work correctly for accessibility because FloatLabelLayout sometimes clear hint. -->
+        <!--suppress ContentDescription -->
         <LinearLayout
             style="@style/PreferenceScreenLayout"
             android:layout_width="match_parent"
