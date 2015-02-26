@@ -81,12 +81,20 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
     properties_.volume.reset(
         new uint16_t(FakeBluetoothMediaTransportClient::kTransportVolume));
 
+    media_ = static_cast<FakeBluetoothMediaClient*>(
+        DBusThreadManager::Get()->GetBluetoothMediaClient());
+    transport_ = static_cast<FakeBluetoothMediaTransportClient*>(
+        DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
+
     GetAdapter();
   }
 
   void TearDown() override {
     callback_count_ = 0;
     error_callback_count_ = 0;
+    observer_.reset();
+
+    media_->SetVisible(true);
 
     // The adapter should outlive audio sink.
     audio_sink_ = nullptr;
@@ -123,6 +131,8 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
   }
 
   // Registers BluetoothAudioSinkChromeOS with default codec and capabilities.
+  // If the audio sink is retrieved successfully, the state changes to
+  // STATE_DISCONNECTED.
   void GetAudioSink() {
     // Sets up valid codec and capabilities.
     BluetoothAudioSink::Options options;
@@ -138,8 +148,20 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
         base::Bind(&BluetoothAudioSinkChromeOSTest::RegisterErrorCallback,
                    base::Unretained(this)));
 
+    observer_.reset(new TestAudioSinkObserver(audio_sink_));
     EXPECT_EQ(callback_count_, 1);
     EXPECT_EQ(error_callback_count_, 0);
+    EXPECT_EQ(observer_->state_changed_count_, 0);
+    EXPECT_EQ(observer_->volume_changed_count_, 0);
+  }
+
+  void GetFakeMediaEndpoint() {
+    BluetoothAudioSinkChromeOS* audio_sink_chromeos =
+        static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
+    ASSERT_NE(audio_sink_chromeos, nullptr);
+
+    media_endpoint_ = static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
+        audio_sink_chromeos->GetEndpointServiceProvider());
   }
 
   // Called whenever RegisterAudioSink is completed successfully.
@@ -147,6 +169,11 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
       scoped_refptr<BluetoothAudioSink> audio_sink) {
     ++callback_count_;
     audio_sink_ = audio_sink;
+
+    GetFakeMediaEndpoint();
+    ASSERT_NE(media_endpoint_, nullptr);
+    media_->SetEndpointRegistered(media_endpoint_, true);
+
     ASSERT_NE(audio_sink_.get(), nullptr);
     ASSERT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
   }
@@ -166,6 +193,11 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
     EXPECT_EQ(capabilities, std::vector<uint8_t>({0x3f, 0xff, 0x12, 0x35}));
   }
 
+  void UnregisterErrorCallback(BluetoothAudioSink::ErrorCode error_code) {
+    ++error_callback_count_;
+    EXPECT_EQ(error_code, BluetoothAudioSink::ERROR_NOT_UNREGISTERED);
+  }
+
   // Generic callbacks.
   void Callback() {
     ++callback_count_;
@@ -181,6 +213,10 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
 
   base::MessageLoop message_loop_;
 
+  FakeBluetoothMediaClient* media_;
+  FakeBluetoothMediaTransportClient* transport_;
+  FakeBluetoothMediaEndpointServiceProvider* media_endpoint_;
+  scoped_ptr<TestAudioSinkObserver> observer_;
   scoped_refptr<BluetoothAdapter> adapter_;
   scoped_refptr<BluetoothAudioSink> audio_sink_;
 
@@ -192,11 +228,6 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
 
 TEST_F(BluetoothAudioSinkChromeOSTest, RegisterSucceeded) {
   GetAudioSink();
-
-  // Adds an observer for |audio_sink_|.
-  TestAudioSinkObserver observer(audio_sink_);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
 }
 
 TEST_F(BluetoothAudioSinkChromeOSTest, RegisterFailedWithInvalidOptions) {
@@ -232,21 +263,9 @@ TEST_F(BluetoothAudioSinkChromeOSTest, RegisterFailedWithInvalidOptions) {
 TEST_F(BluetoothAudioSinkChromeOSTest, SelectConfiguration) {
   GetAudioSink();
 
-  // Adds an observer for |audio_sink_|.
-  TestAudioSinkObserver observer(audio_sink_);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
-
   // Simulates calling SelectConfiguration on the media endpoint object owned by
   // |audio_sink_| with some fake capabilities.
-  BluetoothAudioSinkChromeOS* audio_sink_chromeos =
-      static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
-  FakeBluetoothMediaEndpointServiceProvider* media_endpoint =
-      static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
-          audio_sink_chromeos->GetEndpointServiceProvider());
-  ASSERT_NE(media_endpoint, nullptr);
-
-  media_endpoint->SelectConfiguration(
+  media_endpoint_->SelectConfiguration(
       std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
       base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
                  base::Unretained(this)));
@@ -254,138 +273,382 @@ TEST_F(BluetoothAudioSinkChromeOSTest, SelectConfiguration) {
   EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
   EXPECT_EQ(callback_count_, 2);
   EXPECT_EQ(error_callback_count_, 0);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
 }
 
 TEST_F(BluetoothAudioSinkChromeOSTest, SetConfiguration) {
   GetAudioSink();
 
-  // Adds an observer for |audio_sink_|.
-  TestAudioSinkObserver observer(audio_sink_);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
 
   // Simulates calling SetConfiguration on the media endpoint object owned by
   // |audio_sink_| with a fake transport path and a
   // Delegate::TransportProperties structure.
-  BluetoothAudioSinkChromeOS* audio_sink_chromeos =
-      static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
-  FakeBluetoothMediaEndpointServiceProvider* media_endpoint =
-      static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
-          audio_sink_chromeos->GetEndpointServiceProvider());
-  ASSERT_NE(media_endpoint, nullptr);
-
-  media_endpoint->SetConfiguration(
-      ObjectPath(FakeBluetoothMediaTransportClient::kTransportPath),
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
       properties_);
 
   EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
-  EXPECT_EQ(callback_count_, 1);
+  EXPECT_EQ(callback_count_, 2);
   EXPECT_EQ(error_callback_count_, 0);
-  EXPECT_EQ(observer.state_changed_count_, 1);
-  EXPECT_EQ(observer.volume_changed_count_, 1);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
 }
 
 TEST_F(BluetoothAudioSinkChromeOSTest, SetConfigurationWithUnexpectedState) {
   GetAudioSink();
 
-  // Adds an observer for |audio_sink_|.
-  TestAudioSinkObserver observer(audio_sink_);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
 
-  // Simulates calling SetConfiguration on the media endpoint object owned by
-  // |audio_sink_| with a fake transport path and a
-  // Delegate::TransportProperties structure.
-  BluetoothAudioSinkChromeOS* audio_sink_chromeos =
-      static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
-  FakeBluetoothMediaEndpointServiceProvider* media_endpoint =
-      static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
-          audio_sink_chromeos->GetEndpointServiceProvider());
-  ASSERT_NE(media_endpoint, nullptr);
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
 
   // Set state of Delegate::TransportProperties with an unexpected value.
-  properties_.state = "active";
+  properties_.state = "pending";
 
-  media_endpoint->SetConfiguration(
-      ObjectPath(FakeBluetoothMediaTransportClient::kTransportPath),
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
       properties_);
 
   EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
-  EXPECT_EQ(callback_count_, 1);
+  EXPECT_EQ(callback_count_, 2);
   EXPECT_EQ(error_callback_count_, 0);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
 }
 
-// Checks if the observer is notified while the media object is
-// removed(invisible). Once the media object is removed, the audio sink is no
-// longer valid.
-TEST_F(BluetoothAudioSinkChromeOSTest, ObserverNotifiedWhenMediaRemoved) {
+// TODO(mcchou): Adds test on media-removed events for STATE_PENDING and
+// STATE_ACTIVE.
+// Checks if the observer is notified on media-removed event when the state of
+// |audio_sink_| is STATE_DISCONNECTED. Once the media object is removed, the
+// audio sink is no longer valid.
+TEST_F(BluetoothAudioSinkChromeOSTest, MediaRemovedDuringDisconnectedState) {
   GetAudioSink();
-
-  // Adds an observer for |audio_sink_|.
-  TestAudioSinkObserver observer(audio_sink_);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
 
   // Gets the media object and makes it invisible to see if the state of the
   // audio sink changes accordingly.
-  FakeBluetoothMediaClient* media = static_cast<FakeBluetoothMediaClient*>(
-      DBusThreadManager::Get()->GetBluetoothMediaClient());
-  media->SetVisible(false);
+  media_->SetVisible(false);
 
-  BluetoothAudioSinkChromeOS* audio_sink_chromeos =
-      static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
-  FakeBluetoothMediaEndpointServiceProvider* media_endpoint =
-      static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
-          audio_sink_chromeos->GetEndpointServiceProvider());
+  GetFakeMediaEndpoint();
 
   EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_INVALID);
-  EXPECT_EQ(media_endpoint, nullptr);
+  EXPECT_EQ(media_endpoint_, nullptr);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
 }
 
-// Checks if the observer is notified while the media transport is
-// removed(invisible). Once the media transport object is removed, the audio
-// sink is disconnected.
-TEST_F(BluetoothAudioSinkChromeOSTest, ObserverNotifiedWhenTransportRemoved) {
+// Checks if the observer is  notified on media-removed event when the state of
+// |audio_sink_| is STATE_IDLE. Once the media object is removed, the audio sink
+// is no longer valid.
+TEST_F(BluetoothAudioSinkChromeOSTest, MediaRemovedDuringIdleState) {
   GetAudioSink();
 
-  // Adds an observer for |audio_sink_|.
-  TestAudioSinkObserver observer(audio_sink_);
-  EXPECT_EQ(observer.state_changed_count_, 0);
-  EXPECT_EQ(observer.volume_changed_count_, 0);
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
 
-  // Simulates calling SetConfiguration on the media endpoint object owned by
-  // |audio_sink_| with a fake transport path and a
-  // Delegate::TransportProperties structure.
-  BluetoothAudioSinkChromeOS* audio_sink_chromeos =
-      static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
-  FakeBluetoothMediaEndpointServiceProvider* media_endpoint =
-      static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
-          audio_sink_chromeos->GetEndpointServiceProvider());
-  ASSERT_NE(media_endpoint, nullptr);
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
 
-  media_endpoint->SetConfiguration(
-      ObjectPath(FakeBluetoothMediaTransportClient::kTransportPath),
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
       properties_);
 
   EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
-  EXPECT_EQ(callback_count_, 1);
+  EXPECT_EQ(callback_count_, 2);
   EXPECT_EQ(error_callback_count_, 0);
-  EXPECT_EQ(observer.state_changed_count_, 1);
-  EXPECT_EQ(observer.volume_changed_count_, 1);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
 
-  // Gets the media transport object and makes it invalid to see if the state
-  // of the audio sink changes accordingly.
-  FakeBluetoothMediaTransportClient* transport =
-      static_cast<FakeBluetoothMediaTransportClient*>(
-          DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
+  // Gets the media object and makes it invisible to see if the state of the
+  // audio sink changes accordingly.
+  media_->SetVisible(false);
 
-  transport->SetValid(media_endpoint->object_path(), false);
+  GetFakeMediaEndpoint();
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_INVALID);
+  EXPECT_EQ(media_endpoint_, nullptr);
+
+  // The state becomes disconnted and then invalid, since the removal of
+  // transport object should happend before media becomes invisible.
+  // State: STATE_IDLE -> STATE_DISCONNECTED -> STATE_INVALID
+  EXPECT_EQ(observer_->state_changed_count_, 3);
+  EXPECT_EQ(observer_->volume_changed_count_, 2);
+}
+
+// TODO(mcchou): Add tests on transport-removed event for STATE_PENDING and
+// STATE_ACTIVE.
+// Checks if the observer is notified on transport-removed event when the state
+// of |audio_sink_| is STATE_IDEL. Once the media transport object is removed,
+// the audio sink is disconnected.
+TEST_F(BluetoothAudioSinkChromeOSTest, TransportRemovedDuringIdleState) {
+  GetAudioSink();
+
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
+
   EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
-  EXPECT_NE(media_endpoint, nullptr);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
+      properties_);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
+
+  // Makes the transport object invalid to see if the state of the audio sink
+  // changes accordingly.
+  transport_->SetValid(media_endpoint_, false);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_NE(media_endpoint_, nullptr);
+  EXPECT_EQ(observer_->state_changed_count_, 2);
+  EXPECT_EQ(observer_->volume_changed_count_, 2);
+}
+
+TEST_F(BluetoothAudioSinkChromeOSTest,
+       AdapterPoweredChangedDuringDisconnectedState) {
+  GetAudioSink();
+
+  adapter_->SetPowered(
+      false,
+      base::Bind(&BluetoothAudioSinkChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+
+  adapter_->SetPowered(
+      true,
+      base::Bind(&BluetoothAudioSinkChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 3);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+}
+
+TEST_F(BluetoothAudioSinkChromeOSTest, AdapterPoweredChangedDuringIdleState) {
+  GetAudioSink();
+
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
+      properties_);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
+
+  adapter_->SetPowered(
+      false,
+      base::Bind(&BluetoothAudioSinkChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  GetFakeMediaEndpoint();
+
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_NE(media_endpoint_, nullptr);
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 3);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 2);
+  EXPECT_EQ(observer_->volume_changed_count_, 2);
+}
+
+// TODO(mcchou): Add tests on UnregisterAudioSink for STATE_PENDING and
+// STATE_ACTIVE.
+
+TEST_F(BluetoothAudioSinkChromeOSTest,
+       UnregisterAudioSinkDuringDisconnectedState) {
+  GetAudioSink();
+
+  audio_sink_->Unregister(
+      base::Bind(&BluetoothAudioSinkChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::UnregisterErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_INVALID);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+}
+
+TEST_F(BluetoothAudioSinkChromeOSTest, UnregisterAudioSinkDuringIdleState) {
+  GetAudioSink();
+
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
+      properties_);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
+
+  audio_sink_->Unregister(
+      base::Bind(&BluetoothAudioSinkChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::UnregisterErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_INVALID);
+  EXPECT_EQ(callback_count_, 3);
+  EXPECT_EQ(error_callback_count_, 0);
+
+  // The state becomes disconnted and then invalid, since the removal of
+  // transport object should happend before the unregistration of endpoint.
+  // State: STATE_IDLE -> STATE_DISCONNECTED -> STATE_INVALID
+  EXPECT_EQ(observer_->state_changed_count_, 3);
+  EXPECT_EQ(observer_->volume_changed_count_, 2);
+}
+
+TEST_F(BluetoothAudioSinkChromeOSTest, StateChanged) {
+  GetAudioSink();
+
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
+      properties_);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
+
+  // Changes the current state of transport to pending.
+  transport_->SetState(media_endpoint_->object_path(), "pending");
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_PENDING);
+  EXPECT_EQ(observer_->state_changed_count_, 2);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
+}
+
+TEST_F(BluetoothAudioSinkChromeOSTest, VolumeChanged) {
+  GetAudioSink();
+
+  media_endpoint_->SelectConfiguration(
+      std::vector<uint8_t>({0x21, 0x15, 0x33, 0x2C}),
+      base::Bind(&BluetoothAudioSinkChromeOSTest::SelectConfigurationCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_DISCONNECTED);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 0);
+  EXPECT_EQ(observer_->volume_changed_count_, 0);
+
+  media_endpoint_->SetConfiguration(
+      transport_->GetTransportPath(media_endpoint_->object_path()),
+      properties_);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(callback_count_, 2);
+  EXPECT_EQ(error_callback_count_, 0);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 1);
+
+  // |kTransportVolume| is the initial volume of the transport, and this
+  // value is propagated to the audio sink via SetConfiguration.
+  EXPECT_EQ(audio_sink_->GetVolume(),
+            FakeBluetoothMediaTransportClient::kTransportVolume);
+
+  // Changes volume to a valid level.
+  transport_->SetVolume(media_endpoint_->object_path(), 100);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 2);
+  EXPECT_EQ(audio_sink_->GetVolume(), 100);
+
+  // Changes volume to an invalid level.
+  transport_->SetVolume(media_endpoint_->object_path(), 200);
+
+  EXPECT_EQ(audio_sink_->GetState(), BluetoothAudioSink::STATE_IDLE);
+  EXPECT_EQ(observer_->state_changed_count_, 1);
+  EXPECT_EQ(observer_->volume_changed_count_, 3);
+  EXPECT_EQ(audio_sink_->GetVolume(), BluetoothAudioSink::kInvalidVolume);
 }
 
 }  // namespace chromeos

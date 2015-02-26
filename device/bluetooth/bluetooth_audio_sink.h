@@ -40,8 +40,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSink
   // Possible types of error raised by Audio Sink object.
   enum ErrorCode {
     ERROR_UNSUPPORTED_PLATFORM,  // A2DP sink not supported on current platform.
-    ERROR_INVALID_ADAPTER,       // BluetoothAdapter not presented/powered.
-    ERROR_NOT_REGISTERED,        // BluetoothAudioSink not registered.
+    ERROR_INVALID_ADAPTER,  // BluetoothAdapter not present/powered.
+    ERROR_NOT_REGISTERED,  // BluetoothAudioSink not registered.
+    ERROR_NOT_UNREGISTERED,  // BluetoothAudioSink not unregistered.
   };
 
   // Options to configure an A2DP audio sink.
@@ -81,6 +82,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSink
   // is called.
   typedef base::Callback<void(ErrorCode)> ErrorCallback;
 
+  // Possible volumes for media transport are 0-127, and 128 is used to
+  // represent invalid volume.
+  static const uint16_t kInvalidVolume;
+
   // Unregisters the audio sink. An audio sink will unregister itself
   // automatically in its destructor, but calling Unregister is recommended,
   // since user applications can be notified of an error returned by the call.
@@ -95,6 +100,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSink
 
   // Getters for state and volume.
   virtual State GetState() const = 0;
+
+  // Returns the current volume level of the audio sink. The valid volumes are
+  // 0-127, and |kInvalidVolume| is returned instead if the volume is unknown.
   virtual uint16_t GetVolume() const = 0;
 
  protected:

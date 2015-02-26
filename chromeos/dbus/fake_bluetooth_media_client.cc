@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_media_endpoint_service_provider.h"
 #include "chromeos/dbus/fake_bluetooth_media_transport_client.h"
 
 using dbus::ObjectPath;
@@ -68,9 +70,6 @@ void FakeBluetoothMediaClient::RegisterEndpoint(
     return;
   }
 
-  // Sets the state of a given endpoint path to true if it is registered.
-  SetEndpointRegistered(endpoint_path, true);
-
   callback.Run();
 }
 
@@ -80,7 +79,15 @@ void FakeBluetoothMediaClient::UnregisterEndpoint(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   // TODO(mcchou): Come up with some corresponding actions.
-  error_callback.Run(kFailedError, "");
+  VLOG(1) << "UnregisterEndpoint: " << endpoint_path.value();
+
+  if (!ContainsKey(endpoints_, endpoint_path)) {
+    error_callback.Run(kFailedError, "Unknown media endpoint");
+    return;
+  }
+
+  SetEndpointRegistered(endpoints_[endpoint_path], false);
+  callback.Run();
 }
 
 void FakeBluetoothMediaClient::SetVisible(bool visible) {
@@ -89,14 +96,11 @@ void FakeBluetoothMediaClient::SetVisible(bool visible) {
   if (visible_)
     return;
 
-  // If the media object becomes invisible, an update chain will
-  // unregister all endpoints and set the associated transport
-  // objects to be invalid.
-  for (std::map<ObjectPath, bool>::iterator it = endpoints_.begin();
-       it != endpoints_.end(); ++it) {
-    SetEndpointRegistered(it->first, false);
-  }
-  endpoints_.clear();
+  // If the media object becomes invisible, an update chain will unregister all
+  // endpoints and set the associated transport objects to be invalid.
+  // SetEndpointRegistered will remove the endpoint entry from |endpoints_|.
+  while (endpoints_.begin() != endpoints_.end())
+    SetEndpointRegistered(endpoints_.begin()->second, false);
 
   // Notifies observers about the change on |visible_|.
   FOR_EACH_OBSERVER(BluetoothMediaClient::Observer, observers_,
@@ -104,18 +108,30 @@ void FakeBluetoothMediaClient::SetVisible(bool visible) {
 }
 
 void FakeBluetoothMediaClient::SetEndpointRegistered(
-    const ObjectPath& endpoint_path,
+    FakeBluetoothMediaEndpointServiceProvider* endpoint,
     bool registered) {
   if (registered) {
-    endpoints_[endpoint_path] = registered;
-  } else {
-    // Once a media endpoint object becomes invalid, the associated transport
-    // becomes invalid.
-    FakeBluetoothMediaTransportClient* transport =
-        static_cast<FakeBluetoothMediaTransportClient*>(
-            DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
-    transport->SetValid(endpoint_path, true);
+    endpoints_[endpoint->object_path()] = endpoint;
+    return;
   }
+
+  if (!IsRegistered(endpoint->object_path()))
+    return;
+
+  // Once a media endpoint object becomes invalid, invalidate the associated
+  // transport.
+  FakeBluetoothMediaTransportClient* transport =
+      static_cast<FakeBluetoothMediaTransportClient*>(
+          DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
+  transport->SetValid(endpoint, false);
+
+  endpoints_.erase(endpoint->object_path());
+  endpoint->Released();
+}
+
+bool FakeBluetoothMediaClient::IsRegistered(
+    const dbus::ObjectPath& endpoint_path) {
+  return ContainsKey(endpoints_, endpoint_path);
 }
 
 }  // namespace chromeos

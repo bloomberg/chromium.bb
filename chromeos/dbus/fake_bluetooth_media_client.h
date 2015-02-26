@@ -15,6 +15,8 @@
 
 namespace chromeos {
 
+class FakeBluetoothMediaEndpointServiceProvider;
+
 class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
  public:
   // The default codec is SBC(0x00).
@@ -43,9 +45,13 @@ class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
   // events.
   void SetVisible(bool visible);
 
-  // Sets the registration state for a given media endpoint path.
-  void SetEndpointRegistered(const dbus::ObjectPath& endpoint_path,
-                             bool registered);
+  // Sets the registration state for a given media endpoint.
+  void SetEndpointRegistered(
+      FakeBluetoothMediaEndpointServiceProvider* endpoint,
+      bool registered);
+
+  // Indicates whether the given endpoint path is registered or not.
+  bool IsRegistered(const dbus::ObjectPath& endpoint_path);
 
  private:
   // Indicates whether the media object is visible or not.
@@ -54,9 +60,10 @@ class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
   // The path of the media object.
   dbus::ObjectPath object_path_;
 
-  // Pairs of endpoint paths and bool values indicating whether or not endpoints
-  // are registered.
-  std::map<dbus::ObjectPath, bool> endpoints_;
+  // Map of registered endpoints. Each pair is composed of an endpoint path as
+  // key and a pointer to the endpoint as value.
+  std::map<dbus::ObjectPath, FakeBluetoothMediaEndpointServiceProvider*>
+      endpoints_;
 
   // List of observers interested in event notifications from us.
   ObserverList<BluetoothMediaClient::Observer> observers_;

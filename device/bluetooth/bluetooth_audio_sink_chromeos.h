@@ -50,6 +50,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // device::BluetoothAdapter::Observer overrides.
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
 
   // BluetoothMediaClient::Observer overrides.
   void MediaRemoved(const dbus::ObjectPath& object_path) override;
@@ -95,9 +97,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   void OnRegisterSucceeded(const base::Closure& callback);
 
   // Called when the registration of Media Endpoint failed.
-  void OnRegisterFailed(const BluetoothAudioSink::ErrorCallback& error_callback,
-                        const std::string& error_name,
-                        const std::string& error_message);
+  void OnRegisterFailed(
+      const device::BluetoothAudioSink::ErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
+
+  // Called when the unregistration of Media Endpoint has succeeded. The
+  // clean-up of media, media transport and media endpoint will be handled here.
+  void OnUnregisterSucceeded(const base::Closure& callback);
+
+  // Called when the unregistration of Media Endpoint failed.
+  void OnUnregisterFailed(
+      const device::BluetoothAudioSink::ErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
 
   // Reads from the file descriptor acquired via Media Transport object and
   // notify |observer_| while the audio data is available.
@@ -114,14 +127,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // device.
   device::BluetoothAudioSink::State state_;
 
-  // The volume control by the remote device during the streaming.
+  // The volume control by the remote device during the streaming. The valid
+  // range of volume is 0-127, and 128 is used to represent invalid volume.
   uint16_t volume_;
 
   // Read MTU of the file descriptor acquired via Media Transport object.
-  uint16_t read_mtu_;
+  scoped_ptr<uint16_t> read_mtu_;
 
   // Write MTU of the file descriptor acquired via Media Transport object.
-  uint16_t write_mtu_;
+  scoped_ptr<uint16_t> write_mtu_;
 
   // File descriptor acquired via Media Transport object.
   dbus::FileDescriptor fd_;

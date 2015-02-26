@@ -27,6 +27,9 @@ namespace {
 
 namespace device {
 
+// static
+const uint16_t BluetoothAudioSink::kInvalidVolume = 128;
+
 BluetoothAudioSink::Options::Options() : codec(kDefaultCodec) {
   capabilities.assign(kDefaultCapabilities,
                       kDefaultCapabilities + sizeof(kDefaultCapabilities));

@@ -30,12 +30,6 @@ void FakeBluetoothMediaEndpointServiceProvider::SetConfiguration(
   VLOG(1) << object_path_.value() << ": SetConfiguration for "
           << transport_path.value();
 
-  // Makes the transport object valid for the given endpoint path.
-  FakeBluetoothMediaTransportClient* transport =
-      static_cast<FakeBluetoothMediaTransportClient*>(
-          DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
-  transport->SetValid(object_path_, true);
-
   delegate_->SetConfiguration(transport_path, properties);
 }
 
@@ -43,18 +37,28 @@ void FakeBluetoothMediaEndpointServiceProvider::SelectConfiguration(
     const std::vector<uint8_t>& capabilities,
     const Delegate::SelectConfigurationCallback& callback) {
   VLOG(1) << object_path_.value() << ": SelectConfiguration";
+
   delegate_->SelectConfiguration(capabilities, callback);
+
+  // Makes the transport object valid for the given endpoint path.
+  FakeBluetoothMediaTransportClient* transport =
+      static_cast<FakeBluetoothMediaTransportClient*>(
+          DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
+  DCHECK(transport);
+  transport->SetValid(this, true);
 }
 
 void FakeBluetoothMediaEndpointServiceProvider::ClearConfiguration(
     const ObjectPath& transport_path) {
   VLOG(1) << object_path_.value() << ": ClearConfiguration on "
           << transport_path.value();
+
   delegate_->ClearConfiguration(transport_path);
 }
 
 void FakeBluetoothMediaEndpointServiceProvider::Released() {
   VLOG(1) << object_path_.value() << ": Released";
+
   delegate_->Released();
 }
 
