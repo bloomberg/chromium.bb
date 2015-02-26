@@ -22,9 +22,20 @@ declare_args() {
   enable_plugins = !is_android && !is_ios
 
   # Enables Native Client support.
-  # TODO(GYP) enable this when nacl works in GN.
+  # TODO(GYP): Get NaCl linking on other platforms.
+  # Also, see if we can always get rid of enable_nacl_untrusted and
+  # enable_pnacl and always build them if enable_nacl is true.
+  # The "is_nacl" part of the condition is needed to ensure that
+  # the untrusted code is built properly; arguably it should be
+  # guarded by "is_nacl" directly rather than enable_nacl_untrusted, but
+  # this will go away when Mac and Win are working and we can just use
+  # the commented out logic.
+  # enable_nacl = !is_ios && !is_android
+  # Currently this *should* work:
+  # enable_nacl = (is_linux && build_cpu_arch == "x64") || is_nacl
   enable_nacl = false
-  #enable_nacl = (!is_ios && !is_android)
+  enable_nacl_untrusted = enable_nacl
+  enable_pnacl = enable_nacl_untrusted
 
   # If debug_devtools is set to true, JavaScript files for DevTools are stored
   # as is and loaded from disk. Otherwise, a concatenated file is stored in

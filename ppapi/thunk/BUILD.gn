@@ -120,7 +120,6 @@ source_set("thunk") {
     "ppb_var_array_thunk.cc",
     "ppb_var_dictionary_thunk.cc",
     "ppb_video_capture_api.h",
-    "ppb_video_capture_thunk.cc",
     "ppb_video_decoder_api.h",
     "ppb_video_decoder_dev_api.h",
     "ppb_video_decoder_thunk.cc",
@@ -169,6 +168,7 @@ source_set("thunk") {
       "ppb_scrollbar_thunk.cc",
       "ppb_talk_private_thunk.cc",
       "ppb_url_util_thunk.cc",
+      "ppb_video_capture_thunk.cc",
       "ppb_video_decoder_dev_thunk.cc",
     ]
   }

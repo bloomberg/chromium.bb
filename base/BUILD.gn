@@ -764,7 +764,29 @@ component("base") {
   ]
 
   if (is_nacl) {
-    sources += [ "files/file_path_watcher_stub.cc" ]
+    # We reset sources_assignment_filter in order to explicitly include
+    # the linux file (which would otherwise be filtered out).
+    set_sources_assignment_filter([])
+    sources += [
+      "files/file_path_watcher_stub.cc",
+      "sync_socket_nacl.cc",
+      "threading/platform_thread_linux.cc",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+
+    sources -= [
+      "allocator/type_profiler_control.cc",
+      "allocator/type_profiler_control.h",
+      "async_socket_io_handler_posix.cc",
+      "base_paths.cc",
+      "cpu.cc",
+      "files/file_proxy.cc",
+      "files/file_util.cc",
+      "files/file_util_proxy.cc",
+      "path_service.cc",
+      "scoped_native_library.cc",
+      "files/scoped_temp_dir.cc",
+    ]
   }
 
   sources -= [
@@ -852,11 +874,12 @@ component("base") {
       "process/launch_posix.cc",
       "process/process_metrics_posix.cc",
       "process/process_posix.cc",
+      "rand_util_posix.cc",
       "sync_socket_posix.cc",
       "sys_info_posix.cc",
     ]
   } else {
-    # Remove nacl stuff.
+    # Remove NaCl stuff.
     sources -= [
       "memory/shared_memory_nacl.cc",
       "os_compat_nacl.cc",

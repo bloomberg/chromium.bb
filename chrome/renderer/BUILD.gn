@@ -67,8 +67,8 @@ static_library("renderer") {
 
   if (enable_nacl) {
     deps += [
-      #'../components/nacl.gyp:nacl',  TODO(GYP)
-      #'../components/nacl.gyp:nacl_renderer',  TODO(GYP)
+      "//components/nacl",
+      "//components/nacl:nacl_renderer",
     ]
   }
 

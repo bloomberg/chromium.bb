@@ -328,10 +328,10 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       ]
 
       if (enable_nacl) {
-        # TODO(GYP) this is also under a disable_nacl_untrusted==0 condition.
         deps += [
-          # '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',  TODO(GYP)
-          # '../components/nacl.gyp:nacl_helper',  TODO(GYP)
+          "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
+          "//components/nacl:nacl_helper",
+
           # '../components/nacl_nonsfi.gyp:nacl_helper_nonsfi',  TODO(GYP)
         ]
       }
@@ -575,7 +575,10 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
       }
       if (!is_chromeos) {
-        sources -= [ "data/webui/certificate_viewer_dialog_test.js" ]
+        sources -= [
+          "data/webui/certificate_viewer_dialog_test.js",
+          "test/data/chromeos/oobe_webui_browsertest.js",
+        ]
       }
       if (!enable_app_list) {
         sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
@@ -700,28 +703,32 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
           "nacl/pnacl_header_test.cc",
           "nacl/pnacl_header_test.h",
         ]
-        deps += [
-          #'test/data/nacl/nacl_test_data.gyp:*',  # TODO(GYP)
-          #'../ppapi/native_client/native_client.gyp:nacl_irt',  # TODO(GYP)
-          #'../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests',  # TODO(GYP)
-          #'../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive',  # TODO(GYP)
-          #'../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries',  # TODO(GYP)
-          #'../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app',  # TODO(GYP)          #'../ppapi/ppapi_tests_mojo.gyp:ppapi_tests_mojo',  # TODO(GYP)
-          #'../ppapi/ppapi_tests_mojo.gyp:ppapi_tests_mojo',  # TODO(GYP)
+
+        # TODO(GYP): Make NaCl work in other configs and update the irt
+        # dependency as appropriate. We should probably push this
+        # dependency into ppapi/native_client so that clients don't need
+        # to know all of the different toolchain options.
+        assert(current_cpu == "x64")
+        data_deps += [
+          # "test/data/nacl:shared_test_files",  # TODO(GYP)
+          "//ppapi/native_client:nacl_irt(//native_client/build/toolchain/nacl:irt_x64)",
+          # "../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests",  # TODO(GYP)
+          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive",  # TODO(GYP)
+          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries",  # TODO(GYP)
+          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app",  # TODO(GYP)
+          # "../ppapi/ppapi_tests_mojo.gyp:ppapi_tests_mojo",  # TODO(GYP)
         ]
         if (is_chromeos) {
           sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
+          deps += [
+            #'browser_chromeos',  TODO(GYP)
+            #'../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',  TODO(GYP)
+          ]
         }
-        deps += [
-          #'browser_chromeos',  TODO(GYP)
-          #'../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',  TODO(GYP)
-        ]
       }
       if (is_win || is_linux) {
         sources += [ "../browser/nacl_host/test/nacl_gdb_browsertest.cc" ]
-        deps += [
-          #'browser/nacl_host/test/mock_nacl_gdb.gyp:mock_nacl_gdb',  TODO(GYP)
-        ]
+        deps += [ "//chrome/browser/nacl_host/test:mock_nacl_gdb" ]
       }
       if (is_win) {
         # TODO(halyavin) NaCl on Windows can't open debug stub socket in
@@ -731,15 +738,13 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
           #'chrome.gyp:chrome_nacl_win64',  TODO(GYP)
         ]
       }
-      is(is_linux) {
+      if (is_linux) {
         deps += [
-          #'../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap', TODO(GYP)
-          #'../components/nacl.gyp:nacl_helper', TODO(GYP)
-          #'../components/nacl_nonsfi.gyp:nacl_helper_nonsfi', TODO(GYP)
+          "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
+          "//components/nacl:nacl_helper",
+
+          # "//components/nacl_nonsfi.gyp:nacl_helper_nonsfi",  # TODO(GYP)
         ]
-      }
-      if (!is_chromeos) {
-        sources -= [ "test/data/chromeos/oobe_webui_browsertest.js" ]
       }
     }
     if (debug_devtools) {
@@ -1288,11 +1293,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         sources -= [ "../browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc" ]
       }
     }
-    if (enable_nacl) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_nacl_sources,
-                             ".",
-                             "//chrome")
-    }
+
     if (enable_extensions) {
       sources +=
           rebase_path(unit_gypi_values.chrome_unit_tests_extensions_sources,

@@ -13,27 +13,20 @@ import("//build/config/linux/pkg_config.gni")
 # don't want to bloat the binary more by including another copy.
 
 declare_args() {
-  if (is_linux && (!is_official_build || is_chromeos)) {
-    # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
-    # anyways. However, we want to have control of the version of harfbuzz
-    # we use, so don't use system harfbuzz for official builds, unless we
-    # are building for chrome os, where we have the system harfbuzz under
-    # control as well.
-    use_system_harfbuzz = exec_script(pkg_config_script,
-                                      pkg_config_args + [
-                                            "--atleast-version=1.31.0",
-                                            "pangoft2",
-                                          ],
-                                      "value")
-  } else {
-    use_system_harfbuzz = false
-  }
-  if (is_linux && current_cpu == "arm" && !is_chromeos) {
-    # Override use_system_harfbuzz for ARM cross compiling so system
-    # harfbuzz is not used because the corresponding package is not
-    # available.
-    use_system_harfbuzz = false
-  }
+  # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
+  # anyways. However, we want to have control of the version of harfbuzz
+  # we use, so don't use system harfbuzz for official builds, unless we
+  # are building for chrome os, where we have the system harfbuzz under
+  # control as well. We also do not want to use the system harfbuzz
+  # when cross-compiling for ARM.
+  use_system_harfbuzz = is_linux && (is_chromeos || (!is_official_build &&
+                                                     current_cpu != "arm")) &&
+                        exec_script(pkg_config_script,
+                                    pkg_config_args + [
+                                          "--atleast-version=1.31.0",
+                                          "pangoft2",
+                                        ],
+                                    "value")
 }
 
 if (use_system_harfbuzz) {

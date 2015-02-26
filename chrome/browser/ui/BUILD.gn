@@ -158,12 +158,10 @@ static_library("ui") {
       sources -= [ "views/task_manager_view.cc" ]
     }
   }
-  if (!enable_nacl) {
+  if (enable_nacl) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_nacl_sources, ".", "//chrome")
-    deps += [
-      #"//native_client/src/trusted/service_runtime/service_runtime.gyp:sel",  TODO(GYP)
-    ]
+    deps += [ "//native_client/src/trusted/service_runtime:sel" ]
   }
   if (enable_configuration_policy) {
     sources += rebase_path(gypi_values.chrome_browser_ui_policy_sources,

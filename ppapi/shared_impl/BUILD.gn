@@ -172,12 +172,17 @@ component("shared_impl") {
     "//media:shared_memory_support",
     "//ppapi/c",
     "//ppapi/thunk",
-    "//skia",
     "//third_party/icu:icuuc",
-    "//ui/events:events_base",
-    "//ui/surface",
     "//url",
   ]
+
+  if (!is_nacl) {
+    deps += [
+      "//skia",
+      "//ui/events:events_base",
+      "//ui/surface",
+    ]
+  }
 
   if (is_mac) {
     libs = [ "QuartzCore.framework" ]

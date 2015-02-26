@@ -35,6 +35,7 @@ if (!is_nacl) {
       "$gen_dir/mojo_syscall.cc",
       "monacl_sel_main.cc",
     ]
+
     deps = [
       # This target makes sure we have all the pre-processor defines needed to
       # use NaCl's headers.
@@ -43,20 +44,8 @@ if (!is_nacl) {
       "//native_client/src/trusted/service_runtime:sel_main_chrome",
       ":mojo_nacl_codegen($default_toolchain)",
     ]
-  }
-
-  # A simple shell for running untrusted binaries that talk to the Mojo
-  # embedder. (No services.)
-  executable("monacl_shell") {
-    testonly = true
-    sources = [
-      "monacl_shell.cc",
-    ]
-    deps = [
-      "//base:base",
-      "//third_party/mojo/src/mojo/edk/system:system",
-      ":monacl_sel",
-    ]
+    public_configs =
+        [ "//third_party/mojo/src/mojo/public/build/config:mojo_sdk" ]
   }
 }
 
@@ -68,55 +57,26 @@ if (is_nacl) {
       "$gen_dir/libmojo.cc",
       "$gen_dir/mojo_irt.h",
     ]
-    include_dirs = [ "$root_build_dir/gen" ]
-    deps = [
+
+    public_configs =
+        [ "//third_party/mojo/src/mojo/public/build/config:mojo_sdk" ]
+
+    public_deps = [
       ":mojo_nacl_codegen($default_toolchain)",
     ]
   }
 
-  # Unit test for the Mojo public API.
-  executable("monacl_test") {
-    testonly = true
-    sources = [
-      "//third_party/mojo/src/mojo/public/cpp/system/tests/core_unittest.cc",
-      "//third_party/mojo/src/mojo/public/cpp/system/tests/macros_unittest.cc",
-    ]
-    deps = [
-      "//testing/gtest:gtest",
-      "//testing/gtest:gtest_main",
-      "//third_party/mojo/src/mojo/public/c/system/tests:tests",
-      "//third_party/mojo/src/mojo/public/cpp/system:system",
-      ":mojo",
-    ]
-  }
-
-  executable("irt_mojo") {
+  source_set("irt_mojo_sources") {
     cflags_c = [ "-std=c99" ]
     sources = [
-      "irt_entry_mojo.c",
       "$gen_dir/mojo_irt.c",
       "$gen_dir/mojo_irt.h",
     ]
-    include_dirs = [ "$root_build_dir/gen" ]
-    deps = [
+    public_deps = [
       "//native_client/build/config/nacl:nacl_base",
       "//native_client/src/untrusted/irt:irt_core_lib",
       "//native_client/src/untrusted/nacl:imc_syscalls",
       ":mojo_nacl_codegen($default_toolchain)",
     ]
   }
-}
-
-group("mojo_nacl") {
-  deps = [
-    ":irt_mojo(//native_client/build/toolchain/nacl:irt_${current_cpu})",
-  ]
-}
-
-group("mojo_nacl_tests") {
-  testonly = true
-  deps = [
-    ":monacl_shell",
-    ":monacl_test(//native_client/build/toolchain/nacl:clang_newlib_${current_cpu})",
-  ]
 }

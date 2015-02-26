@@ -67,7 +67,13 @@ component("ipc") {
     "unix_domain_socket_util.h",
   ]
 
-  if (!is_nacl) {
+  if (is_nacl) {
+    sources -= [
+      "ipc_channel.cc",
+      "ipc_channel_posix.cc",
+      "unix_domain_socket_util.cc",
+    ]
+  } else {
     sources -= [
       "ipc_channel_nacl.cc",
       "ipc_channel_nacl.h",
@@ -88,7 +94,7 @@ component("ipc") {
   ]
 }
 
-# TODO(dpranke): crbug.com/360936. Get this to build and run on Android.
+# TODO(GYP): crbug.com/360936. Get this to build and run on Android.
 if (!is_android) {
   test("ipc_tests") {
     sources = [
@@ -149,7 +155,6 @@ if (!is_android) {
     #    deps += "//base/allocator"
     #  }
     #}
-
     deps = [
       ":ipc",
       ":test_support",

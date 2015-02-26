@@ -184,8 +184,12 @@ component("proxy") {
     "url_response_info_resource.cc",
     "url_response_info_resource.h",
     "var_serialization_rules.h",
+    "video_decoder_resource.cc",
+    "video_decoder_resource.h",
     "video_destination_resource.cc",
     "video_destination_resource.h",
+    "video_encoder_resource.cc",
+    "video_encoder_resource.h",
     "video_frame_resource.cc",
     "video_frame_resource.h",
     "video_source_resource.cc",
@@ -258,10 +262,6 @@ component("proxy") {
       "talk_resource.h",
       "video_capture_resource.cc",
       "video_capture_resource.h",
-      "video_decoder_resource.cc",
-      "video_decoder_resource.h",
-      "video_encoder_resource.cc",
-      "video_encoder_resource.h",
     ]
   }
 
@@ -269,8 +269,6 @@ component("proxy") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
-    "//gin",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc",
     "//ipc",
@@ -278,19 +276,23 @@ component("proxy") {
     "//ppapi/c",
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
-    "//skia",
     "//third_party/icu",
-    "//ui/events:events_base",
-    "//ui/surface",
   ]
 
-  # TODO(GYP) support chrome_multiple_dll
-  #if (chrome_multiple_dll) {
-  #  deps += [ "//third_party/WebKit/public:blink_minimal" ]
-  #} else {
-  deps += [ "//third_party/WebKit/public:blink" ]
-
-  #}
+  if (is_nacl) {
+    deps += [
+      "//ui/events:latency_info",
+      "//mojo/nacl:mojo",
+    ]
+  } else {
+    deps += [
+      "//base/third_party/dynamic_annotations",
+      "//gin",
+      "//skia",
+      "//ui/events:events_base",
+      "//ui/surface",
+    ]
+  }
 }
 
 source_set("ipc") {
@@ -327,9 +329,13 @@ source_set("ipc") {
     "//ipc",
     "//ppapi/c",
     "//ppapi/shared_impl",
-    "//skia",
-    "//ui/events/ipc",
   ]
+  if (!is_nacl) {
+    deps += [
+      "//skia",
+      "//ui/events/ipc",
+    ]
+  }
 }
 
 source_set("test_support") {

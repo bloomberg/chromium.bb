@@ -548,6 +548,12 @@ if (is_win) {
 } else if (is_ios) {
   host_toolchain = "//build/toolchain/mac:host_clang"
   set_default_toolchain("//build/toolchain/mac:clang")
+} else if (is_nacl) {
+  # TODO(GYP): This will need to change when we get NaCl working
+  # on multiple platforms, but this whole block of code (how we define
+  # host_toolchain) needs to be reworked regardless to key off of build_os
+  # and build_cpu_arch rather than the is_* variables.
+  host_toolchain = "//build/toolchain/linux:clang_x64"
 }
 
 # ==============================================================================

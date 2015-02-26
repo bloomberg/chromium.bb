@@ -1,0 +1,268 @@
+# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+if (enable_nacl) {
+  source_set("nacl") {
+    sources = [
+      "loader/nacl_ipc_adapter.cc",
+      "loader/nacl_ipc_adapter.h",
+      "loader/nacl_main.cc",
+      "loader/nacl_main_platform_delegate.h",
+      "loader/nacl_main_platform_delegate_linux.cc",
+      "loader/nacl_main_platform_delegate_mac.mm",
+      "loader/nacl_main_platform_delegate_win.cc",
+      "loader/nacl_listener.cc",
+      "loader/nacl_listener.h",
+      "loader/nacl_trusted_listener.cc",
+      "loader/nacl_trusted_listener.h",
+      "loader/nacl_validation_db.h",
+      "loader/nacl_validation_query.cc",
+      "loader/nacl_validation_query.h",
+    ]
+
+    deps = [
+      "//base",
+      "//base:base_static",
+      "//ipc",
+      "//mojo/nacl:monacl_sel",
+      "//native_client/src/trusted/service_runtime:sel_main_chrome",
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
+    ]
+
+    if (enable_nacl_untrusted) {
+      data_deps = [
+        # TODO(GYP): handle other cpu_arch's correctly.
+        "//ppapi/native_client:nacl_irt(//native_client/build/toolchain/nacl:irt_x64)",
+      ]
+    }
+    if (enable_pnacl) {
+      data_deps += [
+        # TODO(GYP): handle other cpu_arch's correctly.
+        "//ppapi/native_client/src/untrusted/pnacl_support_extension",
+      ]
+    }
+  }
+
+  source_set("nacl_browser") {
+    sources = [
+      "browser/nacl_broker_host_win.cc",
+      "browser/nacl_broker_host_win.h",
+      "browser/nacl_broker_service_win.cc",
+      "browser/nacl_broker_service_win.h",
+      "browser/nacl_browser.cc",
+      "browser/nacl_browser.h",
+      "browser/nacl_file_host.cc",
+      "browser/nacl_file_host.h",
+      "browser/nacl_host_message_filter.cc",
+      "browser/nacl_host_message_filter.h",
+      "browser/nacl_process_host.cc",
+      "browser/nacl_process_host.h",
+      "browser/nacl_validation_cache.cc",
+      "browser/nacl_validation_cache.h",
+      "browser/pnacl_host.cc",
+      "browser/pnacl_host.h",
+      "browser/pnacl_translation_cache.cc",
+      "browser/pnacl_translation_cache.h",
+      "common/nacl_debug_exception_handler_win.cc",
+      "common/nacl_debug_exception_handler_win.h",
+    ]
+
+    deps = [
+      ":nacl_common",
+      ":nacl_switches",
+      "//native_client/src/trusted/service_runtime:sel_main_chrome",
+      "//content//public/browser",
+    ]
+
+    if (is_linux) {
+      sources += [
+        "zygote/nacl_fork_delegate_linux.cc",
+        "zygote/nacl_fork_delegate_linux.h",
+      ]
+
+      deps += [ "//sandbox/linux:suid_sandbox_client" ]
+    }
+  }
+
+  source_set("nacl_renderer") {
+    sources = [
+      "renderer/file_downloader.cc",
+      "renderer/file_downloader.h",
+      "renderer/histogram.cc",
+      "renderer/histogram.h",
+      "renderer/manifest_downloader.cc",
+      "renderer/manifest_downloader.h",
+      "renderer/manifest_service_channel.cc",
+      "renderer/manifest_service_channel.h",
+      "renderer/nacl_helper.cc",
+      "renderer/nacl_helper.h",
+      "renderer/json_manifest.cc",
+      "renderer/json_manifest.h",
+      "renderer/nexe_load_manager.cc",
+      "renderer/nexe_load_manager.h",
+      "renderer/platform_info.cc",
+      "renderer/platform_info.h",
+      "renderer/pnacl_translation_resource_host.cc",
+      "renderer/pnacl_translation_resource_host.h",
+      "renderer/ppb_nacl_private_impl.cc",
+      "renderer/ppb_nacl_private_impl.h",
+      "renderer/progress_event.cc",
+      "renderer/progress_event.h",
+      "renderer/trusted_plugin_channel.cc",
+      "renderer/trusted_plugin_channel.h",
+    ]
+
+    deps = [
+      ":nacl_common",
+      "renderer/plugin:nacl_trusted_plugin",
+      "//content/public/renderer",
+      "//third_party/jsoncpp",
+      "//third_party/WebKit/public:blink",
+    ]
+  }
+
+  executable("nacl_loader_unittests") {
+    testonly = true
+    sources = [
+      "loader/run_all_unittests.cc",
+    ]
+
+    deps = [
+      ":nacl",
+      "//base/test:test_support",
+      "//testing/gtest",
+    ]
+  }
+
+  if (is_linux) {
+    executable("nacl_helper") {
+      sources = [
+        "loader/nacl_helper_linux.cc",
+        "loader/nacl_helper_linux.h",
+      ]
+
+      deps = [
+        ":nacl_linux",
+        "//mojo/nacl:monacl_sel",
+      ]
+
+      cflags = [ "-fPIE" ]
+
+      ldflags = [ "-pie" ]
+    }
+
+    source_set("nacl_linux") {
+      sources = [
+        "loader/nonsfi/abi_conversion.cc",
+        "loader/nonsfi/abi_conversion.h",
+        "loader/nonsfi/elf_loader.cc",
+        "loader/nonsfi/elf_loader.h",
+        "loader/nonsfi/irt_basic.cc",
+        "loader/nonsfi/irt_clock.cc",
+        "loader/nonsfi/irt_exception_handling.cc",
+        "loader/nonsfi/irt_fdio.cc",
+        "loader/nonsfi/irt_futex.cc",
+        "loader/nonsfi/irt_icache.cc",
+        "loader/nonsfi/irt_interfaces.cc",
+        "loader/nonsfi/irt_interfaces.h",
+        "loader/nonsfi/irt_memory.cc",
+        "loader/nonsfi/irt_ppapi.cc",
+        "loader/nonsfi/irt_random.cc",
+        "loader/nonsfi/irt_resource_open.cc",
+        "loader/nonsfi/irt_thread.cc",
+        "loader/nonsfi/irt_util.h",
+        "loader/nonsfi/nonsfi_listener.cc",
+        "loader/nonsfi/nonsfi_listener.h",
+        "loader/nonsfi/nonsfi_main.cc",
+        "loader/nonsfi/nonsfi_main.h",
+        "loader/nonsfi/nonsfi_sandbox.cc",
+        "loader/nonsfi/nonsfi_sandbox.h",
+        "loader/sandbox_linux/nacl_bpf_sandbox_linux.cc",
+        "loader/sandbox_linux/nacl_sandbox_linux.cc",
+        "//ppapi/nacl_irt/irt_manifest.h",
+        "//ppapi/nacl_irt/manifest_service.cc",
+        "//ppapi/nacl_irt/manifest_service.h",
+        "//ppapi/nacl_irt/plugin_main.cc",
+        "//ppapi/nacl_irt/plugin_main.h",
+        "//ppapi/nacl_irt/plugin_startup.cc",
+        "//ppapi/nacl_irt/plugin_startup.h",
+        "//ppapi/nacl_irt/ppapi_dispatcher.cc",
+        "//ppapi/nacl_irt/ppapi_dispatcher.h",
+      ]
+
+      defines = [ "IN_NACL_HELPER=1" ]
+
+      deps = [
+        ":nacl",
+        ":nacl_common",
+        ":nacl_switches",
+        "//components/tracing",
+        "//crypto",
+        "//ppapi/proxy",
+        "//sandbox/linux:libc_urandom_override",
+        "//sandbox",
+      ]
+
+      if (use_glib) {
+        configs += [ "//build/config/linux:glib" ]
+      }
+
+      if (use_seccomp_bpf) {
+        defines += [ "USE_SECCOMP_BPF" ]
+      }
+    }
+  }
+} else {
+  group("nacl") {
+  }
+}
+
+source_set("nacl_switches") {
+  sources = [
+    "common/nacl_switches.cc",
+    "common/nacl_switches.h",
+  ]
+}
+
+source_set("nacl_common") {
+  sources = [
+    "common/nacl_cmd_line.cc",
+    "common/nacl_cmd_line.h",
+    "common/nacl_constants.cc",
+    "common/nacl_constants.h",
+    "common/nacl_host_messages.h",
+    "common/nacl_host_messages.cc",
+    "common/nacl_messages.cc",
+    "common/nacl_messages.h",
+    "common/nacl_nonsfi_util.cc",
+    "common/nacl_nonsfi_util.h",
+    "common/nacl_process_type.h",
+    "common/nacl_renderer_messages.h",
+    "common/nacl_renderer_messages.cc",
+    "common/nacl_sandbox_type_mac.h",
+    "common/nacl_types.cc",
+    "common/nacl_types.h",
+    "common/nacl_types_param_traits.cc",
+    "common/nacl_types_param_traits.h",
+    "common/pnacl_types.cc",
+    "common/pnacl_types.h",
+  ]
+
+  deps = [
+    "//content/public/common",
+  ]
+
+  if (is_linux) {
+    sources += [
+      "common/nacl_paths.cc",
+      "common/nacl_paths.h",
+    ]
+
+    defines = [ "__STDC_LIMIT_MACROS=1" ]
+  }
+}

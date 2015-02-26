@@ -1,0 +1,29 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_nacl,
+       "These targets must only be built using the untrusted NaCl toolchains.")
+
+source_set("aot") {
+  sources = [
+    "irt_shim_ppapi.c",
+    "pnacl_shim.c",
+    "shim_entry.c",
+    "shim_ppapi.c",
+  ]
+}
+
+source_set("browser") {
+  sources = [
+    "shim_entry.c",
+    "shim_ppapi.c",
+  ]
+}
+
+source_set("irt") {
+  sources = [
+    "irt_shim_ppapi.c",
+    "pnacl_shim.c",
+  ]
+}

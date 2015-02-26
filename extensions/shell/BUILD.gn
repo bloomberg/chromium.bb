@@ -105,6 +105,26 @@ source_set("app_shell_lib") {
       sources += nacl_sources
     }
   }
+
+  if (enable_nacl) {
+    sources += [
+      "browser/shell_nacl_browser_delegate.cc",
+      "browser/shell_nacl_browser_delegate.h",
+    ]
+
+    deps += [
+      "//components/nacl",
+      "//components/nacl:nacl_browser",
+      "//components/nacl:nacl_common",
+      "//components/nacl:nacl_renderer",
+      "//components/nacl:nacl_switches",
+      "//components/nacl/renderer/plugin:nacl_trusted_plugin",
+    ]
+
+    if (is_linux) {
+      deps += [ "//components/nacl:nacl_helper" ]
+    }
+  }
 }
 
 if (!(is_chromeos && !use_ozone) && (!is_win || link_chrome_on_windows)) {

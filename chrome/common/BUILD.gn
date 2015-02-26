@@ -138,9 +138,7 @@ static_library("common") {
   }
 
   if (enable_nacl) {
-    deps += [
-      #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
-    ]
+    deps += [ "//components/nacl:nacl_common" ]
   }
 
   # Printing.
@@ -287,9 +285,7 @@ static_library("constants") {
   ]
 
   if (enable_nacl) {
-    deps += [
-      #'../components/nacl.gyp:nacl_switches',  TODO(GYP)
-    ]
+    deps += [ "//components/nacl:nacl_switches" ]
   }
 }
 
