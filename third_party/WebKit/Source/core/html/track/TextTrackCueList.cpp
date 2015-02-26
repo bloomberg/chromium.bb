@@ -31,6 +31,7 @@
 namespace blink {
 
 TextTrackCueList::TextTrackCueList()
+    : m_firstInvalidIndex(0)
 {
 }
 
@@ -39,11 +40,6 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TextTrackCueList);
 unsigned long TextTrackCueList::length() const
 {
     return m_list.size();
-}
-
-unsigned long TextTrackCueList::getCueIndex(TextTrackCue* cue) const
-{
-    return m_list.find(cue);
 }
 
 TextTrackCue* TextTrackCueList::item(unsigned index) const
@@ -85,7 +81,7 @@ bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
         return false;
 
     m_list.insert(index, cue);
-    invalidateCueIndexes(index);
+    invalidateCueIndex(index);
     return true;
 }
 
@@ -112,9 +108,8 @@ bool TextTrackCueList::remove(TextTrackCue* cue)
         return false;
 
     m_list.remove(index);
-    // FIXME: While removing a cue does not invalidate the cue order, it does
-    // make it more difficult to maintain the invariant, so should probably
-    // just invalidate here as well.
+    invalidateCueIndex(index);
+    cue->invalidateCueIndex();
     return true;
 }
 
@@ -122,11 +117,6 @@ void TextTrackCueList::updateCueIndex(TextTrackCue* cue)
 {
     if (!remove(cue))
         return;
-
-    // FIXME: If moving the cue such that its index in list increases, then
-    // what happens with the cached index on cues in the range [oldIndex,
-    // newIndex)? (Some of the indices will be "safe", but there'll be a risk
-    // that the lazy update via cueIndex() yields duplicates/incorrect order.)
     add(cue);
 }
 
@@ -135,11 +125,25 @@ void TextTrackCueList::clear()
     m_list.clear();
 }
 
-void TextTrackCueList::invalidateCueIndexes(size_t start)
+void TextTrackCueList::invalidateCueIndex(size_t index)
 {
-    // FIXME: When iterating cues we could as well update their cached indices too.
-    for (size_t i = start; i < m_list.size(); ++i)
-        m_list[i]->invalidateCueIndex();
+    // Store the smallest (first) index that we know has a cue that does not
+    // meet the criteria:
+    //   cueIndex(list[index-1]) + 1 == cueIndex(list[index]) [index > 0]
+    // This is a stronger requirement than we need, but it's easier to maintain.
+    // We can then check if a cue's index is valid by comparing it with
+    // |m_firstInvalidIndex| - if it's strictly less it is valid.
+    m_firstInvalidIndex = std::min(m_firstInvalidIndex, index);
+}
+
+void TextTrackCueList::validateCueIndexes()
+{
+    // Compute new index values for the cues starting at
+    // |m_firstInvalidIndex|. If said index is beyond the end of the list, no
+    // cues will need to be updated.
+    for (size_t i = m_firstInvalidIndex; i < m_list.size(); ++i)
+        m_list[i]->updateCueIndex(safeCast<unsigned>(i));
+    m_firstInvalidIndex = m_list.size();
 }
 
 DEFINE_TRACE(TextTrackCueList)

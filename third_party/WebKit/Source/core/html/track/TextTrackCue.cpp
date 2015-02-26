@@ -40,13 +40,13 @@
 
 namespace blink {
 
-static const int invalidCueIndex = -1;
+static const unsigned invalidCueIndex = UINT_MAX;
 
 TextTrackCue::TextTrackCue(double start, double end)
     : m_startTime(start)
     , m_endTime(end)
-    , m_cueIndex(invalidCueIndex)
     , m_track(nullptr)
+    , m_cueIndex(invalidCueIndex)
     , m_isActive(false)
     , m_pauseOnExit(false)
 {
@@ -121,17 +121,20 @@ void TextTrackCue::setPauseOnExit(bool value)
     cueDidChange();
 }
 
-int TextTrackCue::cueIndex()
-{
-    if (m_cueIndex == invalidCueIndex)
-        m_cueIndex = track()->cues()->getCueIndex(this);
-
-    return m_cueIndex;
-}
-
 void TextTrackCue::invalidateCueIndex()
 {
     m_cueIndex = invalidCueIndex;
+}
+
+unsigned TextTrackCue::cueIndex()
+{
+    // This method can only be called on cues while they are associated with
+    // a(n enabled) track (and hence that track's list of cues should exist.)
+    ASSERT(track() && track()->cues());
+    TextTrackCueList* cueList = track()->cues();
+    if (!cueList->isCueIndexValid(m_cueIndex))
+        cueList->validateCueIndexes();
+    return m_cueIndex;
 }
 
 bool TextTrackCue::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)

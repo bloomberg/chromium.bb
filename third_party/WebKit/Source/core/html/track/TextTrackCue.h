@@ -70,7 +70,8 @@ public:
     bool pauseOnExit() const { return m_pauseOnExit; }
     void setPauseOnExit(bool);
 
-    int cueIndex();
+    unsigned cueIndex();
+    void updateCueIndex(unsigned cueIndex) { m_cueIndex = cueIndex; }
     void invalidateCueIndex();
 
     using EventTarget::dispatchEvent;
@@ -112,9 +113,10 @@ private:
     AtomicString m_id;
     double m_startTime;
     double m_endTime;
-    int m_cueIndex;
 
     RawPtrWillBeMember<TextTrack> m_track;
+
+    unsigned m_cueIndex;
 
     bool m_isActive : 1;
     bool m_pauseOnExit : 1;

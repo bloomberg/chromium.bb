@@ -95,7 +95,7 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a, const
     // 12 - Further sort tasks in events that have the same time by the
     // relative text track cue order of the text track cues associated
     // with these tasks.
-    return a.second->cueIndex() - b.second->cueIndex() < 0;
+    return a.second->cueIndex() < b.second->cueIndex();
 }
 
 static PassRefPtrWillBeRawPtr<Event> createEventWithTarget(const AtomicString& eventName, PassRefPtrWillBeRawPtr<EventTarget> eventTarget)
