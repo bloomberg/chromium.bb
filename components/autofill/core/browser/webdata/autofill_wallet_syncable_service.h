@@ -58,9 +58,13 @@ class AutofillWalletSyncableService
       const std::string& app_locale);
 
  private:
+  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list);
+
   base::ThreadChecker thread_checker_;
 
   AutofillWebDataBackend* webdata_backend_;  // Weak ref.
+
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   syncer::SyncableService::StartSyncFlare flare_;
 
