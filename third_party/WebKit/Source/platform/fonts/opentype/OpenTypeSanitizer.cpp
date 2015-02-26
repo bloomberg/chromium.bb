@@ -78,7 +78,8 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 
     ots::ExpandingMemoryStream output(m_buffer->size(), maxWebFontSize);
     double start = currentTime();
-    if (!ots::Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size()))
+    ots::OTSContext otsContext;
+    if (!otsContext.Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size()))
         return nullptr;
 
     const size_t transcodeLen = output.Tell();
