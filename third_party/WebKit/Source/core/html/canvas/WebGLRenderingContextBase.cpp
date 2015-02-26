@@ -2276,7 +2276,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
                 return WebGLAny(scriptState, value);
             }
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
-            if (extensionEnabled(EXTsRGBName)) {
+            if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher()) {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
                 return WebGLAny(scriptState, value);
@@ -2294,7 +2294,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
             return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(object));
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
-            if (extensionEnabled(EXTsRGBName)) {
+            if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher()) {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
                 return WebGLAny(scriptState, value);
@@ -2519,7 +2519,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_vertex_array_object not enabled");
         return ScriptValue::createNull(scriptState);
     case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
-        if (extensionEnabled(EXTTextureFilterAnisotropicName) || isWebGL2OrHigher())
+        if (extensionEnabled(EXTTextureFilterAnisotropicName))
             return getUnsignedIntParameter(scriptState, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
         return ScriptValue::createNull(scriptState);
@@ -2726,7 +2726,7 @@ ScriptValue WebGLRenderingContextBase::getTexParameter(ScriptState* scriptState,
             return WebGLAny(scriptState, static_cast<unsigned>(value));
         }
     case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
-        if (extensionEnabled(EXTTextureFilterAnisotropicName) || isWebGL2OrHigher()) {
+        if (extensionEnabled(EXTTextureFilterAnisotropicName)) {
             GLfloat value = 0.f;
             webContext()->getTexParameterfv(target, pname, &value);
             return WebGLAny(scriptState, value);
@@ -3237,7 +3237,7 @@ void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum intern
         m_renderbufferBinding->deleteEmulatedStencilBuffer(webContext());
         break;
     case GL_SRGB8_ALPHA8_EXT:
-        if (!extensionEnabled(EXTsRGBName)) {
+        if (!(extensionEnabled(EXTsRGBName) || isWebGL2OrHigher())) {
             synthesizeGLError(GL_INVALID_ENUM, "renderbufferStorage", "sRGB not enabled");
             return;
         }
@@ -3797,7 +3797,7 @@ void WebGLRenderingContextBase::texParameter(GLenum target, GLenum pname, GLfloa
         }
         break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
-        if (!extensionEnabled(EXTTextureFilterAnisotropicName) || isWebGL2OrHigher()) {
+        if (!extensionEnabled(EXTTextureFilterAnisotropicName)) {
             synthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter, EXT_texture_filter_anisotropic not enabled");
             return;
         }
@@ -4797,7 +4797,7 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
         return false;
     case GL_SRGB_EXT:
     case GL_SRGB_ALPHA_EXT:
-        if (extensionEnabled(EXTsRGBName))
+        if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher())
             break;
         synthesizeGLError(GL_INVALID_ENUM, functionName, "sRGB texture formats not enabled");
         return false;
