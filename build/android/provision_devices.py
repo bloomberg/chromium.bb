@@ -13,6 +13,7 @@ Usage:
 import argparse
 import logging
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -115,6 +116,14 @@ def _ConfigureLocalProperties(device, java_debug=True):
 
   # LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
+def WriteAdbKeysFile(device, adb_keys_string):
+  dir_path = posixpath.dirname(constants.ADB_KEYS_FILE)
+  device.RunShellCommand('mkdir -p %s' % dir_path, as_root=True)
+  device.RunShellCommand('restorecon %s' % dir_path, as_root=True)
+  device.WriteFile(constants.ADB_KEYS_FILE, adb_keys_string, as_root=True)
+  device.RunShellCommand('restorecon %s' % constants.ADB_KEYS_FILE,
+                         as_root=True)
+
 
 def WipeDeviceData(device):
   """Wipes data from device, keeping only the adb_keys for authorization.
@@ -133,13 +142,7 @@ def WipeDeviceData(device):
     adb_keys = device.ReadFile(constants.ADB_KEYS_FILE, as_root=True)
   device.RunShellCommand('wipe data', as_root=True)
   if device_authorized:
-    path_list = constants.ADB_KEYS_FILE.split('/')
-    dir_path = '/'.join(path_list[:len(path_list)-1])
-    device.RunShellCommand('mkdir -p %s' % dir_path, as_root=True)
-    device.RunShellCommand('restorecon %s' % dir_path, as_root=True)
-    device.WriteFile(constants.ADB_KEYS_FILE, adb_keys, as_root=True)
-    device.RunShellCommand('restorecon %s' % constants.ADB_KEYS_FILE,
-                           as_root=True)
+    WriteAdbKeysFile(device, adb_keys)
 
 
 def WipeDeviceIfPossible(device, timeout):
@@ -173,6 +176,14 @@ def ProvisionDevice(device, options):
     reboot_timeout = _DEFAULT_TIMEOUTS.LOLLIPOP
   else:
     reboot_timeout = _DEFAULT_TIMEOUTS.PRE_LOLLIPOP
+
+  if options.adb_key_files:
+    adb_keys = set()
+    for adb_key_file in options.adb_key_files:
+      with open(adb_key_file, 'r') as f:
+        adb_public_keys = f.readlines()
+      adb_keys.update(adb_public_keys)
+    WriteAdbKeysFile(device, '\n'.join(adb_keys))
 
   try:
     if not options.skip_wipe:
@@ -280,6 +291,8 @@ def main():
   parser.add_argument('-r', '--auto-reconnect', action='store_true',
                       help='push binary which will reboot the device on adb'
                       ' disconnections')
+  parser.add_argument('--adb-key-files', type=str, nargs='+',
+                      help='list of adb keys to push to device')
   args = parser.parse_args()
   constants.SetBuildType(args.target)
 
