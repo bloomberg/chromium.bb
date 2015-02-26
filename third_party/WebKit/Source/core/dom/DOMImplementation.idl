@@ -18,27 +18,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-domimplementation
+
 [
     SetWrapperReferenceFrom=document,
     TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface DOMImplementation {
+    [RaisesException] DocumentType createDocumentType(DOMString qualifiedName, DOMString publicId, DOMString systemId);
+    [RaisesException] XMLDocument createDocument(DOMString? namespaceURI, [TreatNullAs=EmptyString] DOMString qualifiedName, optional DocumentType? doctype = null);
+    // FIXME: createHTMLDocument should return a Document. crbug.com/238368
+    // FIXME: The title argument should not have a default value. crbug.com/335871
+    HTMLDocument createHTMLDocument(optional DOMString title = null);
 
-    // DOM Level 1
-
+    // FIXME: hasFeature should take no arguments and always return true. crbug.com/429536
     [ImplementedAs=hasFeatureForBindings, MeasureAs=DOMImplementationHasFeature]
     boolean hasFeature(DOMString feature, DOMString? version);
-
-    // DOM Level 2
-
-    [RaisesException] DocumentType createDocumentType(DOMString qualifiedName,
-                                                      DOMString publicId,
-                                                      DOMString systemId);
-    [RaisesException] XMLDocument createDocument(DOMString? namespaceURI,
-                                                 [TreatNullAs=EmptyString] DOMString qualifiedName,
-                                                 optional DocumentType? doctype = null);
-
-    // HTMLDOMImplementation interface from DOM Level 2 HTML
-
-    HTMLDocument createHTMLDocument(optional DOMString title = null);
 };
