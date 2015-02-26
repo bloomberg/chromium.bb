@@ -510,13 +510,12 @@ const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id) {
   return GetNodeByID(model->root_node(), id);
 }
 
-bool IsDescendantOf(const bookmarks::BookmarkNode* node,
-                    const bookmarks::BookmarkNode* root) {
+bool IsDescendantOf(const BookmarkNode* node, const BookmarkNode* root) {
   return node && node->HasAncestor(root);
 }
 
-bool HasDescendantsOf(const std::vector<const bookmarks::BookmarkNode*>& list,
-                      const bookmarks::BookmarkNode* root) {
+bool HasDescendantsOf(const std::vector<const BookmarkNode*>& list,
+                      const BookmarkNode* root) {
   for (const BookmarkNode* node : list) {
     if (IsDescendantOf(node, root))
       return true;
