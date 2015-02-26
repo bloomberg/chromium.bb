@@ -344,58 +344,22 @@ TEST_F(EventConverterEvdevImplTest, KeyWithLock) {
       {{0, 0}, EV_MSC, MSC_SCAN, 0x70039},
       {{0, 0}, EV_KEY, KEY_CAPSLOCK, 0},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-      {{0, 0}, EV_MSC, MSC_SCAN, 0x70014},
-      {{0, 0}, EV_KEY, KEY_Q, 1},
-      {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-      {{0, 0}, EV_MSC, MSC_SCAN, 0x70014},
-      {{0, 0}, EV_KEY, KEY_Q, 0},
-      {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-      {{0, 0}, EV_MSC, MSC_SCAN, 0x70039},
-      {{0, 0}, EV_KEY, KEY_CAPSLOCK, 1},
-      {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-      {{0, 0}, EV_MSC, MSC_SCAN, 0x70039},
-      {{0, 0}, EV_KEY, KEY_CAPSLOCK, 0},
-      {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
   dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
-  EXPECT_EQ(6u, size());
+  EXPECT_EQ(2u, size());
 
   ui::KeyEvent* event;
 
   event = dispatched_event(0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
-  EXPECT_EQ(ui::EF_CAPS_LOCK_DOWN, event->flags());
+  EXPECT_EQ(ui::EF_MOD3_DOWN, event->flags());
 
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
-  EXPECT_EQ(ui::EF_CAPS_LOCK_DOWN, event->flags());
-
-  event = dispatched_event(2);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
-  EXPECT_EQ(ui::VKEY_Q, event->key_code());
-  EXPECT_EQ(ui::EF_CAPS_LOCK_DOWN, event->flags());
-
-  event = dispatched_event(3);
-  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
-  EXPECT_EQ(ui::VKEY_Q, event->key_code());
-  EXPECT_EQ(ui::EF_CAPS_LOCK_DOWN, event->flags());
-
-  event = dispatched_event(4);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
-  EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
-  EXPECT_EQ(0, event->flags());
-
-  event = dispatched_event(5);
-  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
-  EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
-  EXPECT_EQ(0, event->flags());
+  EXPECT_EQ(ui::EF_NONE, event->flags());
 }
 
 TEST_F(EventConverterEvdevImplTest, MouseButton) {
