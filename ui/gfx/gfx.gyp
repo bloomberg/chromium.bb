@@ -184,6 +184,8 @@
         'gpu_memory_buffer.h',
         'harfbuzz_font_skia.cc',
         'harfbuzz_font_skia.h',
+        'hud_font.cc',
+        'hud_font.h',
         'image/canvas_image_source.cc',
         'image/canvas_image_source.h',
         'image/image.cc',

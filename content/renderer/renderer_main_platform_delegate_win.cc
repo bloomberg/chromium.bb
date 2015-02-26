@@ -23,6 +23,7 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/gfx/hud_font.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -54,10 +55,16 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
 void WarmupDirectWrite() {
   // The objects used here are intentionally not freed as we want the Skia
   // code to use these objects after warmup.
-  SkTypeface* typeface =
-      GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0);
-  DoPreSandboxWarmupForTypeface(typeface);
   SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
+
+  // We need to warm up *some* font for DirectWrite. We use this one
+  // specifically, because the CC HUD code needs to have a font anyway, so warm
+  // up the monospace one it wants, and then pass it down.
+  skia::RefPtr<SkTypeface> hud_typeface =
+      skia::AdoptRef(GetPreSandboxWarmupFontMgr()->legacyCreateTypeface(
+          "Lucida Console", SkTypeface::kBold));
+  DoPreSandboxWarmupForTypeface(hud_typeface.get());
+  gfx::SetHudTypeface(hud_typeface);
 }
 
 }  // namespace
