@@ -66,8 +66,18 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
 
-  // Updates the title and icon of the avatar button.
+  // Updates the avatar button using the old or new UI based on the BrowserView
+  // type, and the presence of the --enable-new-avatar-menu flag. Calls either
+  // UpdateAvatarInfo() or UpdateNewStyleAvatar() accordingly.
+  void UpdateAvatar();
+
+  // Updates the title and icon of the old avatar button.
   void UpdateAvatarInfo();
+
+  // Updates the avatar button displayed in the caption area by calling
+  // UpdateNewStyleAvatarInfo() with an implementation specific |listener|
+  // and button |style|.
+  virtual void UpdateNewStyleAvatar() = 0;
 
   // Updates the title of the avatar button displayed in the caption area.
   // The button uses |style| to match the browser window style and notifies
@@ -76,16 +86,16 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
                                 const NewAvatarButton::AvatarButtonStyle style);
 
  private:
-  // Draws a taskbar icon if avatar are enabled, erases it otherwise.  If
-  // |taskbar_badge_avatar| is null, then |avatar| is used.
-  void DrawTaskbarDecoration(const gfx::Image& avatar,
-                             const gfx::Image& taskbar_badge_avatar);
-
   // Overriden from ProfileInfoCacheObserver.
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
+
+  // Draws a taskbar icon if avatars are enabled, erases it otherwise.
+  void UpdateTaskbarDecoration();
 
   // The frame that hosts this view.
   BrowserFrame* frame_;

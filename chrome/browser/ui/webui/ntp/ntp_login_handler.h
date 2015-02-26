@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
 
 #include "base/prefs/pref_member.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
@@ -16,18 +15,16 @@ class Profile;
 // username at the top of the NTP (and update itself when that changes).
 // In the future it may expand to allow users to login from the NTP.
 class NTPLoginHandler : public content::WebUIMessageHandler,
-                        public content::NotificationObserver {
+                        public ProfileInfoCacheObserver {
  public:
   NTPLoginHandler();
   ~NTPLoginHandler() override;
 
-  // WebUIMessageHandler interface
+  // WebUIMessageHandler implementation:
   void RegisterMessages() override;
 
-  // content::NotificationObserver interface
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileInfoCacheObserver implementation:
+  void OnProfileUserNameChanged(const base::FilePath& profile_path) override;
 
   // Returns true if the login handler should be shown in a new tab page
   // for the given |profile|. |profile| must not be NULL.
@@ -70,7 +67,6 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
   void UpdateLogin();
 
   BooleanPrefMember signin_allowed_pref_;
-  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_

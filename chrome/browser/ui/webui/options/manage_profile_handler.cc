@@ -128,8 +128,7 @@ void ManageProfileHandler::GetLocalizedValues(
 }
 
 void ManageProfileHandler::InitializeHandler() {
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 content::NotificationService::AllSources());
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   pref_change_registrar_.Init(profile->GetPrefs());
@@ -189,18 +188,31 @@ void ManageProfileHandler::RegisterMessages() {
 }
 
 void ManageProfileHandler::Uninitialize() {
-  registrar_.RemoveAll();
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
 }
 
-void ManageProfileHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
-    SendExistingProfileNames();
-    base::StringValue value(kManageProfileIdentifier);
-    SendProfileIconsAndNames(value);
-  }
+void ManageProfileHandler::OnProfileAdded(const base::FilePath& profile_path) {
+  SendExistingProfileNames();
+}
+
+void ManageProfileHandler::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  SendExistingProfileNames();
+}
+
+void ManageProfileHandler::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  base::StringValue value(kManageProfileIdentifier);
+  SendProfileIconsAndNames(value);
+}
+
+void ManageProfileHandler::OnProfileAvatarChanged(
+    const base::FilePath& profile_path) {
+  base::StringValue value(kManageProfileIdentifier);
+  SendProfileIconsAndNames(value);
 }
 
 void ManageProfileHandler::OnStateChanged() {

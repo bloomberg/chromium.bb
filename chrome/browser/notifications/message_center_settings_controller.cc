@@ -134,10 +134,8 @@ MessageCenterSettingsController::MessageCenterSettingsController(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  RebuildNotifierGroups();
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  RebuildNotifierGroups(false);
 
 #if defined(OS_CHROMEOS)
   // UserManager may not exist in some tests.
@@ -147,6 +145,8 @@ MessageCenterSettingsController::MessageCenterSettingsController(
 }
 
 MessageCenterSettingsController::~MessageCenterSettingsController() {
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
 #if defined(OS_CHROMEOS)
   // UserManager may not exist in some tests.
   if (user_manager::UserManager::IsInitialized())
@@ -403,7 +403,7 @@ void MessageCenterSettingsController::OnFaviconLoaded(
 #if defined(OS_CHROMEOS)
 void MessageCenterSettingsController::ActiveUserChanged(
     const user_manager::User* active_user) {
-  RebuildNotifierGroups();
+  RebuildNotifierGroups(false);
 }
 #endif
 
@@ -426,10 +426,26 @@ void MessageCenterSettingsController::Observe(
     return;
   }
 
-  RebuildNotifierGroups();
-  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
-                    observers_,
-                    NotifierGroupChanged());
+  RebuildNotifierGroups(true);
+}
+
+void MessageCenterSettingsController::OnProfileAdded(
+    const base::FilePath& profile_path) {
+  RebuildNotifierGroups(true);
+}
+void MessageCenterSettingsController::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  RebuildNotifierGroups(true);
+}
+void MessageCenterSettingsController::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  RebuildNotifierGroups(true);
+}
+void MessageCenterSettingsController::OnProfileUserNameChanged(
+    const base::FilePath& profile_path) {
+  RebuildNotifierGroups(true);
 }
 
 #if defined(OS_CHROMEOS)
@@ -460,12 +476,11 @@ void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
 }
 #endif
 
-void MessageCenterSettingsController::RebuildNotifierGroups() {
+void MessageCenterSettingsController::RebuildNotifierGroups(bool notify) {
   notifier_groups_.clear();
   current_notifier_group_ = 0;
 
   const size_t count = profile_info_cache_->GetNumberOfProfiles();
-
   for (size_t i = 0; i < count; ++i) {
     scoped_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(
@@ -517,4 +532,10 @@ void MessageCenterSettingsController::RebuildNotifierGroups() {
             weak_factory_.GetWeakPtr()));
   }
 #endif
+
+  if (notify) {
+    FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
+                      observers_,
+                      NotifierGroupChanged());
+  }
 }

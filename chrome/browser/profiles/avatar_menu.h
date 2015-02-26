@@ -12,10 +12,9 @@
 #include "base/compiler_specific.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"
@@ -41,7 +40,7 @@ class AvatarMenu :
 #if defined(ENABLE_SUPERVISED_USERS)
     public SupervisedUserServiceObserver,
 #endif
-    public content::NotificationObserver {
+    public ProfileInfoCacheObserver {
  public:
   // Represents an item in the menu.
   struct Item {
@@ -147,16 +146,27 @@ class AvatarMenu :
   // Returns true if the edit profile link should be shown.
   bool ShouldShowEditProfileLink() const;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
  private:
+  // ProfileInfoCacheObserver:
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+      const base::string16& profile_name) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+      const base::string16& old_profile_name) override;
+  void OnProfileUserNameChanged(const base::FilePath& profile_path) override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override;
+  void OnProfileSigninRequiredChanged(
+      const base::FilePath& profile_path) override;
+
 #if defined(ENABLE_SUPERVISED_USERS)
   // SupervisedUserServiceObserver:
   void OnCustodianInfoChanged() override;
 #endif
+
+  // Rebuilds the menu and notifies any observers that an update occured.
+  void Update();
 
   // The model that provides the list of menu items.
   scoped_ptr<ProfileList> profile_list_;
@@ -178,9 +188,6 @@ class AvatarMenu :
 
   // Browser in which this avatar menu resides. Weak.
   Browser* browser_;
-
-  // Listens for notifications from the ProfileInfoCache.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenu);
 };

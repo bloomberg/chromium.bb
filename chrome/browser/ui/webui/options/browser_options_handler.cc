@@ -813,6 +813,8 @@ void BrowserOptionsHandler::RegisterMessages() {
 
 void BrowserOptionsHandler::Uninitialize() {
   registrar_.RemoveAll();
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
 #if defined(OS_WIN)
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
 #endif
@@ -863,6 +865,8 @@ void BrowserOptionsHandler::InitializeHandler() {
   g_browser_process->policy_service()->AddObserver(
       policy::POLICY_DOMAIN_CHROME, this);
 
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
   // TODO(blundell): Use a ScopedObserver to observe the PSS so that cleanup on
@@ -885,8 +889,6 @@ void BrowserOptionsHandler::InitializeHandler() {
       base::Bind(&BrowserOptionsHandler::UpdateDefaultBrowserState,
                  base::Unretained(this)));
 
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 content::NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
@@ -1283,9 +1285,6 @@ void BrowserOptionsHandler::Observe(
       UpdateAccountPicture();
       break;
 #endif
-    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-    SendProfilesInfo();
-      break;
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       // Update our sync/signin status display.
       OnStateChanged();
@@ -1293,6 +1292,27 @@ void BrowserOptionsHandler::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void BrowserOptionsHandler::OnProfileAdded(const base::FilePath& profile_path) {
+  SendProfilesInfo();
+}
+
+void BrowserOptionsHandler::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  SendProfilesInfo();
+}
+
+void BrowserOptionsHandler::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  SendProfilesInfo();
+}
+
+void BrowserOptionsHandler::OnProfileAvatarChanged(
+    const base::FilePath& profile_path) {
+  SendProfilesInfo();
 }
 
 void BrowserOptionsHandler::ToggleAutoLaunch(const base::ListValue* args) {

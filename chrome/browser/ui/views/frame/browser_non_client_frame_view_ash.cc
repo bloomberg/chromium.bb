@@ -126,12 +126,7 @@ void BrowserNonClientFrameViewAsh::Init() {
     window_icon_->Update();
   }
 
-  if (browser_view()->IsRegularOrGuestSession() &&
-      switches::IsNewAvatarMenu()) {
-    UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
-  } else {
-    UpdateAvatarInfo();
-  }
+  UpdateAvatar();
 
   // HeaderPainter handles layout.
   if (UsePackagedAppHeaderStyle()) {
@@ -453,6 +448,14 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   DCHECK(sender == new_avatar_button());
   chrome::ExecuteCommand(browser_view()->browser(), IDC_SHOW_AVATAR_MENU);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserNonClientFrameViewAsh, protected:
+
+// BrowserNonClientFrameView:
+void BrowserNonClientFrameViewAsh::UpdateNewStyleAvatar() {
+  UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

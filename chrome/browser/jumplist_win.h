@@ -23,13 +23,10 @@
 #include "components/history/core/browser/top_sites_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace chrome {
 struct FaviconImageResult;
-}
-
-namespace content {
-class NotificationRegistrar;
 }
 
 class PrefChangeRegistrar;

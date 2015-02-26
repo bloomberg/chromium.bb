@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle_win.h"
@@ -97,15 +95,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   if (browser_view->ShouldShowWindowIcon())
     InitThrobberIcons();
 
-  if (browser_view->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
-    UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
-  else
-    UpdateAvatarInfo();
-
-  if (!browser_view->IsOffTheRecord()) {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                   content::NotificationService::AllSources());
-  }
+  UpdateAvatar();
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() {
@@ -291,7 +281,9 @@ void GlassBrowserFrameView::Layout() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GlassBrowserFrameView, views::ButtonListener overrides:
+// GlassBrowserFrameView, protected:
+
+// views::ButtonListener:
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (sender == new_avatar_button()) {
@@ -305,6 +297,11 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
         mode,
         signin::ManageAccountsParams());
   }
+}
+
+// BrowserNonClientFrameView:
+void GlassBrowserFrameView::UpdateNewStyleAvatar() {
+  UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -598,25 +595,6 @@ void GlassBrowserFrameView::DisplayNextThrobberFrame() {
   SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
               static_cast<WPARAM>(ICON_SMALL),
               reinterpret_cast<LPARAM>(throbber_icons_[throbber_frame_]));
-}
-
-void GlassBrowserFrameView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      if (browser_view()->IsRegularOrGuestSession() &&
-          switches::IsNewAvatarMenu()) {
-        UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
-      } else {
-        UpdateAvatarInfo();
-      }
-      break;
-    default:
-      NOTREACHED() << "Got a notification we didn't register for!";
-      break;
-  }
 }
 
 // static

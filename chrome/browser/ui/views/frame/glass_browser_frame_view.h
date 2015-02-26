@@ -7,16 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
-                              public views::ButtonListener,
-                              public content::NotificationObserver {
+                              public views::ButtonListener {
  public:
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
@@ -49,6 +46,9 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) override;
+
+  // BrowserNonClientFrameView:
+  void UpdateNewStyleAvatar() override;
 
  private:
   // views::NonClientFrameView:
@@ -89,11 +89,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Displays the next throbber frame.
   void DisplayNextThrobberFrame();
 
-  // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
-
   // The layout rect of the avatar icon, if visible.
   gfx::Rect avatar_bounds_;
 
@@ -105,8 +100,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // The index of the current frame of the throbber animation.
   int throbber_frame_;
-
-  content::NotificationRegistrar registrar_;
 
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];

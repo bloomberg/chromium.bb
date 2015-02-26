@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -28,7 +27,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -228,11 +226,6 @@ void ProfileInfoCache::AddProfileToCache(
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileAdded(profile_path));
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 void ProfileInfoCache::AddObserver(ProfileInfoCacheObserver* obs) {
@@ -265,11 +258,6 @@ void ProfileInfoCache::DeleteProfileFromCache(
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileWasRemoved(profile_path, name));
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 size_t ProfileInfoCache::GetNumberOfProfiles() const {
@@ -486,7 +474,7 @@ void ProfileInfoCache::SetProfileActiveTimeAtIndex(size_t index) {
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetDouble(kActiveTimeKey, base::Time::Now().ToDoubleT());
   // This takes ownership of |info|.
-  SetInfoQuietlyForProfileAtIndex(index, info.release());
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
@@ -538,6 +526,11 @@ void ProfileInfoCache::SetUserNameOfProfileAtIndex(
   info->SetString(kUserNameKey, user_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileUserNameChanged(profile_path));
 }
 
 void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
@@ -916,22 +909,11 @@ const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
   return info;
 }
 
-void ProfileInfoCache::SetInfoQuietlyForProfileAtIndex(
-    size_t index, base::DictionaryValue* info) {
+void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
+                                                base::DictionaryValue* info) {
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
   cache->SetWithoutPathExpansion(sorted_keys_[index], info);
-}
-
-// TODO(noms): Switch to newer notification system.
-void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
-                                                base::DictionaryValue* info) {
-  SetInfoQuietlyForProfileAtIndex(index, info);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(
@@ -1001,11 +983,6 @@ void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
   DCHECK(key_it != sorted_keys_.end());
   sorted_keys_.erase(key_it);
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
@@ -1107,11 +1084,6 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
   }
   delete image;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileHighResAvatarLoaded(profile_path));
@@ -1121,11 +1093,6 @@ void ProfileInfoCache::OnAvatarPictureSaved(
       const std::string& file_name,
       const base::FilePath& profile_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHE_PICTURE_SAVED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
       observer_list_,

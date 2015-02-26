@@ -153,10 +153,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache and takes ownership of |info|.
-  // Currently the only information that is cached is the profile's name,
-  // user name, and avatar icon.
-  void SetInfoQuietlyForProfileAtIndex(size_t index,
-                                       base::DictionaryValue* info);
   void SetInfoForProfileAtIndex(size_t index, base::DictionaryValue* info);
   std::string CacheKeyFromProfilePath(const base::FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(

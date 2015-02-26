@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -23,9 +22,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -421,24 +417,20 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
       base::string16(), 0, std::string());
   gfx::Image gaia_image(gfx::test::CreateImage());
 
-  content::WindowedNotificationObserver save_observer(
-      chrome::NOTIFICATION_PROFILE_CACHE_PICTURE_SAVED,
-      content::NotificationService::AllSources());
   GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
+
+  // Make sure everything has completed, and the file has been written to disk.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 
-  // Wait for the file to be written to disk then reset the cache.
-  save_observer.Wait();
   ResetCache();
-
   // Try to get the GAIA picture. This should return NULL until the read from
   // disk is done.
-  content::WindowedNotificationObserver read_observer(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources());
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
-  read_observer.Wait();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(gfx::test::IsEqual(
     gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 }

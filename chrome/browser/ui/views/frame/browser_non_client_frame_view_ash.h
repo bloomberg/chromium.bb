@@ -77,6 +77,10 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+ protected:
+  // BrowserNonClientFrameView:
+  void UpdateNewStyleAvatar() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,

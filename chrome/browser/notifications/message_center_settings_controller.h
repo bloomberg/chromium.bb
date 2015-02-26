@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_details.h"
@@ -46,6 +47,7 @@ class ProfileNotifierGroup;
 class MessageCenterSettingsController
     : public message_center::NotifierSettingsProvider,
       public content::NotificationObserver,
+      public ProfileInfoCacheObserver,
 #if defined(OS_CHROMEOS)
       public user_manager::UserManager::UserSessionStateObserver,
 #endif
@@ -90,6 +92,14 @@ class MessageCenterSettingsController
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // ProfileInfoCacheObserver:
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+      const base::string16& profile_name) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+      const base::string16& old_profile_name) override;
+  void OnProfileUserNameChanged(const base::FilePath& profile_path) override;
+
   void OnFaviconLoaded(const GURL& url,
                        const favicon_base::FaviconImageResult& favicon_result);
 
@@ -101,7 +111,9 @@ class MessageCenterSettingsController
   void CreateNotifierGroupForGuestLogin();
 #endif
 
-  void RebuildNotifierGroups();
+  // Sets up the notifier groups for all profiles. If |notify| is true, then
+  // it sends out a NotifierGroupChange notification to each observer.
+  void RebuildNotifierGroups(bool notify);
 
   // The views displaying notifier settings.
   ObserverList<message_center::NotifierSettingsObserver> observers_;

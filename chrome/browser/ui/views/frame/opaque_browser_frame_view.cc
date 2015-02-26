@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -147,15 +146,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  if (browser_view->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
-    UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
-  else
-    UpdateAvatarInfo();
-
-  if (!browser_view->IsOffTheRecord()) {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                   content::NotificationService::AllSources());
-  }
+  UpdateAvatar();
 
   platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
       this, layout_, browser_view->browser()->profile()));
@@ -374,28 +365,6 @@ gfx::ImageSkia OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameView, protected:
-
-void OpaqueBrowserFrameView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      if (browser_view() ->IsRegularOrGuestSession() &&
-          switches::IsNewAvatarMenu()) {
-        UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
-      } else {
-        UpdateAvatarInfo();
-      }
-      break;
-    default:
-      NOTREACHED() << "Got a notification we didn't register for!";
-      break;
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, OpaqueBrowserFrameViewLayoutDelegate implementation:
 
 bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
@@ -478,8 +447,9 @@ gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameView, views::View overrides:
+// OpaqueBrowserFrameView, protected:
 
+// views::View:
 void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
@@ -501,6 +471,11 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
     PaintToolbarBackground(canvas);
   if (!layout_->IsTitleBarCondensed())
     PaintRestoredClientEdge(canvas);
+}
+
+// BrowserNonClientFrameView:
+void OpaqueBrowserFrameView::UpdateNewStyleAvatar() {
+  UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

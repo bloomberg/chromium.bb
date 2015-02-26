@@ -226,7 +226,7 @@ TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
   manager()->profile_info_cache()->SetNameOfProfileAtIndex(0,
         ASCIIToUTF16(newname1));
   const AvatarMenu::Item& item1next = model->GetItemAt(0);
-  EXPECT_GT(change_count(), 1);
+  EXPECT_EQ(1, change_count());
   EXPECT_EQ(0U, item1next.menu_index);
   EXPECT_EQ(ASCIIToUTF16(name2), item1next.name);
 
@@ -245,14 +245,12 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
 
   manager()->CreateTestingProfile("Test 3");
 
-  // Four changes happened via the call to CreateTestingProfile: adding the
-  // profile to the cache, setting the user name, rebuilding the list of
-  // profiles after the name change, and changing the avatar.
+  // Three changes happened via the call to CreateTestingProfile: adding the
+  // profile to the cache, setting the user name (which rebuilds the list of
+  // profiles after the name change) and changing the avatar.
   // On Windows, an extra change happens to set the shortcut name for the
   // profile.
-  // TODO(michaelpg): Determine why five changes happen on ChromeOS and
-  // investigate other platforms.
-  EXPECT_GE(change_count(), 4);
+  EXPECT_GE(3, change_count());
   ASSERT_EQ(3U, model->GetNumberOfItems());
 
   const AvatarMenu::Item& item1 = model->GetItemAt(0);

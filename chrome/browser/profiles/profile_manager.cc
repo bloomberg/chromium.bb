@@ -259,10 +259,6 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
       this,
       chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
       content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources());
 
   if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir_.empty())
     profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
@@ -917,10 +913,6 @@ void ProfileManager::Observe(
                                          active_profiles_.end(), profile));
         save_active_profiles = !closing_all_browsers_;
       }
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED: {
-      save_active_profiles = !closing_all_browsers_;
       break;
     }
     default: {

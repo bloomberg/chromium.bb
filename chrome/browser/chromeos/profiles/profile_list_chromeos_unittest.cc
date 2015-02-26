@@ -227,7 +227,7 @@ TEST_F(ProfileListChromeOSTest, ModifyingNameResortsCorrectly) {
   AddProfile(name2, true);
 
   AvatarMenu* menu = GetAvatarMenu();
-
+  EXPECT_EQ(0, change_count());
   ASSERT_EQ(2U, menu->GetNumberOfItems());
 
   const AvatarMenu::Item& item1 = menu->GetItemAt(0);
@@ -243,9 +243,9 @@ TEST_F(ProfileListChromeOSTest, ModifyingNameResortsCorrectly) {
   GetFakeChromeUserManager()->SaveUserDisplayName(
       base::UTF16ToASCII(name1) + "@example.com", newname1);
   manager()->profile_info_cache()->SetNameOfProfileAtIndex(0, newname1);
+  EXPECT_EQ(1, change_count());
 
   const AvatarMenu::Item& item1next = menu->GetItemAt(0);
-  EXPECT_GT(change_count(), 1);
   EXPECT_EQ(0U, item1next.menu_index);
   EXPECT_EQ(name2, item1next.name);
 
@@ -263,15 +263,15 @@ TEST_F(ProfileListChromeOSTest, ChangeOnNotify) {
 
   AvatarMenu* menu = GetAvatarMenu();
   EXPECT_EQ(2U, menu->GetNumberOfItems());
+  EXPECT_EQ(0, change_count());
 
   base::string16 name3(ASCIIToUTF16("p3.com"));
   AddProfile(name3, true);
 
-  // Four changes happened via the call to CreateTestingProfile: adding the
-  // profile to the cache, setting the user name, rebuilding the list of
-  // profiles after the name change, and changing the avatar.
-  // TODO(michaelpg): Determine why actual change number does not match comment.
-  EXPECT_GE(change_count(), 4);
+  // Three changes happened via the call to CreateTestingProfile: adding the
+  // profile to the cache, setting the user name (which rebuilt the list of
+  // profiles after the name change), and changing the avatar.
+  EXPECT_EQ(change_count(), 3);
   ASSERT_EQ(3U, menu->GetNumberOfItems());
 
   const AvatarMenu::Item& item1 = menu->GetItemAt(0);

@@ -87,6 +87,13 @@ void BrowserNonClientFrameView::OnThemeChanged() {
 }
 #endif
 
+void BrowserNonClientFrameView::UpdateAvatar() {
+  if (browser_view()->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
+    UpdateNewStyleAvatar();
+  else
+    UpdateAvatarInfo();
+}
+
 void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
@@ -166,45 +173,34 @@ void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
   }
 }
 
-void BrowserNonClientFrameView::DrawTaskbarDecoration(
-    const gfx::Image& avatar,
-    const gfx::Image& taskbar_badge_avatar) {
-  // For popups and panels which don't have the avatar button, we still
-  // need to draw the taskbar decoration. Even though we have an icon on the
-  // window's relaunch details, we draw over it because the user may have pinned
-  // the badge-less Chrome shortcut which will cause windows to ignore the
-  // relaunch details.
-  // TODO(calamity): ideally this should not be necessary but due to issues with
-  // the default shortcut being pinned, we add the runtime badge for safety.
-  // See crbug.com/313800.
-  bool show_decoration = AvatarMenu::ShouldShowAvatarMenu() &&
-      !browser_view_->browser()->profile()->IsGuestSession();
-  // In tests, make sure that the browser process and profile manager are valid
-  // before using.
-  if (g_browser_process && g_browser_process->profile_manager()) {
-    const ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    show_decoration = show_decoration && cache.GetNumberOfProfiles() > 1;
-  }
-  chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(),
-      show_decoration
-          ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
-          : nullptr);
-}
-
 void BrowserNonClientFrameView::OnProfileAdded(
     const base::FilePath& profile_path) {
-  OnProfileAvatarChanged(profile_path);
+  UpdateTaskbarDecoration();
+  UpdateAvatar();
 }
 
 void BrowserNonClientFrameView::OnProfileWasRemoved(
     const base::FilePath& profile_path,
     const base::string16& profile_name) {
-  OnProfileAvatarChanged(profile_path);
+  UpdateTaskbarDecoration();
+  UpdateAvatar();
 }
 
 void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
+  UpdateTaskbarDecoration();
+  // Profile avatars are only displayed in the old UI or incognito.
+  if (browser_view()->IsOffTheRecord() || !switches::IsNewAvatarMenu())
+    UpdateAvatarInfo();
+}
+
+void BrowserNonClientFrameView::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  UpdateAvatar();
+}
+
+void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
   gfx::Image avatar;
   gfx::Image taskbar_badge_avatar;
   bool is_rectangle;
@@ -216,6 +212,26 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
                                         AvatarMenu::ShouldShowAvatarMenu(),
                                         &avatar, &taskbar_badge_avatar,
                                         &is_rectangle)) {
-    DrawTaskbarDecoration(avatar, taskbar_badge_avatar);
+    // For popups and panels which don't have the avatar button, we still
+    // need to draw the taskbar decoration. Even though we have an icon on the
+    // window's relaunch details, we draw over it because the user may have
+    // pinned the badge-less Chrome shortcut which will cause windows to ignore
+    // the relaunch details.
+    // TODO(calamity): ideally this should not be necessary but due to issues
+    // with the default shortcut being pinned, we add the runtime badge for
+    // safety. See crbug.com/313800.
+    bool show_decoration = AvatarMenu::ShouldShowAvatarMenu() &&
+        !browser_view_->browser()->profile()->IsGuestSession();
+    // In tests, make sure that the browser process and profile manager are
+    // valid before using.
+    if (g_browser_process && g_browser_process->profile_manager()) {
+      const ProfileInfoCache& cache =
+          g_browser_process->profile_manager()->GetProfileInfoCache();
+      show_decoration = show_decoration && cache.GetNumberOfProfiles() > 1;
+    }
+    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(),
+        show_decoration
+            ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
+            : nullptr);
   }
 }

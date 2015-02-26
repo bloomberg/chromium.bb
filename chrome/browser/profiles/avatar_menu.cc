@@ -65,8 +65,7 @@ AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
   ActiveBrowserChanged(browser_);
 
   // Register this as an observer of the info cache.
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources());
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 
 #if defined(ENABLE_SUPERVISED_USERS)
   // Register this as an observer of the SupervisedUserService to be notified
@@ -79,6 +78,8 @@ AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
 }
 
 AvatarMenu::~AvatarMenu() {
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
 }
 
 AvatarMenu::Item::Item(size_t menu_index,
@@ -252,13 +253,36 @@ bool AvatarMenu::ShouldShowEditProfileLink() const {
   return menu_actions_->ShouldShowEditProfileLink();
 }
 
-void AvatarMenu::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
-  RebuildMenu();
-  if (observer_)
-    observer_->OnAvatarMenuChanged(this);
+void AvatarMenu::OnProfileAdded(const base::FilePath& profile_path) {
+  Update();
+}
+
+void AvatarMenu::OnProfileWasRemoved(const base::FilePath& profile_path,
+                                     const base::string16& profile_name) {
+  Update();
+}
+
+void AvatarMenu::OnProfileNameChanged(const base::FilePath& profile_path,
+                                      const base::string16& old_profile_name) {
+  Update();
+}
+
+void AvatarMenu::OnProfileUserNameChanged(const base::FilePath& profile_path) {
+  Update();
+}
+
+void AvatarMenu::OnProfileAvatarChanged(const base::FilePath& profile_path) {
+  Update();
+}
+
+void AvatarMenu::OnProfileHighResAvatarLoaded(
+    const base::FilePath& profile_path) {
+  Update();
+}
+
+void AvatarMenu::OnProfileSigninRequiredChanged(
+    const base::FilePath& profile_path) {
+  Update();
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -268,3 +292,9 @@ void AvatarMenu::OnCustodianInfoChanged() {
     observer_->OnAvatarMenuChanged(this);
 }
 #endif
+
+void AvatarMenu::Update() {
+  RebuildMenu();
+  if (observer_)
+    observer_->OnAvatarMenuChanged(this);
+}
