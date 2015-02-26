@@ -860,6 +860,11 @@ void UserSessionManager::InitProfilePreferences(
     const UserContext& user_context) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP &&
+      profile->IsNewProfile()) {
+    ChromeUserManager::Get()->SetIsCurrentUserNew(true);
+  }
+
   if (user->is_active()) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();

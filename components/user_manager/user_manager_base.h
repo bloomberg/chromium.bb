@@ -104,6 +104,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void NotifyLocalStateChanged() override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
 
+  virtual void SetIsCurrentUserNew(bool is_new);
+
   // Helper function that copies users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
   // skipped.
@@ -237,8 +239,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   virtual bool GetEphemeralUsersEnabled() const;
   virtual void SetEphemeralUsersEnabled(bool enabled);
-
-  virtual void SetIsCurrentUserNew(bool is_new);
 
   virtual void SetOwnerEmail(std::string owner_user_id);
 
