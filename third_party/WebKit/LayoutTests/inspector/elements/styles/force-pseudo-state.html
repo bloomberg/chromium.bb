@@ -34,7 +34,7 @@ function test()
     function foundDiv(node)
     {
         divNode = node;
-        WebInspector.panels.elements._setPseudoClassForNode(divNode, "hover", true);
+        InspectorTest.cssModel.forcePseudoState(divNode, "hover", true);
         InspectorTest.cssModel.forcePseudoState(divNode, "active", true);
         InspectorTest.selectNodeAndWaitForStyles("div", divSelected1);
     }
@@ -45,12 +45,12 @@ function test()
         InspectorTest.addResult("DIV with :hover and :active");
         dumpData();
         InspectorTest.waitForStyles("div", hoverCallback, true);
-        WebInspector.panels.elements._setPseudoClassForNode(divNode, "hover", false);
+        InspectorTest.cssModel.forcePseudoState(divNode, "hover", false);
 
         function hoverCallback()
         {
             InspectorTest.waitForStyles("div", divSelected2, true);
-            WebInspector.panels.elements._setPseudoClassForNode(divNode, "focus", true);
+            InspectorTest.cssModel.forcePseudoState(divNode, "focus", true);
         }
     }
 
@@ -60,12 +60,12 @@ function test()
         InspectorTest.addResult("DIV with :active and :focus");
         dumpData();
         InspectorTest.waitForStyles("div", focusCallback, true);
-        WebInspector.panels.elements._setPseudoClassForNode(divNode, "focus", false);
+        InspectorTest.cssModel.forcePseudoState(divNode, "focus", false);
 
         function focusCallback()
         {
             InspectorTest.waitForStyles("div", divSelected3, true);
-            WebInspector.panels.elements._setPseudoClassForNode(divNode, "active", false);
+            InspectorTest.cssModel.forcePseudoState(divNode, "active", false);
         }
     }
 
