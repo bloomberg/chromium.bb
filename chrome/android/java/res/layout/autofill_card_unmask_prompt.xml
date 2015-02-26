@@ -31,8 +31,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!-- TODO(estade): add accessibility content descriptions. -->
-
             <LinearLayout
                 android:id="@+id/expiration_container"
                 android:layout_width="wrap_content"

@@ -61,8 +61,7 @@
                     android:imeOptions="flagNoExtractUi"
                     android:inputType="phone"
                     android:singleLine="true"
-                    android:hint="@string/autofill_profile_editor_phone_number"
-                    android:contentDescription="@string/autofill_profile_editor_phone_number" />
+                    android:hint="@string/autofill_profile_editor_phone_number" />
             </org.chromium.chrome.browser.widget.FloatLabelLayout>
 
             <org.chromium.chrome.browser.widget.FloatLabelLayout
@@ -76,8 +75,7 @@
                     android:imeOptions="flagNoExtractUi"
                     android:inputType="textEmailAddress"
                     android:singleLine="true"
-                    android:hint="@string/autofill_profile_editor_email_address"
-                    android:contentDescription="@string/autofill_profile_editor_email_address" />
+                    android:hint="@string/autofill_profile_editor_email_address" />
             </org.chromium.chrome.browser.widget.FloatLabelLayout>
 
         </LinearLayout>
