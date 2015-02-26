@@ -152,13 +152,16 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
         if (layer->clipParent())
             directReasons |= CompositingReasonOutOfFlowClipping;
 
-        if (const Layer* scrollingAncestor = layer->ancestorScrollingLayer()) {
-            if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())
-                directReasons |= CompositingReasonOverflowScrollingParent;
-        }
-
         if (layer->needsCompositedScrolling())
             directReasons |= CompositingReasonOverflowScrollingTouch;
+    }
+
+    // Composite |layer| if it is inside of an ancestor scrolling layer, but that
+    // scrolling layer is not not on the stacking context ancestor chain of |layer|.
+    // See the definition of the scrollParent property in Layer for more detail.
+    if (const Layer* scrollingAncestor = layer->ancestorScrollingLayer()) {
+        if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())
+            directReasons |= CompositingReasonOverflowScrollingParent;
     }
 
     if (requiresCompositingForPositionFixed(layer))
