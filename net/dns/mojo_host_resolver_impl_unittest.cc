@@ -13,7 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/dns/mojo_type_converters.h"
+#include "net/dns/mojo_host_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"

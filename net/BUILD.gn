@@ -807,10 +807,10 @@ if (use_v8_in_net && !is_android) {
 
   source_set("mojo_type_converters") {
     sources = [
-      "dns/mojo_type_converters.cc",
-      "dns/mojo_type_converters.h",
-      "proxy/mojo_type_converters.cc",
-      "proxy/mojo_type_converters.h",
+      "dns/mojo_host_type_converters.cc",
+      "dns/mojo_host_type_converters.h",
+      "proxy/mojo_proxy_type_converters.cc",
+      "proxy/mojo_proxy_type_converters.h",
     ]
 
     public_deps = [

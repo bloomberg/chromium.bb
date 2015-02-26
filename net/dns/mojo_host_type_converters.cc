@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/dns/mojo_type_converters.h"
+#include "net/dns/mojo_host_type_converters.h"
 
 #include "net/base/address_list.h"
 #include "net/base/net_util.h"

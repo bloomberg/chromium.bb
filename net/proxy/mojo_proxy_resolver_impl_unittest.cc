@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
-#include "net/proxy/mojo_type_converters.h"
+#include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gtest/include/gtest/gtest.h"

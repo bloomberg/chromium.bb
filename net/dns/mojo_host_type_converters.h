@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DNS_MOJO_TYPE_CONVERTERS_H_
-#define NET_DNS_MOJO_TYPE_CONVERTERS_H_
+#ifndef NET_DNS_MOJO_HOST_TYPE_CONVERTERS_H_
+#define NET_DNS_MOJO_HOST_TYPE_CONVERTERS_H_
 
 #include "net/dns/host_resolver.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
@@ -36,4 +36,4 @@ struct TypeConverter<net::AddressList, net::interfaces::AddressList> {
 
 }  // namespace mojo
 
-#endif  // NET_DNS_MOJO_TYPE_CONVERTERS_H_
+#endif  // NET_DNS_MOJO_HOST_TYPE_CONVERTERS_H_

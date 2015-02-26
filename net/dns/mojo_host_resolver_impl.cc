@@ -9,7 +9,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/mojo_type_converters.h"
+#include "net/dns/mojo_host_type_converters.h"
 
 namespace net {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/mojo_type_converters.h"
+#include "net/proxy/mojo_proxy_type_converters.h"
 
 #include "base/logging.h"
 #include "net/base/host_port_pair.h"

@@ -1304,10 +1304,10 @@
           'target_name': 'mojo_type_converters',
           'type': 'static_library',
           'sources': [
-            'dns/mojo_type_converters.cc',
-            'dns/mojo_type_converters.h',
-            'proxy/mojo_type_converters.cc',
-            'proxy/mojo_type_converters.h',
+            'dns/mojo_host_type_converters.cc',
+            'dns/mojo_host_type_converters.h',
+            'proxy/mojo_proxy_type_converters.cc',
+            'proxy/mojo_proxy_type_converters.h',
           ],
           'dependencies': [
             'net',

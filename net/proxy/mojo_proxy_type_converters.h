@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_MOJO_TYPE_CONVERTERS_H_
-#define NET_PROXY_MOJO_TYPE_CONVERTERS_H_
+#ifndef NET_PROXY_MOJO_PROXY_TYPE_CONVERTERS_H_
+#define NET_PROXY_MOJO_PROXY_TYPE_CONVERTERS_H_
 
 #include "net/interfaces/proxy_resolver_service.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
@@ -26,4 +26,4 @@ struct TypeConverter<net::ProxyServer, net::interfaces::ProxyServerPtr> {
 
 }  // namespace mojo
 
-#endif  // NET_PROXY_MOJO_TYPE_CONVERTERS_H_
+#endif  // NET_PROXY_MOJO_PROXY_TYPE_CONVERTERS_H_
