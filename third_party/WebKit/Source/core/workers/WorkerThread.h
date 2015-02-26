@@ -39,6 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include <v8.h>
 
 namespace blink {
 
@@ -65,6 +66,9 @@ public:
 
     void didStartRunLoop();
     void didStopRunLoop();
+
+    v8::Isolate* isolate() const { return m_isolate; }
+    void cleanupIsolate();
 
     // Can be used to wait for this worker thread to shut down.
     // (This is signalled on the main thread, so it's assumed to be waited on the worker context thread)
@@ -123,7 +127,10 @@ private:
     void initialize();
     void cleanup();
     void idleHandler();
+    void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
+    v8::Isolate* initializeIsolate();
+    void terminateV8Execution();
 
     bool m_terminated;
     OwnPtr<WorkerSharedTimer> m_sharedTimer;
@@ -139,6 +146,9 @@ private:
     Mutex m_threadCreationMutex;
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
     OwnPtrWillBePersistent<WorkerThreadStartupData> m_startupData;
+
+    v8::Isolate* m_isolate;
+    OwnPtr<V8IsolateInterruptor> m_interruptor;
 
     // Used to signal thread shutdown.
     OwnPtr<WebWaitableEvent> m_shutdownEvent;

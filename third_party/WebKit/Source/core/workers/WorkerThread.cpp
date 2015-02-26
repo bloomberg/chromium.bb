@@ -29,6 +29,7 @@
 #include "core/workers/WorkerThread.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -79,6 +80,30 @@ private:
     // Thread owns the microtask runner; reference remains
     // valid for the lifetime of this object.
     WorkerThread* m_workerThread;
+};
+
+// We need to postpone V8 Isolate destruction until the very end of
+// worker thread finalization when all objects on the worker heap
+// are destroyed.
+class IsolateCleanupTask final : public ThreadState::CleanupTask {
+public:
+    static PassOwnPtr<IsolateCleanupTask> create(v8::Isolate* isolate, WebThread& thread)
+    {
+        return adoptPtr(new IsolateCleanupTask(isolate, thread));
+    }
+
+    virtual void postCleanup()
+    {
+        ALLOW_UNUSED_LOCAL(m_thread);
+        ASSERT(m_thread.isCurrentThread());
+        V8PerIsolateData::destroy(m_isolate);
+    }
+
+private:
+    IsolateCleanupTask(v8::Isolate* isolate, WebThread& thread) : m_isolate(isolate), m_thread(thread)  { }
+
+    v8::Isolate* m_isolate;
+    WebThread& m_thread;
 };
 
 } // namespace
@@ -269,6 +294,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_startupData(startupData)
+    , m_isolate(nullptr)
     , m_shutdownEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
     , m_terminationEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
 {
@@ -328,6 +354,8 @@ void WorkerThread::initialize()
         m_microtaskRunner = adoptPtr(new MicrotaskRunner(this));
         m_thread->addTaskObserver(m_microtaskRunner.get());
         m_thread->attachGC();
+
+        m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
 
         m_sharedTimer = adoptPtr(new WorkerSharedTimer(this));
@@ -357,7 +385,6 @@ void WorkerThread::initialize()
 
 void WorkerThread::cleanup()
 {
-
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
 
@@ -398,7 +425,9 @@ public:
         workerGlobalScope->clearInspector();
         // It's not safe to call clearScript until all the cleanup tasks posted by functions initiated by WorkerThreadShutdownStartTask have completed.
         workerGlobalScope->clearScript();
-        workerGlobalScope->thread()->m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerGlobalScope->thread())));
+        WorkerThread* workerThread = workerGlobalScope->thread();
+        workerThread->cleanupIsolate();
+        workerThread->m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerThread)));
     }
 
     virtual bool isCleanupTask() const { return true; }
@@ -471,7 +500,8 @@ void WorkerThread::stopInternal()
         return;
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
-    m_workerGlobalScope->script()->scheduleExecutionTermination();
+    terminateV8Execution();
+
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
     postTask(FROM_HERE, WorkerThreadShutdownStartTask::create());
@@ -487,6 +517,16 @@ void WorkerThread::didStopRunLoop()
 {
     ASSERT(isCurrentThread());
     blink::Platform::current()->didStopWorkerRunLoop(WebWorkerRunLoop(this));
+}
+
+void WorkerThread::cleanupIsolate()
+{
+    ASSERT(isCurrentThread());
+    ASSERT(m_isolate);
+    V8PerIsolateData::willBeDestroyed(m_isolate);
+    ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolate, m_thread->platformThread()));
+    m_isolate = nullptr;
+    ThreadState::current()->removeInterruptor(m_interruptor.get());
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()
@@ -530,6 +570,26 @@ void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<Executi
 void WorkerThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, long long delayMs)
 {
     m_thread->postDelayedTask(location, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
+}
+
+v8::Isolate* WorkerThread::initializeIsolate()
+{
+    ASSERT(isCurrentThread());
+    ASSERT(!m_isolate);
+    v8::Isolate* isolate = V8PerIsolateData::initialize();
+    V8Initializer::initializeWorker(isolate);
+
+    m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
+    ThreadState::current()->addInterruptor(m_interruptor.get());
+    ThreadState::current()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
+
+    return isolate;
+}
+
+void WorkerThread::terminateV8Execution()
+{
+    m_workerGlobalScope->script()->willScheduleExecutionTermination();
+    v8::V8::TerminateExecution(m_isolate);
 }
 
 void WorkerThread::postDebuggerTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)

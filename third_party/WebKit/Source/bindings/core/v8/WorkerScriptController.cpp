@@ -36,7 +36,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
-#include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -102,49 +101,21 @@ public:
     WorkerGlobalScopeExecutionState* m_outerState;
 };
 
-WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
-    : m_isolate(0)
-    , m_workerGlobalScope(workerGlobalScope)
+WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope, v8::Isolate* isolate)
+    : m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
     , m_rejectedPromises(RejectedPromises::create())
     , m_globalScopeExecutionState(0)
 {
-    m_isolate = V8PerIsolateData::initialize();
-    V8Initializer::initializeWorker(m_isolate);
-    m_world = DOMWrapperWorld::create(m_isolate, WorkerWorldId);
-    m_interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
-    ThreadState::current()->addInterruptor(m_interruptor.get());
-    ThreadState::current()->registerTraceDOMWrappers(m_isolate, V8GCController::traceDOMWrappers);
+    ASSERT(isolate);
+    m_world = DOMWrapperWorld::create(isolate, WorkerWorldId);
 }
-
-// We need to postpone V8 Isolate destruction until the very end of
-// worker thread finalization when all objects on the worker heap
-// are destroyed.
-class IsolateCleanupTask : public ThreadState::CleanupTask {
-public:
-    static PassOwnPtr<IsolateCleanupTask> create(v8::Isolate* isolate)
-    {
-        return adoptPtr(new IsolateCleanupTask(isolate));
-    }
-
-    virtual void postCleanup()
-    {
-        V8PerIsolateData::destroy(m_isolate);
-    }
-
-private:
-    explicit IsolateCleanupTask(v8::Isolate* isolate) : m_isolate(isolate)  { }
-
-    v8::Isolate* m_isolate;
-};
 
 WorkerScriptController::~WorkerScriptController()
 {
     m_rejectedPromises->dispose();
     m_rejectedPromises.clear();
-
-    ThreadState::current()->removeInterruptor(m_interruptor.get());
 
     m_world->dispose();
 
@@ -154,20 +125,16 @@ WorkerScriptController::~WorkerScriptController()
 
     if (isContextInitialized())
         m_scriptState->disposePerContextData();
-
-    V8PerIsolateData::willBeDestroyed(m_isolate);
-
-    ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolate));
 }
 
 bool WorkerScriptController::initializeContextIfNeeded()
 {
-    v8::HandleScope handleScope(m_isolate);
+    v8::HandleScope handleScope(isolate());
 
     if (isContextInitialized())
         return true;
 
-    v8::Handle<v8::Context> context = v8::Context::New(m_isolate);
+    v8::Handle<v8::Context> context = v8::Context::New(isolate());
     if (context.IsEmpty())
         return false;
 
@@ -181,19 +148,24 @@ bool WorkerScriptController::initializeContextIfNeeded()
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope.wrapperTypeInfo();
     v8::Handle<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
-    v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(m_isolate, workerGlobalScopeConstructor);
+    v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(isolate(), workerGlobalScopeConstructor);
     if (jsWorkerGlobalScope.IsEmpty()) {
         m_scriptState->disposePerContextData();
         return false;
     }
 
-    V8DOMWrapper::associateObjectWithWrapper(m_isolate, &m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
+    V8DOMWrapper::associateObjectWithWrapper(isolate(), &m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());
     globalObject->SetPrototype(jsWorkerGlobalScope);
 
     return true;
+}
+
+v8::Isolate* WorkerScriptController::isolate() const
+{
+    return m_workerGlobalScope.thread()->isolate();
 }
 
 ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
@@ -205,15 +177,15 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     if (!m_disableEvalPending.isEmpty()) {
         m_scriptState->context()->AllowCodeGenerationFromStrings(false);
-        m_scriptState->context()->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));
+        m_scriptState->context()->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), m_disableEvalPending));
         m_disableEvalPending = String();
     }
 
     v8::TryCatch block;
 
-    v8::Handle<v8::String> scriptString = v8String(m_isolate, script);
-    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, m_isolate, nullptr, nullptr, cacheHandler, SharableCrossOrigin, v8CacheOptions);
-    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(m_isolate, compiledScript, &m_workerGlobalScope);
+    v8::Handle<v8::String> scriptString = v8String(isolate(), script);
+    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, isolate(), nullptr, nullptr, cacheHandler, SharableCrossOrigin, v8CacheOptions);
+    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, &m_workerGlobalScope);
 
     if (!block.CanContinue()) {
         forbidExecution();
@@ -260,7 +232,7 @@ bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
                 *errorEvent = ErrorEvent::createSanitizedError(m_world.get());
             else
                 *errorEvent = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(m_isolate, errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global());
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(isolate(), errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global());
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
@@ -275,21 +247,18 @@ bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     return true;
 }
 
-void WorkerScriptController::scheduleExecutionTermination()
+void WorkerScriptController::willScheduleExecutionTermination()
 {
     // The mutex provides a memory barrier to ensure that once
     // termination is scheduled, isExecutionTerminating will
     // accurately reflect that state when called from another thread.
-    {
-        MutexLocker locker(m_scheduledTerminationMutex);
-        m_executionScheduledToTerminate = true;
-    }
-    v8::V8::TerminateExecution(m_isolate);
+    MutexLocker locker(m_scheduledTerminationMutex);
+    m_executionScheduledToTerminate = true;
 }
 
 bool WorkerScriptController::isExecutionTerminating() const
 {
-    // See comments in scheduleExecutionTermination regarding mutex usage.
+    // See comments in willScheduleExecutionTermination regarding mutex usage.
     MutexLocker locker(m_scheduledTerminationMutex);
     return m_executionScheduledToTerminate;
 }
@@ -316,7 +285,7 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBe
     const String& errorMessage = errorEvent->message();
     if (m_globalScopeExecutionState)
         m_globalScopeExecutionState->m_errorEventFromImportedScript = errorEvent;
-    exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(m_isolate, errorMessage));
+    exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(isolate(), errorMessage));
 }
 
 } // namespace blink

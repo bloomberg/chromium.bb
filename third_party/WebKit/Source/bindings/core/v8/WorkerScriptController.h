@@ -50,7 +50,7 @@ class WorkerGlobalScope;
 
 class WorkerScriptController {
 public:
-    explicit WorkerScriptController(WorkerGlobalScope&);
+    WorkerScriptController(WorkerGlobalScope&, v8::Isolate*);
     ~WorkerScriptController();
 
     bool isExecutionForbidden() const;
@@ -60,7 +60,7 @@ public:
     bool evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
 
     // Prevents future JavaScript execution. See
-    // scheduleExecutionTermination, isExecutionForbidden.
+    // willScheduleExecutionTermination, isExecutionForbidden.
     void forbidExecution();
 
     // Used by WorkerThread:
@@ -71,7 +71,7 @@ public:
     // forbidExecution to prevent further JavaScript execution. Use
     // forbidExecution()/isExecutionForbidden() to guard against
     // reentry into JavaScript.
-    void scheduleExecutionTermination();
+    void willScheduleExecutionTermination();
 
     // Used by WorkerGlobalScope:
     void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>, ExceptionState&);
@@ -79,7 +79,7 @@ public:
     // Send a notification about current thread is going to be idle.
     // Returns true if the embedder should stop calling idleNotification
     // until real work has been done.
-    bool idleNotification() { return m_isolate->IdleNotification(1000); }
+    bool idleNotification() { return isolate()->IdleNotification(1000); }
 
     // Used by Inspector agents:
     ScriptState* scriptState() { return m_scriptState.get(); }
@@ -93,11 +93,11 @@ private:
     class WorkerGlobalScopeExecutionState;
 
     bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
+    v8::Isolate* isolate() const;
 
     // Evaluate a script file in the current execution environment.
     ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
 
-    v8::Isolate* m_isolate;
     WorkerGlobalScope& m_workerGlobalScope;
     RefPtr<ScriptState> m_scriptState;
     RefPtr<DOMWrapperWorld> m_world;
@@ -116,7 +116,6 @@ private:
     // trace its on-heap fields.
     GC_PLUGIN_IGNORE("394615")
     WorkerGlobalScopeExecutionState* m_globalScopeExecutionState;
-    OwnPtr<V8IsolateInterruptor> m_interruptor;
 };
 
 } // namespace blink
