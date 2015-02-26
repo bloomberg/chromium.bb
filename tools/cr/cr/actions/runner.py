@@ -30,6 +30,7 @@ class Runner(cr.Action, cr.Plugin.Type):
             Set to 'no' to force it to not be a test.
             """
     )
+    cls.AddSelectorArg(command, parser)
 
   @cr.Plugin.activemethod
   def Kill(self, targets, arguments):

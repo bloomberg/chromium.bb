@@ -59,8 +59,8 @@ def Main():
     # Load the build specific configuration
     found_build_dir = cr.base.client.LoadConfig()
     # Final processing or arguments
-    cr.context.ParseArgs()
     cr.plugin.Activate()
+    cr.context.ParseArgs()
     # If we did not get a command before, it might have been fixed.
     if command is None:
       command = cr.Command.GetActivePlugin()

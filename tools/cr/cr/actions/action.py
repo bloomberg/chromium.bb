@@ -25,7 +25,7 @@ class Action(cr.Plugin):
         cls.SELECTOR_ARG, dest=cls.SELECTOR,
         choices=cls.Choices(),
         default=None,
-        help=cls.SELECTOR_HELP + 'Overrides ' + cls.SELECTOR
+        help=cls.SELECTOR_HELP + ' Overrides ' + cls.SELECTOR
     )
 
   @cr.Plugin.activemethod
