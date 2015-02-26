@@ -215,8 +215,6 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
 };
 
 TEST(ProxyResolverPerfTest, ProxyResolverV8) {
-  net::ProxyResolverV8::EnsureIsolateCreated();
-
   MockJSBindings js_bindings;
   net::ProxyResolverV8 resolver;
   resolver.set_js_bindings(&js_bindings);

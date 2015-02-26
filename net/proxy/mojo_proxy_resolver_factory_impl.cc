@@ -15,7 +15,6 @@ namespace {
 
 scoped_ptr<ProxyResolver> CreateDefaultProxyResolver(
     HostResolver* host_resolver) {
-  ProxyResolverV8::EnsureIsolateCreated();
   return make_scoped_ptr(
       new ProxyResolverV8Tracing(host_resolver, nullptr, nullptr));
 }

@@ -19,14 +19,6 @@
 #include "url/android/url_jni_registrar.h"
 #endif
 
-#if !defined(OS_IOS)
-#include "net/proxy/proxy_resolver_v8.h"
-#endif
-
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/public/isolate_holder.h"
-#endif
-
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 #endif
@@ -64,14 +56,6 @@ int main(int argc, char** argv) {
   // Enable support for SSL server sockets, which must be done while
   // single-threaded.
   net::EnableSSLServerSockets();
-
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  gin::IsolateHolder::LoadV8Snapshot();
-#endif
-
-#if !defined(OS_IOS)
-  net::ProxyResolverV8::EnsureIsolateCreated();
-#endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   mojo::embedder::test::InitWithSimplePlatformSupport();

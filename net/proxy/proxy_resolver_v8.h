@@ -10,35 +10,9 @@
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver.h"
 
-namespace gin {
-class IsolateHolder;
-}  // namespace gin
-
-namespace v8 {
-class HeapStatistics;
-class Isolate;
-}  // namespace v8
-
 namespace net {
 
 // Implementation of ProxyResolver that uses V8 to evaluate PAC scripts.
-//
-// ----------------------------------------------------------------------------
-// !!! Important note on threading model:
-// ----------------------------------------------------------------------------
-// There can be only one instance of V8 running at a time. To enforce this
-// constraint, ProxyResolverV8 holds a v8::Locker during execution. Therefore
-// it is OK to run multiple instances of ProxyResolverV8 on different threads,
-// since only one will be running inside V8 at a time.
-//
-// It is important that *ALL* instances of V8 in the process be using
-// v8::Locker. If not there can be race conditions between the non-locked V8
-// instances and the locked V8 instances used by ProxyResolverV8 (assuming they
-// run on different threads).
-//
-// This is the case with the V8 instance used by chromium's renderer -- it runs
-// on a different thread from ProxyResolver (renderer thread vs PAC thread),
-// and does not use locking since it expects to be alone.
 class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
  public:
   // Interface for the javascript bindings.
@@ -93,21 +67,12 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
                    const net::CompletionCallback& /*callback*/) override;
 
-  // Create an isolate to use for the proxy resolver. If the embedder invokes
-  // this method multiple times, it must be invoked in a thread safe manner,
-  // e.g. always from the same thread.
-  static void EnsureIsolateCreated();
-
-  static v8::Isolate* GetDefaultIsolate();
-
   // Get total/ued heap memory usage of all v8 instances used by the proxy
   // resolver.
   static size_t GetTotalHeapSize();
   static size_t GetUsedHeapSize();
 
  private:
-  static gin::IsolateHolder* g_proxy_resolver_isolate_;
-
   // Context holds the Javascript state for the most recently loaded PAC
   // script. It corresponds with the data from the last call to
   // SetPacScript().

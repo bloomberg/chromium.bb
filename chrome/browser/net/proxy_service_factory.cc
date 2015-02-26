@@ -104,12 +104,6 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
   bool use_v8 = false;
 #else
   bool use_v8 = !command_line.HasSwitch(switches::kWinHttpProxyResolver);
-  if (use_v8 && command_line.HasSwitch(switches::kSingleProcess)) {
-    // See the note about V8 multithreading in net/proxy/proxy_resolver_v8.h
-    // to understand why we have this limitation.
-    LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
-    use_v8 = false;  // Fallback to non-v8 implementation.
-  }
 #endif  // defined(OS_IOS)
 
   size_t num_pac_threads = 0u;  // Use default number of threads.
@@ -133,8 +127,6 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 #if defined(OS_IOS)
     NOTREACHED();
 #else
-    net::ProxyResolverV8::EnsureIsolateCreated();
-
     net::DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher;
 #if defined(OS_CHROMEOS)
     dhcp_proxy_script_fetcher =
