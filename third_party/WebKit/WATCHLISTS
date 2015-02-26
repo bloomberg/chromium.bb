@@ -276,7 +276,8 @@
                   '|Source/platform/image-encoders/skia/WEBP'
     },
     'css_grid_layout': {
-      'filepath': 'Source/core/rendering/.*Grid' \
+      'filepath': 'Source/core/layout/.*Grid' \
+                  '|Source/core/paint/.*Grid' \
                   '|Source/core/css/.*Grid' \
                   '|LayoutTests/fast/css-grid-layout/' \
                   '|LayoutTests/ietestcenter/css3/grid/' \
