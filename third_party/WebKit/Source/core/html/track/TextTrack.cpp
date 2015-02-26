@@ -232,7 +232,7 @@ void TextTrack::addListOfCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>
         cueTimeline()->addCues(this, cues);
 }
 
-TextTrackCueList* TextTrack::activeCues() const
+TextTrackCueList* TextTrack::activeCues()
 {
     // 4.8.10.12.5 If the text track mode ... is not the text track disabled mode,
     // then the activeCues attribute must return a live TextTrackCueList object ...
@@ -240,9 +240,14 @@ TextTrackCueList* TextTrack::activeCues() const
     // order. Otherwise, it must return null. When an object is returned, the
     // same object must be returned each time.
     // http://www.whatwg.org/specs/web-apps/current-work/#dom-texttrack-activecues
-    if (m_cues && m_mode != disabledKeyword())
-        return m_cues->activeCues();
-    return nullptr;
+    if (!m_cues || m_mode == disabledKeyword())
+        return nullptr;
+
+    if (!m_activeCues)
+        m_activeCues = TextTrackCueList::create();
+
+    m_cues->collectActiveCues(*m_activeCues);
+    return m_activeCues.get();
 }
 
 void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
@@ -467,6 +472,7 @@ Node* TextTrack::owner() const
 DEFINE_TRACE(TextTrack)
 {
     visitor->trace(m_cues);
+    visitor->trace(m_activeCues);
     visitor->trace(m_regions);
     visitor->trace(m_trackList);
     TrackBase::trace(visitor);

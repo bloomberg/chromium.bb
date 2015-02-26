@@ -62,18 +62,13 @@ TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const
     return nullptr;
 }
 
-TextTrackCueList* TextTrackCueList::activeCues()
+void TextTrackCueList::collectActiveCues(TextTrackCueList& activeCues) const
 {
-    if (!m_activeCues)
-        m_activeCues = create();
-
-    m_activeCues->clear();
-    for (size_t i = 0; i < m_list.size(); ++i) {
-        RefPtrWillBeRawPtr<TextTrackCue> cue = m_list[i];
+    activeCues.clear();
+    for (auto& cue : m_list) {
         if (cue->isActive())
-            m_activeCues->add(cue);
+            activeCues.add(cue);
     }
-    return m_activeCues.get();
 }
 
 bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
@@ -153,7 +148,6 @@ void TextTrackCueList::invalidateCueIndexes(size_t start)
 DEFINE_TRACE(TextTrackCueList)
 {
     visitor->trace(m_list);
-    visitor->trace(m_activeCues);
 }
 
 } // namespace blink

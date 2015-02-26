@@ -48,11 +48,11 @@ public:
 
     TextTrackCue* item(unsigned index) const;
     TextTrackCue* getCueById(const AtomicString&) const;
-    TextTrackCueList* activeCues();
 
     bool add(PassRefPtrWillBeRawPtr<TextTrackCue>);
     bool remove(TextTrackCue*);
 
+    void collectActiveCues(TextTrackCueList&) const;
     void updateCueIndex(TextTrackCue*);
 
     DECLARE_TRACE();
@@ -64,7 +64,6 @@ private:
     void invalidateCueIndexes(size_t);
 
     WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> m_list;
-    RefPtrWillBeMember<TextTrackCueList> m_activeCues;
 };
 
 } // namespace blink

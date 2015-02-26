@@ -79,7 +79,7 @@ public:
     void setReadinessState(ReadinessState state) { m_readinessState = state; }
 
     TextTrackCueList* cues();
-    TextTrackCueList* activeCues() const;
+    TextTrackCueList* activeCues();
 
     HTMLMediaElement* mediaElement() const;
     Node* owner() const;
@@ -132,6 +132,7 @@ private:
 
     TextTrackCueList* ensureTextTrackCueList();
     RefPtrWillBeMember<TextTrackCueList> m_cues;
+    RefPtrWillBeMember<TextTrackCueList> m_activeCues;
 
     VTTRegionList* ensureVTTRegionList();
     RefPtrWillBeMember<VTTRegionList> m_regions;
