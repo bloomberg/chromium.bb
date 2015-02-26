@@ -433,12 +433,13 @@ remoting.SessionConnectorImpl.prototype.onSignalingState_ = function(state) {
 remoting.SessionConnectorImpl.prototype.connectIT2MeWithToken_ =
     function(hostId, token) {
   // Resolve the host id to get the host JID.
-  this.pendingXhr_ = remoting.xhr.get(
-      remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
-          encodeURIComponent(hostId),
-      this.onIT2MeHostInfo_.bind(this, hostId),
-      '',
-      { 'Authorization': 'OAuth ' + token });
+  this.pendingXhr_ = remoting.xhr.start({
+    method: 'GET',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
+        encodeURIComponent(hostId),
+    onDone: this.onIT2MeHostInfo_.bind(this),
+    oauthToken: token
+  });
 };
 
 /**

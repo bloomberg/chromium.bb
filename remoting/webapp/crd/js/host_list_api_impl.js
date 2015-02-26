@@ -28,12 +28,15 @@ remoting.HostListApiImpl = function() {
 remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
   /** @type {function(XMLHttpRequest):void} */
   var parseHostListResponse =
-      this.parseHostListResponse_.bind(this, onDone, onError)
+      this.parseHostListResponse_.bind(this, onDone, onError);
   /** @param {string} token */
   var onToken = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.get(remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
-                     parseHostListResponse, '', headers);
+    remoting.xhr.start({
+      method: 'GET',
+      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
+      onDone: parseHostListResponse,
+      oauthToken: token
+    });
   };
   remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
@@ -51,10 +54,6 @@ remoting.HostListApiImpl.prototype.put =
     function(hostId, hostName, hostPublicKey, onDone, onError) {
   /** @param {string} token */
   var onToken = function(token) {
-    var headers = {
-      'Authorization': 'OAuth ' + token,
-      'Content-type' : 'application/json; charset=UTF-8'
-    };
     var newHostDetails = {
       'data': {
         'hostId': hostId,
@@ -62,11 +61,13 @@ remoting.HostListApiImpl.prototype.put =
         'publicKey': hostPublicKey
       }
     };
-    remoting.xhr.put(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-        remoting.xhr.defaultResponse(onDone, onError),
-        JSON.stringify(newHostDetails),
-        headers);
+    remoting.xhr.start({
+      method: 'PUT',
+      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
+      onDone: remoting.xhr.defaultResponse(onDone, onError),
+      jsonContent: newHostDetails,
+      oauthToken: token
+    });
   };
   remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
@@ -81,11 +82,12 @@ remoting.HostListApiImpl.prototype.put =
 remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
   /** @param {string} token */
   var onToken = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.remove(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-        remoting.xhr.defaultResponse(onDone, onError),
-        '', headers);
+    remoting.xhr.start({
+      method: 'DELETE',
+      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
+      onDone: remoting.xhr.defaultResponse(onDone, onError),
+      oauthToken: token
+    });
   };
   remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };

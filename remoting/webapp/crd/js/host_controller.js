@@ -272,11 +272,6 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    */
   function doRegisterHost(
       hostName, privateKey, publicKey, hostClientId, oauthToken) {
-    var headers = {
-      'Authorization': 'OAuth ' + oauthToken,
-      'Content-type' : 'application/json; charset=UTF-8'
-    };
-
     var newHostDetails = { data: {
        hostId: newHostId,
        hostName: hostName,
@@ -286,16 +281,16 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
     var registerHostUrl =
         remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts';
 
-    if (hostClientId) {
-      registerHostUrl += '?' + remoting.xhr.urlencodeParamHash(
-          { hostClientId: hostClientId });
-    }
-
-    remoting.xhr.post(
-        registerHostUrl,
-        onRegistered.bind(null, hostName, publicKey, privateKey),
-        JSON.stringify(newHostDetails),
-        headers);
+    remoting.xhr.start({
+      method: 'POST',
+      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
+      urlParams: {
+        hostClientId: hostClientId
+      },
+      onDone: onRegistered.bind(null, hostName, publicKey, privateKey),
+      jsonContent: newHostDetails,
+      oauthToken: oauthToken
+    });
   }
 
   /**

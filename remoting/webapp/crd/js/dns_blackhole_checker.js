@@ -85,9 +85,11 @@ remoting.DnsBlackholeChecker.prototype.connect = function(server,
 
   this.signalStrategy_.connect(server, username, authToken);
 
-  this.xhr_ =
-      remoting.xhr.get(remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
-                       this.onHttpRequestDone_.bind(this));
+  this.xhr_ = remoting.xhr.start({
+    method: 'GET',
+    url: remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
+    onDone: this.onHttpRequestDone_.bind(this)
+  });
 };
 
 remoting.DnsBlackholeChecker.prototype.getState = function() {

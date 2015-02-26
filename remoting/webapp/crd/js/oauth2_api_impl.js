@@ -93,14 +93,17 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
     }
   };
 
-  var parameters = {
-    'client_id': clientId,
-    'client_secret': clientSecret,
-    'refresh_token': refreshToken,
-    'grant_type': 'refresh_token'
-  };
-
-  remoting.xhr.post(this.getOAuth2TokenEndpoint_(), onResponse, parameters);
+  remoting.xhr.start({
+    method: 'POST',
+    url: this.getOAuth2TokenEndpoint_(),
+    onDone: onResponse,
+    formContent: {
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'refresh_token': refreshToken,
+      'grant_type': 'refresh_token'
+    }
+  });
 };
 
 /**
@@ -140,14 +143,18 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
     }
   };
 
-  var parameters = {
-    'client_id': clientId,
-    'client_secret': clientSecret,
-    'redirect_uri': redirectUri,
-    'code': code,
-    'grant_type': 'authorization_code'
-  };
-  remoting.xhr.post(this.getOAuth2TokenEndpoint_(), onResponse, parameters);
+  remoting.xhr.start({
+    method: 'POST',
+    url: this.getOAuth2TokenEndpoint_(),
+    onDone: onResponse,
+    formContent: {
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'redirect_uri': redirectUri,
+      'code': code,
+      'grant_type': 'authorization_code'
+    }
+  });
 };
 
 /**
@@ -177,9 +184,12 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
       onError(remoting.Error.fromHttpStatus(xhr.status));
     }
   };
-  var headers = { 'Authorization': 'OAuth ' + token };
-  remoting.xhr.get(this.getOAuth2ApiUserInfoEndpoint_(),
-                   onResponse, '', headers);
+  remoting.xhr.start({
+    method: 'GET',
+    url: this.getOAuth2ApiUserInfoEndpoint_(),
+    onDone: onResponse,
+    oauthToken: token
+  });
 };
 
 /**
@@ -210,9 +220,12 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
       onError(remoting.Error.fromHttpStatus(xhr.status));
     }
   };
-  var headers = { 'Authorization': 'OAuth ' + token };
-  remoting.xhr.get(this.getOAuth2ApiUserInfoEndpoint_(),
-                   onResponse, '', headers);
+  remoting.xhr.start({
+    method: 'GET',
+    url: this.getOAuth2ApiUserInfoEndpoint_(),
+    onDone: onResponse,
+    oauthToken: token
+  });
 };
 
 /** @type {remoting.OAuth2Api} */

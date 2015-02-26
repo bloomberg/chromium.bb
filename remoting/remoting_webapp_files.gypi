@@ -71,6 +71,7 @@
       'webapp/unittests/it2me_service_unittest.js',
       'webapp/unittests/l10n_unittest.js',
       'webapp/unittests/menu_button_unittest.js',
+      'webapp/unittests/xhr_unittest.js',
       'webapp/unittests/xmpp_connection_unittest.js',
       'webapp/unittests/xmpp_login_handler_unittest.js',
       'webapp/unittests/xmpp_stream_parser_unittest.js',

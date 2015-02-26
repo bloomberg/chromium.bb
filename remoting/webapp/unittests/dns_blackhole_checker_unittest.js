@@ -10,10 +10,15 @@ var onStateChange = null;
 var onIncomingStanzaCallback = null;
 var checker = null;
 var signalStrategy = null;
+var fakeXhrs;
 
 module('dns_blackhole_checker', {
   setup: function() {
-    sinon.stub(remoting.xhr, 'get');
+    fakeXhrs = [];
+    sinon.useFakeXMLHttpRequest().onCreate = function(xhr) {
+      fakeXhrs.push(xhr);
+    };
+
 
     onStateChange = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();
@@ -29,8 +34,10 @@ module('dns_blackhole_checker', {
     sinon.assert.calledWith(signalStrategy.connect, 'server', 'username',
                             'authToken');
 
-    sinon.assert.calledWith(remoting.xhr.get,
-                            remoting.DnsBlackholeChecker.URL_TO_REQUEST_);
+    QUnit.equal(fakeXhrs.length, 1, 'exactly one XHR is issued');
+    QUnit.equal(
+        fakeXhrs[0].url, remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
+        'the correct URL is requested');
   },
   teardown: function() {
     base.dispose(checker);
@@ -40,14 +47,12 @@ module('dns_blackhole_checker', {
     onStateChange = null;
     onIncomingStanzaCallback = null;
     checker = null;
-
-    remoting.xhr.get.restore();
   },
 });
 
 test('success',
   function() {
-    remoting.xhr.get.getCall(0).args[1]({status: 200});
+    fakeXhrs[0].respond(200);
     sinon.assert.notCalled(onStateChange);
 
     [
@@ -82,7 +87,7 @@ test('http response after connected',
 
     // Verify that DnsBlackholeChecker goes to CONNECTED state after the
     // the HTTP request has succeeded.
-    remoting.xhr.get.getCall(0).args[1]({status: 200});
+    fakeXhrs[0].respond(200);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.CONNECTED);
   }
@@ -90,7 +95,7 @@ test('http response after connected',
 
 test('connect failed',
   function() {
-    remoting.xhr.get.getCall(0).args[1]({status: 200});
+    fakeXhrs[0].respond(200);
     sinon.assert.notCalled(onStateChange);
 
     [
@@ -105,7 +110,7 @@ test('connect failed',
 
 test('blocked',
   function() {
-    remoting.xhr.get.getCall(0).args[1]({status: 400});
+    fakeXhrs[0].respond(400);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.FAILED);
     equal(checker.getError(), remoting.Error.NOT_AUTHORIZED);
@@ -143,7 +148,7 @@ test('blocked after connected',
 
     // Verify that DnsBlackholeChecker goes to FAILED state after it gets the
     // blocked HTTP response.
-    remoting.xhr.get.getCall(0).args[1]({status: 400});
+    fakeXhrs[0].respond(400);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.FAILED);
     equal(checker.getError(), remoting.Error.NOT_AUTHORIZED);
