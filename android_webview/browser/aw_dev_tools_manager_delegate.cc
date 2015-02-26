@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/aw_dev_tools_manager_delegate.h"
 
-#include "android_webview/native/aw_contents.h"
+#include "android_webview/browser/browser_view_renderer.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
@@ -72,9 +72,8 @@ Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
 }
 
 std::string GetViewDescription(WebContents* web_contents) {
-  const android_webview::BrowserViewRenderer* bvr =
-      android_webview::AwContents::FromWebContents(web_contents)
-          ->GetBrowserViewRenderer();
+  android_webview::BrowserViewRenderer* bvr =
+      android_webview::BrowserViewRenderer::FromWebContents(web_contents);
   if (!bvr) return "";
   base::DictionaryValue description;
   description.SetBoolean("attached", bvr->attached_to_window());

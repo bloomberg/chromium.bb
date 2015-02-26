@@ -18,6 +18,10 @@
 class SkCanvas;
 class SkPicture;
 
+namespace content {
+class WebContents;
+}
+
 namespace android_webview {
 
 class BrowserViewRendererClient;
@@ -27,12 +31,16 @@ class BrowserViewRendererClient;
 class BrowserViewRenderer : public content::SynchronousCompositorClient {
  public:
   static void CalculateTileMemoryPolicy();
+  static BrowserViewRenderer* FromWebContents(
+      content::WebContents* web_contents);
 
   BrowserViewRenderer(
       BrowserViewRendererClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~BrowserViewRenderer() override;
+
+  void RegisterWithWebContents(content::WebContents* web_contents);
 
   SharedRendererState* GetAwDrawGLViewContext();
   bool RequestDrawGL(bool wait_for_completion);

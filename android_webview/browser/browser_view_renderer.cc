@@ -10,8 +10,10 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/supports_user_data.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/compositor_frame.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -34,6 +36,26 @@ const size_t kBytesPerPixel = 4;
 const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
 uint64 g_memory_override_in_bytes = 0u;
 
+const void* kBrowserViewRendererUserDataKey = &kBrowserViewRendererUserDataKey;
+
+class BrowserViewRendererUserData : public base::SupportsUserData::Data {
+ public:
+  BrowserViewRendererUserData(BrowserViewRenderer* ptr) : bvr_(ptr) {}
+
+  static BrowserViewRenderer* GetBrowserViewRenderer(
+      content::WebContents* web_contents) {
+    if (!web_contents)
+      return NULL;
+    BrowserViewRendererUserData* data =
+        static_cast<BrowserViewRendererUserData*>(
+            web_contents->GetUserData(kBrowserViewRendererUserDataKey));
+    return data ? data->bvr_ : NULL;
+  }
+
+ private:
+  BrowserViewRenderer* bvr_;
+};
+
 }  // namespace
 
 // static
@@ -50,6 +72,12 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy() {
         &g_memory_override_in_bytes);
     g_memory_override_in_bytes *= 1024 * 1024;
   }
+}
+
+// static
+BrowserViewRenderer* BrowserViewRenderer::FromWebContents(
+    content::WebContents* web_contents) {
+  return BrowserViewRendererUserData::GetBrowserViewRenderer(web_contents);
 }
 
 BrowserViewRenderer::BrowserViewRenderer(
@@ -76,6 +104,12 @@ BrowserViewRenderer::BrowserViewRenderer(
 }
 
 BrowserViewRenderer::~BrowserViewRenderer() {
+}
+
+void BrowserViewRenderer::RegisterWithWebContents(
+    content::WebContents* web_contents) {
+  web_contents->SetUserData(kBrowserViewRendererUserDataKey,
+                            new BrowserViewRendererUserData(this));
 }
 
 SharedRendererState* BrowserViewRenderer::GetAwDrawGLViewContext() {

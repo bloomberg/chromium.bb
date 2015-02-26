@@ -206,8 +206,6 @@ class AwContents : public FindHelper::Listener,
                          float max_page_scale_factor) override;
   void DidOverscroll(gfx::Vector2d overscroll_delta) override;
 
-  const BrowserViewRenderer* GetBrowserViewRenderer() const;
-
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jlong ReleasePopupAwContents(JNIEnv* env, jobject obj);

@@ -170,8 +170,9 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
-  web_contents_->SetUserData(kAwContentsUserDataKey,
+  web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
                              new AwContentsUserData(this));
+  browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
 
@@ -986,10 +987,6 @@ void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {
     return;
   Java_AwContents_didOverscroll(
       env, obj.obj(), overscroll_delta.x(), overscroll_delta.y());
-}
-
-const BrowserViewRenderer* AwContents::GetBrowserViewRenderer() const {
-  return &browser_view_renderer_;
 }
 
 void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale) {
