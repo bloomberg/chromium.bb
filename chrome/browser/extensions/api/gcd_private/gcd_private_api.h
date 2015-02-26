@@ -143,6 +143,26 @@ class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
       const std::vector<api::gcd_private::PairingType>& pairing_types);
 };
 
+class GcdPrivateCreateSessionFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.createSession",
+                             GCDPRIVATE_ESTABLISHSESSION)
+
+  GcdPrivateCreateSessionFunction();
+
+ protected:
+  ~GcdPrivateCreateSessionFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  void OnSessionInitialized(
+      int session_id,
+      api::gcd_private::Status status,
+      const std::vector<api::gcd_private::PairingType>& pairing_types);
+};
+
 class GcdPrivateStartPairingFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.startPairing", GCDPRIVATE_STARTPAIRING)

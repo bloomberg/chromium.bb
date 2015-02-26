@@ -53,7 +53,10 @@ namespace gcdPrivate {
     badPairingCodeError,
 
     // Device error with details in response object.
-    deviceError
+    deviceError,
+
+    // Service resulution failed.
+    serviceResolutionError
   };
 
   enum PairingType {
@@ -103,7 +106,7 @@ namespace gcdPrivate {
   callback SuccessCallback = void(boolean success);
 
   // Called as a response to |getPrefetchedWifiNameList|
-  // |networks| : The list of ssids for which wifi passwords were prefetched.
+  // |networks| : The list of SSIDs for which wifi passwords were prefetched.
   callback SSIDListCallback = void(DOMString[] networks);
 
   interface Functions {
@@ -123,15 +126,22 @@ namespace gcdPrivate {
     // |ssid| : The network to prefetch password for.
     static void prefetchWifiPassword(DOMString ssid, SuccessCallback callback);
 
-    // Get the list of ssids with prefetched callbacks.
+    // Get the list of SSIDs with prefetched callbacks.
     static void getPrefetchedWifiNameList(SSIDListCallback callback);
 
-    // Establish the session.
+    // Deprecated. Establish the session.
+    // TODO(vitalybuka): Remove after uptate of apps using this.
+    // http://crbug.com/461504
     // |ipAddress| : The IPv4 or IPv6 address of the device.
     // |port| : The port with Privet HTTP server.
     static void establishSession(DOMString ipAddress,
                                  long port,
                                  EstablishSessionCallback callback);
+
+    // Create new pairing.
+    // |serviceName| : The mDns service name of the device.
+    static void createSession(DOMString serviceName,
+                              EstablishSessionCallback callback);
 
     // Start pairing with selected method. Should be called after
     // |establishSession|.
@@ -151,7 +161,7 @@ namespace gcdPrivate {
                             SessionCallback callback);
 
     // Send an encrypted message to the device.
-    // If the message is a setup message with a wifi ssid specified but no
+    // If the message is a setup message with a wifi SSID specified but no
     // password, the password cached by |prefetchWifiPassword| will be used and
     // the call will fail if it's not available. For open networks use an empty
     // string as the password.

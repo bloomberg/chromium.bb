@@ -14,6 +14,7 @@
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/local_discovery/gcd_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/privetv3_session.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
@@ -120,6 +121,9 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
                         int port,
                         const EstablishSessionCallback& callback);
 
+  void CreateSession(const std::string& service_name,
+                     const EstablishSessionCallback& callback);
+
   void StartPairing(int session_id,
                     api::gcd_private::PairingType pairing_type,
                     const SessionCallback& callback);
@@ -164,6 +168,10 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
                            const base::DictionaryValue& input,
                            const MessageResponseCallback& callback);
 
+  void OnServiceResolved(int session_id,
+                         const EstablishSessionCallback& callback,
+                         scoped_ptr<local_discovery::PrivetHTTPClient> client);
+
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
   void OnWifiPassword(const SuccessCallback& callback,
                       bool success,
@@ -178,7 +186,12 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
   scoped_ptr<local_discovery::PrivetDeviceLister> privet_device_lister_;
   GCDDeviceMap known_devices_;
 
-  std::map<int, linked_ptr<local_discovery::PrivetV3Session>> sessions_;
+  struct SessionInfo {
+    linked_ptr<local_discovery::PrivetV3Session> session;
+    linked_ptr<local_discovery::PrivetHTTPResolution> http_resolution;
+  };
+
+  std::map<int, SessionInfo> sessions_;
   int last_session_id_;
 
   content::BrowserContext* const browser_context_;
@@ -316,10 +329,40 @@ void GcdPrivateAPIImpl::EstablishSession(
           browser_context_->GetRequestContext()));
 
   int session_id = last_session_id_++;
-  linked_ptr<local_discovery::PrivetV3Session> session_handler(
+  auto& session_data = sessions_[session_id];
+  session_data.session.reset(
       new local_discovery::PrivetV3Session(http_client.Pass()));
-  sessions_[session_id] = session_handler;
-  session_handler->Init(base::Bind(callback, session_id));
+  session_data.session->Init(base::Bind(callback, session_id));
+}
+
+void GcdPrivateAPIImpl::CreateSession(
+    const std::string& service_name,
+    const EstablishSessionCallback& callback) {
+  int session_id = last_session_id_++;
+
+  scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory> factory(
+      local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
+          browser_context_->GetRequestContext()));
+  auto& session_data = sessions_[session_id];
+  session_data.http_resolution.reset(
+      factory->CreatePrivetHTTP(service_name).release());
+  session_data.http_resolution->Start(
+      base::Bind(&GcdPrivateAPIImpl::OnServiceResolved, base::Unretained(this),
+                 session_id, callback));
+}
+
+void GcdPrivateAPIImpl::OnServiceResolved(
+    int session_id,
+    const EstablishSessionCallback& callback,
+    scoped_ptr<local_discovery::PrivetHTTPClient> client) {
+  if (!client) {
+    return callback.Run(session_id, gcd_private::STATUS_SERVICERESOLUTIONERROR,
+                        std::vector<gcd_private::PairingType>());
+  }
+  auto& session_data = sessions_[session_id];
+  session_data.session.reset(
+      new local_discovery::PrivetV3Session(client.Pass()));
+  session_data.session->Init(base::Bind(callback, session_id));
 }
 
 void GcdPrivateAPIImpl::StartPairing(int session_id,
@@ -330,7 +373,7 @@ void GcdPrivateAPIImpl::StartPairing(int session_id,
   if (found == sessions_.end())
     return callback.Run(gcd_private::STATUS_UNKNOWNSESSIONERROR);
 
-  found->second->StartPairing(pairing_type, callback);
+  found->second.session->StartPairing(pairing_type, callback);
 }
 
 void GcdPrivateAPIImpl::ConfirmCode(int session_id,
@@ -341,7 +384,7 @@ void GcdPrivateAPIImpl::ConfirmCode(int session_id,
   if (found == sessions_.end())
     return callback.Run(gcd_private::STATUS_UNKNOWNSESSIONERROR);
 
-  found->second->ConfirmCode(code, callback);
+  found->second.session->ConfirmCode(code, callback);
 }
 
 void GcdPrivateAPIImpl::SendMessage(int session_id,
@@ -388,7 +431,7 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
                         base::DictionaryValue());
   }
 
-  found->second->SendMessage(api, *input_actual, callback);
+  found->second.session->SendMessage(api, *input_actual, callback);
 }
 
 void GcdPrivateAPIImpl::RequestWifiPassword(const std::string& ssid,
@@ -616,6 +659,37 @@ bool GcdPrivateEstablishSessionFunction::RunAsync() {
 }
 
 void GcdPrivateEstablishSessionFunction::OnSessionInitialized(
+    int session_id,
+    api::gcd_private::Status status,
+    const std::vector<api::gcd_private::PairingType>& pairing_types) {
+  results_ = gcd_private::EstablishSession::Results::Create(session_id, status,
+                                                            pairing_types);
+  SendResponse(true);
+}
+
+GcdPrivateCreateSessionFunction::GcdPrivateCreateSessionFunction() {
+}
+
+GcdPrivateCreateSessionFunction::~GcdPrivateCreateSessionFunction() {
+}
+
+bool GcdPrivateCreateSessionFunction::RunAsync() {
+  scoped_ptr<gcd_private::CreateSession::Params> params =
+      gcd_private::CreateSession::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
+
+  GcdPrivateAPIImpl::EstablishSessionCallback callback =
+      base::Bind(&GcdPrivateCreateSessionFunction::OnSessionInitialized, this);
+  gcd_api->CreateSession(params->service_name, callback);
+
+  return true;
+}
+
+void GcdPrivateCreateSessionFunction::OnSessionInitialized(
     int session_id,
     api::gcd_private::Status status,
     const std::vector<api::gcd_private::PairingType>& pairing_types) {
