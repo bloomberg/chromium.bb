@@ -3822,7 +3822,7 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     } else if (eventType == EventTypeNames::DOMCharacterDataModified) {
         UseCounter::count(*this, UseCounter::DOMCharacterDataModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMCHARACTERDATAMODIFIED_LISTENER);
-    } else if (eventType == EventTypeNames::overflowchanged) {
+    } else if (eventType == EventTypeNames::overflowchanged && RuntimeEnabledFeatures::overflowChangedEventEnabled()) {
         UseCounter::countDeprecation(*this, UseCounter::OverflowChangedEvent);
         addListenerType(OVERFLOWCHANGED_LISTENER);
     } else if (eventType == EventTypeNames::webkitAnimationStart || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationstart)) {

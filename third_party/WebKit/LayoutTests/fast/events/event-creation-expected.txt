@@ -66,9 +66,6 @@ PASS document.createEvent('MutationEvent').constructor === window.MutationEvent 
 PASS document.createEvent('MutationEvents') instanceof window.MutationEvent is true
 PASS document.createEvent('MutationEvents') instanceof window.Event is true
 PASS document.createEvent('MutationEvents').constructor === window.MutationEvent is true
-PASS document.createEvent('OverflowEvent') instanceof window.OverflowEvent is true
-PASS document.createEvent('OverflowEvent') instanceof window.Event is true
-PASS document.createEvent('OverflowEvent').constructor === window.OverflowEvent is true
 PASS document.createEvent('PageTransitionEvent') instanceof window.PageTransitionEvent is true
 PASS document.createEvent('PageTransitionEvent') instanceof window.Event is true
 PASS document.createEvent('PageTransitionEvent').constructor === window.PageTransitionEvent is true

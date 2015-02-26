@@ -98,11 +98,6 @@
     shouldBeTrue("document.createEvent('MutationEvents') instanceof window.Event");
     shouldBeTrue("document.createEvent('MutationEvents').constructor === window.MutationEvent");
 
-    // OverflowEvent
-    shouldBeTrue("document.createEvent('OverflowEvent') instanceof window.OverflowEvent");
-    shouldBeTrue("document.createEvent('OverflowEvent') instanceof window.Event");
-    shouldBeTrue("document.createEvent('OverflowEvent').constructor === window.OverflowEvent");
-
     // PageTransitionEvent
     shouldBeTrue("document.createEvent('PageTransitionEvent') instanceof window.PageTransitionEvent");
     shouldBeTrue("document.createEvent('PageTransitionEvent') instanceof window.Event");

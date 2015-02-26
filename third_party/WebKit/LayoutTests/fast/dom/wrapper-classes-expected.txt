@@ -86,10 +86,6 @@ PASS classString(document.createEvent('MutationEvent')) is "MutationEvent"
 FAIL classString(document.createEvent('MutationEvent').__proto__) should be MutationEventPrototype. Was Object.
 PASS classString(document.createEvent('MutationEvent').constructor) is "Function"
 PASS document.createEvent('MutationEvent').constructor.name is "MutationEvent"
-PASS classString(document.createEvent('OverflowEvent')) is "OverflowEvent"
-FAIL classString(document.createEvent('OverflowEvent').__proto__) should be OverflowEventPrototype. Was Object.
-PASS classString(document.createEvent('OverflowEvent').constructor) is "Function"
-PASS document.createEvent('OverflowEvent').constructor.name is "OverflowEvent"
 PASS classString(document.createEvent('TextEvent')) is "TextEvent"
 FAIL classString(document.createEvent('TextEvent').__proto__) should be TextEventPrototype. Was Object.
 PASS classString(document.createEvent('TextEvent').constructor) is "Function"

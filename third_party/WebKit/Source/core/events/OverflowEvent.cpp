@@ -26,6 +26,8 @@
 #include "config.h"
 #include "core/events/OverflowEvent.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
+
 namespace blink {
 
 OverflowEvent::OverflowEvent()
@@ -34,6 +36,7 @@ OverflowEvent::OverflowEvent()
     , m_horizontalOverflow(false)
     , m_verticalOverflow(false)
 {
+    ASSERT(RuntimeEnabledFeatures::overflowChangedEventEnabled());
 }
 
 OverflowEvent::OverflowEvent(bool horizontalOverflowChanged, bool horizontalOverflow, bool verticalOverflowChanged, bool verticalOverflow)
@@ -41,6 +44,7 @@ OverflowEvent::OverflowEvent(bool horizontalOverflowChanged, bool horizontalOver
     , m_horizontalOverflow(horizontalOverflow)
     , m_verticalOverflow(verticalOverflow)
 {
+    ASSERT(RuntimeEnabledFeatures::overflowChangedEventEnabled());
     ASSERT(horizontalOverflowChanged || verticalOverflowChanged);
 
     if (horizontalOverflowChanged && verticalOverflowChanged)
@@ -57,6 +61,8 @@ OverflowEvent::OverflowEvent(const AtomicString& type, const OverflowEventInit& 
     , m_horizontalOverflow(false)
     , m_verticalOverflow(false)
 {
+    ASSERT(RuntimeEnabledFeatures::overflowChangedEventEnabled());
+
     if (initializer.hasOrient())
         m_orient = initializer.orient();
     if (initializer.hasHorizontalOverflow())

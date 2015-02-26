@@ -25,6 +25,7 @@
 
 [
     Constructor(DOMString type, optional OverflowEventInit eventInitDict),
+    RuntimeEnabled=OverflowChangedEvent,
 ] interface OverflowEvent : Event {
     const unsigned short HORIZONTAL = 0;
     const unsigned short VERTICAL   = 1;

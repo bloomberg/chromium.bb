@@ -1300,11 +1300,6 @@ interface OscillatorNode
     method setPeriodicWave
     method start
     method stop
-interface OverflowEvent
-    attribute BOTH
-    attribute HORIZONTAL
-    attribute VERTICAL
-    method constructor
 interface PageTransitionEvent
     method constructor
 interface Path2D

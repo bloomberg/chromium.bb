@@ -4,7 +4,9 @@
 
 // Non-standard.
 
-dictionary OverflowEventInit : EventInit {
+[
+    RuntimeEnabled=OverflowChangedEvent,
+] dictionary OverflowEventInit : EventInit {
     unsigned short orient;
     boolean horizontalOverflow;
     boolean verticalOverflow;
