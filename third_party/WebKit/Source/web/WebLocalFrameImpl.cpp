@@ -911,6 +911,7 @@ void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType,
     if (replace && !unreachableURL.isEmpty() && frame()->loader().provisionalDocumentLoader())
         request = frame()->loader().provisionalDocumentLoader()->originalRequest();
     request.setURL(baseURL);
+    request.setCheckForBrowserSideNavigation(false);
 
     FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
     ASSERT(frameRequest.substituteData().isValid());
