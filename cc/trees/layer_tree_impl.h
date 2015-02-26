@@ -239,7 +239,7 @@ class CC_EXPORT LayerTreeImpl {
 
   size_t NumLayers();
 
-  AnimationRegistrar* animationRegistrar() const;
+  AnimationRegistrar* GetAnimationRegistrar() const;
 
   void PushPersistedState(LayerTreeImpl* pending_tree);
 

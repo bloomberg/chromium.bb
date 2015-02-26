@@ -83,7 +83,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-  AnimationRegistrar* registrar = layer_tree_impl_->animationRegistrar();
+  AnimationRegistrar* registrar = layer_tree_impl_->GetAnimationRegistrar();
   layer_animation_controller_ =
       registrar->GetAnimationControllerForId(layer_id_);
   layer_animation_controller_->AddValueObserver(this);

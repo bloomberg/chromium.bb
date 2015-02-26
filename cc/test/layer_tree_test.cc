@@ -349,10 +349,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void UpdateAnimationState(bool start_ready_animations) override {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
-    AnimationRegistrar::AnimationControllerMap::const_iterator iter =
-        active_animation_controllers().begin();
-    for (; iter != active_animation_controllers().end(); ++iter) {
-      if (iter->second->HasActiveAnimation()) {
+    for (const auto& it :
+         animation_registrar()->active_animation_controllers()) {
+      if (it.second->HasActiveAnimation()) {
         has_unfinished_animation = true;
         break;
       }

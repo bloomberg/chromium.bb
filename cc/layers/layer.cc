@@ -1204,6 +1204,12 @@ void Layer::RemoveAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
+void Layer::RemoveAnimation(int animation_id,
+                            Animation::TargetProperty property) {
+  layer_animation_controller_->RemoveAnimation(animation_id, property);
+  SetNeedsCommit();
+}
+
 void Layer::SetLayerAnimationControllerForTest(
     scoped_refptr<LayerAnimationController> controller) {
   layer_animation_controller_->RemoveValueObserver(this);

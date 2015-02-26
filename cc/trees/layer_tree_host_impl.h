@@ -535,10 +535,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time);
-  const AnimationRegistrar::AnimationControllerMap&
-      active_animation_controllers() const {
-    return animation_registrar_->active_animation_controllers();
-  }
 
   LayerTreeHostImplClient* client_;
   Proxy* proxy_;

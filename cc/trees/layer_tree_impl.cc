@@ -984,7 +984,7 @@ void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->SetNeedsRedraw();
 }
 
-AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
+AnimationRegistrar* LayerTreeImpl::GetAnimationRegistrar() const {
   return layer_tree_host_impl_->animation_registrar();
 }
 

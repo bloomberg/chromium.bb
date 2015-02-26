@@ -256,7 +256,7 @@ void WebLayerImpl::removeAnimation(int animation_id) {
 void WebLayerImpl::removeAnimation(
     int animation_id,
     blink::WebCompositorAnimation::TargetProperty target_property) {
-  layer_->layer_animation_controller()->RemoveAnimation(
+  layer_->RemoveAnimation(
       animation_id, static_cast<Animation::TargetProperty>(target_property));
 }
 

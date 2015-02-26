@@ -3134,31 +3134,26 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
     return;
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateLayers");
-  AnimationRegistrar::AnimationControllerMap copy =
+  AnimationRegistrar::AnimationControllerMap controllers_copy =
       animation_registrar_->active_animation_controllers();
-  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
-       iter != copy.end();
-       ++iter)
-    (*iter).second->Animate(monotonic_time);
+  for (auto& it : controllers_copy)
+    it.second->Animate(monotonic_time);
 
   SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  if (!settings_.accelerated_animation_enabled ||
-      !needs_animate_layers() ||
+  if (!settings_.accelerated_animation_enabled || !needs_animate_layers() ||
       !active_tree_->root_layer())
     return;
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::UpdateAnimationState");
   scoped_ptr<AnimationEventsVector> events =
       make_scoped_ptr(new AnimationEventsVector);
-  AnimationRegistrar::AnimationControllerMap copy =
+  AnimationRegistrar::AnimationControllerMap active_controllers_copy =
       animation_registrar_->active_animation_controllers();
-  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
-       iter != copy.end();
-       ++iter)
-    (*iter).second->UpdateState(start_ready_animations, events.get());
+  for (auto& it : active_controllers_copy)
+    it.second->UpdateState(start_ready_animations, events.get());
 
   if (!events->empty()) {
     client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
@@ -3173,12 +3168,10 @@ void LayerTreeHostImpl::ActivateAnimations() {
     return;
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ActivateAnimations");
-  AnimationRegistrar::AnimationControllerMap copy =
+  AnimationRegistrar::AnimationControllerMap active_controllers_copy =
       animation_registrar_->active_animation_controllers();
-  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
-       iter != copy.end();
-       ++iter)
-    (*iter).second->ActivateAnimations();
+  for (auto& it : active_controllers_copy)
+    it.second->ActivateAnimations();
 
   SetNeedsAnimate();
 }

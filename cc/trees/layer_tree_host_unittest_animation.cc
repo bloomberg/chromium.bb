@@ -195,8 +195,9 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
 
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
-    bool have_animations = !host_impl->animation_registrar()->
-        active_animation_controllers().empty();
+    bool have_animations = !host_impl->animation_registrar()
+                                ->active_animation_controllers()
+                                .empty();
     if (!started_animating_ && have_animations) {
       started_animating_ = true;
       return;
@@ -1241,21 +1242,18 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     // After both animations have started, verify that they have valid
     // start times.
     num_swap_buffers_++;
-    AnimationRegistrar::AnimationControllerMap copy =
+    AnimationRegistrar::AnimationControllerMap controllers_copy =
         host_impl->animation_registrar()->active_animation_controllers();
-    if (copy.size() == 2u) {
+    if (controllers_copy.size() == 2u) {
       EndTest();
       EXPECT_GE(num_swap_buffers_, 3);
-      for (AnimationRegistrar::AnimationControllerMap::iterator iter =
-               copy.begin();
-           iter != copy.end();
-           ++iter) {
-        int id = ((*iter).second->id());
+      for (auto& it : controllers_copy) {
+        int id = it.first;
         if (id == host_impl->RootLayer()->id()) {
-          Animation* anim = (*iter).second->GetAnimation(Animation::TRANSFORM);
+          Animation* anim = it.second->GetAnimation(Animation::TRANSFORM);
           EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
         } else if (id == host_impl->RootLayer()->children()[0]->id()) {
-          Animation* anim = (*iter).second->GetAnimation(Animation::OPACITY);
+          Animation* anim = it.second->GetAnimation(Animation::OPACITY);
           EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
         }
       }

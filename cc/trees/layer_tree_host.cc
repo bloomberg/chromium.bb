@@ -558,8 +558,7 @@ void LayerTreeHost::SetAnimationEvents(
     // controllers may still receive events for impl-only animations.
     const AnimationRegistrar::AnimationControllerMap& animation_controllers =
         animation_registrar_->all_animation_controllers();
-    AnimationRegistrar::AnimationControllerMap::const_iterator iter =
-        animation_controllers.find(event_layer_id);
+    auto iter = animation_controllers.find(event_layer_id);
     if (iter != animation_controllers.end()) {
       switch ((*events)[event_index].type) {
         case AnimationEvent::STARTED:
@@ -1194,14 +1193,12 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
 
   TRACE_EVENT0("cc", "LayerTreeHost::AnimateLayers");
 
-  AnimationRegistrar::AnimationControllerMap copy =
+  AnimationRegistrar::AnimationControllerMap active_controllers_copy =
       animation_registrar_->active_animation_controllers();
-  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
-       iter != copy.end();
-       ++iter) {
-    (*iter).second->Animate(monotonic_time);
+  for (auto& it : active_controllers_copy) {
+    it.second->Animate(monotonic_time);
     bool start_ready_animations = true;
-    (*iter).second->UpdateState(start_ready_animations, NULL);
+    it.second->UpdateState(start_ready_animations, NULL);
   }
 }
 
