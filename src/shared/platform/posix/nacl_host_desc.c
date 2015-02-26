@@ -340,7 +340,6 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
                      int                  flags,
                      int                  mode) {
   int host_desc;
-  nacl_host_stat_t stbuf;
   int posix_flags;
 
   NaClLog(3, "NaClHostDescOpen(0x%08"NACL_PRIxPTR", %s, 0x%x, 0x%x)\n",
@@ -380,21 +379,6 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   if (-1 == host_desc) {
     NaClLog(2, "NaClHostDescOpen: open returned -1, errno %d\n", errno);
     return -NaClXlateErrno(errno);
-  }
-  if (-1 == NACL_HOST_FSTAT64(host_desc, &stbuf)
-      ) {
-    NaClLog(LOG_ERROR,
-            "NaClHostDescOpen: fstat failed?!?  errno %d\n", errno);
-    (void) close(host_desc);
-    return -NaClXlateErrno(errno);
-  }
-  if (!S_ISREG(stbuf.st_mode) && !S_ISCHR(stbuf.st_mode)
-      && !S_ISBLK(stbuf.st_mode)) {
-    NaClLog(LOG_INFO,
-            "NaClHostDescOpen: file type 0x%x, not a file\n", stbuf.st_mode);
-    (void) close(host_desc);
-    /* cannot access anything other than files or char/block devices */
-    return -NACL_ABI_EPERM;
   }
   return NaClHostDescCtor(d, host_desc, flags);
 }
