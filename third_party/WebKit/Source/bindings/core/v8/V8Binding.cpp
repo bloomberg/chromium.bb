@@ -1045,43 +1045,4 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isol
     return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());
 }
 
-bool AttributesWithSideEffectOnGet::hasNoSideEffect(v8::Handle<v8::Value> domObject, v8::Handle<v8::Value> attributeName)
-{
-    if (!(!domObject.IsEmpty() && domObject->IsObject()
-        && !attributeName.IsEmpty() && attributeName->IsString()))
-        return false;
-
-    // FIXME: isDOMWrapper is not designed for checking an arbitrary object.
-    if (!V8DOMWrapper::isDOMWrapper(domObject))
-        return false;
-
-    const WrapperTypeInfo* wrapperTypeInfo =
-        toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(domObject));
-    String attribute = V8StringResource<>(attributeName);
-    if (!wrapperTypeInfo || attribute.isEmpty())
-        return false;
-
-    for (const auto& entry : *attributesWithSideEffectOnGet()) {
-        if (wrapperTypeInfo->isSubclass(entry.first)
-            && attribute == entry.second)
-            return false;
-    }
-
-    return true;
-}
-
-void AttributesWithSideEffectOnGet::add(const WrapperTypeInfo* wrapperTypeInfo, String attributeName)
-{
-    AttributeSet* attributes = attributesWithSideEffectOnGet();
-    AttributeSet::ValueType value(wrapperTypeInfo, attributeName);
-    if (!attributes->contains(value))
-        attributes->append(value);
-}
-
-AttributesWithSideEffectOnGet::AttributeSet* AttributesWithSideEffectOnGet::attributesWithSideEffectOnGet()
-{
-    DEFINE_STATIC_LOCAL(AttributeSet, attributes, ());
-    return &attributes;
-}
-
 } // namespace blink

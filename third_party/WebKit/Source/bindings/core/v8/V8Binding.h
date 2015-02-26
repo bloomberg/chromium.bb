@@ -998,21 +998,6 @@ private:
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Handle<v8::Function>);
 
-class AttributesWithSideEffectOnGet final {
-public:
-    // Returns true iff |domObject| is a DOM object and whose attribute named
-    // |attributeName| has no side effect when "get" is called.
-    static bool hasNoSideEffect(v8::Handle<v8::Value> domObject, v8::Handle<v8::Value> attributeName);
-
-    // Registers a DOM attribute which has side effect when "get" is called.
-    static void add(const WrapperTypeInfo*, String attributeName);
-
-private:
-    typedef Vector<std::pair<const WrapperTypeInfo*, String>> AttributeSet;
-
-    static AttributeSet* attributesWithSideEffectOnGet();
-};
-
 class V8RethrowTryCatchScope final {
 public:
     explicit V8RethrowTryCatchScope(v8::TryCatch& block) : m_block(block) { }

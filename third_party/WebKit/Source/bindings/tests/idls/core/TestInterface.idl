@@ -99,8 +99,6 @@
 
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
 
-    [HasSideEffectOnGet] attribute int attributeWithSideEffect;
-
     void voidMethodPartialOverload();
     void voidMethodPartialOverload(double doubleArg);
     static void staticVoidMethodPartialOverload();

@@ -474,17 +474,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
     {% endif %}
-    {% for attribute in attributes if attribute.has_side_effect_on_get %}
-    {% if loop.first %}
-
-    // DOM attributes which have side effect when "get" is called.
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-    {% endif %}
-        AttributesWithSideEffectOnGet::add(&{{v8_class}}::wrapperTypeInfo, "{{attribute.name}}");
-    {% if loop.last %}
-    }
-    {% endif %}
-    {% endfor %}
 }
 
 {% endif %}{# not is_array_buffer_or_view #}

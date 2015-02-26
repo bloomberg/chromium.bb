@@ -37,11 +37,18 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8DOMError.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
+#include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8Event.h"
+#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
+#include "bindings/core/v8/V8Location.h"
+#include "bindings/core/v8/V8Navigator.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -132,20 +139,6 @@ void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::Functio
     v8SetReturnValue(info, result);
 }
 
-void V8InjectedScriptHost::isDOMAttributeWithNoSideEffectOnGetMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 2)
-        return;
-
-    // FIXME: Should support other DOM objects other than Node.
-    if (!V8Node::hasInstance(info[0], info.GetIsolate())) {
-        v8SetReturnValue(info, false);
-        return;
-    }
-
-    v8SetReturnValue(info, AttributesWithSideEffectOnGet::hasNoSideEffect(info[0], info[1]));
-}
-
 void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -157,6 +150,42 @@ void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCal
     }
 
     v8SetReturnValue(info, V8HTMLAllCollection::hasInstance(info[0], info.GetIsolate()));
+}
+
+void V8InjectedScriptHost::isPopularDOMObjectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    // FIXME: Stop using this function (whilelisting) once we come up with a way
+    // to distinguish DOM wrappers from other obejcts.
+
+    if (info.Length() < 1)
+        return;
+
+    if (!info[0]->IsObject()) {
+        v8SetReturnValue(info, false);
+        return;
+    }
+
+    v8::Local<v8::Value> object = info[0];
+    v8::Isolate* isolate = info.GetIsolate();
+    bool isPopularDOMObject = false;
+    static bool (*hasInstances[])(v8::Local<v8::Value>, v8::Isolate*) = {
+        V8Blob::hasInstance,
+        V8DOMError::hasInstance,
+        V8DOMException::hasInstance,
+        V8Element::hasInstance,
+        V8Event::hasInstance,
+        V8EventTarget::hasInstance,
+        V8Location::hasInstance,
+        V8Navigator::hasInstance,
+    };
+    for (size_t i = 0; i < sizeof hasInstances / sizeof *hasInstances; ++i) {
+        if (hasInstances[i](object, isolate)) {
+            isPopularDOMObject = true;
+            break;
+        }
+    }
+
+    v8SetReturnValue(info, isPopularDOMObject);
 }
 
 void V8InjectedScriptHost::isTypedArrayMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

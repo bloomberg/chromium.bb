@@ -553,7 +553,7 @@ InjectedScript.prototype = {
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
-                        if ("get" in descriptor && "set" in descriptor && InjectedScriptHost.isDOMAttributeWithNoSideEffectOnGet(object, name)) {
+                        if ("get" in descriptor && "set" in descriptor && InjectedScriptHost.isPopularDOMObject(object) && name != "__proto__") {
                             descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [name]);
                             delete descriptor.get;
                             delete descriptor.set;
