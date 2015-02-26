@@ -122,10 +122,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         ThreadUtils.assertOnUiThread();
         if (mAndroidSyncSettings.isMasterSyncEnabled()) {
             Log.d(TAG, "Enabling sync");
-            Account account = mChromeSigninController.getSignedInUser();
             InvalidationController.get(mContext).start();
             mProfileSyncService.enableSync();
-            mAndroidSyncSettings.enableChromeSync(account);
+            mAndroidSyncSettings.enableChromeSync();
         }
     }
 
@@ -138,14 +137,13 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         ThreadUtils.assertOnUiThread();
         if (mChromeSigninController.isSignedIn()) {
             Log.d(TAG, "Disabling sync");
-            Account account = mChromeSigninController.getSignedInUser();
             InvalidationController.get(mContext).stop();
             mProfileSyncService.disableSync();
             if (mAndroidSyncSettings.isMasterSyncEnabled()) {
                 // Only disable Android's Chrome sync setting if we weren't disabled
                 // by the master sync setting. This way, when master sync is enabled
                 // they will both be on and sync will start again.
-                mAndroidSyncSettings.disableChromeSync(account);
+                mAndroidSyncSettings.disableChromeSync();
             }
         }
     }
@@ -159,19 +157,16 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
-        Account account = mChromeSigninController.getSignedInUser();
-        // Don't do anything if there isn't an account.
-        if (account == null) return;
         boolean isSyncActive = !mProfileSyncService.isStartSuppressed();
         // Make the Java state match the native state.
         if (isSyncActive) {
             InvalidationController.get(mContext).start();
-            mAndroidSyncSettings.enableChromeSync(account);
+            mAndroidSyncSettings.enableChromeSync();
         } else {
             InvalidationController.get(mContext).stop();
             if (mAndroidSyncSettings.isMasterSyncEnabled()) {
                 // See comment in stop().
-                mAndroidSyncSettings.disableChromeSync(account);
+                mAndroidSyncSettings.disableChromeSync();
             }
         }
     }

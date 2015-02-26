@@ -46,7 +46,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
         delegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideAndroidSyncSettingsForTests(mContext, delegate);
+        AndroidSyncSettings.overrideForTests(mContext, delegate);
     }
 
     @SmallTest
@@ -119,9 +119,9 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         chromeSigninController.setSignedInAccountName(account.name);
         AndroidSyncSettings androidSyncSettings = AndroidSyncSettings.get(mContext);
         if (syncEnabled) {
-            androidSyncSettings.enableChromeSync(account);
+            androidSyncSettings.enableChromeSync();
         } else {
-            androidSyncSettings.disableChromeSync(account);
+            androidSyncSettings.disableChromeSync();
         }
     }
 

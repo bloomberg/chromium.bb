@@ -61,8 +61,7 @@ public class SyncTest extends ChromeShellTestBase {
         MockSyncContentResolverDelegate syncContentResolverDelegate =
                 new MockSyncContentResolverDelegate();
         syncContentResolverDelegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideAndroidSyncSettingsForTests(
-                mContext, syncContentResolverDelegate);
+        AndroidSyncSettings.overrideForTests(mContext, syncContentResolverDelegate);
         // This call initializes the ChromeSigninController to use our test context.
         ChromeSigninController.get(mContext);
         startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
@@ -177,11 +176,11 @@ public class SyncTest extends ChromeShellTestBase {
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
 
         // Disabling Android sync should turn Chrome sync engine off.
-        AndroidSyncSettings.get(mContext).disableChromeSync(account);
+        AndroidSyncSettings.get(mContext).disableChromeSync();
         SyncTestUtil.verifySyncIsDisabled(mContext, account);
 
         // Enabling Android sync should turn Chrome sync engine on.
-        AndroidSyncSettings.get(mContext).enableChromeSync(account);
+        AndroidSyncSettings.get(mContext).enableChromeSync();
         SyncTestUtil.ensureSyncInitialized(mContext);
         SyncTestUtil.verifySignedInWithAccount(mContext, account);
     }

@@ -371,7 +371,7 @@ public class SigninManager {
 
         // Sign-in to sync.
         ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
-        if (AndroidSyncSettings.get(mContext).isSyncEnabled(mSignInAccount)
+        if (AndroidSyncSettings.get(mContext).isSyncEnabled()
                 && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);
             profileSyncService.syncSignIn();

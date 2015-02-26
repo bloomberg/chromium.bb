@@ -14,8 +14,16 @@ import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListen
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.sync.AndroidSyncSettings;
 
+/**
+ * Caches the signed-in username in the app prefs.
+ */
 public class ChromeSigninController {
+
+    /**
+     * Interface for listening to signin events from ChromeSigninController.
+     */
     public interface Listener {
         /**
          * Called when the user signs out of Chrome.
@@ -36,10 +44,13 @@ public class ChromeSigninController {
 
     private final ObserverList<Listener> mListeners = new ObserverList<Listener>();
 
+    private final AndroidSyncSettings mAndroidSyncSettings;
+
     private boolean mGcmInitialized;
 
     private ChromeSigninController(Context context) {
         mApplicationContext = context.getApplicationContext();
+        mAndroidSyncSettings = AndroidSyncSettings.get(context);
     }
 
     /**
@@ -73,6 +84,8 @@ public class ChromeSigninController {
         PreferenceManager.getDefaultSharedPreferences(mApplicationContext).edit()
                 .putString(SIGNED_IN_ACCOUNT_KEY, accountName)
                 .apply();
+        // TODO(maxbogue): Move this to SigninManager.
+        mAndroidSyncSettings.updateAccount(getSignedInUser());
     }
 
     public void clearSignedInUser() {
