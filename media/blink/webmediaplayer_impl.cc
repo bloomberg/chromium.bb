@@ -42,6 +42,7 @@
 #include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
+#include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -105,6 +106,18 @@ STATIC_ASSERT_MATCHING_ENUM(UseCredentials);
 static void LogMediaSourceError(const scoped_refptr<MediaLog>& media_log,
                                 const std::string& error) {
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
+}
+
+static blink::WebEncryptedMediaInitDataType ConvertInitDataType(
+    const std::string& init_data_type) {
+  if (init_data_type == "cenc")
+    return blink::WebEncryptedMediaInitDataType::Cenc;
+  if (init_data_type == "keyids")
+    return blink::WebEncryptedMediaInitDataType::Keyids;
+  if (init_data_type == "webm")
+    return blink::WebEncryptedMediaInitDataType::Webm;
+  NOTREACHED() << "unexpected " << init_data_type;
+  return blink::WebEncryptedMediaInitDataType::Unknown;
 }
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
@@ -656,6 +669,7 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
          BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result));
 }
 
+// TODO(jrummell): |init_data_type| should be an enum. http://crbug.com/417440
 void WebMediaPlayerImpl::OnEncryptedMediaInitData(
     const std::string& init_data_type,
     const std::vector<uint8>& init_data) {
@@ -673,8 +687,8 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
 
   encrypted_media_support_.SetInitDataType(init_data_type);
 
-  const uint8* init_data_ptr = init_data.empty() ? nullptr : &init_data[0];
-  client_->encrypted(WebString::fromUTF8(init_data_type), init_data_ptr,
+  client_->encrypted(ConvertInitDataType(init_data_type),
+                     vector_as_array(&init_data),
                      base::saturated_cast<unsigned int>(init_data.size()));
 }
 

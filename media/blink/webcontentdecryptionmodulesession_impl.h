@@ -33,6 +33,12 @@ class WebContentDecryptionModuleSessionImpl
   virtual blink::WebString sessionId() const;
 
   virtual void initializeNewSession(
+      blink::WebEncryptedMediaInitDataType init_data_type,
+      const unsigned char* initData,
+      size_t initDataLength,
+      blink::WebEncryptedMediaSessionType session_type,
+      blink::WebContentDecryptionModuleResult result);
+  virtual void initializeNewSession(
       const blink::WebString& init_data_type,
       const uint8* init_data,
       size_t init_data_length,

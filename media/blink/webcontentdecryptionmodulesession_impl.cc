@@ -31,12 +31,6 @@ const char kLoadSessionUMAName[] = "LoadSession";
 const char kRemoveSessionUMAName[] = "RemoveSession";
 const char kUpdateSessionUMAName[] = "UpdateSession";
 
-// TODO(jrummell): Pass an enum from blink. http://crbug.com/418239.
-const char kTemporarySessionType[] = "temporary";
-const char kPersistentLicenseSessionType[] = "persistent-license";
-const char kPersistentReleaseMessageSessionType[] =
-    "persistent-release-message";
-
 static blink::WebContentDecryptionModuleSession::Client::MessageType
 convertMessageType(MediaKeys::MessageType message_type) {
   switch (message_type) {
@@ -94,30 +88,30 @@ blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
 }
 
 void WebContentDecryptionModuleSessionImpl::initializeNewSession(
-    const blink::WebString& init_data_type,
-    const uint8* init_data,
+    blink::WebEncryptedMediaInitDataType init_data_type,
+    const unsigned char* init_data,
     size_t init_data_length,
-    const blink::WebString& session_type,
+    blink::WebEncryptedMediaSessionType session_type,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(session_id_.empty());
 
-  // TODO(ddorwin): Guard against this in supported types check and remove this.
-  // Chromium only supports ASCII MIME types.
-  if (!base::IsStringASCII(init_data_type)) {
-    NOTREACHED();
-    std::string message = "The initialization data type " +
-                          init_data_type.utf8() +
-                          " is not supported by the key system.";
-    result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        blink::WebString::fromUTF8(message));
-    return;
+  // TODO(jrummell): |init_data_type| should be an enum all the way through
+  // Chromium. http://crbug.com/417440
+  std::string init_data_type_as_ascii = "unknown";
+  switch (init_data_type) {
+    case blink::WebEncryptedMediaInitDataType::Cenc:
+      init_data_type_as_ascii = "cenc";
+      break;
+    case blink::WebEncryptedMediaInitDataType::Keyids:
+      init_data_type_as_ascii = "keyids";
+      break;
+    case blink::WebEncryptedMediaInitDataType::Webm:
+      init_data_type_as_ascii = "webm";
+      break;
+    case blink::WebEncryptedMediaInitDataType::Unknown:
+      NOTREACHED() << "unexpected init_data_type";
+      break;
   }
-
-  std::string init_data_type_as_ascii = base::UTF16ToASCII(init_data_type);
-  DLOG_IF(WARNING, init_data_type_as_ascii.find('/') != std::string::npos)
-      << "init_data_type '" << init_data_type_as_ascii
-      << "' may be a MIME type";
 
   // Step 5 from https://w3c.github.io/encrypted-media/#generateRequest.
   // 5. If the Key System implementation represented by this object's cdm
@@ -135,14 +129,20 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     return;
   }
 
-  MediaKeys::SessionType session_type_enum;
-  if (session_type == kPersistentLicenseSessionType) {
-    session_type_enum = MediaKeys::PERSISTENT_LICENSE_SESSION;
-  } else if (session_type == kPersistentReleaseMessageSessionType) {
-    session_type_enum = MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
-  } else {
-    DCHECK(session_type == kTemporarySessionType);
-    session_type_enum = MediaKeys::TEMPORARY_SESSION;
+  MediaKeys::SessionType session_type_enum = MediaKeys::TEMPORARY_SESSION;
+  switch (session_type) {
+    case blink::WebEncryptedMediaSessionType::Temporary:
+      session_type_enum = MediaKeys::TEMPORARY_SESSION;
+      break;
+    case blink::WebEncryptedMediaSessionType::PersistentLicense:
+      session_type_enum = MediaKeys::PERSISTENT_LICENSE_SESSION;
+      break;
+    case blink::WebEncryptedMediaSessionType::PersistentReleaseMessage:
+      session_type_enum = MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
+      break;
+    case blink::WebEncryptedMediaSessionType::Unknown:
+      NOTREACHED() << "unexpected session_type";
+      break;
   }
 
   adapter_->InitializeNewSession(
@@ -153,6 +153,16 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
               base::Unretained(this)))));
+}
+
+// TODO(jrummell): Remove this. http://crbug.com/418239.
+void WebContentDecryptionModuleSessionImpl::initializeNewSession(
+    const blink::WebString& init_data_type,
+    const uint8* init_data,
+    size_t init_data_length,
+    const blink::WebString& session_type,
+    blink::WebContentDecryptionModuleResult result) {
+  NOTREACHED();
 }
 
 void WebContentDecryptionModuleSessionImpl::load(
