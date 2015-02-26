@@ -450,7 +450,7 @@ input::-webkit-clear-button {
     -webkit-user-modify: read-only !important;
     -webkit-margin-start: 2px;
     opacity: 0;
-    pionter-events: none;
+    pointer-events: none;
 }
 
 input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-clear-button {
@@ -612,7 +612,6 @@ input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: flex;
-    -webkit-align-contents: center;
 }
 
 input[type="range" i]::-webkit-slider-runnable-track {
