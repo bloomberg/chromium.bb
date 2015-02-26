@@ -28,7 +28,7 @@ class PathologicalMobileSitesPageSet(page_set_module.PageSet):
     super(PathologicalMobileSitesPageSet, self).__init__(
         user_agent_type='mobile',
         archive_data_file='data/pathological_mobile_sites.json',
-        bucket=page_set_module.INTERNAL_BUCKET)
+        bucket=page_set_module.PARTNER_BUCKET)
 
     sites = ['http://edition.cnn.com',
              'http://m.espn.go.com/nhl/rankings',

@@ -39,7 +39,7 @@ class TaskExecutionTimeToughSchedulingCases(benchmark.Benchmark):
     return 'task_execution_time.tough_scheduling_cases'
 
 
-@benchmark.Disabled  # http://crbug.com/458282
+@benchmark.Enabled('android')
 class TaskExecutionTimePathologicalMobileSites(benchmark.Benchmark):
 
   """Measures task execution statistics while scrolling pathological sites.

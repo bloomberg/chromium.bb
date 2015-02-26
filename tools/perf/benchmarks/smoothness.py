@@ -250,7 +250,7 @@ class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
     return 'smoothness.gpu_rasterization_and_decoding.image_decoding_cases'
 
 
-@benchmark.Disabled  # http://crbug.com/458282
+@benchmark.Enabled('android')
 class SmoothnessPathologicalMobileSites(benchmark.Benchmark):
   """Measures task execution statistics while scrolling pathological sites.
   """
