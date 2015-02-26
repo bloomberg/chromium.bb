@@ -51847,6 +51847,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="2.17"/>
   <int value="9" label="2.18"/>
   <int value="10" label="2.19"/>
+  <int value="11" label="2.20"/>
+  <int value="12" label="2.21"/>
+  <int value="13" label="2.22"/>
+  <int value="14" label="2.23"/>
+  <int value="15" label="2.24"/>
+  <int value="16" label="2.25"/>
+  <int value="17" label="2.26"/>
+  <int value="18" label="2.27"/>
+  <int value="19" label="2.28"/>
+  <int value="20" label="2.29"/>
 </enum>
 
 <enum name="LinuxSandboxStatus" type="int">
