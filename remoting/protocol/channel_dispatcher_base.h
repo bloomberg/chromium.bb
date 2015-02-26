@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/base/buffered_socket_writer.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/message_reader.h"
 

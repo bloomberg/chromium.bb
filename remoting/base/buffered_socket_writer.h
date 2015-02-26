@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_BUFFERED_SOCKET_WRITER_H_
-#define REMOTING_PROTOCOL_BUFFERED_SOCKET_WRITER_H_
+#ifndef REMOTING_BASE_BUFFERED_SOCKET_WRITER_H_
+#define REMOTING_BASE_BUFFERED_SOCKET_WRITER_H_
 
 #include <list>
 
@@ -18,7 +18,6 @@ class Socket;
 }  // namespace net
 
 namespace remoting {
-namespace protocol {
 
 // BufferedSocketWriter and BufferedDatagramWriter implement write data queue
 // for stream and datagram sockets. BufferedSocketWriterBase is a base class
@@ -126,7 +125,6 @@ class BufferedDatagramWriter : public BufferedSocketWriterBase {
   void OnError(int result) override;
 };
 
-}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_BUFFERED_SOCKET_WRITER_H_
+#endif  // REMOTING_BASE_BUFFERED_SOCKET_WRITER_H_

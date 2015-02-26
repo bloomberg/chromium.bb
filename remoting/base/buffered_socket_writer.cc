@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/base/buffered_socket_writer.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -12,7 +12,6 @@
 #include "net/base/net_errors.h"
 
 namespace remoting {
-namespace protocol {
 
 struct BufferedSocketWriterBase::PendingPacket {
   PendingPacket(scoped_refptr<net::IOBufferWithSize> data,
@@ -232,5 +231,4 @@ void BufferedDatagramWriter::OnError(int result) {
 BufferedDatagramWriter::~BufferedDatagramWriter() {
 }
 
-}  // namespace protocol
 }  // namespace remoting

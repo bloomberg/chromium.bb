@@ -6,7 +6,6 @@
 #define REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
 
 #include "base/memory/ref_counted.h"
-#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/input_stub.h"
 

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/base/buffered_socket_writer.h"
 
 #include <stdlib.h>
 
@@ -11,16 +11,55 @@
 #include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "remoting/protocol/fake_session.h"
+#include "net/socket/socket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
-namespace protocol {
 
 namespace {
 const int kTestBufferSize = 10 * 1024; // 10k;
 const size_t kWriteChunkSize = 1024U;
+
+class SocketDataProvider: public net::SocketDataProvider {
+ public:
+  SocketDataProvider()
+      : write_limit_(-1), async_write_(false), next_write_error_(net::OK) {}
+
+  net::MockRead GetNextRead() override {
+    return net::MockRead(net::ASYNC, net::ERR_IO_PENDING);
+  }
+
+  net::MockWriteResult OnWrite(const std::string& data) override {
+    if (next_write_error_ != net::OK) {
+      int r = next_write_error_;
+      next_write_error_ = net::OK;
+      return net::MockWriteResult(async_write_ ? net::ASYNC : net::SYNCHRONOUS,
+                                  r);
+    }
+    int size = data.size();
+    if (write_limit_ > 0)
+      size = std::min(write_limit_, size);
+    written_data_.append(data, 0, size);
+    return net::MockWriteResult(async_write_ ? net::ASYNC : net::SYNCHRONOUS,
+                                size);
+  }
+
+  void Reset() override {}
+
+  std::string written_data() { return written_data_; }
+
+  void set_write_limit(int limit) { write_limit_ = limit; }
+  void set_async_write(bool async_write) { async_write_ = async_write; }
+  void set_next_write_error(int error) { next_write_error_ = error; }
+
+ private:
+  std::string written_data_;
+  int write_limit_;
+  bool async_write_;
+  int next_write_error_;
+};
+
 }  // namespace
 
 class BufferedSocketWriterTest : public testing::Test {
@@ -29,17 +68,9 @@ class BufferedSocketWriterTest : public testing::Test {
       : write_error_(0) {
   }
 
-  void OnDone() {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-  }
-
-  void DestroyWriterAndQuit() {
-    written_data_ = socket_->written_data();
+  void DestroyWriter() {
     writer_.reset();
     socket_.reset();
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
   }
 
   void Unexpected() {
@@ -48,7 +79,12 @@ class BufferedSocketWriterTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    socket_.reset(new FakeStreamSocket());
+    socket_.reset(new net::MockTCPClientSocket(net::AddressList(), &net_log_,
+                                               &socket_data_provider_));
+    socket_data_provider_.set_connect_data(
+        net::MockConnect(net::SYNCHRONOUS, net::OK));
+    EXPECT_EQ(net::OK, socket_->Connect(net::CompletionCallback()));
+
     writer_.reset(new BufferedSocketWriter());
     writer_->Init(socket_.get(), base::Bind(
         &BufferedSocketWriterTest::OnWriteFailed, base::Unretained(this)));
@@ -65,18 +101,18 @@ class BufferedSocketWriterTest : public testing::Test {
   }
 
   void TestWrite() {
-    writer_->Write(test_buffer_, base::Bind(&BufferedSocketWriterTest::OnDone,
-                                            base::Unretained(this)));
-    writer_->Write(test_buffer_2_, base::Bind(&BufferedSocketWriterTest::OnDone,
-                                              base::Unretained(this)));
-    message_loop_.Run();
+    writer_->Write(test_buffer_, base::Closure());
+    writer_->Write(test_buffer_2_, base::Closure());
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(static_cast<size_t>(test_buffer_->size() +
                                   test_buffer_2_->size()),
-              socket_->written_data().size());
-    EXPECT_EQ(0, memcmp(test_buffer_->data(), socket_->written_data().data(),
+              socket_data_provider_.written_data().size());
+    EXPECT_EQ(0, memcmp(test_buffer_->data(),
+                        socket_data_provider_.written_data().data(),
                         test_buffer_->size()));
     EXPECT_EQ(0, memcmp(test_buffer_2_->data(),
-                        socket_->written_data().data() + test_buffer_->size(),
+                        socket_data_provider_.written_data().data() +
+                            test_buffer_->size(),
                         test_buffer_2_->size()));
   }
 
@@ -84,25 +120,27 @@ class BufferedSocketWriterTest : public testing::Test {
     writer_->Write(test_buffer_, base::Bind(
         base::IgnoreResult(&BufferedSocketWriterBase::Write),
         base::Unretained(writer_.get()), test_buffer_2_,
-        base::Bind(&BufferedSocketWriterTest::OnDone,
-                  base::Unretained(this))));
-    message_loop_.Run();
+        base::Closure()));
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(static_cast<size_t>(test_buffer_->size() +
                                   test_buffer_2_->size()),
-              socket_->written_data().size());
-    EXPECT_EQ(0, memcmp(test_buffer_->data(), socket_->written_data().data(),
+              socket_data_provider_.written_data().size());
+    EXPECT_EQ(0, memcmp(test_buffer_->data(),
+                        socket_data_provider_.written_data().data(),
                         test_buffer_->size()));
     EXPECT_EQ(0, memcmp(test_buffer_2_->data(),
-                        socket_->written_data().data() + test_buffer_->size(),
+                        socket_data_provider_.written_data().data() +
+                            test_buffer_->size(),
                         test_buffer_2_->size()));
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FakeStreamSocket> socket_;
+  net::NetLog net_log_;
+  SocketDataProvider socket_data_provider_;
+  scoped_ptr<net::StreamSocket> socket_;
   scoped_ptr<BufferedSocketWriter> writer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_2_;
-  std::string written_data_;
   int write_error_;
 };
 
@@ -113,14 +151,14 @@ TEST_F(BufferedSocketWriterTest, WriteFull) {
 
 // Test synchronous write in 1k chunks.
 TEST_F(BufferedSocketWriterTest, WriteChunks) {
-  socket_->set_write_limit(kWriteChunkSize);
+  socket_data_provider_.set_write_limit(kWriteChunkSize);
   TestWrite();
 }
 
 // Test asynchronous write.
 TEST_F(BufferedSocketWriterTest, WriteAsync) {
-  socket_->set_async_write(true);
-  socket_->set_write_limit(kWriteChunkSize);
+  socket_data_provider_.set_async_write(true);
+  socket_data_provider_.set_write_limit(kWriteChunkSize);
   TestWrite();
 }
 
@@ -131,59 +169,58 @@ TEST_F(BufferedSocketWriterTest, AppendInCallbackSync) {
 
 // Make sure we can call Write() from the done callback.
 TEST_F(BufferedSocketWriterTest, AppendInCallbackAsync) {
-  socket_->set_async_write(true);
-  socket_->set_write_limit(kWriteChunkSize);
+  socket_data_provider_.set_async_write(true);
+  socket_data_provider_.set_write_limit(kWriteChunkSize);
   TestAppendInCallback();
 }
 
 // Test that the writer can be destroyed from callback.
 TEST_F(BufferedSocketWriterTest, DestroyFromCallback) {
-  socket_->set_async_write(true);
+  socket_data_provider_.set_async_write(true);
   writer_->Write(test_buffer_, base::Bind(
-      &BufferedSocketWriterTest::DestroyWriterAndQuit,
+      &BufferedSocketWriterTest::DestroyWriter,
       base::Unretained(this)));
   writer_->Write(test_buffer_2_, base::Bind(
       &BufferedSocketWriterTest::Unexpected,
       base::Unretained(this)));
-  socket_->set_async_write(false);
-  message_loop_.Run();
-  ASSERT_GE(written_data_.size(),
+  socket_data_provider_.set_async_write(false);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_GE(socket_data_provider_.written_data().size(),
             static_cast<size_t>(test_buffer_->size()));
-  EXPECT_EQ(0, memcmp(test_buffer_->data(), written_data_.data(),
+  EXPECT_EQ(0, memcmp(test_buffer_->data(),
+                      socket_data_provider_.written_data().data(),
                       test_buffer_->size()));
 }
 
 // Verify that it stops writing after the first error.
 TEST_F(BufferedSocketWriterTest, TestWriteErrorSync) {
-  socket_->set_write_limit(kWriteChunkSize);
+  socket_data_provider_.set_write_limit(kWriteChunkSize);
   writer_->Write(test_buffer_, base::Closure());
-  socket_->set_async_write(true);
+  socket_data_provider_.set_async_write(true);
+  socket_data_provider_.set_next_write_error(net::ERR_FAILED);
   writer_->Write(test_buffer_2_,
                  base::Bind(&BufferedSocketWriterTest::Unexpected,
                             base::Unretained(this)));
-  socket_->set_next_write_error(net::ERR_FAILED);
-  socket_->set_async_write(false);
+  socket_data_provider_.set_async_write(false);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::ERR_FAILED, write_error_);
   EXPECT_EQ(static_cast<size_t>(test_buffer_->size()),
-            socket_->written_data().size());
+            socket_data_provider_.written_data().size());
 }
 
 // Verify that it stops writing after the first error.
 TEST_F(BufferedSocketWriterTest, TestWriteErrorAsync) {
-  socket_->set_write_limit(kWriteChunkSize);
+  socket_data_provider_.set_write_limit(kWriteChunkSize);
   writer_->Write(test_buffer_, base::Closure());
-  socket_->set_async_write(true);
+  socket_data_provider_.set_async_write(true);
+  socket_data_provider_.set_next_write_error(net::ERR_FAILED);
   writer_->Write(test_buffer_2_,
                  base::Bind(&BufferedSocketWriterTest::Unexpected,
                             base::Unretained(this)));
-  socket_->set_next_write_error(net::ERR_FAILED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::ERR_FAILED, write_error_);
   EXPECT_EQ(static_cast<size_t>(test_buffer_->size()),
-            socket_->written_data().size());
+            socket_data_provider_.written_data().size());
 }
 
-}  // namespace protocol
 }  // namespace remoting
-
