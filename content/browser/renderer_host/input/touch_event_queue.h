@@ -168,9 +168,8 @@ class CONTENT_EXPORT TouchEventQueue {
   gfx::PointF touch_sequence_start_position_;
 
   // Used to defer touch forwarding when ack dispatch triggers |QueueEvent()|.
-  // If not NULL, |dispatching_touch_ack_| is the touch event of which the ack
-  // is being dispatched.
-  const CoalescedWebTouchEvent* dispatching_touch_ack_;
+  // True within the scope of |AckTouchEventToClient()|.
+  bool dispatching_touch_ack_;
 
   // Used to prevent touch timeout scheduling if we receive a synchronous
   // ack after forwarding a touch event to the client.
