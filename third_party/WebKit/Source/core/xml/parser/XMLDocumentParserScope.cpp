@@ -28,24 +28,24 @@
 
 namespace blink {
 
-ResourceFetcher* XMLDocumentParserScope::currentFetcher = 0;
+Document* XMLDocumentParserScope::currentDocument = 0;
 
-XMLDocumentParserScope::XMLDocumentParserScope(ResourceFetcher* fetcher)
-    : m_oldFetcher(currentFetcher)
+XMLDocumentParserScope::XMLDocumentParserScope(Document* document)
+    : m_oldDocument(currentDocument)
     , m_oldGenericErrorFunc(xmlGenericError)
     , m_oldStructuredErrorFunc(xmlStructuredError)
     , m_oldErrorContext(xmlGenericErrorContext)
 {
-    currentFetcher = fetcher;
+    currentDocument = document;
 }
 
-XMLDocumentParserScope::XMLDocumentParserScope(ResourceFetcher* fetcher, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc, void* errorContext)
-    : m_oldFetcher(currentFetcher)
+XMLDocumentParserScope::XMLDocumentParserScope(Document* document, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc, void* errorContext)
+    : m_oldDocument(currentDocument)
     , m_oldGenericErrorFunc(xmlGenericError)
     , m_oldStructuredErrorFunc(xmlStructuredError)
     , m_oldErrorContext(xmlGenericErrorContext)
 {
-    currentFetcher = fetcher;
+    currentDocument = document;
     if (genericErrorFunc)
         xmlSetGenericErrorFunc(errorContext, genericErrorFunc);
     if (structuredErrorFunc)
@@ -54,7 +54,7 @@ XMLDocumentParserScope::XMLDocumentParserScope(ResourceFetcher* fetcher, xmlGene
 
 XMLDocumentParserScope::~XMLDocumentParserScope()
 {
-    currentFetcher = m_oldFetcher;
+    currentDocument = m_oldDocument;
     xmlSetGenericErrorFunc(m_oldErrorContext, m_oldGenericErrorFunc);
     xmlSetStructuredErrorFunc(m_oldErrorContext, m_oldStructuredErrorFunc);
 }

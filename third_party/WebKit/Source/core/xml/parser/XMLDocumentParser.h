@@ -193,7 +193,7 @@ private:
     SegmentedString m_pendingSrc;
 };
 
-xmlDocPtr xmlDocPtrForString(ResourceFetcher*, const String& source, const String& url);
+xmlDocPtr xmlDocPtrForString(Document*, const String& source, const String& url);
 HashMap<String, String> parseAttributes(const String&, bool& attrsOK);
 
 } // namespace blink

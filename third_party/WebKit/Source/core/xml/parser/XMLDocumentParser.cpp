@@ -44,12 +44,14 @@
 #include "core/dom/TransformSource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ScriptResource.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -537,7 +539,7 @@ static int matchFunc(const char*)
     // Only match loads initiated due to uses of libxml2 from within
     // XMLDocumentParser to avoid interfering with client applications that also
     // use libxml2. http://bugs.webkit.org/show_bug.cgi?id=17353
-    return XMLDocumentParserScope::currentFetcher && currentThread() == libxmlLoaderThread;
+    return XMLDocumentParserScope::currentDocument && currentThread() == libxmlLoaderThread;
 }
 
 static inline void setAttributes(Element* element, Vector<Attribute>& attributeVector, ParserContentPolicy parserContentPolicy)
@@ -617,8 +619,14 @@ static bool shouldAllowExternalLoad(const KURL& url)
     // content. If we had more context, we could potentially allow the parser to
     // load a DTD. As things stand, we take the conservative route and allow
     // same-origin requests only.
-    if (!XMLDocumentParserScope::currentFetcher->document()->securityOrigin()->canRequest(url)) {
-        XMLDocumentParserScope::currentFetcher->printAccessDeniedMessage(url);
+    if (!XMLDocumentParserScope::currentDocument->securityOrigin()->canRequest(url)) {
+        // FIXME: This is copy/pasted. We should probably build console logging into canRequest().
+        if (!url.isNull()) {
+            String message = "Unsafe attempt to load URL " + url.elidedString() +
+                " from frame with URL " + XMLDocumentParserScope::currentDocument->url().elidedString() +
+                ". Domains, protocols and ports must match.\n";
+            XMLDocumentParserScope::currentDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
+        }
         return false;
     }
 
@@ -627,7 +635,7 @@ static bool shouldAllowExternalLoad(const KURL& url)
 
 static void* openFunc(const char* uri)
 {
-    ASSERT(XMLDocumentParserScope::currentFetcher);
+    ASSERT(XMLDocumentParserScope::currentDocument);
     ASSERT(currentThread() == libxmlLoaderThread);
 
     KURL url(KURL(), uri);
@@ -639,17 +647,14 @@ static void* openFunc(const char* uri)
     RefPtr<SharedBuffer> data;
 
     {
-        ResourceFetcher* fetcher = XMLDocumentParserScope::currentFetcher;
+        Document* document = XMLDocumentParserScope::currentDocument;
         XMLDocumentParserScope scope(0);
         // FIXME: We should restore the original global error handler as well.
-
-        if (fetcher->frame()) {
-            FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
-            ResourcePtr<Resource> resource = fetcher->fetchSynchronously(request);
-            if (resource && !resource->errorOccurred()) {
-                data = resource->resourceBuffer();
-                finalURL = resource->response().url();
-            }
+        FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
+        ResourcePtr<Resource> resource = document->fetcher()->fetchSynchronously(request);
+        if (resource && !resource->errorOccurred()) {
+            data = resource->resourceBuffer();
+            finalURL = resource->response().url();
         }
     }
 
@@ -658,7 +663,7 @@ static void* openFunc(const char* uri)
     if (!shouldAllowExternalLoad(finalURL))
         return &globalDescriptor;
 
-    UseCounter::count(XMLDocumentParserScope::currentFetcher->document(), UseCounter::XMLExternalResourceLoad);
+    UseCounter::count(XMLDocumentParserScope::currentDocument, UseCounter::XMLExternalResourceLoad);
 
     return new SharedBufferReader(data);
 }
@@ -884,7 +889,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
         // keep this alive until this function is done.
         RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
 
-        XMLDocumentParserScope scope(document()->fetcher());
+        XMLDocumentParserScope scope(document());
         TemporaryChange<bool> encodingScope(m_isCurrentlyParsing8BitChunk, parseString.is8Bit());
         parseChunk(context->context(), parseString);
 
@@ -1466,7 +1471,7 @@ void XMLDocumentParser::initializeParserContext(const CString& chunk)
     m_sawXSLTransform = false;
     m_sawFirstElement = false;
 
-    XMLDocumentParserScope scope(document()->fetcher());
+    XMLDocumentParserScope scope(document());
     if (m_parsingFragment) {
         m_context = XMLParserContext::createMemoryParser(&sax, this, chunk);
     } else {
@@ -1481,7 +1486,7 @@ void XMLDocumentParser::doEnd()
         if (m_context) {
             // Tell libxml we're done.
             {
-                XMLDocumentParserScope scope(document()->fetcher());
+                XMLDocumentParserScope scope(document());
                 finishParsing(context());
             }
 
@@ -1495,7 +1500,7 @@ void XMLDocumentParser::doEnd()
         document()->setIsViewSource(true);
         V8Document::PrivateScript::transformDocumentToTreeViewMethod(document()->frame(), document(), noStyleMessage);
     } else if (m_sawXSLTransform) {
-        xmlDocPtr doc = xmlDocPtrForString(document()->fetcher(), m_originalSourceForTransform.toString(), document()->url().string());
+        xmlDocPtr doc = xmlDocPtrForString(document(), m_originalSourceForTransform.toString(), document()->url().string());
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
         // Make the document think it's done, so it will apply XSL stylesheets.
         document()->setParsingState(Document::FinishedParsing);
@@ -1511,14 +1516,14 @@ void XMLDocumentParser::doEnd()
     }
 }
 
-xmlDocPtr xmlDocPtrForString(ResourceFetcher* fetcher, const String& source, const String& url)
+xmlDocPtr xmlDocPtrForString(Document* document, const String& source, const String& url)
 {
     if (source.isEmpty())
         return 0;
     // Parse in a single chunk into an xmlDocPtr
     // FIXME: Hook up error handlers so that a failure to parse the main
     // document results in good error messages.
-    XMLDocumentParserScope scope(fetcher, errorFunc, 0);
+    XMLDocumentParserScope scope(document, errorFunc, 0);
     XMLParserInput input(source);
     return xmlReadMemory(input.data(), input.size(), url.latin1().data(), input.encoding(), XSLT_PARSE_OPTIONS);
 }

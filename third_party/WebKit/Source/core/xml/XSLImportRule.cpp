@@ -72,7 +72,7 @@ bool XSLImportRule::isLoading()
 
 void XSLImportRule::loadSheet()
 {
-    ResourceFetcher* fetcher = 0;
+    Document* ownerDocument = 0;
     XSLStyleSheet* rootSheet = parentStyleSheet();
 
     if (rootSheet) {
@@ -81,7 +81,7 @@ void XSLImportRule::loadSheet()
     }
 
     if (rootSheet)
-        fetcher = rootSheet->fetcher();
+        ownerDocument = rootSheet->ownerDocument();
 
     String absHref = m_strHref;
     XSLStyleSheet* parentSheet = parentStyleSheet();
@@ -98,9 +98,9 @@ void XSLImportRule::loadSheet()
     }
 
     ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
-    FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), FetchInitiatorTypeNames::xml, fetchOptions);
+    FetchRequest request(ResourceRequest(ownerDocument->completeURL(absHref)), FetchInitiatorTypeNames::xml, fetchOptions);
     request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-    ResourcePtr<Resource> resource = fetcher->fetchSynchronously(request);
+    ResourcePtr<Resource> resource = ownerDocument->fetcher()->fetchSynchronously(request);
     if (!resource)
         return;
 

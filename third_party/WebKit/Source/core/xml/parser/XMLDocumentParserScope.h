@@ -31,19 +31,19 @@
 
 namespace blink {
 
-class ResourceFetcher;
+class Document;
 
 class XMLDocumentParserScope {
     WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
 public:
-    explicit XMLDocumentParserScope(ResourceFetcher*);
-    XMLDocumentParserScope(ResourceFetcher*, xmlGenericErrorFunc, xmlStructuredErrorFunc = 0, void* errorContext = 0);
+    explicit XMLDocumentParserScope(Document*);
+    XMLDocumentParserScope(Document*, xmlGenericErrorFunc, xmlStructuredErrorFunc = 0, void* errorContext = 0);
     ~XMLDocumentParserScope();
 
-    static ResourceFetcher* currentFetcher;
+    static Document* currentDocument;
 
 private:
-    ResourceFetcher* m_oldFetcher;
+    Document* m_oldDocument;
 
     xmlGenericErrorFunc m_oldGenericErrorFunc;
     xmlStructuredErrorFunc m_oldStructuredErrorFunc;
