@@ -357,8 +357,4 @@ def GetPreferredTryMasters(project, change):
             'win_blink_compile_dbg': set(['defaulttests']),
             'win_blink_rel': set(['defaulttests']),
         },
-        'tryserver.chromium.gpu': {
-            'linux_gpu': set(['defaulttests']),
-            'win_gpu': set(['defaulttests']),
-        }
     }
