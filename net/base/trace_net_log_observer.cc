@@ -20,7 +20,7 @@ namespace net {
 namespace {
 
 // TraceLog category for NetLog events.
-const char kNetLogTracingCategory[] = TRACE_DISABLED_BY_DEFAULT("netlog");
+const char kNetLogTracingCategory[] = "netlog";
 
 class TracedValue : public base::trace_event::ConvertableToTraceFormat {
  public:
