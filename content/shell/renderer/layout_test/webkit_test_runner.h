@@ -64,8 +64,6 @@ class WebKitTestRunner : public RenderViewObserver,
       const blink::WebScreenOrientationType& orientation) override;
   void ResetScreenOrientation() override;
   void DidChangeBatteryStatus(const blink::WebBatteryStatus& status) override;
-  void SetScreenAvailability(bool available) override;
-  void ResetPresentationService() override;
   void PrintMessage(const std::string& message) override;
   void PostTask(WebTask* task) override;
   void PostDelayedTask(WebTask* task, long long ms) override;
