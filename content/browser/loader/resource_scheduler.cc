@@ -171,14 +171,11 @@ class ResourceScheduler::ScheduledResourceRequest
         scheduler_(scheduler),
         priority_(priority),
         fifo_ordering_(0) {
-    TRACE_EVENT_ASYNC_BEGIN1("net", "URLRequest", request_,
-                             "url", request->url().spec());
   }
 
   ~ScheduledResourceRequest() override { scheduler_->RemoveRequest(this); }
 
   void Start() {
-    TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request_, "Queued");
     ready_ = true;
     if (!request_->status().is_success())
       return;

@@ -23,7 +23,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -432,7 +431,6 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
   if (force_safety_mode)
     safe_search_util::ForceYouTubeSafetyMode(request, headers);
 
-  TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "SendRequest");
   return extensions_delegate_->OnBeforeSendHeaders(request, callback, headers);
 }
 
@@ -465,7 +463,6 @@ void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
 
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
-  TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "ResponseStarted");
   extensions_delegate_->OnResponseStarted(request);
 }
 
@@ -476,8 +473,6 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "423948 ChromeNetworkDelegate::OnRawBytesRead"));
 
-  TRACE_EVENT_ASYNC_STEP_PAST1("net", "URLRequest", &request, "DidRead",
-                               "bytes_read", bytes_read);
 #if defined(ENABLE_TASK_MANAGER)
   // This is not completely accurate, but as a first approximation ignore
   // requests that are served from the cache. See bug 330931 for more info.
@@ -511,7 +506,6 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     RecordCacheStateStats(request);
   }
 
-  TRACE_EVENT_ASYNC_END0("net", "URLRequest", request);
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
 #if defined(OS_ANDROID)
     // For better accuracy, we use the actual bytes read instead of the length
