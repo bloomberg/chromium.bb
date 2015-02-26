@@ -960,7 +960,7 @@ void LocalDOMWindow::print()
     if (!host)
         return;
 
-    if (!frame()->document()->loadEventFinished()) {
+    if (frame()->isLoading()) {
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }
