@@ -165,7 +165,8 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
+      'AffectedFile', 'Change', 'DoGetTrySlaves',
+      'DoPostUploadExecuter', 'DoPresubmitChecks', 'GetPostUploadExecuter',
       'GetTrySlavesExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',

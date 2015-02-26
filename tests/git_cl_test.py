@@ -221,6 +221,7 @@ class TestGitCl(TestCase):
         ((['git', 'symbolic-ref', 'HEAD'],), 'hash'),
         ((['git',
            'config', 'branch.hash.last-upload-hash', 'hash'],), ''),
+        ((['git', 'config', 'rietveld.run-post-upload-hook'],), ''),
     ]
 
   @staticmethod
@@ -731,6 +732,8 @@ class TestGitCl(TestCase):
            'rietveld.project'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.pending-ref-prefix'],), ''),
+        ((['git', 'config', '--unset-all',
+           'rietveld.run-post-upload-hook'],), ''),
         ((['git', 'config', 'gerrit.host',
            'gerrit.chromium.org'],), ''),
         # DownloadHooks(False)
@@ -758,6 +761,8 @@ class TestGitCl(TestCase):
         # DownloadHooks(True)
         ((['git', 'config', 'rietveld.bug-prefix'],), ''),
         (('Bug Prefix:',), ''),
+        ((['git', 'config', 'rietveld.run-post-upload-hook'],), ''),
+        (('Run Post Upload Hook:',), ''),
         ((commit_msg_path, os.X_OK,), True),
         ]
     git_cl.main(['config'])

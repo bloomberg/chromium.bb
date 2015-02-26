@@ -432,6 +432,11 @@ class Settings(object):
   def GetBugPrefix(self):
     return self._GetRietveldConfig('bug-prefix', error_ok=True)
 
+  def GetRunPostUploadHook(self):
+    run_post_upload_hook = self._GetRietveldConfig(
+        'run-post-upload-hook', error_ok=True)
+    return run_post_upload_hook == "True"
+
   def GetDefaultCCList(self):
     return self._GetRietveldConfig('cc', error_ok=True)
 
@@ -1029,6 +1034,8 @@ def GetCodereviewSettingsInteractively():
               'tree-status-url', False)
   SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
   SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
+  SetProperty(settings.GetRunPostUploadHook(), 'Run Post Upload Hook',
+              'run-post-upload-hook', False)
 
   # TODO: configure a default branch to diff against, rather than this
   # svn-based hackery.
@@ -1211,6 +1218,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('project', 'PROJECT', unset_error_ok=True)
   SetProperty('pending-ref-prefix', 'PENDING_REF_PREFIX', unset_error_ok=True)
+  SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
+              unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -2036,6 +2045,14 @@ def CMDupload(parser, args):
   if not ret:
     git_set_branch_value('last-upload-hash',
                          RunGit(['rev-parse', 'HEAD']).strip())
+    # Run post upload hooks, if specified.
+    if settings.GetRunPostUploadHook():
+      presubmit_support.DoPostUploadExecuter(
+          change,
+          cl,
+          settings.GetRoot(),
+          options.verbose,
+          sys.stdout)
 
   return ret
 

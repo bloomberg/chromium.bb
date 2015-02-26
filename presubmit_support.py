@@ -1143,6 +1143,37 @@ class GetTryMastersExecuter(object):
     return get_preferred_try_masters(project, change)
 
 
+class GetPostUploadExecuter(object):
+  @staticmethod
+  def ExecPresubmitScript(script_text, presubmit_path, cl, change):
+    """Executes PostUploadHook() from a single presubmit script.
+
+    Args:
+      script_text: The text of the presubmit script.
+      presubmit_path: Project script to run.
+      cl: The Changelist object.
+      change: The Change object.
+
+    Return:
+      A list of results objects.
+    """
+    context = {}
+    try:
+      exec script_text in context
+    except Exception, e:
+      raise PresubmitFailure('"%s" had an exception.\n%s'
+                             % (presubmit_path, e))
+
+    function_name = 'PostUploadHook'
+    if function_name not in context:
+      return {}
+    post_upload_hook = context[function_name]
+    if not len(inspect.getargspec(post_upload_hook)[0]) == 3:
+      raise PresubmitFailure(
+          'Expected function "PostUploadHook" to take three arguments.')
+    return post_upload_hook(cl, change, OutputApi(False))
+
+
 def DoGetTrySlaves(change,
                    changed_files,
                    repository_root,
@@ -1260,6 +1291,49 @@ def DoGetTryMasters(change,
 
   if results and verbose:
     output_stream.write('%s\n' % str(results))
+  return results
+
+
+def DoPostUploadExecuter(change,
+                         cl,
+                         repository_root,
+                         verbose,
+                         output_stream):
+  """Execute the post upload hook.
+
+  Args:
+    change: The Change object.
+    cl: The Changelist object.
+    repository_root: The repository root.
+    verbose: Prints debug info.
+    output_stream: A stream to write debug output to.
+  """
+  presubmit_files = ListRelevantPresubmitFiles(
+      change.LocalPaths(), repository_root)
+  if not presubmit_files and verbose:
+    output_stream.write("Warning, no PRESUBMIT.py found.\n")
+  results = []
+  executer = GetPostUploadExecuter()
+  # The root presubmit file should be executed after the ones in subdirectories.
+  # i.e. the specific post upload hooks should run before the general ones.
+  # Thus, reverse the order provided by ListRelevantPresubmitFiles.
+  presubmit_files.reverse()
+
+  for filename in presubmit_files:
+    filename = os.path.abspath(filename)
+    if verbose:
+      output_stream.write("Running %s\n" % filename)
+    # Accept CRLF presubmit script.
+    presubmit_script = gclient_utils.FileRead(filename, 'rU')
+    results.extend(executer.ExecPresubmitScript(
+        presubmit_script, filename, cl, change))
+  output_stream.write('\n')
+  if results:
+    output_stream.write('** Post Upload Hook Messages **\n')
+  for result in results:
+    result.handle(output_stream)
+    output_stream.write('\n')
+
   return results
 
 
