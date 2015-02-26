@@ -390,6 +390,7 @@ Element& RenderMenuList::ownerElement() const
 
 const LayoutStyle* RenderMenuList::layoutStyleForItem(Element& element) const
 {
+    document().updateRenderTreeIfNeeded();
     return element.layoutStyle() ? element.layoutStyle() : element.computedStyle();
 }
 

@@ -66,14 +66,17 @@ ListPicker.prototype = Object.create(Picker.prototype);
 ListPicker.prototype._handleWindowDidHide = function() {
     this._fixWindowSize();
     var selectedOption = this._selectElement.options[this._selectElement.selectedIndex];
-    selectedOption.scrollIntoView(false);
+    if (selectedOption)
+        selectedOption.scrollIntoView(false);
     window.removeEventListener("didHide", this._handleWindowDidHideBound, false);
 };
 
 ListPicker.prototype._handleWindowMessage = function(event) {
     eval(event.data);
-    if (window.updateData.type === "update")
-        this._update(window.updateData);
+    if (window.updateData.type === "update") {
+        this._config.children = window.updateData.children;
+        this._update();
+    }
     delete window.updateData;
 };
 
@@ -156,62 +159,73 @@ ListPicker.prototype._listItemCount = function() {
 };
 
 ListPicker.prototype._layout = function() {
-    for (var i = 0; i < this._config.children.length; ++i) {
-        this._selectElement.appendChild(this._createItemElement(this._config.children[i]));
-    }
+    this._updateChildren(this._selectElement, this._config);
     this._selectElement.value = this._config.selectedIndex;
 };
 
-ListPicker.prototype._update = function(data) {
-    this._config.children = data.children;
+ListPicker.prototype._update = function() {
+    var scrollPosition = this._selectElement.scrollTop;
     var oldValue = this._selectElement.value;
-    while (this._selectElement.firstChild) {
-        this._selectElement.removeChild(this._selectElement.firstChild);
-    }
-    for (var i = 0; i < this._config.children.length; ++i) {
-        this._selectElement.appendChild(this._createItemElement(this._config.children[i]));
-    }
-    this._selectElement.value = this._config.selectedIndex;
+    this._layout();
+    this._selectElement.scrollTop = scrollPosition;
     var elementUnderMouse = document.elementFromPoint(this.lastMousePositionX, this.lastMousePositionY);
     var optionUnderMouse = elementUnderMouse && elementUnderMouse.closest("option");
     if (optionUnderMouse)
         optionUnderMouse.selected = true;
     else
         this._selectElement.value = oldValue;
-    this._fixWindowSize();
+    this._selectElement.scrollTop = scrollPosition;
+    this.dispatchEvent("didUpdate");
+};
+
+/**
+ * @param {!Element} parent Select element or optgroup element.
+ * @param {!Object} config
+ */
+ListPicker.prototype._updateChildren = function(parent, config) {
+    var outOfDateIndex = 0;
+    for (var i = 0; i < config.children.length; ++i) {
+        var childConfig = config.children[i];
+        var item = this._findReusableItem(parent, childConfig, outOfDateIndex) || this._createItemElement(childConfig);
+        this._configureItem(item, childConfig);
+        if (outOfDateIndex < parent.children.length)
+            parent.insertBefore(item, parent.children[outOfDateIndex]);
+        else
+            parent.appendChild(item);
+        outOfDateIndex++;
+    }
+    var unused = parent.children.length - outOfDateIndex;
+    for (var i = 0; i < unused; i++) {
+        parent.removeChild(parent.lastElementChild);
+    }
+};
+
+ListPicker.prototype._findReusableItem = function(parent, config, startIndex) {
+    if (startIndex >= parent.children.length)
+        return null;
+    var tagName = "OPTION";
+    if (config.type === "optgroup")
+        tagName = "OPTGROUP";
+    else if (config.type === "separator")
+        tagName = "HR";
+    for (var i = startIndex; i < parent.children.length; i++) {
+        var child = parent.children[i];
+        if (tagName === child.tagName) {
+            return child;
+        }
+    }
+    return null;
 };
 
 ListPicker.prototype._createItemElement = function(config) {
-    if (config.type === "option") {
-        var option = createElement("option");
-        option.appendChild(document.createTextNode(config.label));
-        option.value = config.value;
-        option.title = config.title;
-        option.disabled = config.disabled;
-        option.setAttribute("aria-label", config.ariaLabel);
-        this._applyItemStyle(option, config.style);
-        this._selectElement.appendChild(option);
-        return option;
-    } else if (config.type === "optgroup") {
-        var optgroup = createElement("optgroup");
-        optgroup.label = config.label;
-        optgroup.title = config.title;
-        optgroup.disabled = config.disabled;
-        optgroup.setAttribute("aria-label", config.ariaLabel);
-        this._applyItemStyle(optgroup, config.style);
-        for (var i = 0; i < config.children.length; ++i) {
-            optgroup.appendChild(this._createItemElement(config.children[i]));
-        }
-        this._selectElement.appendChild(optgroup);
-        return optgroup;
-    } else if (config.type === "separator") {
-        var hr = createElement("hr");
-        hr.title = config.title;
-        hr.disabled = config.disabled;
-        hr.setAttribute("aria-label", config.ariaLabel);
-        this._applyItemStyle(hr, config.style);
-        return hr;
-    }
+    var element;
+    if (config.type === "option")
+        element = createElement("option");
+    else if (config.type === "optgroup")
+        element = createElement("optgroup");
+    else if (config.type === "separator")
+        element = createElement("hr");
+    return element;
 };
 
 ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
@@ -225,6 +239,27 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
     element.style.direction = styleConfig.direction;
     element.style.unicodeBidi = styleConfig.unicodeBidi;
     element.style.zoom = styleConfig.zoom;
+};
+
+ListPicker.prototype._configureItem = function(element, config) {
+    if (config.type === "option") {
+        element.label = config.label;
+        element.value = config.value;
+        element.title = config.title;
+        element.disabled = config.disabled;
+        element.setAttribute("aria-label", config.ariaLabel);
+    } else if (config.type === "optgroup") {
+        element.label = config.label;
+        element.title = config.title;
+        element.disabled = config.disabled;
+        element.setAttribute("aria-label", config.ariaLabel);
+        this._updateChildren(element, config);
+    } else if (config.type === "separator") {
+        element.title = config.title;
+        element.disabled = config.disabled;
+        element.setAttribute("aria-label", config.ariaLabel);
+    }
+    this._applyItemStyle(element, config.style);
 };
 
 if (window.dialogArguments) {
