@@ -185,12 +185,11 @@ UIColor* GetSettingsBackgroundColor() {
 
 UIImage* ResizeImage(UIImage* image,
                      CGSize targetSize,
-                     BOOL preserveAspectRatio,
-                     BOOL trimToFit) {
+                     ProjectionMode projectionMode) {
   CGSize revisedTargetSize;
   CGRect projectTo;
 
-  CalculateProjection([image size], targetSize, preserveAspectRatio, trimToFit,
+  CalculateProjection([image size], targetSize, projectionMode,
                       revisedTargetSize, projectTo);
 
   if (CGRectEqualToRect(projectTo, CGRectZero))

@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/ui_util.h"
+
 // UI Util containing functions that require UIKit.
 
 enum { FONT_HELVETICA, FONT_HELVETICA_NEUE, FONT_HELVETICA_NEUE_LIGHT };
@@ -81,8 +83,7 @@ inline UIColor* UIColorFromRGB(int rgb, CGFloat alpha = 1.0) {
 // The resize always preserves the scale of the original image.
 UIImage* ResizeImage(UIImage* image,
                      CGSize targetSize,
-                     BOOL preserveAspectRatio,
-                     BOOL trimToFit);
+                     ProjectionMode projectionMode);
 
 // Returns a slightly blurred image darkened enough to provide contrast for
 // white text to be readable.

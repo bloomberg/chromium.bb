@@ -79,19 +79,14 @@ UIImage* testImage(CGSize imageSize) {
 TEST(UIKitUIUtilTest, TestResizeImageInvalidInput) {
   UIImage* actual;
   UIImage* image = testImage(CGSizeMake(100, 50));
-  actual = ResizeImage(image, CGSizeZero,
-                       YES,  // preserveAspectRatio
-                       NO);  // trimToFit
+  actual = ResizeImage(image, CGSizeZero, ProjectionMode::kAspectFit);
   EXPECT_FALSE(actual);
 
-  actual = ResizeImage(image, CGSizeMake(0.1, 0.1),
-                       YES,  // preserveAspectRatio
-                       NO);  // trimToFit
+  actual = ResizeImage(image, CGSizeMake(0.1, 0.1), ProjectionMode::kAspectFit);
   EXPECT_FALSE(actual);
 
-  actual = ResizeImage(image, CGSizeMake(-100, -100),
-                       YES,  // preserveAspectRatio
-                       NO);  // trimToFit
+  actual =
+      ResizeImage(image, CGSizeMake(-100, -100), ProjectionMode::kAspectFit);
   EXPECT_FALSE(actual);
 }
 

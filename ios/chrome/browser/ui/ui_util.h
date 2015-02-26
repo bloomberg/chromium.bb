@@ -55,24 +55,40 @@ CGRect CGRectCopyWithOrigin(CGRect rect, CGFloat x, CGFloat y);
 CGRect CGRectMakeAlignedAndCenteredAt(CGFloat x, CGFloat y, CGFloat width);
 
 // This function is used to figure out how to resize an image from an
-// |originalSize| to a |targetSize|. It returns the final size of the resized
-// image and |projectTo| that is used to select which part of the original image
-// to scale into the destination.
+// |originalSize| to a |targetSize|. It returns a |revisedTargetSize| of the
+// resized  image and |projectTo| that is used to describe the rectangle in the
+// target that the image will be covering. Returned values are always floored to
+// integral values.
 //
-// If |preserveAspectRatio| is YES, the original image aspect ratio is
-// preserved.
+// The ProjectionMode describes in which way the stretching will apply.
 //
-// When |preserveAspectRatio| is YES and if |targetSize|'s aspect ratio
-// is different from the image, the resulting image will be shrunken to
-// a size that is within |targetSize|.
-//
-// To preserve the |targetSize| when |preserveAspectRatio| is YES, set
-// |trimToFit| to YES. The resulting image will be the largest proportion
-// of the receiver that fits in the targetSize, aligned to center of the image.
+enum class ProjectionMode {
+  // Just stretches the source into the destination, not preserving aspect ratio
+  // at all.
+  // |projectTo| and |revisedTargetSize| will be set to |targetSize|
+  kFill,
+
+  // Scale to the target, maintaining aspect ratio, clipping the excess. Large
+  // original sizes are shrunk until they fit on one side, small original sizes
+  // are expanded.
+  // |projectTo| will be a subset of |originalSize|
+  // |revisedTargetSize| will be set to |targetSize|
+  kAspectFill,
+
+  // Fit the image in the target so it fits completely inside, preserving aspect
+  // ratio. This will leave bands with with no data in the target.
+  // |projectTo| will be set to |originalSize|
+  // |revisedTargetSize| will be a smaller in one direction from |targetSize|
+  kAspectFit,
+
+  // Scale to the target, maintaining aspect ratio and not clipping the excess.
+  // |projectTo| will be set to |originalSize|
+  // |revisedTargetSize| will be a larger in one direction from |targetSize|
+  kAspectFillNoClipping,
+};
 void CalculateProjection(CGSize originalSize,
                          CGSize targetSize,
-                         bool preserveAspectRatio,
-                         bool trimToFit,
+                         ProjectionMode projectionMode,
                          CGSize& revisedTargetSize,
                          CGRect& projectTo);
 

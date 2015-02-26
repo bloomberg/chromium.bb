@@ -92,8 +92,7 @@ CGRect CGRectMakeAlignedAndCenteredAt(CGFloat x, CGFloat y, CGFloat width) {
 // Based on an original size and a target size applies the transformations.
 void CalculateProjection(CGSize originalSize,
                          CGSize desiredTargetSize,
-                         bool preserveAspectRatio,
-                         bool trimToFit,
+                         ProjectionMode projectionMode,
                          CGSize& targetSize,
                          CGRect& projectTo) {
   targetSize = desiredTargetSize;
@@ -105,10 +104,13 @@ void CalculateProjection(CGSize originalSize,
 
   CGFloat aspectRatio = originalSize.width / originalSize.height;
   CGFloat targetAspectRatio = targetSize.width / targetSize.height;
-  if (preserveAspectRatio) {
-    if (trimToFit) {
-      // Scale and clip image so that the aspect ratio is preserved and the
-      // target size is filled.
+  switch (projectionMode) {
+    case ProjectionMode::kFill:
+      // Don't preserve the aspect ratio.
+      projectTo.size = targetSize;
+      break;
+
+    case ProjectionMode::kAspectFill:
       if (targetAspectRatio < aspectRatio) {
         // Clip the x-axis.
         projectTo.size.width = targetSize.height * aspectRatio;
@@ -122,23 +124,30 @@ void CalculateProjection(CGSize originalSize,
         projectTo.origin.x = 0;
         projectTo.origin.y = (targetSize.height - projectTo.size.height) / 2;
       }
-    } else {
-      // Scale image to ensure it fits inside the specified targetSize.
+      break;
+
+    case ProjectionMode::kAspectFit:
       if (targetAspectRatio < aspectRatio) {
-        // Target is less wide than the original.
         projectTo.size.width = targetSize.width;
         projectTo.size.height = projectTo.size.width / aspectRatio;
         targetSize = projectTo.size;
       } else {
-        // Target is wider than the original.
         projectTo.size.height = targetSize.height;
         projectTo.size.width = projectTo.size.height * aspectRatio;
         targetSize = projectTo.size;
       }
-    }
-  } else {
-    // Don't preserve the aspect ratio.
-    projectTo.size = targetSize;
+      break;
+
+    case ProjectionMode::kAspectFillNoClipping:
+      if (targetAspectRatio < aspectRatio) {
+        targetSize.width = targetSize.height * aspectRatio;
+        targetSize.height = targetSize.height;
+      } else {
+        targetSize.width = targetSize.width;
+        targetSize.height = targetSize.width / aspectRatio;
+      }
+      projectTo.size = targetSize;
+      break;
   }
 
   projectTo = CGRectIntegral(projectTo);
