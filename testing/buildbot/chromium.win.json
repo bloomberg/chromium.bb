@@ -18,7 +18,12 @@
         }
       },
       "cacheinvalidation_unittests",
-      "cast_unittests",
+      {
+        "test": "cast_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "cc_unittests",
         "swarming": {
@@ -165,7 +170,12 @@
         }
       },
       "cacheinvalidation_unittests",
-      "cast_unittests",
+      {
+        "test": "cast_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "cc_unittests",
         "swarming": {
@@ -316,7 +326,12 @@
         }
       },
       "cacheinvalidation_unittests",
-      "cast_unittests",
+      {
+        "test": "cast_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "cc_unittests",
         "swarming": {
@@ -475,7 +490,12 @@
       },
       "aura_unittests",
       "cacheinvalidation_unittests",
-      "cast_unittests",
+      {
+        "test": "cast_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "cc_unittests",
         "swarming": {
@@ -632,7 +652,12 @@
         }
       },
       "cacheinvalidation_unittests",
-      "cast_unittests",
+      {
+        "test": "cast_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "cc_unittests",
         "swarming": {

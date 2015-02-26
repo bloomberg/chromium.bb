@@ -21,12 +21,12 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'sources': [
-	'test/loopback_transport.cc',
-	'test/loopback_transport.h',
         'test/fake_media_source.cc',
         'test/fake_media_source.h',
         'test/fake_single_thread_task_runner.cc',
         'test/fake_single_thread_task_runner.h',
+        'test/loopback_transport.cc',
+        'test/loopback_transport.h',
         'test/skewed_single_thread_task_runner.cc',
         'test/skewed_single_thread_task_runner.h',
         'test/skewed_tick_clock.cc',
@@ -363,5 +363,22 @@
           ],
       }], # targets
     }], # OS=="ios" or OS=="mac"
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'cast_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'cast_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'cast_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ], # conditions
 }
