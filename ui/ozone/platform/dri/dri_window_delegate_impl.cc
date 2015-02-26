@@ -63,26 +63,6 @@ void DriWindowDelegateImpl::Initialize() {
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
   screen_manager_->AddObserver(this);
-  scoped_refptr<DriWrapper> drm =
-      device_manager_->GetDrmDevice(gfx::kNullAcceleratedWidget);
-
-  uint64_t cursor_width = 64;
-  uint64_t cursor_height = 64;
-  drm->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
-  drm->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
-
-  SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
-  for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
-    cursor_buffers_[i] = new DriBuffer(drm);
-    // Don't register a framebuffer for cursors since they are special (they
-    // aren't modesetting buffers and drivers may fail to register them due to
-    // their small sizes).
-    if (!cursor_buffers_[i]->Initialize(
-            info, false /* should_register_framebuffer */)) {
-      LOG(ERROR) << "Failed to initialize cursor buffer";
-      return;
-    }
-  }
 }
 
 void DriWindowDelegateImpl::Shutdown() {
@@ -105,6 +85,7 @@ void DriWindowDelegateImpl::OnBoundsChanged(const gfx::Rect& bounds) {
   bounds_ = bounds;
   controller_ = screen_manager_->GetDisplayController(bounds);
   UpdateWidgetToDrmDeviceMapping();
+  UpdateCursorBuffers();
 }
 
 void DriWindowDelegateImpl::SetCursor(const std::vector<SkBitmap>& bitmaps,
@@ -145,6 +126,9 @@ void DriWindowDelegateImpl::OnDisplayChanged(
     HardwareDisplayController* controller) {
   DCHECK(controller);
 
+  // If we have a new controller we need to re-allocate the buffers.
+  bool should_allocate_cursor_buffers = controller_ != controller;
+
   gfx::Rect controller_bounds =
       gfx::Rect(controller->origin(), controller->GetModeSize());
   if (controller_) {
@@ -159,6 +143,8 @@ void DriWindowDelegateImpl::OnDisplayChanged(
   }
 
   UpdateWidgetToDrmDeviceMapping();
+  if (should_allocate_cursor_buffers)
+    UpdateCursorBuffers();
 }
 
 void DriWindowDelegateImpl::OnDisplayRemoved(
@@ -168,22 +154,22 @@ void DriWindowDelegateImpl::OnDisplayRemoved(
 }
 
 void DriWindowDelegateImpl::ResetCursor(bool bitmap_only) {
+  if (!controller_)
+    return;
+
   if (cursor_bitmaps_.size()) {
     // Draw new cursor into backbuffer.
     UpdateCursorImage(cursor_buffers_[cursor_frontbuffer_ ^ 1].get(),
                       cursor_bitmaps_[cursor_frame_]);
 
     // Reset location & buffer.
-    if (controller_) {
-      if (!bitmap_only)
-        controller_->MoveCursor(cursor_location_);
-      controller_->SetCursor(cursor_buffers_[cursor_frontbuffer_ ^ 1]);
-      cursor_frontbuffer_ ^= 1;
-    }
+    if (!bitmap_only)
+      controller_->MoveCursor(cursor_location_);
+    controller_->SetCursor(cursor_buffers_[cursor_frontbuffer_ ^ 1]);
+    cursor_frontbuffer_ ^= 1;
   } else {
     // No cursor set.
-    if (controller_)
-      controller_->UnsetCursor();
+    controller_->UnsetCursor();
   }
 }
 
@@ -200,6 +186,34 @@ void DriWindowDelegateImpl::UpdateWidgetToDrmDeviceMapping() {
     drm = controller_->GetAllocationDriWrapper();
 
   device_manager_->UpdateDrmDevice(widget_, drm);
+}
+
+void DriWindowDelegateImpl::UpdateCursorBuffers() {
+  if (!controller_) {
+    for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
+      cursor_buffers_[i] = nullptr;
+    }
+  } else {
+    scoped_refptr<DriWrapper> drm = controller_->GetAllocationDriWrapper();
+
+    uint64_t cursor_width = 64;
+    uint64_t cursor_height = 64;
+    drm->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
+    drm->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
+
+    SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
+    for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
+      cursor_buffers_[i] = new DriBuffer(drm);
+      // Don't register a framebuffer for cursors since they are special (they
+      // aren't modesetting buffers and drivers may fail to register them due to
+      // their small sizes).
+      if (!cursor_buffers_[i]->Initialize(
+              info, false /* should_register_framebuffer */)) {
+        LOG(FATAL) << "Failed to initialize cursor buffer";
+        return;
+      }
+    }
+  }
 }
 
 }  // namespace ui

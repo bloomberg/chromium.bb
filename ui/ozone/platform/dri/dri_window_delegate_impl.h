@@ -54,6 +54,10 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
 
   void UpdateWidgetToDrmDeviceMapping();
 
+  // When |controller_| changes this is called to reallocate the cursor buffers
+  // since the allocation DRM device may have changed.
+  void UpdateCursorBuffers();
+
   gfx::AcceleratedWidget widget_;
 
   DrmDeviceManager* device_manager_;          // Not owned.

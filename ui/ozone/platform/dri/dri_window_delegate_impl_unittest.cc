@@ -32,6 +32,19 @@ const uint32_t kDefaultCrtc = 1;
 const uint32_t kDefaultConnector = 2;
 const int kDefaultCursorSize = 64;
 
+std::vector<skia::RefPtr<SkSurface>> GetCursorBuffers(
+    const scoped_refptr<ui::MockDriWrapper> drm) {
+  std::vector<skia::RefPtr<SkSurface>> cursor_buffers;
+  for (const skia::RefPtr<SkSurface>& cursor_buffer : drm->buffers()) {
+    if (cursor_buffer->width() == kDefaultCursorSize &&
+        cursor_buffer->height() == kDefaultCursorSize) {
+      cursor_buffers.push_back(cursor_buffer);
+    }
+  }
+
+  return cursor_buffers;
+}
+
 }  // namespace
 
 class DriWindowDelegateImplTest : public testing::Test {
@@ -70,6 +83,8 @@ void DriWindowDelegateImplTest::SetUp() {
                                     drm_device_manager_.get(),
                                     screen_manager_.get()));
   window_delegate->Initialize();
+  window_delegate->OnBoundsChanged(
+      gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
   window_delegate_manager_->AddWindowDelegate(kDefaultWidgetHandle,
                                               window_delegate.Pass());
 }
@@ -94,14 +109,7 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
       ->SetCursor(cursor_bitmaps, gfx::Point(4, 2), 0);
 
   SkBitmap cursor;
-  std::vector<skia::RefPtr<SkSurface>> cursor_buffers;
-  for (const skia::RefPtr<SkSurface>& cursor_buffer : dri_->buffers()) {
-    if (cursor_buffer->width() == kDefaultCursorSize &&
-        cursor_buffer->height() == kDefaultCursorSize) {
-      cursor_buffers.push_back(cursor_buffer);
-    }
-  }
-
+  std::vector<skia::RefPtr<SkSurface>> cursor_buffers = GetCursorBuffers(dri_);
   EXPECT_EQ(2u, cursor_buffers.size());
 
   // Buffers 1 is the cursor backbuffer we just drew in.
@@ -118,4 +126,21 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
                   cursor.getColor(j, i));
     }
   }
+}
+
+TEST_F(DriWindowDelegateImplTest, CheckCursorSurfaceAfterChangingDevice) {
+  // Add another device.
+  scoped_refptr<ui::MockDriWrapper> drm = new ui::MockDriWrapper();
+  screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm, kDefaultCrtc, kDefaultConnector,
+      gfx::Point(0, kDefaultMode.vdisplay), kDefaultMode);
+
+  // Move window to the display on the new device.
+  window_delegate_manager_->GetWindowDelegate(kDefaultWidgetHandle)
+      ->OnBoundsChanged(gfx::Rect(0, kDefaultMode.vdisplay,
+                                  kDefaultMode.hdisplay,
+                                  kDefaultMode.vdisplay));
+
+  EXPECT_EQ(2u, GetCursorBuffers(drm).size());
 }
