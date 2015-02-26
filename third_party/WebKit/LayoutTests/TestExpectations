@@ -265,7 +265,6 @@ crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOn
 crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ Failure ]
-crbug.com/444591 virtual/slimmingpaint/fast/css/mask-missing-image-crash.html [ Pass Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/transformed-mask.html [ ImageOnlyFailure ]
 
@@ -842,8 +841,6 @@ crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-lay
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
-
-crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
