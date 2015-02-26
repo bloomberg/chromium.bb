@@ -58,7 +58,7 @@ function test()
 
     function dumpConsoleMessages()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
         InspectorTest.completeTest();
     }
 }

@@ -108,12 +108,7 @@ function test()
 
     function dump()
     {
-        var result = InspectorTest.dumpConsoleMessagesIntoArray(false, false, InspectorTest.textContentWithLineBreaks).join("\n");
-        // Remove the actual stacks from the output as they may contain absolute paths.
-        result = result.replace(/^(\s+stack:\s).*$/gm, "$1(...)");
-        // Remove the stack from preview.
-        result = result.replace(/(DOMException:[^{]*)\{.*\}$/gm, "$1{...<removed>...}");
-        InspectorTest.addResult(result);
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
         InspectorTest.completeTest();
     }
 }

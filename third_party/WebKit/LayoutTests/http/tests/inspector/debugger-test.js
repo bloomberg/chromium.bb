@@ -180,7 +180,7 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
     function step1()
     {
         InspectorTest.captureStackTrace(callFrames, asyncStackTrace, options);
-        InspectorTest.addResult(caption);
+        InspectorTest.addResult(InspectorTest.clearSpecificInfoFromStackFrames(caption));
         InspectorTest.runAfterPendingDispatches(step2);
     }
 
@@ -399,7 +399,10 @@ InspectorTest.dumpScopeVariablesSidebarPane = function()
     InspectorTest.addResult("Scope variables sidebar pane:");
     var sections = WebInspector.panels.sources.sidebarPanes.scopechain._sections;
     for (var i = 0; i < sections.length; ++i) {
-        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(sections[i].element));
+        var textContent = InspectorTest.textContentWithLineBreaks(sections[i].element);
+        var text = InspectorTest.clearSpecificInfoFromStackFrames(textContent);
+        if (text.length > 0)
+            InspectorTest.addResult(text);
         if (!sections[i].expanded)
             InspectorTest.addResult("    <section collapsed>");
     }

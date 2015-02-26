@@ -55,7 +55,7 @@ function test()
     function onMessagesExpanded()
     {
         InspectorTest.addResult("Before expanding accessors:");
-        InspectorTest.dumpConsoleMessages(false, false);
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
 
         var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
         var buttons = [];
@@ -74,7 +74,7 @@ function test()
     function step2()
     {
         InspectorTest.addResult("\nAfter expanding accessors:");
-        InspectorTest.dumpConsoleMessages(false, false);
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
         InspectorTest.completeTest();
     }
 }

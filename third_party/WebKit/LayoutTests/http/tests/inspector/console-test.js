@@ -119,6 +119,31 @@ InspectorTest.dumpConsoleMessagesIntoArray = function(printOriginatingCommand, d
     return result;
 }
 
+InspectorTest.formatterIgnoreStackFrameUrls = function(messageFormatter, node)
+{
+    function isNotEmptyLine(string)
+    {
+        return string.trim().length > 0;
+    }
+
+    function ignoreStackFrameAndMutableData(string)
+    {
+        var buffer = string.replace(/\u200b/g, "");
+        buffer = buffer.replace(/VM\d+/g, "VM");
+        buffer = buffer.replace(/InjectedScript\.\w+ @ VM:\d+/g, "");
+        return buffer.replace(/^\s+at [^\]]+(]?)$/, "$1");
+    }
+
+    messageFormatter = messageFormatter || InspectorTest.textContentWithLineBreaks;
+    var buffer = messageFormatter(node);
+    return buffer.split("\n").map(ignoreStackFrameAndMutableData).filter(isNotEmptyLine).join("\n");
+}
+
+InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames = function(printOriginatingCommand, dumpClassNames, messageFormatter)
+{
+    InspectorTest.addResults(InspectorTest.dumpConsoleMessagesIntoArray(printOriginatingCommand, dumpClassNames, InspectorTest.formatterIgnoreStackFrameUrls.bind(this, messageFormatter)));
+}
+
 InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, results)
 {
     if (forceInvalidate)

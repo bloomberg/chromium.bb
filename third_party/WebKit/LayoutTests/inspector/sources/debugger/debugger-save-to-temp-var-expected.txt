@@ -25,5 +25,5 @@ temp14
 temp15
 function func() {}
 temp16
-Error: errr {stack: (...), message: "errr"}
+Error: errr
 

@@ -454,7 +454,7 @@ InspectorTest.textContentWithLineBreaks = function(node)
         } else if (currentNode.nodeName === "STYLE") {
             currentNode = currentNode.traverseNextNode(node);
             continue;
-        } else if (currentNode.classList.contains("console-message")) {
+        } else if (currentNode.classList && currentNode.classList.contains("console-message")) {
             buffer += "\n\n";
         }
     }
@@ -472,6 +472,15 @@ InspectorTest.textContentWithoutStyles = function(node)
             currentNode = currentNode.traverseNextNode(node);
     }
     return buffer;
+}
+
+InspectorTest.clearSpecificInfoFromStackFrames = function(text)
+{
+    var buffer = text.replace(/\(file:\/\/\/(?:[^)]+\)|[\w\/:-]+)/g, "(...)");
+    buffer = buffer.replace(/\(<anonymous>:[^)]+\)/g, "(...)");
+    buffer = buffer.replace(/VM\d+/g, "VM");
+    buffer = buffer.replace(/\s*at[^()]+\(native\)/g, "");
+    return buffer.replace(/\s*at Object.InjectedScript.[^)]+\)/g, "");
 }
 
 InspectorTest.hideInspectorView = function()

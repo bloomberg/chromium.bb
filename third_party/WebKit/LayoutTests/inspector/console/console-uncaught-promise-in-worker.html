@@ -30,7 +30,7 @@ function test()
 
     function dump()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
         InspectorTest.completeTest();
     }
 }

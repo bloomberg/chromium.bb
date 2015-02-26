@@ -99,14 +99,7 @@ function test()
 
         function printScopeChain()
         {
-            var sections = scopeChainPane._sections;
-            for (var i = 0; i < sections.length; ++i) {
-                var section = sections[i];
-                var properties = section.propertiesForTest;
-                InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(section.element));
-                if (!section.expanded)
-                    InspectorTest.addResult("    <section collapsed>");
-            }
+            InspectorTest.dumpScopeVariablesSidebarPane();
             InspectorTest.addResult("");
 
             // Dump up to the testFunction() - we don't care what was before.

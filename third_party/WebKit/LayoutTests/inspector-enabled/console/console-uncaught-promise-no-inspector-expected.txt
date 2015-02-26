@@ -4,21 +4,6 @@ CONSOLE ERROR: line 47: Uncaught (in promise) NotFoundError: Failed to execute '
 Tests that uncaught promise rejection messages have line numbers when the inspector is closed and stack traces are not collected.
 
 console-uncaught-promise-no-inspector.html:9 Uncaught (in promise) Error: err1
-    message: "err1"
-    stack: (...)
-    get stack: function () { [native code] }
-    set stack: function () { [native code] }
-    __proto__: d
 console-uncaught-promise-no-inspector.html:28 Uncaught (in promise) Error: err2
-    message: "err2"
-    stack: (...)
-    get stack: function () { [native code] }
-    set stack: function () { [native code] }
-    __proto__: d
 console-uncaught-promise-no-inspector.html:47 Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-    code: 8
-    message: "Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node."
-    name: "NotFoundError"
-    stack: (...)
-    __proto__: DOMException
 

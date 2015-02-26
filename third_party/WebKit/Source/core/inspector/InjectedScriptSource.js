@@ -200,6 +200,26 @@ function isSymbol(obj)
 }
 
 /**
+ * @param {string} str
+ * @param {string} searchElement
+ * @param {number=} fromIndex
+ * @return {number}
+ */
+function indexOf(str, searchElement, fromIndex)
+{
+    var len = str.length;
+    var n = fromIndex || 0;
+    var k = max(n >= 0 ? n : len + n, 0);
+
+    while (k < len) {
+        if (str[k] === searchElement)
+            return k;
+        ++k;
+    }
+    return -1;
+}
+
+/**
  * @constructor
  */
 var InjectedScript = function()
@@ -1101,8 +1121,7 @@ InjectedScript.prototype = {
             return null;
 
         var subtype = InjectedScriptHost.subtype(obj);
-        // FIXME: Consider exposing "error" subtype via protocol.
-        if (subtype && subtype !== "error")
+        if (subtype)
             return subtype;
 
         if (isArrayLike(obj))
@@ -1165,7 +1184,14 @@ InjectedScript.prototype = {
 
         if (InjectedScriptHost.subtype(obj) === "error") {
             try {
+                var stack = obj.stack;
                 var message = obj.message;
+                var stackMessageEnd = indexOf(stack, "\n");
+                if (stackMessageEnd !== -1) {
+                    if (message)
+                        return className + ": " + message + "\n" + stack.substr(stackMessageEnd + 1);
+                    return className + "\n" + stack.substr(stackMessageEnd + 1);
+                }
                 if (message)
                     return className + ": " + message;
             } catch(e) {

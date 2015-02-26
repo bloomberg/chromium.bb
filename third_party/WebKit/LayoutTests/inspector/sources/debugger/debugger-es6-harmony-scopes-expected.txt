@@ -10,6 +10,8 @@ Block
     const2: 2
 Catch
     e: Error: An exception
+    at innerFunction (...)
+    at testFunction (...)
 Block
     block1: "block {...}"
     const1: 1
