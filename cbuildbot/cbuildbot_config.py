@@ -1797,6 +1797,12 @@ chrome_pfq.add_config('peach_pit-chrome-pfq',
   important=False,
 )
 
+chrome_pfq.add_config('tricky-chrome-pfq',
+  _base_configs['tricky'],
+  hw_tests=HWTestConfig.SharedPoolPFQ(),
+  important=False,
+)
+
 _telemetry_boards = frozenset([
     'amd64-generic',
     'arm-generic',
@@ -3289,6 +3295,7 @@ _waterfall_config_map = {
       'daisy_freon-paladin',
       'daisy_skate-paladin',
       'nyan_freon-paladin',
+      'tricky-paladin',
       'whirlwind-paladin',
 
       # Experimental Canaries
@@ -3322,6 +3329,7 @@ _waterfall_config_map = {
       # Experimental PFQs.
       'daisy_freon-chrome-pfq',
       'peach_pit-chrome-pfq',
+      'tricky-chrome-pfq',
 
       # Incremental Builders.
       'mario-incremental',
