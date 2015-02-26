@@ -142,6 +142,18 @@ void WindowProxy::clearForNavigation()
     disposeContext(DetachGlobal);
 }
 
+void WindowProxy::takeGlobalFrom(WindowProxy* windowProxy)
+{
+    v8::HandleScope handleScope(m_isolate);
+    ASSERT(!windowProxy->isContextInitialized());
+    // If a ScriptState was created, the context was initialized at some point.
+    // Make sure the global object was detached from the proxy by calling clearForNavigation().
+    if (windowProxy->m_scriptState)
+        ASSERT(windowProxy->m_scriptState->isGlobalObjectDetached());
+    m_global.set(m_isolate, windowProxy->m_global.newLocal(m_isolate));
+    windowProxy->m_global.clear();
+}
+
 // Create a new environment and setup the global object.
 //
 // The global object corresponds to a DOMWindow instance. However, to

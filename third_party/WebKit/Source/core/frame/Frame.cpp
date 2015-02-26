@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/frame/Frame.h"
 
+#include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/DocumentType.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -146,6 +147,17 @@ ChromeClient& Frame::chromeClient() const
     if (Page* page = this->page())
         return page->chrome().client();
     return emptyChromeClient();
+}
+
+void Frame::finishSwapFrom(Frame* old)
+{
+    WindowProxyManager* oldManager = old->windowProxyManager();
+    // FIXME: In the future, the Blink API layer will be calling detach() on the
+    // old frame prior to completing the swap. However, detach calls
+    // clearForClose() instead of clearForNavigation(). Make sure this doesn't
+    // become a no-op when that lands, since it's important to detach the global.
+    oldManager->clearForNavigation();
+    windowProxyManager()->takeGlobalFrom(oldManager);
 }
 
 Frame* Frame::findFrameForNavigation(const AtomicString& name, Frame& activeFrame)

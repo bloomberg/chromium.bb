@@ -78,6 +78,7 @@ public:
     bool contextIsValid() const { return !m_context.isEmpty() && !m_globalObjectDetached; }
     void detachGlobalObject();
     void clearContext() { return m_context.clear(); }
+    bool isGlobalObjectDetached() const { return m_globalObjectDetached; }
 
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
     void disposePerContextData();

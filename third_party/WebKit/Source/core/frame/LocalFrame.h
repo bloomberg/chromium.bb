@@ -185,6 +185,9 @@ namespace blink {
     private:
         LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
+        // Internal Frame helper overrides:
+        WindowProxyManager* windowProxyManager() const override;
+
         String localLayerTreeAsText(unsigned flags) const;
 
         void detachView();

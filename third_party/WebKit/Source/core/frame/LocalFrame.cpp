@@ -318,6 +318,11 @@ bool LocalFrame::isLoadingAsChild() const
     return isLoading() || !document()->isLoadCompleted();
 }
 
+WindowProxyManager* LocalFrame::windowProxyManager() const
+{
+    return m_script->windowProxyManager();
+}
+
 void LocalFrame::disconnectOwnerElement()
 {
     if (owner()) {

@@ -38,6 +38,8 @@ public:
     WindowProxy* existingWindowProxy(DOMWrapperWorld&);
     void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
+    void takeGlobalFrom(WindowProxyManager*);
+
 private:
     typedef WillBeHeapHashMap<int, OwnPtrWillBeMember<WindowProxy>> IsolatedWorldMap;
 

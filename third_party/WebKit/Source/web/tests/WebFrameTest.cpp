@@ -82,6 +82,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebSelectionBound.h"
@@ -7095,6 +7096,46 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     std::string content = localFrame->contentAsText(1024).utf8();
     EXPECT_EQ("hello", content);
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
+TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    v8::Local<v8::Value> windowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window"));
+    ASSERT_TRUE(windowTop->IsObject());
+    v8::Local<v8::Value> originalWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
+        "document.querySelector('#frame2').contentWindow;"));
+    ASSERT_TRUE(originalWindow->IsObject());
+
+    // Make sure window reference stays the same when swapping to a remote frame.
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    WebFrame* targetFrame = mainFrame()->firstChild()->nextSibling();
+    targetFrame->swap(remoteFrame);
+    remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+    v8::Local<v8::Value> remoteWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
+        "document.querySelector('#frame2').contentWindow;"));
+    EXPECT_TRUE(originalWindow->StrictEquals(remoteWindow));
+    // Check that its view is consistent with the world.
+    v8::Local<v8::Value> remoteWindowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
+        "document.querySelector('#frame2').contentWindow.top;"));
+    EXPECT_TRUE(windowTop->StrictEquals(remoteWindowTop));
+
+    // Now check that remote -> local works too, since it goes through a different code path.
+    FrameTestHelpers::TestWebFrameClient client;
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    remoteFrame->swap(localFrame);
+    v8::Local<v8::Value> localWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
+        "document.querySelector('#frame2').contentWindow;"));
+    EXPECT_TRUE(originalWindow->StrictEquals(localWindow));
+    v8::Local<v8::Value> localWindowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
+        "document.querySelector('#frame2').contentWindow.top;"));
+    EXPECT_TRUE(windowTop->StrictEquals(localWindowTop));
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.

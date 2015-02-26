@@ -83,6 +83,13 @@ void WindowProxyManager::collectIsolatedContexts(Vector<std::pair<ScriptState*, 
     }
 }
 
+void WindowProxyManager::takeGlobalFrom(WindowProxyManager* other)
+{
+    m_windowProxy->takeGlobalFrom(other->m_windowProxy.get());
+    for (auto& entry : other->m_isolatedWorlds)
+        windowProxy(entry.value->world())->takeGlobalFrom(entry.value.get());
+}
+
 WindowProxyManager::WindowProxyManager(Frame& frame)
     : m_frame(&frame)
     , m_isolate(v8::Isolate::GetCurrent())

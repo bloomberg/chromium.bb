@@ -50,6 +50,7 @@ class Page;
 class SecurityContext;
 class Settings;
 class WindowProxy;
+class WindowProxyManager;
 
 class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
@@ -93,6 +94,8 @@ public:
     Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
     Frame* findUnsafeParentScrollPropagationBoundary();
 
+    void finishSwapFrom(Frame*);
+
     bool canNavigate(const Frame&);
     virtual void printNavigationErrorMessage(const Frame&, const char* reason) = 0;
 
@@ -110,6 +113,8 @@ public:
 
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
+
+    virtual WindowProxyManager* windowProxyManager() const = 0;
 
     mutable FrameTree m_treeNode;
 

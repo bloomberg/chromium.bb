@@ -79,6 +79,8 @@ public:
     void clearForNavigation();
     void clearForClose();
 
+    void takeGlobalFrom(WindowProxy*);
+
     DOMWrapperWorld& world() { return *m_world; }
 
 private:

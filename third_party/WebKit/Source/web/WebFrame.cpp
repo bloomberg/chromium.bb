@@ -5,6 +5,7 @@
 #include "config.h"
 #include "public/web/WebFrame.h"
 
+#include "bindings/core/v8/WindowProxyManager.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -98,6 +99,7 @@ bool WebFrame::swap(WebFrame* frame)
     } else {
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
     }
+    toCoreFrame(frame)->finishSwapFrom(oldFrame.get());
 
     return true;
 }

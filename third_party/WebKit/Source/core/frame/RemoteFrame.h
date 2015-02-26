@@ -50,6 +50,9 @@ public:
 private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
+    // Internal Frame helper overrides:
+    WindowProxyManager* windowProxyManager() const override { return m_windowProxyManager.get(); }
+
     RemoteFrameClient* remoteFrameClient() const;
 
     RefPtrWillBeMember<RemoteFrameView> m_view;
