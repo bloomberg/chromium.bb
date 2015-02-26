@@ -378,7 +378,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.renderer_settings.refresh_rate = 60.0;
   settings.renderer_settings.allow_antialiasing = false;
   settings.renderer_settings.highp_threshold_min = 2048;
-  settings.impl_side_painting = false;
+  settings.impl_side_painting = true;
   settings.calculate_top_controls_position = false;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
