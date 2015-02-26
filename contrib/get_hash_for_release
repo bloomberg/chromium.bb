@@ -85,8 +85,8 @@ get_release_for_hash() {
   local -a all_revs=($(ls "${temp_dir}/buildspecs/${release}" |
                        sort -Vr | sed -e 's/\.xml$//'))
   latest_rev=$(basename $(cd "${temp_dir}/buildspecs/${release}" &&
-                          git log -n1 --name-only --oneline . | grep -v ' ' |
-                          sed -e 's/\.xml$//'))
+                          git log -n1 --name-only --oneline --grep release . |
+                          grep -v ' ' | sed -e 's/\.xml$//'))
   revs=()
   for rev in "${all_revs[@]}"; do
     is_child_release "${latest_rev}" "${rev}" && revs+=("${rev}")
