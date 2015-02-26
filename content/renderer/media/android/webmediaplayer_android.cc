@@ -45,6 +45,7 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
+#include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -118,6 +119,18 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   bitmap->setInfo(info);
   bitmap->setPixelRef(pixel_ref)->unref();
   return true;
+}
+
+static blink::WebEncryptedMediaInitDataType ConvertInitDataType(
+    const std::string& init_data_type) {
+  if (init_data_type == "cenc")
+    return blink::WebEncryptedMediaInitDataType::Cenc;
+  if (init_data_type == "keyids")
+    return blink::WebEncryptedMediaInitDataType::Keyids;
+  if (init_data_type == "webm")
+    return blink::WebEncryptedMediaInitDataType::Webm;
+  NOTREACHED() << "unexpected " << init_data_type;
+  return blink::WebEncryptedMediaInitDataType::Unknown;
 }
 
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
@@ -1721,6 +1734,7 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
   client_->mediaSourceOpened(web_media_source);
 }
 
+// TODO(jrummell): |init_data_type| should be an enum. http://crbug.com/417440
 void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
     const std::string& init_data_type,
     const std::vector<uint8>& init_data) {
@@ -1741,9 +1755,8 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
   if (init_data_type_.empty())
     init_data_type_ = init_data_type;
 
-  const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  client_->encrypted(WebString::fromUTF8(init_data_type), init_data_ptr,
-                     init_data.size());
+  client_->encrypted(ConvertInitDataType(init_data_type),
+                     vector_as_array(&init_data), init_data.size());
 }
 
 void WebMediaPlayerAndroid::SetCdmInternal(
