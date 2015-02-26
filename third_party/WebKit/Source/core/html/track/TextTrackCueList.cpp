@@ -24,8 +24,9 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/TextTrackCueList.h"
+
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -80,31 +81,33 @@ bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
     ASSERT(cue->startTime() >= 0);
     ASSERT(cue->endTime() >= 0);
 
-    return add(cue, 0, m_list.size());
+    // Maintain text track cue order:
+    // https://html.spec.whatwg.org/#text-track-cue-order
+    size_t index = findInsertionIndex(cue.get());
+
+    // FIXME: The cue should not exist in the list in the first place.
+    if (!m_list.isEmpty() && (index > 0) && (m_list[index - 1].get() == cue.get()))
+        return false;
+
+    m_list.insert(index, cue);
+    invalidateCueIndexes(index);
+    return true;
 }
 
-bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue, size_t start, size_t end)
+static bool cueIsBefore(const TextTrackCue* cue, PassRefPtrWillBeRawPtr<TextTrackCue> otherCue)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(start <= m_list.size());
-    ASSERT_WITH_SECURITY_IMPLICATION(end <= m_list.size());
-
-    // Maintain text track cue order:
-    // http://www.whatwg.org/specs/web-apps/current-work/#text-track-cue-order
-    RefPtrWillBeRawPtr<TextTrackCue> cue = prpCue;
-    if (start == end) {
-        if (!m_list.isEmpty() && (start > 0) && (m_list[start - 1].get() == cue.get()))
-            return false;
-
-        m_list.insert(start, cue);
-        invalidateCueIndexes(start);
+    if (cue->startTime() < otherCue->startTime())
         return true;
-    }
 
-    size_t index = (start + end) / 2;
-    if (cue->startTime() < m_list[index]->startTime() || (cue->startTime() == m_list[index]->startTime() && cue->endTime() > m_list[index]->endTime()))
-        return add(cue.release(), start, index);
+    return cue->startTime() == otherCue->startTime() && cue->endTime() > otherCue->endTime();
+}
 
-    return add(cue.release(), index + 1, end);
+size_t TextTrackCueList::findInsertionIndex(const TextTrackCue* cueToInsert) const
+{
+    auto it = std::upper_bound(m_list.begin(), m_list.end(), cueToInsert, cueIsBefore);
+    size_t index = safeCast<size_t>(it - m_list.begin());
+    ASSERT_WITH_SECURITY_IMPLICATION(index <= m_list.size());
+    return index;
 }
 
 bool TextTrackCueList::remove(TextTrackCue* cue)
@@ -114,21 +117,25 @@ bool TextTrackCueList::remove(TextTrackCue* cue)
         return false;
 
     m_list.remove(index);
+    // FIXME: While removing a cue does not invalidate the cue order, it does
+    // make it more difficult to maintain the invariant, so should probably
+    // just invalidate here as well.
     return true;
 }
 
-bool TextTrackCueList::updateCueIndex(TextTrackCue* cue)
+void TextTrackCueList::updateCueIndex(TextTrackCue* cue)
 {
-    size_t index = m_list.find(cue);
-    if (index == kNotFound)
-        return false;
+    if (!remove(cue))
+        return;
 
     cue->setIsActive(false);
     cue->removeDisplayTree();
 
-    m_list.remove(index);
-
-    return add(cue);
+    // FIXME: If moving the cue such that its index in list increases, then
+    // what happens with the cached index on cues in the range [oldIndex,
+    // newIndex)? (Some of the indices will be "safe", but there'll be a risk
+    // that the lazy update via cueIndex() yields duplicates/incorrect order.)
+    add(cue);
 }
 
 void TextTrackCueList::clear()
@@ -138,6 +145,7 @@ void TextTrackCueList::clear()
 
 void TextTrackCueList::invalidateCueIndexes(size_t start)
 {
+    // FIXME: When iterating cues we could as well update their cached indices too.
     for (size_t i = start; i < m_list.size(); ++i)
         m_list[i]->invalidateCueIndex();
 }

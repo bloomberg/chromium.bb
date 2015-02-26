@@ -53,13 +53,13 @@ public:
     bool add(PassRefPtrWillBeRawPtr<TextTrackCue>);
     bool remove(TextTrackCue*);
 
-    bool updateCueIndex(TextTrackCue*);
+    void updateCueIndex(TextTrackCue*);
 
     DECLARE_TRACE();
 
 private:
     TextTrackCueList();
-    bool add(PassRefPtrWillBeRawPtr<TextTrackCue>, size_t, size_t);
+    size_t findInsertionIndex(const TextTrackCue*) const;
     void clear();
     void invalidateCueIndexes(size_t);
 
