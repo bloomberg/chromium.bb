@@ -12,8 +12,6 @@
                         "linux_chromium_asan_rel_ng": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
-                        "ios_rel_device_ninja": ["defaulttests"],
-                        "ios_dbg_simulator_ninja": ["defaulttests"],
                         "mac_chromium_gn_rel": ["defaulttests"]
                     },
                     "tryserver.chromium.win": {
@@ -75,10 +73,10 @@
               "linux_chromium_compile_dbg_32_ng": ["compile"]
             },
             "tryserver.chromium.mac": {
+              "ios_dbg_simulator_ninja": ["defaulttests"],
+              "ios_rel_device_ninja": ["defaulttests"],
               "mac_chromium_compile_dbg_ng": ["defaulttests"],
-              "mac_chromium_rel_ng": ["defaulttests"],
-              "ios_rel_device_ng": ["defaulttests"],
-              "ios_rel_device_ninja_ng": ["defaulttests"]
+              "mac_chromium_rel_ng": ["defaulttests"]
             },
             "tryserver.chromium.win": {
               "win8_chromium_rel": ["defaulttests"],
