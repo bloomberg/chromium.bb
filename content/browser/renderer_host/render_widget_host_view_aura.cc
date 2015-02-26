@@ -2067,18 +2067,12 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
       pointer_state_, event->may_cause_scrolling());
   pointer_state_.CleanupRemovedTouchPoints(*event);
 
-  // Forward the touch event only if a touch point was updated, and
-  // there's a touch-event handler in the page, and no other
-  // touch-event is in the queue. It is important to always mark
-  // events as being handled asynchronously if there is a touch-event
-  // handler in the page, or some touch-event is already in the queue,
-  // even if no point has been updated. This ensures that this event
-  // does not get processed by the gesture recognizer before events
-  // currently awaiting dispatch in the touch queue.
-  if (host_->ShouldForwardTouchEvent()) {
-    event->DisableSynchronousHandling();
-    host_->ForwardTouchEventWithLatencyInfo(touch_event, *event->latency());
-  }
+  // It is important to always mark events as being handled asynchronously when
+  // they are forwarded. This ensures that the current event does not get
+  // processed by the gesture recognizer before events currently awaiting
+  // dispatch in the touch queue.
+  event->DisableSynchronousHandling();
+  host_->ForwardTouchEventWithLatencyInfo(touch_event, *event->latency());
 }
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {

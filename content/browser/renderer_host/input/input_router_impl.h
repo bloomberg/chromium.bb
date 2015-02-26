@@ -68,7 +68,6 @@ class CONTENT_EXPORT InputRouterImpl
       const GestureEventWithLatencyInfo& gesture_event) override;
   void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override;
-  bool ShouldForwardTouchEvent() const override;
   void OnViewUpdated(int view_flags) override;
   bool HasPendingEvents() const override;
 

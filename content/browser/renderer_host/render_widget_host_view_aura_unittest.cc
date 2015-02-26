@@ -448,6 +448,28 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     widget_host_->OnMessageReceived(response);
   }
 
+  size_t GetSentMessageCountAndResetSink() {
+    size_t count = sink_->message_count();
+    sink_->ClearMessages();
+    return count;
+  }
+
+  void AckLastSentInputEventIfNecessary(InputEventAckState ack_result) {
+    if (!sink_->message_count())
+      return;
+
+    InputMsg_HandleInputEvent::Param params;
+    if (!InputMsg_HandleInputEvent::Read(
+            sink_->GetMessageAt(sink_->message_count() - 1), &params)) {
+      return;
+    }
+
+    if (WebInputEventTraits::IgnoresAckDisposition(*get<0>(params)))
+      return;
+
+    SendInputEventACK(get<0>(params)->type, ack_result);
+  }
+
  protected:
   // If true, then calls RWH::Shutdown() instead of deleting RWH.
   bool widget_host_uses_shutdown_to_destroy_;
@@ -691,28 +713,6 @@ class RenderWidgetHostViewAuraOverscrollTest
   void ReleaseTouchPoint(int index) {
     touch_event_.ReleasePoint(index);
     SendTouchEvent();
-  }
-
-  size_t GetSentMessageCountAndResetSink() {
-    size_t count = sink_->message_count();
-    sink_->ClearMessages();
-    return count;
-  }
-
-  void AckLastSentInputEventIfNecessary(InputEventAckState ack_result) {
-    if (!sink_->message_count())
-      return;
-
-    InputMsg_HandleInputEvent::Param params;
-    if (!InputMsg_HandleInputEvent::Read(
-            sink_->GetMessageAt(sink_->message_count() - 1), &params)) {
-      return;
-    }
-
-    if (WebInputEventTraits::IgnoresAckDisposition(*get<0>(params)))
-      return;
-
-    SendInputEventACK(get<0>(params)->type, ack_result);
   }
 
   SyntheticWebTouchEvent touch_event_;
@@ -1021,10 +1021,10 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
 TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->InitAsChild(NULL);
   view_->Show();
+  GetSentMessageCountAndResetSink();
 
   // Start with no touch-event handler in the renderer.
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-  EXPECT_FALSE(widget_host_->ShouldForwardTouchEvent());
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        gfx::Point(30, 30),
@@ -1039,8 +1039,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
                          0,
                          ui::EventTimeForNow());
 
+  // The touch events should get forwared from the view, but they should not
+  // reach the renderer.
   view_->OnTouchEvent(&press);
-  EXPECT_FALSE(press.handled());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
   EXPECT_TRUE(view_->touch_event_->cancelable);
   EXPECT_EQ(1U, view_->touch_event_->touchesLength);
@@ -1048,7 +1051,8 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
             view_->touch_event_->touches[0].state);
 
   view_->OnTouchEvent(&move);
-  EXPECT_FALSE(move.handled());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
   EXPECT_TRUE(view_->touch_event_->cancelable);
   EXPECT_EQ(1U, view_->touch_event_->touchesLength);
@@ -1056,16 +1060,17 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
             view_->touch_event_->touches[0].state);
 
   view_->OnTouchEvent(&release);
-  EXPECT_FALSE(release.handled());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(nullptr, view_->touch_event_);
 
   // Now install some touch-event handlers and do the same steps. The touch
   // events should now be consumed. However, the touch-event state should be
   // updated as before.
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
 
   view_->OnTouchEvent(&press);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
   EXPECT_TRUE(view_->touch_event_->cancelable);
@@ -1093,19 +1098,18 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
             view_->touch_event_->touches[0].state);
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
 
   // Ack'ing the outstanding event should flush the pending touch queue.
   InputHostMsg_HandleInputEvent_ACK_Params ack;
   ack.type = blink::WebInputEvent::TouchStart;
   ack.state = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
-  EXPECT_FALSE(widget_host_->ShouldForwardTouchEvent());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
       base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&move2);
-  EXPECT_FALSE(move2.handled());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
   EXPECT_EQ(1U, view_->touch_event_->touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StateMoved,
@@ -1114,7 +1118,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
       base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&release2);
-  EXPECT_FALSE(release2.handled());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(nullptr, view_->touch_event_);
 }
 
@@ -1125,7 +1129,6 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
   view_->Show();
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        gfx::Point(30, 30),
@@ -3102,9 +3105,9 @@ TEST_F(RenderWidgetHostViewAuraTest,
        InvalidEventsHaveSyncHandlingDisabled) {
   view_->InitAsChild(NULL);
   view_->Show();
+  GetSentMessageCountAndResetSink();
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
                        ui::EventTimeForNow());
@@ -3113,11 +3116,16 @@ TEST_F(RenderWidgetHostViewAuraTest,
   ui::TouchEvent invalid_move(ui::ET_TOUCH_MOVED, gfx::Point(30, 30), 1,
                               ui::EventTimeForNow());
 
-  view_->OnTouchEvent(&press);
-  view_->OnTouchEvent(&invalid_move);
   // Valid press is handled asynchronously.
+  view_->OnTouchEvent(&press);
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  // Invalid move is handled synchronously, but is consumed.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Invalid move is handled synchronously, but is consumed. It should not
+  // be forwarded to the renderer.
+  view_->OnTouchEvent(&invalid_move);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_FALSE(invalid_move.synchronous_handling_disabled());
   EXPECT_TRUE(invalid_move.stopped_propagation());
 }

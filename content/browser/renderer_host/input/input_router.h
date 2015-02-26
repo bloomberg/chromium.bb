@@ -50,11 +50,6 @@ class InputRouter : public IPC::Listener {
   // Returns the oldest queued or in-flight keyboard event sent to the router.
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const = 0;
 
-  // Returns |true| if the caller should immediately forward touch events to the
-  // router.  When |false|, the caller can forego sending touch events, and
-  // instead consume them directly.
-  virtual bool ShouldForwardTouchEvent() const = 0;
-
   // Allow the router to make more informed input handling decisions based on
   // the current view.
   enum ViewFlags {

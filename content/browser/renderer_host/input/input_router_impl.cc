@@ -237,12 +237,6 @@ const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
   return &key_queue_.front();
 }
 
-bool InputRouterImpl::ShouldForwardTouchEvent() const {
-  // Always send a touch event if the renderer has a touch-event handler or
-  // there are pending touch events.
-  return touch_event_queue_.has_handlers() || !touch_event_queue_.empty();
-}
-
 void InputRouterImpl::OnViewUpdated(int view_flags) {
   current_view_flags_ = view_flags;
 

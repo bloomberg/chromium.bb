@@ -810,19 +810,15 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   if (stylus_text_selector_.OnTouchEvent(event))
     return true;
 
-  auto result = gesture_provider_.OnTouchEvent(event);
+  ui::FilteredGestureProvider::TouchHandlingResult result =
+      gesture_provider_.OnTouchEvent(event);
   if (!result.succeeded)
     return false;
 
-  if (host_->ShouldForwardTouchEvent()) {
-    blink::WebTouchEvent web_event =
-        CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
-    host_->ForwardTouchEventWithLatencyInfo(web_event,
-                                            CreateLatencyInfo(web_event));
-  } else {
-    const bool event_consumed = false;
-    gesture_provider_.OnAsyncTouchEventAck(event_consumed);
-  }
+  blink::WebTouchEvent web_event =
+      CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
+  host_->ForwardTouchEventWithLatencyInfo(web_event,
+                                          CreateLatencyInfo(web_event));
 
   // Send a proactive BeginFrame on the next vsync to reduce latency.
   // This is good enough as long as the first touch event has Begin semantics

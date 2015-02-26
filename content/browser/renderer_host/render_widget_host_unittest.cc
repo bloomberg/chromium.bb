@@ -100,7 +100,6 @@ class MockInputRouter : public InputRouter {
     NOTREACHED();
     return NULL;
   }
-  bool ShouldForwardTouchEvent() const override { return true; }
   void OnViewUpdated(int view_flags) override {}
   bool HasPendingEvents() const override { return false; }
 

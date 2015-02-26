@@ -29,7 +29,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
 
     // True if |event| was both valid and successfully handled by the
     // gesture provider. Otherwise, false, in which case the caller should drop
-    // |event| and cease furthe propagation.
+    // |event| and cease further propagation.
     bool succeeded;
 
     // Whether |event| produced scrolling motion, either the start of a scroll,

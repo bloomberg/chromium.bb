@@ -380,9 +380,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // |ignore_input_events_| or |process_->IgnoreInputEvents()| is true.
   bool IgnoreInputEvents() const;
 
-  // Event queries delegated to the |input_router_|.
-  bool ShouldForwardTouchEvent() const;
-
   bool has_touch_handler() const { return has_touch_handler_; }
 
   // Notification that the user has made some kind of input that could

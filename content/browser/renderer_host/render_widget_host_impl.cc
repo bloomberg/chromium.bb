@@ -1902,17 +1902,6 @@ bool RenderWidgetHostImpl::IgnoreInputEvents() const {
   return ignore_input_events_ || process_->IgnoreInputEvents();
 }
 
-bool RenderWidgetHostImpl::ShouldForwardTouchEvent() const {
-  // It's important that the emulator sees a complete native touch stream,
-  // allowing it to perform touch filtering as appropriate.
-  // TODO(dgozman): Remove when touch stream forwarding issues resolved, see
-  // crbug.com/375940.
-  if (touch_emulator_ && touch_emulator_->enabled())
-    return true;
-
-  return input_router_->ShouldForwardTouchEvent();
-}
-
 void RenderWidgetHostImpl::StartUserGesture() {
   OnUserGesture();
 }
