@@ -65,8 +65,8 @@ static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8:
         return;
     }
     {% endif %}
-    if (info.This()->IsObject())
-        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+    ASSERT(info.This()->IsObject());
+    v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
 {% endif %}

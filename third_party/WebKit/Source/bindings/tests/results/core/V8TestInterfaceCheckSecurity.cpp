@@ -40,8 +40,8 @@ static void TestInterfaceCheckSecurityForceSetAttributeOnThis(v8::Local<v8::Stri
         exceptionState.throwIfNeeded();
         return;
     }
-    if (info.This()->IsObject())
-        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+    ASSERT(info.This()->IsObject());
+    v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
 static void longAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)

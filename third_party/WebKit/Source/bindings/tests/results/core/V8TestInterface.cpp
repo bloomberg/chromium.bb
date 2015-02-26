@@ -58,8 +58,8 @@ static void (*partial2StaticVoidMethodMethodForPartialInterface)(const v8::Funct
 template<class CallbackInfo>
 static void TestInterfaceImplementationForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
-    if (info.This()->IsObject())
-        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+    ASSERT(info.This()->IsObject());
+    v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
 static void TestInterfaceImplementationForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)

@@ -100,8 +100,8 @@ static void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::String>, const
 template<class CallbackInfo>
 static void TestObjectForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
-    if (info.This()->IsObject())
-        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+    ASSERT(info.This()->IsObject());
+    v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
 static void TestObjectForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
