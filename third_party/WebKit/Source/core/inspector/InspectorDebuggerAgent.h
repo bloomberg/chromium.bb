@@ -304,7 +304,7 @@ private:
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;
-    bool m_performingAsyncStepIn;
+    bool m_startingStepIntoAsync;
     WillBeHeapVector<RawPtrWillBeMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
 };
 

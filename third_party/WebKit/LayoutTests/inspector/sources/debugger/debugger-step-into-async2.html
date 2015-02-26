@@ -12,78 +12,7 @@ function testFunction()
     debugger; // <- will turn on async call stacks here.
 
     setTimeout(dummy, 0);
-    setTimeout(dummy.bind(null), 10);
-
-    setTimeout(callback1, 20); // <- StepIntoAsync
-
-    setTimeout(dummy, 0);
-    setTimeout(dummy.bind(null), 10);
-}
-
-function callback1()
-{
-    var func = setTimeout.bind(null, callback2, 0);
-    func = setTimeout.bind(null, func, 0);
-    func = setTimeout.bind(null, func, 0);
-    setTimeout(func); // <- StepIntoAsync
-    Promise.resolve().then(dummy).then(dummy).then(dummy);
-    return 1;
-}
-
-function callback2()
-{
-    var func = Framework.willSchedule(callback3);
-    func = Framework.willSchedule(func);
-    func = Framework.willSchedule(func);
-    Framework.schedule(func); // <- StepIntoAsync
-    Promise.resolve().then(dummy).then(dummy).then(dummy);
-    setTimeout(dummy, 0);
-    return 2;
-}
-
-function callback3()
-{
-    var func = Framework.bind(Framework.safeRun, null, Framework.createButtonWithEventListenersAndClick, Framework.throwFrameworkException, callback4);
-    Framework.schedule(func); // <- StepIntoAsync
-    return 3;
-}
-
-function callback4()
-{
-    var func = Framework.bind(Framework.createButtonWithEventListenersAndClick, null, callback5);
-    Framework.schedule(func); // <- StepIntoAsync
-    return 4;
-}
-
-function callback5()
-{
-    var resolve;
-    var promise = new Promise(function(a, b) { resolve = a; });
-    promise
-        .then(JSON.stringify)
-        .then(JSON.parse)
-        .then(Framework.empty)
-        .then(Framework.createButtonWithEventListenersAndClick)
-        .then(callback6)
-        .then(dummy)
-        .catch(dummy);
-    resolve({foo: 42}); // <- StepIntoAsync
-    setTimeout(dummy, 0);
-    return 5;
-}
-
-function callback6()
-{
-    Promise.resolve({foo: 43}) // <- StepIntoAsync
-        .then(JSON.stringify)
-        .then(JSON.parse)
-        .then(Framework.empty)
-        .then(Framework.createButtonWithEventListenersAndClick)
-        .then(callback7)
-        .then(dummy)
-        .catch(dummy);
-    setTimeout(dummy, 0);
-    return 6;
+    setTimeout(callback7, 20); // <- StepIntoAsync
 }
 
 function callback7()
@@ -92,8 +21,10 @@ function callback7()
         .then(
             function inner()
             {
+                var p = Promise.reject(new Error("my error"));
+                p.catch(function() {});
                 debugger;
-                return Promise.reject(new Error("my error")); // <- StepIntoAsync
+                return p; // <- StepIntoAsync
             }
         )
         .then(dummy)
@@ -116,9 +47,9 @@ function callback9()
 {
     var iframe = document.getElementById("iframe");
     var win = iframe.contentWindow;
+    window.addEventListener("message", callback10, false);
+    debugger;
     win.postMessage("skip debugger", "*"); // <- StepIntoAsync
-    setTimeout(dummy, 0);
-    setTimeout(callback10, 10)
     setTimeout(dummy, 0);
     Promise.resolve().then(dummy);
     return 9;
@@ -126,6 +57,7 @@ function callback9()
 
 function callback10()
 {
+    window.removeEventListener("message", callback10, false);
     debugger;
     Promise.resolve({foo: 44}) // <- StepIntoAsync
         .then(
@@ -137,11 +69,17 @@ function callback10()
         .then(
             function inner2()
             {
+                return callback11();
             }
         )
         .then(dummy);
     setTimeout(dummy, 0);
     return 10;
+}
+
+function callback11()
+{
+    return 11;
 }
 
 function test()
@@ -165,22 +103,17 @@ function test()
     function step3()
     {
         var actions = [
-            "StepOver", "StepOver", "StepOver", "Print", // on setTimeout(callback1)
-            "StepIntoAsync", "Print", // at callback1
-            "StepIntoAsync", "Print", // at callback2
-            "StepIntoAsync", "Print", // at callback3
-            "StepIntoAsync", "Print", // at callback4
-            "StepIntoAsync", "Print", // at callback5
-            "StepIntoAsync", "Print", // at callback6
+            "StepOver", "StepOver", "Print", // on setTimeout(callback1)
             "StepIntoAsync", "Print", // at callback7
             "Resume", // now paused at debugger in inner()
-            "StepIntoAsync", "Print", // at callback8
-            "Resume",
-            "StepIntoAsync", "Print", // at callback9
-            "StepIntoAsync", "Print", // at onmessage handler in iframe
+            "StepOver", "StepOver", "StepIntoAsync", "Print", // at callback8
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback9
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at onmessage handler in iframe
             "Resume", // now paused at debugger in callback10
-            "StepIntoAsync", "Print", // in inner1
+            "StepInto", "StepInto", "StepIntoAsync", "Print", // in inner1
             "StepIntoAsync", "Print", // in inner2
+            // Test that StepIntoAsync is StepInto when there are no Async operations.
+            "StepIntoAsync", "StepIntoAsync", "Print", // in callback11
         ];
         InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
     }
@@ -196,7 +129,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Tests debugger StepIntoAsync action.
+Tests debugger StepIntoAsync action (part 2).
 </p>
 <div><iframe src="resources/post-message-listener.html"
     id="iframe" width="800" height="100" style="border: 1px solid black;">

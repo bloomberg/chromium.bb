@@ -163,7 +163,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_nestedAsyncCallCount(0)
     , m_currentAsyncOperationId(unknownAsyncOperationId)
     , m_pendingTraceAsyncOperationCompleted(false)
-    , m_performingAsyncStepIn(false)
+    , m_startingStepIntoAsync(false)
 {
     m_promiseTracker = PromiseTracker::create(this);
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
@@ -843,13 +843,9 @@ void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
         *errorString = "Can only perform operation if async call stacks are enabled.";
         return;
     }
-    m_inAsyncOperationForStepInto = false;
-    m_asyncOperationsForStepInto.clear();
-    m_performingAsyncStepIn = true;
-    m_scheduledDebuggerStep = NoStep;
-    m_steppingFromFramework = isTopCallFrameBlackboxed();
-    m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
-    scriptDebugServer().continueProgram();
+    clearStepIntoAsync();
+    m_startingStepIntoAsync = true;
+    stepInto(errorString);
 }
 
 void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString, const String& stringPauseState)
@@ -1097,10 +1093,19 @@ int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& descriptio
     m_asyncOperations.set(m_lastAsyncOperationId, chain);
     if (chain)
         m_asyncOperationNotifications.add(m_lastAsyncOperationId);
-    if (m_performingAsyncStepIn) {
-        if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
-            m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
+
+    if (m_startingStepIntoAsync) {
+        // We have successfully started a StepIntoAsync, so revoke the debugger's StepInto
+        // and wait for the corresponding async operation breakpoint.
+        ASSERT(m_asyncOperationsForStepInto.isEmpty());
+        m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
+        m_startingStepIntoAsync = false;
+        m_scheduledDebuggerStep = NoStep;
+        scriptDebugServer().clearStepping();
+    } else if (m_inAsyncOperationForStepInto) {
+        m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
     }
+
     if (m_pausedScriptState)
         flushAsyncOperationEvents(nullptr);
     return m_lastAsyncOperationId;
@@ -1116,20 +1121,26 @@ void InspectorDebuggerAgent::traceAsyncCallbackStarting(int operationId)
     if (chain && (!recursionLevel || (recursionLevel == 1 && Microtask::performingCheckpoint(isolate)))) {
         // There can be still an old m_currentAsyncCallChain set if we start running Microtasks
         // right after executing a JS callback but before the corresponding traceAsyncCallbackCompleted().
-        // In this case just call traceAsyncCallbackCompleted() now, and the subsequent one will be ignored.
+        // In this case just call traceAsyncCallbackCompleted() now, and the subsequent ones will be ignored.
+        //
+        // The nested levels count may be greater than 1, for example, when events are guarded via custom
+        // traceAsync* calls, like in window.postMessage(). In this case there will be a willHandleEvent
+        // instrumentation with unknownAsyncOperationId bumping up the nested levels count.
         if (m_currentAsyncCallChain) {
-            ASSERT(m_nestedAsyncCallCount == 1);
+            ASSERT(m_nestedAsyncCallCount >= 1);
             ASSERT(recursionLevel == 1 && Microtask::performingCheckpoint(isolate));
+            m_nestedAsyncCallCount = 1;
             traceAsyncCallbackCompleted();
         }
 
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
+        ASSERT(!m_currentAsyncCallChain);
         m_currentAsyncCallChain = chain;
         m_currentAsyncOperationId = operationId;
         m_pendingTraceAsyncOperationCompleted = false;
         m_nestedAsyncCallCount = 1;
 
-        if (m_performingAsyncStepIn && m_asyncOperationsForStepInto.contains(operationId)) {
+        if (m_asyncOperationsForStepInto.contains(operationId)) {
             m_inAsyncOperationForStepInto = true;
             m_scheduledDebuggerStep = StepInto;
             m_skippedStepFrameCount = 0;
@@ -1154,8 +1165,6 @@ void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
     --m_nestedAsyncCallCount;
     if (!m_nestedAsyncCallCount) {
         clearCurrentAsyncOperation();
-        if (!m_performingAsyncStepIn)
-            return;
         if (!m_inAsyncOperationForStepInto)
             return;
         m_inAsyncOperationForStepInto = false;
@@ -1185,7 +1194,7 @@ void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
         m_asyncOperationBreakpoints.remove(operationId);
         shouldNotify = !m_asyncOperationNotifications.take(operationId);
     }
-    if (m_performingAsyncStepIn) {
+    if (m_startingStepIntoAsync) {
         if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
             clearStepIntoAsync();
     }
@@ -1621,7 +1630,7 @@ void InspectorDebuggerAgent::clear()
 
 void InspectorDebuggerAgent::clearStepIntoAsync()
 {
-    m_performingAsyncStepIn = false;
+    m_startingStepIntoAsync = false;
     m_asyncOperationsForStepInto.clear();
     m_inAsyncOperationForStepInto = false;
 }
