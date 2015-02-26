@@ -34,6 +34,8 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/update_client/update_query_params.h"
@@ -639,7 +641,8 @@ class ExtensionUpdaterTest : public testing::Test {
  public:
   ExtensionUpdaterTest()
       : thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {
+            content::TestBrowserThreadBundle::IO_MAINLOOP),
+        testing_local_state_(TestingBrowserProcess::GetGlobal()) {
   }
 
   void SetUp() override {
@@ -1905,6 +1908,7 @@ class ExtensionUpdaterTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
+  ScopedTestingLocalState testing_local_state_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
