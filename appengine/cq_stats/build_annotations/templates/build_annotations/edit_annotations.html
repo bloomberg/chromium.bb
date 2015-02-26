@@ -103,8 +103,7 @@
             <td class="annotations_list">{{ form.failure_message }}<br><div class="errorlist">{{ form.failure_message.errors }}</div></td>
             <td class="annotations_list">{{ form.blame_url }}<br><div class="errorlist">{{ form.blame_url.errors }}</div></td>
             <td class="annotations_list">{{ form.notes }}<br><div class="errorlist">{{ form.notes.errors }}</div></td>
-            <td class="annotations_list"><label>Mark for deletion: </label>{{ form.DELETE }}</td>
-            <td class="annotations_list">{{ form. }}<br><div class="errorlist">{{ form..errors }}</div></td>
+            <td class="annotations_list">Mark for deletion: {{ form.deleted }}<br><div class="errorlist">{{ form.deleted.errors }}</div></td>
         </tr>
     {% endfor %}
   </table>

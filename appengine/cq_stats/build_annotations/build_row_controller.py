@@ -171,7 +171,8 @@ class BuildRowController(object):
       failure_entries = []
       for entry in build_stage_entries:
         failure_entries += [x for x in entry.failuretable_set.all()]
-      annotations_qs = build_entry.annotationstable_set.all()
+      annotations_qs = build_entry.annotationstable_set.all().filter(
+          deleted=False)
 
       build_row = BuildRow(build_entry, build_stage_entries, cl_action_entries,
                            failure_entries, annotations_qs)

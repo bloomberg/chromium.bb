@@ -24,10 +24,14 @@ class AnnotationsForm(forms.ModelForm):
   class Meta:
     """Set meta options for the form."""
     model = ba_models.AnnotationsTable
-    fields = ['failure_category', 'failure_message', 'blame_url', 'notes']
+    fields = ['failure_category', 'failure_message', 'blame_url', 'notes',
+              'deleted']
 
 
+# NB: Explicitly set can_delete=False for clarity.
+# Due to a bug in (< django-1.7), models get deleted when the formset is saved
+# even if we request not to commit changes.
 AnnotationsFormSet = forms.models.modelformset_factory(
     ba_models.AnnotationsTable,
     form=AnnotationsForm,
-    can_delete=True)
+    can_delete=False)

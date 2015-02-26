@@ -270,3 +270,4 @@ class AnnotationsTable(UpdateAwareMixIn, BaseModel):
   failure_message = models.CharField(max_length=1024, blank=True, null=True)
   blame_url = models.CharField(max_length=80, blank=True, null=True)
   notes = models.CharField(max_length=1024, blank=True, null=True)
+  deleted = models.BooleanField(default=False, null=False)
