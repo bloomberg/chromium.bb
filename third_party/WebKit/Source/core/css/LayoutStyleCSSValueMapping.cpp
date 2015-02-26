@@ -2525,14 +2525,12 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         return SVGLength::toCSSPrimitiveValue(svgStyle.strokeWidth());
     case CSSPropertyBaselineShift: {
         switch (svgStyle.baselineShift()) {
-        case BS_BASELINE:
-            return CSSPrimitiveValue::createIdentifier(CSSValueBaseline);
         case BS_SUPER:
             return CSSPrimitiveValue::createIdentifier(CSSValueSuper);
         case BS_SUB:
             return CSSPrimitiveValue::createIdentifier(CSSValueSub);
         case BS_LENGTH:
-            return SVGLength::toCSSPrimitiveValue(svgStyle.baselineShiftValue());
+            return zoomAdjustedPixelValueForLength(svgStyle.baselineShiftValue(), style);
         }
         ASSERT_NOT_REACHED();
         return nullptr;

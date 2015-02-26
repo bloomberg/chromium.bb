@@ -67,7 +67,7 @@ TEST(SVGLayoutStyleTest, MiscStyleShouldCompareValue)
     TEST_STYLE_VALUE_NO_DIFF(Color, FloodColor);
     TEST_STYLE_VALUE_NO_DIFF(float, FloodOpacity);
     TEST_STYLE_VALUE_NO_DIFF(Color, LightingColor);
-    TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGLength, BaselineShiftValue);
+    TEST_STYLE_VALUE_NO_DIFF(Length, BaselineShiftValue);
 }
 
 }

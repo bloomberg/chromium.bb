@@ -71,7 +71,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
     case CSSPropertyBackgroundSize:
         return fillLayersEqual<CSSPropertyBackgroundSize>(a.backgroundLayers(), b.backgroundLayers());
     case CSSPropertyBaselineShift:
-        return dataEquivalent(a.baselineShiftValue(), b.baselineShiftValue());
+        return a.baselineShiftValue() == b.baselineShiftValue();
     case CSSPropertyBorderBottomColor:
         return a.borderBottomColor() == b.borderBottomColor()
             && a.visitedLinkBorderBottomColor() == b.visitedLinkBorderBottomColor();

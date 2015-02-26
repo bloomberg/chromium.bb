@@ -51,7 +51,8 @@ public:
     // Initial values for all the properties
     static EAlignmentBaseline initialAlignmentBaseline() { return AB_AUTO; }
     static EDominantBaseline initialDominantBaseline() { return DB_AUTO; }
-    static EBaselineShift initialBaselineShift() { return BS_BASELINE; }
+    static EBaselineShift initialBaselineShift() { return BS_LENGTH; }
+    static Length initialBaselineShiftValue() { return Length(Fixed); }
     static EVectorEffect initialVectorEffect() { return VE_NONE; }
     static EBufferedRendering initialBufferedRendering() { return BR_AUTO; }
     static LineCap initialCapStyle() { return ButtCap; }
@@ -91,13 +92,6 @@ public:
     static EPaintOrder initialPaintOrder() { return PO_NORMAL; }
     static Length initialX() { return Length(Fixed); }
     static Length initialY() { return Length(Fixed); }
-
-    static PassRefPtrWillBeRawPtr<SVGLength> initialBaselineShiftValue()
-    {
-        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
-        length->newValueSpecifiedUnits(LengthTypeNumber, 0);
-        return length.release();
-    }
 
     static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeDashOffset()
     {
@@ -249,10 +243,10 @@ public:
             misc.access()->lightingColor = obj;
     }
 
-    void setBaselineShiftValue(PassRefPtrWillBeRawPtr<SVGLength> obj)
+    void setBaselineShiftValue(const Length& baselineShiftValue)
     {
-        if (!(misc->baselineShiftValue == obj))
-            misc.access()->baselineShiftValue = obj;
+        if (!(misc->baselineShiftValue == baselineShiftValue))
+            misc.access()->baselineShiftValue = baselineShiftValue;
     }
 
     // Setters for non-inherited resources
@@ -328,7 +322,7 @@ public:
     float floodOpacity() const { return misc->floodOpacity; }
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
-    SVGLength* baselineShiftValue() const { return misc->baselineShiftValue.get(); }
+    const Length& baselineShiftValue() const { return misc->baselineShiftValue; }
     const Length& x() const { return layout->x; }
     const Length& y() const { return layout->y; }
     const AtomicString& clipperResource() const { return resources->clipper; }

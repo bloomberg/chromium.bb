@@ -942,12 +942,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverStat
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (!primitiveValue->isValueID()) {
         svgStyle.setBaselineShift(BS_LENGTH);
-        svgStyle.setBaselineShiftValue(SVGLength::fromCSSPrimitiveValue(primitiveValue));
+        svgStyle.setBaselineShiftValue(StyleBuilderConverter::convertLength(state, primitiveValue));
         return;
     }
     switch (primitiveValue->getValueID()) {
     case CSSValueBaseline:
-        svgStyle.setBaselineShift(BS_BASELINE);
+        svgStyle.setBaselineShift(BS_LENGTH);
+        svgStyle.setBaselineShiftValue(Length(Fixed));
         return;
     case CSSValueSub:
         svgStyle.setBaselineShift(BS_SUB);

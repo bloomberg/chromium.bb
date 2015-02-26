@@ -177,6 +177,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyWidth:
         range = RangeNonNegative;
         // Fall through
+    case CSSPropertyBaselineShift:
     case CSSPropertyBottom:
     case CSSPropertyLeft:
     case CSSPropertyLetterSpacing:
@@ -198,6 +199,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             fallBackToLegacy = true;
         // FIXME: Handle keywords e.g. 'smaller', 'larger'.
         if (property == CSSPropertyFontSize)
+            fallBackToLegacy = true;
+
+        // FIXME: Handle keywords e.g. 'baseline', 'sub'.
+        if (property == CSSPropertyBaselineShift)
             fallBackToLegacy = true;
 
         // FIXME: Handle keywords e.g. 'normal'
@@ -329,7 +334,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyStrokeWidth:
         range = RangeNonNegative;
         // Fall through
-    case CSSPropertyBaselineShift:
     case CSSPropertyStrokeDashoffset: {
         RefPtrWillBeRawPtr<Interpolation> interpolation = SVGLengthStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property, range);
         if (interpolation)

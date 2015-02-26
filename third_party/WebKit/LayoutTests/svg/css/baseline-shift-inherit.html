@@ -12,10 +12,16 @@ setup(function() {
   window.svg = document.querySelector('svg');
   window.textElement = document.querySelector('text');
 });
-['baseline', 'sub', 'super', '10px', '100%'].forEach(function(item) {
+[
+  {value: 'baseline', expected: '0px'},
+  {value: 'sub'},
+  {value: 'super'},
+  {value: '10px'},
+  {value: '100%'}
+].forEach(function(item) {
   test(function() {
-    svg.style.setProperty('baseline-shift', item);
-    assert_equals(getComputedStyle(textElement).baselineShift, item);
+    svg.style.setProperty('baseline-shift', item.value);
+    assert_equals(getComputedStyle(textElement).baselineShift, item.expected || item.value);
   }, 'Inheritance of the baseline-shift property - ' + item + '.');
 });
 </script>

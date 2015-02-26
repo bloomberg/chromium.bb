@@ -49,7 +49,7 @@ enum SVGPaintType {
 };
 
 enum EBaselineShift {
-    BS_BASELINE, BS_SUB, BS_SUPER, BS_LENGTH
+    BS_LENGTH, BS_SUB, BS_SUPER
 };
 
 enum ETextAnchor {
@@ -211,7 +211,7 @@ public:
     float floodOpacity;
     Color lightingColor;
 
-    RefPtrWillBePersistent<SVGLength> baselineShiftValue;
+    Length baselineShiftValue;
 
 private:
     StyleMiscData();

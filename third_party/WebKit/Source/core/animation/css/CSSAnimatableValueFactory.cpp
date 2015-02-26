@@ -311,7 +311,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         case BS_SUB:
             return AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueSub));
         default:
-            return AnimatableSVGLength::create(style.baselineShiftValue());
+            return createFromLength(style.baselineShiftValue(), style);
         }
     case CSSPropertyBorderBottomColor:
         return createFromColor(property, style);

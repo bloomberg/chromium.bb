@@ -224,7 +224,7 @@ rect: style.getPropertyValue(stroke-miterlimit) : 4
 rect: style.getPropertyValue(stroke-opacity) : 1
 rect: style.getPropertyValue(stroke-width) : 2px
 rect: style.getPropertyValue(alignment-baseline) : auto
-rect: style.getPropertyValue(baseline-shift) : baseline
+rect: style.getPropertyValue(baseline-shift) : 0px
 rect: style.getPropertyValue(dominant-baseline) : auto
 rect: style.getPropertyValue(text-anchor) : start
 rect: style.getPropertyValue(writing-mode) : lr-tb
@@ -457,7 +457,7 @@ g: style.getPropertyValue(stroke-miterlimit) : 4
 g: style.getPropertyValue(stroke-opacity) : 1
 g: style.getPropertyValue(stroke-width) : 2px
 g: style.getPropertyValue(alignment-baseline) : auto
-g: style.getPropertyValue(baseline-shift) : baseline
+g: style.getPropertyValue(baseline-shift) : 0px
 g: style.getPropertyValue(dominant-baseline) : auto
 g: style.getPropertyValue(text-anchor) : start
 g: style.getPropertyValue(writing-mode) : lr-tb

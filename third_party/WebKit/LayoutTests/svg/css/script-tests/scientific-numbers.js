@@ -10,13 +10,13 @@ text.setAttribute("y", "100px");
 rootSVGElement.appendChild(text);
 
 function test(valueString, expectedValue) {
-	// Reset baseline-shift to baseline.
-	text.setAttribute("baseline-shift", "baseline");
-	shouldBeEqualToString("getComputedStyle(text).baselineShift", "baseline");
+    // Reset baseline-shift to baseline.
+    text.style.baselineShift = "baseline";
+    shouldBeEqualToString("text.style.baselineShift", "baseline");
 
-	// Run test
-	text.setAttribute("baseline-shift", valueString);
-	shouldBeEqualToString("getComputedStyle(text).baselineShift", expectedValue);
+    // Run test
+    text.style.baselineShift = valueString;
+    shouldBeEqualToString("text.style.baselineShift", expectedValue);
 }
 
 debug("");

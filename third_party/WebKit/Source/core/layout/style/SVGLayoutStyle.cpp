@@ -155,7 +155,7 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
         return true;
 
     // Text related properties influence layout.
-    if (*misc->baselineShiftValue != *other->misc->baselineShiftValue)
+    if (misc->baselineShiftValue != other->misc->baselineShiftValue)
         return true;
 
     // These properties affect the cached stroke bounding box rects.

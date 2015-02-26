@@ -26,7 +26,7 @@ svg {
     We have to specify the target class on the text element because numerical
     values of baseline-shift are not inherited properly. See crbug.com/304006.
     -->
-    <text x="0" y="25" font-size="20" class="target">
+    <text x="0" y="25" font-size="10" class="target">
       <tspan>T</tspan>T
     </text>
   </svg>
@@ -112,26 +112,26 @@ assertInterpolation({
 assertInterpolation({
   property: 'baseline-shift',
   from: '10px',
-  to: '20em'
+  to: '21em'
 }, [
-  {at: -0.25, is: '10px'},
+  {at: -0.25, is: '-40px'},
   {at: 0, is: '10px'},
-  {at: 0.25, is: '10px'},
-  {at: 0.75, is: '20em'},
-  {at: 1, is: '20em'},
-  {at: 1.25, is: '20em'},
+  {at: 0.25, is: '60px'},
+  {at: 0.75, is: '160px'},
+  {at: 1, is: '210px'},
+  {at: 1.25, is: '260px'},
 ]);
 assertInterpolation({
   property: 'baseline-shift',
   from: 'inherit',
-  to: '40em'
+  to: '33em'
 }, [
-  {at: -0.25, is: '30px'},
+  {at: -0.25, is: '-45px'},
   {at: 0, is: '30px'},
-  {at: 0.25, is: '30px'},
-  {at: 0.75, is: '40em'},
-  {at: 1, is: '40em'},
-  {at: 1.25, is: '40em'},
+  {at: 0.25, is: '105px'},
+  {at: 0.75, is: '255px'},
+  {at: 1, is: '330px'},
+  {at: 1.25, is: '405px'},
 ]);
 
 </script>

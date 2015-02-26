@@ -9,18 +9,6 @@
 
 namespace blink {
 
-namespace {
-
-bool isBaseline(const CSSValue& value)
-{
-    if (!value.isPrimitiveValue())
-        return false;
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    return primitiveValue.isValueID() && primitiveValue.getValueID() == CSSValueBaseline;
-}
-
-} // namespace
-
 bool SVGLengthStyleInterpolation::canCreateFrom(const CSSValue& value)
 {
     if (!value.isPrimitiveValue())
@@ -40,7 +28,7 @@ bool SVGLengthStyleInterpolation::canCreateFrom(const CSSValue& value)
         return true;
 
     default:
-        return isBaseline(value);
+        return false;
     }
 }
 
@@ -64,11 +52,8 @@ PassRefPtrWillBeRawPtr<SVGLengthStyleInterpolation> SVGLengthStyleInterpolation:
     if (!canCreateFrom(start) || !canCreateFrom(end))
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> zero = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX);
-    const CSSPrimitiveValue& primitiveStart =
-        isBaseline(start) ? *zero : toCSSPrimitiveValue(start);
-    const CSSPrimitiveValue& primitiveEnd =
-        isBaseline(end) ? *zero : toCSSPrimitiveValue(end);
+    const CSSPrimitiveValue& primitiveStart = toCSSPrimitiveValue(start);
+    const CSSPrimitiveValue& primitiveEnd = toCSSPrimitiveValue(end);
 
     CSSPrimitiveValue::UnitType type = primitiveStart.primitiveType();
     if (primitiveStart.getDoubleValue() == 0)

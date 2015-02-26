@@ -144,7 +144,7 @@ StyleMiscData::StyleMiscData(const StyleMiscData& other)
     , floodColor(other.floodColor)
     , floodOpacity(other.floodOpacity)
     , lightingColor(other.lightingColor)
-    , baselineShiftValue(other.baselineShiftValue->clone())
+    , baselineShiftValue(other.baselineShiftValue)
 {
 }
 
@@ -153,7 +153,7 @@ bool StyleMiscData::operator==(const StyleMiscData& other) const
     return floodOpacity == other.floodOpacity
         && floodColor == other.floodColor
         && lightingColor == other.lightingColor
-        && *baselineShiftValue == *other.baselineShiftValue;
+        && baselineShiftValue == other.baselineShiftValue;
 }
 
 StyleResourceData::StyleResourceData()

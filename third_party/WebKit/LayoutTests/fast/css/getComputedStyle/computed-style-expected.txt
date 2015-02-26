@@ -226,7 +226,7 @@ stroke-miterlimit: 4;
 stroke-opacity: 1;
 stroke-width: 1;
 alignment-baseline: auto;
-baseline-shift: baseline;
+baseline-shift: 0px;
 dominant-baseline: auto;
 text-anchor: start;
 writing-mode: lr-tb;

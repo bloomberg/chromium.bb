@@ -293,7 +293,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         setOnFillLayers<CSSPropertyBackgroundSize>(style->accessBackgroundLayers(), value, state);
         return;
     case CSSPropertyBaselineShift:
-        style->setBaselineShiftValue(toAnimatableSVGLength(value)->toSVGLength());
+        style->accessSVGStyle().setBaselineShift(BS_LENGTH);
+        style->accessSVGStyle().setBaselineShiftValue(animatableValueToLength(value, state));
         return;
     case CSSPropertyBorderBottomColor:
         style->setBorderBottomColor(toAnimatableColor(value)->color());

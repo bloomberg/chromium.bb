@@ -24,7 +24,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/SVGLayoutStyle.h"
 #include "core/layout/svg/SVGTextMetrics.h"
-#include "core/svg/SVGLengthContext.h"
+#include "platform/LengthFunctions.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/UnicodeRange.h"
 
@@ -35,20 +35,15 @@ SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font)
 {
 }
 
-float SVGTextLayoutEngineBaseline::calculateBaselineShift(const SVGLayoutStyle& style, SVGElement* contextElement) const
+float SVGTextLayoutEngineBaseline::calculateBaselineShift(const LayoutStyle& style) const
 {
-    if (style.baselineShift() == BS_LENGTH) {
-        RefPtrWillBeRawPtr<SVGLength> baselineShiftValueLength = style.baselineShiftValue();
-        if (baselineShiftValueLength->unitType() == LengthTypePercentage)
-            return baselineShiftValueLength->scaleByPercentage(m_font.fontDescription().computedPixelSize());
+    const SVGLayoutStyle& svgStyle = style.svgStyle();
 
-        SVGLengthContext lengthContext(contextElement);
-        return baselineShiftValueLength->value(lengthContext);
+    switch (svgStyle.baselineShift()) {
+    case BS_LENGTH: {
+        const float zoom = style.effectiveZoom();
+        return floatValueForLength(svgStyle.baselineShiftValue(), m_font.fontDescription().computedPixelSize() * zoom) / zoom;
     }
-
-    switch (style.baselineShift()) {
-    case BS_BASELINE:
-        return 0;
     case BS_SUB:
         return -m_font.fontMetrics().floatHeight() / 2;
     case BS_SUPER:
