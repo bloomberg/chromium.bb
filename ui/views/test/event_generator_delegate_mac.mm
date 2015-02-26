@@ -20,30 +20,16 @@ namespace {
 // Singleton to provide state for swizzled Objective C methods.
 ui::test::EventGenerator* g_active_generator = NULL;
 
+// Set (and always cleared) in EmulateSendEvent() to provide an answer for
+// [NSApp currentEvent].
+NSEvent* g_current_event = nil;
+
 }  // namespace
 
 @interface NSEventDonor : NSObject
 @end
 
-@implementation NSEventDonor
-
-// Donate +[NSEvent pressedMouseButtons] by retrieving the flags from the
-// active generator.
-+ (NSUInteger)pressedMouseButtons {
-  if (!g_active_generator)
-    return [NSEventDonor pressedMouseButtons];  // Call original implementation.
-
-  int flags = g_active_generator->flags();
-  NSUInteger bitmask = 0;
-  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
-    bitmask |= 1;
-  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    bitmask |= 1 << 1;
-  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    bitmask |= 1 << 2;
-  return bitmask;
-}
-
+@interface NSApplicationDonor : NSObject
 @end
 
 namespace {
@@ -133,6 +119,7 @@ NSEventType EventTypeToNative(ui::EventType ui_event_type,
 // sendEvent is a black box which (among other things) will try to peek at the
 // event queue and can block indefinitely.
 void EmulateSendEvent(NSWindow* window, NSEvent* event) {
+  base::AutoReset<NSEvent*> reset(&g_current_event, event);
   NSResponder* responder = [window firstResponder];
   switch ([event type]) {
     case NSKeyDown:
@@ -243,6 +230,10 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
     return Singleton<EventGeneratorDelegateMac>::get();
   }
 
+  IMP CurrentEventMethod() {
+    return swizzle_current_event_->GetOriginalImplementation();
+  }
+
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override { return true; }
   ui::EventTarget* GetParentTarget() override { return NULL; }
@@ -291,6 +282,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   ui::test::EventGenerator* owner_;
   NSWindow* window_;
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
+  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
   base::scoped_nsobject<NSMenu> fake_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
@@ -368,6 +360,7 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
                                            gfx::NativeWindow root_window,
                                            gfx::NativeWindow window) {
   swizzle_pressed_.reset();
+  swizzle_current_event_.reset();
   owner_ = owner;
   window_ = window;
 
@@ -384,6 +377,10 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
         [NSEvent class],
         [NSEventDonor class],
         @selector(pressedMouseButtons)));
+    swizzle_current_event_.reset(new base::mac::ScopedObjCClassSwizzler(
+        [NSApplication class],
+        [NSApplicationDonor class],
+        @selector(currentEvent)));
   }
 }
 
@@ -410,3 +407,37 @@ void InitializeMacEventGeneratorDelegate() {
 
 }  // namespace test
 }  // namespace views
+
+@implementation NSEventDonor
+
+// Donate +[NSEvent pressedMouseButtons] by retrieving the flags from the
+// active generator.
++ (NSUInteger)pressedMouseButtons {
+  if (!g_active_generator)
+    return [NSEventDonor pressedMouseButtons];  // Call original implementation.
+
+  int flags = g_active_generator->flags();
+  NSUInteger bitmask = 0;
+  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
+    bitmask |= 1;
+  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    bitmask |= 1 << 1;
+  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    bitmask |= 1 << 2;
+  return bitmask;
+}
+
+@end
+
+@implementation NSApplicationDonor
+
+- (NSEvent*)currentEvent {
+  if (g_current_event)
+    return g_current_event;
+
+  // Find the original implementation and invoke it.
+  IMP original = EventGeneratorDelegateMac::GetInstance()->CurrentEventMethod();
+  return original(self, _cmd);
+}
+
+@end

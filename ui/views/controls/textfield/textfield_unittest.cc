@@ -856,6 +856,25 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
                        ui::EF_LEFT_MOUSE_BUTTON);
   textfield_->OnMousePressed(click);
   EXPECT_EQ(1, GetFocusedView()->id());
+
+  // Tab/Shift+Tab should also cycle focus, not insert a tab character.
+  SendKeyEvent(ui::VKEY_TAB, false, false);
+  EXPECT_EQ(2, GetFocusedView()->id());
+  SendKeyEvent(ui::VKEY_TAB, false, false);
+  EXPECT_EQ(3, GetFocusedView()->id());
+  // Cycle back to the first textfield.
+  SendKeyEvent(ui::VKEY_TAB, false, false);
+  EXPECT_EQ(1, GetFocusedView()->id());
+
+  SendKeyEvent(ui::VKEY_TAB, true, false);
+  EXPECT_EQ(3, GetFocusedView()->id());
+  SendKeyEvent(ui::VKEY_TAB, true, false);
+  EXPECT_EQ(2, GetFocusedView()->id());
+  SendKeyEvent(ui::VKEY_TAB, true, false);
+  EXPECT_EQ(1, GetFocusedView()->id());
+  // Cycle back to the last textfield.
+  SendKeyEvent(ui::VKEY_TAB, true, false);
+  EXPECT_EQ(3, GetFocusedView()->id());
 }
 
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
