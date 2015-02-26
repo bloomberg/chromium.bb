@@ -5,7 +5,6 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 
 #include "android_webview/native/android_protocol_handler.h"
-#include "android_webview/native/aw_assets.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
@@ -27,6 +26,7 @@
 #include "android_webview/native/input_stream_impl.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/permission/aw_permission_request.h"
+#include "android_webview/native/public/aw_assets.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/trace_event/trace_event.h"
