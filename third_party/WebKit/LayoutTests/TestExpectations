@@ -1005,7 +1005,6 @@ crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-f
 # Tests which become flaky with the Blink Scheduler enabled
 crbug.com/432129 fast/inline/whitespace-reattaching.html [ Pass Failure ]
 crbug.com/432129 [ Win Debug ] inspector-protocol/timeline/timeline-raf.html [ Pass Failure ]
-crbug.com/432129 inspector/elements/styles/styles-change-node-while-editing.html [ Pass Failure ]
 crbug.com/432129 virtual/slimmingpaint/fast/inline/whitespace-reattaching.html [ Pass Failure ]
 crbug.com/432129 virtual/slimmingpaint/fast/text/descent-clip-in-scaled-page.html [ Pass ImageOnlyFailure ]
 
