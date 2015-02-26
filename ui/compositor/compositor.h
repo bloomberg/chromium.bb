@@ -72,11 +72,10 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroring_layer|.
-  virtual scoped_refptr<Reflector> CreateReflector(
-      Compositor* mirrored_compositor,
-      Layer* mirroring_layer) = 0;
+  virtual scoped_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
+                                                Layer* mirroring_layer) = 0;
   // Removes the reflector, which stops the mirroring.
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) = 0;
+  virtual void RemoveReflector(Reflector* reflector) = 0;
 
   // Return a reference to a shared offscreen context provider usable from the
   // main thread.

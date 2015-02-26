@@ -71,8 +71,6 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<ui::Compositor> compositor_;
 
-  IDMap<content::BrowserCompositorOutputSurface> surface_map_;
-
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurfaceTest);
 };
 
@@ -99,10 +97,6 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
 void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
   output_surface_.reset();
   compositor_.reset();
-
-  EXPECT_TRUE(surface_map_.IsEmpty());
-
-  surface_map_.Clear();
   ui::TerminateContextFactoryForTests();
 }
 
@@ -112,8 +106,6 @@ SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
   return scoped_ptr<content::BrowserCompositorOutputSurface>(
       new content::SoftwareBrowserCompositorOutputSurface(
           device.Pass(),
-          1,
-          &surface_map_,
           compositor_->vsync_manager()));
 }
 

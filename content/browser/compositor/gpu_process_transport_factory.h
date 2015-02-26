@@ -44,9 +44,9 @@ class GpuProcessTransportFactory
 
   // ui::ContextFactory implementation.
   void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
-  scoped_refptr<ui::Reflector> CreateReflector(ui::Compositor* source,
-                                               ui::Layer* target) override;
-  void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
+  scoped_ptr<ui::Reflector> CreateReflector(ui::Compositor* source,
+                                            ui::Layer* target) override;
+  void RemoveReflector(ui::Reflector* reflector) override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   bool DoesCreateTestContexts() override;

@@ -18,12 +18,8 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
-    int surface_id,
-    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : BrowserCompositorOutputSurface(software_device.Pass(),
-                                     surface_id,
-                                     output_surface_map,
                                      vsync_manager),
       weak_factory_(this) {
 }

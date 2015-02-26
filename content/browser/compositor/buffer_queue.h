@@ -36,7 +36,7 @@ class CONTENT_EXPORT BufferQueue {
               int surface_id);
   virtual ~BufferQueue();
 
-  bool Initialize();
+  void Initialize();
 
   void BindFramebuffer();
   void SwapBuffers(const gfx::Rect& damage);

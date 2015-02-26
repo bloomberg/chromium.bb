@@ -37,6 +37,7 @@ class CONTENT_EXPORT ReflectorImpl
  public:
   ReflectorImpl(ui::Compositor* mirrored_compositor,
                 ui::Layer* mirroring_layer);
+  ~ReflectorImpl() override;
 
   ui::Compositor* mirrored_compositor() { return mirrored_compositor_; }
 
@@ -59,10 +60,6 @@ class CONTENT_EXPORT ReflectorImpl
   void OnSourceSurfaceReady(BrowserCompositorOutputSurface* surface);
 
  private:
-  friend class ReflectorImplTest;
-
-  ~ReflectorImpl() override;
-
   void UpdateTexture(const gfx::Size& size, const gfx::Rect& redraw_rect);
 
   ui::Compositor* mirrored_compositor_;

@@ -7,56 +7,40 @@
 namespace ui {
 
 CompositorVSyncManager::CompositorVSyncManager()
-    : observer_list_(new ObserverListThreadSafe<Observer>()),
-      authoritative_vsync_interval_(base::TimeDelta::FromSeconds(0)) {}
+    : authoritative_vsync_interval_(base::TimeDelta::FromSeconds(0)) {
+}
 
 CompositorVSyncManager::~CompositorVSyncManager() {}
 
 void CompositorVSyncManager::SetAuthoritativeVSyncInterval(
     base::TimeDelta interval) {
-  base::TimeTicks timebase;
-  {
-    base::AutoLock lock(vsync_parameters_lock_);
-    timebase = last_timebase_;
-    authoritative_vsync_interval_ = interval;
-    last_interval_ = interval;
-  }
-  NotifyObservers(timebase, interval);
+  authoritative_vsync_interval_ = interval;
+  last_interval_ = interval;
+  NotifyObservers(last_timebase_, last_interval_);
 }
 
 void CompositorVSyncManager::UpdateVSyncParameters(base::TimeTicks timebase,
                                                    base::TimeDelta interval) {
-  {
-    base::AutoLock lock(vsync_parameters_lock_);
-    if (authoritative_vsync_interval_ != base::TimeDelta::FromSeconds(0))
-      interval = authoritative_vsync_interval_;
-    last_timebase_ = timebase;
-    last_interval_ = interval;
-  }
+  if (authoritative_vsync_interval_ != base::TimeDelta::FromSeconds(0))
+    interval = authoritative_vsync_interval_;
+  last_timebase_ = timebase;
+  last_interval_ = interval;
   NotifyObservers(timebase, interval);
 }
 
 void CompositorVSyncManager::AddObserver(Observer* observer) {
-  base::TimeTicks timebase;
-  base::TimeDelta interval;
-  {
-    base::AutoLock lock(vsync_parameters_lock_);
-    timebase = last_timebase_;
-    interval = last_interval_;
-  }
-  observer_list_->AddObserver(observer);
-  observer->OnUpdateVSyncParameters(timebase, interval);
+  observer_list_.AddObserver(observer);
+  observer->OnUpdateVSyncParameters(last_timebase_, last_interval_);
 }
 
 void CompositorVSyncManager::RemoveObserver(Observer* observer) {
-  observer_list_->RemoveObserver(observer);
+  observer_list_.RemoveObserver(observer);
 }
 
 void CompositorVSyncManager::NotifyObservers(base::TimeTicks timebase,
                                              base::TimeDelta interval) {
-  observer_list_->Notify(
-      FROM_HERE, &CompositorVSyncManager::Observer::OnUpdateVSyncParameters,
-      timebase, interval);
+  FOR_EACH_OBSERVER(CompositorVSyncManager::Observer, observer_list_,
+                    OnUpdateVSyncParameters(timebase, interval));
 }
 
 }  // namespace ui

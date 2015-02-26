@@ -19,20 +19,24 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         const scoped_refptr<ContextProviderCommandBuffer>& context,
         int surface_id,
-        IDMap<BrowserCompositorOutputSurface>* output_surface_map,
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator,
         unsigned internalformat,
         BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,
-                                        surface_id,
-                                        output_surface_map,
                                         vsync_manager,
                                         overlay_candidate_validator.Pass()),
       internalformat_(internalformat),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
+
+  gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
+                                context_provider_->ContextSupport()));
+  output_surface_.reset(
+      new BufferQueue(context_provider_, internalformat_, gl_helper_.get(),
+                      gpu_memory_buffer_manager_, surface_id));
+  output_surface_->Initialize();
 }
 
 GpuSurfacelessBrowserCompositorOutputSurface::
@@ -78,18 +82,6 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
   GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor);
   DCHECK(output_surface_);
   output_surface_->Reshape(SurfaceSize(), scale_factor);
-}
-
-bool GpuSurfacelessBrowserCompositorOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
-  if (!GpuBrowserCompositorOutputSurface::BindToClient(client))
-    return false;
-  gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
-                                context_provider_->ContextSupport()));
-  output_surface_.reset(
-      new BufferQueue(context_provider_, internalformat_, gl_helper_.get(),
-                      gpu_memory_buffer_manager_, surface_id_));
-  return output_surface_->Initialize();
 }
 
 }  // namespace content

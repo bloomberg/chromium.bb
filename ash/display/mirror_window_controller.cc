@@ -144,8 +144,9 @@ void MirrorWindowController::UpdateWindow() {
 void MirrorWindowController::Close() {
   if (ash_host_.get()) {
     aura::WindowTreeHost* host = ash_host_->AsWindowTreeHost();
-    aura::Env::GetInstance()->context_factory()->RemoveReflector(reflector_);
-    reflector_ = NULL;
+    aura::Env::GetInstance()->context_factory()->RemoveReflector(
+        reflector_.get());
+    reflector_ = nullptr;
     NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
         aura::client::GetCaptureClient(host->window()));
     aura::client::SetCaptureClient(host->window(), NULL);

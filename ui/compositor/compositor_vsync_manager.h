@@ -6,7 +6,7 @@
 #define UI_COMPOSITOR_COMPOSITOR_VSYNC_MANAGER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
@@ -15,12 +15,9 @@ namespace ui {
 
 // This class manages vsync parameters for a compositor. It merges updates of
 // the parameters from different sources and sends the merged updates to
-// observers which register to it. This class is explicitly synchronized and is
-// safe to use and update from any thread. Observers of the manager will be
-// notified on the thread they have registered from, and should be removed from
-// the same thread.
+// observers which register to it.
 class COMPOSITOR_EXPORT CompositorVSyncManager
-    : public base::RefCountedThreadSafe<CompositorVSyncManager> {
+    : public base::RefCounted<CompositorVSyncManager> {
  public:
   class Observer {
    public:
@@ -48,17 +45,14 @@ class COMPOSITOR_EXPORT CompositorVSyncManager
   void RemoveObserver(Observer* observer);
 
  private:
-  friend class base::RefCountedThreadSafe<CompositorVSyncManager>;
+  friend class base::RefCounted<CompositorVSyncManager>;
 
   ~CompositorVSyncManager();
 
   void NotifyObservers(base::TimeTicks timebase, base::TimeDelta interval);
 
-  // List of observers.
-  scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
+  ObserverList<Observer> observer_list_;
 
-  // Protects the cached vsync parameters below.
-  base::Lock vsync_parameters_lock_;
   base::TimeTicks last_timebase_;
   base::TimeDelta last_interval_;
   base::TimeDelta authoritative_vsync_interval_;

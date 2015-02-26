@@ -14,56 +14,41 @@ namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    int surface_id,
-    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : OutputSurface(context_provider),
-      surface_id_(surface_id),
-      output_surface_map_(output_surface_map),
-      vsync_manager_(vsync_manager) {
+      vsync_manager_(vsync_manager),
+      reflector_(nullptr) {
   Initialize();
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
-    int surface_id,
-    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : OutputSurface(software_device.Pass()),
-      surface_id_(surface_id),
-      output_surface_map_(output_surface_map),
-      vsync_manager_(vsync_manager) {
+      vsync_manager_(vsync_manager),
+      reflector_(nullptr) {
   Initialize();
 }
 
 BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
-  DCHECK(CalledOnValidThread());
-  if (reflector_.get())
+  if (reflector_)
     reflector_->DetachFromOutputSurface();
-  DCHECK(!reflector_.get());
+  DCHECK(!reflector_);
   if (!HasClient())
     return;
-  output_surface_map_->Remove(surface_id_);
   vsync_manager_->RemoveObserver(this);
 }
 
 void BrowserCompositorOutputSurface::Initialize() {
   capabilities_.max_frames_pending = 1;
   capabilities_.adjust_deadline_for_parent = false;
-
-  DetachFromThread();
 }
 
 bool BrowserCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
-  DCHECK(CalledOnValidThread());
-
   if (!OutputSurface::BindToClient(client))
     return false;
-
-  output_surface_map_->AddWithID(this, surface_id_);
-  if (reflector_.get())
-    reflector_->OnSourceSurfaceReady(this);
+  // Don't want vsync notifications until there is a client.
   vsync_manager_->AddObserver(this);
   return true;
 }
@@ -71,7 +56,6 @@ bool BrowserCompositorOutputSurface::BindToClient(
 void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   CommitVSyncParameters(timebase, interval);
 }
@@ -79,7 +63,6 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
 void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   vsync_manager_->UpdateVSyncParameters(timebase, interval);
 }

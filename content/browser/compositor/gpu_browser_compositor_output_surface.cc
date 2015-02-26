@@ -17,13 +17,9 @@ namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context,
-    int surface_id,
-    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator)
     : BrowserCompositorOutputSurface(context,
-                                     surface_id,
-                                     output_surface_map,
                                      vsync_manager),
 #if defined(OS_MACOSX)
       should_not_show_frames_(false),
@@ -68,7 +64,7 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 
   GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
 
-  if (reflector_.get()) {
+  if (reflector_) {
     if (frame->gl_frame_data->sub_buffer_rect ==
         gfx::Rect(frame->gl_frame_data->size))
       reflector_->OnSourceSwapBuffers();

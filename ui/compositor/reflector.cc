@@ -6,13 +6,7 @@
 
 namespace ui {
 
-Reflector::Reflector() {
-}
-
 Reflector::~Reflector() {
-}
-
-void Reflector::OnMirroringCompositorResized() {
 }
 
 }  // namespace ui

@@ -42,12 +42,8 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(
       const scoped_refptr<cc::ContextProvider>& context_provider,
-      int surface_id,
-      IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
       : BrowserCompositorOutputSurface(context_provider,
-                                       surface_id,
-                                       output_surface_map,
                                        vsync_manager) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
@@ -87,7 +83,7 @@ class ReflectorImplTest : public testing::Test {
         cc::TestWebGraphicsContext3D::Create().Pass());
     output_surface_ =
         scoped_ptr<TestOutputSurface>(
-            new TestOutputSurface(context_provider_, 1, &surface_map_,
+            new TestOutputSurface(context_provider_,
                                   compositor_->vsync_manager())).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
@@ -97,7 +93,8 @@ class ReflectorImplTest : public testing::Test {
   }
 
   void SetUpReflector() {
-    reflector_ = new ReflectorImpl(compositor_.get(), mirroring_layer_.get());
+    reflector_ = make_scoped_ptr(
+        new ReflectorImpl(compositor_.get(), mirroring_layer_.get()));
     reflector_->OnSourceSurfaceReady(output_surface_.get());
   }
 
@@ -116,14 +113,13 @@ class ReflectorImplTest : public testing::Test {
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  IDMap<BrowserCompositorOutputSurface> surface_map_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::MessageLoopProxy> proxy_;
   scoped_ptr<ui::Compositor> compositor_;
   scoped_ptr<ui::Layer> mirroring_layer_;
-  scoped_refptr<ReflectorImpl> reflector_;
+  scoped_ptr<ReflectorImpl> reflector_;
   scoped_ptr<TestOutputSurface> output_surface_;
 };
 

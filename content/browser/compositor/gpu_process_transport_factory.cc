@@ -66,8 +66,11 @@ namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
   int surface_id;
-  scoped_refptr<ReflectorImpl> reflector;
+  BrowserCompositorOutputSurface* surface;
+  ReflectorImpl* reflector;
   scoped_ptr<cc::OnscreenDisplayClient> display_client;
+
+  PerCompositorData() : surface_id(0), surface(nullptr), reflector(nullptr) {}
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
@@ -147,8 +150,14 @@ void GpuProcessTransportFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
   DCHECK(!!compositor);
   PerCompositorData* data = per_compositor_data_[compositor.get()];
-  if (!data)
+  if (!data) {
     data = CreatePerCompositorData(compositor.get());
+  } else {
+    // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
+    // output_surface_map_ here.
+    output_surface_map_.Remove(data->surface_id);
+    data->surface = nullptr;
+  }
 
   bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
@@ -212,8 +221,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   scoped_ptr<BrowserCompositorOutputSurface> surface;
   if (!create_gpu_output_surface) {
     surface = make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
-        CreateSoftwareOutputDevice(compositor.get()), data->surface_id,
-        &output_surface_map_, compositor->vsync_manager()));
+        CreateSoftwareOutputDevice(compositor.get()),
+        compositor->vsync_manager()));
   } else {
     DCHECK(context_provider);
 #if defined(USE_OZONE)
@@ -221,22 +230,24 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             ->CanShowPrimaryPlaneAsOverlay()) {
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
-              context_provider, data->surface_id, &output_surface_map_,
-              compositor->vsync_manager(),
+              context_provider, data->surface_id, compositor->vsync_manager(),
               CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
               BrowserGpuMemoryBufferManager::current()));
     } else
 #endif
     {
       surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
-          context_provider, data->surface_id, &output_surface_map_,
-          compositor->vsync_manager(),
+          context_provider, compositor->vsync_manager(),
           CreateOverlayCandidateValidator(compositor->widget())));
     }
   }
 
+  // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
+  // output_surface_map_ here.
+  output_surface_map_.AddWithID(surface.get(), data->surface_id);
+  data->surface = surface.get();
   if (data->reflector)
-    data->reflector->OnSourceSurfaceReady(surface.get());
+    data->reflector->OnSourceSurfaceReady(data->surface);
 
   if (!UseSurfacesEnabled()) {
     compositor->SetOutputSurface(surface.Pass());
@@ -264,26 +275,22 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   compositor->SetOutputSurface(output_surface.Pass());
 }
 
-scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
+scoped_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
     ui::Compositor* source_compositor,
     ui::Layer* target_layer) {
   PerCompositorData* source_data = per_compositor_data_[source_compositor];
   DCHECK(source_data);
 
-  source_data->reflector = new ReflectorImpl(source_compositor, target_layer);
-  // Use the |output_surface_map_| to check if the output surface has been bound
-  // to the thread/is ready to be used.
-  BrowserCompositorOutputSurface* source_surface =
-      output_surface_map_.Lookup(source_data->surface_id);
-  if (source_surface)
-    source_data->reflector->OnSourceSurfaceReady(source_surface);
-  return source_data->reflector;
+  scoped_ptr<ReflectorImpl> reflector(
+      new ReflectorImpl(source_compositor, target_layer));
+  source_data->reflector = reflector.get();
+  if (BrowserCompositorOutputSurface* source_surface = source_data->surface)
+    reflector->OnSourceSurfaceReady(source_surface);
+  return reflector.Pass();
 }
 
-void GpuProcessTransportFactory::RemoveReflector(
-    scoped_refptr<ui::Reflector> reflector) {
-  ReflectorImpl* reflector_impl =
-      static_cast<ReflectorImpl*>(reflector.get());
+void GpuProcessTransportFactory::RemoveReflector(ui::Reflector* reflector) {
+  ReflectorImpl* reflector_impl = static_cast<ReflectorImpl*>(reflector);
   PerCompositorData* data =
       per_compositor_data_[reflector_impl->mirrored_compositor()];
   DCHECK(data);
@@ -297,6 +304,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     return;
   PerCompositorData* data = it->second;
   DCHECK(data);
+  // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
+  // output_surface_map_ here.
+  if (data->surface)
+    output_surface_map_.Remove(data->surface_id);
   GpuSurfaceTracker::Get()->RemoveSurface(data->surface_id);
   delete data;
   per_compositor_data_.erase(it);

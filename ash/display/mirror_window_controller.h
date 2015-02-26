@@ -65,7 +65,7 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   scoped_ptr<AshWindowTreeHost> ash_host_;
   gfx::Size mirror_window_host_size_;
-  scoped_refptr<ui::Reflector> reflector_;
+  scoped_ptr<ui::Reflector> reflector_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowController);
 };

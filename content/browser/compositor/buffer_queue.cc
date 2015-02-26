@@ -40,10 +40,9 @@ BufferQueue::~BufferQueue() {
     gl->DeleteFramebuffers(1, &fbo_);
 }
 
-bool BufferQueue::Initialize() {
+void BufferQueue::Initialize() {
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   gl->GenFramebuffers(1, &fbo_);
-  return fbo_ != 0;
 }
 
 void BufferQueue::BindFramebuffer() {

@@ -27,6 +27,13 @@
 namespace ui {
 namespace {
 
+class FakeReflector : public Reflector {
+ public:
+  FakeReflector() {}
+  ~FakeReflector() override {}
+  void OnMirroringCompositorResized() override {}
+};
+
 // An OutputSurface implementation that directly draws and swaps to an actual
 // GL surface.
 class DirectOutputSurface : public cc::OutputSurface {
@@ -132,14 +139,14 @@ void InProcessContextFactory::CreateOutputSurface(
   }
 }
 
-scoped_refptr<Reflector> InProcessContextFactory::CreateReflector(
+scoped_ptr<Reflector> InProcessContextFactory::CreateReflector(
     Compositor* mirroed_compositor,
     Layer* mirroring_layer) {
-  return new Reflector();
+  return make_scoped_ptr(new FakeReflector);
 }
 
-void InProcessContextFactory::RemoveReflector(
-    scoped_refptr<Reflector> reflector) {}
+void InProcessContextFactory::RemoveReflector(Reflector* reflector) {
+}
 
 scoped_refptr<cc::ContextProvider>
 InProcessContextFactory::SharedMainThreadContextProvider() {

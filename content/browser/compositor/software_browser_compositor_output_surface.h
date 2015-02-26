@@ -24,8 +24,6 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
  public:
   SoftwareBrowserCompositorOutputSurface(
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
-      int surface_id,
-      IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   ~SoftwareBrowserCompositorOutputSurface() override;
