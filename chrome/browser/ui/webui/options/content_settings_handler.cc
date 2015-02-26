@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -1418,6 +1419,9 @@ void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
     RemoveMediaException(args);
   else
     RemoveExceptionFromHostContentSettingsMap(args, type);
+
+  WebSiteSettingsUmaUtil::LogPermissionChange(
+      type, ContentSetting::CONTENT_SETTING_DEFAULT);
 }
 
 void ContentSettingsHandler::SetException(const base::ListValue* args) {

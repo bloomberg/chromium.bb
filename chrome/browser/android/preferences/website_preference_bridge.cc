@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -153,6 +153,7 @@ static void SetSettingForOrigin(JNIEnv* env,
       content_type,
       std::string(),
       setting);
+  WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
 }
 
 static void GetGeolocationOrigins(JNIEnv* env,
@@ -230,7 +231,7 @@ static void SetPushNotificationSettingForOrigin(JNIEnv* env, jclass clazz,
   // permission types. See https://crbug.com/416894.
   Profile* profile = ProfileManager::GetActiveUserProfile();
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
-
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
   switch (value) {
     case -1:
       DesktopNotificationProfileUtil::ClearSetting(
@@ -238,13 +239,17 @@ static void SetPushNotificationSettingForOrigin(JNIEnv* env, jclass clazz,
       break;
     case 1:
       DesktopNotificationProfileUtil::GrantPermission(profile, url);
+      setting = CONTENT_SETTING_ALLOW;
       break;
     case 2:
       DesktopNotificationProfileUtil::DenyPermission(profile, url);
+      setting = CONTENT_SETTING_BLOCK;
       break;
     default:
       NOTREACHED();
   }
+  WebSiteSettingsUmaUtil::LogPermissionChange(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
 static void GetVoiceAndVideoCaptureOrigins(JNIEnv* env,
@@ -323,12 +328,16 @@ static void SetCookieSettingForOrigin(JNIEnv* env, jclass clazz,
   ContentSettingsPattern primary_pattern(
       ContentSettingsPattern::FromURLNoWildcard(url));
   ContentSettingsPattern secondary_pattern(ContentSettingsPattern::Wildcard());
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
   if (value == -1) {
     GetCookieSettings()->ResetCookieSetting(primary_pattern, secondary_pattern);
   } else {
+    setting = value ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
     GetCookieSettings()->SetCookieSetting(primary_pattern, secondary_pattern,
-        value ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+                                          setting);
   }
+  WebSiteSettingsUmaUtil::LogPermissionChange(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
 namespace {

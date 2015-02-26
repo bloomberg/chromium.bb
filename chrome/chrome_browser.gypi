@@ -1270,6 +1270,8 @@
       'browser/content_settings/permission_queue_controller.h',
       'browser/content_settings/tab_specific_content_settings.cc',
       'browser/content_settings/tab_specific_content_settings.h',
+      'browser/content_settings/web_site_settings_uma_util.cc',
+      'browser/content_settings/web_site_settings_uma_util.h',
     ],
     'chrome_browser_extensions_sources': [
       'browser/accessibility/accessibility_extension_api.cc',
