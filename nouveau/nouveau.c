@@ -349,8 +349,8 @@ nouveau_bo_del(struct nouveau_bo *bo)
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	struct drm_gem_close req = { bo->handle };
 
-	pthread_mutex_lock(&nvdev->lock);
-	if (nvbo->name) {
+	if (nvbo->head.next) {
+		pthread_mutex_lock(&nvdev->lock);
 		if (atomic_read(&nvbo->refcnt) == 0) {
 			DRMLISTDEL(&nvbo->head);
 			/*
@@ -365,8 +365,6 @@ nouveau_bo_del(struct nouveau_bo *bo)
 		}
 		pthread_mutex_unlock(&nvdev->lock);
 	} else {
-		DRMLISTDEL(&nvbo->head);
-		pthread_mutex_unlock(&nvdev->lock);
 		drmIoctl(bo->device->fd, DRM_IOCTL_GEM_CLOSE, &req);
 	}
 	if (bo->map)
@@ -379,7 +377,6 @@ nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, uint32_t align,
 	       uint64_t size, union nouveau_bo_config *config,
 	       struct nouveau_bo **pbo)
 {
-	struct nouveau_device_priv *nvdev = nouveau_device(dev);
 	struct nouveau_bo_priv *nvbo = calloc(1, sizeof(*nvbo));
 	struct nouveau_bo *bo = &nvbo->base;
 	int ret;
@@ -396,10 +393,6 @@ nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, uint32_t align,
 		free(nvbo);
 		return ret;
 	}
-
-	pthread_mutex_lock(&nvdev->lock);
-	DRMLISTADD(&nvbo->head, &nvdev->bo_list);
-	pthread_mutex_unlock(&nvdev->lock);
 
 	*pbo = bo;
 	return 0;
@@ -457,6 +450,18 @@ nouveau_bo_wrap_locked(struct nouveau_device *dev, uint32_t handle,
 	return -ENOMEM;
 }
 
+static void
+nouveau_bo_make_global(struct nouveau_bo_priv *nvbo)
+{
+	if (!nvbo->head.next) {
+		struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
+		pthread_mutex_lock(&nvdev->lock);
+		if (!nvbo->head.next)
+			DRMLISTADD(&nvbo->head, &nvdev->bo_list);
+		pthread_mutex_unlock(&nvdev->lock);
+	}
+}
+
 drm_public int
 nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 		struct nouveau_bo **pbo)
@@ -494,13 +499,16 @@ nouveau_bo_name_get(struct nouveau_bo *bo, uint32_t *name)
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 
 	*name = nvbo->name;
-	if (!*name || *name == ~0U) {
+	if (!*name) {
 		int ret = drmIoctl(bo->device->fd, DRM_IOCTL_GEM_FLINK, &req);
+
 		if (ret) {
 			*name = 0;
 			return ret;
 		}
 		nvbo->name = *name = req.name;
+
+		nouveau_bo_make_global(nvbo);
 	}
 	return 0;
 }
@@ -533,16 +541,6 @@ nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 	ret = drmPrimeFDToHandle(dev->fd, prime_fd, &handle);
 	if (ret == 0) {
 		ret = nouveau_bo_wrap_locked(dev, handle, bo, 0);
-		if (!ret) {
-			struct nouveau_bo_priv *nvbo = nouveau_bo(*bo);
-			if (!nvbo->name) {
-				/*
-				 * XXX: Force locked DRM_IOCTL_GEM_CLOSE
-				 * to rule out race conditions
-				 */
-				nvbo->name = ~0;
-			}
-		}
 	}
 	pthread_mutex_unlock(&nvdev->lock);
 	return ret;
@@ -557,8 +555,8 @@ nouveau_bo_set_prime(struct nouveau_bo *bo, int *prime_fd)
 	ret = drmPrimeHandleToFD(bo->device->fd, nvbo->base.handle, DRM_CLOEXEC, prime_fd);
 	if (ret)
 		return ret;
-	if (!nvbo->name)
-		nvbo->name = ~0;
+
+	nouveau_bo_make_global(nvbo);
 	return 0;
 }
 
@@ -578,8 +576,8 @@ nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 	if (push && push->channel)
 		nouveau_pushbuf_kick(push, push->channel);
 
-	if (!nvbo->name && !(nvbo->access & NOUVEAU_BO_WR) &&
-			   !(      access & NOUVEAU_BO_WR))
+	if (!nvbo->head.next && !(nvbo->access & NOUVEAU_BO_WR) &&
+				!(access & NOUVEAU_BO_WR))
 		return 0;
 
 	req.handle = bo->handle;
