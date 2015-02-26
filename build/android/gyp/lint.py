@@ -20,7 +20,7 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 
 def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
-             result_path, product_dir, sources, jar_path):
+             result_path, product_dir, sources, jar_path, resource_dir=None):
 
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
@@ -80,6 +80,8 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
         '--classpath', _RelativizePath(jar_path),
         '--xml', _RelativizePath(result_path),
     ]
+    if resource_dir:
+      cmd.extend(['--resources', _RelativizePath(resource_dir)])
 
     # There may be multiple source files with the same basename (but in
     # different directories). It is difficult to determine what part of the path
@@ -164,6 +166,7 @@ def main():
   parser.add_option('--src-dirs', help='Directories containing java files.')
   parser.add_option('--java-files', help='Paths to java files.')
   parser.add_option('--jar-path', help='Jar file containing class files.')
+  parser.add_option('--resource-dir', help='Path to resource dir.')
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--enable', action='store_true',
                     help='Run lint instead of just touching stamp.')
@@ -191,7 +194,8 @@ def main():
     rc = _RunLint(options.lint_path, options.config_path,
                   options.processed_config_path,
                   options.manifest_path, options.result_path,
-                  options.product_dir, sources, options.jar_path)
+                  options.product_dir, sources, options.jar_path,
+                  options.resource_dir)
 
   if options.depfile:
     build_utils.WriteDepfile(

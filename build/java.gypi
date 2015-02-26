@@ -113,9 +113,9 @@
     }],
     ['has_java_resources == 1', {
       'variables': {
-        'res_dir': '<(java_in_dir)/res',
-        'res_input_dirs': ['<(res_dir)', '<@(res_extra_dirs)'],
-        'resource_input_paths': ['<!@(find <(res_dir) -type f)'],
+        'resource_dir': '<(java_in_dir)/res',
+        'res_input_dirs': ['<(resource_dir)', '<@(res_extra_dirs)'],
+        'resource_input_paths': ['<!@(find <(resource_dir) -type f)'],
 
         'R_dir': '<(intermediate_dir)/java_R',
         'R_text_file': '<(R_dir)/R.txt',

@@ -15,13 +15,14 @@
       }, {
         'is_enabled': '',
       }]
-    ]
+    ],
+    'android_manifest_path%': '<(DEPTH)/build/android/AndroidManifest.xml',
+    'resource_dir%': '<(DEPTH)/build/android/ant/empty/res',
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
     '<(DEPTH)/build/android/gyp/lint.py',
     '<(DEPTH)/build/android/lint/suppressions.xml',
-    '<(DEPTH)/build/android/AndroidManifest.xml',
     '<(lint_jar_path)',
   ],
   'action': [
@@ -29,8 +30,9 @@
     '--lint-path=<(android_sdk_root)/tools/lint',
     '--config-path=<(DEPTH)/build/android/lint/suppressions.xml',
     '--processed-config-path=<(config_path)',
-    '--manifest-path=<(DEPTH)/build/android/AndroidManifest.xml',
+    '--manifest-path=<(android_manifest_path)',
     '--result-path=<(result_path)',
+    '--resource-dir=<(resource_dir)',
     '--product-dir=<(PRODUCT_DIR)',
     '--src-dirs=>(src_dirs)',
     '--jar-path=<(lint_jar_path)',

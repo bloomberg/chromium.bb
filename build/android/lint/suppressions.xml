@@ -55,6 +55,8 @@ Still reading?
     <ignore path="content/shell/android/java/res/"/>
     <ignore path="chrome/android/shell/res/"/>
   </issue>
+  <issue id="InconsistentLayout" severity="ignore"/>
+  <issue id="InflateParams" severity="ignore"/>
   <issue id="MissingApplicationIcon" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingVersion">
@@ -69,7 +71,9 @@ Still reading?
   <issue id="Overdraw" severity="ignore"/>
   <issue id="Recycle" severity="ignore"/>
   <issue id="Registered" severity="ignore"/>
+  <issue id="RtlCompat" severity="ignore"/>
   <issue id="RtlEnabled" severity="ignore"/>
+  <issue id="RtlSymmetry" severity="ignore"/>
   <issue id="SdCardPath">
     <ignore path="content/public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java"/>
   </issue>
@@ -83,6 +87,8 @@ Still reading?
     <ignore path="chrome/android/java/res/drawable/btn_back.xml" />
     <ignore path="chrome/android/java/res/drawable/btn_forward.xml" />
   </issue>
+  <issue id="SignatureOrSystemPermissions" severity="ignore"/>
+  <issue id="UnusedAttribute" severity="ignore"/>
   <issue id="ViewConstructor" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
 </lint>
