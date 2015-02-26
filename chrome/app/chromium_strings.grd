@@ -1321,58 +1321,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
         </message>
       </if>
 
-      <!-- About device logs UI display strings -->
-      <message name="IDS_DEVICE_LOG_TITLE" desc="Title of the chrome://device-log page">
-        Device Log
-      </message>
-      <message name="IDS_DEVICE_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
-        Add a query param in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;
-      </message>
-      <message name="IDS_DEVICE_LOG_REFRESH" desc="Button to refresh device log">
-        Refresh
-      </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_SHOW" desc="'Show' label before logging level checkboxes">
-        Show:
-      </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_ERROR" desc="Error logging level checkbox">
-        Error
-      </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_USER" desc="User logging level checkbox">
-        User
-      </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_EVENT" desc="Event logging level checkbox">
-        Event
-      </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_DEBUG" desc="Debug logging level checkbox">
-        Debug
-      </message>
-      <message name="IDS_DEVICE_LOG_TYPE_LOGIN" desc="Checkbox to enable showing events of type LOGIN">
-        Login
-      </message>
-      <message name="IDS_DEVICE_LOG_TYPE_NETWORK" desc="Checkbox to enable showing events of type NETWORK">
-        Network
-      </message>
-      <message name="IDS_DEVICE_LOG_TYPE_POWER" desc="Checkbox to enable showing events of type POWER">
-        Power
-      </message>
-      <message name="IDS_DEVICE_LOG_TYPE_USB" desc="Checkbox to enable showing events of type USB">
-        USB
-      </message>
-      <message name="IDS_DEVICE_LOG_TYPE_HID" desc="Checkbox to enable showing events of type HID (Human Interface Device)">
-        HID
-      </message>
-      <message name="IDS_DEVICE_LOG_FILEINFO" desc="File info checkbox in device event log">
-        File Info
-      </message>
-      <message name="IDS_DEVICE_LOG_TIME_DETAIL" desc="Detailed timestamps checkbox in device event log">
-        Detailed Timestamps
-      </message>
-      <message name="IDS_DEVICE_LOG_ENTRY" desc="Format string for lines in chrome://device-log.">
-        [<ph name="TIMESTAMP">$1<ex>Timestamp</ex></ph>]
-        <ph name="FILE_INFO">$2<ex>file:123</ex></ph>
-        <ph name="EVENT_NAME">$3<ex>Event Description</ex></ph>
-      </message>
-
     </messages>
   </release>
 </grit>
