@@ -194,64 +194,6 @@ TEST_F(PacingSenderTest, VariousSending) {
   CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
 }
 
-// TODO(ianswett): Remove this test.
-TEST_F(PacingSenderTest, DISABLED_CongestionAvoidanceSending) {
-  // Configure pacing rate of 1 packet per 1 ms.
-  EXPECT_CALL(*mock_sender_, PacingRate())
-      .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
-          kMaxPacketSize * 1.25, QuicTime::Delta::FromMilliseconds(2))));
-
-  // Now update the RTT and verify that packets are actually paced.
-  UpdateRtt();
-
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-
-  // The first packet was a "make up", then we sent two packets "into the
-  // future", so the delay should be 2200us.
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(2200));
-
-  // Wake up on time.
-  clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(2200));
-  CheckPacketIsSentImmediately();
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(1600));
-  CheckAckIsSentImmediately();
-
-  // Wake up late.
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(4));
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(2400));
-
-  // Wake up really late.
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(2400));
-
-  // Wake up really late again, but application pause partway through.
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsSentImmediately();
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(2200));
-
-  // Wake up too early.
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(2200));
-
-  // Wake up early, but after enough time has passed to permit a send.
-  clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(1200));
-  CheckPacketIsSentImmediately();
-  CheckPacketIsDelayed(QuicTime::Delta::FromMicroseconds(2600));
-}
-
 TEST_F(PacingSenderTest, InitialBurst) {
   // Configure pacing rate of 1 packet per 1 ms.
   InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(
