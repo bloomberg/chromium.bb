@@ -30,10 +30,10 @@ declare_args() {
   # guarded by "is_nacl" directly rather than enable_nacl_untrusted, but
   # this will go away when Mac and Win are working and we can just use
   # the commented out logic.
-  # enable_nacl = !is_ios && !is_android
-  # Currently this *should* work:
-  # enable_nacl = (is_linux && build_cpu_arch == "x64") || is_nacl
-  enable_nacl = false
+  # Eventually we want this to be:
+  #   enable_nacl = !is_ios && !is_android
+  enable_nacl = (is_linux && !is_chromeos && !is_debug &&
+                 build_cpu_arch == "x64") || is_nacl
   enable_nacl_untrusted = enable_nacl
   enable_pnacl = enable_nacl_untrusted
 

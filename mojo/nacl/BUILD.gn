@@ -1,5 +1,20 @@
+# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(dpranke) - it's very dangerous to have files being built with one
+# toolchain having as part of the include_dirs a path to another toolchain's
+# gen/ directory; it would be easy to end up including files meant for a
+# different toolchain. We should either change this code to generate the
+# files in every toolchain, or check in the generated code. Currently
+# the plan is to do the latter.
+
 # All toolchains use the same generated code.
 gen_dir = "$root_build_dir/gen/mojo/nacl"
+
+config("mojo_nacl") {
+  include_dirs = [ "$root_build_dir/gen" ]
+}
 
 # Only allow the generator to be run by one toolchain.
 if (current_toolchain == default_toolchain) {
@@ -58,8 +73,10 @@ if (is_nacl) {
       "$gen_dir/mojo_irt.h",
     ]
 
-    public_configs =
-        [ "//third_party/mojo/src/mojo/public/build/config:mojo_sdk" ]
+    public_configs = [
+      ":mojo_nacl",
+      "//third_party/mojo/src/mojo/public/build/config:mojo_sdk",
+    ]
 
     public_deps = [
       ":mojo_nacl_codegen($default_toolchain)",
@@ -72,6 +89,12 @@ if (is_nacl) {
       "$gen_dir/mojo_irt.c",
       "$gen_dir/mojo_irt.h",
     ]
+
+    public_configs = [
+      ":mojo_nacl",
+      "//third_party/mojo/src/mojo/public/build/config:mojo_sdk",
+    ]
+
     public_deps = [
       "//native_client/build/config/nacl:nacl_base",
       "//native_client/src/untrusted/irt:irt_core_lib",
