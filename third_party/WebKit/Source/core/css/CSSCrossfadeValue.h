@@ -58,7 +58,7 @@ public:
     bool isPending() const;
     bool knownToBeOpaque(const LayoutObject*) const;
 
-    void loadSubimages(ResourceFetcher*);
+    void loadSubimages(Document*);
 
     void setPercentage(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue) { m_percentageValue = percentageValue; }
 

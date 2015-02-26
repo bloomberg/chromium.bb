@@ -169,7 +169,6 @@ public:
         ResourceLoadingFromNetwork,
         ResourceLoadingFromCache
     };
-    void maybeNotifyInsecureContent(const Resource*) const;
     void requestLoadStarted(Resource*, const FetchRequest&, ResourceLoadStartType);
     static const ResourceLoaderOptions& defaultResourceOptions();
 

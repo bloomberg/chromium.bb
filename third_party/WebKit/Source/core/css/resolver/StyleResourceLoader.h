@@ -29,19 +29,20 @@
 namespace blink {
 
 class ElementStyleResources;
+class Document;
 class LayoutStyle;
-class ResourceFetcher;
+class RenderStyle;
 class ShapeValue;
 class StyleImage;
 class StylePendingImage;
 
 // Manages loading of resources, requested by the stylesheets.
 // Expects the same lifetime as StyleResolver, because
-// it expects ResourceFetcher to never change.
+// it expects Document to never change.
 class StyleResourceLoader {
 WTF_MAKE_NONCOPYABLE(StyleResourceLoader);
 public:
-    explicit StyleResourceLoader(ResourceFetcher*);
+    explicit StyleResourceLoader(Document*);
 
     void loadPendingResources(LayoutStyle*, ElementStyleResources&);
 
@@ -52,7 +53,7 @@ private:
     void loadPendingImages(LayoutStyle*, ElementStyleResources&);
     void loadPendingShapeImage(LayoutStyle*, ShapeValue*, float deviceScaleFactor);
 
-    ResourceFetcher* m_fetcher;
+    Document* m_document;
 };
 
 } // namespace blink

@@ -54,9 +54,9 @@ StyleImage* CSSImageValue::cachedOrPendingImage()
     return m_image.get();
 }
 
-StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
+StyleFetchedImage* CSSImageValue::cachedImage(Document* document, const ResourceLoaderOptions& options)
 {
-    ASSERT(fetcher);
+    ASSERT(document);
 
     if (!m_accessedImage) {
         m_accessedImage = true;
@@ -65,9 +65,9 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const Re
         request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
 
         if (options.corsEnabled == IsCORSEnabled)
-            request.setCrossOriginAccessControl(fetcher->document()->securityOrigin(), options.allowCredentials, options.credentialsRequested);
+            request.setCrossOriginAccessControl(document->securityOrigin(), options.allowCredentials, options.credentialsRequested);
 
-        if (ResourcePtr<ImageResource> cachedImage = fetcher->fetchImage(request))
+        if (ResourcePtr<ImageResource> cachedImage = document->fetcher()->fetchImage(request))
             m_image = StyleFetchedImage::create(cachedImage.get());
     }
 
@@ -86,7 +86,8 @@ void CSSImageValue::restoreCachedResourceIfNeeded(Document& document)
         return;
 
     FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, resource->options());
-    document.fetcher()->maybeNotifyInsecureContent(resource);
+    MixedContentChecker::shouldBlockFetch(document.frame(), resource->lastResourceRequest(),
+        resource->lastResourceRequest().url(), MixedContentChecker::SendReport);
     document.fetcher()->requestLoadStarted(resource, request, ResourceFetcher::ResourceLoadingFromCache);
 }
 

@@ -60,13 +60,13 @@ static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject* rendere
     return false;
 }
 
-static ImageResource* cachedImageForCSSValue(CSSValue* value, ResourceFetcher* fetcher)
+static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document)
 {
     if (!value)
         return 0;
 
     if (value->isImageValue()) {
-        StyleFetchedImage* styleImageResource = toCSSImageValue(value)->cachedImage(fetcher);
+        StyleFetchedImage* styleImageResource = toCSSImageValue(value)->cachedImage(document);
         if (!styleImageResource)
             return 0;
 
@@ -74,7 +74,7 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, ResourceFetcher* f
     }
 
     if (value->isImageGeneratorValue()) {
-        toCSSImageGeneratorValue(value)->loadSubimages(fetcher);
+        toCSSImageGeneratorValue(value)->loadSubimages(document);
         // FIXME: Handle CSSImageGeneratorValue (and thus cross-fades with gradients and canvas).
         return 0;
     }
@@ -110,9 +110,9 @@ IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* renderer)
     float percentage = m_percentageValue->getFloatValue();
     float inversePercentage = 1 - percentage;
 
-    ResourceFetcher* fetcher = renderer->document().fetcher();
-    ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), fetcher);
-    ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), fetcher);
+    Document* document = &renderer->document();
+    ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
+    ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
 
     if (!cachedFromImage || !cachedToImage)
         return IntSize();
@@ -139,13 +139,13 @@ bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject* renderer) const
     return subimageKnownToBeOpaque(m_fromValue.get(), renderer) && subimageKnownToBeOpaque(m_toValue.get(), renderer);
 }
 
-void CSSCrossfadeValue::loadSubimages(ResourceFetcher* fetcher)
+void CSSCrossfadeValue::loadSubimages(Document* document)
 {
     ResourcePtr<ImageResource> oldCachedFromImage = m_cachedFromImage;
     ResourcePtr<ImageResource> oldCachedToImage = m_cachedToImage;
 
-    m_cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), fetcher);
-    m_cachedToImage = cachedImageForCSSValue(m_toValue.get(), fetcher);
+    m_cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
+    m_cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
 
     if (m_cachedFromImage != oldCachedFromImage) {
         if (oldCachedFromImage)
@@ -169,9 +169,9 @@ PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* renderer, const IntSize
     if (size.isEmpty())
         return nullptr;
 
-    ResourceFetcher* fetcher = renderer->document().fetcher();
-    ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), fetcher);
-    ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), fetcher);
+    Document* document = &renderer->document();
+    ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
+    ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
 
     if (!cachedFromImage || !cachedToImage)
         return Image::nullImage();

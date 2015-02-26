@@ -205,20 +205,20 @@ bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* renderer) const
     return false;
 }
 
-void CSSImageGeneratorValue::loadSubimages(ResourceFetcher* fetcher)
+void CSSImageGeneratorValue::loadSubimages(Document* document)
 {
     switch (classType()) {
     case CrossfadeClass:
-        toCSSCrossfadeValue(this)->loadSubimages(fetcher);
+        toCSSCrossfadeValue(this)->loadSubimages(document);
         break;
     case CanvasClass:
-        toCSSCanvasValue(this)->loadSubimages(fetcher);
+        toCSSCanvasValue(this)->loadSubimages(document);
         break;
     case LinearGradientClass:
-        toCSSLinearGradientValue(this)->loadSubimages(fetcher);
+        toCSSLinearGradientValue(this)->loadSubimages(document);
         break;
     case RadialGradientClass:
-        toCSSRadialGradientValue(this)->loadSubimages(fetcher);
+        toCSSRadialGradientValue(this)->loadSubimages(document);
         break;
     default:
         ASSERT_NOT_REACHED();

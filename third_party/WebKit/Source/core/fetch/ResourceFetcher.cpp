@@ -678,15 +678,6 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
     return request.options().synchronousPolicy == RequestSynchronously && resource->isLoading();
 }
 
-void ResourceFetcher::maybeNotifyInsecureContent(const Resource* resource) const
-{
-    // As a side effect browser will be notified.
-    MixedContentChecker::shouldBlockFetch(frame(),
-                                          resource->lastResourceRequest(),
-                                          resource->lastResourceRequest().url(),
-                                          MixedContentChecker::SendReport);
-}
-
 // Limit the number of URLs in m_validatedURLs to avoid memory bloat.
 // http://crbug.com/52411
 static const int kMaxValidatedURLsSize = 10000;

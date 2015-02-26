@@ -212,19 +212,8 @@ DEFINE_TRACE(Resource)
     visitor->trace(m_proxyResource);
 }
 
-void Resource::failBeforeStarting()
-{
-    WTF_LOG(ResourceLoading, "Cannot start loading '%s'", url().string().latin1().data());
-    error(Resource::LoadError);
-}
-
 void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
-    if (!fetcher->frame()) {
-        failBeforeStarting();
-        return;
-    }
-
     m_options = options;
     m_loading = true;
 

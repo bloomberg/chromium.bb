@@ -350,8 +350,6 @@ private:
 
     bool hasRightHandleCountApartFromCache(unsigned targetCount) const;
 
-    void failBeforeStarting();
-
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CachedMetadataHandler::CacheType);
     void clearCachedMetadata(CachedMetadataHandler::CacheType);
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;

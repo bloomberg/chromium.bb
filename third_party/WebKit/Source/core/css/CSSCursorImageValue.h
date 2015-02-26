@@ -46,7 +46,7 @@ public:
     String customCSSText() const;
 
     bool updateIfSVGCursorIsUsed(Element*);
-    StyleImage* cachedImage(ResourceFetcher*, float deviceScaleFactor);
+    StyleImage* cachedImage(Document*, float deviceScaleFactor);
     StyleImage* cachedOrPendingImage(float deviceScaleFactor);
 
 #if !ENABLE(OILPAN)

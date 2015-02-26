@@ -106,7 +106,7 @@ public:
     bool isPending() const { return false; }
     bool knownToBeOpaque(const LayoutObject*) const;
 
-    void loadSubimages(ResourceFetcher*) { }
+    void loadSubimages(Document*) { }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 

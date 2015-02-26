@@ -28,6 +28,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
+#include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/layout/style/ContentData.h"
 #include "core/layout/style/FillLayer.h"
@@ -40,8 +41,8 @@
 
 namespace blink {
 
-StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
-    : m_fetcher(fetcher)
+StyleResourceLoader::StyleResourceLoader(Document* document)
+    : m_document(document)
 {
 }
 
@@ -59,7 +60,7 @@ void StyleResourceLoader::loadPendingSVGDocuments(LayoutStyle* layoutStyle, Elem
             CSSSVGDocumentValue* value = elementStyleResources.pendingSVGDocuments().get(referenceFilter);
             if (!value)
                 continue;
-            DocumentResource* resource = value->load(m_fetcher);
+            DocumentResource* resource = value->load(m_document);
             if (!resource)
                 continue;
 
@@ -71,30 +72,30 @@ void StyleResourceLoader::loadPendingSVGDocuments(LayoutStyle* layoutStyle, Elem
     elementStyleResources.clearPendingSVGDocuments();
 }
 
-static PassRefPtr<StyleImage> doLoadPendingImage(ResourceFetcher* fetcher, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
+static PassRefPtr<StyleImage> doLoadPendingImage(Document* document, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
-        return imageValue->cachedImage(fetcher, options);
+        return imageValue->cachedImage(document, options);
 
     if (CSSImageGeneratorValue* imageGeneratorValue
         = pendingImage->cssImageGeneratorValue()) {
-        imageGeneratorValue->loadSubimages(fetcher);
+        imageGeneratorValue->loadSubimages(document);
         return StyleGeneratedImage::create(imageGeneratorValue);
     }
 
     if (CSSCursorImageValue* cursorImageValue
         = pendingImage->cssCursorImageValue())
-        return cursorImageValue->cachedImage(fetcher, deviceScaleFactor);
+        return cursorImageValue->cachedImage(document, deviceScaleFactor);
 
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
-        return imageSetValue->cachedImageSet(fetcher, deviceScaleFactor, options);
+        return imageSetValue->cachedImageSet(document, deviceScaleFactor, options);
 
     return nullptr;
 }
 
 PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
 {
-    return doLoadPendingImage(m_fetcher, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
+    return doLoadPendingImage(m_document, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
 }
 
 void StyleResourceLoader::loadPendingShapeImage(LayoutStyle* layoutStyle, ShapeValue* shapeValue, float deviceScaleFactor)
@@ -111,7 +112,7 @@ void StyleResourceLoader::loadPendingShapeImage(LayoutStyle* layoutStyle, ShapeV
     options.credentialsRequested  = ClientDidNotRequestCredentials;
     options.corsEnabled = IsCORSEnabled;
 
-    shapeValue->setImage(doLoadPendingImage(m_fetcher, toStylePendingImage(image), deviceScaleFactor, options));
+    shapeValue->setImage(doLoadPendingImage(m_document, toStylePendingImage(image), deviceScaleFactor, options));
 }
 
 void StyleResourceLoader::loadPendingImages(LayoutStyle* style, ElementStyleResources& elementStyleResources)

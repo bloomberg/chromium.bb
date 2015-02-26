@@ -48,7 +48,7 @@ public:
     IntSize fixedSize(const LayoutObject*);
 
     bool isPending() const { return false; }
-    void loadSubimages(ResourceFetcher*) { }
+    void loadSubimages(Document*) { }
 
     bool equals(const CSSCanvasValue&) const;
 

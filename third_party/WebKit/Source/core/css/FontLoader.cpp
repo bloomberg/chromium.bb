@@ -9,7 +9,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/fetch/FontResource.h"
-#include "core/fetch/ResourceFetcher.h"
 
 namespace blink {
 
@@ -31,17 +30,17 @@ private:
     }
 };
 
-FontLoader::FontLoader(CSSFontSelector* fontSelector, ResourceFetcher* resourceFetcher)
+FontLoader::FontLoader(CSSFontSelector* fontSelector, Document* document)
     : m_beginLoadingTimer(this, &FontLoader::beginLoadTimerFired)
     , m_fontSelector(fontSelector)
-    , m_resourceFetcher(resourceFetcher)
+    , m_document(document)
 {
 }
 
 FontLoader::~FontLoader()
 {
 #if ENABLE(OILPAN)
-    if (!m_resourceFetcher) {
+    if (!m_document) {
         ASSERT(m_fontsToBeginLoading.isEmpty());
         return;
     }
@@ -54,10 +53,10 @@ FontLoader::~FontLoader()
 
 void FontLoader::addFontToBeginLoading(FontResource* fontResource)
 {
-    if (!m_resourceFetcher || !fontResource->stillNeedsLoad() || fontResource->loadScheduled())
+    if (!m_document || !fontResource->stillNeedsLoad() || fontResource->loadScheduled())
         return;
 
-    m_fontsToBeginLoading.append(FontToLoad::create(fontResource, *m_resourceFetcher->document()));
+    m_fontsToBeginLoading.append(FontToLoad::create(fontResource, *m_document));
     fontResource->didScheduleLoad();
     if (!m_beginLoadingTimer.isActive())
         m_beginLoadingTimer.startOneShot(0, FROM_HERE);
@@ -70,12 +69,16 @@ void FontLoader::beginLoadTimerFired(Timer<blink::FontLoader>*)
 
 void FontLoader::loadPendingFonts()
 {
-    ASSERT(m_resourceFetcher);
+    ASSERT(m_document);
 
     FontsToLoadVector fontsToBeginLoading;
     fontsToBeginLoading.swap(m_fontsToBeginLoading);
-    for (const auto& fontToLoad : fontsToBeginLoading)
-        fontToLoad->fontResource->beginLoadIfNeeded(m_resourceFetcher);
+    for (const auto& fontToLoad : fontsToBeginLoading) {
+        if (m_document->frame())
+            fontToLoad->fontResource->beginLoadIfNeeded(m_document->fetcher());
+        else
+            fontToLoad->fontResource->error(Resource::LoadError);
+    }
 
     // When the local fontsToBeginLoading vector goes out of scope it will
     // decrement the request counts on the ResourceFetcher for all the fonts
@@ -89,16 +92,16 @@ void FontLoader::fontFaceInvalidated()
 }
 
 #if !ENABLE(OILPAN)
-void FontLoader::clearResourceFetcherAndFontSelector()
+void FontLoader::clearDocumentAndFontSelector()
 {
-    if (!m_resourceFetcher) {
+    if (!m_document) {
         ASSERT(m_fontsToBeginLoading.isEmpty());
         return;
     }
 
     m_beginLoadingTimer.stop();
     clearPendingFonts();
-    m_resourceFetcher = nullptr;
+    m_document = nullptr;
     m_fontSelector = nullptr;
 }
 #endif
@@ -112,7 +115,7 @@ void FontLoader::clearPendingFonts()
 
 DEFINE_TRACE(FontLoader)
 {
-    visitor->trace(m_resourceFetcher);
+    visitor->trace(m_document);
     visitor->trace(m_fontSelector);
 }
 

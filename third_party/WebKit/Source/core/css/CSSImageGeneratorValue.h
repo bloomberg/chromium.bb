@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class ResourceFetcher;
+class Document;
 class Image;
 class LayoutObject;
 
@@ -64,7 +64,7 @@ public:
     bool isPending() const;
     bool knownToBeOpaque(const LayoutObject*) const;
 
-    void loadSubimages(ResourceFetcher*);
+    void loadSubimages(Document*);
 
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
