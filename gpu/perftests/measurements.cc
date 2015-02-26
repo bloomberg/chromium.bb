@@ -5,8 +5,8 @@
 #include "gpu/perftests/measurements.h"
 
 #include "base/logging.h"
-#include "gpu/command_buffer/service/gpu_timing.h"
 #include "testing/perf/perf_test.h"
+#include "ui/gl/gpu_timing.h"
 
 namespace gpu {
 
@@ -52,9 +52,9 @@ Measurement Measurement::Divide(int a) const {
 Measurement::~Measurement() {
 }
 
-MeasurementTimers::MeasurementTimers(GPUTiming* gpu_timing)
+MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
     : wall_time_start_(), cpu_time_start_(), gpu_timer_() {
-  DCHECK(gpu_timing);
+  DCHECK(gpu_timing_client);
   wall_time_start_ = base::TimeTicks::NowFromSystemTraceTime();
   if (base::TimeTicks::IsThreadNowSupported()) {
     cpu_time_start_ = base::TimeTicks::ThreadNow();
@@ -64,8 +64,8 @@ MeasurementTimers::MeasurementTimers(GPUTiming* gpu_timing)
     logged_once = true;
   }
 
-  if (gpu_timing->IsAvailable()) {
-    gpu_timer_.reset(new GPUTimer(gpu_timing));
+  if (gpu_timing_client->IsAvailable()) {
+    gpu_timer_ = gpu_timing_client->CreateGPUTimer();
     gpu_timer_->Start();
   }
 }

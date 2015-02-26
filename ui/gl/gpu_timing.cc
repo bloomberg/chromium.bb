@@ -2,19 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/gpu_timing.h"
+#include "ui/gl/gpu_timing.h"
 
 #include "base/time/time.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gpu {
+namespace gfx {
 
-GPUTimer::GPUTimer(GPUTiming* gpu_timing) : gpu_timing_(gpu_timing) {
-  DCHECK(gpu_timing_);
-  memset(queries_, 0, sizeof(queries_));
-  glGenQueriesARB(2, queries_);
+GPUTiming::GPUTiming(GLContextReal* context) {
+  DCHECK(context);
+  const GLVersionInfo* version_info = context->GetVersionInfo();
+  DCHECK(version_info);
+  if (version_info->is_es3 &&  // glGetInteger64v is supported under ES3.
+    context->HasExtension("GL_EXT_disjoint_timer_query")) {
+    timer_type_ = kTimerTypeDisjoint;
+  } else if (context->HasExtension("GL_ARB_timer_query")) {
+    timer_type_ = kTimerTypeARB;
+  }
+}
+
+GPUTiming::~GPUTiming() {
+}
+
+scoped_refptr<GPUTimingClient> GPUTiming::CreateGPUTimingClient() {
+  return new GPUTimingClient(this);
 }
 
 GPUTimer::~GPUTimer() {
@@ -28,12 +41,12 @@ void GPUTimer::Start() {
 
 void GPUTimer::End() {
   end_requested_ = true;
-  offset_ = gpu_timing_->CalculateTimerOffset();
+  offset_ = gpu_timing_client_->CalculateTimerOffset();
   glQueryCounter(queries_[1], GL_TIMESTAMP);
 }
 
 bool GPUTimer::IsAvailable() {
-  if (!gpu_timing_->IsAvailable() || !end_requested_) {
+  if (!gpu_timing_client_->IsAvailable() || !end_requested_) {
     return false;
   }
   GLint done = 0;
@@ -63,46 +76,41 @@ int64 GPUTimer::GetDeltaElapsed() {
   return end - start;
 }
 
-GPUTiming::GPUTiming() : cpu_time_for_testing_() {
+GPUTimer::GPUTimer(scoped_refptr<GPUTimingClient> gpu_timing_client)
+    : gpu_timing_client_(gpu_timing_client) {
+  DCHECK(gpu_timing_client_);
+  memset(queries_, 0, sizeof(queries_));
+  glGenQueriesARB(2, queries_);
 }
 
-GPUTiming::~GPUTiming() {
-}
-
-bool GPUTiming::Initialize(gfx::GLContext* gl_context) {
-  DCHECK(gl_context);
-  DCHECK_EQ(kTimerTypeInvalid, timer_type_);
-
-  const gfx::GLVersionInfo* version_info = gl_context->GetVersionInfo();
-  DCHECK(version_info);
-  if (version_info->is_es3 &&  // glGetInteger64v is supported under ES3.
-      gfx::g_driver_gl.ext.b_GL_EXT_disjoint_timer_query) {
-    timer_type_ = kTimerTypeDisjoint;
-    return true;
-  } else if (gfx::g_driver_gl.ext.b_GL_ARB_timer_query) {
-    timer_type_ = kTimerTypeARB;
-    return true;
+GPUTimingClient::GPUTimingClient(GPUTiming* gpu_timing)
+    : gpu_timing_(gpu_timing) {
+  if (gpu_timing) {
+    timer_type_ = gpu_timing->GetTimerType();
   }
-  return false;
 }
 
-bool GPUTiming::IsAvailable() {
-  return timer_type_ != kTimerTypeInvalid;
+scoped_ptr<GPUTimer> GPUTimingClient::CreateGPUTimer() {
+  return make_scoped_ptr(new GPUTimer(this));
 }
 
-const char* GPUTiming::GetTimerTypeName() const {
+bool GPUTimingClient::IsAvailable() {
+  return timer_type_ != GPUTiming::kTimerTypeInvalid;
+}
+
+const char* GPUTimingClient::GetTimerTypeName() const {
   switch (timer_type_) {
-    case kTimerTypeDisjoint:
+    case GPUTiming::kTimerTypeDisjoint:
       return "GL_EXT_disjoint_timer_query";
-    case kTimerTypeARB:
+    case GPUTiming::kTimerTypeARB:
       return "GL_ARB_timer_query";
     default:
       return "Unknown";
   }
 }
 
-bool GPUTiming::CheckAndResetTimerErrors() {
-  if (timer_type_ == kTimerTypeDisjoint) {
+bool GPUTimingClient::CheckAndResetTimerErrors() {
+  if (timer_type_ == GPUTiming::kTimerTypeDisjoint) {
     GLint disjoint_value = 0;
     glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint_value);
     return disjoint_value != 0;
@@ -111,7 +119,7 @@ bool GPUTiming::CheckAndResetTimerErrors() {
   }
 }
 
-int64 GPUTiming::CalculateTimerOffset() {
+int64 GPUTimingClient::CalculateTimerOffset() {
   if (!offset_valid_) {
     GLint64 gl_now = 0;
     glGetInteger64v(GL_TIMESTAMP, &gl_now);
@@ -120,27 +128,21 @@ int64 GPUTiming::CalculateTimerOffset() {
             ? base::TimeTicks::NowFromSystemTraceTime().ToInternalValue()
             : cpu_time_for_testing_.Run();
     offset_ = now - gl_now / base::Time::kNanosecondsPerMicrosecond;
-    offset_valid_ = timer_type_ == kTimerTypeARB;
+    offset_valid_ = timer_type_ == GPUTiming::kTimerTypeARB;
   }
   return offset_;
 }
 
-void GPUTiming::InvalidateTimerOffset() {
+void GPUTimingClient::InvalidateTimerOffset() {
   offset_valid_ = false;
 }
 
-void GPUTiming::SetCpuTimeForTesting(
+void GPUTimingClient::SetCpuTimeForTesting(
     const base::Callback<int64(void)>& cpu_time) {
   cpu_time_for_testing_ = cpu_time;
 }
 
-void GPUTiming::SetOffsetForTesting(int64 offset, bool cache_it) {
-  offset_ = offset;
-  offset_valid_ = cache_it;
+GPUTimingClient::~GPUTimingClient() {
 }
 
-void GPUTiming::SetTimerTypeForTesting(TimerType type) {
-  timer_type_ = type;
-}
-
-}  // namespace gpu
+}  // namespace gfx

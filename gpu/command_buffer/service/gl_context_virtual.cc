@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gpu_timing.h"
 
 namespace gpu {
 
@@ -80,6 +81,10 @@ bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
 
 void* GLContextVirtual::GetHandle() {
   return shared_context_->GetHandle();
+}
+
+scoped_refptr<gfx::GPUTimingClient> GLContextVirtual::CreateGPUTimingClient() {
+  return shared_context_->CreateGPUTimingClient();
 }
 
 void GLContextVirtual::OnSetSwapInterval(int interval) {

@@ -67,8 +67,6 @@ source_set("service") {
     "gpu_state_tracer.h",
     "gpu_switches.cc",
     "gpu_switches.h",
-    "gpu_timing.cc",
-    "gpu_timing.h",
     "gpu_tracer.cc",
     "gpu_tracer.h",
     "id_manager.cc",

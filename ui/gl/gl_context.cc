@@ -15,6 +15,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/gpu_timing.h"
 
 namespace gfx {
 
@@ -211,6 +212,13 @@ void GLContext::SetRealGLApi() {
 
 GLContextReal::GLContextReal(GLShareGroup* share_group)
     : GLContext(share_group) {}
+
+scoped_refptr<gfx::GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
+  if (!gpu_timing_) {
+    gpu_timing_.reset(new gfx::GPUTiming(this));
+  }
+  return gpu_timing_->CreateGPUTimingClient();
+}
 
 GLContextReal::~GLContextReal() {}
 

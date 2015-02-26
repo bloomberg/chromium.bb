@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/gpu_timing.h"
 
 namespace gpu {
 namespace gles2 {
@@ -81,7 +82,7 @@ void TraceOutputter::TraceServiceEnd(const std::string& category,
 }
 
 GPUTrace::GPUTrace(scoped_refptr<Outputter> outputter,
-                   gpu::GPUTiming* gpu_timing,
+                   gfx::GPUTimingClient* gpu_timing_client,
                    const std::string& category,
                    const std::string& name,
                    const bool enabled)
@@ -89,8 +90,8 @@ GPUTrace::GPUTrace(scoped_refptr<Outputter> outputter,
       name_(name),
       outputter_(outputter),
       enabled_(enabled) {
-  if (gpu_timing->IsAvailable()) {
-    gpu_timer_.reset(new GPUTimer(gpu_timing));
+  if (gpu_timing_client->IsAvailable()) {
+    gpu_timer_ = gpu_timing_client->CreateGPUTimer();
   }
 }
 
@@ -136,9 +137,15 @@ GPUTracer::GPUTracer(gles2::GLES2Decoder* decoder)
       gpu_trace_dev_category(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu.device"))),
       decoder_(decoder),
-      gpu_timing_(),
       gpu_executing_(false),
       process_posted_(false) {
+  DCHECK(decoder_);
+  gfx::GLContext* context = decoder_->GetGLContext();
+  if (context) {
+    gpu_timing_client_ = context->CreateGPUTimingClient();
+  } else {
+    gpu_timing_client_ = new gfx::GPUTimingClient();
+  }
 }
 
 GPUTracer::~GPUTracer() {
@@ -148,26 +155,26 @@ bool GPUTracer::BeginDecoding() {
   if (gpu_executing_)
     return false;
 
-  if (outputter_ == NULL) {
-    outputter_ = CreateOutputter(gpu_timing_.GetTimerTypeName());
-    gpu_timing_.Initialize(decoder_->GetGLContext());
+  if (!outputter_) {
+    outputter_ = CreateOutputter(gpu_timing_client_->GetTimerTypeName());
   }
 
   if (*gpu_trace_dev_category == '\0') {
     // If GPU device category is off, invalidate timing sync.
-    gpu_timing_.InvalidateTimerOffset();
+    gpu_timing_client_->InvalidateTimerOffset();
   }
 
   gpu_executing_ = true;
   if (IsTracing()) {
-    gpu_timing_.CheckAndResetTimerErrors();
+    gpu_timing_client_->CheckAndResetTimerErrors();
     // Begin a Trace for all active markers
     for (int n = 0; n < NUM_TRACER_SOURCES; n++) {
       for (size_t i = 0; i < markers_[n].size(); i++) {
         TraceMarker& trace_marker = markers_[n][i];
         trace_marker.trace_ =
-            new GPUTrace(outputter_, &gpu_timing_, trace_marker.category_,
-                         trace_marker.name_, *gpu_trace_dev_category != 0);
+            new GPUTrace(outputter_, gpu_timing_client_.get(),
+                         trace_marker.category_, trace_marker.name_,
+                         *gpu_trace_dev_category != 0);
         trace_marker.trace_->Start(*gpu_trace_srv_category != 0);
       }
     }
@@ -216,7 +223,8 @@ bool GPUTracer::Begin(const std::string& category, const std::string& name,
   // Create trace
   if (IsTracing()) {
     scoped_refptr<GPUTrace> trace = new GPUTrace(
-        outputter_, &gpu_timing_, category, name, *gpu_trace_dev_category != 0);
+        outputter_, gpu_timing_client_.get(), category, name,
+        *gpu_trace_dev_category != 0);
     trace->Start(*gpu_trace_srv_category != 0);
     markers_[source].back().trace_ = trace;
   }
@@ -288,7 +296,7 @@ void GPUTracer::Process() {
 }
 
 void GPUTracer::ProcessTraces() {
-  if (!gpu_timing_.IsAvailable()) {
+  if (!gpu_timing_client_->IsAvailable()) {
     traces_.clear();
     return;
   }
@@ -304,7 +312,7 @@ void GPUTracer::ProcessTraces() {
 
   // Check if timers are still valid (e.g: a disjoint operation
   // might have occurred.)
-  if (gpu_timing_.CheckAndResetTimerErrors())
+  if (gpu_timing_client_->CheckAndResetTimerErrors())
     traces_.clear();
 
   while (!traces_.empty() && traces_.front()->IsAvailable()) {

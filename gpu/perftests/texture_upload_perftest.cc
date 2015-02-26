@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/perftests/measurements.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -18,6 +17,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gpu_timing.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace gpu {
@@ -124,12 +124,12 @@ class TextureUploadPerfTest : public testing::Test {
               glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
 
     glViewport(0, 0, fbo_size_.width(), fbo_size_.height());
+    gpu_timing_client_ = gl_context_->CreateGPUTimingClient();
 
-    if (gpu_timing_.Initialize(gl_context_.get())) {
+    if (gpu_timing_client_->IsAvailable()) {
       LOG(INFO) << "Gpu timing initialized with timer type: "
-                << gpu_timing_.GetTimerTypeName();
-      gpu_timing_.CheckAndResetTimerErrors();
-      gpu_timing_.InvalidateTimerOffset();
+                << gpu_timing_client_->GetTimerTypeName();
+      gpu_timing_client_->InvalidateTimerOffset();
     } else {
       LOG(WARNING) << "Can't initialize gpu timing";
     }
@@ -205,10 +205,10 @@ class TextureUploadPerfTest : public testing::Test {
                                          const std::vector<uint8>& pixels,
                                          const GLenum format,
                                          const GLenum type) {
-    MeasurementTimers total_timers(&gpu_timing_);
+    MeasurementTimers total_timers(gpu_timing_client_.get());
     GLuint texture_id = 0;
 
-    MeasurementTimers tex_timers(&gpu_timing_);
+    MeasurementTimers tex_timers(gpu_timing_client_.get());
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -222,7 +222,7 @@ class TextureUploadPerfTest : public testing::Test {
     CheckNoGlError();
     tex_timers.Record();
 
-    MeasurementTimers draw_timers(&gpu_timing_);
+    MeasurementTimers draw_timers(gpu_timing_client_.get());
     glUseProgram(program_object_);
     glUniform1i(sampler_location_, 0);
 
@@ -237,7 +237,7 @@ class TextureUploadPerfTest : public testing::Test {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     draw_timers.Record();
 
-    MeasurementTimers finish_timers(&gpu_timing_);
+    MeasurementTimers finish_timers(gpu_timing_client_.get());
     glFinish();
     CheckNoGlError();
     finish_timers.Record();
@@ -257,7 +257,8 @@ class TextureUploadPerfTest : public testing::Test {
 
     std::vector<Measurement> measurements;
     bool gpu_timer_errors =
-        gpu_timing_.IsAvailable() && gpu_timing_.CheckAndResetTimerErrors();
+        gpu_timing_client_->IsAvailable() &&
+        gpu_timing_client_->CheckAndResetTimerErrors();
     if (!gpu_timer_errors) {
       measurements.push_back(total_timers.GetAsMeasurement("total"));
       measurements.push_back(tex_timers.GetAsMeasurement("teximage2d"));
@@ -298,7 +299,7 @@ class TextureUploadPerfTest : public testing::Test {
   const gfx::Size fbo_size_;  // for the fbo
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> surface_;
-  GPUTiming gpu_timing_;
+  scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
 
   GLuint color_texture_ = 0;
   GLuint framebuffer_object_ = 0;

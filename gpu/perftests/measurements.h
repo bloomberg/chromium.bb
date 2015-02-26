@@ -10,9 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
+namespace gfx {
+  class GPUTimingClient;
+  class GPUTimer;
+}
+
 namespace gpu {
-class GPUTiming;
-class GPUTimer;
+
 struct Measurement {
   Measurement();
   Measurement(const Measurement& m);
@@ -37,7 +41,7 @@ struct Measurement {
 // creation up to when Record is called.
 class MeasurementTimers {
  public:
-  explicit MeasurementTimers(GPUTiming* gpu_timing);
+  explicit MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client);
   void Record();
   Measurement GetAsMeasurement(const std::string& name);
   ~MeasurementTimers();
@@ -45,7 +49,7 @@ class MeasurementTimers {
  private:
   base::TimeTicks wall_time_start_;
   base::TimeTicks cpu_time_start_;
-  scoped_ptr<gpu::GPUTimer> gpu_timer_;
+  scoped_ptr<gfx::GPUTimer> gpu_timer_;
 
   base::TimeDelta wall_time_;
   base::TimeDelta cpu_time_;

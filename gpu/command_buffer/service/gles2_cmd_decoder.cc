@@ -2444,7 +2444,6 @@ bool GLES2DecoderImpl::Initialize(
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
   set_initialized();
-  gpu_tracer_.reset(new GPUTracer(this));
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2474,6 +2473,9 @@ bool GLES2DecoderImpl::Initialize(
   ContextCreationAttribHelper attrib_parser;
   if (!attrib_parser.Parse(attribs))
     return false;
+
+  // Create GPU Tracer for timing values.
+  gpu_tracer_.reset(new GPUTracer(this));
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =

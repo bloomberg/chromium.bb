@@ -15,8 +15,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/gpu_export.h"
+
+namespace gfx {
+  class GPUTimingClient;
+  class GPUTimer;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -82,6 +86,7 @@ class GPU_EXPORT GPUTracer
 
   void IssueProcessTask();
 
+  scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
   scoped_refptr<Outputter> outputter_;
   std::vector<TraceMarker> markers_[NUM_TRACER_SOURCES];
   std::deque<scoped_refptr<GPUTrace> > traces_;
@@ -89,7 +94,6 @@ class GPU_EXPORT GPUTracer
   const unsigned char* gpu_trace_srv_category;
   const unsigned char* gpu_trace_dev_category;
   gles2::GLES2Decoder* decoder_;
-  gpu::GPUTiming gpu_timing_;
 
   bool gpu_executing_;
   bool process_posted_;
@@ -146,7 +150,7 @@ class GPU_EXPORT GPUTrace
     : public base::RefCounted<GPUTrace> {
  public:
   GPUTrace(scoped_refptr<Outputter> outputter,
-           gpu::GPUTiming* gpu_timing,
+           gfx::GPUTimingClient* gpu_timing_client,
            const std::string& category,
            const std::string& name,
            const bool enabled);
@@ -167,7 +171,7 @@ class GPU_EXPORT GPUTrace
   std::string category_;
   std::string name_;
   scoped_refptr<Outputter> outputter_;
-  scoped_ptr<gpu::GPUTimer> gpu_timer_;
+  scoped_ptr<gfx::GPUTimer> gpu_timer_;
   const bool enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GPUTrace);

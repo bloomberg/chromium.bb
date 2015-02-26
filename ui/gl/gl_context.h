@@ -19,8 +19,11 @@
 namespace gfx {
 
 class GLSurface;
+class GPUTiming;
+class GPUTimingClient;
 class VirtualGLApi;
 struct GLVersionInfo;
+
 
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
@@ -49,6 +52,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   // Get the underlying platform specific GL context "handle".
   virtual void* GetHandle() = 0;
+
+  // Creates a GPUTimingClient class which abstracts various GPU Timing exts.
+  virtual scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() = 0;
 
   // Gets the GLStateRestorer for the context.
   GLStateRestorer* GetGLStateRestorer();
@@ -173,6 +179,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 class GL_EXPORT GLContextReal : public GLContext {
  public:
   explicit GLContextReal(GLShareGroup* share_group);
+  scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() override;
 
  protected:
   ~GLContextReal() override;
@@ -180,6 +187,7 @@ class GL_EXPORT GLContextReal : public GLContext {
   void SetCurrent(GLSurface* surface) override;
 
  private:
+  scoped_ptr<gfx::GPUTiming> gpu_timing_;
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);
 };
 
