@@ -169,16 +169,9 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       if (state == 'update')
         return;
       var deviceBlock = $(blockId);
-      for (var stateCase in this.CONNECTION)
+      for (var key in this.CONNECTION) {
+        var stateCase = this.CONNECTION[key];
         deviceBlock.classList.toggle(stateCase, stateCase == state);
-
-      // 'Continue' button available iff at least one device is connected,
-      if ((blockId in this.BLOCK) &&
-          (state == this.CONNECTION.CONNECTED ||
-           state == this.CONNECTION.PAIRED)) {
-        $('hid-continue-button').disabled = false;
-      } else {
-        $('hid-continue-button').disabled = true;
       }
     },
 
