@@ -208,6 +208,7 @@ class BlinkPerfEvents(benchmark.Benchmark):
     return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
+@benchmark.Disabled('win8')  # http://crbug.com/462350
 class BlinkPerfLayout(benchmark.Benchmark):
   tag = 'layout'
   test = _BlinkPerfMeasurement
