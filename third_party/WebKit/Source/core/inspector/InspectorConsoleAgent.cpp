@@ -34,7 +34,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScript.h"
-#include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -252,22 +251,6 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     }
     m_frontend->messageAdded(jsonObj);
     m_frontend->flush();
-}
-
-class InspectableHeapObject final : public InjectedScriptHost::InspectableObject {
-public:
-    explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
-    virtual ScriptValue get(ScriptState*) override
-    {
-        return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
-    }
-private:
-    int m_heapObjectId;
-};
-
-void InspectorConsoleAgent::addInspectedHeapObject(ErrorString*, int inspectedHeapObjectId)
-{
-    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableHeapObject(inspectedHeapObjectId)));
 }
 
 void InspectorConsoleAgent::setLastEvaluationResult(ErrorString* errorString, const String& objectId)

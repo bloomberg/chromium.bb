@@ -302,6 +302,28 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
         *error = "Failed to wrap object";
 }
 
+class InspectableHeapObject final : public InjectedScriptHost::InspectableObject {
+public:
+    explicit InspectableHeapObject(unsigned heapObjectId) : m_heapObjectId(heapObjectId) { }
+    virtual ScriptValue get(ScriptState*) override
+    {
+        return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
+    }
+private:
+    unsigned m_heapObjectId;
+};
+
+void InspectorHeapProfilerAgent::addInspectedHeapObject(ErrorString* errorString, const String& inspectedHeapObjectId)
+{
+    bool ok;
+    unsigned id = inspectedHeapObjectId.toUInt(&ok);
+    if (!ok) {
+        *errorString = "Invalid heap snapshot object id";
+        return;
+    }
+    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
+}
+
 void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const String& objectId, String* heapSnapshotObjectId)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);

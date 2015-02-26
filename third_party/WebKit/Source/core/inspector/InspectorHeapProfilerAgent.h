@@ -69,6 +69,7 @@ public:
     virtual void takeHeapSnapshot(ErrorString*, const bool* reportProgress) override;
 
     virtual void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;
+    virtual void addInspectedHeapObject(ErrorString*, const String& inspectedHeapObjectId) override;
     virtual void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
 
 private:
