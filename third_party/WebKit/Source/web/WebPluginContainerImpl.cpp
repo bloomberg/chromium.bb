@@ -149,7 +149,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     DisableCompositingQueryAsserts disabler;
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    renderer->invalidatePaintRectangle(dirtyRect);
+    renderer->invalidatePaintRectangle(LayoutRect(dirtyRect));
 }
 
 void WebPluginContainerImpl::setFocus(bool focused, WebFocusType focusType)

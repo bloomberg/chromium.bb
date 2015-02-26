@@ -184,8 +184,8 @@ LayoutRect LayerClipper::childrenClipRect() const
     ClipRect backgroundRect, foregroundRect, outlineRect;
     // Need to use uncached clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
     ClipRectsContext context(clippingRootLayer, UncachedClipRects);
-    calculateRects(context, m_renderer.view()->unscaledDocumentRect(), layerBounds, backgroundRect, foregroundRect, outlineRect);
-    return clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox();
+    calculateRects(context, LayoutRect(m_renderer.view()->unscaledDocumentRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
+    return LayoutRect(clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox());
 }
 
 LayoutRect LayerClipper::localClipRect() const
@@ -195,7 +195,7 @@ LayoutRect LayerClipper::localClipRect() const
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     ClipRectsContext context(clippingRootLayer, PaintingClipRects);
-    calculateRects(context, LayoutRect::infiniteIntRect(), layerBounds, backgroundRect, foregroundRect, outlineRect);
+    calculateRects(context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
 
     LayoutRect clipRect = backgroundRect.rect();
     if (clipRect == LayoutRect::infiniteIntRect())
@@ -276,7 +276,7 @@ void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects
     bool rootLayerScrolls = m_renderer.document().settings() && m_renderer.document().settings()->rootLayerScrolls();
     if (!m_renderer.layer()->parent() && !rootLayerScrolls) {
         // The root layer's clip rect is always infinite.
-        clipRects.reset(LayoutRect::infiniteIntRect());
+        clipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
         return;
     }
 
@@ -295,7 +295,7 @@ void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects
             parentLayer->clipper().calculateClipRects(context, clipRects);
         }
     } else {
-        clipRects.reset(LayoutRect::infiniteIntRect());
+        clipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
     }
 
     adjustClipRectsForChildren(m_renderer, clipRects);
@@ -326,14 +326,14 @@ ClipRect LayerClipper::backgroundClipRect(const ClipRectsContext& context) const
 
     RefPtr<ClipRects> parentClipRects = ClipRects::create();
     if (m_renderer.layer() == context.rootLayer)
-        parentClipRects->reset(LayoutRect::infiniteIntRect());
+        parentClipRects->reset(LayoutRect(LayoutRect::infiniteIntRect()));
     else
         m_renderer.layer()->parent()->clipper().getOrCalculateClipRects(context, *parentClipRects);
 
     ClipRect result = backgroundClipRectForPosition(*parentClipRects, m_renderer.style()->position());
 
     // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
-    if (parentClipRects->fixed() && context.rootLayer->renderer() == m_renderer.view() && result != LayoutRect::infiniteIntRect())
+    if (parentClipRects->fixed() && context.rootLayer->renderer() == m_renderer.view() && result != LayoutRect(LayoutRect::infiniteIntRect()))
         result.move(m_renderer.view()->frameView()->scrollOffsetForViewportConstrainedObjects());
 
     return result;

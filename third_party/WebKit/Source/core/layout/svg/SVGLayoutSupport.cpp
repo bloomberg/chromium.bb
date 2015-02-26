@@ -49,7 +49,7 @@ static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
 {
     if (rect.isEmpty())
         return LayoutRect();
-    return enclosingIntRect(rect);
+    return LayoutRect(enclosingIntRect(rect));
 }
 
 LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject* object, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)

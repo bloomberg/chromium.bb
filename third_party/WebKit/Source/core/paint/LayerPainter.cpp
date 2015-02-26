@@ -42,7 +42,7 @@ static inline bool shouldSuppressPaintingLayer(Layer* layer)
 
 void LayerPainter::paint(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, LayoutObject* paintingRoot, PaintLayerFlags paintFlags)
 {
-    LayerPaintingInfo paintingInfo(&m_renderLayer, enclosingIntRect(damageRect), paintBehavior, LayoutSize(), paintingRoot);
+    LayerPaintingInfo paintingInfo(&m_renderLayer, LayoutRect(enclosingIntRect(damageRect)), paintBehavior, LayoutSize(), paintingRoot);
     if (shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
         paintLayer(context, paintingInfo, paintFlags);
 }
@@ -397,7 +397,7 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     Transform3DRecorder transform3DRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform);
 
     // Now do a paint with the root layer shifted to be us.
-    LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect)), paintingInfo.paintBehavior,
+    LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.paintBehavior,
         adjustedSubPixelAccumulation, paintingInfo.paintingRoot);
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
 }
@@ -556,7 +556,7 @@ void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const La
         if (!localDirtyRect.isEmpty()) {
             // Each strip pushes a clip, since column boxes are specified as being
             // like overflow:hidden.
-            ClipRecorder clipRecorder(m_renderLayer.renderer()->displayItemClient(), context, DisplayItem::ClipLayerColumnBounds, enclosingIntRect(colRect));
+            ClipRecorder clipRecorder(m_renderLayer.renderer()->displayItemClient(), context, DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
 
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.
@@ -708,7 +708,7 @@ void LayerPainter::paintOverlayScrollbars(GraphicsContext* context, const Layout
     if (!m_renderLayer.containsDirtyOverlayScrollbars())
         return;
 
-    LayerPaintingInfo paintingInfo(&m_renderLayer, enclosingIntRect(damageRect), paintBehavior, LayoutSize(), paintingRoot);
+    LayerPaintingInfo paintingInfo(&m_renderLayer, LayoutRect(enclosingIntRect(damageRect)), paintBehavior, LayoutSize(), paintingRoot);
     paintLayer(context, paintingInfo, PaintLayerPaintingOverlayScrollbars);
 
     m_renderLayer.setContainsDirtyOverlayScrollbars(false);

@@ -206,7 +206,7 @@ LayoutRect AXScrollView::elementRect() const
     if (!m_scrollView)
         return LayoutRect();
 
-    return m_scrollView->frameRect();
+    return LayoutRect(m_scrollView->frameRect());
 }
 
 FrameView* AXScrollView::documentFrameView() const

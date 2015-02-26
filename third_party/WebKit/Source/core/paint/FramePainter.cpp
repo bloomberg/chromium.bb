@@ -103,7 +103,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     RELEASE_ASSERT(!m_frameView.needsLayout());
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(layoutView, rect, 0));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));
 
     bool isTopLevelPainter = !s_inPaintContents;
     s_inPaintContents = true;
@@ -118,7 +118,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     }
 
     if (m_frameView.paintBehavior() == PaintBehaviorNormal)
-        document->markers().invalidateRenderedRectsForMarkersInRect(rect);
+        document->markers().invalidateRenderedRectsForMarkersInRect(LayoutRect(rect));
 
     if (document->printing())
         m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers);
@@ -140,10 +140,10 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->renderer()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
-    layerPainter.paint(context, rect, m_frameView.paintBehavior(), renderer);
+    layerPainter.paint(context, LayoutRect(rect), m_frameView.paintBehavior(), renderer);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(context, rect, m_frameView.paintBehavior(), renderer);
+        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), m_frameView.paintBehavior(), renderer);
 
     m_frameView.setIsPainting(false);
 
@@ -161,7 +161,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
         s_inPaintContents = false;
     }
 
-    InspectorInstrumentation::didPaint(layoutView, 0, context, rect);
+    InspectorInstrumentation::didPaint(layoutView, 0, context, LayoutRect(rect));
 }
 
 void FramePainter::paintScrollbars(GraphicsContext* context, const IntRect& rect)
@@ -186,7 +186,7 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
         bool needsBackground = m_frameView.frame().isMainFrame();
         if (needsBackground)
             context->fillRect(cornerRect, m_frameView.baseBackgroundColor());
-        ScrollbarPainter::paintIntoRect(m_frameView.scrollCorner(), context, cornerRect.location(), cornerRect);
+        ScrollbarPainter::paintIntoRect(m_frameView.scrollCorner(), context, cornerRect.location(), LayoutRect(cornerRect));
         return;
     }
 

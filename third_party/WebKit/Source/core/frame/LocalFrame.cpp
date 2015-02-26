@@ -677,7 +677,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     IntRect rect;
 
     return paintIntoDragImage(renderer->displayItemClient(), DisplayItem::ClipNodeImage, renderer->shouldRespectImageOrientation(),
-        pixelSnappedIntRect(renderer->paintingRootRect(rect)));
+        renderer->paintingRootRect(rect));
 }
 
 PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()

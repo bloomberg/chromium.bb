@@ -96,7 +96,7 @@ void drawRect(GraphicsContext* context, LayoutObject* renderer, PaintPhase phase
 
 void drawClippedRect(GraphicsContext* context, LayoutBoxModelObject* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    IntRect rect(1, 1, 9, 9);
+    LayoutRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
     LayerClipRecorder layerClipRecorder(renderer, context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
     drawRect(context, renderer, phase, bound);
@@ -341,7 +341,7 @@ TEST_F(ViewDisplayListTest, UpdateClip)
     LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->renderer());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
-    ClipRect firstClipRect(IntRect(1, 1, 2, 2));
+    ClipRect firstClipRect(LayoutRect(1, 1, 2, 2));
     {
         LayerClipRecorder layerClipRecorder(firstRenderer, &context, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -366,7 +366,7 @@ TEST_F(ViewDisplayListTest, UpdateClip)
 
     rootDisplayItemList().invalidate(secondRenderer->displayItemClient());
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
-    ClipRect secondClipRect(IntRect(1, 1, 2, 2));
+    ClipRect secondClipRect(LayoutRect(1, 1, 2, 2));
     {
         LayerClipRecorder layerClipRecorder(secondRenderer, &context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));

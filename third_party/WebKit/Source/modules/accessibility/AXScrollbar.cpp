@@ -58,7 +58,7 @@ LayoutRect AXScrollbar::elementRect() const
     if (!m_scrollbar)
         return LayoutRect();
 
-    return m_scrollbar->frameRect();
+    return LayoutRect(m_scrollbar->frameRect());
 }
 
 Document* AXScrollbar::document() const

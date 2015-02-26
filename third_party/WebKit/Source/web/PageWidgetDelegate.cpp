@@ -93,7 +93,7 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
     IntRect dirtyRect(rect);
     FrameView* view = root.view();
     if (view) {
-        ClipRecorder clipRecorder(root.displayItemClient(), graphicsContext.get(), DisplayItem::PageWidgetDelegateClip, dirtyRect);
+        ClipRecorder clipRecorder(root.displayItemClient(), graphicsContext.get(), DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
         view->paint(graphicsContext.get(), dirtyRect);
         if (overlays)

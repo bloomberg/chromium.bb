@@ -315,7 +315,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
 LayoutRect InlineFlowBoxPainter::roundedFrameRectClampedToLineTopAndBottomIfNeeded() const
 {
     // Pixel snap rect painting.
-    LayoutRect rect = m_inlineFlowBox.roundedFrameRect();
+    LayoutRect rect(m_inlineFlowBox.roundedFrameRect());
 
     bool noQuirksMode = m_inlineFlowBox.renderer().document().inNoQuirksMode();
     if (!noQuirksMode && !m_inlineFlowBox.hasTextChildren() && !(m_inlineFlowBox.descendantsHaveSameLineHeightAndBaseline() && m_inlineFlowBox.hasTextDescendants())) {

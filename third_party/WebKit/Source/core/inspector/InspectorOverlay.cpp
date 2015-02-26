@@ -279,7 +279,7 @@ static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad
         LayoutInline* layoutInline = toLayoutInline(renderer);
 
         // LayoutInline's bounding box includes paddings and borders, excludes margins.
-        borderBox = layoutInline->linesBoundingBox();
+        borderBox = LayoutRect(layoutInline->linesBoundingBox());
         paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(), borderBox.y() + layoutInline->borderTop(),
             borderBox.width() - layoutInline->borderLeft() - layoutInline->borderRight(), borderBox.height() - layoutInline->borderTop() - layoutInline->borderBottom());
         contentBox = LayoutRect(paddingBox.x() + layoutInline->paddingLeft(), paddingBox.y() + layoutInline->paddingTop(),
@@ -829,7 +829,7 @@ bool InspectorOverlay::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel
     if (!buildNodeQuads(node->renderer(), &content, &padding, &border, &margin))
         return false;
 
-    IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootFrame(renderer->absoluteBoundingBoxRect()));
+    IntRect boundingBox = view->contentsToRootFrame(renderer->absoluteBoundingBoxRect());
     LayoutBoxModelObject* modelObject = renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
 
     model = TypeBuilder::DOM::BoxModel::create()

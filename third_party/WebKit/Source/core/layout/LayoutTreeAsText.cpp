@@ -191,13 +191,13 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         // many test results.
         const RenderText& text = toRenderText(o);
         IntRect linesBox = text.linesBoundingBox();
-        r = IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height());
+        r = LayoutRect(IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height()));
         if (adjustForTableCells && !text.firstTextBox())
             adjustForTableCells = false;
     } else if (o.isLayoutInline()) {
         // FIXME: Would be better not to just dump 0, 0 as the x and y here.
         const LayoutInline& inlineFlow = toLayoutInline(o);
-        r = IntRect(0, 0, inlineFlow.linesBoundingBox().width(), inlineFlow.linesBoundingBox().height());
+        r = LayoutRect(IntRect(0, 0, inlineFlow.linesBoundingBox().width(), inlineFlow.linesBoundingBox().height()));
         adjustForTableCells = false;
     } else if (o.isTableCell()) {
         // FIXME: Deliberately dump the "inner" box of table cells, since that is what current results reflect.  We'd like

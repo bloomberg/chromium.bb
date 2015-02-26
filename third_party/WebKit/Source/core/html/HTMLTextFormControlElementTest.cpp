@@ -115,21 +115,21 @@ TEST_F(HTMLTextFormControlElementTest, SetSelectionRangeDoesNotCauseLayout)
     input().setSelectionRange(1, 1);
     FrameSelection& frameSelection = document().frame()->selection();
     forceLayoutFlag();
-    LayoutRect oldCaretRect = frameSelection.absoluteCaretBounds();
+    LayoutRect oldCaretRect(frameSelection.absoluteCaretBounds());
     EXPECT_FALSE(oldCaretRect.isEmpty());
     int startLayoutCount = layoutCount();
     input().setSelectionRange(1, 1);
     EXPECT_EQ(startLayoutCount, layoutCount());
-    LayoutRect newCaretRect = frameSelection.absoluteCaretBounds();
+    LayoutRect newCaretRect(frameSelection.absoluteCaretBounds());
     EXPECT_EQ(oldCaretRect, newCaretRect);
 
     forceLayoutFlag();
-    oldCaretRect = frameSelection.absoluteCaretBounds();
+    oldCaretRect = LayoutRect(frameSelection.absoluteCaretBounds());
     EXPECT_FALSE(oldCaretRect.isEmpty());
     startLayoutCount = layoutCount();
     input().setSelectionRange(2, 2);
     EXPECT_EQ(startLayoutCount, layoutCount());
-    newCaretRect = frameSelection.absoluteCaretBounds();
+    newCaretRect = LayoutRect(frameSelection.absoluteCaretBounds());
     EXPECT_NE(oldCaretRect, newCaretRect);
 }
 

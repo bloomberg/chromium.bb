@@ -352,7 +352,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     // Paint the root of the main frame in the way that CompositedLayerMapping would.
     FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     Layer* rootLayer = view->layoutView()->layer();
-    IntRect paintRect(0, 0, kWidth, kHeight);
+    LayoutRect paintRect(0, 0, kWidth, kHeight);
     LayerPaintingInfo paintingInfo(rootLayer, paintRect, PaintBehaviorNormal, LayoutSize());
     LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
 

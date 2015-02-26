@@ -42,7 +42,7 @@ private:
 
 void drawEmptyClip(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    IntRect rect(1, 1, 9, 9);
+    LayoutRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
     LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
@@ -50,7 +50,7 @@ void drawEmptyClip(GraphicsContext* context, LayoutView* renderer, PaintPhase ph
 void drawRectInClip(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
-    ClipRect clipRect(rect);
+    ClipRect clipRect((LayoutRect(rect)));
     LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
     RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
     if (!drawingRecorder.canUseCachedDrawing())

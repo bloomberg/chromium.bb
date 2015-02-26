@@ -295,11 +295,11 @@ void HTMLCanvasElement::didFinalizeFrame()
     FloatRect srcRect(0, 0, size().width(), size().height());
     m_dirtyRect.intersect(srcRect);
     if (LayoutBox* ro = layoutBox()) {
-        FloatRect mappedDirtyRect = mapRect(m_dirtyRect, srcRect, ro->contentBoxRect());
+        LayoutRect mappedDirtyRect(enclosingIntRect(mapRect(m_dirtyRect, srcRect, ro->contentBoxRect())));
         // For querying Layer::compositingState()
         // FIXME: is this invalidation using the correct compositing state?
         DisableCompositingQueryAsserts disabler;
-        ro->invalidatePaintRectangle(enclosingIntRect(mappedDirtyRect));
+        ro->invalidatePaintRectangle(mappedDirtyRect);
     }
     notifyObserversCanvasChanged(m_dirtyRect);
     m_dirtyRect = FloatRect();

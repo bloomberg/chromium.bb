@@ -28,7 +28,7 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
         return;
 
     if (m_renderLayerScrollableArea.resizer()) {
-        ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.resizer(), context, paintOffset, absRect);
+        ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.resizer(), context, paintOffset, LayoutRect(absRect));
         return;
     }
 
@@ -173,7 +173,7 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
         return;
 
     if (m_renderLayerScrollableArea.scrollCorner()) {
-        ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.scrollCorner(), context, paintOffset, absRect);
+        ScrollbarPainter::paintIntoRect(m_renderLayerScrollableArea.scrollCorner(), context, paintOffset, LayoutRect(absRect));
         return;
     }
 

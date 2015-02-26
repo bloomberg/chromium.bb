@@ -1047,7 +1047,7 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     }
 
     // Now check ourselves. Pixel snap hit testing.
-    LayoutRect frameRect = roundedFrameRect();
+    LayoutRect frameRect(roundedFrameRect());
     LayoutUnit minX = frameRect.x();
     LayoutUnit minY = frameRect.y();
     LayoutUnit width = frameRect.width();

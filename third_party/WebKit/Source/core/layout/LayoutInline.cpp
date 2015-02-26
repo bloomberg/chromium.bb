@@ -1045,7 +1045,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
             LayoutRect rect = curr->clippedOverflowRectForPaintInvalidation(view());
             context(rect);
             if (curr == endContinuation)
-                return enclosingIntRect(floatResult);
+                return LayoutRect(enclosingIntRect(floatResult));
         }
     }
     return LayoutRect();
@@ -1442,7 +1442,7 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 
     AnnotatedRegionValue region;
     region.draggable = style()->getDraggableRegionMode() == DraggableRegionDrag;
-    region.bounds = linesBoundingBox();
+    region.bounds = LayoutRect(linesBoundingBox());
 
     LayoutObject* container = containingBlock();
     if (!container)

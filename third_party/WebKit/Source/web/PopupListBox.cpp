@@ -357,7 +357,7 @@ void PopupListBox::typeAheadFind(const PlatformKeyboardEvent& event)
 
 void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
 {
-    ClipRecorder frameClip(displayItemClient(), gc, DisplayItem::ClipPopupListBoxFrame, frameRect());
+    ClipRecorder frameClip(displayItemClient(), gc, DisplayItem::ClipPopupListBoxFrame, LayoutRect(frameRect()));
     TransformRecorder transformRecorder(*gc, displayItemClient(), AffineTransform::translation(x(), y()));
     IntRect paintRect = intersection(rect, frameRect());
     paintRect.moveBy(-location());

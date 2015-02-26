@@ -118,13 +118,13 @@ void HitTestLocation::move(const LayoutSize& offset)
 }
 
 template<typename RectType>
-bool HitTestLocation::intersectsRect(const RectType& rect) const
+bool HitTestLocation::intersectsRect(const RectType& rect, const RectType& boundingBox) const
 {
     // FIXME: When the hit test is not rect based we should use rect.contains(m_point).
     // That does change some corner case tests though.
 
     // First check if rect even intersects our bounding box.
-    if (!rect.intersects(m_boundingBox))
+    if (!rect.intersects(boundingBox))
         return false;
 
     // If the transformed rect is rectilinear the bounding box intersection was accurate.
@@ -132,7 +132,7 @@ bool HitTestLocation::intersectsRect(const RectType& rect) const
         return true;
 
     // If rect fully contains our bounding box, we are also sure of an intersection.
-    if (rect.contains(m_boundingBox))
+    if (rect.contains(boundingBox))
         return true;
 
     // Otherwise we need to do a slower quad based intersection test.
@@ -141,12 +141,12 @@ bool HitTestLocation::intersectsRect(const RectType& rect) const
 
 bool HitTestLocation::intersects(const LayoutRect& rect) const
 {
-    return intersectsRect(rect);
+    return intersectsRect(rect, LayoutRect(m_boundingBox));
 }
 
 bool HitTestLocation::intersects(const FloatRect& rect) const
 {
-    return intersectsRect(rect);
+    return intersectsRect(rect, FloatRect(m_boundingBox));
 }
 
 bool HitTestLocation::intersects(const FloatRoundedRect& rect) const

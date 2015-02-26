@@ -284,7 +284,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     recordingContext.beginRecording(dstRect);
 
     {
-        ClipRecorder clipRecorder(displayItemClient(), &recordingContext, DisplayItem::ClipNodeImage, enclosingIntRect(dstRect));
+        ClipRecorder clipRecorder(displayItemClient(), &recordingContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;

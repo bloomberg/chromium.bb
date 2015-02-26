@@ -611,7 +611,7 @@ LayoutBoxModelObject* Node::layoutBoxModelObject() const
 LayoutRect Node::boundingBox() const
 {
     if (renderer())
-        return renderer()->absoluteBoundingBoxRect();
+        return LayoutRect(renderer()->absoluteBoundingBoxRect());
     return LayoutRect();
 }
 

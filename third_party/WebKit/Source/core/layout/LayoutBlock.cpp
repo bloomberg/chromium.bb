@@ -1398,7 +1398,7 @@ bool LayoutBlock::updateImageLoadingPriorities()
         return false;
 
     LayoutRect viewBounds = viewRect();
-    LayoutRect objectBounds = absoluteContentBox();
+    LayoutRect objectBounds(absoluteContentBox());
     // The object bounds might be empty right now, so intersects will fail since it doesn't deal
     // with empty rects. Use LayoutRect::contains in that case.
     bool isVisible;
@@ -1530,7 +1530,7 @@ void LayoutBlock::addVisualOverflowFromTheme()
 
     IntRect inflatedRect = pixelSnappedBorderBoxRect();
     LayoutTheme::theme().adjustPaintInvalidationRect(this, inflatedRect);
-    addVisualOverflow(inflatedRect);
+    addVisualOverflow(LayoutRect(inflatedRect));
 }
 
 bool LayoutBlock::createsNewFormattingContext() const
@@ -2326,7 +2326,7 @@ bool LayoutBlock::hitTestColumns(const HitTestRequest& request, HitTestResult& r
         return false;
 
     for (ColumnRectIterator it(*this); it.hasMore(); it.advance()) {
-        LayoutRect hitRect = locationInContainer.boundingBox();
+        LayoutRect hitRect = LayoutRect(locationInContainer.boundingBox());
         LayoutRect colRect = it.columnRect();
         colRect.moveBy(accumulatedOffset);
         if (locationInContainer.intersects(colRect)) {

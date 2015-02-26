@@ -2385,11 +2385,11 @@ LayoutRect AXLayoutObject::computeElementRect() const
     if (obj->isText()) {
         Vector<FloatQuad> quads;
         toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
-        result = boundingBoxForQuads(obj, quads);
+        result = LayoutRect(boundingBoxForQuads(obj, quads));
     } else if (isWebArea() || obj->isSVGRoot()) {
-        result = obj->absoluteBoundingBoxRect();
+        result = LayoutRect(obj->absoluteBoundingBoxRect());
     } else {
-        result = obj->absoluteFocusRingBoundingBoxRect();
+        result = LayoutRect(obj->absoluteFocusRingBoundingBoxRect());
     }
 
     Document* document = this->document();

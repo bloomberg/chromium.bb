@@ -22,7 +22,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!displayingPoster && !mediaPlayer)
         return;
 
-    LayoutRect rect = m_layoutVideo.videoBox();
+    LayoutRect rect(m_layoutVideo.videoBox());
     if (rect.isEmpty())
         return;
     rect.moveBy(paintOffset);

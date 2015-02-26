@@ -1037,7 +1037,7 @@ void LayerScrollableArea::positionOverflowControls(const IntSize& offsetFromRoot
         m_scrollCorner->setFrameRect(LayoutRect(scrollCorner));
 
     if (m_resizer)
-        m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
+        m_resizer->setFrameRect(LayoutRect(resizerCornerRect(borderBox, ResizerForPointer)));
 
     // FIXME, this should eventually be removed, once we are certain that composited
     // controls get correctly positioned on a compositor update. For now, conservatively

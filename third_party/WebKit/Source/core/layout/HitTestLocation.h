@@ -74,7 +74,7 @@ public:
 
 private:
     template<typename RectType>
-    bool intersectsRect(const RectType&) const;
+    bool intersectsRect(const RectType&, const RectType& boundingBox) const;
     void move(const LayoutSize& offset);
 
     // This is cached forms of the more accurate point and area below.

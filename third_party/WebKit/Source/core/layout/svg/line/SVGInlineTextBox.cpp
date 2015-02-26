@@ -162,7 +162,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
 
     // FIXME: the call to rawValue() below is temporary and should be removed once the transition
     // to LayoutUnit-based types is complete (crbug.com/321237)
-    return enclosingIntRect(selectionRect.rawValue());
+    return LayoutRect(enclosingIntRect(selectionRect.rawValue()));
 }
 
 void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)

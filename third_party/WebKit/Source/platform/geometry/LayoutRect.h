@@ -49,7 +49,7 @@ public:
         : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) { }
     LayoutRect(const FloatPoint& location, const FloatSize& size)
         : m_location(location), m_size(size) { }
-    LayoutRect(const IntRect& rect) : m_location(rect.location()), m_size(rect.size()) { }
+    explicit LayoutRect(const IntRect& rect) : m_location(rect.location()), m_size(rect.size()) { }
 
     explicit LayoutRect(const FloatRect&); // don't do this implicitly since it's lossy
 

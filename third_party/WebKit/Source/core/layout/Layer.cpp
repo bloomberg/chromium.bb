@@ -1585,7 +1585,7 @@ void Layer::collectFragments(LayerFragments& fragments, const Layer* rootLayer, 
     ClipRect backgroundRectInFlowThread;
     ClipRect foregroundRectInFlowThread;
     ClipRect outlineRectInFlowThread;
-    clipper().calculateRects(paginationClipRectsContext, LayoutRect::infiniteIntRect(), layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread,
+    clipper().calculateRects(paginationClipRectsContext, LayoutRect(LayoutRect::infiniteIntRect()), layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread,
         outlineRectInFlowThread, &offsetWithinPaginatedLayer);
 
     // Take our bounding box within the flow thread and clip it.
@@ -1651,7 +1651,7 @@ static inline LayoutRect frameVisibleRect(LayoutObject* renderer)
     if (!frameView)
         return LayoutRect();
 
-    return frameView->visibleContentRect();
+    return LayoutRect(frameView->visibleContentRect());
 }
 
 bool Layer::hitTest(const HitTestRequest& request, HitTestResult& result)
@@ -1670,7 +1670,7 @@ bool Layer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTes
     // Start with frameVisibleRect to ensure we include the scrollbars.
     LayoutRect hitTestArea = frameVisibleRect(renderer());
     if (request.ignoreClipping())
-        hitTestArea.unite(renderer()->view()->documentRect());
+        hitTestArea.unite(LayoutRect(renderer()->view()->documentRect()));
 
     Layer* insideLayer = hitTestLayer(this, 0, request, result, hitTestArea, hitTestLocation, false);
     if (!insideLayer) {
@@ -2203,7 +2203,7 @@ Layer* Layer::hitTestChildLayerColumns(Layer* childLayer, Layer* rootLayer, cons
                 newTransformState->translate(offset.width(), offset.height(), HitTestingTransformState::AccumulateTransform);
                 FloatPoint localPoint = newTransformState->mappedPoint();
                 FloatQuad localPointQuad = newTransformState->mappedQuad();
-                LayoutRect localHitTestRect = newTransformState->mappedArea().enclosingBoundingBox();
+                LayoutRect localHitTestRect(newTransformState->mappedArea().enclosingBoundingBox());
                 HitTestLocation newHitTestLocation;
                 if (hitTestLocation.isRectBasedTest())
                     newHitTestLocation = HitTestLocation(localPoint, localPointQuad);
@@ -2253,7 +2253,7 @@ void Layer::invalidatePaintForBlockSelectionGaps()
     if (m_blockSelectionGapsBounds.isEmpty())
         return;
 
-    LayoutRect rect = m_blockSelectionGapsBounds;
+    LayoutRect rect(m_blockSelectionGapsBounds);
     if (renderer()->hasOverflowClip()) {
         LayoutBox* box = layoutBox();
         rect.move(-box->scrolledContentOffset());
@@ -2436,7 +2436,7 @@ LayoutRect Layer::boundingBoxForCompositing(const Layer* ancestorLayer, Calculat
 
     // The root layer is always just the size of the document.
     if (isRootLayer())
-        return m_renderer->view()->unscaledDocumentRect();
+        return LayoutRect(m_renderer->view()->unscaledDocumentRect());
 
     // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
     // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute

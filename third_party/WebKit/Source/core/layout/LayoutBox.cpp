@@ -499,7 +499,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
             if (ownerElement && ownerElement->renderer()) {
                 HTMLFrameElementBase* frameElementBase = isHTMLFrameElementBase(*ownerElement) ? toHTMLFrameElementBase(ownerElement) : 0;
                 if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
-                    LayoutRect viewRect = frameView->visibleContentRect();
+                    LayoutRect viewRect(frameView->visibleContentRect());
                     LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
 
                     double xOffset = exposeRect.x();
@@ -1170,7 +1170,7 @@ void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const L
 bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
 {
     ASSERT(hasBackground());
-    LayoutRect backgroundRect = enclosingIntRect(borderBoxRect());
+    LayoutRect backgroundRect(enclosingIntRect(borderBoxRect()));
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
     if (backgroundColor.alpha()) {
