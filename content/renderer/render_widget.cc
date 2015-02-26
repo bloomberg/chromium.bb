@@ -2181,7 +2181,8 @@ void RenderWidget::showUnhandledTapUIIfNeeded(
     bool page_changed) {
   DCHECK(handling_input_event_);
   bool should_trigger = !page_changed && tapped_node.isTextNode() &&
-                        !tapped_node.isContentEditable();
+                        !tapped_node.isContentEditable() &&
+                        !tapped_node.isInsideFocusableElementOrARIAWidget();
   if (should_trigger) {
     Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(routing_id_,
         tapped_position.x, tapped_position.y));

@@ -193,6 +193,8 @@ class CONTENT_EXPORT RenderWidget
 #if defined(OS_ANDROID)
   // Notifies that a tap was not consumed, so showing a UI for the unhandled
   // tap may be needed.
+  // Performs various checks on the given WebNode to apply heuristics to
+  // determine if triggering is appropriate.
   virtual void showUnhandledTapUIIfNeeded(
       const blink::WebPoint& tapped_position,
       const blink::WebNode& tapped_node,
