@@ -31,6 +31,10 @@ check_PROGRAMS = \
 	dristat \
 	drmstat
 
+if HAVE_NOUVEAU
+SUBDIRS += nouveau
+endif
+
 if HAVE_LIBUDEV
 
 check_LTLIBRARIES = libdrmtest.la
