@@ -40,8 +40,6 @@ class AwWebContentsDelegate
                       bool user_gesture,
                       bool* was_blocked) override;
 
-  void NavigationStateChanged(content::WebContents* source,
-                              content::InvalidateTypes changed_flags) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_frame_id,
                           const base::string16& frame_name,
