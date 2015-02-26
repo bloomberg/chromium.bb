@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.preferences.bandwidth.BandwidthType;
 /**
  * Reads, writes, and migrates preferences related to network usage and privacy.
  */
-public class PrivacyPreferencesManager {
+public class PrivacyPreferencesManager implements CrashReportingPermissionManager{
 
     static final String PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
     static final String PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR = "crash_dump_upload_no_cellular";
@@ -242,18 +242,6 @@ public class PrivacyPreferencesManager {
     }
 
     /**
-     * Check whether to allow uploading crash dump now.
-     * {@link #allowUploadCrashDump()} should return {@code true},
-     * and the network should be connected as well.
-     *
-     * @return boolean to whether to allow uploading crash dump now.
-     */
-    public boolean allowUploadCrashDumpNow() {
-        return mCrashUploadingEnabled && isNetworkAvailable() && (allowUploadCrashDump()
-                || CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD));
-    }
-
-    /**
      * Check whether crash dump upload preference is set to NEVER only.
      *
      * @return boolean {@code true} if the option is set to NEVER
@@ -287,5 +275,18 @@ public class PrivacyPreferencesManager {
         }
         ed.apply();
         PrefServiceBridge.getInstance().setCrashReporting(allowCrashUpload);
+    }
+
+    /**
+     * Check whether to allow uploading crash dump now.
+     * {@link #allowUploadCrashDump()} should return {@code true},
+     * and the network should be connected as well.
+     *
+     * @return boolean to whether to allow uploading crash dump now.
+     */
+    @Override
+    public boolean isUploadPermitted() {
+        return mCrashUploadingEnabled && isNetworkAvailable() && (allowUploadCrashDump()
+                || CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD));
     }
 }

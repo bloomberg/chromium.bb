@@ -105,7 +105,7 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
             String state = String.format(
                     "[cellular = %b, preference = %b, connected = %b, wifi = %b]",
                     mobileCapable, userPreference.toBooleanValue(), isConnected, wifiOn);
-            boolean res = preferenceManager.allowUploadCrashDumpNow();
+            boolean res = preferenceManager.isUploadPermitted();
             if (uploadPermitted) {
                 assertTrue("Upload should be permitted for " + state, res);
             } else {
