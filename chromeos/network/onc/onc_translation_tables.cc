@@ -337,7 +337,8 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kFoundNetworks, shill::kFoundNetworksProperty},
     { ::onc::cellular::kHardwareRevision, shill::kHardwareRevisionProperty},
-    { ::onc::cellular::kHomeProvider, shill::kHomeProviderProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kHomeProvider, shill::kHomeProviderProperty},
     { ::onc::cellular::kICCID, shill::kIccidProperty},
     { ::onc::cellular::kIMEI, shill::kImeiProperty},
     { ::onc::cellular::kIMSI, shill::kImsiProperty},

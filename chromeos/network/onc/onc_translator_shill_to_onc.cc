@@ -391,6 +391,12 @@ void ShillToONCTranslator::TranslateCellularDevice() {
     TranslateAndAddNestedObject(::onc::cellular::kSIMLockStatus,
                                 *shill_sim_lock_status);
   }
+  const base::DictionaryValue* shill_home_provider = NULL;
+  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
+          shill::kHomeProviderProperty, &shill_home_provider)) {
+    TranslateAndAddNestedObject(::onc::cellular::kHomeProvider,
+                                *shill_home_provider);
+  }
   const base::ListValue* shill_apns = NULL;
   if (shill_dictionary_->GetListWithoutPathExpansion(
           shill::kCellularApnListProperty, &shill_apns)) {

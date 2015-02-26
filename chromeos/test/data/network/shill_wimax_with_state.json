@@ -2,10 +2,8 @@
    "AutoConnect": true,
    "Connectable": true,
    "Name": "SomeWiMAX",
-   "EAP.Identity": "${LOGIN_ID}@my.domain.com",
    "GUID": "{77db0089-0bc8-4358-929c-123xcv}",
    "Profile": "/profile/someuser",
-   "SaveCredentials": true,
    "State": "idle",
    "Strength": 10,
    "Type": "wimax"

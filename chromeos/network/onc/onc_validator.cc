@@ -527,9 +527,11 @@ bool Validator::ValidateToplevelConfiguration(base::DictionaryValue* result) {
 bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
   using namespace ::onc::network_config;
 
-  const char* const kValidTypes[] = {
-      ::onc::network_type::kEthernet, ::onc::network_type::kVPN,
-      ::onc::network_type::kWiFi, ::onc::network_type::kCellular};
+  const char* const kValidTypes[] = {::onc::network_type::kEthernet,
+                                     ::onc::network_type::kVPN,
+                                     ::onc::network_type::kWiFi,
+                                     ::onc::network_type::kCellular,
+                                     ::onc::network_type::kWimax};
   const std::vector<const char*> valid_types(toVector(kValidTypes));
   const char* const kValidIPConfigTypes[] = {kIPConfigTypeDHCP,
                                              kIPConfigTypeStatic};
@@ -589,6 +591,9 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     } else if (type == ::onc::network_type::kCellular) {
       all_required_exist &=
           RequireField(*result, ::onc::network_config::kCellular);
+    } else if (type == ::onc::network_type::kWimax) {
+      all_required_exist &=
+          RequireField(*result, ::onc::network_config::kWimax);
     } else if (type == ::onc::network_type::kVPN) {
       all_required_exist &= RequireField(*result, ::onc::network_config::kVPN);
     }

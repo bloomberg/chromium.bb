@@ -727,27 +727,21 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   }
 
   // Wimax
+  const std::string kWimaxPath = "/service/wimax1";
   state = GetInitialStateForType(shill::kTypeWimax, &enabled);
   if (state != kTechnologyUnavailable) {
     AddTechnology(shill::kTypeWimax, enabled);
     devices->AddDevice(
         "/device/wimax1", shill::kTypeWimax, "stub_wimax_device1");
 
-    services->AddService("/service/wimax1",
-                         "wimax1_guid",
-                         "wimax1" /* name */,
-                         shill::kTypeWimax,
-                         state,
-                         add_to_visible);
-    services->SetServiceProperty("/service/wimax1",
-                                 shill::kConnectableProperty,
+    services->AddService(kWimaxPath, "wimax1_guid", "wimax1" /* name */,
+                         shill::kTypeWimax, state, add_to_visible);
+    services->SetServiceProperty(kWimaxPath, shill::kConnectableProperty,
                                  base::FundamentalValue(true));
     base::FundamentalValue strength_value(80);
-    services->SetServiceProperty(
-        "/service/wimax1", shill::kSignalStrengthProperty, strength_value);
-    base::StringValue identity_value("test.identity");
-    services->SetServiceProperty(
-        "/service/wimax1", shill::kEapIdentityProperty, identity_value);
+    services->SetServiceProperty(kWimaxPath, shill::kSignalStrengthProperty,
+                                 strength_value);
+    profiles->AddService(shared_profile, kWimaxPath);
   }
 
   // Cellular

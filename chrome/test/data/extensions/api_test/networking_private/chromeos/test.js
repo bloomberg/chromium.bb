@@ -331,8 +331,8 @@ var availableTests = [
                      "AutoConnect": true,
                      "Carrier": "Cellular1_Carrier",
                      "HomeProvider": {
-                       "country": "us",
-                       "name": "Cellular1_Provider"
+                       "Country": "us",
+                       "Name": "Cellular1_Provider"
                      },
                      "NetworkTechnology": "GSM",
                      "RoamingState": "Home"

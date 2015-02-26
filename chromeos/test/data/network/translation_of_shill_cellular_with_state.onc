@@ -8,8 +8,8 @@
     "AutoConnect": true,
     "Carrier": "cellular_provider",
     "HomeProvider": {
-      "country": "us",
-      "name": "cellular_provider"
+      "Country": "us",
+      "Name": "cellular_provider"
     },
     "RoamingState": "Home",
     "ServingOperator": {

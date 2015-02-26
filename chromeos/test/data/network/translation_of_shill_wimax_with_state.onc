@@ -6,10 +6,6 @@
     "Name": "SomeWiMAX",
     "WiMAX": {
         "AutoConnect": true,
-	"EAP": {
-	  "Identity": "${LOGIN_ID}@my.domain.com",
-	  "SaveCredentials": true
-	},
         "SignalStrength": 10
     },
     "Source":"User"
