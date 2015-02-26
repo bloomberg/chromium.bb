@@ -4,8 +4,11 @@
 
 #include "content/child/child_discardable_shared_memory_manager.h"
 
+#include "base/debug/crash_logging.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/child_process_messages.h"
 
 namespace content {
@@ -43,10 +46,12 @@ class DiscardableMemoryShmemChunkImpl
 
 ChildDiscardableSharedMemoryManager::ChildDiscardableSharedMemoryManager(
     ThreadSafeSender* sender)
-    : heap_(base::GetPageSize()), sender_(sender) {
+    : heap_(base::GetPageSize()), sender_(sender), bytes_allocated_(0) {
 }
 
 ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
+  if (bytes_allocated_)
+    BytesAllocatedChanged(0);
 }
 
 scoped_ptr<base::DiscardableMemoryShmemChunk>
@@ -75,7 +80,11 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
         base::DiscardableSharedMemory::FAILED) {
       DCHECK(!free_span->shared_memory()->IsMemoryResident());
       // We have to release free memory before |free_span| can be destroyed.
-      heap_.ReleaseFreeMemory();
+      size_t bytes_released = heap_.ReleaseFreeMemory();
+      DCHECK_NE(bytes_released, 0u);
+      DCHECK_LE(bytes_released, bytes_allocated_);
+      bytes_allocated_ -= bytes_released;
+      BytesAllocatedChanged(bytes_allocated_);
       DCHECK(!free_span->shared_memory());
       continue;
     }
@@ -86,7 +95,12 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   // Release free memory and free up the address space. Failing to do this
   // can result in the child process running out of address space.
-  heap_.ReleaseFreeMemory();
+  size_t bytes_released = heap_.ReleaseFreeMemory();
+  if (bytes_released) {
+    DCHECK_LE(bytes_released, bytes_allocated_);
+    bytes_allocated_ -= bytes_released;
+    BytesAllocatedChanged(bytes_allocated_);
+  }
 
   size_t pages_to_allocate =
       std::max(kAllocationSize / base::GetPageSize(), pages);
@@ -95,6 +109,11 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   // Ask parent process to allocate a new discardable shared memory segment.
   scoped_ptr<base::DiscardableSharedMemory> shared_memory(
       AllocateLockedDiscardableSharedMemory(allocation_size_in_bytes));
+
+  // Note: use mapped size rather than |allocation_size_in_bytes| as
+  // the latter only represent the amount of memory available for usage.
+  bytes_allocated_ += shared_memory->mapped_size();
+  BytesAllocatedChanged(bytes_allocated_);
 
   // Create span for allocated memory.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
@@ -118,7 +137,12 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {
   base::AutoLock lock(lock_);
 
-  heap_.ReleaseFreeMemory();
+  size_t bytes_released = heap_.ReleaseFreeMemory();
+  if (bytes_released) {
+    DCHECK_LE(bytes_released, bytes_allocated_);
+    bytes_allocated_ -= bytes_released;
+    BytesAllocatedChanged(bytes_allocated_);
+  }
 }
 
 bool ChildDiscardableSharedMemoryManager::LockSpan(
@@ -192,6 +216,16 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
       new base::DiscardableSharedMemory(handle));
   CHECK(memory->Map(size));
   return memory.Pass();
+}
+
+void ChildDiscardableSharedMemoryManager::BytesAllocatedChanged(
+    size_t new_bytes_allocated) const {
+  TRACE_COUNTER_ID1("renderer", "DiscardableMemoryUsage", this,
+                    new_bytes_allocated);
+
+  static const char kDiscardableMemoryUsageKey[] = "dm-usage";
+  base::debug::SetCrashKeyValue(kDiscardableMemoryUsageKey,
+                                base::Uint64ToString(new_bytes_allocated));
 }
 
 }  // namespace content

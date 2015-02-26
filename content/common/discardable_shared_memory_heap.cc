@@ -142,7 +142,8 @@ DiscardableSharedMemoryHeap::SearchFreeList(size_t blocks) {
   return best ? Carve(best, blocks) : nullptr;
 }
 
-void DiscardableSharedMemoryHeap::ReleaseFreeMemory() {
+size_t DiscardableSharedMemoryHeap::ReleaseFreeMemory() {
+  size_t bytes_released = 0;
   size_t i = 0;
 
   // Release memory for all non-resident segments.
@@ -155,12 +156,16 @@ void DiscardableSharedMemoryHeap::ReleaseFreeMemory() {
       continue;
     }
 
+    bytes_released += shared_memory->mapped_size();
+
     // Release the memory and unregistering all associated spans.
     ReleaseMemory(shared_memory);
 
     std::swap(shared_memory_segments_[i], shared_memory_segments_.back());
     shared_memory_segments_.pop_back();
   }
+
+  return bytes_released;
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>

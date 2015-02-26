@@ -68,8 +68,9 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // memory. If found, the span is removed from the free list and returned.
   scoped_ptr<Span> SearchFreeList(size_t blocks);
 
-  // Release shared memory segments that have been purged.
-  void ReleaseFreeMemory();
+  // Release shared memory segments that have been purged. Returns bytes of
+  // memory that were released.
+  size_t ReleaseFreeMemory();
 
  private:
   scoped_ptr<Span> RemoveFromFreeList(Span* span);
