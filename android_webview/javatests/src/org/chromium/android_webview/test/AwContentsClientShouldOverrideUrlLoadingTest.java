@@ -11,6 +11,7 @@ import android.util.Pair;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -338,8 +339,12 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
+    crbug.com/462306
+    */
+    @DisabledTest
     public void testCalledWhenTopLevelAboutBlankNavigation() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
