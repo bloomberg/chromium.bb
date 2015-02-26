@@ -781,37 +781,52 @@ class ChromiumOSDevice(RemoteDevice):
 
   def __init__(self, *args, **kwargs):
     super(ChromiumOSDevice, self).__init__(*args, **kwargs)
-    self.path = self._GetPath()
-    self.lsb_release = self._GetLSBRelease()
-    self.board = self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
-    # TODO(garnold) Use the actual SDK version field, once known (brillo:280).
-    self.sdk_version = self.lsb_release.get('CHROMEOS_RELEASE_VERSION', '')
+    self._path = None
+    self._lsb_release = {}
 
-  def _GetPath(self):
-    """Gets $PATH on the device and prepend it with DEV_BIN_PATHS."""
-    try:
-      result = self.BaseRunCommand(['echo', "${PATH}"])
-    except cros_build_lib.RunCommandError as e:
-      logging.error('Failed to get $PATH on the device: %s', e.result.error)
-      raise
+  @property
+  def path(self):
+    """The $PATH variable on the device prepended with DEV_BIN_PATHS."""
+    if not self._path:
+      try:
+        result = self.BaseRunCommand(['echo', "${PATH}"])
+      except cros_build_lib.RunCommandError as e:
+        logging.error('Failed to get $PATH on the device: %s', e.result.error)
+        raise
+      self._path = '%s:%s' % (DEV_BIN_PATHS, result.output.strip())
 
-    return '%s:%s' % (DEV_BIN_PATHS, result.output.strip())
+    return self._path
 
-  def _GetLSBRelease(self):
-    """Gets /etc/lsb-release on the device.
+  @property
+  def lsb_release(self):
+    """The /etc/lsb-release content on the device.
 
     Returns a dict of entries in /etc/lsb-release file. If multiple entries
     have the same key, only the first entry is recorded. Returns an empty dict
     if the reading command failed or the file is corrupted (i.e., does not have
     the format of <key>=<value> for every line).
     """
-    try:
-      result = self.BaseRunCommand(['cat', '/etc/lsb-release'])
-      return dict(e.split('=', 1) for e in reversed(result.output.splitlines()))
-    except Exception as e:
-      logging.error('Failed to read "/etc/lsb-release" on the device or the'
-                    'file may be corrupted: %s', e.result.error)
-      return {}
+    if not self._lsb_release:
+      try:
+        result = self.BaseRunCommand(['cat', '/etc/lsb-release'])
+        self._lsb_release = dict(e.split('=', 1)
+                                 for e in reversed(result.output.splitlines()))
+      except Exception as e:
+        logging.error('Failed to read "/etc/lsb-release" on the device or the '
+                      'file may be corrupted: %s', e.result.error)
+
+    return self._lsb_release
+
+  @property
+  def board(self):
+    """The board name of the device."""
+    return self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
+
+  @property
+  def sdk_version(self):
+    """The SDK version of the device."""
+    # TODO(garnold) Use the actual SDK version field, once known (brillo:280).
+    return self.lsb_release.get('CHROMEOS_RELEASE_VERSION', '')
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
