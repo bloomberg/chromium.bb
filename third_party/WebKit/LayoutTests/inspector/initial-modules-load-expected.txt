@@ -10,7 +10,6 @@ Loaded modules:
     host
     main
     platform
-    screencast
     sdk
     toolbox
     ui
@@ -26,7 +25,6 @@ Loaded modules:
     host
     main
     platform
-    screencast
     sdk
     toolbox
     ui
@@ -44,7 +42,6 @@ Loaded modules:
     main
     network
     platform
-    screencast
     sdk
     source_frame
     toolbox
@@ -64,7 +61,6 @@ Loaded modules:
     main
     network
     platform
-    screencast
     sdk
     source_frame
     sources
@@ -85,7 +81,6 @@ Loaded modules:
     main
     network
     platform
-    screencast
     sdk
     source_frame
     sources
