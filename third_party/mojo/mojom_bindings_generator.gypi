@@ -6,6 +6,24 @@
   'includes': [
     'mojom_bindings_generator_variables.gypi',
   ],
+  'actions': [
+    {
+      'variables': {
+        'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
+        'stamp_filename': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/<(_target_name).stamp',
+      },
+      'action_name': '<(_target_name)_mojom_bindings_stamp',
+      # The java output directory is deleted to ensure that the java library
+      # doesn't try to compile stale files.
+      'action': [
+        'python', '<(DEPTH)/build/rmdir_and_stamp.py',
+        '<(java_out_dir)',
+        '<(stamp_filename)',
+      ],
+      'inputs': [ '<@(_sources)' ],
+      'outputs': [ '<(stamp_filename)' ],
+    }
+  ],
   'rules': [
     {
       'rule_name': '<(_target_name)_mojom_bindings_generator',
@@ -18,9 +36,11 @@
          '-I<(DEPTH)',
          '-I<(DEPTH)/third_party/mojo/src'
         ],
+        'stamp_filename': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/<(_target_name).stamp',
       },
       'inputs': [
         '<@(mojom_bindings_generator_sources)',
+        '<(stamp_filename)',
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.cc',
@@ -58,6 +78,10 @@
     'variables': {
       'generated_src_dirs': [
         '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
+      ],
+      'additional_input_paths': [
+        '<@(mojom_bindings_generator_sources)',
+        '<@(_sources)',
       ],
     },
   },
