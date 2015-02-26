@@ -399,7 +399,7 @@ TEST_F(PersonalDataManagerTest, ReturnsServerCreditCards) {
   EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
 }
 
-// Tests that UpdateCreditCard can be used to mask or unmask server cards.
+// Tests that UpdateServerCreditCard can be used to mask or unmask server cards.
 TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   EnableWalletCardImport();
 
@@ -2922,6 +2922,76 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   EXPECT_EQ(1U, added_card->use_count());
   EXPECT_NE(base::Time(), added_card->use_date());
   EXPECT_NE(base::Time(), added_card->modification_date());
+}
+
+TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "9012" /* Visa */, "01", "2010");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
+  test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
+                          "2109" /* Mastercard */, "12", "2012");
+  server_cards.back().SetTypeForMaskedCard(kMasterCard);
+
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+
+  autofill_table_->SetServerCreditCards(server_cards);
+  personal_data_->Refresh();
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
+  // The GUIDs will be different, so just compare the data.
+  for (size_t i = 0; i < 3; ++i)
+    EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
+
+  CreditCard* unmasked_card = &server_cards.front();
+  unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
+  unmasked_card->SetNumber(ASCIIToUTF16("423456789012"));
+  EXPECT_NE(0, unmasked_card->Compare(
+      *personal_data_->GetCreditCards().front()));
+  personal_data_->UpdateServerCreditCard(*unmasked_card);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  for (size_t i = 0; i < 3; ++i)
+    EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
+
+  // For an unmasked card, usage data starts out as 1 and Now().
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[0]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
+
+  EXPECT_EQ(0U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+
+  EXPECT_EQ(0U, personal_data_->GetCreditCards()[2]->use_count());
+  EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
+
+  server_cards.back().set_guid(personal_data_->GetCreditCards()[2]->guid());
+  personal_data_->RecordUseOf(server_cards.back());
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[0]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
+
+  EXPECT_EQ(0U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[2]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
 }
 
 }  // namespace autofill

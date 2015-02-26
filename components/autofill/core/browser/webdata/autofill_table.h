@@ -68,10 +68,11 @@ struct FormFieldData;
 //                      Added in version 54.
 //   country_code
 //   use_count          The number of times this profile has been used to fill
-//                      a form.
-//   last_use           The date this profile was last used to fill a form.
-//   date_modified      The date on which this profile was last modified.
-//                      Added in version 30.
+//                      a form. Added in version 61.
+//   use_date           The date this profile was last used to fill a form,
+//                      in time_t. Added in version 61.
+//   date_modified      The date on which this profile was last modified, in
+//                      time_t. Added in version 30.
 //   origin             The domain of origin for this profile.
 //                      Added in version 50.
 //   language_code      The BCP 47 language code used to format the address for
@@ -126,10 +127,11 @@ struct FormFieldData;
 //   card_number_encrypted
 //                      Stores encrypted credit card number.
 //   use_count          The number of times this card has been used to fill
-//                      a form.
-//   last_use           The date this card was last used to fill a form.
-//   date_modified      The date on which this entry was last modified.
-//                      Added in version 30.
+//                      a form. Added in version 61.
+//   use_date           The date this card was last used to fill a form,
+//                      in time_t. Added in version 61.
+//   date_modified      The date on which this entry was last modified, in
+//                      time_t. Added in version 30.
 //   origin             The domain of origin for this profile.
 //                      Added in version 50.
 //
@@ -161,6 +163,10 @@ struct FormFieldData;
 //                      masked_credit_cards table to get the rest of the data.
 //   card_number_encrypted
 //                      Full card number, encrypted.
+//   use_count          The number of times this card has been used to fill
+//                      a form. Added in version 62.
+//   use_date           The date this card was last used to fill a form, in
+//                      internal time format (NOT time_t). Added in version 62.
 //
 // server_addresses     This table contains Autofill address data synced from
 //                      the wallet server. It's basically the same as the
@@ -311,6 +317,9 @@ class AutofillTable : public WebDatabaseTable {
                               const base::string16& full_number);
   bool MaskServerCreditCard(const std::string& id);
 
+  // Updates the use count and last use date for an unmasked server card.
+  bool UpdateUnmaskedCardUsageStats(const CreditCard& credit_card);
+
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.  Returns the
   // list of deleted profile guids in |profile_guids|.  Return value is true if
@@ -369,6 +378,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion57AddFullNameField();
   bool MigrateToVersion60AddServerCards();
   bool MigrateToVersion61AddUsageStats();
+  bool MigrateToVersion62AddUsageStatsForUnmaskedCards();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;

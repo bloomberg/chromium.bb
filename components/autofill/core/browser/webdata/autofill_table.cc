@@ -571,6 +571,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 61:
       *update_compatible_version = false;
       return MigrateToVersion61AddUsageStats();
+    case 62:
+      *update_compatible_version = false;
+      return MigrateToVersion62AddUsageStatsForUnmaskedCards();
   }
   return true;
 }
@@ -1231,11 +1234,13 @@ bool AutofillTable::GetServerCreditCards(
       "card_number_encrypted, "  // 0
       "last_four,"     // 1
       "masked.id,"     // 2
-      "type,"          // 3
-      "status,"        // 4
-      "name_on_card,"  // 5
-      "exp_month,"     // 6
-      "exp_year "      // 7
+      "use_count,"     // 3
+      "use_date,"      // 4
+      "type,"          // 5
+      "status,"        // 6
+      "name_on_card,"  // 7
+      "exp_month,"     // 8
+      "exp_year "      // 9
       "FROM masked_credit_cards masked "
       "LEFT OUTER JOIN unmasked_credit_cards unmasked "
       "ON masked.id = unmasked.id"));
@@ -1256,13 +1261,19 @@ bool AutofillTable::GetServerCreditCards(
         CREDIT_CARD_NUMBER,
         record_type == CreditCard::MASKED_SERVER_CARD ? last_four
                                                       : full_card_number);
+    int64 use_count = s.ColumnInt64(index++);
+    int64 use_date = s.ColumnInt64(index++);
     std::string card_type = s.ColumnString(index++);
     if (record_type == CreditCard::MASKED_SERVER_CARD) {
       // The type must be set after setting the number to override the
       // autodectected type.
       card->SetTypeForMaskedCard(card_type.c_str());
+      DCHECK_EQ(0, use_count);
+      DCHECK_EQ(0, use_date);
     } else {
       DCHECK_EQ(CreditCard::GetCreditCardType(full_card_number), card_type);
+      card->set_use_count(use_count);
+      card->set_use_date(base::Time::FromInternalValue(use_date));
     }
 
     card->SetServerStatus(ServerStatusStringToEnum(s.ColumnString(index++)));
@@ -1356,14 +1367,19 @@ bool AutofillTable::UnmaskServerCreditCard(const std::string& id,
   // Make sure there aren't duplicates for this card.
   MaskServerCreditCard(id);
   sql::Statement s(db_->GetUniqueStatement(
-      "INSERT INTO unmasked_credit_cards(id, card_number_encrypted) "
-      "VALUES (?,?)"));
+      "INSERT INTO unmasked_credit_cards(id, card_number_encrypted,"
+      "            use_count, use_date) "
+      "VALUES (?,?,?,?)"));
   s.BindString(0, id);
 
   std::string encrypted_data;
   OSCrypt::EncryptString16(full_number, &encrypted_data);
   s.BindBlob(1, encrypted_data.data(),
              static_cast<int>(encrypted_data.length()));
+
+  // Unmasking counts as a usage, so set the stats accordingly.
+  s.BindInt64(2, 1);
+  s.BindInt64(3, base::Time::Now().ToInternalValue());
 
   s.Run();
   return db_->GetLastChangeCount() > 0;
@@ -1373,6 +1389,21 @@ bool AutofillTable::MaskServerCreditCard(const std::string& id) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM unmasked_credit_cards WHERE id = ?"));
   s.BindString(0, id);
+  s.Run();
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::UpdateUnmaskedCardUsageStats(
+    const CreditCard& credit_card) {
+  DCHECK_EQ(CreditCard::FULL_SERVER_CARD, credit_card.record_type());
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "UPDATE unmasked_credit_cards "
+      "SET use_count=?, use_date=? "
+      "WHERE id=?"));
+  s.BindInt64(0, credit_card.use_count());
+  s.BindInt64(1, credit_card.use_date().ToInternalValue());
+  s.BindString(2, credit_card.server_id());
   s.Run();
   return db_->GetLastChangeCount() > 0;
 }
@@ -1733,7 +1764,9 @@ bool AutofillTable::InitUnmaskedCreditCardsTable() {
   if (!db_->DoesTableExist("unmasked_credit_cards")) {
     if (!db_->Execute("CREATE TABLE unmasked_credit_cards ("
                       "id VARCHAR,"
-                      "card_number_encrypted VARCHAR)")) {
+                      "card_number_encrypted VARCHAR, "
+                      "use_count INTEGER NOT NULL DEFAULT 0, "
+                      "use_date INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -2710,9 +2743,46 @@ bool AutofillTable::MigrateToVersion57AddFullNameField() {
 }
 
 bool AutofillTable::MigrateToVersion60AddServerCards() {
-  return InitMaskedCreditCardsTable() &&
-         InitUnmaskedCreditCardsTable() &&
-         InitServerAddressesTable();
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  if (!db_->DoesTableExist("masked_credit_cards") &&
+      !db_->Execute("CREATE TABLE masked_credit_cards ("
+                    "id VARCHAR,"
+                    "status VARCHAR,"
+                    "name_on_card VARCHAR,"
+                    "type VARCHAR,"
+                    "last_four VARCHAR,"
+                    "exp_month INTEGER DEFAULT 0,"
+                    "exp_year INTEGER DEFAULT 0)")) {
+    return false;
+  }
+
+  if (!db_->DoesTableExist("unmasked_credit_cards") &&
+      !db_->Execute("CREATE TABLE unmasked_credit_cards ("
+                    "id VARCHAR,"
+                    "card_number_encrypted VARCHAR)")) {
+    return false;
+  }
+
+  if (!db_->DoesTableExist("server_addresses") &&
+      !db_->Execute("CREATE TABLE server_addresses ("
+                    "id VARCHAR,"
+                    "company_name VARCHAR,"
+                    "street_address VARCHAR,"
+                    "address_1 VARCHAR,"
+                    "address_2 VARCHAR,"
+                    "address_3 VARCHAR,"
+                    "address_4 VARCHAR,"
+                    "postal_code VARCHAR,"
+                    "sorting_code VARCHAR,"
+                    "country_code VARCHAR,"
+                    "language_code VARCHAR)")) {
+    return false;
+  }
+
+  return transaction.Commit();
 }
 
 bool AutofillTable::MigrateToVersion61AddUsageStats() {
@@ -2744,6 +2814,28 @@ bool AutofillTable::MigrateToVersion61AddUsageStats() {
   // Add use_date to credit_cards.
   if (!db_->DoesColumnExist("credit_cards", "use_date") &&
       !db_->Execute("ALTER TABLE credit_cards ADD COLUMN "
+                    "use_date INTEGER NOT NULL DEFAULT 0")) {
+    return false;
+  }
+
+  return transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion62AddUsageStatsForUnmaskedCards() {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  // Add use_count to unmasked_credit_cards.
+  if (!db_->DoesColumnExist("unmasked_credit_cards", "use_count") &&
+      !db_->Execute("ALTER TABLE unmasked_credit_cards ADD COLUMN "
+                    "use_count INTEGER NOT NULL DEFAULT 0")) {
+    return false;
+  }
+
+  // Add use_date to unmasked_credit_cards.
+  if (!db_->DoesColumnExist("unmasked_credit_cards", "use_date") &&
+      !db_->Execute("ALTER TABLE unmasked_credit_cards ADD COLUMN "
                     "use_date INTEGER NOT NULL DEFAULT 0")) {
     return false;
   }

@@ -143,6 +143,10 @@ class AutofillWebDataBackendImpl
   WebDatabase::State MaskServerCreditCard(const std::string& id,
                                           WebDatabase* db);
 
+  WebDatabase::State UpdateUnmaskedCardUsageStats(
+      const CreditCard& credit_card,
+      WebDatabase* db);
+
   // Removes Autofill records from the database. Valid only for local
   // cards/profiles.
   WebDatabase::State RemoveAutofillDataModifiedBetween(

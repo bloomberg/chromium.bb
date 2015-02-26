@@ -481,9 +481,16 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
     return;
 
   CreditCard* credit_card = GetCreditCardByGUID(data_model.guid());
-  if (credit_card && credit_card->record_type() == CreditCard::LOCAL_CARD) {
+  if (credit_card) {
     credit_card->RecordUse();
-    database_->UpdateCreditCard(*credit_card);
+
+    if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+      database_->UpdateCreditCard(*credit_card);
+    else if (credit_card->record_type() == CreditCard::FULL_SERVER_CARD)
+      database_->UpdateUnmaskedCardUsageStats(*credit_card);
+    else
+      NOTREACHED() << " A MASKED_SERVER_CARD can't be used.";
+
     Refresh();
     return;
   }

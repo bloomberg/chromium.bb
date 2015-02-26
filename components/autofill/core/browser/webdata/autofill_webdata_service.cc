@@ -198,6 +198,14 @@ void AutofillWebDataService::MaskServerCreditCard(const std::string& id) {
            autofill_backend_, id));
 }
 
+void AutofillWebDataService::UpdateUnmaskedCardUsageStats(
+    const CreditCard& credit_card) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::UpdateUnmaskedCardUsageStats,
+           autofill_backend_, credit_card));
+}
+
 void AutofillWebDataService::RemoveAutofillDataModifiedBetween(
     const Time& delete_begin,
     const Time& delete_end) {

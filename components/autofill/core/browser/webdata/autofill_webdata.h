@@ -107,6 +107,9 @@ class AutofillWebData {
                                       const base::string16& full_number) = 0;
   virtual void MaskServerCreditCard(const std::string& id) = 0;
 
+  // Updates the use count and last use date for an unmasked server card.
+  virtual void UpdateUnmaskedCardUsageStats(const CreditCard& credit_card) = 0;
+
   // Removes Autofill records from the database.
   virtual void RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
