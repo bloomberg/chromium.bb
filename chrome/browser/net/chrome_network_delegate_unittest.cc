@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/chrome_network_delegate.h"
 
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -13,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -23,12 +25,41 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
+TEST(ChromeNetworkDelegateTest, DisableFirstPartyOnlyCookiesIffFlagDisabled) {
+  BooleanPrefMember pref_member_;
+  scoped_ptr<ChromeNetworkDelegate> delegate;
+
 #if defined(ENABLE_EXTENSIONS)
-class ChromeNetworkDelegateTest : public testing::Test {
+  scoped_refptr<extensions::EventRouterForwarder> forwarder =
+      new extensions::EventRouterForwarder();
+  delegate.reset(new ChromeNetworkDelegate(forwarder.get(), &pref_member_));
+#else
+  delegate.reset(new ChromeNetworkDelegate(nullptr, &pref_member_));
+#endif
+  EXPECT_FALSE(delegate->FirstPartyOnlyCookieExperimentEnabled());
+}
+
+TEST(ChromeNetworkDelegateTest, EnableFirstPartyOnlyCookiesIffFlagEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+  BooleanPrefMember pref_member_;
+  scoped_ptr<ChromeNetworkDelegate> delegate;
+
+#if defined(ENABLE_EXTENSIONS)
+  scoped_refptr<extensions::EventRouterForwarder> forwarder =
+      new extensions::EventRouterForwarder();
+  delegate.reset(new ChromeNetworkDelegate(forwarder.get(), &pref_member_));
+#else
+  delegate.reset(new ChromeNetworkDelegate(nullptr, &pref_member_));
+#endif
+  EXPECT_TRUE(delegate->FirstPartyOnlyCookieExperimentEnabled());
+}
+
+#if defined(ENABLE_EXTENSIONS)
+class ChromeNetworkDelegateThrottlingTest : public testing::Test {
  protected:
-  ChromeNetworkDelegateTest()
-      : forwarder_(new extensions::EventRouterForwarder()) {
-  }
+  ChromeNetworkDelegateThrottlingTest()
+      : forwarder_(new extensions::EventRouterForwarder()) {}
 
   void SetUp() override {
     never_throttle_requests_original_value_ =
@@ -43,7 +74,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
   scoped_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
     return make_scoped_ptr(
-        new ChromeNetworkDelegate(forwarder_.get(), &pref_member_));
+        new ChromeNetworkDelegate(forwarder(), &pref_member_));
   }
 
   // Implementation moved here for access to private bits.
@@ -81,6 +112,8 @@ class ChromeNetworkDelegateTest : public testing::Test {
   }
 
  private:
+  extensions::EventRouterForwarder* forwarder() { return forwarder_.get(); }
+
   bool never_throttle_requests_original_value_;
   base::MessageLoopForIO message_loop_;
 
@@ -88,7 +121,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
   BooleanPrefMember pref_member_;
 };
 
-TEST_F(ChromeNetworkDelegateTest, NeverThrottleLogic) {
+TEST_F(ChromeNetworkDelegateThrottlingTest, NeverThrottleLogic) {
   NeverThrottleLogicImpl();
 }
 #endif  // defined(ENABLE_EXTENSIONS)
@@ -313,4 +346,3 @@ TEST_F(ChromeNetworkDelegatePrivacyModeTest,
   EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
                                                        kBlockedFirstPartySite));
 }
-

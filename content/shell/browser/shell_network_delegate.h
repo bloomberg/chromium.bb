@@ -54,6 +54,7 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& path) const override;
   bool OnCanThrottleRequest(const net::URLRequest& request) const override;
+  bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };

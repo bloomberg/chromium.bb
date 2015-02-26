@@ -80,6 +80,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   bool OnCanThrottleRequest(const URLRequest& request) const final;
   bool OnCanEnablePrivacyMode(const GURL& url,
                               const GURL& first_party_for_cookies) const final;
+  bool OnFirstPartyOnlyCookieExperimentEnabled() const final;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
@@ -151,6 +152,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnCanEnablePrivacyModeInternal(
       const GURL& url,
       const GURL& first_party_for_cookies) const;
+
+  virtual void OnFirstPartyOnlyCookieExperimentEnabledInternal() const;
 
   virtual void OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
       const URLRequest& request,

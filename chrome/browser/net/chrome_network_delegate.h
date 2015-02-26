@@ -144,7 +144,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   static void AllowAccessToAllFiles();
 
  private:
-  friend class ChromeNetworkDelegateTest;
+  friend class ChromeNetworkDelegateThrottlingTest;
 
   // NetworkDelegate implementation.
   int OnBeforeURLRequest(net::URLRequest* request,
@@ -184,6 +184,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanEnablePrivacyMode(
       const GURL& url,
       const GURL& first_party_for_cookies) const override;
+  bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const net::URLRequest& request,
       const GURL& target_url,
@@ -224,6 +225,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // set this variable once at start-up time.  It is effectively
   // static anyway since it is based on a command-line flag.
   static bool g_never_throttle_requests_;
+
+  bool experimental_web_platform_features_enabled_;
 
   bool first_request_;
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -59,7 +61,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/command_line.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_switches.h"
 #endif
@@ -293,6 +294,9 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       url_blacklist_manager_(NULL),
 #endif
       domain_reliability_monitor_(NULL),
+      experimental_web_platform_features_enabled_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalWebPlatformFeatures)),
       first_request_(true),
       prerender_tracker_(NULL) {
   DCHECK(enable_referrers);
@@ -722,6 +726,10 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
       url, first_party_for_cookies);
   bool privacy_mode = !(reading_cookie_allowed && setting_cookie_allowed);
   return privacy_mode;
+}
+
+bool ChromeNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
+  return experimental_web_platform_features_enabled_;
 }
 
 bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
