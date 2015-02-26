@@ -81,9 +81,4 @@ void WorkerConsoleAgent::disableStackCapturingIfNeeded()
     ScriptController::setCaptureCallStackForUncaughtExceptions(false);
 }
 
-void WorkerConsoleAgent::addInspectedNode(ErrorString* error, int)
-{
-    *error = "addInspectedNode is not supported for workers";
-}
-
 } // namespace blink

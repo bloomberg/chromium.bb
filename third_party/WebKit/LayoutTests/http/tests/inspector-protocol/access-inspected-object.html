@@ -43,7 +43,7 @@ function test()
     function didFindDiv(messageObject)
     {
         InspectorTest.sendCommand("Console.enable", {});
-        InspectorTest.sendCommand("Console.addInspectedNode", {
+        InspectorTest.sendCommand("DOM.setInspectedNode", {
                 "nodeId": messageObject.result.nodeId
             }, didAddInspectedNode);
     }

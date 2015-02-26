@@ -32,15 +32,10 @@
 #include "core/inspector/PageConsoleAgent.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/workers/WorkerInspectorProxy.h"
@@ -133,34 +128,6 @@ void PageConsoleAgent::disableStackCapturingIfNeeded()
 {
     if (!(--s_enabledAgentCount))
         ScriptController::setCaptureCallStackForUncaughtExceptions(false);
-}
-
-class InspectableNode final : public InjectedScriptHost::InspectableObject {
-public:
-    explicit InspectableNode(Node* node) : m_node(node) { }
-    virtual ScriptValue get(ScriptState* state) override
-    {
-        return InjectedScriptHost::nodeAsScriptValue(state, m_node);
-    }
-private:
-    Node* m_node;
-};
-
-void PageConsoleAgent::addInspectedNode(ErrorString* errorString, int nodeId)
-{
-    Node* node = m_inspectorDOMAgent->nodeForId(nodeId);
-    if (!node) {
-        *errorString = "nodeId is not valid";
-        return;
-    }
-    while (node->isInShadowTree()) {
-        Node& ancestor = NodeTraversal::highestAncestorOrSelf(*node);
-        if (!ancestor.isShadowRoot() || toShadowRoot(ancestor).type() == ShadowRoot::OpenShadowRoot)
-            break;
-        // User agent shadow root, keep climbing up.
-        node = toShadowRoot(ancestor).host();
-    }
-    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
 }
 
 } // namespace blink

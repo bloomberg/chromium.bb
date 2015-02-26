@@ -72,7 +72,6 @@ public:
 
     void addProfileFinishedMessageToConsole(PassRefPtrWillBeRawPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
-    virtual void addInspectedNode(ErrorString*, int nodeId) = 0;
     virtual void addInspectedHeapObject(ErrorString*, int inspectedHeapObjectId) override;
 
     virtual bool isWorkerAgent() = 0;

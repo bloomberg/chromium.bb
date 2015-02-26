@@ -71,7 +71,6 @@ protected:
 private:
     PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorPageAgent*);
     virtual void clearMessages(ErrorString*) override;
-    virtual void addInspectedNode(ErrorString*, int nodeId) override;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;

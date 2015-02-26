@@ -138,6 +138,7 @@ public:
     virtual void requestNode(ErrorString*, const String& objectId, int* nodeId) override;
     virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) override;
     virtual void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<TypeBuilder::Array<int> >&) override;
+    virtual void setInspectedNode(ErrorString*, int nodeId) override;
     virtual void hideHighlight(ErrorString*) override;
     virtual void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
     virtual void highlightQuad(ErrorString*, const RefPtr<JSONArray>& quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;

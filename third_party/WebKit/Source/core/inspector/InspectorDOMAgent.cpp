@@ -64,6 +64,8 @@
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorOverlay.h"
@@ -2288,6 +2290,25 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
         else
             result->addItem(0);
     }
+}
+
+class InspectableNode final : public InjectedScriptHost::InspectableObject {
+public:
+    explicit InspectableNode(Node* node) : m_node(node) { }
+    virtual ScriptValue get(ScriptState* state) override
+    {
+        return InjectedScriptHost::nodeAsScriptValue(state, m_node);
+    }
+private:
+    Node* m_node;
+};
+
+void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
+{
+    Node* node = assertNode(errorString, nodeId);
+    if (!node)
+        return;
+    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
 }
 
 void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId, int* relayoutBoundaryNodeId)

@@ -61,7 +61,6 @@ protected:
 
 private:
     WorkerConsoleAgent(InjectedScriptManager*, WorkerGlobalScope*);
-    virtual void addInspectedNode(ErrorString*, int nodeId) override;
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
 };
