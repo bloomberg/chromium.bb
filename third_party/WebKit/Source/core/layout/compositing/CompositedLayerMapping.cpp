@@ -547,7 +547,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
 static IntRect clipBox(LayoutBox* renderer)
 {
-    LayoutRect result = LayoutRect::infiniteIntRect();
+    LayoutRect result = LayoutRect(LayoutRect::infiniteIntRect());
     if (renderer->hasOverflowClip())
         result = renderer->overflowClipRect(LayoutPoint());
 
@@ -1356,7 +1356,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offse
     }
 
     if (GraphicsLayer* layer = layerForScrollCorner()) {
-        const LayoutRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
+        const IntRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
         layer->setPosition(FloatPoint(scrollCornerAndResizer.location() - offsetFromRenderer));
         layer->setSize(FloatSize(scrollCornerAndResizer.size()));
         layer->setDrawsContent(!scrollCornerAndResizer.isEmpty());
@@ -1943,7 +1943,7 @@ LayoutSize CompositedLayerMapping::contentOffsetInCompositingLayer() const
 
 LayoutRect CompositedLayerMapping::contentsBox() const
 {
-    LayoutRect contentsBox = contentsRect(renderer());
+    LayoutRect contentsBox = LayoutRect(contentsRect(renderer()));
     contentsBox.move(contentOffsetInCompositingLayer());
     return contentsBox;
 }
@@ -2130,13 +2130,13 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
 
     if (paintInfo.renderLayer->compositingState() != PaintsIntoGroupedBacking) {
         // FIXME: GraphicsLayers need a way to split for LayoutRegions.
-        LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
+        LayerPaintingInfo paintingInfo(paintInfo.renderLayer, LayoutRect(dirtyRect), PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
         LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 
         if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
             LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags | PaintLayerPaintingOverlayScrollbars);
     } else {
-        LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
+        LayerPaintingInfo paintingInfo(paintInfo.renderLayer, LayoutRect(dirtyRect), PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
 
         // Layer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
         // since there is no graphics layer to clip them precisely. Furthermore, in some cases we squash layers that need clipping in software
@@ -2190,7 +2190,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(true);
 #endif
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(m_owningLayer.renderer(), clip, graphicsLayer));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(m_owningLayer.renderer(), LayoutRect(clip), graphicsLayer));
 
     PaintLayerFlags paintLayerFlags = 0;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)
@@ -2243,7 +2243,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, IntPoint(), transformedClip);
         context.restore();
     }
-    InspectorInstrumentation::didPaint(m_owningLayer.renderer(), graphicsLayer, &context, clip);
+    InspectorInstrumentation::didPaint(m_owningLayer.renderer(), graphicsLayer, &context, LayoutRect(clip));
 #if ENABLE(ASSERT)
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(false);

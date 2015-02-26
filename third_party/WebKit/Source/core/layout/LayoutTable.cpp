@@ -616,8 +616,9 @@ void LayoutTable::addOverflowFromChildren()
         int topBorderOverflow = borderTop() - outerBorderTop();
         IntRect borderOverflowRect(leftBorderOverflow, topBorderOverflow, rightBorderOverflow - leftBorderOverflow, bottomBorderOverflow - topBorderOverflow);
         if (borderOverflowRect != pixelSnappedBorderBoxRect()) {
-            addLayoutOverflow(borderOverflowRect);
-            addVisualOverflow(borderOverflowRect);
+            LayoutRect borderLayoutRect(borderOverflowRect);
+            addLayoutOverflow(borderLayoutRect);
+            addVisualOverflow(borderLayoutRect);
         }
     }
 

@@ -408,7 +408,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext* pt, const FloatP
         if (grammar) {
             markerRect.move(-boxOrigin.x(), -boxOrigin.y());
             markerRect = m_inlineTextBox.renderer().localToAbsoluteQuad(FloatRect(markerRect)).enclosingBoundingBox();
-            toRenderedDocumentMarker(marker)->setRenderedRect(markerRect);
+            toRenderedDocumentMarker(marker)->setRenderedRect(LayoutRect(markerRect));
         }
     }
 
@@ -807,7 +807,7 @@ void InlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* pt, const Float
     // Always compute and store the rect associated with this marker. The computed rect is in absolute coordinates.
     IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, IntPoint(m_inlineTextBox.x(), m_inlineTextBox.root().selectionTop()), selHeight, sPos, ePos));
     markerRect = m_inlineTextBox.renderer().localToAbsoluteQuad(FloatRect(markerRect)).enclosingBoundingBox();
-    toRenderedDocumentMarker(marker)->setRenderedRect(markerRect);
+    toRenderedDocumentMarker(marker)->setRenderedRect(LayoutRect(markerRect));
 
     // Optionally highlight the text
     if (m_inlineTextBox.renderer().frame()->editor().markedTextMatchesAreHighlighted()) {

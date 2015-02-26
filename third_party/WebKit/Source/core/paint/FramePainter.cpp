@@ -39,7 +39,7 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
         TransformRecorder transformRecorder(*context, m_frameView.layoutView()->displayItemClient(),
             AffineTransform::translation(m_frameView.x() - m_frameView.scrollX(), m_frameView.y() - m_frameView.scrollY()));
 
-        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameToVisibleContentRect, m_frameView.visibleContentRect());
+        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(m_frameView.visibleContentRect()));
 
         documentDirtyRect.moveBy(-m_frameView.location() + m_frameView.scrollPosition());
         paintContents(context, documentDirtyRect);
@@ -57,7 +57,7 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
         TransformRecorder transformRecorder(*context, m_frameView.layoutView()->displayItemClient(),
             AffineTransform::translation(m_frameView.x(), m_frameView.y()));
 
-        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
+        ClipRecorder recorder(m_frameView.layoutView()->displayItemClient(), context, DisplayItem::ClipFrameScrollbars, LayoutRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }

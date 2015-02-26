@@ -70,7 +70,7 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
             if (!m_renderBlockFlow.hasLayer()) {
                 LayoutRect localBounds(gapRectsBounds);
                 m_renderBlockFlow.flipForWritingMode(localBounds);
-                gapRectsBounds = m_renderBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->renderer()).enclosingBoundingBox();
+                gapRectsBounds = LayoutRect(m_renderBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->renderer()).enclosingBoundingBox());
                 if (layer->renderer()->hasOverflowClip())
                     gapRectsBounds.move(layer->layoutBox()->scrolledContentOffset());
             }

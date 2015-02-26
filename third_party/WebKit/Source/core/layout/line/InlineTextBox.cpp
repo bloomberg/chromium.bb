@@ -85,7 +85,7 @@ LayoutRect InlineTextBox::logicalOverflowRect() const
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237). The call to enclosingIntRect()
         // should also likely be switched to LayoutUnit pixel-snapping.
-        return enclosingIntRect(logicalFrameRect().rawValue());
+        return LayoutRect(enclosingIntRect(logicalFrameRect().rawValue()));
     }
 
     return gTextBoxesWithOverflow->get(this);
@@ -197,11 +197,11 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     FloatPointWillBeLayoutPoint startingPoint = FloatPointWillBeLayoutPoint(logicalLeft(), selTop.toFloat());
     LayoutRect r;
     if (sPos || ePos != static_cast<int>(m_len)) {
-        r = enclosingIntRect(font.selectionRectForText(textRun, startingPoint.toFloatPoint(), selHeight, sPos, ePos));
+        r = LayoutRect(enclosingIntRect(font.selectionRectForText(textRun, startingPoint.toFloatPoint(), selHeight, sPos, ePos)));
     } else { // Avoid computing the font width when the entire line box is selected as an optimization.
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
-        r = enclosingIntRect(FloatRectWillBeLayoutRect(startingPoint, FloatSizeWillBeLayoutSize(m_logicalWidth, selHeight.toFloat())).rawValue());
+        r = LayoutRect(enclosingIntRect(FloatRectWillBeLayoutRect(startingPoint, FloatSizeWillBeLayoutSize(m_logicalWidth, selHeight.toFloat())).rawValue()));
     }
 
     LayoutUnit logicalWidth = r.width();

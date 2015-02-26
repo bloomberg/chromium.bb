@@ -17,7 +17,7 @@ void ScrollbarPainter::paintPart(GraphicsContext* graphicsContext, ScrollbarPart
     LayoutScrollbarPart* partRenderer = m_renderScrollbar.getPart(partType);
     if (!partRenderer)
         return;
-    paintIntoRect(partRenderer, graphicsContext, m_renderScrollbar.location(), rect);
+    paintIntoRect(partRenderer, graphicsContext, m_renderScrollbar.location(), LayoutRect(rect));
 }
 
 void ScrollbarPainter::paintIntoRect(LayoutScrollbarPart* renderScrollbarPart, GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)

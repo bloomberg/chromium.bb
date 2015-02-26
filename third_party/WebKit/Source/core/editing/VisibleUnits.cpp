@@ -1394,7 +1394,7 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
 {
     if (position.position().isNull()) {
         renderer = nullptr;
-        return IntRect();
+        return LayoutRect();
     }
     Node* node = position.position().anchorNode();
 

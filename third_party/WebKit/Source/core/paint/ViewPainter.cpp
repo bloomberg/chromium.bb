@@ -26,7 +26,7 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
     // This avoids painting garbage between columns if there is a column gap.
     if (m_layoutView.frameView() && m_layoutView.style()->isOverflowPaged()) {
-        LayoutRect paintRect = paintInfo.rect;
+        LayoutRect paintRect(paintInfo.rect);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             paintRect = m_layoutView.viewRect();
 
@@ -81,7 +81,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     // Only fill with the base background color (typically white) if we're the root document,
     // since iframes/frames with no background in the child document should show the parent's background.
     if (!m_layoutView.frameView()->isTransparent()) {
-        LayoutRect paintRect = paintInfo.rect;
+        LayoutRect paintRect(paintInfo.rect);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             paintRect = m_layoutView.viewRect();
 

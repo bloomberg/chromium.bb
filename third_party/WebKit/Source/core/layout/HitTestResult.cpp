@@ -389,7 +389,7 @@ bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestReques
     if (request.penetratingList())
         return true;
 
-    bool regionFilled = rect.contains(locationInContainer.boundingBox());
+    bool regionFilled = rect.contains(LayoutRect(locationInContainer.boundingBox()));
     return !regionFilled;
 }
 

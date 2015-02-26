@@ -61,7 +61,7 @@ static inline bool compareCellPositionsWithOverflowingCells(LayoutTableCell* ele
 
 void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutRect localPaintInvalidationRect = paintInfo.rect;
+    LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.rect);
     localPaintInvalidationRect.moveBy(-paintOffset);
 
     LayoutRect tableAlignedRect = m_layoutTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);

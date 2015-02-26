@@ -63,7 +63,7 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
     // Use the visual overflow rect here, because it will include overflow introduced by the theme.
     LayoutRect bounds = m_layoutBox.visualOverflowRect();
     bounds.moveBy(paintOffset);
-    return pixelSnappedIntRect(bounds);
+    return LayoutRect(pixelSnappedIntRect(bounds));
 }
 
 LayoutRect BoxPainter::scrolledBackgroundRect()
@@ -1341,9 +1341,10 @@ void BoxPainter::clipBorderSideForComplexInnerPath(GraphicsContext* graphicsCont
         graphicsContext->clipOutRoundedRect(adjustedInnerRect);
 }
 
-static bool allCornersClippedOut(const FloatRoundedRect& border, const LayoutRect& clipRect)
+static bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClipRect)
 {
     LayoutRect boundingRect(border.rect());
+    LayoutRect clipRect(intClipRect);
     if (clipRect.contains(boundingRect))
         return false;
 

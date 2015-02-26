@@ -298,7 +298,7 @@ private:
     void setNeedsLayoutIsForbidden(bool flag) { m_setNeedsLayoutForbidden = flag; }
 #endif
 
-    void addAbsoluteRectForLayer(LayoutRect& result);
+    void addAbsoluteRectForLayer(IntRect& result);
     bool requiresAnonymousTableWrappers(const LayoutObject*) const;
 
     // Gets pseudoStyle from Shadow host(in case of input elements)
@@ -792,7 +792,7 @@ public:
     static FloatRect absoluteBoundingBoxRectForRange(const Range*);
 
     // the rect that will be painted if this object is passed as the paintingRoot
-    LayoutRect paintingRootRect(LayoutRect& topLevelRect);
+    IntRect paintingRootRect(IntRect& topLevelRect);
 
     virtual LayoutUnit minPreferredLogicalWidth() const { return 0; }
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }

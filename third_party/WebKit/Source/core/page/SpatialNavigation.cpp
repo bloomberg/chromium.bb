@@ -155,7 +155,7 @@ bool hasOffscreenRect(Node* node, WebFocusType type)
 
     ASSERT(!frameView->needsLayout());
 
-    LayoutRect containerViewportRect = frameView->visibleContentRect();
+    LayoutRect containerViewportRect(frameView->visibleContentRect());
     // We want to select a node if it is currently off screen, but will be
     // exposed after we scroll. Adjust the viewport to post-scrolling position.
     // If the container has overflow:hidden, we cannot scroll, so we do not pass direction
@@ -394,7 +394,7 @@ LayoutRect nodeRectInAbsoluteCoordinates(Node* node, bool ignoreBorder)
 
 LayoutRect frameRectInAbsoluteCoordinates(LocalFrame* frame)
 {
-    return rectToAbsoluteCoordinates(frame, frame->view()->visibleContentRect());
+    return rectToAbsoluteCoordinates(frame, LayoutRect(frame->view()->visibleContentRect()));
 }
 
 // This method calculates the exitPoint from the startingRect and the entryPoint into the candidate rect.

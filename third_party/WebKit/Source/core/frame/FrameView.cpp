@@ -402,7 +402,7 @@ void FrameView::invalidateRect(const IntRect& rect)
                      renderer->borderTop() + renderer->paddingTop());
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    renderer->invalidatePaintRectangle(paintInvalidationRect);
+    renderer->invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
@@ -1122,7 +1122,7 @@ void FrameView::gatherDebugLayoutRects(LayoutObject* layoutRoot)
     for (LayoutObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->layoutDidGetCalledSinceLastFrame()) {
             FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousPaintInvalidationRect()));
-            LayoutRect rect = quad.enclosingBoundingBox();
+            LayoutRect rect = LayoutRect(quad.enclosingBoundingBox());
             debugInfo.currentLayoutRects().append(rect);
         }
     }
@@ -1267,7 +1267,7 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object)
 
 LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
 {
-    LayoutRect viewportRect = visibleContentRect();
+    LayoutRect viewportRect = LayoutRect(visibleContentRect());
     // Ignore overhang. No-op when not using rubber banding.
     viewportRect.setLocation(clampScrollPosition(scrollPosition()));
     return viewportRect;
@@ -1389,7 +1389,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         ASSERT(layoutView());
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
-        layoutView()->invalidatePaintRectangle(updateRect);
+        layoutView()->invalidatePaintRectangle(LayoutRect(updateRect));
     }
     if (LayoutPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {
@@ -2706,7 +2706,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
         // FIXME: We are assuming a shrink-to-fit printing implementation.  A cropping
         // implementation should not do this!
         bool horizontalWritingMode = layoutView->style()->isHorizontalWritingMode();
-        const LayoutRect& documentRect = layoutView->documentRect();
+        const LayoutRect& documentRect = LayoutRect(layoutView->documentRect());
         LayoutUnit docLogicalWidth = horizontalWritingMode ? documentRect.width() : documentRect.height();
         if (docLogicalWidth > pageLogicalWidth) {
             FloatSize expectedPageSize(std::min<float>(documentRect.width().toFloat(), pageSize.width() * maximumShrinkFactor), std::min<float>(documentRect.height().toFloat(), pageSize.height() * maximumShrinkFactor));
@@ -2721,7 +2721,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             layout();
 
-            const LayoutRect& updatedDocumentRect = layoutView->documentRect();
+            const LayoutRect& updatedDocumentRect = LayoutRect(layoutView->documentRect());
             LayoutUnit docLogicalHeight = horizontalWritingMode ? updatedDocumentRect.height() : updatedDocumentRect.width();
             LayoutUnit docLogicalTop = horizontalWritingMode ? updatedDocumentRect.y() : updatedDocumentRect.x();
             LayoutUnit docLogicalRight = horizontalWritingMode ? updatedDocumentRect.maxX() : updatedDocumentRect.maxY();

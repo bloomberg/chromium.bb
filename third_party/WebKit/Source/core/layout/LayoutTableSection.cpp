@@ -1529,7 +1529,7 @@ bool LayoutTableSection::nodeAtPoint(const HitTestRequest& request, HitTestResul
 
     recalcCellsIfNeeded();
 
-    LayoutRect hitTestRect = locationInContainer.boundingBox();
+    LayoutRect hitTestRect = LayoutRect(locationInContainer.boundingBox());
     hitTestRect.moveBy(-adjustedLocation);
 
     LayoutRect tableAlignedRect = logicalRectForWritingModeAndDirection(hitTestRect);

@@ -50,7 +50,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
         LayoutRect overflowBox = overflowRectForPaintRejection();
         m_renderBlock.flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedPaintOffset);
-        if (!overflowBox.intersects(localPaintInfo.rect))
+        if (!overflowBox.intersects(LayoutRect(localPaintInfo.rect)))
             return;
     }
 
@@ -283,12 +283,12 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     FrameSelection& selection = m_renderBlock.frame()->selection();
     if (hasCursorCaret(selection, &m_renderBlock, caretBrowsing)) {
-        selection.paintCaret(paintInfo.context, paintOffset, paintInfo.rect);
+        selection.paintCaret(paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
     }
 
     DragCaretController& dragCaretController = m_renderBlock.frame()->page()->dragCaretController();
     if (hasDragCaret(dragCaretController, &m_renderBlock, caretBrowsing)) {
-        dragCaretController.paintDragCaret(m_renderBlock.frame(), paintInfo.context, paintOffset, paintInfo.rect);
+        dragCaretController.paintDragCaret(m_renderBlock.frame(), paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
     }
 }
 
@@ -437,7 +437,7 @@ void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutP
             // FIXME: Content and column rules that extend outside column boxes at the edges of the multi-column element
             // are clipped according to the 'overflow' property.
             ClipRecorder clipRecorder(m_renderBlock.displayItemClient(), paintInfo.context,
-                DisplayItem::paintPhaseToClipColumnBoundsType(paintInfo.phase), enclosingIntRect(clipRect));
+                DisplayItem::paintPhaseToClipColumnBoundsType(paintInfo.phase), LayoutRect(enclosingIntRect(clipRect)));
 
             // Adjust our x and y when painting.
             LayoutPoint adjustedPaintOffset = paintOffset + offset;

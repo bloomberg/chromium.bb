@@ -1168,7 +1168,7 @@ PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String&
     if (!nextMatch)
         return nullptr;
 
-    nextMatch->firstNode()->renderer()->scrollRectToVisible(nextMatch->boundingBox(),
+    nextMatch->firstNode()->renderer()->scrollRectToVisible(LayoutRect(nextMatch->boundingBox()),
         ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
 
     return nextMatch.release();

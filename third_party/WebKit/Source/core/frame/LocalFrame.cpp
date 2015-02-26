@@ -669,7 +669,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     if (!renderer)
         return nullptr;
 
-    LayoutRect rect;
+    IntRect rect;
 
     return paintIntoDragImage(renderer->displayItemClient(), DisplayItem::ClipNodeImage, renderer->shouldRespectImageOrientation(),
         pixelSnappedIntRect(renderer->paintingRootRect(rect)));
@@ -735,14 +735,14 @@ PassRefPtrWillBeRawPtr<Range> LocalFrame::rangeForPoint(const IntPoint& framePoi
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
         RefPtrWillBeRawPtr<Range> previousCharacterRange = makeRange(previous, position);
-        LayoutRect rect = editor().firstRectForRange(previousCharacterRange.get());
+        IntRect rect = editor().firstRectForRange(previousCharacterRange.get());
         if (rect.contains(framePoint))
             return previousCharacterRange.release();
     }
 
     VisiblePosition next = position.next();
     if (RefPtrWillBeRawPtr<Range> nextCharacterRange = makeRange(position, next)) {
-        LayoutRect rect = editor().firstRectForRange(nextCharacterRange.get());
+        IntRect rect = editor().firstRectForRange(nextCharacterRange.get());
         if (rect.contains(framePoint))
             return nextCharacterRange.release();
     }

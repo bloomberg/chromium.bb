@@ -198,7 +198,7 @@ LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
         LayoutMultiColumnSet* columnSet = *iter;
         LayerFragments fragments;
-        columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect::infiniteIntRect());
+        columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect(LayoutRect::infiniteIntRect()));
         for (size_t i = 0; i < fragments.size(); ++i) {
             const LayerFragment& fragment = fragments.at(i);
             LayoutRect fragmentRect(layerBoundingBox);

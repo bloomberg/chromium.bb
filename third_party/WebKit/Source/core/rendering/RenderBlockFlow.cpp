@@ -2732,7 +2732,7 @@ static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoi
         ASSERT(paintInfo.context->clipRecorderStack());
         paintInfo.context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
             r->displayItemClient(), paintInfo.context, paintInfo.displayItemTypeForClipping(),
-            IntRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())), SkRegion::kDifference_Op)));
+            LayoutRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())), SkRegion::kDifference_Op)));
     }
 }
 

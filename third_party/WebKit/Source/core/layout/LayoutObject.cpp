@@ -1017,7 +1017,7 @@ FloatRect LayoutObject::absoluteBoundingBoxRectForRange(const Range* range)
     return result;
 }
 
-void LayoutObject::addAbsoluteRectForLayer(LayoutRect& result)
+void LayoutObject::addAbsoluteRectForLayer(IntRect& result)
 {
     if (hasLayer())
         result.unite(absoluteBoundingBoxRect());
@@ -1025,10 +1025,9 @@ void LayoutObject::addAbsoluteRectForLayer(LayoutRect& result)
         current->addAbsoluteRectForLayer(result);
 }
 
-LayoutRect LayoutObject::paintingRootRect(LayoutRect& topLevelRect)
+IntRect LayoutObject::paintingRootRect(IntRect& topLevelRect)
 {
-    LayoutRect result = absoluteBoundingBoxRect();
-    topLevelRect = result;
+    IntRect result = absoluteBoundingBoxRect();
     for (LayoutObject* current = slowFirstChild(); current; current = current->nextSibling())
         current->addAbsoluteRectForLayer(result);
     return result;

@@ -442,7 +442,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
         }
     }
 
-    toRenderedDocumentMarker(marker)->setRenderedRect(textRenderer.localToAbsoluteQuad(markerRect).enclosingBoundingBox());
+    toRenderedDocumentMarker(marker)->setRenderedRect(LayoutRect(textRenderer.localToAbsoluteQuad(markerRect).enclosingBoundingBox()));
 }
 
 } // namespace blink

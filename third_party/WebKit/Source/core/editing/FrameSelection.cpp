@@ -1687,7 +1687,7 @@ LayoutRect FrameSelection::bounds() const
     if (!view)
         return LayoutRect();
 
-    return intersection(unclippedBounds(), view->visibleContentRect());
+    return intersection(unclippedBounds(), LayoutRect(view->visibleContentRect()));
 }
 
 LayoutRect FrameSelection::unclippedBounds() const
@@ -1700,7 +1700,7 @@ LayoutRect FrameSelection::unclippedBounds() const
     if (!view || !layoutView)
         return LayoutRect();
 
-    return layoutView->selectionBounds();
+    return LayoutRect(layoutView->selectionBounds());
 }
 
 static inline HTMLFormElement* associatedFormElement(HTMLElement& element)
@@ -1757,10 +1757,10 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
     case NoSelection:
         return;
     case CaretSelection:
-        rect = absoluteCaretBounds();
+        rect = LayoutRect(absoluteCaretBounds());
         break;
     case RangeSelection:
-        rect = revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(unclippedBounds());
+        rect = LayoutRect(revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(unclippedBounds()));
         break;
     }
 

@@ -28,7 +28,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
     if (!m_lineBoxList.firstLineBox())
         return;
 
-    if (!m_lineBoxList.anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset))
+    if (!m_lineBoxList.anyLineIntersectsRect(renderer, LayoutRect(paintInfo.rect), paintOffset))
         return;
 
     PaintInfo info(paintInfo);

@@ -306,7 +306,7 @@ bool LayoutImage::updateImageLoadingPriorities()
         return false;
 
     LayoutRect viewBounds = viewRect();
-    LayoutRect objectBounds = absoluteContentBox();
+    LayoutRect objectBounds = LayoutRect(absoluteContentBox());
 
     // The object bounds might be empty right now, so intersects will fail since it doesn't deal
     // with empty rects. Use LayoutRect::contains in that case.

@@ -190,7 +190,7 @@ bool LineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* renderer, Inline
     LayoutUnit logicalTop = std::min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
     LayoutUnit logicalBottom = box->logicalBottomVisualOverflow(root.lineBottom());
 
-    return rangeIntersectsRect(renderer, logicalTop, logicalBottom, paintInfo.rect, offset);
+    return rangeIntersectsRect(renderer, logicalTop, logicalBottom, LayoutRect(paintInfo.rect), offset);
 }
 
 bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
@@ -205,9 +205,9 @@ bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& 
         return false;
 
     LayoutPoint point = locationInContainer.point();
-    LayoutRect rect = firstLineBox()->isHorizontal() ?
+    LayoutRect rect(firstLineBox()->isHorizontal() ?
         IntRect(point.x(), point.y() - locationInContainer.topPadding(), 1, locationInContainer.topPadding() + locationInContainer.bottomPadding() + 1) :
-        IntRect(point.x() - locationInContainer.leftPadding(), point.y(), locationInContainer.rightPadding() + locationInContainer.leftPadding() + 1, 1);
+        IntRect(point.x() - locationInContainer.leftPadding(), point.y(), locationInContainer.rightPadding() + locationInContainer.leftPadding() + 1, 1));
 
     if (!anyLineIntersectsRect(renderer, rect, accumulatedOffset))
         return false;

@@ -211,7 +211,7 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
     if (scrollRect.isEmpty())
         return;
 
-    LayoutRect paintInvalidationRect = scrollRect;
+    LayoutRect paintInvalidationRect = LayoutRect(scrollRect);
     box().flipForWritingMode(paintInvalidationRect);
 
     IntRect intRect = pixelSnappedIntRect(paintInvalidationRect);
@@ -221,7 +221,7 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
     } else {
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
-        box().invalidatePaintRectangle(intRect);
+        box().invalidatePaintRectangle(LayoutRect(intRect));
     }
 }
 
@@ -233,9 +233,9 @@ void LayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
     }
 
     if (m_scrollCorner)
-        m_scrollCorner->invalidatePaintRectangle(rect);
+        m_scrollCorner->invalidatePaintRectangle(LayoutRect(rect));
     if (m_resizer)
-        m_resizer->invalidatePaintRectangle(rect);
+        m_resizer->invalidatePaintRectangle(LayoutRect(rect));
 }
 
 bool LayerScrollableArea::shouldUseIntegerScrollOffset() const
@@ -1034,7 +1034,7 @@ void LayerScrollableArea::positionOverflowControls(const IntSize& offsetFromRoot
 
     const IntRect& scrollCorner = scrollCornerRect();
     if (m_scrollCorner)
-        m_scrollCorner->setFrameRect(scrollCorner);
+        m_scrollCorner->setFrameRect(LayoutRect(scrollCorner));
 
     if (m_resizer)
         m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));

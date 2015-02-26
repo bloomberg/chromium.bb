@@ -526,7 +526,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                     // We want to move the rect into the viewport that excludes the scrollbars so we intersect
                     // the pinch viewport with the scrollbar-excluded frameView content rect.
                     LayoutRect viewRect = intersection(
-                        LayoutRect(pinchViewport.visibleRectInDocument()), frameView->visibleContentRect());
+                        LayoutRect(pinchViewport.visibleRectInDocument()), LayoutRect(frameView->visibleContentRect()));
                     LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
 
                     // pinchViewport.scrollIntoView will attempt to center the given rect within the viewport
@@ -538,7 +538,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
 
                     pinchViewport.scrollIntoView(r);
                 } else {
-                    LayoutRect viewRect = frameView->visibleContentRect();
+                    LayoutRect viewRect = LayoutRect(frameView->visibleContentRect());
                     LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
                     frameView->setScrollPosition(DoublePoint(r.location()));
                 }
@@ -1187,7 +1187,7 @@ bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
     BoxPainter::calculateBackgroundImageGeometry(*this, 0, style()->backgroundLayers(), backgroundRect, geometry);
     if (geometry.hasNonLocalGeometry())
         return false;
-    paintedExtent = geometry.destRect();
+    paintedExtent = LayoutRect(geometry.destRect());
     return true;
 }
 
@@ -1399,9 +1399,9 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
         // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
         if (ScrollableArea* area = scrollableArea()) {
             if (area->hasVerticalBarDamage())
-                invalidatePaintRectangle(area->verticalBarDamage());
+                invalidatePaintRectangle(LayoutRect(area->verticalBarDamage()));
             if (area->hasHorizontalBarDamage())
-                invalidatePaintRectangle(area->horizontalBarDamage());
+                invalidatePaintRectangle(LayoutRect(area->horizontalBarDamage()));
         }
     }
 
@@ -1803,7 +1803,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
 
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer) && position != FixedPosition) {
         if (layer() && layer()->transform())
-            rect = layer()->transform()->mapRect(pixelSnappedIntRect(rect));
+            rect = LayoutRect(layer()->transform()->mapRect(pixelSnappedIntRect(rect)));
 
         // We can't trust the bits on LayoutObject, because this might be called while re-resolving style.
         if (styleToUse.hasInFlowPosition() && layer())
@@ -1836,7 +1836,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
     // We are now in our parent container's coordinate space.  Apply our transform to obtain a bounding box
     // in the parent's coordinate space that encloses us.
     if (hasLayer() && layer()->transform()) {
-        rect = layer()->transform()->mapRect(pixelSnappedIntRect(rect));
+        rect = LayoutRect(layer()->transform()->mapRect(pixelSnappedIntRect(rect)));
         topLeft = rect.location();
         topLeft.move(locationOffset());
     }
@@ -2800,7 +2800,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         return LayoutUnit();
 
     LayoutUnit heightResult;
-    LayoutRect boundingBox = flow->linesBoundingBox();
+    LayoutRect boundingBox(flow->linesBoundingBox());
     if (containingBlock->isHorizontalWritingMode())
         heightResult = boundingBox.height();
     else

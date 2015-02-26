@@ -835,7 +835,7 @@ LayoutRect LayoutView::viewRect() const
     if (shouldUsePrintingLayout())
         return LayoutRect(LayoutPoint(), size());
     if (m_frameView)
-        return m_frameView->visibleContentRect();
+        return LayoutRect(m_frameView->visibleContentRect());
     return LayoutRect();
 }
 
@@ -865,7 +865,7 @@ LayoutObject* LayoutView::backgroundRenderer() const
 LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundRenderer) const
 {
     if (!hasColumns())
-        return unscaledDocumentRect();
+        return LayoutRect(unscaledDocumentRect());
 
     ColumnInfo* columnInfo = this->columnInfo();
     LayoutRect backgroundRect(0, 0, columnInfo->desiredColumnWidth(), columnInfo->columnHeight() * columnInfo->columnCount());
