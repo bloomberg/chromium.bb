@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 
 namespace content {
@@ -19,7 +20,7 @@ namespace {
 base::LazyInstance<HostDiscardableSharedMemoryManager>
     g_discardable_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
 
-const size_t kDefaultMemoryLimit = 512 * 1024 * 1024;
+const int64_t kMaxDefaultMemoryLimit = 512 * 1024 * 1024;
 
 const int kEnforceMemoryPolicyDelayMs = 1000;
 
@@ -35,13 +36,17 @@ HostDiscardableSharedMemoryManager::MemorySegment::~MemorySegment() {
 }
 
 HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
-    : memory_limit_(kDefaultMemoryLimit),
+    : memory_limit_(
+          // Allow 25% of physical memory to be used for discardable memory.
+          std::min(base::SysInfo::AmountOfPhysicalMemory() / 4,
+                   kMaxDefaultMemoryLimit)),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
           base::Bind(&HostDiscardableSharedMemoryManager::OnMemoryPressure,
                      base::Unretained(this)))),
       enforce_memory_policy_pending_(false),
       weak_ptr_factory_(this) {
+  DCHECK_NE(memory_limit_, 0u);
 }
 
 HostDiscardableSharedMemoryManager::~HostDiscardableSharedMemoryManager() {
