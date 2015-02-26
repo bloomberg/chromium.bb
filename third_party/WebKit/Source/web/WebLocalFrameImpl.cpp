@@ -415,7 +415,7 @@ protected:
         context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
         context.clip(pageRect);
         frame()->view()->paintContents(&context, pageRect);
-        outputLinkAndLinkedDestinations(context, frame()->document(), pageRect);
+        outputLinkAndLinkedDestinations(context, pageRect);
         context.restore();
         return scale;
     }

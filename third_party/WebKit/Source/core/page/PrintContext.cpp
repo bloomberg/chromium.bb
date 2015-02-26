@@ -236,22 +236,30 @@ void PrintContext::collectLinkAndLinkedDestinations(Node* node)
 
     bool linkIsValid = true;
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, node->document().baseURL())) {
-        String name = url.fragmentIdentifier();
-        Element* element = node->document().findAnchor(name);
-        if (element)
-            m_linkedDestinations.set(name, element);
-        else
+        // Only output anchors and links to anchors in the top-level frame because our PrintContext
+        // supports only one namespace for the anchors.
+        if (node->document().frame() == m_frame.get()) {
+            String name = url.fragmentIdentifier();
+            if (Element* element = node->document().findAnchor(name))
+                m_linkedDestinations.set(name, element);
+            else
+                linkIsValid = false;
+        } else {
             linkIsValid = false;
+        }
     }
 
     if (linkIsValid)
         m_linkDestinations.set(toElement(node), url);
 }
 
-void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsContext, Node* node, const IntRect& pageRect)
+void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsContext, const IntRect& pageRect)
 {
     if (!m_linkAndLinkedDestinationsValid) {
-        collectLinkAndLinkedDestinations(node);
+        for (Frame* currentFrame = frame(); currentFrame; currentFrame = currentFrame->tree().traverseNext(frame())) {
+            if (currentFrame->isLocalFrame())
+                collectLinkAndLinkedDestinations(toLocalFrame(currentFrame)->document());
+        }
         m_linkAndLinkedDestinationsValid = true;
     }
 
