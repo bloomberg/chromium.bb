@@ -533,8 +533,9 @@ class _PaygenBuild(object):
     """
     # TODO(dgarrett): Switch to JSON mechanism in _DiscoverAllFsiBuilds
     #   after it's in production, and after we clear the change with the TPMs.
-    #
     #   At that time, check and ignore FSIs without the is_delta_supported flag.
+    # TODO(pprabhu): Can't switch to _DiscoverAllFsiBuilds till the HACK there
+    #   is removed.
 
     # FSI versions are only defined for the stable-channel.
     if self._build.channel != 'stable-channel':
@@ -568,6 +569,13 @@ class _PaygenBuild(object):
       may be empty.
     """
     results = []
+    # XXX:HACK -- FSI builds for this board is known to brick the DUTs in the
+    # lab. As a workaround, we're dropping test coverage for this board
+    # temporarily (crbug.com/460174).
+    # TODO(pprabhu) Remove hack once we have a real solution (crbug.com/462320).
+    if self._build.board == 'peach-pit':
+      return results
+
     contents = json.loads(gslib.Cat(FSI_URI))
 
     for fsi in contents.get('fsis', []):
