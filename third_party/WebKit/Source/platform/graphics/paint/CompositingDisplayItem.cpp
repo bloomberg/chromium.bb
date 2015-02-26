@@ -14,13 +14,13 @@ namespace blink {
 
 void BeginCompositingDisplayItem::replay(GraphicsContext* context)
 {
-    context->beginLayer(m_opacity, m_xferMode, m_clipRect.get(), m_colorFilter);
+    context->beginLayer(m_opacity, m_xferMode, m_hasBounds ? &m_bounds : nullptr, m_colorFilter);
 }
 
 void BeginCompositingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    // FIXME: Pass across the rect too.
-    list->appendCompositingItem(m_opacity, m_xferMode, GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter).get());
+    SkRect bounds = WebCoreFloatRectToSKRect(m_bounds);
+    list->appendCompositingItem(m_opacity, m_xferMode, m_hasBounds ? &bounds : nullptr, GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter).get());
 }
 
 #ifndef NDEBUG
@@ -28,6 +28,8 @@ void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
     stringBuilder.append(WTF::String::format(", xferMode: %d, opacity: %f", m_xferMode, m_opacity));
+    if (m_hasBounds)
+        stringBuilder.append(WTF::String::format(", bounds: [%f, %f, %f, %f]", m_bounds.location().x(), m_bounds.location().y(), m_bounds.size().width(), m_bounds.size().height()));
 }
 #endif
 

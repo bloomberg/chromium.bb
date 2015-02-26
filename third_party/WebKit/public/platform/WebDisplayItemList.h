@@ -45,7 +45,7 @@ public:
     virtual void appendTransformItem(const SkMatrix44&) = 0;
     virtual void appendEndTransformItem() = 0;
     virtual void appendCompositingItem(float opacity,
-        SkXfermode::Mode, SkColorFilter*) = 0;
+        SkXfermode::Mode, SkRect* bounds, SkColorFilter*) = 0;
     virtual void appendEndCompositingItem() = 0;
 
     virtual void appendFilterItem(const WebFilterOperations&, const WebFloatRect& bounds) = 0;

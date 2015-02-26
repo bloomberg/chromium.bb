@@ -19,19 +19,20 @@ namespace blink {
 class PLATFORM_EXPORT BeginCompositingDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* clipRect = 0, ColorFilter colorFilter = ColorFilterNone)
+    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds = nullptr, ColorFilter colorFilter = ColorFilterNone)
     {
-        return adoptPtr(new BeginCompositingDisplayItem(client, xferMode, opacity, clipRect, colorFilter));
+        return adoptPtr(new BeginCompositingDisplayItem(client, xferMode, opacity, bounds, colorFilter));
     }
 
-    BeginCompositingDisplayItem(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* clipRect = 0, ColorFilter colorFilter = ColorFilterNone)
+    BeginCompositingDisplayItem(DisplayItemClient client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter = ColorFilterNone)
         : PairedBeginDisplayItem(client, BeginCompositing)
         , m_xferMode(xferMode)
         , m_opacity(opacity)
+        , m_hasBounds(bounds)
         , m_colorFilter(colorFilter)
         {
-            if (clipRect)
-                m_clipRect = adoptPtr(new FloatRect(*clipRect));
+            if (bounds)
+                m_bounds = FloatRect(*bounds);
         }
 
     virtual void replay(GraphicsContext*) override;
@@ -43,7 +44,8 @@ private:
 #endif
     const SkXfermode::Mode m_xferMode;
     const float m_opacity;
-    OwnPtr<FloatRect> m_clipRect;
+    bool m_hasBounds;
+    FloatRect m_bounds;
     ColorFilter m_colorFilter;
 };
 
