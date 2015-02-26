@@ -215,8 +215,15 @@ FcScandir (const char		*dirp,
     {
 	if (!filter || (filter) (dent))
 	{
-	    p = (struct dirent *) malloc (sizeof (struct dirent));
-	    memcpy (p, dent, sizeof (struct dirent));
+	    size_t dentlen = sizeof (struct dirent);
+
+	    if (sizeof (struct dirent) == FcPtrToOffset (dent, dent->d_name))
+	    {
+		dentlen += strlen (dent->d_name) + 1;
+		dentlen = ((dentlen + ALIGNOF_VOID_P - 1) & ~(ALIGNOF_VOID_P - 1));
+	    }
+	    p = (struct dirent *) malloc (dentlen);
+	    memcpy (p, dent, dentlen);
 	    if (n >= lsize)
 	    {
 		lsize += 128;

@@ -680,6 +680,7 @@ dnl Figure out what cache format suffix to use for this architecture
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF([void *])
 AC_CHECK_ALIGNOF([double])
+AC_CHECK_ALIGNOF([void *])
 
 dnl include the header file for workaround of miscalculating size on autoconf
 dnl particularly for fat binaries
