@@ -132,6 +132,169 @@ class DelegatedRendererLayerImplTestSimple
   DelegatedRendererLayerImpl* delegated_renderer_layer_;
 };
 
+TEST_F(DelegatedRendererLayerImplTest,
+       ChangeContributingRenderPassForNewFrame) {
+  FakeDelegatedRendererLayerImpl* fake_delegated_renderer_layer_impl;
+  {
+    scoped_ptr<LayerImpl> root_layer =
+        SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
+    scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
+        FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 2);
+
+    host_impl_->SetViewportSize(gfx::Size(100, 100));
+    root_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->SetHasRenderSurface(true);
+
+    delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
+    delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
+    delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
+    delegated_renderer_layer->SetDrawsContent(true);
+    delegated_renderer_layer->SetHasRenderSurface(true);
+    gfx::Transform transform;
+    transform.Translate(1.0, 1.0);
+    delegated_renderer_layer->SetTransform(transform);
+
+    RenderPassList delegated_render_passes;
+    TestRenderPass* pass1 =
+        AddRenderPass(&delegated_render_passes, RenderPassId(9, 6),
+                      gfx::Rect(6, 6, 6, 6), gfx::Transform(1, 0, 0, 1, 5, 6));
+    AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
+    TestRenderPass* pass2 =
+        AddRenderPass(&delegated_render_passes, RenderPassId(9, 7),
+                      gfx::Rect(7, 7, 7, 7), gfx::Transform(1, 0, 0, 1, 7, 8));
+    AddQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
+    AddRenderPassQuad(pass2, pass1);
+    TestRenderPass* pass3 =
+        AddRenderPass(&delegated_render_passes, RenderPassId(9, 8),
+                      gfx::Rect(0, 0, 8, 8), gfx::Transform(1, 0, 0, 1, 9, 10));
+    AddRenderPassQuad(pass3, pass2);
+    delegated_renderer_layer->SetFrameDataForRenderPasses(
+        1.f, delegated_render_passes);
+
+    fake_delegated_renderer_layer_impl = delegated_renderer_layer.get();
+
+    root_layer->AddChild(delegated_renderer_layer.Pass());
+
+    host_impl_->active_tree()->SetRootLayer(root_layer.Pass());
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    // Root layer has one render pass, and delegated renderer layer has two
+    // contributing render passes and its own render pass.
+    ASSERT_EQ(4u, frame.render_passes.size());
+
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+  {
+    // New frame makes delegated renderer layer loses its contributing render
+    // passes.
+    RenderPassList delegated_render_passes;
+    AddRenderPass(&delegated_render_passes, RenderPassId(9, 8),
+                  gfx::Rect(0, 0, 8, 8), gfx::Transform(1, 0, 0, 1, 9, 10));
+    fake_delegated_renderer_layer_impl->SetFrameDataForRenderPasses(
+        1.f, delegated_render_passes);
+
+    // Force damage to redraw a new frame.
+    host_impl_->SetViewportDamage(gfx::Rect(10, 10));
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    // Each non-DelegatedRendererLayer added one RenderPass. The
+    // DelegatedRendererLayer added two contributing passes.
+    ASSERT_EQ(1u, frame.render_passes.size());
+
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+}
+
+TEST_F(DelegatedRendererLayerImplTest,
+       ChangeContributingRenderPassNonFullTreeSync) {
+  FakeDelegatedRendererLayerImpl* fake_delegated_renderer_layer_impl;
+  {
+    host_impl_->CreatePendingTree();
+    scoped_ptr<LayerImpl> root_layer =
+        SolidColorLayerImpl::Create(host_impl_->pending_tree(), 1);
+    scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
+        FakeDelegatedRendererLayerImpl::Create(host_impl_->pending_tree(), 2);
+
+    host_impl_->SetViewportSize(gfx::Size(100, 100));
+    root_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->SetHasRenderSurface(true);
+
+    delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
+    delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
+    delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
+    delegated_renderer_layer->SetDrawsContent(true);
+    delegated_renderer_layer->SetHasRenderSurface(true);
+    gfx::Transform transform;
+    transform.Translate(1.0, 1.0);
+    delegated_renderer_layer->SetTransform(transform);
+
+    RenderPassList delegated_render_passes;
+    TestRenderPass* pass1 =
+        AddRenderPass(&delegated_render_passes, RenderPassId(9, 6),
+                      gfx::Rect(6, 6, 6, 6), gfx::Transform(1, 0, 0, 1, 5, 6));
+    AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
+    TestRenderPass* pass2 =
+        AddRenderPass(&delegated_render_passes, RenderPassId(9, 7),
+                      gfx::Rect(7, 7, 7, 7), gfx::Transform(1, 0, 0, 1, 7, 8));
+    AddQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
+    AddRenderPassQuad(pass2, pass1);
+    TestRenderPass* pass3 =
+        AddRenderPass(&delegated_render_passes, RenderPassId(9, 8),
+                      gfx::Rect(0, 0, 8, 8), gfx::Transform(1, 0, 0, 1, 9, 10));
+    AddRenderPassQuad(pass3, pass2);
+    delegated_renderer_layer->SetFrameDataForRenderPasses(
+        1.f, delegated_render_passes);
+
+    fake_delegated_renderer_layer_impl = delegated_renderer_layer.get();
+
+    root_layer->AddChild(delegated_renderer_layer.Pass());
+
+    host_impl_->pending_tree()->SetRootLayer(root_layer.Pass());
+    host_impl_->ActivateSyncTree();
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    // Root layer has one render pass, and delegated renderer layer has two
+    // contributing render passes and its own render pass.
+    ASSERT_EQ(4u, frame.render_passes.size());
+
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+  {
+    // Remove contributing render passes from the delegated renderer layer.
+    host_impl_->CreatePendingTree();
+    host_impl_->pending_tree()->set_needs_full_tree_sync(false);
+    RenderPassList delegated_render_passes;
+    AddRenderPass(&delegated_render_passes, RenderPassId(9, 8),
+                  gfx::Rect(0, 0, 8, 8), gfx::Transform(1, 0, 0, 1, 9, 10));
+
+    fake_delegated_renderer_layer_impl->SetFrameDataForRenderPasses(
+        1.f, delegated_render_passes);
+
+    // Force damage to redraw a new frame.
+
+    host_impl_->ActivateSyncTree();
+    host_impl_->SetViewportDamage(gfx::Rect(100, 100));
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    // Root layer has one render pass, and delegated renderer layer no longer
+    // has contributing render passes.
+    ASSERT_EQ(1u, frame.render_passes.size());
+
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+}
+
 TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));

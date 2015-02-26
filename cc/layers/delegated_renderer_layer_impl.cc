@@ -172,6 +172,10 @@ void DelegatedRendererLayerImpl::SetRenderPasses(
 
   // Give back an empty array instead of nulls.
   render_passes_in_draw_order->clear();
+
+  // The render passes given here become part of the RenderSurfaceLayerList, so
+  // changing them requires recomputing the RenderSurfaceLayerList.
+  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 void DelegatedRendererLayerImpl::ClearRenderPasses() {
