@@ -43,10 +43,6 @@ class WebThreadImpl : public WebThreadBase {
                                Task* task,
                                long long delay_ms);
 
-  // TODO(skyostil): Remove once blink has migrated.
-  virtual void postTask(Task* task);
-  virtual void postDelayedTask(Task* task, long long delay_ms);
-
   virtual void enterRunLoop();
   virtual void exitRunLoop();
 
@@ -69,10 +65,6 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   virtual void postDelayedTask(const blink::WebTraceLocation& location,
                                Task* task,
                                long long delay_ms);
-
-  // TODO(skyostil): Remove once blink has migrated.
-  virtual void postTask(Task* task);
-  virtual void postDelayedTask(Task* task, long long delay_ms);
 
   virtual void enterRunLoop();
   virtual void exitRunLoop();

@@ -88,20 +88,9 @@ static void RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task) {
     task->run();
 }
 
-void WebThreadImpl::postTask(Task* task) {
-  postDelayedTask(task, 0);
-}
-
 void WebThreadImpl::postTask(const blink::WebTraceLocation& location,
                              Task* task) {
   postDelayedTask(location, task, 0);
-}
-
-void WebThreadImpl::postDelayedTask(Task* task, long long delay_ms) {
-  thread_->message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
-      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void WebThreadImpl::postDelayedTask(const blink::WebTraceLocation& web_location,
@@ -143,22 +132,10 @@ WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
     base::MessageLoopProxy* message_loop)
     : message_loop_(message_loop) {}
 
-void WebThreadImplForMessageLoop::postTask(Task* task) {
-  postDelayedTask(task, 0);
-}
-
 void WebThreadImplForMessageLoop::postTask(
     const blink::WebTraceLocation& location,
     Task* task) {
   postDelayedTask(location, task, 0);
-}
-
-void WebThreadImplForMessageLoop::postDelayedTask(Task* task,
-                                                  long long delay_ms) {
-  message_loop_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
-      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void WebThreadImplForMessageLoop::postDelayedTask(
