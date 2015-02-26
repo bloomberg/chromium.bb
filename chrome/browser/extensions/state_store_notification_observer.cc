@@ -23,7 +23,8 @@ StateStoreNotificationObserver::StateStoreNotificationObserver(
 StateStoreNotificationObserver::~StateStoreNotificationObserver() {
 }
 
-void StateStoreNotificationObserver::OnSessionRestoreDone() {
+void StateStoreNotificationObserver::OnSessionRestoreDone(
+    int /* num_tabs_restored */) {
   on_session_restored_callback_subscription_.reset();
   state_store_->RequestInitAfterDelay();
 }

@@ -96,7 +96,7 @@ class ExitHandler {
   ~ExitHandler();
 
   // Called when a session restore has finished.
-  void OnSessionRestoreDone();
+  void OnSessionRestoreDone(int num_tabs_restored);
 
   // Does the appropriate call to Exit.
   static void Exit();
@@ -133,7 +133,7 @@ ExitHandler::ExitHandler() {
 ExitHandler::~ExitHandler() {
 }
 
-void ExitHandler::OnSessionRestoreDone() {
+void ExitHandler::OnSessionRestoreDone(int /* num_tabs */) {
   if (!SessionRestore::IsRestoringSynchronously()) {
     // At this point the message loop may not be running (meaning we haven't
     // gotten through browser startup, but are close). Post the task to at which

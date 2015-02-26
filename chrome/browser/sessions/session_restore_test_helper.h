@@ -27,7 +27,7 @@ class SessionRestoreTestHelper {
 
  private:
   // Callback for session restore notifications.
-  void OnSessionRestoreDone();
+  void OnSessionRestoreDone(int /* num_tabs_restored */);
 
   // Indicates whether a session restore notification has been received.
   bool restore_notification_seen_;

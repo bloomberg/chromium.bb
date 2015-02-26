@@ -40,12 +40,12 @@ class SessionRestore {
   };
 
   // Notification callback list.
-  using CallbackList = base::CallbackList<void(void)>;
+  using CallbackList = base::CallbackList<void(int)>;
 
   // Used by objects calling RegisterOnSessionRestoredCallback() to de-register
   // themselves when they are destroyed.
   using CallbackSubscription =
-      scoped_ptr<base::CallbackList<void(void)>::Subscription>;
+      scoped_ptr<base::CallbackList<void(int)>::Subscription>;
 
   // Restores the last session. |behavior| is a bitmask of Behaviors, see it
   // for details. If |browser| is non-null the tabs for the first window are
@@ -92,9 +92,20 @@ class SessionRestore {
   static bool IsRestoringSynchronously();
 
   // Register callbacks for session restore events. These callbacks are stored
-  // in on_session_restored_callbacks_.
+  // in |on_session_restored_callbacks_|.
+  // The callback is supplied an integer arg representing a tab count. The exact
+  // meaning and timing depend upon the restore type:
+  // - SessionRestore::SYNCHRONOUS: the parameter is the number of tabs that
+  // were created. Additionally the callback is invoked immediately after the
+  // tabs have been created. That is, the tabs are not necessarily loading.
+  // - For all other restore types the parameter is the number of tabs that were
+  // restored and is sent after all tabs have started loading. Additionally if a
+  // request to restore tabs comes in while a previous request to restore tabs
+  // has not yet completed (loading tabs is throttled), then the callback is
+  // only notified once both sets of tabs have started loading and with the
+  // total number of tabs for both restores.
   static CallbackSubscription RegisterOnSessionRestoredCallback(
-      const base::Closure& callback);
+      const base::Callback<void(int)>& callback);
 
   // The max number of non-selected tabs SessionRestore loads when restoring
   // a session. A value of 0 indicates all tabs are loaded at once.

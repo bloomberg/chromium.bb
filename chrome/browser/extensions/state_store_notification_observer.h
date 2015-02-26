@@ -22,7 +22,7 @@ class StateStoreNotificationObserver {
 
  private:
   // Called when a session restore has finished.
-  void OnSessionRestoreDone();
+  void OnSessionRestoreDone(int num_tabs_restored);
 
   StateStore* state_store_;  // Not owned.
 

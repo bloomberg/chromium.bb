@@ -61,7 +61,7 @@ class PerfProvider : public base::NonThreadSafe,
   void OnUserLoggedIn();
 
   // Called when a session restore has finished.
-  void OnSessionRestoreDone();
+  void OnSessionRestoreDone(int num_tabs_restored);
 
   // Turns off perf collection. Does not delete any data that was already
   // collected and stored in |cached_perf_data_|.
@@ -87,9 +87,11 @@ class PerfProvider : public base::NonThreadSafe,
                                   const base::TimeDelta& time_after_resume);
 
   // Collects perf data after a session restore. |time_after_restore| is how
-  // long ago the session restore started.
+  // long ago the session restore started. |num_tabs_restored| is the total
+  // number of tabs being restored.
   void CollectPerfDataAfterSessionRestore(
-      const base::TimeDelta& time_after_restore);
+      const base::TimeDelta& time_after_restore,
+      int num_tabs_restored);
 
   // Parses a perf data protobuf from the |data| passed in only if the
   // |incognito_observer| indicates that no incognito window had been opened

@@ -335,7 +335,7 @@ void TabLoader::LoadNextTab() {
   // When the session restore is done synchronously, notification is sent from
   // SessionRestoreImpl::Restore .
   if (tabs_to_load_.empty() && !SessionRestore::IsRestoringSynchronously()) {
-    on_session_restored_callbacks_->Notify();
+    on_session_restored_callbacks_->Notify(tab_count_);
   }
 }
 
@@ -641,8 +641,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
         loop.Run();
         quit_closure_for_sync_restore_ = base::Closure();
       }
+      // Count the total number of tabs in |windows_|.
+      int total_num_tabs = 0;
+      for (int i = 0; i < static_cast<int>(windows_.size()); ++i)
+        total_num_tabs += windows_[i]->tabs.size();
+
       Browser* browser = ProcessSessionWindows(&windows_, active_window_id_);
-      on_session_restored_callbacks_->Notify();
+      on_session_restored_callbacks_->Notify(total_num_tabs);
       delete this;
       return browser;
     }
@@ -1354,10 +1359,10 @@ bool SessionRestore::IsRestoringSynchronously() {
 // static
 SessionRestore::CallbackSubscription
     SessionRestore::RegisterOnSessionRestoredCallback(
-        const base::Closure& callback) {
+        const base::Callback<void(int)>& callback) {
   return on_session_restored_callbacks()->Add(callback);
 }
 
 // static
-base::CallbackList<void(void)>*
+base::CallbackList<void(int)>*
     SessionRestore::on_session_restored_callbacks_ = nullptr;

@@ -29,7 +29,8 @@ void SessionRestoreTestHelper::Wait() {
   EXPECT_TRUE(restore_notification_seen_);
 }
 
-void SessionRestoreTestHelper::OnSessionRestoreDone() {
+void SessionRestoreTestHelper::OnSessionRestoreDone(
+    int /* num_tabs_restored */) {
   restore_notification_seen_ = true;
   if (!loop_is_running_)
     return;
