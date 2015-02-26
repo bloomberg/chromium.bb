@@ -10,6 +10,7 @@
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/net_util.h"
 
 namespace local_discovery {
 
@@ -80,6 +81,8 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
     const net::HostPortPair& address,
     const ResultCallback& callback) {
 #if defined(OS_MACOSX)
+  net::IPAddressNumber ip_address;
+  DCHECK(net::ParseIPLiteralToNumber(address.host(), &ip_address));
   // MAC already has IP there.
   callback.Run(scoped_ptr<PrivetHTTPClient>(
       new PrivetHTTPClientImpl(name_, address, request_context_.get())));
