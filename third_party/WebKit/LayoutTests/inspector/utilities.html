@@ -443,6 +443,26 @@ function test()
             }
             next();
         },
+
+        function stringToBase64Test(next)
+        {
+            var testArray = [
+                "", "",
+                "a", "YQ==",
+                "bc", "YmM=",
+                "def", "ZGVm",
+                "ghij", "Z2hpag==",
+                "klmno", "a2xtbm8=",
+                "pqrstu", "cHFyc3R1",
+                String.fromCharCode(0x444, 0x5555, 0x66666, 0x777777), "0YTllZXmmabnnbc="
+            ];
+            for (var i = 0; i < testArray.length; i += 2) {
+                var string = testArray[i];
+                var encodedString = testArray[i + 1];
+                InspectorTest.assertEquals(encodedString, string.toBase64());
+            }
+            next();
+        }
     ]);
 }
 
