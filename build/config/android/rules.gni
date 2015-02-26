@@ -1032,6 +1032,9 @@ template("android_standalone_library") {
   deps_dex(target_name) {
     deps = invoker.deps
     dex_path = invoker.dex_path
+    if (defined(invoker.excluded_jars)) {
+      excluded_jars = invoker.excluded_jars
+    }
   }
 }
 

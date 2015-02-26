@@ -1093,5 +1093,9 @@ template("deps_dex") {
     output = invoker.dex_path
     dex_arg_key = "${rebased_build_config}:final_dex:dependency_dex_files"
     args = [ "--inputs=@FileArg($dex_arg_key)" ]
+    if (defined(invoker.excluded_jars)) {
+      excluded_jars = rebase_path(invoker.excluded_jars, root_build_dir)
+      args += [ "--excluded-paths=${excluded_jars}" ]
+    }
   }
 }

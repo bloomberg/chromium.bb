@@ -50,9 +50,8 @@ def main():
   parser.add_option('--no-locals',
                     help='Exclude locals list from the dex file.')
   parser.add_option('--inputs', help='A list of additional input paths.')
-  parser.add_option('--excluded-paths-file',
-                    help='Path to a file containing a list of paths to exclude '
-                    'from the dex file.')
+  parser.add_option('--excluded-paths',
+                    help='A list of paths to exclude from the dex file.')
 
   options, paths = parser.parse_args(args)
 
@@ -63,12 +62,12 @@ def main():
       and options.configuration_name == 'Release'):
     paths = [options.proguard_enabled_input_path]
 
-  if options.excluded_paths_file:
-    exclude_paths = build_utils.ReadJson(options.excluded_paths_file)
-    paths = [p for p in paths if not p in exclude_paths]
-
   if options.inputs:
     paths += build_utils.ParseGypList(options.inputs)
+
+  if options.excluded_paths:
+    exclude_paths = build_utils.ParseGypList(options.excluded_paths)
+    paths = [p for p in paths if not p in exclude_paths]
 
   DoDex(options, paths)
 

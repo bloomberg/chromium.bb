@@ -811,7 +811,7 @@
         ['is_test_apk == 1 and tested_apk_dex_path != "/"', {
           'variables': {
             'dex_additional_options': [
-              '--excluded-paths-file', '>(tested_apk_dex_path).inputs'
+              '--excluded-paths', '@FileArg(>(tested_apk_dex_path).inputs)'
             ],
           },
           'inputs': [
