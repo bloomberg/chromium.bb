@@ -1,2 +1,42 @@
 {
+  "Android Nexus4 Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Nexus5 Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Nexus7v2 Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android Nexus10 Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  },
+  "Android MotoE Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
+  }
 }
