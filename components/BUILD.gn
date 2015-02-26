@@ -114,6 +114,10 @@ group("all_components") {
     "//components/wifi_sync",
   ]
 
+  if (!enable_configuration_policy) {
+    deps -= [ "//components/policy" ]
+  }
+
   if (!is_win && !is_mac) {
     deps -= [ "//components/wifi" ]
   }

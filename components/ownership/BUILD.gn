@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
+
 component("ownership") {
   sources = [
     "mock_owner_key_util.cc",
@@ -19,11 +21,14 @@ component("ownership") {
   deps = [
     "//base",
     "//components/keyed_service/core",
-    "//components/policy",
     "//components/policy/proto",
     "//components/policy:policy_component_common",
     "//crypto",
   ]
+
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy" ]
+  }
 }
 
 source_set("unit_tests") {
