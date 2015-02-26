@@ -45,9 +45,6 @@ public:
     virtual bool setAzimuth(float) override;
     virtual bool setElevation(float) override;
 
-    virtual void initPaintingData(PaintingData&) const override;
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z) const override;
-
     virtual TextStream& externalRepresentation(TextStream&) const override;
 
 private:

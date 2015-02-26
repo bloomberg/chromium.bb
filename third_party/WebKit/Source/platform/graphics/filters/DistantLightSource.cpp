@@ -35,20 +35,6 @@
 
 namespace blink {
 
-void DistantLightSource::initPaintingData(PaintingData& paintingData) const
-{
-    float azimuth = deg2rad(m_azimuth);
-    float elevation = deg2rad(m_elevation);
-    paintingData.lightVector.setX(cosf(azimuth) * cosf(elevation));
-    paintingData.lightVector.setY(sinf(azimuth) * cosf(elevation));
-    paintingData.lightVector.setZ(sinf(elevation));
-    paintingData.lightVectorLength = 1;
-}
-
-void DistantLightSource::updatePaintingData(PaintingData&, int, int, float) const
-{
-}
-
 bool DistantLightSource::setAzimuth(float azimuth)
 {
     if (m_azimuth == azimuth)

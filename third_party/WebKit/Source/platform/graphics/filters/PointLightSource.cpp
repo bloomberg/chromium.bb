@@ -35,18 +35,6 @@
 
 namespace blink {
 
-void PointLightSource::initPaintingData(PaintingData&) const
-{
-}
-
-void PointLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z) const
-{
-    paintingData.lightVector.setX(m_position.x() - x);
-    paintingData.lightVector.setY(m_position.y() - y);
-    paintingData.lightVector.setZ(m_position.z() - z);
-    paintingData.lightVectorLength = paintingData.lightVector.length();
-}
-
 bool PointLightSource::setPosition(const FloatPoint3D& position)
 {
     if (m_position == position)

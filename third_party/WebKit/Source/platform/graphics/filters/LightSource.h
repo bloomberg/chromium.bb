@@ -41,24 +41,6 @@ class TextStream;
 
 class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
 public:
-
-    // Light vectors must be calculated for every pixel during
-    // painting. It is expensive to pass all these arguments to
-    // a frequently called function, especially because not all
-    // light sources require all of them. Instead, we just pass
-    // a reference to the following structure
-    struct PaintingData {
-        // SVGFELighting also use them
-        FloatPoint3D lightVector;
-        FloatPoint3D colorVector;
-        float lightVectorLength;
-        // Private members
-        FloatPoint3D directionVector;
-        FloatPoint3D privateColorVector;
-        float coneCutOffLimit;
-        float coneFullLight;
-    };
-
     LightSource(LightType type)
         : m_type(type)
     { }
@@ -69,11 +51,6 @@ public:
     virtual TextStream& externalRepresentation(TextStream&) const = 0;
 
     virtual PassRefPtr<LightSource> create(const FloatPoint3D& scale, const FloatSize& offset) const = 0;
-
-    virtual void initPaintingData(PaintingData&) const = 0;
-    // z is a float number, since it is the alpha value scaled by a user
-    // specified "surfaceScale" constant, which type is <number> in the SVG standard
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z) const = 0;
 
     virtual bool setAzimuth(float) { return false; }
     virtual bool setElevation(float) { return false; }

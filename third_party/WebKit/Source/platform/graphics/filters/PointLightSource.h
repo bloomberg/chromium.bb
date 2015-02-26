@@ -43,9 +43,6 @@ public:
     const FloatPoint3D& position() const { return m_position; }
     virtual bool setPosition(const FloatPoint3D&) override;
 
-    virtual void initPaintingData(PaintingData&) const override;
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z) const override;
-
     virtual TextStream& externalRepresentation(TextStream&) const override;
 
 private:

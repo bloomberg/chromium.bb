@@ -36,67 +36,6 @@
 
 namespace blink {
 
-// spot-light edge darkening depends on an absolute treshold
-// according to the SVG 1.1 SE light regression tests
-static const float antiAliasTreshold = 0.016f;
-
-void SpotLightSource::initPaintingData(PaintingData& paintingData) const
-{
-    paintingData.privateColorVector = paintingData.colorVector;
-    paintingData.directionVector.setX(m_direction.x() - m_position.x());
-    paintingData.directionVector.setY(m_direction.y() - m_position.y());
-    paintingData.directionVector.setZ(m_direction.z() - m_position.z());
-    paintingData.directionVector.normalize();
-
-    if (!m_limitingConeAngle) {
-        paintingData.coneCutOffLimit = 0.0f;
-        paintingData.coneFullLight = -antiAliasTreshold;
-    } else {
-        float limitingConeAngle = m_limitingConeAngle;
-        if (limitingConeAngle < 0.0f)
-            limitingConeAngle = -limitingConeAngle;
-        if (limitingConeAngle > 90.0f)
-            limitingConeAngle = 90.0f;
-        paintingData.coneCutOffLimit = cosf(deg2rad(180.0f - limitingConeAngle));
-        paintingData.coneFullLight = paintingData.coneCutOffLimit - antiAliasTreshold;
-    }
-}
-
-void SpotLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z) const
-{
-    paintingData.lightVector.setX(m_position.x() - x);
-    paintingData.lightVector.setY(m_position.y() - y);
-    paintingData.lightVector.setZ(m_position.z() - z);
-    paintingData.lightVectorLength = paintingData.lightVector.length();
-
-    float cosineOfAngle = (paintingData.lightVector * paintingData.directionVector) / paintingData.lightVectorLength;
-    if (cosineOfAngle > paintingData.coneCutOffLimit) {
-        // No light is produced, scanlines are not updated
-        paintingData.colorVector.setX(0.0f);
-        paintingData.colorVector.setY(0.0f);
-        paintingData.colorVector.setZ(0.0f);
-        return;
-    }
-
-    // Set the color of the pixel
-    float lightStrength;
-    if (1.0f == m_specularExponent) {
-        lightStrength = -cosineOfAngle; // -cosineOfAngle ^ 1 == -cosineOfAngle
-    } else {
-        lightStrength = powf(-cosineOfAngle, m_specularExponent);
-    }
-
-    if (cosineOfAngle > paintingData.coneFullLight)
-        lightStrength *= (paintingData.coneCutOffLimit - cosineOfAngle) / (paintingData.coneCutOffLimit - paintingData.coneFullLight);
-
-    if (lightStrength > 1.0f)
-        lightStrength = 1.0f;
-
-    paintingData.colorVector.setX(paintingData.privateColorVector.x() * lightStrength);
-    paintingData.colorVector.setY(paintingData.privateColorVector.y() * lightStrength);
-    paintingData.colorVector.setZ(paintingData.privateColorVector.z() * lightStrength);
-}
-
 bool SpotLightSource::setPosition(const FloatPoint3D& position)
 {
     if (m_position == position)
