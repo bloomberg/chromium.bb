@@ -134,9 +134,7 @@ class Waterfall:
   SPECIFIC_BUILD_URL = BASE_URL + '%s/builders/%s/builds/%s'
   BASE_JSON_BUILDERS_URL = BASE_URL + '%s/json/builders'
   BASE_JSON_BUILDS_URL = BASE_URL + '%s/json/builders/%s/builds'
-  REGULAR_WATERFALLS = ['chromium.gpu',
-          'tryserver.chromium.gpu',
-          'chromium.gpu.fyi']
+  REGULAR_WATERFALLS = ['chromium.gpu', 'chromium.gpu.fyi']
   WEBKIT_GPU_BOTS = ['GPU Win Builder',
           'GPU Win Builder (dbg)',
           'GPU Win7 (NVIDIA)',
