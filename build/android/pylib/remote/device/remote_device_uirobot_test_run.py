@@ -43,7 +43,7 @@ class RemoteDeviceUirobotTestRun(remote_device_test_run.RemoteDeviceTestRun):
       default_runner_type = 'ios_robot'
     else:
       raise remote_device_helper.RemoteDeviceError(
-          'Unkown device type: %s' % self._env.device_type)
+          'Unknown device type: %s' % self._env.device_type)
 
     self._app_id = self._UploadAppToDevice(self._test_instance.app_under_test)
     if not self._env.runner_type:

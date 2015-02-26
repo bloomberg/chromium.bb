@@ -29,6 +29,7 @@ from pylib.device import intent
 from pylib.device import logcat_monitor
 from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
+from pylib.utils import base_error
 from pylib.utils import device_temp_file
 from pylib.utils import host_utils
 from pylib.utils import md5sum
@@ -187,7 +188,7 @@ class DeviceUtils(object):
     """
     try:
       return self.adb.GetState() == 'device'
-    except device_errors.BaseError as exc:
+    except base_error.BaseError as exc:
       logging.info('Failed to get state: %s', exc)
       return False
 

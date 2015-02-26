@@ -302,7 +302,8 @@ class RemoteDeviceEnvironment(environment.Environment):
 
   def _NoDeviceFound(self):
     self._PrintAvailableDevices(self._GetDeviceList())
-    raise remote_device_helper.RemoteDeviceError('No device found.')
+    raise remote_device_helper.RemoteDeviceError(
+        'No device found.', is_infra_error=True)
 
   @property
   def collect(self):

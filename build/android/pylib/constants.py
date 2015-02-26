@@ -288,4 +288,5 @@ def _FindAdbPath():
 
 # Exit codes
 ERROR_EXIT_CODE = 1
+INFRA_EXIT_CODE = 87
 WARNING_EXIT_CODE = 88
