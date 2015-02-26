@@ -54,6 +54,7 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::TextEvent;
 using protocol::MouseEvent;
+using protocol::TouchEvent;
 
 // A class to generate events on Mac.
 class InputInjectorMac : public InputInjector {
@@ -69,6 +70,7 @@ class InputInjectorMac : public InputInjector {
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectTouchEvent(const TouchEvent& event) override;
 
   // InputInjector interface.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
@@ -134,6 +136,10 @@ void InputInjectorMac::InjectTextEvent(const TextEvent& event) {
 
 void InputInjectorMac::InjectMouseEvent(const MouseEvent& event) {
   core_->InjectMouseEvent(event);
+}
+
+void InputInjectorMac::InjectTouchEvent(const TouchEvent& event) {
+  NOTIMPLEMENTED() << "Raw touch event injection not implemented for Mac.";
 }
 
 void InputInjectorMac::Start(

@@ -23,6 +23,7 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientEventDispatcher);

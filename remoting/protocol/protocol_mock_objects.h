@@ -123,6 +123,7 @@ class MockInputStub : public InputStub {
   MOCK_METHOD1(InjectKeyEvent, void(const KeyEvent& event));
   MOCK_METHOD1(InjectTextEvent, void(const TextEvent& event));
   MOCK_METHOD1(InjectMouseEvent, void(const MouseEvent& event));
+  MOCK_METHOD1(InjectTouchEvent, void(const TouchEvent& event));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputStub);

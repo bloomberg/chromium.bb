@@ -128,6 +128,7 @@
         'client/plugin/empty_cursor_filter_unittest.cc',
         'client/plugin/normalizing_input_filter_cros_unittest.cc',
         'client/plugin/normalizing_input_filter_mac_unittest.cc',
+        'client/plugin/touch_input_scaler_unittest.cc',
         'client/server_log_entry_client_unittest.cc',
         'codec/audio_encoder_opus_unittest.cc',
         'codec/codec_test.cc',

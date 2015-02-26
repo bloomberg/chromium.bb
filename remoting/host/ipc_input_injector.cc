@@ -33,6 +33,10 @@ void IpcInputInjector::InjectMouseEvent(const protocol::MouseEvent& event) {
   desktop_session_proxy_->InjectMouseEvent(event);
 }
 
+void IpcInputInjector::InjectTouchEvent(const protocol::TouchEvent& event) {
+  NOTIMPLEMENTED();
+}
+
 void IpcInputInjector::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   desktop_session_proxy_->StartInputInjector(client_clipboard.Pass());

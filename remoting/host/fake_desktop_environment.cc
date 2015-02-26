@@ -27,6 +27,9 @@ void FakeInputInjector::InjectTextEvent(const protocol::TextEvent& event) {
 void FakeInputInjector::InjectMouseEvent(const protocol::MouseEvent& event) {
 }
 
+void FakeInputInjector::InjectTouchEvent(const protocol::TouchEvent& event) {
+}
+
 void FakeInputInjector::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
 }

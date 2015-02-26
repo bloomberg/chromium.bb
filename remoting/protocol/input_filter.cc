@@ -32,5 +32,10 @@ void InputFilter::InjectMouseEvent(const MouseEvent& event) {
     input_stub_->InjectMouseEvent(event);
 }
 
+void InputFilter::InjectTouchEvent(const TouchEvent& event) {
+  if (enabled_ && input_stub_ != nullptr)
+    input_stub_->InjectTouchEvent(event);
+}
+
 }  // namespace protocol
 }  // namespace remoting

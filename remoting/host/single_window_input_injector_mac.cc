@@ -18,6 +18,7 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::TextEvent;
 using protocol::MouseEvent;
+using protocol::TouchEvent;
 
 class SingleWindowInputInjectorMac : public SingleWindowInputInjector {
  public:
@@ -31,6 +32,7 @@ class SingleWindowInputInjectorMac : public SingleWindowInputInjector {
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectTouchEvent(const TouchEvent& event) override;
   void InjectClipboardEvent(const ClipboardEvent& event) override;
 
  private:
@@ -105,6 +107,10 @@ void SingleWindowInputInjectorMac::InjectMouseEvent(const MouseEvent& event) {
   } else {
     input_injector_->InjectMouseEvent(event);
   }
+}
+
+void SingleWindowInputInjectorMac::InjectTouchEvent(const TouchEvent& event) {
+  NOTIMPLEMENTED();
 }
 
 void SingleWindowInputInjectorMac::InjectClipboardEvent(

@@ -43,6 +43,7 @@ class SessionInputInjectorWin : public InputInjector {
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
   virtual void InjectTextEvent(const protocol::TextEvent& event) override;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  virtual void InjectTouchEvent(const protocol::TouchEvent& event) override;
 
  private:
   // The actual implementation resides in SessionInputInjectorWin::Core class.

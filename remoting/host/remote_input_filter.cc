@@ -95,6 +95,12 @@ void RemoteInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
   event_tracker_->InjectMouseEvent(event);
 }
 
+void RemoteInputFilter::InjectTouchEvent(const protocol::TouchEvent& event) {
+  if (ShouldIgnoreInput())
+    return;
+  event_tracker_->InjectTouchEvent(event);
+}
+
 bool RemoteInputFilter::ShouldIgnoreInput() const {
   // Ignore remote events if the local mouse moved recently.
   int64 millis =

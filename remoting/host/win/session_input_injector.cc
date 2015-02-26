@@ -43,6 +43,7 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
 using protocol::TextEvent;
+using protocol::TouchEvent;
 
 class SessionInputInjectorWin::Core
     : public base::RefCountedThreadSafe<SessionInputInjectorWin::Core>,
@@ -55,17 +56,16 @@ class SessionInputInjectorWin::Core
       const base::Closure& inject_sas);
 
   // InputInjector implementation.
-  virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  virtual void Start(scoped_ptr<ClipboardStub> client_clipboard) override;
 
   // protocol::ClipboardStub implementation.
-  virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) override;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
   // protocol::InputStub implementation.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  virtual void InjectKeyEvent(const KeyEvent& event) override;
+  virtual void InjectTextEvent(const TextEvent& event) override;
+  virtual void InjectMouseEvent(const MouseEvent& event) override;
+  virtual void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
@@ -189,6 +189,10 @@ void SessionInputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   nested_executor_->InjectMouseEvent(event);
 }
 
+void SessionInputInjectorWin::Core::InjectTouchEvent(const TouchEvent& event) {
+  NOTIMPLEMENTED();
+}
+
 SessionInputInjectorWin::Core::~Core() {
 }
 
@@ -238,6 +242,11 @@ void SessionInputInjectorWin::InjectTextEvent(
 void SessionInputInjectorWin::InjectMouseEvent(
     const protocol::MouseEvent& event) {
   core_->InjectMouseEvent(event);
+}
+
+void SessionInputInjectorWin::InjectTouchEvent(
+    const protocol::TouchEvent& event) {
+  core_->InjectTouchEvent(event);
 }
 
 }  // namespace remoting

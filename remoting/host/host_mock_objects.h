@@ -112,6 +112,7 @@ class MockInputInjector : public InputInjector {
   MOCK_METHOD1(InjectKeyEvent, void(const protocol::KeyEvent& event));
   MOCK_METHOD1(InjectTextEvent, void(const protocol::TextEvent& event));
   MOCK_METHOD1(InjectMouseEvent, void(const protocol::MouseEvent& event));
+  MOCK_METHOD1(InjectTouchEvent, void(const protocol::TouchEvent& event));
   MOCK_METHOD1(StartPtr,
                void(protocol::ClipboardStub* client_clipboard));
 

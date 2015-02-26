@@ -46,5 +46,12 @@ void ClientEventDispatcher::InjectMouseEvent(const MouseEvent& event) {
   writer()->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientEventDispatcher::InjectTouchEvent(const TouchEvent& event) {
+  EventMessage message;
+  message.set_timestamp(base::Time::Now().ToInternalValue());
+  message.mutable_touch_event()->CopyFrom(event);
+  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 }  // namespace protocol
 }  // namespace remoting

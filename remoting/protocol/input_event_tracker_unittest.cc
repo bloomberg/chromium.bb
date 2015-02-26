@@ -44,6 +44,17 @@ MATCHER_P4(EqualsMouseEvent, x, y, button, down, "") {
          arg.button_down() == down;
 }
 
+MATCHER_P2(TouchPointIdsAndTypeEqual, ids, type, "") {
+  if (arg.event_type() != type)
+    return false;
+
+  std::set<uint32> touch_ids;
+  for (const TouchEventPoint& point : arg.touch_points()) {
+    touch_ids.insert(point.id());
+  }
+  return touch_ids == ids;
+}
+
 static KeyEvent NewUsbEvent(uint32 usb_keycode,
                             bool pressed) {
   KeyEvent event;
@@ -70,7 +81,12 @@ static MouseEvent NewMouseEvent(int x, int y,
   return event;
 }
 
+void AddTouchPoint(uint32 id, TouchEvent* event) {
+  TouchEventPoint* p = event->add_touch_points();
+  p->set_id(id);
 }
+
+}  // namespace
 
 // Verify that keys that were pressed and released aren't re-released.
 TEST(InputEventTrackerTest, NothingToRelease) {
@@ -235,6 +251,103 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
   EXPECT_FALSE(input_tracker.IsKeyPressed(2));
   EXPECT_TRUE(input_tracker.IsKeyPressed(3));
   EXPECT_EQ(1, input_tracker.PressedKeyCount());
+
+  input_tracker.ReleaseAll();
+}
+
+// All touch points added with multiple touch events should be released as a
+// cancel event.
+TEST(InputEventTrackerTest, ReleaseAllTouchPoints) {
+  MockInputStub mock_stub;
+  InputEventTracker input_tracker(&mock_stub);
+
+  std::set<uint32> expected_ids1;
+  expected_ids1.insert(1);
+  expected_ids1.insert(2);
+  std::set<uint32> expected_ids2;
+  expected_ids2.insert(3);
+  expected_ids2.insert(5);
+  expected_ids2.insert(8);
+
+  std::set<uint32> all_touch_point_ids;
+  all_touch_point_ids.insert(expected_ids1.begin(), expected_ids1.end());
+  all_touch_point_ids.insert(expected_ids2.begin(), expected_ids2.end());
+
+  InSequence s;
+  EXPECT_CALL(mock_stub, InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                             expected_ids1, TouchEvent::TOUCH_POINT_START)));
+  EXPECT_CALL(mock_stub, InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                             expected_ids2, TouchEvent::TOUCH_POINT_START)));
+
+  EXPECT_CALL(mock_stub,
+              InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                  all_touch_point_ids, TouchEvent::TOUCH_POINT_CANCEL)));
+
+  TouchEvent start_event1;
+  start_event1.set_event_type(TouchEvent::TOUCH_POINT_START);
+  AddTouchPoint(1, &start_event1);
+  AddTouchPoint(2, &start_event1);
+  input_tracker.InjectTouchEvent(start_event1);
+
+  TouchEvent start_event2;
+  start_event2.set_event_type(TouchEvent::TOUCH_POINT_START);
+  AddTouchPoint(3, &start_event2);
+  AddTouchPoint(5, &start_event2);
+  AddTouchPoint(8, &start_event2);
+  input_tracker.InjectTouchEvent(start_event2);
+
+  input_tracker.ReleaseAll();
+}
+
+// Add some touch points and remove only a subset of them. ReleaseAll() should
+// cancel all the remaining touch points.
+TEST(InputEventTrackerTest, ReleaseAllRemainingTouchPoints) {
+  MockInputStub mock_stub;
+  InputEventTracker input_tracker(&mock_stub);
+
+  std::set<uint32> start_expected_ids;
+  start_expected_ids.insert(1);
+  start_expected_ids.insert(2);
+  start_expected_ids.insert(3);
+
+  std::set<uint32> end_expected_ids;
+  end_expected_ids.insert(1);
+  std::set<uint32> cancel_expected_ids;
+  cancel_expected_ids.insert(3);
+
+  std::set<uint32> all_remaining_touch_point_ids;
+  all_remaining_touch_point_ids.insert(2);
+
+  InSequence s;
+  EXPECT_CALL(mock_stub,
+              InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                  start_expected_ids, TouchEvent::TOUCH_POINT_START)));
+  EXPECT_CALL(mock_stub, InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                             end_expected_ids, TouchEvent::TOUCH_POINT_END)));
+  EXPECT_CALL(mock_stub,
+              InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                  cancel_expected_ids, TouchEvent::TOUCH_POINT_CANCEL)));
+
+  EXPECT_CALL(mock_stub, InjectTouchEvent(TouchPointIdsAndTypeEqual(
+                             all_remaining_touch_point_ids,
+                             TouchEvent::TOUCH_POINT_CANCEL)));
+
+  TouchEvent start_event;
+  start_event.set_event_type(TouchEvent::TOUCH_POINT_START);
+  AddTouchPoint(1, &start_event);
+  AddTouchPoint(2, &start_event);
+  AddTouchPoint(3, &start_event);
+  input_tracker.InjectTouchEvent(start_event);
+
+  TouchEvent end_event;
+  end_event.set_event_type(TouchEvent::TOUCH_POINT_END);
+  AddTouchPoint(1, &end_event);
+  input_tracker.InjectTouchEvent(end_event);
+
+  TouchEvent cancel_event;
+  cancel_event.set_event_type(TouchEvent::TOUCH_POINT_CANCEL);
+  AddTouchPoint(3, &cancel_event);
+  input_tracker.InjectTouchEvent(cancel_event);
 
   input_tracker.ReleaseAll();
 }

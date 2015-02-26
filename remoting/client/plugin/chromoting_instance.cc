@@ -187,7 +187,8 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       plugin_task_runner_(new PluginThreadTaskRunner(&plugin_thread_delegate_)),
       context_(plugin_task_runner_.get()),
       input_tracker_(&mouse_input_filter_),
-      key_mapper_(&input_tracker_),
+      touch_input_scaler_(&input_tracker_),
+      key_mapper_(&touch_input_scaler_),
       cursor_setter_(this),
       empty_cursor_filter_(&cursor_setter_),
       text_input_controller_(this),
@@ -352,6 +353,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleDelegateLargeCursors();
   } else if (method == "enableDebugRegion") {
     HandleEnableDebugRegion(*data);
+  } else if (method == "enableTouchEvents") {
+    HandleEnableTouchEvents();
   }
 }
 
@@ -370,8 +373,10 @@ void ChromotingInstance::DidChangeView(const pp::View& view) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   plugin_view_ = view;
-  mouse_input_filter_.set_input_size(
+  webrtc::DesktopSize size(
       webrtc::DesktopSize(view.GetRect().width(), view.GetRect().height()));
+  mouse_input_filter_.set_input_size(size);
+  touch_input_scaler_.set_input_size(size);
 
   if (video_renderer_)
     video_renderer_->OnViewChanged(view);
@@ -403,8 +408,9 @@ void ChromotingInstance::OnVideoFirstFrameReceived() {
 }
 
 void ChromotingInstance::OnVideoSize(const webrtc::DesktopSize& size,
-                                        const webrtc::DesktopVector& dpi) {
+                                     const webrtc::DesktopVector& dpi) {
   mouse_input_filter_.set_output_size(size);
+  touch_input_scaler_.set_output_size(size);
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetInteger("width", size.width());
@@ -688,9 +694,12 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Connect the input pipeline to the protocol stub & initialize components.
   mouse_input_filter_.set_input_stub(client_->input_stub());
+  touch_input_scaler_.set_input_stub(client_->input_stub());
   if (!plugin_view_.is_null()) {
-    mouse_input_filter_.set_input_size(webrtc::DesktopSize(
-        plugin_view_.GetRect().width(), plugin_view_.GetRect().height()));
+    webrtc::DesktopSize size(plugin_view_.GetRect().width(),
+                             plugin_view_.GetRect().height());
+    mouse_input_filter_.set_input_size(size);
+    touch_input_scaler_.set_input_size(size);
   }
 
   // Setup the signal strategy.
@@ -977,6 +986,10 @@ void ChromotingInstance::HandleEnableDebugRegion(
   }
 
   video_renderer_->EnableDebugDirtyRegion(enable);
+}
+
+void ChromotingInstance::HandleEnableTouchEvents() {
+  RequestInputEvents(PP_INPUTEVENT_CLASS_TOUCH);
 }
 
 void ChromotingInstance::Disconnect() {

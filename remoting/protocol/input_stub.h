@@ -16,6 +16,7 @@ namespace protocol {
 class KeyEvent;
 class TextEvent;
 class MouseEvent;
+class TouchEvent;
 
 class InputStub {
  public:
@@ -27,6 +28,7 @@ class InputStub {
   virtual void InjectKeyEvent(const KeyEvent& event) = 0;
   virtual void InjectTextEvent(const TextEvent& event) = 0;
   virtual void InjectMouseEvent(const MouseEvent& event) = 0;
+  virtual void InjectTouchEvent(const TouchEvent& event) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputStub);

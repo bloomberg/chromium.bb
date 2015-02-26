@@ -29,14 +29,15 @@ class InputEventTracker : public InputStub {
   // Returns the count of keys currently pressed.
   int PressedKeyCount() const;
 
-  // Dispatch release events for all currently-pressed keys and mouse buttons
-  // to the InputStub.
+  // Dispatch release events for all currently-pressed keys, mouse buttons, and
+  // touch points to the InputStub.
   void ReleaseAll();
 
   // InputStub interface.
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
   protocol::InputStub* input_stub_;
@@ -45,6 +46,8 @@ class InputEventTracker : public InputStub {
 
   webrtc::DesktopVector mouse_pos_;
   uint32 mouse_button_state_;
+
+  std::set<uint32> touch_point_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventTracker);
 };

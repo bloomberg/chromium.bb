@@ -35,6 +35,7 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::TextEvent;
 using protocol::MouseEvent;
+using protocol::TouchEvent;
 
 bool FindKeycodeForKeySym(Display* display,
                           KeySym key_sym,
@@ -106,6 +107,7 @@ class InputInjectorX11 : public InputInjector {
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectTouchEvent(const TouchEvent& event) override;
 
   // InputInjector interface.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
@@ -217,6 +219,10 @@ void InputInjectorX11::InjectTextEvent(const TextEvent& event) {
 
 void InputInjectorX11::InjectMouseEvent(const MouseEvent& event) {
   core_->InjectMouseEvent(event);
+}
+
+void InputInjectorX11::InjectTouchEvent(const TouchEvent& event) {
+  NOTIMPLEMENTED() << "Raw touch event injection not implemented for X11.";
 }
 
 void InputInjectorX11::Start(

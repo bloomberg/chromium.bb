@@ -26,6 +26,7 @@ class InputInjectorChromeos : public InputInjector {
   void InjectKeyEvent(const protocol::KeyEvent& event) override;
   void InjectTextEvent(const protocol::TextEvent& event) override;
   void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectTouchEvent(const protocol::TouchEvent& event) override;
 
   // InputInjector interface.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;

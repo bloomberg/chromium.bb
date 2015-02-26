@@ -10,6 +10,7 @@
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/mouse_cursor.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/cpp/touch_point.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/proto/event.pb.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
@@ -17,6 +18,52 @@
 namespace remoting {
 
 namespace {
+
+void SetTouchEventType(PP_InputEvent_Type pp_type,
+                       protocol::TouchEvent* touch_event) {
+  DCHECK(touch_event);
+  switch (pp_type) {
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+      touch_event->set_event_type(protocol::TouchEvent::TOUCH_POINT_START);
+      return;
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+      touch_event->set_event_type(protocol::TouchEvent::TOUCH_POINT_MOVE);
+      return;
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+      touch_event->set_event_type(protocol::TouchEvent::TOUCH_POINT_END);
+      return;
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
+      touch_event->set_event_type(protocol::TouchEvent::TOUCH_POINT_CANCEL);
+      return;
+    default:
+      NOTREACHED() << "Unknown event type: " << pp_type;
+      return;
+  }
+}
+
+// Creates a protocol::TouchEvent instance from |pp_touch_event|.
+// Note that only the changed touches are added to the TouchEvent.
+protocol::TouchEvent MakeTouchEvent(const pp::TouchInputEvent& pp_touch_event) {
+  protocol::TouchEvent touch_event;
+  SetTouchEventType(pp_touch_event.GetType(), &touch_event);
+  DCHECK(touch_event.has_event_type());
+
+  for (uint32_t i = 0;
+       i < pp_touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_CHANGEDTOUCHES);
+       ++i) {
+    pp::TouchPoint pp_point =
+        pp_touch_event.GetTouchByIndex(PP_TOUCHLIST_TYPE_CHANGEDTOUCHES, i);
+    protocol::TouchEventPoint* point = touch_event.add_touch_points();
+    point->set_id(pp_point.id());
+    point->set_x(pp_point.position().x());
+    point->set_y(pp_point.position().y());
+    point->set_radius_x(pp_point.radii().x());
+    point->set_radius_y(pp_point.radii().y());
+    point->set_angle(pp_point.rotation_angle());
+  }
+
+  return touch_event;
+}
 
 // Builds the Chromotocol lock states flags for the PPAPI |event|.
 uint32_t MakeLockStates(const pp::InputEvent& event) {
@@ -72,6 +119,18 @@ PepperInputHandler::PepperInputHandler()
 
 bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
   switch (event.GetType()) {
+    // Touch input cases.
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL: {
+      if (!input_stub_)
+        return true;
+      pp::TouchInputEvent pp_touch_event(event);
+      input_stub_->InjectTouchEvent(MakeTouchEvent(pp_touch_event));
+      return true;
+    }
+
     case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
       // We need to return true here or else we'll get a local (plugin) context
       // menu instead of the mouseup event for the right click.

@@ -267,6 +267,8 @@
       'client/plugin/pepper_video_renderer_2d.h',
       'client/plugin/pepper_video_renderer_3d.cc',
       'client/plugin/pepper_video_renderer_3d.h',
+      'client/plugin/touch_input_scaler.cc',
+      'client/plugin/touch_input_scaler.h',
     ],
   }
 }

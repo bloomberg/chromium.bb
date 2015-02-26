@@ -35,4 +35,5 @@ message EventMessage {
   optional KeyEvent key_event = 3;
   optional MouseEvent mouse_event = 4;
   optional TextEvent text_event = 5;
+  optional TouchEvent touch_event = 6;
 }

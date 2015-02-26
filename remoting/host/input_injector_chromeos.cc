@@ -24,6 +24,7 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
 using protocol::TextEvent;
+using protocol::TouchEvent;
 
 namespace {
 
@@ -193,6 +194,10 @@ void InputInjectorChromeos::InjectMouseEvent(const MouseEvent& event) {
   input_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::InjectMouseEvent,
                             base::Unretained(core_.get()), event));
+}
+
+void InputInjectorChromeos::InjectTouchEvent(const TouchEvent& event) {
+  NOTIMPLEMENTED() << "Raw touch event injection not implemented for ChromeOS.";
 }
 
 void InputInjectorChromeos::Start(

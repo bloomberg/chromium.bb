@@ -51,6 +51,7 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::TextEvent;
 using protocol::MouseEvent;
+using protocol::TouchEvent;
 
 // A class to generate events on Windows.
 class InputInjectorWin : public InputInjector {
@@ -66,6 +67,7 @@ class InputInjectorWin : public InputInjector {
   virtual void InjectKeyEvent(const KeyEvent& event) override;
   virtual void InjectTextEvent(const TextEvent& event) override;
   virtual void InjectMouseEvent(const MouseEvent& event) override;
+  virtual void InjectTouchEvent(const TouchEvent& event) override;
 
   // InputInjector interface.
   virtual void Start(
@@ -135,6 +137,10 @@ void InputInjectorWin::InjectTextEvent(const TextEvent& event) {
 
 void InputInjectorWin::InjectMouseEvent(const MouseEvent& event) {
   core_->InjectMouseEvent(event);
+}
+
+void InputInjectorWin::InjectTouchEvent(const TouchEvent& event) {
+  NOTIMPLEMENTED() << "Raw touch event injection not implemented for Windows.";
 }
 
 void InputInjectorWin::Start(
