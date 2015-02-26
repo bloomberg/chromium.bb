@@ -38,8 +38,6 @@ using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
 using ::i18n::addressinput::STREET_ADDRESS;
 
-const base::string16::value_type kCreditCardPrefix[] = {'*', 0};
-
 template<typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
@@ -873,8 +871,14 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
             credit_card->GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
       }
     } else {
-      suggestion->label = kCreditCardPrefix;
+#if defined(OS_ANDROID)
+      // Since Android places the label on its own row, there's more horizontal
+      // space to work with. Show "Amex - 1234" rather than desktop's "*1234".
+      suggestion->label = credit_card->TypeAndLastFourDigits();
+#else
+      suggestion->label = base::ASCIIToUTF16("*");
       suggestion->label.append(credit_card->LastFourDigits());
+#endif
     }
   }
   return suggestions;

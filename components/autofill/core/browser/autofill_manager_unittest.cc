@@ -913,12 +913,20 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
+#if defined(OS_ANDROID)
+  static const char* kVisaSuggestion = "Visa - 3456";
+  static const char* kMcSuggestion = "MasterCard - 8765";
+#else
+  static const char* kVisaSuggestion = "*3456";
+  static const char* kMcSuggestion = "*8765";
+#endif
+
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Elvis Presley", "*3456", kVisaCard,
+      Suggestion("Elvis Presley", kVisaSuggestion, kVisaCard,
                  autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("Buddy Holly", "*8765", kMasterCard,
+      Suggestion("Buddy Holly", kMcSuggestion, kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
 

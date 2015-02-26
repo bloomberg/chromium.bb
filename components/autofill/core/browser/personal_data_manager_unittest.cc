@@ -2733,18 +2733,21 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
-  // Sublabel is card number when filling name.
+  // Sublabel is card number when filling name (exact format depends on
+  // the platform, but the last 4 digits should appear).
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME), base::string16());
   ASSERT_EQ(3U, suggestions.size());
   // Ordered by MFU.
   EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("*8555"), suggestions[1].label);
+  EXPECT_TRUE(suggestions[1].label.find(ASCIIToUTF16("8555")) !=
+      base::string16::npos);
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
   EXPECT_EQ(base::string16(), suggestions[0].label);
   EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("*2109"), suggestions[2].label);
+  EXPECT_TRUE(suggestions[2].label.find(ASCIIToUTF16("2109")) !=
+      base::string16::npos);
 
   // Sublabel is expiration date when filling card number.
   suggestions = personal_data_->GetCreditCardSuggestions(
