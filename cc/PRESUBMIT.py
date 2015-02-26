@@ -14,21 +14,11 @@ import string
 CC_SOURCE_FILES=(r'^cc[\\/].*\.(cc|h)$',)
 
 def CheckChangeLintsClean(input_api, output_api):
-  input_api.cpplint._cpplint_state.ResetErrorCounts()  # reset global state
   source_filter = lambda x: input_api.FilterSourceFile(
     x, white_list=CC_SOURCE_FILES, black_list=None)
-  files = [f.AbsoluteLocalPath() for f in
-           input_api.AffectedSourceFiles(source_filter)]
-  level = 1  # strict, but just warn
 
-  for file_name in files:
-    input_api.cpplint.ProcessFile(file_name, level)
-
-  if not input_api.cpplint._cpplint_state.error_count:
-    return []
-
-  return [output_api.PresubmitPromptWarning(
-    'Changelist failed cpplint.py check.')]
+  return input_api.canned_checks.CheckChangeLintsClean(
+      input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
 
 def CheckAsserts(input_api, output_api, white_list=CC_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
