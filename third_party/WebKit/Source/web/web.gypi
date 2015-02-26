@@ -255,7 +255,6 @@
       'WebUserMediaRequest.cpp',
       'WebViewImpl.cpp',
       'WebViewImpl.h',
-      'WebWorkerRunLoop.cpp',
       'WorkerGlobalScopeProxyProviderImpl.cpp',
       'WorkerGlobalScopeProxyProviderImpl.h',
       'WorkerPermissionClient.cpp',

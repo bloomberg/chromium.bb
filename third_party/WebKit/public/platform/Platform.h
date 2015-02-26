@@ -107,7 +107,6 @@ class WebURL;
 class WebURLLoader;
 class WebUnitTestSupport;
 class WebWaitableEvent;
-class WebWorkerRunLoop;
 struct WebLocalizedString;
 struct WebSize;
 
@@ -586,8 +585,8 @@ public:
 
     // WebWorker ----------------------------------------------------------
 
-    virtual void didStartWorkerRunLoop(const WebWorkerRunLoop&) { }
-    virtual void didStopWorkerRunLoop(const WebWorkerRunLoop&) { }
+    virtual void didStartWorkerRunLoop() { }
+    virtual void didStopWorkerRunLoop() { }
 
     // WebCrypto ----------------------------------------------------------
 

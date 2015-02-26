@@ -46,7 +46,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebWaitableEvent.h"
-#include "public/platform/WebWorkerRunLoop.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
@@ -510,13 +509,13 @@ void WorkerThread::stopInternal()
 void WorkerThread::didStartRunLoop()
 {
     ASSERT(isCurrentThread());
-    blink::Platform::current()->didStartWorkerRunLoop(WebWorkerRunLoop(this));
+    blink::Platform::current()->didStartWorkerRunLoop();
 }
 
 void WorkerThread::didStopRunLoop()
 {
     ASSERT(isCurrentThread());
-    blink::Platform::current()->didStopWorkerRunLoop(WebWorkerRunLoop(this));
+    blink::Platform::current()->didStopWorkerRunLoop();
 }
 
 void WorkerThread::cleanupIsolate()
