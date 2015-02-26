@@ -342,13 +342,7 @@ static jboolean IsAutofillManaged(JNIEnv* env, jclass clazz) {
 
 // Returns whether the Wallet import feature is available.
 static jboolean IsWalletImportFeatureAvailable(JNIEnv* env, jclass clazz) {
-  // TODO(estade): what to do in the IsManaged case?
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
-  PersonalDataManager* pdm = PersonalDataManagerFactory::GetForProfile(
-      GetProfile());
-  return service->IsSyncEnabledAndLoggedIn() &&
-      pdm->IsExperimentalWalletIntegrationEnabled();
+  return false;
 }
 
 // Returns whether the Wallet import feature is enabled.
