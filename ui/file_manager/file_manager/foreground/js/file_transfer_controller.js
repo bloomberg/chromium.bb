@@ -1083,6 +1083,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
   for (var i = 0; i < entries.length; i++) {
     if (entries[i].isFile)
       fileEntries.push(entries[i]);
+    asyncData[entries[i].toURL()] = {externalFileUrl: '', file: null};
   }
   var containsDirectory = this.selectionHandler_.selection.directoryCount > 0;
 
@@ -1092,7 +1093,6 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
   // asynchronous operations.
   if (!containsDirectory) {
     for (var i = 0; i < fileEntries.length; i++) {
-      asyncData[fileEntries[i].toURL()] = {externalFileUrl: '', file: null};
       fileEntries[i].file(function(data, file) {
         data.file = file;
       }.bind(null, asyncData[fileEntries[i].toURL()]));
