@@ -28,6 +28,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
@@ -439,6 +440,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
   load_time_data.SetString("appdetails",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_DETAILS));
+  load_time_data.SetString("appinfodialog",
+      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_SHOW_INFO));
   load_time_data.SetString("appcreateshortcut",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
   load_time_data.SetString("appDefaultPageName",
@@ -501,6 +504,9 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   bool bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
   load_time_data.SetBoolean("enableNewBookmarkApps", bookmark_apps_enabled);
+
+  load_time_data.SetBoolean("canShowAppInfoDialog",
+                            CanShowAppInfoDialog());
 
 #if defined(OS_CHROMEOS)
   load_time_data.SetString("expandMenu",

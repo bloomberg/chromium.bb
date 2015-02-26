@@ -109,16 +109,6 @@ namespace {
 const char kAppsDeveloperToolsExtensionId[] =
     "ohmmkhmmmpcnpikjeljgnaoabkaalbgc";
 
-// Returns true if the extensions page should display the new-style extension
-// info dialog. If false, display the old permissions dialog.
-bool ShouldDisplayExtensionInfoDialog() {
-#if defined(OS_MACOSX)
-  return false;
-#else
-  return true;
-#endif
-}
-
 }  // namespace
 
 namespace extensions {
@@ -316,7 +306,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("optionsPageHref",
                             OptionsPageInfo::GetOptionsPage(extension).spec());
   extension_data->SetBoolean("enableExtensionInfoDialog",
-                             ShouldDisplayExtensionInfoDialog());
+                             CanShowAppInfoDialog());
 
   // Add dependent extensions.
   base::ListValue* dependents_list = new base::ListValue;
@@ -573,7 +563,7 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   source->AddString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
-  if (ShouldDisplayExtensionInfoDialog()) {
+  if (CanShowAppInfoDialog()) {
     source->AddString("extensionSettingsPermissions",
                       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INFO_LINK));
   } else {
@@ -1196,20 +1186,17 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
   // The BrokerDelegate manages its own lifetime.
   BrokerDelegate* broker_delegate = new BrokerDelegate(AsWeakPtr());
 
-  // Show the new-style extensions dialog when the flag is set. The flag cannot
-  // be set on Mac platforms.
-  if (ShouldDisplayExtensionInfoDialog()) {
+  // Show the new-style extensions dialog when it is available. It is currently
+  // unavailable by default on Mac.
+  if (CanShowAppInfoDialog()) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                               AppInfoLaunchSource::FROM_EXTENSIONS_PAGE,
                               AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
 
     // Display the dialog at a size similar to the app list.
-    const int kAppInfoDialogWidth = 380;
-    const int kAppInfoDialogHeight = 490;
-
     ShowAppInfoInNativeDialog(
         web_contents()->GetTopLevelNativeWindow(),
-        gfx::Size(kAppInfoDialogWidth, kAppInfoDialogHeight),
+        GetAppInfoNativeDialogSize(),
         Profile::FromWebUI(web_ui()), extension,
         base::Bind(&BrokerDelegate::AppInfoDialogClosed,
                    base::Unretained(broker_delegate)));

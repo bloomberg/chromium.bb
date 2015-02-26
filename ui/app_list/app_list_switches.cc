@@ -67,13 +67,6 @@ bool IsVoiceSearchEnabled() {
 #endif
 }
 
-bool IsAppInfoEnabled() {
-#if defined(OS_MACOSX)
-  return IsMacViewsAppListListEnabled();
-#endif
-  return true;
-}
-
 bool IsExperimentalAppListEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kEnableExperimentalAppList))

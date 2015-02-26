@@ -87,6 +87,9 @@ class AppLauncherHandler
   // [extension_id].
   void HandleCreateAppShortcut(const base::ListValue* args);
 
+  // Handles the "showAppInfo" message with |args| containing [extension_id].
+  void HandleShowAppInfo(const base::ListValue* args);
+
   // Handles the "reorderApps" message with |args| containing [dragged_app_id,
   // app_order].
   void HandleReorderApps(const base::ListValue* args);

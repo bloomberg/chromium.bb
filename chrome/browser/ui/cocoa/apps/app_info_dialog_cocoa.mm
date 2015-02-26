@@ -4,6 +4,15 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
+#include "ui/gfx/geometry/size.h"
+
+bool CanShowAppInfoDialog() {
+  return false;
+}
+
+gfx::Size GetAppInfoNativeDialogSize() {
+  return gfx::Size();
+}
 
 void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           const gfx::Rect& app_list_bounds,

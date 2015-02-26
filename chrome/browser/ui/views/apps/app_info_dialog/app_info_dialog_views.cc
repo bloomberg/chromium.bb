@@ -20,6 +20,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/border.h"
@@ -28,6 +29,18 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
+
+bool CanShowAppInfoDialog() {
+#if defined(OS_MACOSX)
+  return app_list::switches::IsMacViewsAppListListEnabled();
+#else
+  return true;
+#endif
+}
+
+gfx::Size GetAppInfoNativeDialogSize() {
+  return gfx::Size(380, 490);
+}
 
 void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           const gfx::Rect& app_list_bounds,

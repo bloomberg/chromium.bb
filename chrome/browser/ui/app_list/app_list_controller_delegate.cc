@@ -25,7 +25,6 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(ENABLE_RLZ)
@@ -87,7 +86,7 @@ bool AppListControllerDelegate::UserMayModifySettings(
 }
 
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
-  return app_list::switches::IsAppInfoEnabled();
+  return CanShowAppInfoDialog();
 }
 
 void AppListControllerDelegate::DoShowAppInfoFlow(

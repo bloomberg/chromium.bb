@@ -31,8 +31,6 @@ bool APP_LIST_EXPORT IsFolderUIEnabled();
 
 bool APP_LIST_EXPORT IsVoiceSearchEnabled();
 
-bool APP_LIST_EXPORT IsAppInfoEnabled();
-
 bool APP_LIST_EXPORT IsExperimentalAppListEnabled();
 
 // Determines whether either command-line switch was given for enabling the

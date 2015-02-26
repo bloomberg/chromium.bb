@@ -43831,6 +43831,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="AppInfoDialogLaunchOrigin" type="int">
   <int value="0" label="App List context menu"/>
   <int value="1" label="Extensions page"/>
+  <int value="2" label="Apps Page context menu"/>
 </enum>
 
 <enum name="AppLaunch" type="int">

@@ -26,6 +26,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -221,6 +222,9 @@ void AppLauncherHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("createAppShortcut",
       base::Bind(&AppLauncherHandler::HandleCreateAppShortcut,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showAppInfo",
+      base::Bind(&AppLauncherHandler::HandleShowAppInfo,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("reorderApps",
       base::Bind(&AppLauncherHandler::HandleReorderApps,
@@ -612,6 +616,25 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
       base::Callback<void(bool)>());
+}
+
+void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+
+  const Extension* extension =
+      extension_service_->GetExtensionById(extension_id, true);
+  if (!extension)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
+                            AppInfoLaunchSource::FROM_APPS_PAGE,
+                            AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
+
+  ShowAppInfoInNativeDialog(
+      web_ui()->GetWebContents()->GetTopLevelNativeWindow(),
+      GetAppInfoNativeDialogSize(), Profile::FromWebUI(web_ui()), extension,
+      base::Closure());
 }
 
 void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {

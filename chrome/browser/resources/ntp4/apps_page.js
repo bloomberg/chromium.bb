@@ -64,12 +64,20 @@ cr.define('ntp', function() {
       this.launchTypeMenuSeparator_ = cr.ui.MenuItem.createSeparator();
       menu.appendChild(this.launchTypeMenuSeparator_);
       this.options_ = this.appendMenuItem_('appoptions');
-      this.details_ = this.appendMenuItem_('appdetails');
       this.uninstall_ = this.appendMenuItem_('appuninstall');
+
+      if (loadTimeData.getBoolean('canShowAppInfoDialog')) {
+        this.appinfo_ = this.appendMenuItem_('appinfodialog');
+        this.appinfo_.addEventListener('activate',
+                                       this.onShowAppInfo_.bind(this));
+      } else {
+        this.details_ = this.appendMenuItem_('appdetails');
+        this.details_.addEventListener('activate',
+                                       this.onShowDetails_.bind(this));
+      }
+
       this.options_.addEventListener('activate',
                                      this.onShowOptions_.bind(this));
-      this.details_.addEventListener('activate',
-                                     this.onShowDetails_.bind(this));
       this.uninstall_.addEventListener('activate',
                                        this.onUninstall_.bind(this));
 
@@ -141,7 +149,8 @@ cr.define('ntp', function() {
       this.launchTypeMenuSeparator_.hidden = app.appData.packagedApp;
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
-      this.details_.disabled = !app.appData.detailsUrl;
+      if (this.details_)
+        this.details_.disabled = !app.appData.detailsUrl;
       this.uninstall_.disabled = !app.appData.mayDisable;
 
       if (cr.isMac) {
@@ -194,6 +203,9 @@ cr.define('ntp', function() {
     onCreateShortcut_: function(e) {
       chrome.send('createAppShortcut', [this.app_.appData.id]);
     },
+    onShowAppInfo_: function(e) {
+      chrome.send('showAppInfo', [this.app_.appData.id]);
+    }
   };
 
   /**
