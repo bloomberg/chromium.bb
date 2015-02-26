@@ -841,11 +841,31 @@ def GetParser():
   return parser
 
 
+def SpewDeprecationWarning():
+  warning = """
+
+*** YOU ARE USING A DEPRECATED WORKFLOW. ***
+gather_builder_stats has been deprecated.
+Instead of using the spreadsheet to annotate builds, point your browser to
+go/chromiumos-build-annotator to annotate builds directly in cidb.
+
+Then, to summarize builds, you can use
+  $ summarize_build_stats --annotations-from-cidb [OPTIONS]
+
+"""
+  cros_build_lib.Warning(warning)
+
+
 def main(argv):
   parser = GetParser()
-  options = parser.parse_args(argv)
+  try:
+    options = parser.parse_args(argv)
+  except (Exception, SystemExit):
+    SpewDeprecationWarning()
+    raise
 
   if not _CheckOptions(options):
+    SpewDeprecationWarning()
     sys.exit(1)
 
   if options.end_date:
@@ -920,4 +940,6 @@ def main(argv):
       if options.mark_gathered:
         stats_mgr.MarkGathered()
 
+    # Warn in the end because this script dumps a lot of stuff on the console.
+    SpewDeprecationWarning()
     cros_build_lib.Info('Finished with %s.\n\n', stats_mgr.config_target)
