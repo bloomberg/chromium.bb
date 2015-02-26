@@ -75,8 +75,12 @@ void ChromeNativeAppWindowViewsWin::EnsureCaptionStyleSet() {
 }
 
 void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
+    const extensions::AppWindow::CreateParams& create_params,
     views::Widget::InitParams* init_params,
     views::Widget* widget) {
+  ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(create_params, init_params,
+                                                     widget);
+
   content::BrowserContext* browser_context = app_window()->browser_context();
   std::string extension_id = app_window()->extension_id();
   // If an app has any existing windows, ensure new ones are created on the
@@ -110,7 +114,7 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
 
 void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
     const extensions::AppWindow::CreateParams& create_params) {
-  ChromeNativeAppWindowViews::InitializeDefaultWindow(create_params);
+  ChromeNativeAppWindowViewsAura::InitializeDefaultWindow(create_params);
 
   // Remaining initialization is for Windows shell integration, which doesn't
   // apply to app windows in Ash.
@@ -145,23 +149,23 @@ ChromeNativeAppWindowViewsWin::CreateStandardDesktopAppFrame() {
     glass_frame_view_ = new GlassAppWindowFrameViewWin(this, widget());
     return glass_frame_view_;
   }
-  return ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame();
+  return ChromeNativeAppWindowViewsAura::CreateStandardDesktopAppFrame();
 }
 
 void ChromeNativeAppWindowViewsWin::Show() {
   ActivateParentDesktopIfNecessary();
-  ChromeNativeAppWindowViews::Show();
+  ChromeNativeAppWindowViewsAura::Show();
 }
 
 void ChromeNativeAppWindowViewsWin::Activate() {
   ActivateParentDesktopIfNecessary();
-  ChromeNativeAppWindowViews::Activate();
+  ChromeNativeAppWindowViewsAura::Activate();
 }
 
 bool ChromeNativeAppWindowViewsWin::CanMinimize() const {
   // Resizing on Windows breaks translucency if the window also has shape.
   // See http://crbug.com/417947.
-  return ChromeNativeAppWindowViews::CanMinimize() &&
+  return ChromeNativeAppWindowViewsAura::CanMinimize() &&
          !(WidgetHasHitTestMask() && is_translucent_);
 }
 

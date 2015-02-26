@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_WIN_H_
 
-#include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 
 namespace web_app {
 struct ShortcutInfo;
@@ -15,7 +15,7 @@ class GlassAppWindowFrameViewWin;
 
 // Windows-specific parts of the views-backed native shell window implementation
 // for packaged apps.
-class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
+class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViewsAura {
  public:
   ChromeNativeAppWindowViewsWin();
 
@@ -34,8 +34,10 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   void EnsureCaptionStyleSet();
 
   // Overridden from ChromeNativeAppWindowViews:
-  virtual void OnBeforeWidgetInit(views::Widget::InitParams* init_params,
-                                  views::Widget* widget) override;
+  virtual void OnBeforeWidgetInit(
+      const extensions::AppWindow::CreateParams& create_params,
+      views::Widget::InitParams* init_params,
+      views::Widget* widget) override;
   virtual void InitializeDefaultWindow(
       const extensions::AppWindow::CreateParams& create_params) override;
   virtual views::NonClientFrameView* CreateStandardDesktopAppFrame() override;

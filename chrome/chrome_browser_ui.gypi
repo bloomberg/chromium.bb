@@ -1956,6 +1956,8 @@
       'browser/ui/views/apps/chrome_apps_client_views_win.cc',
       'browser/ui/views/apps/chrome_native_app_window_views.cc',
       'browser/ui/views/apps/chrome_native_app_window_views.h',
+      'browser/ui/views/apps/chrome_native_app_window_views_aura.cc',
+      'browser/ui/views/apps/chrome_native_app_window_views_aura.h',
       'browser/ui/views/apps/chrome_native_app_window_views_win.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_win.h',
       'browser/ui/views/apps/desktop_keyboard_capture.cc',

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
 #include "apps/ui/views/app_window_frame_view.h"
-#include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -25,7 +25,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
   views::Widget* widget() { return widget_.get(); }
 
   extensions::NativeAppWindow* app_window() { return &app_window_; }
-  ChromeNativeAppWindowViews* app_window_views() { return &app_window_; }
+  ChromeNativeAppWindowViewsAura* app_window_views() { return &app_window_; }
 
  protected:
   void SetUp() override {
@@ -53,7 +53,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  private:
   views::WebView web_view_;
   scoped_ptr<views::Widget> widget_;
-  ChromeNativeAppWindowViews app_window_;
+  ChromeNativeAppWindowViewsAura app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShapedAppWindowTargeterTest);
 };
