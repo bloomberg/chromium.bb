@@ -591,7 +591,9 @@ bool RenderWidgetHostImpl::GetResizeParams(
 
   const bool size_changed =
       !old_resize_params_ ||
-      old_resize_params_->new_size != resize_params->new_size;
+      old_resize_params_->new_size != resize_params->new_size ||
+      (old_resize_params_->physical_backing_size.IsEmpty() &&
+       !resize_params->physical_backing_size.IsEmpty());
   bool dirty =
       size_changed || screen_info_out_of_date_ ||
       old_resize_params_->physical_backing_size !=

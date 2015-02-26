@@ -197,35 +197,15 @@ namespace  {
 class RenderWidgetHostProcess : public MockRenderProcessHost {
  public:
   explicit RenderWidgetHostProcess(BrowserContext* browser_context)
-      : MockRenderProcessHost(browser_context),
-        update_msg_reply_flags_(0) {
+      : MockRenderProcessHost(browser_context) {
   }
   ~RenderWidgetHostProcess() override {}
-
-  void set_update_msg_reply_flags(int flags) {
-    update_msg_reply_flags_ = flags;
-  }
-
-  // Fills the given update parameters with resonable default values.
-  void InitUpdateRectParams(ViewHostMsg_UpdateRect_Params* params);
 
   bool HasConnection() const override { return true; }
 
  protected:
-  // Indicates the flags that should be sent with a repaint request. This
-  // only has an effect when update_msg_should_reply_ is true.
-  int update_msg_reply_flags_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostProcess);
 };
-
-void RenderWidgetHostProcess::InitUpdateRectParams(
-    ViewHostMsg_UpdateRect_Params* params) {
-  const int w = 100, h = 100;
-
-  params->view_size = gfx::Size(w, h);
-  params->flags = update_msg_reply_flags_;
-}
 
 // TestView --------------------------------------------------------------------
 
@@ -636,7 +616,13 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
-  // Setting the bounds to a "real" rect should send out the notification.
+  // No resize ack if the physical backing gets set, but the view bounds are
+  // zero.
+  view_->SetMockPhysicalBackingSize(gfx::Size(200, 200));
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+
+  // Setting the view bounds to nonzero should send out the notification.
   // but should not expect ack for empty physical backing size.
   gfx::Rect original_size(0, 0, 100, 100);
   process_->sink().ClearMessages();
@@ -647,14 +633,19 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
-  // Setting the bounds to a "real" rect should send out the notification.
-  // but should not expect ack for only physical backing size change.
+  // Setting the bounds and physical backing size to nonzero should send out
+  // the notification and expect an ack.
   process_->sink().ClearMessages();
   view_->ClearMockPhysicalBackingSize();
   host_->WasResized();
-  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  ViewHostMsg_UpdateRect_Params params;
+  params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
+  params.view_size = original_size.size();
+  host_->OnUpdateRect(params);
+  EXPECT_FALSE(host_->resize_ack_pending_);
 
   // Send out a update that's not a resize ack after setting resize ack pending
   // flag. This should not clean the resize ack pending flag.
@@ -664,8 +655,8 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(second_size);
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
-  ViewHostMsg_UpdateRect_Params params;
-  process_->InitUpdateRectParams(&params);
+  params.flags = 0;
+  params.view_size = gfx::Size(100, 100);
   host_->OnUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
@@ -689,15 +680,16 @@ TEST_F(RenderWidgetHostTest, Resize) {
   host_->OnUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
-  ASSERT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
+  params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
   params.view_size = third_size.size();
   host_->OnUpdateRect(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
-  ASSERT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // Now clearing the bounds should send out a notification but we shouldn't
   // expect a resize ack (since the renderer won't ack empty sizes). The message
@@ -805,7 +797,7 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   // Send it an update as from the renderer.
   process_->sink().ClearMessages();
   ViewHostMsg_UpdateRect_Params params;
-  process_->InitUpdateRectParams(&params);
+  params.view_size = gfx::Size(100, 100);
   host_->OnUpdateRect(params);
 
   // Now unhide.
