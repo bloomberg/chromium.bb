@@ -61,43 +61,43 @@ input[type='checkbox']:checked {
 }
 
 .gallery[tools] .image-container[cursor='move'] {
-  /** TODO(hirono): Take book 2x assets for the mouse cursor.
-      crbug.com/460430 */
-  cursor: url(../images/100/cursor_move.png) 15 15, auto;
+  cursor: -webkit-image-set(
+      url(../images/100/cursor_move.png) 1x,
+      url(../images/200/cursor_move.png) 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='crop'] {
-  /** TODO(hirono): Take book 2x assets for the mouse cursor.
-      crbug.com/460430 */
-  cursor: url(../images/100/cursor_crop.png) 15 15, auto;
+  cursor: -webkit-image-set(
+      url(../images/100/cursor_crop.png) 1x,
+      url(../images/200/cursor_crop.png) 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='n-resize'],
 .gallery[tools] .image-container[cursor='s-resize'] {
-  /** TODO(hirono): Take book 2x assets for the mouse cursor.
-      crbug.com/460430 */
-  cursor: url(../images/100/cursor_updown.png) 15 15, auto;
+  cursor: -webkit-image-set(
+      url(../images/100/cursor_updown.png) 1x,
+      url(../images/200/cursor_updown.png) 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='e-resize'],
 .gallery[tools] .image-container[cursor='w-resize'] {
-  /** TODO(hirono): Take book 2x assets for the mouse cursor.
-      crbug.com/460430 */
-  cursor: url(../images/100/cursor_leftright.png) 15 15, auto;
+  cursor: -webkit-image-set(
+      url(../images/100/cursor_leftright.png) 1x,
+      url(../images/200/cursor_leftright.png) 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='nw-resize'],
 .gallery[tools] .image-container[cursor='se-resize'] {
-  /** TODO(hirono): Take book 2x assets for the mouse cursor.
-      crbug.com/460430 */
-  cursor: url(../images/100/cursor_nwse.png) 15 15, auto;
+  cursor: -webkit-image-set(
+      url(../images/100/cursor_nwse.png) 1x,
+      url(../images/200/cursor_nwse.png) 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='ne-resize'],
 .gallery[tools] .image-container[cursor='sw-resize'] {
-  /** TODO(hirono): Take book 2x assets for the mouse cursor.
-      crbug.com/460430 */
-  cursor: url(../images/100/cursor_swne.png) 15 15, auto;
+  cursor: -webkit-image-set(
+      url(../images/100/cursor_swne.png) 1x,
+      url(../images/200/cursor_swne.png) 2x) 15 15, auto;
 }
 
 .gallery .image-container > .image {
