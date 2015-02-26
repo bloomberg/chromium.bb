@@ -108,6 +108,12 @@ public:
     int pixelSnappedLogicalHeight() const { return style()->isHorizontalWritingMode() ? pixelSnappedHeight() : pixelSnappedWidth(); }
     int pixelSnappedLogicalWidth() const { return style()->isHorizontalWritingMode() ? pixelSnappedWidth() : pixelSnappedHeight(); }
 
+    LayoutUnit minimumLogicalHeightForEmptyLine() const
+    {
+        return borderAndPaddingLogicalHeight() + scrollbarLogicalHeight()
+            + lineHeight(true, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
+    }
+
     void setLogicalLeft(LayoutUnit left)
     {
         if (style()->isHorizontalWritingMode())

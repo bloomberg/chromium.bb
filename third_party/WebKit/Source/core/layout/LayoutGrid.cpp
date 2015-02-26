@@ -1156,9 +1156,12 @@ void LayoutGrid::layoutGridItems()
     for (const auto& row : sizingData.rowTracks)
         setLogicalHeight(logicalHeight() + row.baseSize());
 
-    // Min / max logical height is handled by the call to updateLogicalHeight in layoutBlock.
+    LayoutUnit height = logicalHeight() + borderAndPaddingLogicalHeight();
+    if (hasLineIfEmpty())
+        height = std::max(height, minimumLogicalHeightForEmptyLine());
 
-    setLogicalHeight(logicalHeight() + borderAndPaddingLogicalHeight());
+    // Min / max logical height is handled by the call to updateLogicalHeight in layoutBlock.
+    setLogicalHeight(height);
 }
 
 void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
