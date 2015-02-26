@@ -29,15 +29,15 @@
 #ifndef AXSlider_h
 #define AXSlider_h
 
+#include "modules/accessibility/AXLayoutObject.h"
 #include "modules/accessibility/AXMockObject.h"
-#include "modules/accessibility/AXRenderObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 class HTMLInputElement;
 
-class AXSlider : public AXRenderObject {
+class AXSlider : public AXLayoutObject {
 
 public:
     static PassRefPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl*);

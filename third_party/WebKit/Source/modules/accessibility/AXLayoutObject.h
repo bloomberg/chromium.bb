@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXRenderObject_h
-#define AXRenderObject_h
+#ifndef AXLayoutObject_h
+#define AXLayoutObject_h
 
 #include "modules/accessibility/AXNodeObject.h"
 #include "platform/geometry/LayoutRect.h"
@@ -45,13 +45,13 @@ class Node;
 class VisibleSelection;
 class Widget;
 
-class AXRenderObject : public AXNodeObject {
+class AXLayoutObject : public AXNodeObject {
 protected:
-    AXRenderObject(LayoutObject*, AXObjectCacheImpl*);
+    AXLayoutObject(LayoutObject*, AXObjectCacheImpl*);
 
 public:
-    static PassRefPtr<AXRenderObject> create(LayoutObject*, AXObjectCacheImpl*);
-    virtual ~AXRenderObject();
+    static PassRefPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl*);
+    virtual ~AXLayoutObject();
 
     // Public, overridden from AXObject.
     virtual LayoutObject* renderer() const override final { return m_renderer; }
@@ -80,7 +80,7 @@ protected:
     virtual void init() override;
     virtual void detach() override;
     virtual bool isDetached() const override { return !m_renderer; }
-    virtual bool isAXRenderObject() const override { return true; }
+    virtual bool isAXLayoutObject() const override { return true; }
 
     // Check object role or purpose.
     virtual bool isAttachment() const override;
@@ -167,7 +167,7 @@ protected:
     // Properties of the object's owning document or page.
     virtual double estimatedLoadingProgress() const override;
 
-    // DOM and Render tree access.
+    // DOM and layout tree access.
     virtual Node* node() const override;
     virtual Document* document() const override;
     virtual FrameView* documentFrameView() const override;
@@ -200,7 +200,7 @@ private:
     bool isTabItemSelected() const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
     bool layoutObjectIsObservable(LayoutObject*) const;
-    LayoutObject* renderParentObject() const;
+    LayoutObject* layoutParentObject() const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
     bool isSVGImage() const;
     void detachRemoteSVGRoot();
@@ -225,8 +225,8 @@ private:
     void accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector&) const;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXRenderObject, isAXRenderObject());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXLayoutObject, isAXLayoutObject());
 
 } // namespace blink
 
-#endif // AXRenderObject_h
+#endif // AXLayoutObject_h

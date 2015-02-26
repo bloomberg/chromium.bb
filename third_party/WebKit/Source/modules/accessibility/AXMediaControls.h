@@ -37,7 +37,7 @@ namespace blink {
 
 class AXObjectCacheImpl;
 
-class AccessibilityMediaControl : public AXRenderObject {
+class AccessibilityMediaControl : public AXLayoutObject {
 
 public:
     static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl*);

@@ -70,7 +70,7 @@ public:
     bool hasAnimations() const;
 
 private:
-    friend class AXRenderObject;
+    friend class AXLayoutObject;
     friend class SVGImageChromeClient;
     friend class SVGImageForContainer;
 

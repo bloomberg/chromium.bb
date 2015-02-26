@@ -29,13 +29,13 @@
 #ifndef AXListBox_h
 #define AXListBox_h
 
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXListBox final : public AXRenderObject {
+class AXListBox final : public AXLayoutObject {
 
 private:
     AXListBox(LayoutObject*, AXObjectCacheImpl*);

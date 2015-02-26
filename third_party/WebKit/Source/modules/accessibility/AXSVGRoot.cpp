@@ -34,7 +34,7 @@
 namespace blink {
 
 AXSVGRoot::AXSVGRoot(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 
@@ -60,11 +60,11 @@ void AXSVGRoot::setParent(AXObject* parent)
 AXObject* AXSVGRoot::computeParent() const
 {
     // If a parent was set because this is a remote SVG resource, use that
-    // but otherwise, we should rely on the standard render tree for the parent.
+    // but otherwise, we should rely on the standard layout tree for the parent.
     if (m_parent)
         return m_parent;
 
-    return AXRenderObject::computeParent();
+    return AXLayoutObject::computeParent();
 }
 
 

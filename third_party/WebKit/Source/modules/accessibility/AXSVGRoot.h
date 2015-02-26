@@ -29,13 +29,13 @@
 #ifndef AXSVGRoot_h
 #define AXSVGRoot_h
 
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXSVGRoot final : public AXRenderObject {
+class AXSVGRoot final : public AXLayoutObject {
 
 protected:
     AXSVGRoot(LayoutObject*, AXObjectCacheImpl*);

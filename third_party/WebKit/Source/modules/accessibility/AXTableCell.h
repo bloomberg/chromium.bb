@@ -29,13 +29,13 @@
 #ifndef AXTableCell_h
 #define AXTableCell_h
 
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXTableCell : public AXRenderObject {
+class AXTableCell : public AXLayoutObject {
 
 protected:
     AXTableCell(LayoutObject*, AXObjectCacheImpl*);

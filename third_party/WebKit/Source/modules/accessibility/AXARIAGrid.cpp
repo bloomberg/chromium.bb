@@ -84,7 +84,7 @@ void AXARIAGrid::addChildren()
     ASSERT(!m_haveChildren);
 
     if (!isAXTable()) {
-        AXRenderObject::addChildren();
+        AXLayoutObject::addChildren();
         return;
     }
 
@@ -101,7 +101,7 @@ void AXARIAGrid::addChildren()
 
         if (!addTableCellChild(child.get(), appendedRows, columnCount)) {
 
-            // in case the render tree doesn't match the expected ARIA hierarchy, look at the children
+            // in case the layout tree doesn't match the expected ARIA hierarchy, look at the children
             if (!child->hasChildren())
                 child->addChildren();
 

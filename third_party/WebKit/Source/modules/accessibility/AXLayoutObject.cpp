@@ -27,7 +27,7 @@
 */
 
 #include "config.h"
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/InputTypeNames.h"
@@ -167,7 +167,7 @@ static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
     return 0;
 }
 
-AXRenderObject::AXRenderObject(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+AXLayoutObject::AXLayoutObject(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
     : AXNodeObject(renderer->node(), axObjectCache)
     , m_renderer(renderer)
     , m_cachedElementRectDirty(true)
@@ -177,17 +177,17 @@ AXRenderObject::AXRenderObject(LayoutObject* renderer, AXObjectCacheImpl* axObje
 #endif
 }
 
-PassRefPtr<AXRenderObject> AXRenderObject::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXLayoutObject> AXLayoutObject::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXRenderObject(renderer, axObjectCache));
+    return adoptRef(new AXLayoutObject(renderer, axObjectCache));
 }
 
-AXRenderObject::~AXRenderObject()
+AXLayoutObject::~AXLayoutObject()
 {
     ASSERT(isDetached());
 }
 
-LayoutRect AXRenderObject::elementRect() const
+LayoutRect AXLayoutObject::elementRect() const
 {
     if (!m_explicitElementRect.isEmpty())
         return m_explicitElementRect;
@@ -197,38 +197,38 @@ LayoutRect AXRenderObject::elementRect() const
         return computeElementRect();
 
     for (const AXObject* obj = this; obj; obj = obj->parentObject()) {
-        if (obj->isAXRenderObject())
-            toAXRenderObject(obj)->checkCachedElementRect();
+        if (obj->isAXLayoutObject())
+            toAXLayoutObject(obj)->checkCachedElementRect();
     }
     for (const AXObject* obj = this; obj; obj = obj->parentObject()) {
-        if (obj->isAXRenderObject())
-            toAXRenderObject(obj)->updateCachedElementRect();
+        if (obj->isAXLayoutObject())
+            toAXLayoutObject(obj)->updateCachedElementRect();
     }
 
     return m_cachedElementRect;
 }
 
-void AXRenderObject::setRenderer(LayoutObject* renderer)
+void AXLayoutObject::setRenderer(LayoutObject* renderer)
 {
     m_renderer = renderer;
     setNode(renderer->node());
 }
 
-LayoutBoxModelObject* AXRenderObject::layoutBoxModelObject() const
+LayoutBoxModelObject* AXLayoutObject::layoutBoxModelObject() const
 {
     if (!m_renderer || !m_renderer->isBoxModelObject())
         return 0;
     return toLayoutBoxModelObject(m_renderer);
 }
 
-Document* AXRenderObject::topDocument() const
+Document* AXLayoutObject::topDocument() const
 {
     if (!document())
         return 0;
     return &document()->topDocument();
 }
 
-bool AXRenderObject::shouldNotifyActiveDescendant() const
+bool AXLayoutObject::shouldNotifyActiveDescendant() const
 {
     // We want to notify that the combo box has changed its active descendant,
     // but we do not want to change the focus, because focus should remain with the combo box.
@@ -238,7 +238,7 @@ bool AXRenderObject::shouldNotifyActiveDescendant() const
     return shouldFocusActiveDescendant();
 }
 
-ScrollableArea* AXRenderObject::getScrollableAreaIfScrollable() const
+ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
 {
     // If the parent is a FrameView, then this object isn't really scrollable; the parent should handle the scrolling.
     if (parentObject() && parentObject()->isAXScrollView())
@@ -265,7 +265,7 @@ static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
     return false;
 }
 
-AccessibilityRole AXRenderObject::determineAccessibilityRole()
+AccessibilityRole AXLayoutObject::determineAccessibilityRole()
 {
     if (!m_renderer)
         return UnknownRole;
@@ -385,12 +385,12 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     return UnknownRole;
 }
 
-void AXRenderObject::init()
+void AXLayoutObject::init()
 {
     AXNodeObject::init();
 }
 
-void AXRenderObject::detach()
+void AXLayoutObject::detach()
 {
     AXNodeObject::detach();
 
@@ -407,7 +407,7 @@ void AXRenderObject::detach()
 // Check object role or purpose.
 //
 
-bool AXRenderObject::isAttachment() const
+bool AXLayoutObject::isAttachment() const
 {
     LayoutBoxModelObject* renderer = layoutBoxModelObject();
     if (!renderer)
@@ -428,7 +428,7 @@ static bool isLinkable(const AXObject& object)
     return object.isLink() || object.isImage() || object.renderer()->isText();
 }
 
-bool AXRenderObject::isLinked() const
+bool AXLayoutObject::isLinked() const
 {
     if (!isLinkable(*this))
         return false;
@@ -440,12 +440,12 @@ bool AXRenderObject::isLinked() const
     return !toHTMLAnchorElement(*anchor).href().isEmpty();
 }
 
-bool AXRenderObject::isLoaded() const
+bool AXLayoutObject::isLoaded() const
 {
     return !m_renderer->document().parser();
 }
 
-bool AXRenderObject::isOffScreen() const
+bool AXLayoutObject::isOffScreen() const
 {
     ASSERT(m_renderer);
     IntRect contentRect = pixelSnappedIntRect(m_renderer->absoluteClippedOverflowRect());
@@ -455,7 +455,7 @@ bool AXRenderObject::isOffScreen() const
     return viewRect.isEmpty();
 }
 
-bool AXRenderObject::isReadOnly() const
+bool AXLayoutObject::isReadOnly() const
 {
     ASSERT(m_renderer);
 
@@ -471,7 +471,7 @@ bool AXRenderObject::isReadOnly() const
     return AXNodeObject::isReadOnly();
 }
 
-bool AXRenderObject::isVisited() const
+bool AXLayoutObject::isVisited() const
 {
     // FIXME: Is it a privacy violation to expose visited information to accessibility APIs?
     return m_renderer->style()->isLink() && m_renderer->style()->insideLink() == InsideVisitedLink;
@@ -481,7 +481,7 @@ bool AXRenderObject::isVisited() const
 // Check object state.
 //
 
-bool AXRenderObject::isFocused() const
+bool AXLayoutObject::isFocused() const
 {
     if (!m_renderer)
         return false;
@@ -500,7 +500,7 @@ bool AXRenderObject::isFocused() const
     return false;
 }
 
-bool AXRenderObject::isSelected() const
+bool AXLayoutObject::isSelected() const
 {
     if (!m_renderer)
         return false;
@@ -523,9 +523,9 @@ bool AXRenderObject::isSelected() const
 // Whether objects are ignored, i.e. not included in the tree.
 //
 
-AXObjectInclusion AXRenderObject::defaultObjectInclusion() const
+AXObjectInclusion AXLayoutObject::defaultObjectInclusion() const
 {
-    // The following cases can apply to any element that's a subclass of AXRenderObject.
+    // The following cases can apply to any element that's a subclass of AXLayoutObject.
 
     if (!m_renderer)
         return IgnoreObject;
@@ -541,7 +541,7 @@ AXObjectInclusion AXRenderObject::defaultObjectInclusion() const
     return AXObject::defaultObjectInclusion();
 }
 
-bool AXRenderObject::computeAccessibilityIsIgnored() const
+bool AXLayoutObject::computeAccessibilityIsIgnored() const
 {
 #if ENABLE(ASSERT)
     ASSERT(m_initialized);
@@ -549,7 +549,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
     // Check first if any of the common reasons cause this element to be ignored.
     // Then process other use cases that need to be applied to all the various roles
-    // that AXRenderObjects take on.
+    // that AXLayoutObjects take on.
     AXObjectInclusion decision = defaultObjectInclusion();
     if (decision == IncludeObject)
         return false;
@@ -706,7 +706,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
             if (image->size().height() <= 1 || image->size().width() <= 1)
                 return true;
 
-            // check whether rendered image was stretched from one-dimensional file image
+            // check whether laid out image was stretched from one-dimensional file image
             if (image->cachedImage()) {
                 LayoutSize imageSize = image->cachedImage()->imageSizeForRenderer(m_renderer, image->view()->zoomFactor());
                 return imageSize.height() <= 1 || imageSize.width() <= 1;
@@ -755,7 +755,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 // Properties of static elements.
 //
 
-const AtomicString& AXRenderObject::accessKey() const
+const AtomicString& AXLayoutObject::accessKey() const
 {
     Node* node = m_renderer->node();
     if (!node)
@@ -765,7 +765,7 @@ const AtomicString& AXRenderObject::accessKey() const
     return toElement(node)->getAttribute(accesskeyAttr);
 }
 
-AccessibilityOrientation AXRenderObject::orientation() const
+AccessibilityOrientation AXLayoutObject::orientation() const
 {
     const AtomicString& ariaOrientation = getAttribute(aria_orientationAttr);
     AccessibilityOrientation axorientation = AccessibilityOrientationUndefined;
@@ -808,7 +808,7 @@ AccessibilityOrientation AXRenderObject::orientation() const
     return axorientation;
 }
 
-String AXRenderObject::text() const
+String AXLayoutObject::text() const
 {
     if (isPasswordFieldAndShouldHideValue()) {
         if (!m_renderer)
@@ -848,7 +848,7 @@ String AXRenderObject::text() const
     return AXNodeObject::text();
 }
 
-int AXRenderObject::textLength() const
+int AXLayoutObject::textLength() const
 {
     if (!isTextControl())
         return -1;
@@ -856,7 +856,7 @@ int AXRenderObject::textLength() const
     return text().length();
 }
 
-KURL AXRenderObject::url() const
+KURL AXLayoutObject::url() const
 {
     if (isAnchor() && isHTMLAnchorElement(m_renderer->node())) {
         if (HTMLAnchorElement* anchor = toHTMLAnchorElement(anchorElement()))
@@ -879,7 +879,7 @@ KURL AXRenderObject::url() const
 // Load inline text boxes.
 //
 
-void AXRenderObject::loadInlineTextBoxes()
+void AXLayoutObject::loadInlineTextBoxes()
 {
     if (!renderer() || !renderer()->isText())
         return;
@@ -897,7 +897,7 @@ static String queryString(WebLocalizedString::Name name)
     return Locale::defaultLocale().queryString(name);
 }
 
-String AXRenderObject::actionVerb() const
+String AXLayoutObject::actionVerb() const
 {
     switch (roleValue()) {
     case ButtonRole:
@@ -917,7 +917,7 @@ String AXRenderObject::actionVerb() const
     }
 }
 
-String AXRenderObject::stringValue() const
+String AXLayoutObject::stringValue() const
 {
     if (!m_renderer)
         return String();
@@ -985,7 +985,7 @@ String AXRenderObject::stringValue() const
 // ARIA attributes.
 //
 
-AXObject* AXRenderObject::activeDescendant() const
+AXObject* AXLayoutObject::activeDescendant() const
 {
     if (!m_renderer)
         return 0;
@@ -1008,13 +1008,13 @@ AXObject* AXRenderObject::activeDescendant() const
     AXObject* obj = axObjectCache()->getOrCreate(target);
 
     // An activedescendant is only useful if it has a renderer, because that's what's needed to post the notification.
-    if (obj && obj->isAXRenderObject())
+    if (obj && obj->isAXLayoutObject())
         return obj;
 
     return 0;
 }
 
-void AXRenderObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
+void AXLayoutObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, attr);
@@ -1029,37 +1029,37 @@ void AXRenderObject::accessibilityChildrenFromAttribute(QualifiedName attr, Acce
     }
 }
 
-void AXRenderObject::ariaFlowToElements(AccessibilityChildrenVector& flowTo) const
+void AXLayoutObject::ariaFlowToElements(AccessibilityChildrenVector& flowTo) const
 {
     accessibilityChildrenFromAttribute(aria_flowtoAttr, flowTo);
 }
 
-void AXRenderObject::ariaControlsElements(AccessibilityChildrenVector& controls) const
+void AXLayoutObject::ariaControlsElements(AccessibilityChildrenVector& controls) const
 {
     accessibilityChildrenFromAttribute(aria_controlsAttr, controls);
 }
 
-void AXRenderObject::ariaDescribedbyElements(AccessibilityChildrenVector& describedby) const
+void AXLayoutObject::ariaDescribedbyElements(AccessibilityChildrenVector& describedby) const
 {
     accessibilityChildrenFromAttribute(aria_describedbyAttr, describedby);
 }
 
-void AXRenderObject::ariaLabelledbyElements(AccessibilityChildrenVector& labelledby) const
+void AXLayoutObject::ariaLabelledbyElements(AccessibilityChildrenVector& labelledby) const
 {
     accessibilityChildrenFromAttribute(aria_labelledbyAttr, labelledby);
 }
 
-void AXRenderObject::ariaOwnsElements(AccessibilityChildrenVector& owns) const
+void AXLayoutObject::ariaOwnsElements(AccessibilityChildrenVector& owns) const
 {
     accessibilityChildrenFromAttribute(aria_ownsAttr, owns);
 }
 
-bool AXRenderObject::ariaHasPopup() const
+bool AXLayoutObject::ariaHasPopup() const
 {
     return elementAttributeValue(aria_haspopupAttr);
 }
 
-bool AXRenderObject::ariaRoleHasPresentationalChildren() const
+bool AXLayoutObject::ariaRoleHasPresentationalChildren() const
 {
     switch (m_ariaRole) {
     case ButtonRole:
@@ -1074,7 +1074,7 @@ bool AXRenderObject::ariaRoleHasPresentationalChildren() const
     }
 }
 
-bool AXRenderObject::isPresentationalChildOfAriaRole() const
+bool AXLayoutObject::isPresentationalChildOfAriaRole() const
 {
     // Walk the parent chain looking for a parent that has presentational children
     AXObject* parent;
@@ -1084,7 +1084,7 @@ bool AXRenderObject::isPresentationalChildOfAriaRole() const
     return parent;
 }
 
-bool AXRenderObject::shouldFocusActiveDescendant() const
+bool AXLayoutObject::shouldFocusActiveDescendant() const
 {
     switch (ariaRoleAttribute()) {
     case ComboBoxRole:
@@ -1108,24 +1108,24 @@ bool AXRenderObject::shouldFocusActiveDescendant() const
     }
 }
 
-bool AXRenderObject::supportsARIADragging() const
+bool AXLayoutObject::supportsARIADragging() const
 {
     const AtomicString& grabbed = getAttribute(aria_grabbedAttr);
     return equalIgnoringCase(grabbed, "true") || equalIgnoringCase(grabbed, "false");
 }
 
-bool AXRenderObject::supportsARIADropping() const
+bool AXLayoutObject::supportsARIADropping() const
 {
     const AtomicString& dropEffect = getAttribute(aria_dropeffectAttr);
     return !dropEffect.isEmpty();
 }
 
-bool AXRenderObject::supportsARIAFlowTo() const
+bool AXLayoutObject::supportsARIAFlowTo() const
 {
     return !getAttribute(aria_flowtoAttr).isEmpty();
 }
 
-bool AXRenderObject::supportsARIAOwns() const
+bool AXLayoutObject::supportsARIAOwns() const
 {
     if (!m_renderer)
         return false;
@@ -1138,7 +1138,7 @@ bool AXRenderObject::supportsARIAOwns() const
 // ARIA live-region features.
 //
 
-const AtomicString& AXRenderObject::liveRegionStatus() const
+const AtomicString& AXLayoutObject::liveRegionStatus() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusAssertive, ("assertive", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusPolite, ("polite", AtomicString::ConstructFromLiteral));
@@ -1165,7 +1165,7 @@ const AtomicString& AXRenderObject::liveRegionStatus() const
     return liveRegionStatus;
 }
 
-const AtomicString& AXRenderObject::liveRegionRelevant() const
+const AtomicString& AXLayoutObject::liveRegionRelevant() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, defaultLiveRegionRelevant, ("additions text", AtomicString::ConstructFromLiteral));
     const AtomicString& relevant = getAttribute(aria_relevantAttr);
@@ -1177,7 +1177,7 @@ const AtomicString& AXRenderObject::liveRegionRelevant() const
     return relevant;
 }
 
-bool AXRenderObject::liveRegionAtomic() const
+bool AXLayoutObject::liveRegionAtomic() const
 {
     // ARIA role status should have implicit aria-atomic value of true.
     if (getAttribute(aria_atomicAttr).isEmpty() && roleValue() == StatusRole)
@@ -1185,7 +1185,7 @@ bool AXRenderObject::liveRegionAtomic() const
     return elementAttributeValue(aria_atomicAttr);
 }
 
-bool AXRenderObject::liveRegionBusy() const
+bool AXLayoutObject::liveRegionBusy() const
 {
     return elementAttributeValue(aria_busyAttr);
 }
@@ -1194,7 +1194,7 @@ bool AXRenderObject::liveRegionBusy() const
 // Accessibility Text.
 //
 
-String AXRenderObject::textUnderElement(TextUnderElementMode mode) const
+String AXLayoutObject::textUnderElement(TextUnderElementMode mode) const
 {
     if (!m_renderer)
         return String();
@@ -1212,7 +1212,7 @@ String AXRenderObject::textUnderElement(TextUnderElementMode mode) const
 // Accessibility Text - (To be deprecated).
 //
 
-String AXRenderObject::helpText() const
+String AXLayoutObject::helpText() const
 {
     if (!m_renderer)
         return String();
@@ -1255,7 +1255,7 @@ String AXRenderObject::helpText() const
 // Position and size.
 //
 
-void AXRenderObject::checkCachedElementRect() const
+void AXLayoutObject::checkCachedElementRect() const
 {
     if (m_cachedElementRectDirty)
         return;
@@ -1281,7 +1281,7 @@ void AXRenderObject::checkCachedElementRect() const
         markCachedElementRectDirty();
 }
 
-void AXRenderObject::updateCachedElementRect() const
+void AXLayoutObject::updateCachedElementRect() const
 {
     if (!m_cachedElementRectDirty)
         return;
@@ -1305,7 +1305,7 @@ void AXRenderObject::updateCachedElementRect() const
     m_cachedElementRectDirty = false;
 }
 
-void AXRenderObject::markCachedElementRectDirty() const
+void AXLayoutObject::markCachedElementRectDirty() const
 {
     if (m_cachedElementRectDirty)
         return;
@@ -1316,7 +1316,7 @@ void AXRenderObject::markCachedElementRectDirty() const
         child->markCachedElementRectDirty();
 }
 
-IntPoint AXRenderObject::clickPoint()
+IntPoint AXLayoutObject::clickPoint()
 {
     // Headings are usually much wider than their textual content. If the mid point is used, often it can be wrong.
     if (isHeading() && children().size() == 1)
@@ -1334,7 +1334,7 @@ IntPoint AXRenderObject::clickPoint()
 // Hit testing.
 //
 
-AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
+AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
 {
     if (!m_renderer || !m_renderer->hasLayer())
         return 0;
@@ -1366,13 +1366,13 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     AXObject* result = axObjectCache()->getOrCreate(obj);
     result->updateChildrenIfNecessary();
 
-    // Allow the element to perform any hit-testing it might need to do to reach non-render children.
+    // Allow the element to perform any hit-testing it might need to do to reach non-layout children.
     result = result->elementAccessibilityHitTest(point);
 
     if (result && result->accessibilityIsIgnored()) {
         // If this element is the label of a control, a hit test should return the control.
-        if (result->isAXRenderObject()) {
-            AXObject* controlObject = toAXRenderObject(result)->correspondingControlForLabelElement();
+        if (result->isAXLayoutObject()) {
+            AXObject* controlObject = toAXLayoutObject(result)->correspondingControlForLabelElement();
             if (controlObject && !controlObject->exposesTitleUIElement())
                 return controlObject;
         }
@@ -1383,7 +1383,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     return result;
 }
 
-AXObject* AXRenderObject::elementAccessibilityHitTest(const IntPoint& point) const
+AXObject* AXLayoutObject::elementAccessibilityHitTest(const IntPoint& point) const
 {
     if (isSVGImage())
         return remoteSVGElementHitTest(point);
@@ -1395,7 +1395,7 @@ AXObject* AXRenderObject::elementAccessibilityHitTest(const IntPoint& point) con
 // High-level accessibility tree access.
 //
 
-AXObject* AXRenderObject::computeParent() const
+AXObject* AXLayoutObject::computeParent() const
 {
     if (!m_renderer)
         return 0;
@@ -1410,7 +1410,7 @@ AXObject* AXRenderObject::computeParent() const
             return parent;
     }
 
-    LayoutObject* parentObj = renderParentObject();
+    LayoutObject* parentObj = layoutParentObject();
     if (parentObj)
         return axObjectCache()->getOrCreate(parentObj);
 
@@ -1421,7 +1421,7 @@ AXObject* AXRenderObject::computeParent() const
     return 0;
 }
 
-AXObject* AXRenderObject::computeParentIfExists() const
+AXObject* AXLayoutObject::computeParentIfExists() const
 {
     if (!m_renderer)
         return 0;
@@ -1436,7 +1436,7 @@ AXObject* AXRenderObject::computeParentIfExists() const
             return parent;
     }
 
-    LayoutObject* parentObj = renderParentObject();
+    LayoutObject* parentObj = layoutParentObject();
     if (parentObj)
         return axObjectCache()->get(parentObj);
 
@@ -1451,7 +1451,7 @@ AXObject* AXRenderObject::computeParentIfExists() const
 // Low-level accessibility tree exploration, only for use within the accessibility module.
 //
 
-AXObject* AXRenderObject::firstChild() const
+AXObject* AXLayoutObject::firstChild() const
 {
     if (!m_renderer)
         return 0;
@@ -1464,7 +1464,7 @@ AXObject* AXRenderObject::firstChild() const
     return axObjectCache()->getOrCreate(firstChild);
 }
 
-AXObject* AXRenderObject::nextSibling() const
+AXObject* AXLayoutObject::nextSibling() const
 {
     if (!m_renderer)
         return 0;
@@ -1508,7 +1508,7 @@ AXObject* AXRenderObject::nextSibling() const
     return axObjectCache()->getOrCreate(nextSibling);
 }
 
-void AXRenderObject::addChildren()
+void AXLayoutObject::addChildren()
 {
     // If the need to add more children in addition to existing children arises,
     // childrenChanged should have been called, leaving the object with no children.
@@ -1537,7 +1537,7 @@ void AXRenderObject::addChildren()
     }
 }
 
-bool AXRenderObject::canHaveChildren() const
+bool AXLayoutObject::canHaveChildren() const
 {
     if (!m_renderer)
         return false;
@@ -1545,7 +1545,7 @@ bool AXRenderObject::canHaveChildren() const
     return AXNodeObject::canHaveChildren();
 }
 
-void AXRenderObject::updateChildrenIfNecessary()
+void AXLayoutObject::updateChildrenIfNecessary()
 {
     if (needsToUpdateChildren())
         clearChildren();
@@ -1553,13 +1553,13 @@ void AXRenderObject::updateChildrenIfNecessary()
     AXObject::updateChildrenIfNecessary();
 }
 
-void AXRenderObject::clearChildren()
+void AXLayoutObject::clearChildren()
 {
     AXObject::clearChildren();
     m_childrenDirty = false;
 }
 
-AXObject* AXRenderObject::observableObject() const
+AXObject* AXLayoutObject::observableObject() const
 {
     // Find the object going up the parent chain that is used in accessibility to monitor certain notifications.
     for (LayoutObject* renderer = m_renderer; renderer && renderer->node(); renderer = renderer->parent()) {
@@ -1574,7 +1574,7 @@ AXObject* AXRenderObject::observableObject() const
 // Properties of the object's owning document or page.
 //
 
-double AXRenderObject::estimatedLoadingProgress() const
+double AXLayoutObject::estimatedLoadingProgress() const
 {
     if (!m_renderer)
         return 0;
@@ -1588,22 +1588,22 @@ double AXRenderObject::estimatedLoadingProgress() const
 }
 
 //
-// DOM and Render tree access.
+// DOM and layout tree access.
 //
 
-Node* AXRenderObject::node() const
+Node* AXLayoutObject::node() const
 {
     return m_renderer ? m_renderer->node() : 0;
 }
 
-Document* AXRenderObject::document() const
+Document* AXLayoutObject::document() const
 {
     if (!m_renderer)
         return 0;
     return &m_renderer->document();
 }
 
-FrameView* AXRenderObject::documentFrameView() const
+FrameView* AXLayoutObject::documentFrameView() const
 {
     if (!m_renderer)
         return 0;
@@ -1612,7 +1612,7 @@ FrameView* AXRenderObject::documentFrameView() const
     return m_renderer->document().view();
 }
 
-Element* AXRenderObject::anchorElement() const
+Element* AXLayoutObject::anchorElement() const
 {
     if (!m_renderer)
         return 0;
@@ -1620,7 +1620,7 @@ Element* AXRenderObject::anchorElement() const
     AXObjectCacheImpl* cache = axObjectCache();
     LayoutObject* currRenderer;
 
-    // Search up the render tree for a LayoutObject with a DOM node. Defer to an earlier continuation, though.
+    // Search up the layout tree for a LayoutObject with a DOM node. Defer to an earlier continuation, though.
     for (currRenderer = m_renderer; currRenderer && !currRenderer->node(); currRenderer = currRenderer->parent()) {
         if (currRenderer->isAnonymousBlock()) {
             LayoutObject* continuation = toLayoutBlock(currRenderer)->continuation();
@@ -1644,7 +1644,7 @@ Element* AXRenderObject::anchorElement() const
     return 0;
 }
 
-Widget* AXRenderObject::widgetForAttachmentView() const
+Widget* AXLayoutObject::widgetForAttachmentView() const
 {
     if (!isAttachment())
         return 0;
@@ -1655,7 +1655,7 @@ Widget* AXRenderObject::widgetForAttachmentView() const
 // Selected text.
 //
 
-AXObject::PlainTextRange AXRenderObject::selectedTextRange() const
+AXObject::PlainTextRange AXLayoutObject::selectedTextRange() const
 {
     if (!isTextControl())
         return PlainTextRange();
@@ -1675,7 +1675,7 @@ AXObject::PlainTextRange AXRenderObject::selectedTextRange() const
     return ariaSelectedTextRange();
 }
 
-VisibleSelection AXRenderObject::selection() const
+VisibleSelection AXLayoutObject::selection() const
 {
     return m_renderer->frame()->selection().selection();
 }
@@ -1684,7 +1684,7 @@ VisibleSelection AXRenderObject::selection() const
 // Modify or take an action on an object.
 //
 
-void AXRenderObject::setSelectedTextRange(const PlainTextRange& range)
+void AXLayoutObject::setSelectedTextRange(const PlainTextRange& range)
 {
     if (isNativeTextControl() && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(m_renderer)->textFormControlElement();
@@ -1701,7 +1701,7 @@ void AXRenderObject::setSelectedTextRange(const PlainTextRange& range)
         Position(node, range.start + range.length, Position::PositionIsOffsetInAnchor), DOWNSTREAM));
 }
 
-void AXRenderObject::setValue(const String& string)
+void AXLayoutObject::setValue(const String& string)
 {
     if (!node() || !node()->isElementNode())
         return;
@@ -1716,7 +1716,7 @@ void AXRenderObject::setValue(const String& string)
 }
 
 // FIXME: This function should use an IntSize to avoid the conversion below.
-void AXRenderObject::scrollTo(const IntPoint& point) const
+void AXLayoutObject::scrollTo(const IntPoint& point) const
 {
     if (!m_renderer || !m_renderer->isBox())
         return;
@@ -1732,7 +1732,7 @@ void AXRenderObject::scrollTo(const IntPoint& point) const
 // Notifications that this object may have changed.
 //
 
-void AXRenderObject::handleActiveDescendantChanged()
+void AXLayoutObject::handleActiveDescendantChanged()
 {
     Element* element = toElement(renderer()->node());
     if (!element)
@@ -1740,13 +1740,13 @@ void AXRenderObject::handleActiveDescendantChanged()
     Document& doc = renderer()->document();
     if (!doc.frame()->selection().isFocusedAndActive() || doc.focusedElement() != element)
         return;
-    AXRenderObject* activedescendant = toAXRenderObject(activeDescendant());
+    AXLayoutObject* activedescendant = toAXLayoutObject(activeDescendant());
 
     if (activedescendant && shouldNotifyActiveDescendant())
         toAXObjectCacheImpl(doc.axObjectCache())->postNotification(m_renderer, AXObjectCacheImpl::AXActiveDescendantChanged, true);
 }
 
-void AXRenderObject::handleAriaExpandedChanged()
+void AXLayoutObject::handleAriaExpandedChanged()
 {
     // Find if a parent of this object should handle aria-expanded changes.
     AXObject* containerParent = this->parentObject();
@@ -1788,7 +1788,7 @@ void AXRenderObject::handleAriaExpandedChanged()
     }
 }
 
-void AXRenderObject::textChanged()
+void AXLayoutObject::textChanged()
 {
     if (!m_renderer)
         return;
@@ -1807,7 +1807,7 @@ void AXRenderObject::textChanged()
 //
 
 // NOTE: Consider providing this utility method as AX API
-int AXRenderObject::index(const VisiblePosition& position) const
+int AXLayoutObject::index(const VisiblePosition& position) const
 {
     if (position.isNull() || !isTextControl())
         return -1;
@@ -1818,7 +1818,7 @@ int AXRenderObject::index(const VisiblePosition& position) const
     return -1;
 }
 
-VisiblePosition AXRenderObject::visiblePositionForIndex(int index) const
+VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 {
     if (!m_renderer)
         return VisiblePosition();
@@ -1846,7 +1846,7 @@ VisiblePosition AXRenderObject::visiblePositionForIndex(int index) const
     return VisiblePosition(Position(it.endContainer(), it.endOffset(), Position::PositionIsOffsetInAnchor), UPSTREAM);
 }
 
-int AXRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
+int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& pos) const
 {
     if (isNativeTextControl() && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(m_renderer)->textFormControlElement();
@@ -1871,7 +1871,7 @@ int AXRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
     return TextIterator::rangeLength(range.get());
 }
 
-void AXRenderObject::addInlineTextBoxChildren(bool force)
+void AXLayoutObject::addInlineTextBoxChildren(bool force)
 {
     Settings* settings = document()->settings();
     if (!force && (!settings || !settings->inlineTextBoxAccessibilityEnabled()))
@@ -1895,7 +1895,7 @@ void AXRenderObject::addInlineTextBoxChildren(bool force)
     }
 }
 
-void AXRenderObject::lineBreaks(Vector<int>& lineBreaks) const
+void AXLayoutObject::lineBreaks(Vector<int>& lineBreaks) const
 {
     if (!isTextControl())
         return;
@@ -1914,7 +1914,7 @@ void AXRenderObject::lineBreaks(Vector<int>& lineBreaks) const
 // Private.
 //
 
-bool AXRenderObject::isAllowedChildOfTree() const
+bool AXLayoutObject::isAllowedChildOfTree() const
 {
     // Determine if this is in a tree. If so, we apply special behavior to make it work like an AXOutline.
     AXObject* axObj = parentObject();
@@ -1936,7 +1936,7 @@ bool AXRenderObject::isAllowedChildOfTree() const
     return true;
 }
 
-void AXRenderObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& result)
+void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& result)
 {
     bool isMulti = isMultiSelectable();
 
@@ -1953,7 +1953,7 @@ void AXRenderObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& re
     }
 }
 
-AXObject::PlainTextRange AXRenderObject::ariaSelectedTextRange() const
+AXObject::PlainTextRange AXLayoutObject::ariaSelectedTextRange() const
 {
     Node* node = m_renderer->node();
     if (!node)
@@ -1970,7 +1970,7 @@ AXObject::PlainTextRange AXRenderObject::ariaSelectedTextRange() const
     return PlainTextRange(start, end - start);
 }
 
-bool AXRenderObject::nodeIsTextControl(const Node* node) const
+bool AXLayoutObject::nodeIsTextControl(const Node* node) const
 {
     if (!node)
         return false;
@@ -1982,7 +1982,7 @@ bool AXRenderObject::nodeIsTextControl(const Node* node) const
     return axObjectForNode->isTextControl();
 }
 
-bool AXRenderObject::isTabItemSelected() const
+bool AXLayoutObject::isTabItemSelected() const
 {
     if (!isTabItem() || !m_renderer)
         return false;
@@ -2022,7 +2022,7 @@ bool AXRenderObject::isTabItemSelected() const
     return false;
 }
 
-AXObject* AXRenderObject::accessibilityImageMapHitTest(HTMLAreaElement* area, const IntPoint& point) const
+AXObject* AXLayoutObject::accessibilityImageMapHitTest(HTMLAreaElement* area, const IntPoint& point) const
 {
     if (!area)
         return 0;
@@ -2041,7 +2041,7 @@ AXObject* AXRenderObject::accessibilityImageMapHitTest(HTMLAreaElement* area, co
     return 0;
 }
 
-bool AXRenderObject::layoutObjectIsObservable(LayoutObject* renderer) const
+bool AXLayoutObject::layoutObjectIsObservable(LayoutObject* renderer) const
 {
     // AX clients will listen for AXValueChange on a text control.
     if (renderer->isTextControl())
@@ -2059,7 +2059,7 @@ bool AXRenderObject::layoutObjectIsObservable(LayoutObject* renderer) const
     return false;
 }
 
-LayoutObject* AXRenderObject::renderParentObject() const
+LayoutObject* AXLayoutObject::layoutParentObject() const
 {
     if (!m_renderer)
         return 0;
@@ -2083,10 +2083,10 @@ LayoutObject* AXRenderObject::renderParentObject() const
     if (firstChild && firstChild->node()) {
         // Case 3: The first sibling is the beginning of a continuation chain. Find the origin of that continuation.
         // Get the node's renderer and follow that continuation chain until the first child is found.
-        for (LayoutObject* nodeRenderFirstChild = firstChild->node()->renderer(); nodeRenderFirstChild != firstChild; nodeRenderFirstChild = firstChild->node()->renderer()) {
-            for (LayoutObject* contsTest = nodeRenderFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
+        for (LayoutObject* nodeLayoutFirstChild = firstChild->node()->renderer(); nodeLayoutFirstChild != firstChild; nodeLayoutFirstChild = firstChild->node()->renderer()) {
+            for (LayoutObject* contsTest = nodeLayoutFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
                 if (contsTest == firstChild) {
-                    parent = nodeRenderFirstChild->parent();
+                    parent = nodeLayoutFirstChild->parent();
                     break;
                 }
             }
@@ -2102,7 +2102,7 @@ LayoutObject* AXRenderObject::renderParentObject() const
     return parent;
 }
 
-bool AXRenderObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
+bool AXLayoutObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
 {
     for (LayoutObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->node() && parent->node()->hasTagName(tagName))
@@ -2111,25 +2111,25 @@ bool AXRenderObject::isDescendantOfElementType(const HTMLQualifiedName& tagName)
     return false;
 }
 
-bool AXRenderObject::isSVGImage() const
+bool AXLayoutObject::isSVGImage() const
 {
     return remoteSVGRootElement();
 }
 
-void AXRenderObject::detachRemoteSVGRoot()
+void AXLayoutObject::detachRemoteSVGRoot()
 {
     if (AXSVGRoot* root = remoteSVGRootElement())
         root->setParent(0);
 }
 
-AXSVGRoot* AXRenderObject::remoteSVGRootElement() const
+AXSVGRoot* AXLayoutObject::remoteSVGRootElement() const
 {
     // FIXME(dmazzoni): none of this code properly handled multiple references to the same
     // remote SVG document. I'm disabling this support until it can be fixed properly.
     return 0;
 }
 
-AXObject* AXRenderObject::remoteSVGElementHitTest(const IntPoint& point) const
+AXObject* AXLayoutObject::remoteSVGElementHitTest(const IntPoint& point) const
 {
     AXObject* remote = remoteSVGRootElement();
     if (!remote)
@@ -2141,7 +2141,7 @@ AXObject* AXRenderObject::remoteSVGElementHitTest(const IntPoint& point) const
 
 // The boundingBox for elements within the remote SVG element needs to be offset by its position
 // within the parent page, otherwise they are in relative coordinates only.
-void AXRenderObject::offsetBoundingBoxForRemoteSVGElement(LayoutRect& rect) const
+void AXLayoutObject::offsetBoundingBoxForRemoteSVGElement(LayoutRect& rect) const
 {
     for (AXObject* parent = parentObject(); parent; parent = parent->parentObject()) {
         if (parent->isAXSVGRoot()) {
@@ -2151,9 +2151,9 @@ void AXRenderObject::offsetBoundingBoxForRemoteSVGElement(LayoutRect& rect) cons
     }
 }
 
-// Hidden children are those that are not rendered or visible, but are specifically marked as aria-hidden=false,
+// Hidden children are those that are not laid out or visible, but are specifically marked as aria-hidden=false,
 // meaning that they should be exposed to the AX hierarchy.
-void AXRenderObject::addHiddenChildren()
+void AXLayoutObject::addHiddenChildren()
 {
     Node* node = this->node();
     if (!node)
@@ -2177,7 +2177,7 @@ void AXRenderObject::addHiddenChildren()
     unsigned insertionIndex = 0;
     for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
         if (child->renderer()) {
-            // Find out where the last render sibling is located within m_children.
+            // Find out where the last layout sibling is located within m_children.
             AXObject* childObject = axObjectCache()->get(child->renderer());
             if (childObject && childObject->accessibilityIsIgnored()) {
                 AccessibilityChildrenVector children = childObject->children();
@@ -2204,7 +2204,7 @@ void AXRenderObject::addHiddenChildren()
     }
 }
 
-void AXRenderObject::addTextFieldChildren()
+void AXLayoutObject::addTextFieldChildren()
 {
     Node* node = this->node();
     if (!isHTMLInputElement(node))
@@ -2221,7 +2221,7 @@ void AXRenderObject::addTextFieldChildren()
     m_children.append(axSpinButton);
 }
 
-void AXRenderObject::addImageMapChildren()
+void AXLayoutObject::addImageMapChildren()
 {
     LayoutBoxModelObject* cssBox = layoutBoxModelObject();
     if (!cssBox || !cssBox->isLayoutImage())
@@ -2246,19 +2246,19 @@ void AXRenderObject::addImageMapChildren()
     }
 }
 
-void AXRenderObject::addCanvasChildren()
+void AXLayoutObject::addCanvasChildren()
 {
     if (!isHTMLCanvasElement(node()))
         return;
 
-    // If it's a canvas, it won't have rendered children, but it might have accessible fallback content.
+    // If it's a canvas, it won't have laid out children, but it might have accessible fallback content.
     // Clear m_haveChildren because AXNodeObject::addChildren will expect it to be false.
     ASSERT(!m_children.size());
     m_haveChildren = false;
     AXNodeObject::addChildren();
 }
 
-void AXRenderObject::addAttachmentChildren()
+void AXLayoutObject::addAttachmentChildren()
 {
     if (!isAttachment())
         return;
@@ -2273,7 +2273,7 @@ void AXRenderObject::addAttachmentChildren()
         m_children.append(axWidget);
 }
 
-void AXRenderObject::addPopupChildren()
+void AXLayoutObject::addPopupChildren()
 {
     if (!isHTMLInputElement(node()))
         return;
@@ -2281,7 +2281,7 @@ void AXRenderObject::addPopupChildren()
         m_children.append(axPopup);
 }
 
-void AXRenderObject::addRemoteSVGChildren()
+void AXLayoutObject::addRemoteSVGChildren()
 {
     AXSVGRoot* root = remoteSVGRootElement();
     if (!root)
@@ -2299,7 +2299,7 @@ void AXRenderObject::addRemoteSVGChildren()
     }
 }
 
-void AXRenderObject::ariaSelectedRows(AccessibilityChildrenVector& result)
+void AXLayoutObject::ariaSelectedRows(AccessibilityChildrenVector& result)
 {
     // Get all the rows.
     AccessibilityChildrenVector allRows;
@@ -2329,7 +2329,7 @@ void AXRenderObject::ariaSelectedRows(AccessibilityChildrenVector& result)
     }
 }
 
-bool AXRenderObject::elementAttributeValue(const QualifiedName& attributeName) const
+bool AXLayoutObject::elementAttributeValue(const QualifiedName& attributeName) const
 {
     if (!m_renderer)
         return false;
@@ -2337,7 +2337,7 @@ bool AXRenderObject::elementAttributeValue(const QualifiedName& attributeName) c
     return equalIgnoringCase(getAttribute(attributeName), "true");
 }
 
-bool AXRenderObject::inheritsPresentationalRole() const
+bool AXLayoutObject::inheritsPresentationalRole() const
 {
     // ARIA states if an item can get focus, it should not be presentational.
     if (canSetFocusAttribute())
@@ -2350,10 +2350,10 @@ bool AXRenderObject::inheritsPresentationalRole() const
         return false;
 
     AXObject* parent = parentObject();
-    if (!parent->isAXRenderObject())
+    if (!parent->isAXLayoutObject())
         return false;
 
-    Node* elementNode = toAXRenderObject(parent)->node();
+    Node* elementNode = toAXLayoutObject(parent)->node();
     if (!elementNode || !elementNode->isElementNode())
         return false;
 
@@ -2367,7 +2367,7 @@ bool AXRenderObject::inheritsPresentationalRole() const
     return false;
 }
 
-LayoutRect AXRenderObject::computeElementRect() const
+LayoutRect AXLayoutObject::computeElementRect() const
 {
     LayoutObject* obj = m_renderer;
 

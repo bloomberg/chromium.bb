@@ -332,7 +332,7 @@ public:
 
     // Determine subclass type.
     virtual bool isAXNodeObject() const { return false; }
-    virtual bool isAXRenderObject() const { return false; }
+    virtual bool isAXLayoutObject() const { return false; }
     virtual bool isAXScrollbar() const { return false; }
     virtual bool isAXScrollView() const { return false; }
     virtual bool isAXSVGRoot() const { return false; }
@@ -530,7 +530,7 @@ public:
     // Hit testing.
     // Called on the root AX object to return the deepest available element.
     virtual AXObject* accessibilityHitTest(const IntPoint&) const { return 0; }
-    // Called on the AX object after the render tree determines which is the right AXRenderObject.
+    // Called on the AX object after the layout tree determines which is the right AXLayoutObject.
     virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const;
 
     // High-level accessibility tree access. Other modules should only use these functions.
@@ -561,7 +561,7 @@ public:
     virtual double estimatedLoadingProgress() const { return 0; }
     AXObject* focusedUIElement() const;
 
-    // DOM and Render tree access.
+    // DOM and layout tree access.
     virtual Node* node() const { return 0; }
     virtual LayoutObject* renderer() const { return 0; }
     virtual Document* document() const;

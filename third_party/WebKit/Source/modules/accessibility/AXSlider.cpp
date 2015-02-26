@@ -40,7 +40,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AXSlider::AXSlider(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 

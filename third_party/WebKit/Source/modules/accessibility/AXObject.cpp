@@ -488,7 +488,7 @@ String AXObject::actionVerb() const
 
 AccessibilityButtonState AXObject::checkboxOrRadioValue() const
 {
-    // If this is a real checkbox or radio button, AXRenderObject will handle.
+    // If this is a real checkbox or radio button, AXLayoutObject will handle.
     // If it's an ARIA checkbox or radio, the aria-checked attribute should be used.
 
     const AtomicString& result = getAttribute(aria_checkedAttr);
@@ -719,7 +719,7 @@ Document* AXObject::document() const
 FrameView* AXObject::documentFrameView() const
 {
     const AXObject* object = this;
-    while (object && !object->isAXRenderObject())
+    while (object && !object->isAXLayoutObject())
         object = object->parentObject();
 
     if (!object)

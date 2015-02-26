@@ -26,14 +26,14 @@
 #ifndef AXMenuList_h
 #define AXMenuList_h
 
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 class RenderMenuList;
 
-class AXMenuList final : public AXRenderObject {
+class AXMenuList final : public AXLayoutObject {
 public:
     static PassRefPtr<AXMenuList> create(RenderMenuList* renderer, AXObjectCacheImpl*);
 

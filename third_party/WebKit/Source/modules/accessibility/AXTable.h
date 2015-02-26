@@ -29,7 +29,7 @@
 #ifndef AXTable_h
 #define AXTable_h
 
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -37,7 +37,7 @@ namespace blink {
 class AXObjectCacheImpl;
 class AXTableCell;
 
-class AXTable : public AXRenderObject {
+class AXTable : public AXLayoutObject {
 
 protected:
     AXTable(LayoutObject*, AXObjectCacheImpl*);

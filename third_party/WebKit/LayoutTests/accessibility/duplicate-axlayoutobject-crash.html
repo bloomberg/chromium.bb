@@ -16,7 +16,7 @@
 <p id="description"></p>
 
 <script>
-    description("Ensures that it's not possible to have two AXRenderObjects that point to the same renderer, if the initialization of an AXRenderObject results in another object with the same renderer being created before AXObjectCache has added that mapping to its hash.");
+    description("Ensures that it's not possible to have two AXLayoutObjects that point to the same renderer, if the initialization of an AXLayoutObject results in another object with the same renderer being created before AXObjectCache has added that mapping to its hash.");
     if (window.accessibilityController)
         accessibilityController.accessibleElementById("dummy");
 </script>

@@ -29,8 +29,8 @@
 #include "config.h"
 #include "modules/accessibility/AXImageMapLink.h"
 
+#include "modules/accessibility/AXLayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXRenderObject.h"
 
 namespace blink {
 
@@ -130,8 +130,8 @@ LayoutRect AXImageMapLink::elementRect() const
         return LayoutRect();
 
     LayoutObject* renderer;
-    if (m_parent && m_parent->isAXRenderObject())
-        renderer = toAXRenderObject(m_parent)->renderer();
+    if (m_parent && m_parent->isAXLayoutObject())
+        renderer = toAXLayoutObject(m_parent)->renderer();
     else
         renderer = m_mapElement->renderer();
 

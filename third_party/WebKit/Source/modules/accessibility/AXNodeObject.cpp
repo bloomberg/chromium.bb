@@ -1404,8 +1404,8 @@ String AXNodeObject::title(TextUnderElementMode mode) const
             return label->innerText();
     }
 
-    // If this node isn't rendered, there's no inner text we can extract from a select element.
-    if (!isAXRenderObject() && isHTMLSelectElement(*node))
+    // If this node isn't laid out, there's no inner text we can extract from a select element.
+    if (!isAXLayoutObject() && isHTMLSelectElement(*node))
         return String();
 
     switch (roleValue()) {
@@ -1555,7 +1555,7 @@ LayoutRect AXNodeObject::elementRect() const
     LayoutRect boundingBox;
 
     for (AXObject* positionProvider = parentObject(); positionProvider; positionProvider = positionProvider->parentObject()) {
-        if (positionProvider->isAXRenderObject()) {
+        if (positionProvider->isAXLayoutObject()) {
             LayoutRect parentRect = positionProvider->elementRect();
             boundingBox.setSize(LayoutSize(parentRect.width(), LayoutUnit(std::min(10.0f, parentRect.height().toFloat()))));
             boundingBox.setLocation(parentRect.location());
@@ -1665,10 +1665,10 @@ void AXNodeObject::insertChild(AXObject* child, unsigned index)
 
 bool AXNodeObject::canHaveChildren() const
 {
-    // If this is an AXRenderObject, then it's okay if this object
+    // If this is an AXLayoutObject, then it's okay if this object
     // doesn't have a node - there are some renderers that don't have associated
     // nodes, like scroll areas and css-generated text.
-    if (!node() && !isAXRenderObject())
+    if (!node() && !isAXLayoutObject())
         return false;
 
     // Elements that should not have children
@@ -1845,8 +1845,8 @@ void AXNodeObject::childrenChanged()
     axObjectCache()->postNotification(this, document(), AXObjectCacheImpl::AXChildrenChanged, true);
 
     // Go up the accessibility parent chain, but only if the element already exists. This method is
-    // called during render layouts, minimal work should be done.
-    // If AX elements are created now, they could interrogate the render tree while it's in a funky state.
+    // called during layout, minimal work should be done.
+    // If AX elements are created now, they could interrogate the layout tree while it's in a funky state.
     // At the same time, process ARIA live region changes.
     for (AXObject* parent = this; parent; parent = parent->parentObjectIfExists()) {
         parent->setNeedsToUpdateChildren();

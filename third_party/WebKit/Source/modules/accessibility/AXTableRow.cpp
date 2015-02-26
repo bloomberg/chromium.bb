@@ -39,7 +39,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AXTableRow::AXTableRow(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 
@@ -55,7 +55,7 @@ PassRefPtr<AXTableRow> AXTableRow::create(LayoutObject* renderer, AXObjectCacheI
 AccessibilityRole AXTableRow::determineAccessibilityRole()
 {
     if (!isTableRow())
-        return AXRenderObject::determineAccessibilityRole();
+        return AXLayoutObject::determineAccessibilityRole();
 
     if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
         return m_ariaRole;
@@ -87,7 +87,7 @@ bool AXTableRow::computeAccessibilityIsIgnored() const
         return true;
 
     if (!isTableRow())
-        return AXRenderObject::computeAccessibilityIsIgnored();
+        return AXLayoutObject::computeAccessibilityIsIgnored();
 
     return false;
 }

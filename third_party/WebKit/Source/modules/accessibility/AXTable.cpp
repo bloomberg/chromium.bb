@@ -49,7 +49,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AXTable::AXTable(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
     , m_headerContainer(nullptr)
     , m_isAXTable(true)
 {
@@ -61,7 +61,7 @@ AXTable::~AXTable()
 
 void AXTable::init()
 {
-    AXRenderObject::init();
+    AXLayoutObject::init();
     m_isAXTable = isTableExposableThroughAccessibility();
 }
 
@@ -347,7 +347,7 @@ bool AXTable::isTableExposableThroughAccessibility() const
 
 void AXTable::clearChildren()
 {
-    AXRenderObject::clearChildren();
+    AXLayoutObject::clearChildren();
     m_rows.clear();
     m_columns.clear();
 
@@ -360,7 +360,7 @@ void AXTable::clearChildren()
 void AXTable::addChildren()
 {
     if (!isAXTable()) {
-        AXRenderObject::addChildren();
+        AXLayoutObject::addChildren();
         return;
     }
 
@@ -550,7 +550,7 @@ AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row)
 AccessibilityRole AXTable::roleValue() const
 {
     if (!isAXTable())
-        return AXRenderObject::roleValue();
+        return AXLayoutObject::roleValue();
 
     return TableRole;
 }
@@ -564,7 +564,7 @@ bool AXTable::computeAccessibilityIsIgnored() const
         return true;
 
     if (!isAXTable())
-        return AXRenderObject::computeAccessibilityIsIgnored();
+        return AXLayoutObject::computeAccessibilityIsIgnored();
 
     return false;
 }
@@ -572,7 +572,7 @@ bool AXTable::computeAccessibilityIsIgnored() const
 String AXTable::title(TextUnderElementMode mode) const
 {
     if (!isAXTable())
-        return AXRenderObject::title(mode);
+        return AXLayoutObject::title(mode);
 
     String title;
     if (!m_renderer)
@@ -588,7 +588,7 @@ String AXTable::title(TextUnderElementMode mode) const
 
     // try the standard
     if (title.isEmpty())
-        title = AXRenderObject::title(mode);
+        title = AXLayoutObject::title(mode);
 
     return title;
 }

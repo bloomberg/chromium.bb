@@ -38,7 +38,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AXTableCell::AXTableCell(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 
@@ -77,7 +77,7 @@ bool AXTableCell::computeAccessibilityIsIgnored() const
         return true;
 
     if (!isTableCell())
-        return AXRenderObject::computeAccessibilityIsIgnored();
+        return AXLayoutObject::computeAccessibilityIsIgnored();
 
     return false;
 }
@@ -91,8 +91,8 @@ AXObject* AXTableCell::parentTable() const
     if (!axObjectCache())
         return 0;
 
-    // Do not use getOrCreate. parentTable() can be called while the render tree is being modified
-    // by javascript, and creating a table element may try to access the render tree while in a bad state.
+    // Do not use getOrCreate. parentTable() can be called while the layout tree is being modified
+    // by javascript, and creating a table element may try to access the layout tree while in a bad state.
     // By using only get() implies that the AXTable must be created before AXTableCells. This should
     // always be the case when AT clients access a table.
     // https://bugs.webkit.org/show_bug.cgi?id=42652
@@ -158,7 +158,7 @@ AccessibilityRole AXTableCell::scanToDecideHeaderRole()
 AccessibilityRole AXTableCell::determineAccessibilityRole()
 {
     if (!isTableCell())
-        return AXRenderObject::determineAccessibilityRole();
+        return AXLayoutObject::determineAccessibilityRole();
 
     return scanToDecideHeaderRole();
 }

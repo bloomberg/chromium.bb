@@ -30,7 +30,7 @@
 #define AXListBoxOption_h
 
 #include "core/html/HTMLElement.h"
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ namespace blink {
 class AXObjectCacheImpl;
 class HTMLSelectElement;
 
-class AXListBoxOption final : public AXRenderObject {
+class AXListBoxOption final : public AXLayoutObject {
 
 private:
     AXListBoxOption(LayoutObject*, AXObjectCacheImpl*);

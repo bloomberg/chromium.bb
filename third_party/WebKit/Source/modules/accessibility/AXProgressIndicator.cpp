@@ -31,7 +31,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AXProgressIndicator::AXProgressIndicator(LayoutProgress* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 

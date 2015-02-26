@@ -33,7 +33,7 @@
 namespace blink {
 
 AXMenuList::AXMenuList(RenderMenuList* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 

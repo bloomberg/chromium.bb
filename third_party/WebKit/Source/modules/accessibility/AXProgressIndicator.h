@@ -21,7 +21,7 @@
 #ifndef AXProgressIndicator_h
 #define AXProgressIndicator_h
 
-#include "modules/accessibility/AXRenderObject.h"
+#include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
 
@@ -29,7 +29,7 @@ class AXObjectCacheImpl;
 class HTMLProgressElement;
 class LayoutProgress;
 
-class AXProgressIndicator final : public AXRenderObject {
+class AXProgressIndicator final : public AXLayoutObject {
 public:
     static PassRefPtr<AXProgressIndicator> create(LayoutProgress*, AXObjectCacheImpl*);
 

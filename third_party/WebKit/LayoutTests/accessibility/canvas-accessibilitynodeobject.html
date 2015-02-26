@@ -51,18 +51,18 @@ if (window.testRunner && window.accessibilityController) {
     canvas.focus();
     var axCanvas = accessibilityController.focusedElement;
 
-    var axRenderObjects = [];
+    var axLayoutObjects = [];
     var axNodeObjects = [];
 
-    appendFocusableDescendants(axContainer, axRenderObjects);
+    appendFocusableDescendants(axContainer, axLayoutObjects);
     appendFocusableDescendants(axCanvas, axNodeObjects);
 
-    shouldBe("axRenderObjects.length", "axNodeObjects.length");
+    shouldBe("axLayoutObjects.length", "axNodeObjects.length");
 
-    for (var i = 0; i < axRenderObjects.length; i++) {
-        var axRenderObject = axRenderObjects[i];
+    for (var i = 0; i < axLayoutObjects.length; i++) {
+        var axLayoutObject = axLayoutObjects[i];
         var axNodeObject = axNodeObjects[i];
-        shouldBe("i == " + i + "; axRenderObject.role == axNodeObject.role", "true");
+        shouldBe("i == " + i + "; axLayoutObject.role == axNodeObject.role", "true");
     }
 }
 

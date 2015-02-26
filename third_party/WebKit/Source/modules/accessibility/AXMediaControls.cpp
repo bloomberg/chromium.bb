@@ -44,7 +44,7 @@ static inline String queryString(WebLocalizedString::Name name)
 }
 
 AccessibilityMediaControl::AccessibilityMediaControl(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXRenderObject(renderer, axObjectCache)
+    : AXLayoutObject(renderer, axObjectCache)
 {
 }
 
@@ -83,7 +83,7 @@ String AccessibilityMediaControl::title(TextUnderElementMode mode) const
     if (controlType() == MediaControlsPanel)
         return queryString(WebLocalizedString::AXMediaDefault);
 
-    return AXRenderObject::title(mode);
+    return AXLayoutObject::title(mode);
 }
 
 String AccessibilityMediaControl::accessibilityDescription() const
