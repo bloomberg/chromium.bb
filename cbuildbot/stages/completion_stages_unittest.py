@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import itertools
 import mock
 import sys
 
@@ -337,7 +338,8 @@ class CommitQueueCompletionStageTest(
 
   def VerifyStage(self, failing, inflight, handle_failure=True,
                   handle_timeout=False, sane_tot=True, submit_partial=False,
-                  alert=False, stage=None):
+                  alert=False, stage=None, all_slaves=None, slave_stages=None,
+                  do_submit_partial=True):
     """Runs and Verifies CQMasterHandleFailure.
 
     Args:
@@ -346,21 +348,37 @@ class CommitQueueCompletionStageTest(
       handle_failure: If True, calls HandleValidationFailure.
       handle_timeout: If True, calls HandleValidationTimeout.
       sane_tot: If not true, assumes TOT is not sane.
-      submit_partial: If True, submit partial pool.
+      submit_partial: If True, submit partial pool will submit some changes.
       alert: If True, sends out an alert email for infra failures.
       stage: If set, use this constructed stage, otherwise create own.
+      all_slaves: Optional set of all slave configs.
+      slave_stages: Optional list of slave stages.
+      do_submit_partial: If True, assert that there was no call to
+                     SubmitPartialPool.
     """
     if not stage:
       stage = self.ConstructStage()
 
-    if submit_partial:
-      self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
-                       return_value=self.other_changes)
-    else:
-      self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
-                       return_value=self.changes)
+    all_slaves = all_slaves or set(failing + inflight)
+    if slave_stages is None:
+      slave_stages = []
+      critical_stages = (
+          completion_stages.CommitQueueCompletionStage._CRITICAL_STAGES)
+      for stage_name, slave in itertools.product(critical_stages, all_slaves):
+        slave_stages.append({'name': stage_name,
+                             'build_config': slave,
+                             'status': constants.BUILDER_STATUS_PASSED})
 
-    stage.CQMasterHandleFailure(failing, inflight, [])
+    if submit_partial:
+      spmock = self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
+                                return_value=self.other_changes)
+      handlefailure_changes = self.other_changes
+    else:
+      spmock = self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
+                                return_value=self.changes)
+      handlefailure_changes = self.changes
+
+    stage.CQMasterHandleFailure(failing, inflight, [], all_slaves, slave_stages)
 
     # Verify the calls.
     self.tot_sanity_mock.assert_called_once_with(mock.ANY, mock.ANY)
@@ -368,24 +386,15 @@ class CommitQueueCompletionStageTest(
       self.alert_email_mock.called_once_with(
           mock.ANY, mock.ANY, mock.ANY, mock.ANY)
 
+    self.assertEqual(do_submit_partial, spmock.called)
+
     if handle_failure:
       stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-          mock.ANY, no_stat=[], sanity=sane_tot, changes=self.other_changes)
+          mock.ANY, no_stat=[], sanity=sane_tot, changes=handlefailure_changes)
 
     if handle_timeout:
       stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
           sanity=mock.ANY, changes=self.changes)
-
-  def testNoInflightBuildersNoInfraFail(self):
-    """Test case where there are no inflight builders and no infra failures."""
-    failing = ['foo']
-    inflight = []
-
-    self.PatchObject(completion_stages.CommitQueueCompletionStage,
-                     '_GetInfraFailMessages', return_value=[])
-    self.PatchObject(completion_stages.CommitQueueCompletionStage,
-                     '_GetBuildersWithNoneMessages', return_value=[])
-    self.VerifyStage(failing, inflight, submit_partial=True)
 
   def testNoInflightBuildersWithInfraFail(self):
     """Test case where there are no inflight builders but are infra failures."""
@@ -398,6 +407,25 @@ class CommitQueueCompletionStageTest(
                      '_GetBuildersWithNoneMessages', return_value=[])
     # An alert is sent, since there are infra failures.
     self.VerifyStage(failing, inflight, submit_partial=True, alert=True)
+
+  def testMissingCriticalStage(self):
+    """Test case where a slave failed to run a critical stage."""
+    self.VerifyStage(set(), set(), all_slaves=set(['foo']), slave_stages=[],
+                     do_submit_partial=False)
+
+  def testFailedCriticalStage(self):
+    """Test case where a slave failed a critical stage."""
+    fake_stages = [{'name': 'CommitQueueSync', 'build_config': 'foo',
+                    'status': constants.BUILDER_STATUS_FAILED}]
+    self.VerifyStage(set(), set(), all_slaves=set(['foo']),
+                     slave_stages=fake_stages, do_submit_partial=False)
+
+  def testMissingCriticalStageOnSanitySlave(self):
+    """Test case where a sanity slave failed to run a critical stage."""
+    stage = self.ConstructStage()
+    stage._run.config.sanity_check_slaves = ['sanity']
+    self.VerifyStage(set(), set(), all_slaves=set(['sanity']), slave_stages=[],
+                     do_submit_partial=True, stage=stage)
 
   def testNoInflightBuildersWithNoneFailureMessages(self):
     """Test case where failed builders reported NoneType messages."""
