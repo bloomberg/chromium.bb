@@ -3779,9 +3779,12 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
       net::NetLog::PHASE_END);
 
   // Check that we logged all the headers correctly
-  pos = net::ExpectLogContainsSomewhere(
-      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_SYN_STREAM,
-      net::NetLog::PHASE_NONE);
+  const NetLog::EventType type =
+      (GetParam().protocol <= kProtoSPDY31)
+          ? net::NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
+          : net::NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
+  pos = net::ExpectLogContainsSomewhere(entries, 0, type,
+                                        net::NetLog::PHASE_NONE);
 
   base::ListValue* header_list;
   ASSERT_TRUE(entries[pos].params.get());

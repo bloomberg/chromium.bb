@@ -1083,7 +1083,11 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
   streams_initiated_count_++;
 
   if (net_log().IsLogging()) {
-    net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_SYN_STREAM,
+    const NetLog::EventType type =
+        (GetProtocolVersion() <= SPDY3)
+            ? NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
+            : NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
+    net_log().AddEvent(type,
                        base::Bind(&NetLogSpdySynStreamSentCallback, &block,
                                   (flags & CONTROL_FLAG_FIN) != 0,
                                   (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0,
