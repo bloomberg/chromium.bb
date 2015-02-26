@@ -87,6 +87,8 @@
 window.ImageUtil = ImageUtil;
 window.ImageUtil.metrics = metrics;
 window.Gallery = Gallery;
-window.util = util;
+
+window.reload = reload;  // will be called by the background.
+window.gallery = gallery;  // for debug.
 
 })();

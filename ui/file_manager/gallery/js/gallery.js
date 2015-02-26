@@ -61,6 +61,7 @@ function Gallery(volumeManager) {
   this.selectedEntry_ = null;
   this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
+  this.initialized_ = false;
 
   this.dataModel_ = new GalleryDataModel(
       this.context_.metadataCache,
@@ -348,6 +349,11 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
       return a.index - b.index;
   });
 
+  if (loadingList.length === 0) {
+    this.dataModel_.splice(0, this.dataModel_.length);
+    return;
+  }
+
   // Load entries.
   // Use the self variable capture-by-closure because it is faster than bind.
   var self = this;
@@ -366,6 +372,14 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
     }).then(function(metadataList) {
       if (chunk.length !== metadataList.length)
         return Promise.reject('Failed to load metadata.');
+
+      // Remove all the previous items if it's the first chunk.
+      // Do it here because prevent a flicker between removing all the items
+      // and adding new ones.
+      if (firstChunk) {
+        self.dataModel_.splice(0, self.dataModel_.length);
+        self.updateThumbnails_();  // Remove the caches.
+      }
 
       // Add items to the model.
       var items = [];
@@ -399,7 +413,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
         self.onSelection_();
 
       // Init modes after the first chunk is loaded.
-      if (firstChunk) {
+      if (firstChunk && !self.initialized_) {
         // Determine the initial mode.
         var shouldShowMosaic = selectedEntries.length > 1 ||
             (self.context_.pageState &&
@@ -427,6 +441,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
                 cr.dispatchSimpleEvent(self, 'loaded');
               });
         }
+        self.initialized_ = true;
       }
 
       // Continue to load chunks.
@@ -917,6 +932,17 @@ Gallery.prototype.debugMe = function() {
 var gallery = null;
 
 /**
+ * (Re-)loads entries.
+ */
+function reload() {
+  initializePromise.then(function() {
+    util.URLsToEntries(window.appState.urls, function(entries) {
+      gallery.load(entries);
+    });
+  });
+}
+
+/**
  * Promise to initialize the load time data.
  * @type {!Promise}
  */
@@ -946,27 +972,17 @@ var initializePromise =
     Promise.all([loadTimeDataPromise, volumeManagerPromise]).
     then(function(args) {
       var volumeManager = args[1];
-      var gallery = new Gallery(volumeManager);
-      return gallery;
+      gallery = new Gallery(volumeManager);
     });
 
 // Loads entries.
-initializePromise.then(
-    /**
-     * Loads entries.
-     * @param {!Gallery} gallery The gallery instance.
-     */
-    function(gallery) {
-      util.URLsToEntries(window.appState.urls, function(entries) {
-        gallery.load(entries);
-      });
-    });
+initializePromise.then(reload);
 
 /**
  * Enteres the debug mode.
  */
 window.debugMe = function() {
-  initializePromise.then(function(gallery) {
+  initializePromise.then(function() {
     gallery.debugMe();
   });
 };

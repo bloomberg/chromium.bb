@@ -23,6 +23,13 @@ var windowCreateOptions = {
 var background = new BackgroundBase();
 
 
+/**
+ * Wrapper of gallery window.
+ * @type {SingletonAppWindowWrapper}
+ */
+var gallery = new SingletonAppWindowWrapper('gallery.html',
+    windowCreateOptions);
+
 // Initializes the strings. This needs for the volume manager.
 var loadTimeDataPromise = new Promise(function(fulfill, reject) {
   chrome.fileManagerPrivate.getStrings(function(stringData) {
@@ -76,17 +83,6 @@ function onLaunched(launchData) {
 }
 
 /**
- * Returns a function to generate an ID for window.
- * @type {function():string} Function which returns an unique id.
- */
-var generateWindowId = (function() {
-  var seq = 0;
-  return function() {
-    return 'GALLERY_' + seq++;
-  };
-})();
-
-/**
  * Opens gallery window.
  * @param {!Array.<string>} urls List of URL to show.
  * @param {boolean} reopen True if reopen, false otherwise.
@@ -101,14 +97,8 @@ function openGalleryWindow(urls, reopen) {
     if (urls.length === 0)
       return Promise.reject('No file to open.');
 
-    var windowId = generateWindowId();
-
     // Opens a window.
     return new Promise(function(fulfill, reject) {
-      var gallery = new AppWindowWrapper('gallery.html',
-          windowId,
-          windowCreateOptions);
-
       gallery.launch(
           {urls: urls},
           reopen,
