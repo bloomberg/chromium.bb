@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -64,6 +65,13 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
  private:
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
+    // Ignore signin profile.
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir())
+      return NULL;
+
+    // FileSystemApiTestForDrive doesn't expect that several user profiles could
+    // exist simultaneously.
+    DCHECK(fake_drive_service_ == NULL);
     fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 

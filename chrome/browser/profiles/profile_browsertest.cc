@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -358,6 +359,15 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 
   ASSERT_NE(loaded_profiles.size(), 0UL);
   Profile* profile = loaded_profiles[0];
+
+#if defined(OS_CHROMEOS)
+  for (const auto& loaded_profile : loaded_profiles) {
+    if (!chromeos::ProfileHelper::IsSigninProfile(loaded_profile)) {
+      profile = loaded_profile;
+      break;
+    }
+  }
+#endif
 
   // This retry loop reduces flakiness due to the fact that this ultimately
   // tests whether or not a code path hits a timed wait.

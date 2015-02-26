@@ -808,6 +808,11 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool force_supervised_user_id =
+#if defined(OS_CHROMEOS)
+      g_browser_process->platform_part()
+              ->profile_helper()
+              ->GetSigninProfileDir() != profile->GetPath() &&
+#endif
       command_line->HasSwitch(switches::kSupervisedUserId);
   if (force_supervised_user_id) {
     supervised_user_id =

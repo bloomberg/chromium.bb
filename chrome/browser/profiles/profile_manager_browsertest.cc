@@ -27,6 +27,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/path_service.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -111,6 +112,22 @@ class PasswordStoreConsumerVerifier :
   ScopedVector<autofill::PasswordForm> password_entries_;
   bool called_;
 };
+
+static base::FilePath GetFirstNonSigninProfile(const ProfileInfoCache& cache) {
+#if defined(OS_CHROMEOS)
+  const base::FilePath signin_path =
+      chromeos::ProfileHelper::GetSigninProfileDir();
+  size_t i, profile_num = cache.GetNumberOfProfiles();
+  for (i = 0; i != profile_num; ++i) {
+    base::FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
+    if (profile_path != signin_path)
+      return profile_path;
+  }
+  return base::FilePath();
+#else
+  return cache.GetPathOfProfileAtIndex(0);
+#endif
+}
 
 } // namespace
 
@@ -280,10 +297,11 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  base::FilePath path_profile1 = cache.GetPathOfProfileAtIndex(0);
+  size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
+  base::FilePath path_profile1 = GetFirstNonSigninProfile(cache);
 
-  ASSERT_EQ(profile_manager->GetNumberOfProfiles(), 1U);
-  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
+  ASSERT_NE(0U, initial_profile_count);
+  EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
 
   // Create an additional profile.
   base::FilePath path_profile2 =
@@ -299,14 +317,14 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
-  ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
+  ASSERT_EQ(initial_profile_count + 1, cache.GetNumberOfProfiles());
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the first profile.
   profiles::SwitchToProfile(path_profile1, desktop_type, false,
                             kOnProfileSwitchDoNothing,
                             ProfileMetrics::SWITCH_PROFILE_ICON);
-  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
+  EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
@@ -314,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   profiles::SwitchToProfile(path_profile2, desktop_type, false,
                             kOnProfileSwitchDoNothing,
                             ProfileMetrics::SWITCH_PROFILE_ICON);
-  EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
+  EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 
@@ -322,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   profiles::SwitchToProfile(path_profile1, desktop_type, false,
                             kOnProfileSwitchDoNothing,
                             ProfileMetrics::SWITCH_PROFILE_ICON);
-  EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
+  EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2U, browser_list->size());
 
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
@@ -349,9 +367,10 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  base::FilePath path_profile1 = cache.GetPathOfProfileAtIndex(0);
+  size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
+  base::FilePath path_profile1 = GetFirstNonSigninProfile(cache);
 
-  ASSERT_EQ(1U, profile_manager->GetNumberOfProfiles());
+  ASSERT_NE(0U, initial_profile_count);
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
 
   // Create an ephemeral profile.
@@ -367,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
-  ASSERT_EQ(2U, cache.GetNumberOfProfiles());
+  ASSERT_EQ(initial_profile_count + 1, cache.GetNumberOfProfiles());
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the second profile.
@@ -393,13 +412,13 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   browser_list->get(2)->window()->Close();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2U, browser_list->size());
-  ASSERT_EQ(2U, cache.GetNumberOfProfiles());
+  EXPECT_EQ(initial_profile_count + 1, cache.GetNumberOfProfiles());
 
   // The second should though.
   browser_list->get(1)->window()->Close();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1U, browser_list->size());
-  ASSERT_EQ(1U, cache.GetNumberOfProfiles());
+  EXPECT_EQ(initial_profile_count, cache.GetNumberOfProfiles());
 }
 
 // The test makes sense on those platforms where the keychain exists.

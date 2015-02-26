@@ -141,7 +141,8 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 
 // static
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
-  return profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+  return profile &&
+         profile->GetPath().BaseName().value() == chrome::kInitialProfile;
 }
 
 // static

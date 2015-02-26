@@ -529,6 +529,13 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
+    // Ignore signin profile.
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir())
+      return NULL;
+
+    // DriveFileSystemExtensionApiTest doesn't expect that several user profiles
+    // could exist simultaneously.
+    DCHECK(fake_drive_service_ == NULL);
     fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 

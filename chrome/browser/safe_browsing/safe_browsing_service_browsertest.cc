@@ -48,6 +48,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -1028,6 +1029,18 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   // Change the other pref. SBS should stop now.
   pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   WaitForIOThread();
+
+// TODO(mattm): Remove this when crbug.com/461493 is fixed.
+#if defined(OS_CHROMEOS)
+  // On Chrome OS we should disable safe browsing for signin profile.
+  EXPECT_TRUE(sb_service->enabled());
+  EXPECT_TRUE(csd_service->enabled());
+  chromeos::ProfileHelper::GetSigninProfile()
+      ->GetOriginalProfile()
+      ->GetPrefs()
+      ->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  WaitForIOThread();
+#endif
   EXPECT_FALSE(sb_service->enabled());
   EXPECT_FALSE(csd_service->enabled());
 

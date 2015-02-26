@@ -532,6 +532,12 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
+  // Force loading of signin profile if it was not loaded before. It is possible
+  // when we are restoring session or skipping login screen for some other
+  // reason.
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile()))
+    chromeos::ProfileHelper::GetSigninProfile();
+
   BootTimesRecorder::Get()->OnChromeProcessStart();
 
   // Initialize the network portal detector for Chrome OS. The network
