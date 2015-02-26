@@ -26,6 +26,10 @@ class _GPUTimes(benchmark.Benchmark):
         overhead_level=cat_filter,
         get_metrics_from_flags_callback=_GetGPUTimelineMetric)
 
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value):
+    return (isinstance(value, gpu_timeline.GPUTimelineListOfValues) or
+            isinstance(value, gpu_timeline.GPUTimelineValue))
 
 @benchmark.Disabled  # http://crbug.com/455292
 class GPUTimesKeyMobileSites(_GPUTimes):
@@ -68,3 +72,4 @@ class GPUTimesGpuRasterizationTop25Sites(_GPUTimes):
   @classmethod
   def Name(cls):
     return 'gpu_times.gpu_rasterization.top_25_smooth'
+
