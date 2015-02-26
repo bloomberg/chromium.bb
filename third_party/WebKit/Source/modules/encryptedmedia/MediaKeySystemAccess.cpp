@@ -11,11 +11,13 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
+#include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/Logging.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
+#include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 
 namespace blink {
@@ -35,8 +37,11 @@ public:
     NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const blink::WebVector<blink::WebString>& supportedSessionTypes)
         : ContentDecryptionModuleResultPromise(scriptState)
         , m_keySystem(keySystem)
-        , m_supportedSessionTypes(supportedSessionTypes)
+        , m_supportedSessionTypes(supportedSessionTypes.size())
     {
+        // FIXME: WebMediaKeySystemConfiguration should use the enum.
+        for (size_t i = 0; i < supportedSessionTypes.size(); i++)
+            m_supportedSessionTypes[i] = MediaKeySession::convertSessionType(supportedSessionTypes[i]);
     }
 
     virtual ~NewCdmResultPromise()
@@ -56,7 +61,7 @@ public:
 
 private:
     const String m_keySystem;
-    const blink::WebVector<blink::WebString> m_supportedSessionTypes;
+    blink::WebVector<blink::WebEncryptedMediaSessionType> m_supportedSessionTypes;
 };
 
 // These methods are the inverses of those with the same names in

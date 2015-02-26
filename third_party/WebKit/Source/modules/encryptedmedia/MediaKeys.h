@@ -31,6 +31,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/Timer.h"
+#include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "wtf/Forward.h"
@@ -50,14 +51,14 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLif
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    MediaKeys(ExecutionContext*, const String& keySystem, const blink::WebVector<blink::WebString>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
+    MediaKeys(ExecutionContext*, const String& keySystem, const blink::WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
     virtual ~MediaKeys();
 
     // FIXME: This should be removed after crbug.com/425186 is fully
     // implemented.
     const String& keySystem() const { return m_keySystem; }
 
-    MediaKeySession* createSession(ScriptState*, const String& sessionType, ExceptionState&);
+    MediaKeySession* createSession(ScriptState*, const String& sessionTypeString, ExceptionState&);
 
     ScriptPromise setServerCertificate(ScriptState*, const DOMArrayPiece& serverCertificate);
 
@@ -71,10 +72,11 @@ public:
 private:
     class PendingAction;
 
+    bool sessionTypeSupported(WebEncryptedMediaSessionType);
     void timerFired(Timer<MediaKeys>*);
 
     const String m_keySystem;
-    const blink::WebVector<blink::WebString> m_supportedSessionTypes;
+    const blink::WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
     OwnPtr<blink::WebContentDecryptionModule> m_cdm;
 
     HeapDeque<Member<PendingAction>> m_pendingActions;

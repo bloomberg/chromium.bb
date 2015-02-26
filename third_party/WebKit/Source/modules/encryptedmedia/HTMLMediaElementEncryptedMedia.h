@@ -10,6 +10,7 @@
 #include "core/events/EventTarget.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaPlayerClient.h"
 
 namespace blink {
@@ -44,7 +45,7 @@ public:
     static void keyAdded(HTMLMediaElement&, const String& keySystem, const String& sessionId);
     static void keyError(HTMLMediaElement&, const String& keySystem, const String& sessionId, WebMediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode);
     static void keyMessage(HTMLMediaElement&, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL);
-    static void encrypted(HTMLMediaElement&, const String& initDataType, const unsigned char* initData, unsigned initDataLength);
+    static void encrypted(HTMLMediaElement&, WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength);
     static void didBlockPlaybackWaitingForKey(HTMLMediaElement&);
     static void didResumePlaybackBlockedForKey(HTMLMediaElement&);
     static void playerDestroyed(HTMLMediaElement&);

@@ -35,6 +35,7 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
+#include "public/platform/WebEncryptedMediaTypes.h"
 
 namespace blink {
 
@@ -62,8 +63,9 @@ class MediaKeySession final
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
-    static MediaKeySession* create(ScriptState*, MediaKeys*, const String& sessionType);
-    static bool isValidSessionType(const String& sessionType);
+    static MediaKeySession* create(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
+    static WebEncryptedMediaInitDataType convertInitDataType(const String& initDataType);
+    static WebEncryptedMediaSessionType convertSessionType(const String& sessionType);
     virtual ~MediaKeySession();
 
     String sessionId() const;
@@ -95,7 +97,7 @@ private:
     friend class NewSessionResultPromise;
     friend class LoadSessionResultPromise;
 
-    MediaKeySession(ScriptState*, MediaKeys*, const String& sessionType);
+    MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
 
     void actionTimerFired(Timer<MediaKeySession>*);
 
@@ -119,7 +121,7 @@ private:
     WeakMember<MediaKeys> m_mediaKeys;
 
     // Session properties.
-    String m_sessionType;
+    WebEncryptedMediaSessionType m_sessionType;
     double m_expiration;
     Member<MediaKeyStatusMap> m_keyStatusesMap;
 

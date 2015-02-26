@@ -32,6 +32,45 @@ WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession()
 {
 }
 
+// FIXME: remove once Chromium overrides this method.
+void WebContentDecryptionModuleSession::initializeNewSession(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, size_t initDataLength, WebEncryptedMediaSessionType sessionType, WebContentDecryptionModuleResult result)
+{
+    WebString initDataTypeString;
+    switch (initDataType) {
+    case WebEncryptedMediaInitDataType::Cenc:
+        initDataTypeString = "cenc";
+        break;
+    case WebEncryptedMediaInitDataType::Keyids:
+        initDataTypeString = "keyids";
+        break;
+    case WebEncryptedMediaInitDataType::Webm:
+        initDataTypeString = "webm";
+        break;
+    case WebEncryptedMediaInitDataType::Unknown:
+        ASSERT_NOT_REACHED();
+        initDataTypeString = WebString();
+        break;
+    }
+
+    WebString sessionTypeString;
+    switch (sessionType) {
+    case WebEncryptedMediaSessionType::Temporary:
+        sessionTypeString = "temporary";
+        break;
+    case WebEncryptedMediaSessionType::PersistentLicense:
+        sessionTypeString = "persistent-license";
+        break;
+    case WebEncryptedMediaSessionType::PersistentReleaseMessage:
+        sessionTypeString = "persistent-release-message";
+        break;
+    case WebEncryptedMediaSessionType::Unknown:
+        sessionTypeString = WebString();
+        break;
+    }
+
+    initializeNewSession(initDataTypeString, initData, initDataLength, sessionTypeString, result);
+}
+
 WebContentDecryptionModuleSession::Client::~Client()
 {
 }

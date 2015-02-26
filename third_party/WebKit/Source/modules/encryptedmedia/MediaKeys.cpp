@@ -80,7 +80,7 @@ private:
     const RefPtr<DOMArrayBuffer> m_data;
 };
 
-MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const blink::WebVector<blink::WebString>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
+MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const blink::WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
     : ContextLifecycleObserver(context)
     , m_keySystem(keySystem)
     , m_supportedSessionTypes(supportedSessionTypes)
@@ -99,7 +99,7 @@ MediaKeys::~MediaKeys()
     WTF_LOG(Media, "MediaKeys(%p)::~MediaKeys", this);
 }
 
-MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String& sessionType, ExceptionState& exceptionState)
+MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String& sessionTypeString, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "MediaKeys(%p)::createSession", this);
 
@@ -114,14 +114,8 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String
     // 2. If the Key System implementation represented by this object's cdm
     //    implementation value does not support sessionType, throw a new
     //    DOMException whose name is NotSupportedError.
-    bool found = false;
-    for (size_t i = 0; i < m_supportedSessionTypes.size(); i++) {
-        if (m_supportedSessionTypes[i] == blink::WebString(sessionType)) {
-            found = true;
-            break;
-        }
-    }
-    if (!found)
+    WebEncryptedMediaSessionType sessionType = MediaKeySession::convertSessionType(sessionTypeString);
+    if (!sessionTypeSupported(sessionType))
         exceptionState.throwDOMException(NotSupportedError, "Unsupported session type.");
 
     // 3. Let session be a new MediaKeySession object, and initialize it as
@@ -164,6 +158,16 @@ ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DO
 
     // 6. Return promise.
     return promise;
+}
+
+bool MediaKeys::sessionTypeSupported(WebEncryptedMediaSessionType sessionType)
+{
+    for (size_t i = 0; i < m_supportedSessionTypes.size(); i++) {
+        if (m_supportedSessionTypes[i] == sessionType)
+            return true;
+    }
+
+    return false;
 }
 
 void MediaKeys::timerFired(Timer<MediaKeys>*)

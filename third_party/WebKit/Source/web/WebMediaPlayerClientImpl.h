@@ -34,6 +34,7 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
+#include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
@@ -69,6 +70,8 @@ public:
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) override;
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) override;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) override;
+    virtual void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) override;
+    // FIXME: Remove this once Chromium updated to use enum type.
     virtual void encrypted(const WebString& initDataType, const unsigned char* initData, unsigned initDataLength) override;
     virtual void didBlockPlaybackWaitingForKey() override;
     virtual void didResumePlaybackBlockedForKey() override;

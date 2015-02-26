@@ -307,10 +307,23 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
 }
 
 // Create a MediaEncryptedEvent for WD EME.
-static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(const String& initDataType, const unsigned char* initData, unsigned initDataLength)
+static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaEncryptedEventInit initializer;
-    initializer.setInitDataType(initDataType);
+    switch (initDataType) {
+    case WebEncryptedMediaInitDataType::Cenc:
+        initializer.setInitDataType("cenc");
+        break;
+    case WebEncryptedMediaInitDataType::Keyids:
+        initializer.setInitDataType("keyids");
+        break;
+    case WebEncryptedMediaInitDataType::Webm:
+        initializer.setInitDataType("webm");
+        break;
+    case WebEncryptedMediaInitDataType::Unknown:
+        initializer.setInitDataType(emptyString());
+        break;
+    }
     initializer.setInitData(DOMArrayBuffer::create(initData, initDataLength));
     initializer.setBubbles(false);
     initializer.setCancelable(false);
@@ -510,9 +523,9 @@ void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const
     element.scheduleEvent(event.release());
 }
 
-void HTMLMediaElementEncryptedMedia::encrypted(HTMLMediaElement& element, const String& initDataType, const unsigned char* initData, unsigned initDataLength)
+void HTMLMediaElementEncryptedMedia::encrypted(HTMLMediaElement& element, WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
 {
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted: initDataType=%s", initDataType.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted");
 
     if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
         // Send event for WD EME.
@@ -522,7 +535,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(HTMLMediaElement& element, const 
         } else {
             // Current page is not allowed to see content from the media file,
             // so don't return the initData. However, they still get an event.
-            event = createEncryptedEvent(emptyString(), nullptr, 0);
+            event = createEncryptedEvent(WebEncryptedMediaInitDataType::Unknown, nullptr, 0);
         }
 
         event->setTarget(&element);

@@ -55,16 +55,6 @@
 
 namespace {
 
-// The list of possible values for |sessionType|.
-const char kTemporary[] = "temporary";
-const char kPersistentLicense[] = "persistent-license";
-const char kPersistentReleaseMessage[] = "persistent-release-message";
-
-// The list of possible values for |messageType|.
-const char kLicenseRequest[] = "license-request";
-const char kLicenseRenewal[] = "license-renewal";
-const char kLicenseRelease[] = "license-release";
-
 // Minimum and maximum length for session ids.
 enum {
     MinSessionIdLength = 1,
@@ -91,13 +81,6 @@ static bool isValidSessionId(const String& sessionId)
     }
 
     return true;
-}
-
-// Checks that |initDataType| is a registered Initialization Data Type.
-static bool isRegisteredInitDataType(const String& initDataType)
-{
-    // List from https://w3c.github.io/encrypted-media/initdata-format-registry.html
-    return initDataType == "cenc" || initDataType == "keyids" || initDataType == "webm";
 }
 
 static String ConvertKeyStatusToString(const WebEncryptedMediaKeyInformation::KeyStatus status)
@@ -153,10 +136,10 @@ public:
         return m_data;
     }
 
-    const String& initDataType() const
+    WebEncryptedMediaInitDataType initDataType() const
     {
         ASSERT(m_type == GenerateRequest);
-        return m_stringData;
+        return m_initDataType;
     }
 
     const String& sessionId() const
@@ -165,36 +148,36 @@ public:
         return m_stringData;
     }
 
-    static PendingAction* CreatePendingGenerateRequest(ContentDecryptionModuleResult* result, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData)
+    static PendingAction* CreatePendingGenerateRequest(ContentDecryptionModuleResult* result, WebEncryptedMediaInitDataType initDataType, PassRefPtr<DOMArrayBuffer> initData)
     {
         ASSERT(result);
         ASSERT(initData);
-        return new PendingAction(GenerateRequest, result, initDataType, initData);
+        return new PendingAction(GenerateRequest, result, initDataType, initData, String());
     }
 
     static PendingAction* CreatePendingLoadRequest(ContentDecryptionModuleResult* result, const String& sessionId)
     {
         ASSERT(result);
-        return new PendingAction(Load, result, sessionId, PassRefPtr<DOMArrayBuffer>());
+        return new PendingAction(Load, result, WebEncryptedMediaInitDataType::Unknown, PassRefPtr<DOMArrayBuffer>(), sessionId);
     }
 
     static PendingAction* CreatePendingUpdate(ContentDecryptionModuleResult* result, PassRefPtr<DOMArrayBuffer> data)
     {
         ASSERT(result);
         ASSERT(data);
-        return new PendingAction(Update, result, String(), data);
+        return new PendingAction(Update, result, WebEncryptedMediaInitDataType::Unknown, data, String());
     }
 
     static PendingAction* CreatePendingClose(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Close, result, String(), PassRefPtr<DOMArrayBuffer>());
+        return new PendingAction(Close, result, WebEncryptedMediaInitDataType::Unknown, PassRefPtr<DOMArrayBuffer>(), String());
     }
 
     static PendingAction* CreatePendingRemove(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Remove, result, String(), PassRefPtr<DOMArrayBuffer>());
+        return new PendingAction(Remove, result, WebEncryptedMediaInitDataType::Unknown, PassRefPtr<DOMArrayBuffer>(), String());
     }
 
     ~PendingAction()
@@ -207,18 +190,20 @@ public:
     }
 
 private:
-    PendingAction(Type type, ContentDecryptionModuleResult* result, const String& stringData, PassRefPtr<DOMArrayBuffer> data)
+    PendingAction(Type type, ContentDecryptionModuleResult* result, WebEncryptedMediaInitDataType initDataType, PassRefPtr<DOMArrayBuffer> data, const String& stringData)
         : m_type(type)
         , m_result(result)
-        , m_stringData(stringData)
+        , m_initDataType(initDataType)
         , m_data(data)
+        , m_stringData(stringData)
     {
     }
 
     const Type m_type;
     const Member<ContentDecryptionModuleResult> m_result;
-    const String m_stringData;
+    const WebEncryptedMediaInitDataType m_initDataType;
     const RefPtr<DOMArrayBuffer> m_data;
+    const String m_stringData;
 };
 
 // This class wraps the promise resolver used when initializing a new session
@@ -310,20 +295,40 @@ private:
     Member<MediaKeySession> m_session;
 };
 
-MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* mediaKeys, const String& sessionType)
+MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
 {
-    ASSERT(isValidSessionType(sessionType));
     RefPtrWillBeRawPtr<MediaKeySession> session = new MediaKeySession(scriptState, mediaKeys, sessionType);
     session->suspendIfNeeded();
     return session.get();
 }
 
-bool MediaKeySession::isValidSessionType(const String& sessionType)
+WebEncryptedMediaInitDataType MediaKeySession::convertInitDataType(const String& initDataType)
 {
-    return (sessionType == kTemporary || sessionType == kPersistentLicense || sessionType == kPersistentReleaseMessage);
+    if (initDataType == "cenc")
+        return WebEncryptedMediaInitDataType::Cenc;
+    if (initDataType == "keyids")
+        return WebEncryptedMediaInitDataType::Keyids;
+    if (initDataType == "webm")
+        return WebEncryptedMediaInitDataType::Webm;
+
+    // |initDataType| is not restricted in the idl, so anything is possible.
+    return WebEncryptedMediaInitDataType::Unknown;
 }
 
-MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, const String& sessionType)
+WebEncryptedMediaSessionType MediaKeySession::convertSessionType(const String& sessionType)
+{
+    if (sessionType == "temporary")
+        return WebEncryptedMediaSessionType::Temporary;
+    if (sessionType == "persistent-license")
+        return WebEncryptedMediaSessionType::PersistentLicense;
+    if (sessionType == "persistent-release-message")
+        return WebEncryptedMediaSessionType::PersistentReleaseMessage;
+
+    ASSERT_NOT_REACHED();
+    return WebEncryptedMediaSessionType::Unknown;
+}
+
+MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
     : ActiveDOMObject(scriptState->executionContext())
     , m_keySystem(mediaKeys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
@@ -361,7 +366,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     ASSERT(m_keyStatusesMap->size() == 0);
 
     // 3.5 Let the session type be sessionType.
-    ASSERT(isValidSessionType(m_sessionType));
+    ASSERT(m_sessionType != WebEncryptedMediaSessionType::Unknown);
 
     // 3.6 Let uninitialized be true.
     ASSERT(m_isUninitialized);
@@ -404,9 +409,9 @@ MediaKeyStatusMap* MediaKeySession::keyStatuses()
     return m_keyStatusesMap;
 }
 
-ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, const DOMArrayPiece& initData)
+ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataTypeString, const DOMArrayPiece& initData)
 {
-    WTF_LOG(Media, "MediaKeySession(%p)::generateRequest %s", this, initDataType.ascii().data());
+    WTF_LOG(Media, "MediaKeySession(%p)::generateRequest %s", this, initDataTypeString.ascii().data());
 
     // From https://w3c.github.io/encrypted-media/#generateRequest:
     // Generates a request based on the initData. When this method is invoked,
@@ -422,7 +427,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
 
     // 3. If initDataType is an empty string, return a promise rejected with a
     //    new DOMException whose name is "InvalidAccessError".
-    if (initDataType.isEmpty()) {
+    if (initDataTypeString.isEmpty()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The initDataType parameter is empty."));
     }
@@ -442,9 +447,10 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
     //    (blink side doesn't know what the CDM supports, so the proper check
     //     will be done on the Chromium side. However, we can verify that
     //     |initDataType| is one of the registered values.)
-    if (!isRegisteredInitDataType(initDataType)) {
+    WebEncryptedMediaInitDataType initDataType = convertInitDataType(initDataTypeString);
+    if (initDataType == WebEncryptedMediaInitDataType::Unknown) {
         return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(NotSupportedError, "The initialization data type '" + initDataType + "' is not a registered Initialization Data Type."));
+            scriptState, DOMException::create(NotSupportedError, "The initialization data type '" + initDataTypeString + "' is not supported."));
     }
 
     // 6. Let init data be a copy of the contents of the initData parameter.
@@ -493,7 +499,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     // 4. If this object's session type is not "persistent-license" or
     //    "persistent-release-message", return a promise rejected with a
     //    new DOMException whose name is InvalidAccessError.
-    if (m_sessionType != kPersistentLicense && m_sessionType != kPersistentReleaseMessage) {
+    if (m_sessionType != WebEncryptedMediaSessionType::PersistentLicense && m_sessionType != WebEncryptedMediaSessionType::PersistentReleaseMessage) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The session type is not persistent."));
     }
@@ -608,7 +614,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
     // 2. If this object's session type is not "persistent-license" or
     //    "persistent-release-message", return a promise rejected with a
     //    new DOMException whose name is InvalidAccessError.
-    if (m_sessionType != kPersistentLicense && m_sessionType != kPersistentReleaseMessage) {
+    if (m_sessionType != WebEncryptedMediaSessionType::PersistentLicense && m_sessionType != WebEncryptedMediaSessionType::PersistentReleaseMessage) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The session type is not persistent."));
     }
@@ -805,13 +811,13 @@ void MediaKeySession::message(MessageType messageType, const unsigned char* mess
     MediaKeyMessageEventInit init;
     switch (messageType) {
     case WebContentDecryptionModuleSession::Client::MessageType::LicenseRequest:
-        init.setMessageType(kLicenseRequest);
+        init.setMessageType("license-request");
         break;
     case WebContentDecryptionModuleSession::Client::MessageType::LicenseRenewal:
-        init.setMessageType(kLicenseRenewal);
+        init.setMessageType("license-renewal");
         break;
     case WebContentDecryptionModuleSession::Client::MessageType::LicenseRelease:
-        init.setMessageType(kLicenseRelease);
+        init.setMessageType("license-release");
         break;
     }
     init.setMessage(DOMArrayBuffer::create(static_cast<const void*>(message), messageLength));
