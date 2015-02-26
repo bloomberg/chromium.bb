@@ -73,6 +73,11 @@
       "app": "sql_unittests",
       "device type": "iPhone Retina (4-inch)",
       "os": "7.1"
+    },
+    {
+      "app": "skia_unittests",
+      "device type": "iPhone Retina (4-inch)",
+      "os": "7.1"
     }
   ]
 }
