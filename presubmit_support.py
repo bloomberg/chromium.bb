@@ -1605,7 +1605,7 @@ def CallCommand(cmd_data):
     return cmd_data.info('%s (%4.2fs)' % (cmd_data.name, duration))
 
 
-def Main(argv):
+def main(argv=None):
   parser = optparse.OptionParser(usage="%prog [options] <files...>",
                                  version="%prog " + str(__version__))
   parser.add_option("-c", "--commit", action="store_true", default=False,
@@ -1749,4 +1749,8 @@ def Main(argv):
 
 if __name__ == '__main__':
   fix_encoding.fix_encoding()
-  sys.exit(Main(None))
+  try:
+    sys.exit(main())
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

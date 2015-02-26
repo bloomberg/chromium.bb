@@ -48,7 +48,12 @@ def main(args):
     sys.stderr.write(cpe.stderr)
     return 1
   sys.stderr.write('Switched to branch %s.\n' % opts.branch_name)
+  return 0
 
 
 if __name__ == '__main__':  # pragma: no cover
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

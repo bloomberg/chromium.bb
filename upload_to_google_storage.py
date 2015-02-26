@@ -203,7 +203,7 @@ def upload_to_google_storage(
   return max_ret_code
 
 
-def main(args):
+def main():
   parser = optparse.OptionParser(USAGE_STRING)
   parser.add_option('-b', '--bucket',
                     help='Google Storage bucket to upload to.')
@@ -248,4 +248,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  try:
+    sys.exit(main())
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

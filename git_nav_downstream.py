@@ -34,7 +34,8 @@ def main(args):
     cur = hash_one(cur)
   downstreams = [b for b in branches() if upfn(b) == cur]
   if not downstreams:
-    return "No downstream branches"
+    print "No downstream branches"
+    return 1
   elif len(downstreams) == 1:
     run('checkout', downstreams[0], stdout=sys.stdout, stderr=sys.stderr)
   else:
@@ -55,10 +56,12 @@ def main(args):
         run('checkout', downstreams[int(r)], stdout=sys.stdout,
             stderr=sys.stderr)
         break
+  return 0
 
 
 if __name__ == '__main__':
   try:
     sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
-    pass
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

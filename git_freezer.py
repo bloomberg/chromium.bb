@@ -22,12 +22,17 @@ def CMDthaw(parser, args):
   return thaw()
 
 
-def main():
+def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  ret = dispatcher.execute(optparse.OptionParser(), sys.argv[1:])
+  ret = dispatcher.execute(optparse.OptionParser(), args)
   if ret:
     print ret
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

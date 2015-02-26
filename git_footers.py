@@ -139,7 +139,12 @@ def main(args):
     for k in footers.keys():
       for v in footers[k]:
         print '%s: %s' % (k, v)
+  return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

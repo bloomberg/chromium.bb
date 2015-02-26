@@ -41,8 +41,7 @@ def GetRietveldServerUrl():
     return None
 
 
-if __name__ == '__main__':
-  args = sys.argv[1:]
+def main(args):
   patchset = GetRietveldPatchsetNumber()
   if patchset:
     args.extend([
@@ -68,3 +67,12 @@ if __name__ == '__main__':
   except third_party.upload.ClientLoginError, e:
     print('Got an exception while trying to log in to Rietveld.')
     print(str(e))
+  return 0
+
+
+if __name__ == '__main__':
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

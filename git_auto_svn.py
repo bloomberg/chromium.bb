@@ -55,7 +55,7 @@ def main(argv):
   # to pass flags that don't do anything, and to provide 'usage'.
   parser = argparse.ArgumentParser(
       description='Automatically set up git-svn for a repo mirrored from svn.')
-  parser.parse_args(argv[1:])
+  parser.parse_args(argv)
 
   upstream = root()
   message = run_git('log', '-1', '--format=%B', upstream)
@@ -95,7 +95,12 @@ def main(argv):
   print 'Configured metadata, running "git svn fetch". This may take some time.'
   for line in run_git_stream('svn', 'fetch').xreadlines():
     print line.strip()
+  return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

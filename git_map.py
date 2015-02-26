@@ -37,13 +37,13 @@ RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
 # Git emits combined color
 BRIGHT_RED = '\x1b[1;31m'
 
-def main():
+def main(argv):
   map_extra = config_list('depot_tools.map_extra')
   fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%ad%Creset ~ %s'
   log_proc = subprocess2.Popen(
     [GIT_EXE, 'log', '--graph', '--branches', '--tags', root(),
      '--color=always', '--date=short', ('--pretty=format:' + fmt)
-    ] + map_extra + sys.argv[1:],
+    ] + map_extra + argv,
     stdout=subprocess2.PIPE,
     shell=False)
 
@@ -110,5 +110,8 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
-
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

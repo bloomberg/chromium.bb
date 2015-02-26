@@ -139,6 +139,12 @@ def main():
   )
   args = parser.parse_args()
   cherry_pick(args.branch, args.commit)
+  return 0
+
 
 if __name__ == '__main__':
-  sys.exit(main())
+  try:
+    sys.exit(main())
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

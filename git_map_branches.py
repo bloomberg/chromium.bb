@@ -266,13 +266,18 @@ def main(argv):
   parser.add_argument('--no-color', action='store_true', dest='nocolor',
                       help='Turn off colors.')
 
-  opts = parser.parse_args(argv[1:])
+  opts = parser.parse_args(argv)
 
   mapper = BranchMapper()
   mapper.verbosity = opts.v
   mapper.output.nocolor = opts.nocolor
   mapper.start()
   print mapper.output.as_formatted_string()
+  return 0
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

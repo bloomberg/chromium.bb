@@ -2266,7 +2266,7 @@ def disable_buffering():
   sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
 
 
-def Main(argv):
+def main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
   if sys.hexversion < 0x02060000:
@@ -2292,9 +2292,14 @@ def Main(argv):
     return 1
   finally:
     gclient_utils.PrintWarnings()
+  return 0
 
 
 if '__main__' == __name__:
-  sys.exit(Main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)
 
 # vim: ts=2:sw=2:tw=80:et:

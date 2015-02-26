@@ -44,7 +44,12 @@ def main(args):
   except subprocess2.CalledProcessError as cpe:
     sys.stderr.write(cpe.stderr)
     return 1
+  return 0
 
 
 if __name__ == '__main__':  # pragma: no cover
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

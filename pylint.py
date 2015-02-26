@@ -19,4 +19,8 @@ _RC_FILE = os.path.join(_HERE, 'pylintrc')
 # another rcfile is to be used, passing --rcfile a second time on the command-
 # line will work fine.
 command = [sys.executable, _PYLINT, '--rcfile=%s' % _RC_FILE] + sys.argv[1:]
-sys.exit(subprocess.call(command))
+try:
+  sys.exit(subprocess.call(command))
+except KeyboardInterrupt:
+  sys.stderr.write('interrupted\n')
+  sys.exit(1)

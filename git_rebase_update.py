@@ -187,7 +187,7 @@ def rebase_branch(branch, parent, start_hash):
   return True
 
 
-def main(args=()):
+def main(args=None):
   parser = argparse.ArgumentParser()
   parser.add_argument('--verbose', '-v', action='store_true')
   parser.add_argument('--no_fetch', '--no-fetch', '-n',
@@ -270,4 +270,8 @@ def main(args=()):
 
 
 if __name__ == '__main__':  # pragma: no cover
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main())
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

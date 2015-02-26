@@ -1511,4 +1511,8 @@ def main(argv):
 
 if __name__ == "__main__":
   fix_encoding.fix_encoding()
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

@@ -39,7 +39,7 @@ def main(argv):
     try:
       remove_merge_base(cur)
     except CalledProcessError:
-      print "No merge base currently exists for %s." % cur
+      print 'No merge base currently exists for %s.' % cur
     return 0
 
   if opts.merge_base:
@@ -60,9 +60,12 @@ def main(argv):
     print "Invalid merge_base %s" % opts.merge_base
 
   print "merge_base(%s): %s" % (cur, actual)
-
   return ret
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

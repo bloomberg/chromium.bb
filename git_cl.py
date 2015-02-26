@@ -3088,6 +3088,7 @@ def main(argv):
     DieWithError(
         ('AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
           'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
+  return 0
 
 
 if __name__ == '__main__':
@@ -3095,4 +3096,8 @@ if __name__ == '__main__':
   # unit testing.
   fix_encoding.fix_encoding()
   colorama.init()
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

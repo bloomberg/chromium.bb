@@ -262,4 +262,8 @@ def main():
 
 if __name__ == "__main__":
   fix_encoding.fix_encoding()
-  sys.exit(main())
+  try:
+    sys.exit(main())
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

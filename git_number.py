@@ -259,25 +259,26 @@ def main():  # pragma: no cover
                   "use the 'Cr-Commit-Position' value in the commit's message.")
     return 1
 
+  if opts.reset:
+    clear_caches(on_disk=True)
+    return
+
   try:
-    if opts.reset:
-      clear_caches(on_disk=True)
-      return
+    targets = git.parse_commitrefs(*(args or ['HEAD']))
+  except git.BadCommitRefException as e:
+    parser.error(e)
 
-    try:
-      targets = git.parse_commitrefs(*(args or ['HEAD']))
-    except git.BadCommitRefException as e:
-      parser.error(e)
+  load_generation_numbers(targets)
+  if not opts.no_cache:
+    finalize(targets)
 
-    load_generation_numbers(targets)
-    if not opts.no_cache:
-      finalize(targets)
-
-    print '\n'.join(map(str, map(get_num, targets)))
-    return 0
-  except KeyboardInterrupt:
-    return 1
+  print '\n'.join(map(str, map(get_num, targets)))
+  return 0
 
 
 if __name__ == '__main__':  # pragma: no cover
-  sys.exit(main())
+  try:
+    sys.exit(main())
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

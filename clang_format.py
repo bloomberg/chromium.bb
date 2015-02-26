@@ -62,8 +62,12 @@ def main(args):
   if any(match in args for match in help_syntax):
     print '\nDepot tools redirects you to the clang-format at:\n    %s\n' % tool
 
-  return subprocess.call([tool] + sys.argv[1:])
+  return subprocess.call([tool] + args)
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  try:
+    sys.exit(main(sys.argv[1]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

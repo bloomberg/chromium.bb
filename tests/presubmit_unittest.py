@@ -168,7 +168,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'AffectedFile', 'Change', 'DoGetTrySlaves',
       'DoPostUploadExecuter', 'DoPresubmitChecks', 'GetPostUploadExecuter',
       'GetTrySlavesExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
-      'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
+      'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cpplint', 'cStringIO',
@@ -1153,7 +1153,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
     self.assertEquals(
         True,
-        presubmit.Main(['--root', self.fake_root_dir, 'random_file.txt']))
+        presubmit.main(['--root', self.fake_root_dir, 'random_file.txt']))
 
   def testMainUnversionedFail(self):
     # OptParser calls presubmit.os.path.exists and is a pain when mocked.
@@ -1171,7 +1171,7 @@ def CheckChangeOnCommit(input_api, output_api):
     self.mox.ReplayAll()
 
     try:
-      presubmit.Main(['--root', self.fake_root_dir])
+      presubmit.main(['--root', self.fake_root_dir])
       self.fail()
     except SystemExit, e:
       self.assertEquals(2, e.code)

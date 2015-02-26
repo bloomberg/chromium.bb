@@ -60,7 +60,7 @@ def DoBuild(chrome_root, args):
   return subprocess.call(cmd, cwd=chrome_root, shell=IS_WIN)
 
 
-def Main(args):
+def main(args):
   if len(args) < 3:
     print('Usage: chrome-update.py <path> [options]')
     print('See options from compile.py at')
@@ -84,4 +84,8 @@ def Main(args):
 
 
 if __name__ == "__main__":
-  sys.exit(Main(sys.argv))
+  try:
+    sys.exit(main(sys.argv))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

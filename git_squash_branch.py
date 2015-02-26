@@ -15,6 +15,12 @@ def main(args):
       help='Use the given <msg> as the first line of the commit message.')
   opts = parser.parse_args(args)
   squash_current_branch(opts.message)
+  return 0
+
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

@@ -38,8 +38,12 @@ def main(args):
 
   cmd += extra_args
 
-  subprocess2.check_call(cmd)
+  return subprocess2.check_call(cmd)
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)

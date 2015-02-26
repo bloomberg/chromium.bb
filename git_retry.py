@@ -153,4 +153,8 @@ def main(args):
 if __name__ == '__main__':
   logging.basicConfig()
   logging.getLogger().setLevel(logging.WARNING)
-  sys.exit(main(sys.argv[2:]))
+  try:
+    sys.exit(main(sys.argv[2:]))
+  except KeyboardInterrupt:
+    sys.stderr.write('interrupted\n')
+    sys.exit(1)
