@@ -1076,7 +1076,8 @@ void FrameView::invalidateTreeIfNeeded()
 
     PaintInvalidationState rootPaintInvalidationState(rootForPaintInvalidation);
 
-    if (m_doFullPaintInvalidation)
+    // In slimming paint mode we do per-object invalidation.
+    if (m_doFullPaintInvalidation && !RuntimeEnabledFeatures::slimmingPaintEnabled())
         layoutView()->compositor()->fullyInvalidatePaint();
 
     rootForPaintInvalidation.invalidateTreeIfNeeded(rootPaintInvalidationState);

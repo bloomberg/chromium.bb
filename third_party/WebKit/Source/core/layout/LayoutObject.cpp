@@ -1256,7 +1256,8 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     // If we are set to do a full paint invalidation that means the LayoutView will issue
     // paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the LayoutView.
-    if (view()->doingFullPaintInvalidation())
+    // However, slimming paint mode requires paint invalidation of the child renderers.
+    if (view()->doingFullPaintInvalidation() && !RuntimeEnabledFeatures::slimmingPaintEnabled())
         return invalidationReason;
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "LayoutObject::invalidatePaintIfNeeded()",
