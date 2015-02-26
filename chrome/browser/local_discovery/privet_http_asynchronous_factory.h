@@ -25,6 +25,8 @@ class PrivetHTTPResolution {
 
   virtual ~PrivetHTTPResolution() {}
 
+  virtual void Start(const ResultCallback& callback) = 0;
+
   virtual void Start(const net::HostPortPair& address,
                      const ResultCallback& callback) = 0;
 

@@ -53,6 +53,10 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
           name_, net::HostPortPair("1.2.3.4", 8080), request_context_.get())));
     }
 
+    void Start(const ResultCallback& callback) override {
+      Start(net::HostPortPair(), callback);
+    }
+
     const std::string& GetName() override { return name_; }
 
    private:

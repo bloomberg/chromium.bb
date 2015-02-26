@@ -59,6 +59,24 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::GetName() {
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
+    const ResultCallback& callback) {
+  service_resolver_ = service_discovery_client_->CreateServiceResolver(
+      name_, base::Bind(&ResolutionImpl::ServiceResolveComplete,
+                        base::Unretained(this), callback));
+  service_resolver_->StartResolving();
+}
+
+void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ServiceResolveComplete(
+    const ResultCallback& callback,
+    ServiceResolver::RequestStatus result,
+    const ServiceDescription& description) {
+  if (result != ServiceResolver::STATUS_SUCCESS)
+    return callback.Run(scoped_ptr<PrivetHTTPClient>());
+
+  Start(description.address, callback);
+}
+
+void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
     const net::HostPortPair& address,
     const ResultCallback& callback) {
 #if defined(OS_MACOSX)

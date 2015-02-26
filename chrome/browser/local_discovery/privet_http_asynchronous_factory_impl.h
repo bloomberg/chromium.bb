@@ -29,12 +29,18 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
                    net::URLRequestContextGetter* request_context);
     ~ResolutionImpl() override;
 
+    void Start(const ResultCallback& callback) override;
+
     void Start(const net::HostPortPair& address,
                const ResultCallback& callback) override;
 
     const std::string& GetName() override;
 
    private:
+    void ServiceResolveComplete(const ResultCallback& callback,
+                                ServiceResolver::RequestStatus result,
+                                const ServiceDescription& description);
+
     void DomainResolveComplete(uint16 port,
                                const ResultCallback& callback,
                                bool success,
@@ -44,6 +50,7 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
     std::string name_;
     scoped_refptr<net::URLRequestContextGetter> request_context_;
     scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
+    scoped_ptr<ServiceResolver> service_resolver_;
     scoped_ptr<LocalDomainResolver> domain_resolver_;
   };
 
