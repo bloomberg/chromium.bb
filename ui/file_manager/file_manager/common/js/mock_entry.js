@@ -109,7 +109,12 @@ MockEntry.prototype = {
  * @return {string} Fake URL.
  */
 MockEntry.prototype.toURL = function() {
-  return this.filesystem.rootURL + this.fullPath;
+  var segments = this.fullPath.split('/');
+  for (var i = 0; i < segments.length; i++) {
+    segments[i] = encodeURIComponent(segments[i]);
+  }
+
+  return this.filesystem.rootURL + segments.join('/');
 };
 
 /**

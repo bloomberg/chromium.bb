@@ -8,9 +8,12 @@ var importer = importer || {};
 /**
  * Sets up a logger for use in unit tests.  The test logger doesn't attempt to
  * access chrome's sync file system.  Call this during setUp.
+ * @return {!importer.TestLogger}
  */
 importer.setupTestLogger = function() {
-  importer.logger_ = new importer.TestLogger();
+  var logger = new importer.TestLogger();
+  importer.logger_ = logger;
+  return logger;
 };
 
 /**
@@ -24,18 +27,33 @@ importer.setupTestLogger = function() {
 importer.TestLogger = function() {
   /** @public {!TestCallRecorder} */
   this.errorRecorder = new TestCallRecorder();
+
+  /** @type {boolean} Should we print stuff to console */
+  this.quiet_ = false;
+};
+
+/**
+ * Causes logger to stop printing anything to console.
+ * This can be useful when errors are expected in tests.
+ */
+importer.TestLogger.prototype.quiet = function() {
+  this.quiet_ = true;
 };
 
 /** @override */
 importer.TestLogger.prototype.info = function(content) {
-  console.log(content);
+  if (!this.quiet_) {
+    console.log(content);
+  }
 };
 
 /** @override */
 importer.TestLogger.prototype.error = function(content) {
   this.errorRecorder.callback(content);
-  console.error(content);
-  console.error(new Error('Error stack').stack);
+  if (!this.quiet_) {
+    console.error(content);
+    console.error(new Error('Error stack').stack);
+  }
 };
 
 /** @override */
@@ -43,6 +61,8 @@ importer.TestLogger.prototype.catcher = function(context) {
   return function(error) {
     this.error('Caught promise error. Context: ' + context +
         ' Error: ' + error.message);
-    console.error(error.stack);
+    if (!this.quiet_) {
+      console.error(error.stack);
+    }
   }.bind(this);
 };

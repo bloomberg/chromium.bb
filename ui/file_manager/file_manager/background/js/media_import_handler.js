@@ -400,7 +400,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
    */
   var onComplete = function(destinationEntry) {
     this.cancelCallback_ = null;
-    this.markAsCopied_(entry, destinationDirectory);
+    this.markAsCopied_(entry, destinationEntry);
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
     resolver.resolve(destinationEntry);
   };
@@ -441,23 +441,12 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
 };
 
 /**
- * A callback to notify listeners when a file has been copied.
- * @param {string} sourceUrl
- * @param {Entry} destination
- */
-importer.MediaImportHandler.ImportTask.prototype.onEntryChanged_ =
-    function(sourceUrl, destination) {
-  // TODO(kenobi): Add code to notify observers when entries are created.
-};
-
-/**
  * @param {!FileEntry} entry
- * @param {!DirectoryEntry} destinationDirectory
+ * @param {!FileEntry} destinationEntry
  */
 importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
-    function(entry, destinationDirectory) {
+    function(entry, destinationEntry) {
   this.remainingFilesCount_--;
-  var destinationUrl = destinationDirectory.toURL() + '/' + entry.name;
   this.historyLoader_.getHistory().then(
       /**
        * @param {!importer.ImportHistory} history
@@ -467,7 +456,7 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
         history.markCopied(
             entry,
             this.destination_,
-            destinationUrl);
+            destinationEntry.toURL());
       }.bind(this))
       .catch(importer.getLogger().catcher('import-task-mark-as-copied'));
 };

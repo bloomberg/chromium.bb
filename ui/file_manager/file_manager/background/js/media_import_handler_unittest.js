@@ -74,7 +74,7 @@ function setUp() {
 
   importHistory = new importer.TestImportHistory();
   mediaScanner = new TestMediaScanner();
-  destinationFileSystem = new MockFileSystem(destinationFactory);
+  destinationFileSystem = new MockFileSystem('googleDriveFilesystem');
   destinationFactory = Promise.resolve(destinationFileSystem.root);
   duplicateFinderFactory = new importer.TestDuplicateFinder.Factory();
 
@@ -126,6 +126,49 @@ function testImportMedia(callback) {
           assertEquals(media.length, copiedEntries.length);
         }),
       callback);
+
+  scanResult.finalize();
+}
+
+function testImportMedia_EmploysEncodedUrls(callback) {
+  var media = setupFileSystem([
+    '/DCIM/photos0/Mom and Dad.jpg',
+  ]);
+
+  var scanResult = new TestScanResult(media);
+  var importTask = mediaImporter.importFromScanResult(
+        scanResult,
+        importer.Destination.GOOGLE_DRIVE,
+        destinationFactory);
+
+  var promise = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.COMPLETE:
+                  resolve(destinationFileSystem.root.getAllChildren());
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject('Task failed :(');
+                  break;
+              }
+            });
+      })
+      .then(
+        function(copiedEntries) {
+          var expected = 'Mom%20and%20Dad.jpg';
+          var url = copiedEntries[0].toURL();
+          assertTrue(url.length > expected.length);
+          var actual = url.substring(url.length - expected.length);
+          assertEquals(expected, actual);
+        });
+
+  reportPromise(promise, callback);
 
   scanResult.finalize();
 }
@@ -390,6 +433,11 @@ function testImportWithDuplicates(callback) {
 }
 
 function testImportWithErrors(callback) {
+
+  // Quiet the logger just in this test where we expect errors.
+  // Elsewhere, it's better for errors to be seen by test authors.
+  importer.setupTestLogger().quiet();
+
   var media = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
     '/DCIM/photos0/IMG00002.jpg',
