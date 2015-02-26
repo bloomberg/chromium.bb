@@ -20,6 +20,15 @@ void ForwardGetTouchDeviceStatusReply(
   reply_runner->PostTask(FROM_HERE, base::Bind(reply, base::Passed(&status)));
 }
 
+void ForwardGetTouchEventLogReply(
+    scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
+    const GetTouchEventLogReply& reply,
+    scoped_ptr<std::vector<base::FilePath>> log_paths) {
+  // Thread hop back to UI for reply.
+  reply_runner->PostTask(FROM_HERE,
+                         base::Bind(reply, base::Passed(&log_paths)));
+}
+
 }  // namespace
 
 InputDeviceFactoryEvdevProxy::InputDeviceFactoryEvdevProxy(
@@ -85,6 +94,17 @@ void InputDeviceFactoryEvdevProxy::GetTouchDeviceStatus(
       base::Bind(&InputDeviceFactoryEvdev::GetTouchDeviceStatus,
                  input_device_factory_,
                  base::Bind(&ForwardGetTouchDeviceStatusReply,
+                            base::ThreadTaskRunnerHandle::Get(), reply)));
+}
+
+void InputDeviceFactoryEvdevProxy::GetTouchEventLog(
+    const base::FilePath& out_dir,
+    const GetTouchEventLogReply& reply) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&InputDeviceFactoryEvdev::GetTouchEventLog,
+                 input_device_factory_, out_dir,
+                 base::Bind(&ForwardGetTouchEventLogReply,
                             base::ThreadTaskRunnerHandle::Get(), reply)));
 }
 

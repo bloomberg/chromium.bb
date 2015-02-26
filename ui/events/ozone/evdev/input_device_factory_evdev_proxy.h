@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_PROXY_EVDEV_H_
 
 #include <set>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -21,6 +22,8 @@ class InputDeviceFactoryEvdev;
 struct InputDeviceSettingsEvdev;
 
 typedef base::Callback<void(scoped_ptr<std::string>)> GetTouchDeviceStatusReply;
+typedef base::Callback<void(scoped_ptr<std::vector<base::FilePath>>)>
+    GetTouchEventLogReply;
 
 // Thread safe proxy for InputDeviceFactoryEvdev.
 //
@@ -44,6 +47,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void EnableInternalKeyboard();
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
+  void GetTouchEventLog(const base::FilePath& out_dir,
+                        const GetTouchEventLogReply& reply);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

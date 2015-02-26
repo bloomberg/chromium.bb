@@ -152,6 +152,15 @@ void InputControllerEvdev::GetTouchDeviceStatus(
     reply.Run(make_scoped_ptr(new std::string));
 }
 
+void InputControllerEvdev::GetTouchEventLog(
+    const base::FilePath& out_dir,
+    const GetTouchEventLogReply& reply) {
+  if (input_device_factory_)
+    input_device_factory_->GetTouchEventLog(out_dir, reply);
+  else
+    reply.Run(make_scoped_ptr(new std::vector<base::FilePath>));
+}
+
 void InputControllerEvdev::ScheduleUpdateDeviceSettings() {
   if (!input_device_factory_ || settings_update_pending_)
     return;

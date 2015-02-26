@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_feedback.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h"
 
 // Severity level for general info logging purpose.
@@ -554,6 +555,12 @@ std::ostream& operator<<(std::ostream& out,
   }
 #undef TYPE_CASE
   return out << s;
+}
+
+// A relay function that dumps evdev log to a place that we have access to
+// (the default directory is inaccessible without X11).
+void DumpTouchEvdevDebugLog(void* data) {
+  Event_Dump_Debug_Log_To(data, ui::kTouchpadEvdevLogPath);
 }
 
 }  // namespace
@@ -1426,8 +1433,8 @@ bool GesturesPropFunctionsWrapper::InitializeDeviceProperties(
   // set.
   GesturesProp* dump_debug_log_prop = CreateBoolSingle(
       device_data, "Dump Debug Log", &properties->dump_debug_log, false);
-  RegisterHandlers(
-      device_data, dump_debug_log_prop, device, NULL, Event_Dump_Debug_Log);
+  RegisterHandlers(device_data, dump_debug_log_prop, device, NULL,
+                   DumpTouchEvdevDebugLog);
 
   // Whether to do the gesture recognition or just passing the multi-touch data
   // to upper layers.

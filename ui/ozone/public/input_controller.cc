@@ -37,6 +37,8 @@ class StubInputController : public InputController {
   void SetPrimaryButtonRight(bool right) override;
   void SetTapToClickPaused(bool state) override;
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) override;
+  void GetTouchEventLog(const base::FilePath& out_dir,
+                        const GetTouchEventLogReply& reply) override;
   void DisableInternalTouchpad() override;
   void EnableInternalTouchpad() override;
   void DisableInternalKeyboardExceptKeys(
@@ -128,6 +130,12 @@ void StubInputController::SetTapToClickPaused(bool state) {
 void StubInputController::GetTouchDeviceStatus(
     const GetTouchDeviceStatusReply& reply) {
   reply.Run(scoped_ptr<std::string>(new std::string));
+}
+
+void StubInputController::GetTouchEventLog(const base::FilePath& out_dir,
+                                           const GetTouchEventLogReply& reply) {
+  reply.Run(
+      scoped_ptr<std::vector<base::FilePath>>(new std::vector<base::FilePath>));
 }
 
 void StubInputController::DisableInternalTouchpad() {

@@ -8,7 +8,6 @@
 #include <linux/input.h>
 
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -23,6 +22,7 @@
 
 #if defined(USE_EVDEV_GESTURES)
 #include "ui/events/ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_feedback.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #endif
@@ -88,71 +88,6 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
   }
 }
 
-// Return the values in an array in one string. Used for touch logging.
-template <typename T>
-std::string DumpArrayProperty(const std::vector<T>& value, const char* format) {
-  std::string ret;
-  for (size_t i = 0; i < value.size(); ++i) {
-    if (i > 0)
-      ret.append(", ");
-    ret.append(base::StringPrintf(format, value[i]));
-  }
-  return ret;
-}
-
-// Return the values in a gesture property in one string. Used for touch
-// logging.
-std::string DumpGesturePropertyValue(GesturesProp* property) {
-  switch (property->type()) {
-    case GesturePropertyProvider::PT_INT:
-      return DumpArrayProperty(property->GetIntValue(), "%d");
-      break;
-    case GesturePropertyProvider::PT_SHORT:
-      return DumpArrayProperty(property->GetShortValue(), "%d");
-      break;
-    case GesturePropertyProvider::PT_BOOL:
-      return DumpArrayProperty(property->GetBoolValue(), "%d");
-      break;
-    case GesturePropertyProvider::PT_STRING:
-      return "\"" + property->GetStringValue() + "\"";
-      break;
-    case GesturePropertyProvider::PT_REAL:
-      return DumpArrayProperty(property->GetDoubleValue(), "%lf");
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return std::string();
-}
-
-// Dump touch device property values to a string.
-void DumpTouchDeviceStatus(GesturePropertyProvider* provider,
-                           std::string* status) {
-  // We use DT_ALL since we want gesture property values for all devices that
-  // run with the gesture library, not just mice or touchpads.
-  std::vector<int> ids;
-  provider->GetDeviceIdsByType(DT_ALL, &ids);
-
-  // Dump the property names and values for each device.
-  for (size_t i = 0; i < ids.size(); ++i) {
-    std::vector<std::string> names = provider->GetPropertyNamesById(ids[i]);
-    status->append("\n");
-    status->append(base::StringPrintf("ID %d:\n", ids[i]));
-    status->append(base::StringPrintf(
-        "Device \'%s\':\n", provider->GetDeviceNameById(ids[i]).c_str()));
-
-    // Note that, unlike X11, we don't maintain the "atom" concept here.
-    // Therefore, the property name indices we output here shouldn't be treated
-    // as unique identifiers of the properties.
-    std::sort(names.begin(), names.end());
-    for (size_t j = 0; j < names.size(); ++j) {
-      status->append(base::StringPrintf("\t%s (%zu):", names[j].c_str(), j));
-      GesturesProp* property = provider->GetProperty(ids[i], names[j]);
-      status->append("\t" + DumpGesturePropertyValue(property) + '\n');
-    }
-  }
-}
 #endif
 
 scoped_ptr<EventConverterEvdev> CreateConverter(
@@ -406,6 +341,19 @@ void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
   DumpTouchDeviceStatus(gesture_property_provider_.get(), status.get());
 #endif
   reply.Run(status.Pass());
+}
+
+void InputDeviceFactoryEvdev::GetTouchEventLog(
+    const base::FilePath& out_dir,
+    const GetTouchEventLogReply& reply) {
+  scoped_ptr<std::vector<base::FilePath>> log_paths(
+      new std::vector<base::FilePath>);
+#if defined(USE_EVDEV_GESTURES)
+  DumpTouchEventLog(gesture_property_provider_.get(), out_dir, log_paths.Pass(),
+                    reply);
+#else
+  reply.Run(log_paths.Pass());
+#endif
 }
 
 base::WeakPtr<InputDeviceFactoryEvdev> InputDeviceFactoryEvdev::GetWeakPtr() {

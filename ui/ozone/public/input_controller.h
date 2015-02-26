@@ -7,8 +7,10 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
@@ -30,6 +32,8 @@ class OZONE_EXPORT InputController {
  public:
   typedef base::Callback<void(scoped_ptr<std::string>)>
       GetTouchDeviceStatusReply;
+  typedef base::Callback<void(scoped_ptr<std::vector<base::FilePath>>)>
+      GetTouchEventLogReply;
 
   InputController() {}
   virtual ~InputController() {}
@@ -62,6 +66,8 @@ class OZONE_EXPORT InputController {
 
   // Touch log collection.
   virtual void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) = 0;
+  virtual void GetTouchEventLog(const base::FilePath& out_dir,
+                                const GetTouchEventLogReply& reply) = 0;
 
   // Temporarily enable/disable Tap-to-click. Used to enhance the user
   // experience in some use cases (e.g., typing, watching video).
