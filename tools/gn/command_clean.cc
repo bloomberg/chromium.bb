@@ -27,7 +27,7 @@ std::string ExtractGNBuildCommands(const base::FilePath& build_ninja_file) {
   }
 
   std::vector<std::string> lines;
-  base::SplitString(file_contents, '\n', &lines);
+  base::SplitStringDontTrim(file_contents, '\n', &lines);
 
   std::string result;
   int num_blank_lines = 0;
