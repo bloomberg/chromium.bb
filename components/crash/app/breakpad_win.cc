@@ -616,6 +616,15 @@ void InitCrashReporter(const std::string& process_type_switch) {
   }
 }
 
+void ConsumeInvalidHandleExceptions() {
+  if (g_breakpad) {
+    g_breakpad->set_consume_invalid_handle_exceptions(true);
+  }
+  if (g_dumphandler_no_crash) {
+    g_dumphandler_no_crash->set_consume_invalid_handle_exceptions(true);
+  }
+}
+
 // If the user has disabled crash reporting uploads and restarted Chrome, the
 // restarted instance will still contain the pipe environment variable, which
 // will allow the restarted process to still upload crash reports. This function

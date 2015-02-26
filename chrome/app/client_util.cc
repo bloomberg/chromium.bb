@@ -235,7 +235,14 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   DLL_MAIN chrome_main =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
   int rc = chrome_main(instance, &sandbox_info);
-  return OnBeforeExit(rc, file);
+  rc = OnBeforeExit(rc, file);
+  // Sandboxed processes close some system DLL handles after lockdown so ignore
+  // EXCEPTION_INVALID_HANDLE generated on Windows 10 during shutdown of these
+  // processes.
+  // TODO(wfh): Check whether MS have fixed this in Win10 RTM. crbug.com/456193
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    breakpad::ConsumeInvalidHandleExceptions();
+  return rc;
 }
 
 void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
