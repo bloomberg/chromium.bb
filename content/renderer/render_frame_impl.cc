@@ -124,6 +124,7 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebPluginPlaceholder.h"
 #include "third_party/WebKit/public/web/WebRange.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -1456,9 +1457,12 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
   TRACE_EVENT_INSTANT0("test_tracing", "OnJavaScriptExecuteRequestForTests",
                        TRACE_EVENT_SCOPE_THREAD);
 
+  // A bunch of tests expect to run code in the context of a user gesture, which
+  // can grant additional privileges (e.g. the ability to create popups).
+  blink::WebScopedUserGesture gesture;
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Handle<v8::Value> result =
-      frame_->executeScriptAndReturnValueForTests(WebScriptSource(jscript));
+      frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
 
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
 }
