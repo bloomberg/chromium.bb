@@ -17,7 +17,7 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/h264_decoder.h"
-#include "content/common/gpu/media/v4l2_video_device.h"
+#include "content/common/gpu/media/v4l2_device.h"
 #include "content/common/gpu/media/vp8_decoder.h"
 #include "media/video/video_decode_accelerator.h"
 

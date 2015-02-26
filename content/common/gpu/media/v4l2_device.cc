@@ -6,9 +6,9 @@
 #include <linux/videodev2.h>
 
 #include "base/numerics/safe_conversions.h"
-#include "content/common/gpu/media/generic_v4l2_video_device.h"
+#include "content/common/gpu/media/generic_v4l2_device.h"
 #if defined(ARCH_CPU_ARMEL)
-#include "content/common/gpu/media/tegra_v4l2_video_device.h"
+#include "content/common/gpu/media/tegra_v4l2_device.h"
 #endif
 
 // TODO(posciak): remove this once V4L2 headers are updated.

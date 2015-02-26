@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/media/tegra_v4l2_video_device.h"
+#include "content/common/gpu/media/tegra_v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {

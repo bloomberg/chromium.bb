@@ -2,25 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains the implementation of TegraV4L2Device used on
-// Tegra platform.
+// This file contains the implementation of GenericV4L2Device used on
+// platforms, which provide generic V4L2 video codec devices.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_VIDEO_DEVICE_H_
-#define CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_VIDEO_DEVICE_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_GENERIC_V4L2_DEVICE_H_
+#define CONTENT_COMMON_GPU_MEDIA_GENERIC_V4L2_DEVICE_H_
 
-#include "content/common/gpu/media/v4l2_video_device.h"
-#include "ui/gl/gl_bindings.h"
+#include "content/common/gpu/media/v4l2_device.h"
 
 namespace content {
 
-// This class implements the V4L2Device interface for Tegra platform.
-// It interfaces with libtegrav4l2 library which provides API that exhibit the
-// V4L2 specification via the library API instead of system calls.
-class TegraV4L2Device : public V4L2Device {
+class GenericV4L2Device : public V4L2Device {
  public:
-  explicit TegraV4L2Device(Type type);
+  explicit GenericV4L2Device(Type type);
 
-  int Ioctl(int flags, void* arg) override;
+  // V4L2Device implementation.
+  int Ioctl(int request, void* arg) override;
   bool Poll(bool poll_device, bool* event_pending) override;
   bool SetDevicePollInterrupt() override;
   bool ClearDevicePollInterrupt() override;
@@ -45,15 +42,22 @@ class TegraV4L2Device : public V4L2Device {
   uint32 PreferredInputFormat() override;
 
  private:
-  ~TegraV4L2Device() override;
+  ~GenericV4L2Device() override;
   const Type type_;
 
   // The actual device fd.
   int device_fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(TegraV4L2Device);
-};
+  // eventfd fd to signal device poll thread when its poll() should be
+  // interrupted.
+  int device_poll_interrupt_fd_;
 
+  DISALLOW_COPY_AND_ASSIGN(GenericV4L2Device);
+
+  // Lazily initialize static data after sandbox is enabled.  Return false on
+  // init failure.
+  static bool PostSandboxInitialization();
+};
 }  //  namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_VIDEO_DEVICE_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_GENERIC_V4L2_DEVICE_H_

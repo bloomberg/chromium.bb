@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/v4l2_device.h"
 #include "content/common/gpu/media/v4l2_image_processor.h"
-#include "content/common/gpu/media/v4l2_video_device.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 

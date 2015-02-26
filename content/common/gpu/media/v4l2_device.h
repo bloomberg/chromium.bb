@@ -6,8 +6,8 @@
 // V4L2DecodeAccelerator class to delegate/pass the device specific
 // handling of any of the functionalities.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
-#define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_
+#define CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -108,4 +108,4 @@ class CONTENT_EXPORT V4L2Device
 
 }  //  namespace content
 
-#endif  //  CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
+#endif  //  CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_
