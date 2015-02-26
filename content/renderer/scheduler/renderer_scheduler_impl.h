@@ -66,16 +66,16 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
     TASK_QUEUE_COUNT,
   };
 
-  enum Policy {
-    NORMAL_PRIORITY_POLICY,
-    COMPOSITOR_PRIORITY_POLICY,
-    TOUCHSTART_PRIORITY_POLICY,
+  enum class Policy {
+    NORMAL,
+    COMPOSITOR_PRIORITY,
+    TOUCHSTART_PRIORITY,
   };
 
-  enum InputStreamState {
-    INPUT_INACTIVE,
-    INPUT_ACTIVE,
-    INPUT_ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
+  enum class InputStreamState {
+    INACTIVE,
+    ACTIVE,
+    ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
   };
 
   class PollableNeedsUpdateFlag {

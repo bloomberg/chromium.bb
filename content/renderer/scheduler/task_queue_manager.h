@@ -48,20 +48,20 @@ class TaskQueueSelector;
 class CONTENT_EXPORT TaskQueueManager {
  public:
   // Keep TaskQueue::PumpPolicyToString in sync with this enum.
-  enum PumpPolicy {
-    // Tasks posted to an incoming queue with an AUTO_PUMP_POLICY will be
+  enum class PumpPolicy {
+    // Tasks posted to an incoming queue with an AUTO pump policy will be
     // automatically scheduled for execution or transferred to the work queue
     // automatically.
-    AUTO_PUMP_POLICY,
-    // Tasks posted to an incoming queue with an AUTO_PUMP_AFTER_WAKEUP_POLICY
+    AUTO,
+    // Tasks posted to an incoming queue with an AFTER_WAKEUP pump policy
     // will be scheduled for execution or transferred to the work queue
     // automatically but only after another queue has executed a task.
-    AUTO_PUMP_AFTER_WAKEUP_POLICY,
-    // Tasks posted to an incoming queue with a MANUAL_PUMP_POLICY will not be
+    AFTER_WAKEUP,
+    // Tasks posted to an incoming queue with a MANUAL will not be
     // automatically scheduled for execution or transferred to the work queue.
     // Instead, the selector should call PumpQueue() when necessary to bring
     // in new tasks for execution.
-    MANUAL_PUMP_POLICY
+    MANUAL
   };
 
   // Create a task queue manager with |task_queue_count| task queues.
@@ -116,10 +116,7 @@ class CONTENT_EXPORT TaskQueueManager {
  private:
   friend class internal::TaskQueue;
 
-  enum WorkQueueUpdateEventType {
-    BEFORE_WAKEUP_EVENT_TYPE,
-    AFTER_WAKEUP_EVENT_TYPE
-  };
+  enum class WorkQueueUpdateEventType { BEFORE_WAKEUP, AFTER_WAKEUP };
 
   // Called by the task queue to register a new pending task and allocate a
   // sequence number for it.

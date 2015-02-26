@@ -285,7 +285,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotStayDelayed) {
 
 TEST_F(TaskQueueManagerTest, ManualPumping) {
   Initialize(1u);
-  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::MANUAL);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -309,7 +309,7 @@ TEST_F(TaskQueueManagerTest, ManualPumping) {
 
 TEST_F(TaskQueueManagerTest, ManualPumpingToggle) {
   Initialize(1u);
-  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::MANUAL);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -321,7 +321,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingToggle) {
   EXPECT_FALSE(test_task_runner_->HasPendingTask());
 
   // When pumping is enabled the task runs normally.
-  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AUTO);
   EXPECT_TRUE(test_task_runner_->HasPendingTask());
   selector_->AppendQueueToService(0);
   test_task_runner_->RunUntilIdle();
@@ -350,7 +350,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning) {
 
 TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
   Initialize(1u);
-  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::MANUAL);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -374,7 +374,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
 
 TEST_F(TaskQueueManagerTest, ManualPumpingWithNonEmptyWorkQueue) {
   Initialize(1u);
-  manager_->SetPumpPolicy(0, TaskQueueManager::MANUAL_PUMP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::MANUAL);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -586,7 +586,7 @@ TEST_F(TaskQueueManagerTest, InterruptWorkBatchForDelayedTask) {
 TEST_F(TaskQueueManagerTest, AutoPumpOnWakeup) {
   Initialize(2u);
   EXPECT_EQ(2u, selector_->work_queues().size());
-  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
@@ -613,7 +613,7 @@ TEST_F(TaskQueueManagerTest, AutoPumpOnWakeup) {
 TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupWhenAlreadyAwake) {
   Initialize(2u);
   EXPECT_EQ(2u, selector_->work_queues().size());
-  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
@@ -631,8 +631,8 @@ TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupWhenAlreadyAwake) {
 TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupTriggeredByManuallyPumpedQueue) {
   Initialize(2u);
   EXPECT_EQ(2u, selector_->work_queues().size());
-  manager_->SetPumpPolicy(0, TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY);
-  manager_->SetPumpPolicy(1, TaskQueueManager::MANUAL_PUMP_POLICY);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
+  manager_->SetPumpPolicy(1, TaskQueueManager::PumpPolicy::MANUAL);
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {

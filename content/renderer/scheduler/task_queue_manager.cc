@@ -28,13 +28,13 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override {
-    return PostDelayedTaskImpl(from_here, task, delay, NORMAL_TASK_TYPE);
+    return PostDelayedTaskImpl(from_here, task, delay, TaskType::NORMAL);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay) override {
-    return PostDelayedTaskImpl(from_here, task, delay, NON_NESTABLE_TASK_TYPE);
+    return PostDelayedTaskImpl(from_here, task, delay, TaskType::NON_NESTABLE);
   }
 
   bool IsQueueEmpty() const;
@@ -55,9 +55,9 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
-  enum TaskType {
-    NORMAL_TASK_TYPE,
-    NON_NESTABLE_TASK_TYPE,
+  enum class TaskType {
+    NORMAL,
+    NON_NESTABLE,
   };
 
   ~TaskQueue() override;
@@ -102,7 +102,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
 TaskQueue::TaskQueue(TaskQueueManager* task_queue_manager)
     : task_queue_manager_(task_queue_manager),
-      pump_policy_(TaskQueueManager::AUTO_PUMP_POLICY),
+      pump_policy_(TaskQueueManager::PumpPolicy::AUTO),
       name_(nullptr) {
 }
 
@@ -130,7 +130,7 @@ bool TaskQueue::PostDelayedTaskImpl(const tracked_objects::Location& from_here,
     return false;
 
   base::PendingTask pending_task(from_here, task, base::TimeTicks(),
-                                 task_type != NON_NESTABLE_TASK_TYPE);
+                                 task_type != TaskType::NON_NESTABLE);
   task_queue_manager_->DidQueueTask(&pending_task);
 
   if (delay > base::TimeDelta()) {
@@ -156,10 +156,10 @@ bool TaskQueue::IsQueueEmpty() const {
 bool TaskQueue::ShouldAutoPumpQueueLocked(
     TaskQueueManager::WorkQueueUpdateEventType event_type) {
   lock_.AssertAcquired();
-  if (pump_policy_ == TaskQueueManager::MANUAL_PUMP_POLICY)
+  if (pump_policy_ == TaskQueueManager::PumpPolicy::MANUAL)
     return false;
-  if (pump_policy_ == TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY &&
-      event_type != TaskQueueManager::AFTER_WAKEUP_EVENT_TYPE)
+  if (pump_policy_ == TaskQueueManager::PumpPolicy::AFTER_WAKEUP &&
+      event_type != TaskQueueManager::WorkQueueUpdateEventType::AFTER_WAKEUP)
     return false;
   if (incoming_queue_.empty())
     return false;
@@ -218,7 +218,7 @@ void TaskQueue::EnqueueTaskLocked(const base::PendingTask& pending_task) {
   lock_.AssertAcquired();
   if (!task_queue_manager_)
     return;
-  if (pump_policy_ == TaskQueueManager::AUTO_PUMP_POLICY &&
+  if (pump_policy_ == TaskQueueManager::PumpPolicy::AUTO &&
       incoming_queue_.empty())
     task_queue_manager_->MaybePostDoWorkOnMainRunner();
   incoming_queue_.push(pending_task);
@@ -238,8 +238,8 @@ void TaskQueue::EnqueueTaskLocked(const base::PendingTask& pending_task) {
 
 void TaskQueue::SetPumpPolicy(TaskQueueManager::PumpPolicy pump_policy) {
   base::AutoLock lock(lock_);
-  if (pump_policy == TaskQueueManager::AUTO_PUMP_POLICY &&
-      pump_policy_ != TaskQueueManager::AUTO_PUMP_POLICY) {
+  if (pump_policy == TaskQueueManager::PumpPolicy::AUTO &&
+      pump_policy_ != TaskQueueManager::PumpPolicy::AUTO) {
     PumpQueueLocked();
   }
   pump_policy_ = pump_policy;
@@ -279,12 +279,12 @@ void TaskQueue::AsValueInto(base::trace_event::TracedValue* state) const {
 const char* TaskQueue::PumpPolicyToString(
     TaskQueueManager::PumpPolicy pump_policy) {
   switch (pump_policy) {
-    case TaskQueueManager::AUTO_PUMP_POLICY:
-      return "auto_pump";
-    case TaskQueueManager::AUTO_PUMP_AFTER_WAKEUP_POLICY:
-      return "auto_pump_after_wakeup";
-    case TaskQueueManager::MANUAL_PUMP_POLICY:
-      return "manual_pump";
+    case TaskQueueManager::PumpPolicy::AUTO:
+      return "auto";
+    case TaskQueueManager::PumpPolicy::AFTER_WAKEUP:
+      return "after_wakeup";
+    case TaskQueueManager::PumpPolicy::MANUAL:
+      return "manual";
     default:
       NOTREACHED();
       return nullptr;
@@ -426,7 +426,8 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
   base::TimeTicks next_pending_delayed_task(
       base::TimeTicks::FromInternalValue(kMaxTimeTicks));
 
-  if (!UpdateWorkQueues(&next_pending_delayed_task, BEFORE_WAKEUP_EVENT_TYPE))
+  if (!UpdateWorkQueues(&next_pending_delayed_task,
+                        WorkQueueUpdateEventType::BEFORE_WAKEUP))
     return;
 
   base::PendingTask previous_task((tracked_objects::Location()),
@@ -445,7 +446,8 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     MaybePostDoWorkOnMainRunner();
     ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task);
 
-    if (!UpdateWorkQueues(&next_pending_delayed_task, AFTER_WAKEUP_EVENT_TYPE))
+    if (!UpdateWorkQueues(&next_pending_delayed_task,
+                          WorkQueueUpdateEventType::AFTER_WAKEUP))
       return;
   }
 }
