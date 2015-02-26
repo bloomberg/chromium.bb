@@ -82,14 +82,6 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     self.PatchObject(manifest_version.BuildSpecsManager, 'GetLatestPassingSpec')
     self.PatchObject(sync_stages.SyncStage, 'ManifestCheckout',
                      return_value=self.next_version)
-    self.PatchObject(sync_stages.ManifestVersionedSyncStage,
-                     '_GetMasterVersion', return_value='foo',
-                     autospec=True)
-    self.PatchObject(sync_stages.ManifestVersionedSyncStage,
-                     '_VerifyMasterId', autospec=True)
-    self.PatchObject(manifest_version.BuildSpecsManager, 'BootstrapFromVersion',
-                     autospec=True)
-    self.PatchObject(repository.RepoRepository, 'Sync', autospec=True)
 
     self.sync_stage.Run()
 
@@ -322,14 +314,8 @@ class SlaveCQSyncTest(BaseCQTestCase):
 
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
-    self.PatchObject(sync_stages.ManifestVersionedSyncStage,
-                     '_GetMasterVersion', return_value='foo',
-                     autospec=True)
-    self.PatchObject(sync_stages.MasterSlaveLKGMSyncStage,
-                     '_VerifyMasterId', autospec=True)
-    self.PatchObject(lkgm_manager.LKGMManager, 'BootstrapFromVersion',
+    self.PatchObject(lkgm_manager.LKGMManager, 'GetLatestCandidate',
                      return_value=self.manifest_path, autospec=True)
-    self.PatchObject(repository.RepoRepository, 'Sync', autospec=True)
     self.sync_stage.PerformStage()
     self.ReloadPool()
 
