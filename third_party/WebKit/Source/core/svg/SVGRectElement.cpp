@@ -77,14 +77,16 @@ void SVGRectElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 
 bool SVGRectElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
-    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
         return true;
     return SVGGeometryElement::isPresentationAttribute(attrName);
 }
 
 bool SVGRectElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
 {
-    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
         return true;
     return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
@@ -96,6 +98,10 @@ void SVGRectElement::collectStyleForPresentationAttribute(const QualifiedName& n
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
     else if (property == m_y)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+    else if (property == m_rx)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRx, *m_rx->currentValue());
+    else if (property == m_ry)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRy, *m_ry->currentValue());
     else
         SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
 }
@@ -109,20 +115,20 @@ void SVGRectElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    bool isLengthAttributeXY =
+    bool isPresentationLengthAttribute =
         attrName == SVGNames::xAttr
-        || attrName == SVGNames::yAttr;
-    if (isLengthAttributeXY) {
+        || attrName == SVGNames::yAttr
+        || attrName == SVGNames::rxAttr
+        || attrName == SVGNames::ryAttr;
+    if (isPresentationLengthAttribute) {
         invalidateSVGPresentationAttributeStyle();
         setNeedsStyleRecalc(LocalStyleChange,
             StyleChangeReasonForTracing::fromAttribute(attrName));
     }
 
-    bool isLengthAttribute = isLengthAttributeXY
-                          || attrName == SVGNames::widthAttr
-                          || attrName == SVGNames::heightAttr
-                          || attrName == SVGNames::rxAttr
-                          || attrName == SVGNames::ryAttr;
+    bool isLengthAttribute = isPresentationLengthAttribute
+        || attrName == SVGNames::widthAttr
+        || attrName == SVGNames::heightAttr;
 
     if (isLengthAttribute)
         updateRelativeLengthsInformation();

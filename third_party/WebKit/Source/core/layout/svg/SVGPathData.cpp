@@ -51,12 +51,14 @@ static void updatePathFromCircleElement(SVGElement* element, Path& path)
 static void updatePathFromEllipseElement(SVGElement* element, Path& path)
 {
     SVGEllipseElement* ellipse = toSVGEllipseElement(element);
+    ASSERT(ellipse->renderer());
 
     SVGLengthContext lengthContext(element);
-    float rx = ellipse->rx()->currentValue()->value(lengthContext);
+    const LayoutStyle& style = ellipse->renderer()->styleRef();
+    float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, LengthModeWidth);
     if (rx < 0)
         return;
-    float ry = ellipse->ry()->currentValue()->value(lengthContext);
+    float ry = lengthContext.valueForLength(style.svgStyle().ry(), style, LengthModeHeight);
     if (ry < 0)
         return;
     if (!rx && !ry)
@@ -119,8 +121,8 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
     const LayoutStyle& style = rect->renderer()->styleRef();
     float x = lengthContext.valueForLength(style.svgStyle().x(), style, LengthModeWidth);
     float y = lengthContext.valueForLength(style.svgStyle().y(), style, LengthModeHeight);
-    float rx = rect->rx()->currentValue()->value(lengthContext);
-    float ry = rect->ry()->currentValue()->value(lengthContext);
+    float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, LengthModeWidth);
+    float ry = lengthContext.valueForLength(style.svgStyle().ry(), style, LengthModeHeight);
     bool hasRx = rx > 0;
     bool hasRy = ry > 0;
     if (hasRx || hasRy) {

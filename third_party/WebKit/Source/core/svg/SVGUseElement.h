@@ -55,12 +55,12 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+private:
+    explicit SVGUseElement(Document&);
+
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-
-private:
-    explicit SVGUseElement(Document&);
 
     virtual bool isStructurallyExternal() const override { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
 

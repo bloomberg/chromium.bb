@@ -343,7 +343,9 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyVectorEffect,
     CSSPropertyPaintOrder,
     CSSPropertyX,
-    CSSPropertyY
+    CSSPropertyY,
+    CSSPropertyRx,
+    CSSPropertyRy
 };
 
 static const Vector<CSSPropertyID>& computableProperties()
@@ -485,6 +487,8 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<LayoutStyle> 
     case CSSPropertyWebkitFilter:
     case CSSPropertyX:
     case CSSPropertyY:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
         return true;
     case CSSPropertyMargin:
         return renderer && renderer->isBox() && (!style || !style->marginBottom().isFixed() || !style->marginTop().isFixed() || !style->marginLeft().isFixed() || !style->marginRight().isFixed());

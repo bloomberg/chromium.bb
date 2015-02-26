@@ -272,6 +272,8 @@ class StyleLayoutData : public RefCounted<StyleLayoutData> {
         }
         Length x;
         Length y;
+        Length rx;
+        Length ry;
     private:
         StyleLayoutData();
         StyleLayoutData(const StyleLayoutData&);

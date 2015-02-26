@@ -63,6 +63,38 @@ negativeTestZero("y", "100   px");
 negativeTestZero("y", "100px;");
 negativeTestZero("y", "100px !important");
 negativeTestZero("y", "{ 100px }");
+
+// Test 'rx'.
+testComputed("rx", "  100", "100px");
+testComputed("rx", "100   ", "100px");
+testComputed("rx", "100px", "100px");
+testComputed("rx", "1em", "16px");
+// testComputed("rx", "1ex", "12.8000001907349px"); // enable this again once http://crbug.com/441840 is fixed
+testComputed("rx", "20%", "20%");
+testComputed("rx", "-200px", "-200px");
+
+// Test 'ry'.
+testComputed("ry", "  100", "100px");
+testComputed("ry", "100   ", "100px");
+testComputed("ry", "100px", "100px");
+testComputed("ry", "1em", "16px");
+// testComputed("ry", "1ex", "12.8000001907349px"); // enable this again once http://crbug.com/441840 is fixed
+testComputed("ry", "20%", "20%");
+testComputed("ry", "-200px", "-200px");
+
+// Negative tests for 'rx'.
+negativeTestZero("rx", "auto", "auto");
+negativeTestZero("rx", "100   px");
+negativeTestZero("rx", "100px;");
+negativeTestZero("rx", "100px !important");
+negativeTestZero("rx", "{ 100px }");
+
+// Negative tests for 'ry'.
+negativeTestZero("ry", "auto");
+negativeTestZero("ry", "100   px");
+negativeTestZero("ry", "100px;");
+negativeTestZero("ry", "100px !important");
+negativeTestZero("ry", "{ 100px }");
 </script>
 </body>
 </html>

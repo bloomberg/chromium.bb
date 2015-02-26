@@ -170,6 +170,8 @@ quotes
 removeProperty
 resize
 right
+rx
+ry
 setProperty
 shapeImageThreshold
 shapeMargin

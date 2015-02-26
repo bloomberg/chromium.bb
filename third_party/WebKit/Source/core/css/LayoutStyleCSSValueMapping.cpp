@@ -2560,6 +2560,10 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         return zoomAdjustedPixelValueForLength(svgStyle.x(), style);
     case CSSPropertyY:
         return zoomAdjustedPixelValueForLength(svgStyle.y(), style);
+    case CSSPropertyRx:
+        return zoomAdjustedPixelValueForLength(svgStyle.rx(), style);
+    case CSSPropertyRy:
+        return zoomAdjustedPixelValueForLength(svgStyle.ry(), style);
 
     case CSSPropertyAll:
         return nullptr;

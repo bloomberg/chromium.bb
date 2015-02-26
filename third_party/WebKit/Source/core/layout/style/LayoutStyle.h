@@ -1374,6 +1374,8 @@ public:
 
     void setX(Length x) { accessSVGStyle().setX(x); }
     void setY(Length y) { accessSVGStyle().setY(y); }
+    void setRx(Length rx) { accessSVGStyle().setRx(rx); }
+    void setRy(Length ry) { accessSVGStyle().setRy(ry); }
 
     float floodOpacity() const { return svgStyle().floodOpacity(); }
     void setFloodOpacity(float f) { accessSVGStyle().setFloodOpacity(f); }

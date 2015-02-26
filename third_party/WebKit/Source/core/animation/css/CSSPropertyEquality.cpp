@@ -304,6 +304,10 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
         return a.svgStyle().x() == b.svgStyle().x();
     case CSSPropertyY:
         return a.svgStyle().y() == b.svgStyle().y();
+    case CSSPropertyRx:
+        return a.svgStyle().rx() == b.svgStyle().rx();
+    case CSSPropertyRy:
+        return a.svgStyle().ry() == b.svgStyle().ry();
     case CSSPropertyZIndex:
         return a.zIndex() == b.zIndex();
     default:

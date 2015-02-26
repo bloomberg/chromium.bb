@@ -67,7 +67,6 @@ public:
     virtual String title() const override;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
     static bool isAnimatableCSSProperty(const QualifiedName&);
-    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const { return false; }
 
     enum CTMScope {
         NearestViewportScope, // Used by SVGGraphicsElement::getCTM()
@@ -193,6 +192,7 @@ public:
     static const AtomicString& eventParameterName();
 
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const { return false; }
 
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);

@@ -8107,6 +8107,8 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
         break;
     case CSSPropertyX:
     case CSSPropertyY:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
         validPrimitive = (!id && validUnit(value, FLength | FPercent, SVGAttributeMode));
         break;
 

@@ -632,6 +632,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyY:
         style->setY(animatableValueToLength(value, state));
         return;
+    case CSSPropertyRx:
+        style->setRx(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyRy:
+        style->setRy(animatableValueToLength(value, state));
+        return;
 
     default:
         ASSERT_NOT_REACHED();

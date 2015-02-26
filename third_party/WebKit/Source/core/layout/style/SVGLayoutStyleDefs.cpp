@@ -203,6 +203,8 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
 StyleLayoutData::StyleLayoutData()
     : x(SVGLayoutStyle::initialX())
     , y(SVGLayoutStyle::initialY())
+    , rx(SVGLayoutStyle::initialRx())
+    , ry(SVGLayoutStyle::initialRy())
 {
 }
 
@@ -210,6 +212,8 @@ inline StyleLayoutData::StyleLayoutData(const StyleLayoutData& other)
     : RefCounted<StyleLayoutData>()
     , x(other.x)
     , y(other.y)
+    , rx(other.rx)
+    , ry(other.ry)
 {
 }
 
@@ -221,7 +225,9 @@ PassRefPtr<StyleLayoutData> StyleLayoutData::copy() const
 bool StyleLayoutData::operator==(const StyleLayoutData& other) const
 {
     return x == other.x
-        && y == other.y;
+        && y == other.y
+        && rx == other.rx
+        && ry == other.ry;
 }
 
 }

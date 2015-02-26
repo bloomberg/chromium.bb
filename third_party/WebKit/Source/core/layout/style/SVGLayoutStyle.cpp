@@ -182,10 +182,12 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
             return true;
     }
 
-    // The x and y properties require a re-layout.
+    // The x, y, rx and ry properties require a re-layout.
     if (layout.get() != other->layout.get()) {
         if (layout->x != other->layout->x
-            || layout->y != other->layout->y)
+            || layout->y != other->layout->y
+            || layout->rx != other->layout->rx
+            || layout->ry != other->layout->ry)
             return true;
     }
 

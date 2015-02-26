@@ -532,6 +532,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromLength(style.svgStyle().x(), style);
     case CSSPropertyY:
         return createFromLength(style.svgStyle().y(), style);
+    case CSSPropertyRx:
+        return createFromLength(style.svgStyle().rx(), style);
+    case CSSPropertyRy:
+        return createFromLength(style.svgStyle().ry(), style);
     case CSSPropertyZIndex:
         return createFromDouble(style.zIndex());
     default:

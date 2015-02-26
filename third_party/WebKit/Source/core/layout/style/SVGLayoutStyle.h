@@ -92,6 +92,8 @@ public:
     static EPaintOrder initialPaintOrder() { return PO_NORMAL; }
     static Length initialX() { return Length(Fixed); }
     static Length initialY() { return Length(Fixed); }
+    static Length initialRx() { return Length(Fixed); }
+    static Length initialRy() { return Length(Fixed); }
 
     static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeDashOffset()
     {
@@ -136,6 +138,16 @@ public:
     {
         if (!(layout->y == obj))
             layout.access()->y = obj;
+    }
+    void setRx(const Length& obj)
+    {
+        if (!(layout->rx == obj))
+            layout.access()->rx = obj;
+    }
+    void setRy(const Length& obj)
+    {
+        if (!(layout->ry == obj))
+            layout.access()->ry = obj;
     }
     void setFillOpacity(float obj)
     {
@@ -325,6 +337,8 @@ public:
     const Length& baselineShiftValue() const { return misc->baselineShiftValue; }
     const Length& x() const { return layout->x; }
     const Length& y() const { return layout->y; }
+    const Length& rx() const { return layout->rx; }
+    const Length& ry() const { return layout->ry; }
     const AtomicString& clipperResource() const { return resources->clipper; }
     const AtomicString& filterResource() const { return resources->filter; }
     const AtomicString& maskerResource() const { return resources->masker; }

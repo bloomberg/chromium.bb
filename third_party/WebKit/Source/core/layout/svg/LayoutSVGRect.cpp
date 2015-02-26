@@ -64,8 +64,8 @@ void LayoutSVGRect::updateShapeFromElement()
     if (!boundingBoxSize.isEmpty()) {
         // Fallback to LayoutSVGShape and path-based hit detection if the rect
         // has rounded corners or a non-scaling or non-simple stroke.
-        if (rect->rx()->currentValue()->value(lengthContext) > 0
-            || rect->ry()->currentValue()->value(lengthContext) > 0
+        if (lengthContext.valueForLength(style()->svgStyle().rx(), styleRef(), LengthModeWidth) > 0
+            || lengthContext.valueForLength(style()->svgStyle().ry(), styleRef(), LengthModeHeight) > 0
             || hasNonScalingStroke()
             || !definitelyHasSimpleStroke()) {
             LayoutSVGShape::updateShapeFromElement();
