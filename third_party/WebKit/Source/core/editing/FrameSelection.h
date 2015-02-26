@@ -139,7 +139,7 @@ public:
     Position end() const { return m_selection.end(); }
 
     // Return the renderer that is responsible for painting the caret (in the selection start node)
-    RenderBlock* caretRenderer() const;
+    LayoutBlock* caretRenderer() const;
 
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds();

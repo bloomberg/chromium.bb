@@ -24,7 +24,7 @@
 #ifndef LineLayoutState_h
 #define LineLayoutState_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
@@ -88,7 +88,7 @@ public:
     FloatingObject* lastFloat() const { return m_lastFloat; }
     void setLastFloat(FloatingObject* lastFloat) { m_lastFloat = lastFloat; }
 
-    Vector<RenderBlockFlow::FloatWithRect>& floats() { return m_floats; }
+    Vector<LayoutBlockFlow::FloatWithRect>& floats() { return m_floats; }
 
     unsigned floatIndex() const { return m_floatIndex; }
     void setFloatIndex(unsigned floatIndex) { m_floatIndex = floatIndex; }
@@ -100,7 +100,7 @@ public:
     void setFlowThread(LayoutFlowThread* thread) { m_flowThread = thread; }
 
 private:
-    Vector<RenderBlockFlow::FloatWithRect> m_floats;
+    Vector<LayoutBlockFlow::FloatWithRect> m_floats;
     FloatingObject* m_lastFloat;
     RootInlineBox* m_endLine;
     LineInfo m_lineInfo;

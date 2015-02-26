@@ -63,7 +63,7 @@ class Position;
 class PositionWithAffinity;
 class PseudoStyleRequest;
 class LayoutBoxModelObject;
-class RenderBlock;
+class LayoutBlock;
 class LayoutFlowThread;
 class LayoutGeometryMap;
 class Layer;
@@ -126,8 +126,8 @@ const int showTreeCharacterOffset = 39;
 
 // Base class for all rendering tree objects.
 class LayoutObject : public ImageResourceClient {
-    friend class RenderBlock;
-    friend class RenderBlockFlow;
+    friend class LayoutBlock;
+    friend class LayoutBlockFlow;
     friend class LayerReflectionInfo; // For setParent
     friend class LayerScrollableArea; // For setParent.
     friend class LayoutObjectChildList;
@@ -256,7 +256,7 @@ public:
 
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
     // children.
-    virtual RenderBlock* firstLineBlock() const;
+    virtual LayoutBlock* firstLineBlock() const;
 
     // Called when an object that was floating or positioned becomes a normal flow object
     // again.  We have to make sure the render tree updates as needed to accommodate the new
@@ -382,8 +382,8 @@ public:
 
     virtual bool isInlineBlockOrInlineTable() const { return false; }
     virtual bool isLayoutBoxModelObject() const { return false; }
-    virtual bool isRenderBlock() const { return false; }
-    virtual bool isRenderBlockFlow() const { return false; }
+    virtual bool isLayoutBlock() const { return false; }
+    virtual bool isLayoutBlockFlow() const { return false; }
     virtual bool isLayoutFlowThread() const { return false; }
     virtual bool isLayoutInline() const { return false; }
     virtual bool isLayoutPart() const { return false; }
@@ -462,7 +462,7 @@ public:
 
     // FIXME: Those belong into a SVG specific base-class for all renderers (see above)
     // Unfortunately we don't have such a class yet, because it's not possible for all renderers
-    // to inherit from LayoutSVGObject -> LayoutObject (some need RenderBlock inheritance for instance)
+    // to inherit from LayoutSVGObject -> LayoutObject (some need LayoutBlock inheritance for instance)
     virtual void setNeedsTransformUpdate() { }
     virtual void setNeedsBoundariesUpdate();
 
@@ -504,10 +504,10 @@ public:
     bool isAnonymousBlock() const
     {
         // This function is kept in sync with anonymous block creation conditions in
-        // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
-        // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
-        // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
+        // LayoutBlock::createAnonymousBlock(). This includes creating an anonymous
+        // LayoutBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
+        // are not LayoutBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder();
     }
@@ -638,7 +638,7 @@ public:
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
     // is true if the renderer returned is an ancestor of paintInvalidationContainer.
     LayoutObject* container(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
-    RenderBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
+    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
     virtual LayoutObject* hoverAncestor() const { return parent(); }
 
@@ -745,11 +745,11 @@ public:
     void setStyleInternal(PassRefPtr<LayoutStyle> style) { m_style = style; }
 
     // returns the containing block level element for this element.
-    RenderBlock* containingBlock() const;
+    LayoutBlock* containingBlock() const;
 
     bool canContainFixedPositionObjects() const
     {
-        return isLayoutView() || (hasTransformRelatedProperty() && isRenderBlock()) || isSVGForeignObject();
+        return isLayoutView() || (hasTransformRelatedProperty() && isLayoutBlock()) || isSVGForeignObject();
     }
 
     // Convert the given local point to absolute coordinates
@@ -1343,7 +1343,7 @@ private:
 
         ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
 
-        // from RenderBlock
+        // from LayoutBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
         ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
 

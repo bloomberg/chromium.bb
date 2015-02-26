@@ -121,7 +121,7 @@ private:
 };
 
 LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element& element)
-    : RenderBlock(&element)
+    : LayoutBlock(&element)
 {
     ASSERT(!childrenInline());
     m_stretchingChildren = false;
@@ -181,7 +181,7 @@ void LayoutDeprecatedFlexibleBox::styleWillChange(StyleDifference diff, const La
     if (oldStyle && !oldStyle->lineClamp().isNone() && newStyle.lineClamp().isNone())
         clearLineClamp();
 
-    RenderBlock::styleWillChange(diff, newStyle);
+    LayoutBlock::styleWillChange(diff, newStyle);
 }
 
 void LayoutDeprecatedFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -312,7 +312,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
     bool haveFlex = false, flexingChildren = false;
     gatherFlexChildrenInfo(iterator, relayoutChildren, highestFlexGroup, lowestFlexGroup, haveFlex);
 
-    RenderBlock::startDelayUpdateScrollInfo();
+    LayoutBlock::startDelayUpdateScrollInfo();
 
     // We do 2 passes.  The first pass is simply to lay everyone out at
     // their preferred widths.  The second pass handles flexing the children.
@@ -529,7 +529,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         }
     } while (haveFlex);
 
-    RenderBlock::finishDelayUpdateScrollInfo();
+    LayoutBlock::finishDelayUpdateScrollInfo();
 
     if (remainingSpace > 0 && ((style()->isLeftToRightDirection() && style()->boxPack() != Start)
         || (!style()->isLeftToRightDirection() && style()->boxPack() != End))) {
@@ -606,7 +606,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
     if (haveLineClamp)
         applyLineClamp(iterator, relayoutChildren);
 
-    RenderBlock::startDelayUpdateScrollInfo();
+    LayoutBlock::startDelayUpdateScrollInfo();
 
     // We do 2 passes.  The first pass is simply to lay everyone out at
     // their preferred widths.  The second pass handles flexing the children.
@@ -780,7 +780,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         }
     } while (haveFlex);
 
-    RenderBlock::finishDelayUpdateScrollInfo();
+    LayoutBlock::finishDelayUpdateScrollInfo();
 
     if (style()->boxPack() != Start && remainingSpace > 0) {
         // Children must be repositioned.
@@ -845,18 +845,18 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
 
         child->clearOverrideSize();
         if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))
-            || (child->style()->height().isAuto() && child->isRenderBlock())) {
+            || (child->style()->height().isAuto() && child->isLayoutBlock())) {
             child->setChildNeedsLayout(MarkOnlyThis);
 
             // Dirty all the positioned objects.
-            if (child->isRenderBlock()) {
-                toRenderBlock(child)->markPositionedObjectsForLayout();
-                toRenderBlock(child)->clearTruncation();
+            if (child->isLayoutBlock()) {
+                toLayoutBlock(child)->markPositionedObjectsForLayout();
+                toLayoutBlock(child)->clearTruncation();
             }
         }
         child->layoutIfNeeded();
-        if (child->style()->height().isAuto() && child->isRenderBlock())
-            maxLineCount = std::max(maxLineCount, toRenderBlock(child)->lineCount());
+        if (child->style()->height().isAuto() && child->isLayoutBlock())
+            maxLineCount = std::max(maxLineCount, toLayoutBlock(child)->lineCount());
     }
 
     // Get the number of lines and then alter all block flow children with auto height to use the
@@ -867,10 +867,10 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         return;
 
     for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
-        if (childDoesNotAffectWidthOrFlexing(child) || !child->style()->height().isAuto() || !child->isRenderBlock())
+        if (childDoesNotAffectWidthOrFlexing(child) || !child->style()->height().isAuto() || !child->isLayoutBlock())
             continue;
 
-        RenderBlock* blockChild = toRenderBlock(child);
+        LayoutBlock* blockChild = toLayoutBlock(child);
         int lineCount = blockChild->lineCount();
         if (lineCount <= numVisibleLines)
             continue;
@@ -911,8 +911,8 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         }
 
         // See if this width can be accommodated on the last visible line
-        RenderBlockFlow& destBlock = lastVisibleLine->block();
-        RenderBlockFlow& srcBlock = lastLine->block();
+        LayoutBlockFlow& destBlock = lastVisibleLine->block();
+        LayoutBlockFlow& srcBlock = lastLine->block();
 
         // FIXME: Directions of src/destBlock could be different from our direction and from one another.
         if (!srcBlock.style()->isLeftToRightDirection())
@@ -943,12 +943,12 @@ void LayoutDeprecatedFlexibleBox::clearLineClamp()
 
         child->clearOverrideSize();
         if ((child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))
-            || (child->style()->height().isAuto() && child->isRenderBlock())) {
+            || (child->style()->height().isAuto() && child->isLayoutBlock())) {
             child->setChildNeedsLayout();
 
-            if (child->isRenderBlock()) {
-                toRenderBlock(child)->markPositionedObjectsForLayout();
-                toRenderBlock(child)->clearTruncation();
+            if (child->isLayoutBlock()) {
+                toLayoutBlock(child)->markPositionedObjectsForLayout();
+                toLayoutBlock(child)->clearTruncation();
             }
         }
     }

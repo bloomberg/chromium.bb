@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutVTTCue::LayoutVTTCue(VTTCueBox* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
     , m_cue(element->getCue())
 {
 }
@@ -97,7 +97,7 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
 
     // 11. If line position is less than zero...
     if (linePosition < 0) {
-        RenderBlock* parentBlock = m_cueBox.containingBlock();
+        LayoutBlock* parentBlock = m_cueBox.containingBlock();
 
         // Horizontal / Vertical: ... then increase position by the
         // height / width of the video's rendering area ...
@@ -304,7 +304,7 @@ void LayoutVTTCue::adjustForTopAndBottomMarginBorderAndPadding()
 
 void LayoutVTTCue::layout()
 {
-    RenderBlockFlow::layout();
+    LayoutBlockFlow::layout();
 
     // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
     // longer necessary, since cues having the region parameter set do not have

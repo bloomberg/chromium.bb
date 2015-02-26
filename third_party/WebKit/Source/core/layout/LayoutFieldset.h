@@ -24,11 +24,11 @@
 #ifndef LayoutFieldset_h
 #define LayoutFieldset_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
-class LayoutFieldset final : public RenderBlockFlow {
+class LayoutFieldset final : public LayoutBlockFlow {
 public:
     explicit LayoutFieldset(Element*);
 
@@ -37,7 +37,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "LayoutFieldset"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFieldset || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFieldset || LayoutBlockFlow::isOfType(type); }
 
     virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 

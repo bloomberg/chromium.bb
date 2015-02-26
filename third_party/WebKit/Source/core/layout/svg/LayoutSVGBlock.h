@@ -20,13 +20,13 @@
 #ifndef LayoutSVGBlock_h
 #define LayoutSVGBlock_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class SVGElement;
 
-class LayoutSVGBlock : public RenderBlockFlow {
+class LayoutSVGBlock : public LayoutBlockFlow {
 public:
     explicit LayoutSVGBlock(SVGElement*);
 
@@ -52,7 +52,7 @@ protected:
 
     AffineTransform m_localTransform;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutBlockFlow::isOfType(type); }
 private:
     virtual void updateFromStyle() override final;
 

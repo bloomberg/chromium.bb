@@ -85,9 +85,9 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlSingleLine, isTextField());
 
 // ----------------------------
 
-class LayoutTextControlInnerBlock : public RenderBlockFlow {
+class LayoutTextControlInnerBlock : public LayoutBlockFlow {
 public:
-    LayoutTextControlInnerBlock(Element* element) : RenderBlockFlow(element) { }
+    LayoutTextControlInnerBlock(Element* element) : LayoutBlockFlow(element) { }
     virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
 private:

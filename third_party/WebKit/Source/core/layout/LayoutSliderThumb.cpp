@@ -38,7 +38,7 @@
 namespace blink {
 
 LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 

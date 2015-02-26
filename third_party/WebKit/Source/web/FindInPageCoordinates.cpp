@@ -34,30 +34,30 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 
 namespace blink {
 
-static const RenderBlock* enclosingScrollableAncestor(const LayoutObject* renderer)
+static const LayoutBlock* enclosingScrollableAncestor(const LayoutObject* renderer)
 {
     ASSERT(!renderer->isLayoutView());
 
     // Trace up the containingBlocks until we reach either the render view or a scrollable object.
-    const RenderBlock* container = renderer->containingBlock();
+    const LayoutBlock* container = renderer->containingBlock();
     while (!container->hasOverflowClip() && !container->isLayoutView())
         container = container->containingBlock();
     return container;
 }
 
-static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObject* renderer, const RenderBlock* container)
+static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObject* renderer, const LayoutBlock* container)
 {
     ASSERT(renderer);
 
@@ -99,15 +99,15 @@ FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const Layou
         return FloatRect();
 
     // Normalize the input rect to its container block.
-    const RenderBlock* baseContainer = enclosingScrollableAncestor(baseRenderer);
+    const LayoutBlock* baseContainer = enclosingScrollableAncestor(baseRenderer);
     FloatRect normalizedRect = toNormalizedRect(inputRect, baseRenderer, baseContainer);
 
     // Go up across frames.
     for (const LayoutBox* renderer = baseContainer; renderer; ) {
 
-        // Go up the render tree until we reach the root of the current frame (the LayoutView).
+        // Go up the layout tree until we reach the root of the current frame (the LayoutView).
         while (!renderer->isLayoutView()) {
-            const RenderBlock* container = enclosingScrollableAncestor(renderer);
+            const LayoutBlock* container = enclosingScrollableAncestor(renderer);
 
             // Compose the normalized rects.
             FloatRect normalizedBoxRect = toNormalizedRect(renderer->absoluteBoundingBoxRect(), renderer, container);

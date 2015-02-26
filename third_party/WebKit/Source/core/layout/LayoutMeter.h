@@ -21,13 +21,13 @@
 #ifndef LayoutMeter_h
 #define LayoutMeter_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class HTMLMeterElement;
 
-class LayoutMeter final : public RenderBlockFlow {
+class LayoutMeter final : public LayoutBlockFlow {
 public:
     explicit LayoutMeter(HTMLElement*);
     virtual ~LayoutMeter();
@@ -40,7 +40,7 @@ private:
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
     virtual const char* renderName() const override { return "LayoutMeter"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMeter || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMeter || LayoutBlockFlow::isOfType(type); }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMeter, isMeter());

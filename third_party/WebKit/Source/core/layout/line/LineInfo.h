@@ -24,8 +24,8 @@
 #ifndef LineInfo_h
 #define LineInfo_h
 
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/line/LineWidth.h"
-#include "core/rendering/RenderBlock.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ public:
 
     void setFirstLine(bool firstLine) { m_isFirstLine = firstLine; }
     void setLastLine(bool lastLine) { m_isLastLine = lastLine; }
-    void setEmpty(bool empty, RenderBlock* block = 0, LineWidth* lineWidth = 0)
+    void setEmpty(bool empty, LayoutBlock* block = 0, LineWidth* lineWidth = 0)
     {
         if (m_isEmpty == empty)
             return;

@@ -123,7 +123,7 @@ void LayoutTextControlSingleLine::layout()
         layoutScope.setNeedsLayout(viewPortRenderer);
     }
 
-    RenderBlockFlow::layoutBlock(false);
+    LayoutBlockFlow::layoutBlock(false);
 
     Element* container = containerElement();
     LayoutBox* containerRenderer = container ? container->layoutBox() : 0;
@@ -166,7 +166,7 @@ void LayoutTextControlSingleLine::layout()
 
     // If we need another layout pass, we have changed one of children's height so we need to relayout them.
     if (needsLayout())
-        RenderBlockFlow::layoutBlock(true);
+        LayoutBlockFlow::layoutBlock(true);
 
     // Center the child block in the block progression direction (vertical centering for horizontal text fields).
     if (!container && innerEditorRenderer && innerEditorRenderer->size().height() != contentLogicalHeight()) {
@@ -390,7 +390,7 @@ LayoutUnit LayoutTextControlSingleLine::scrollWidth() const
         LayoutUnit adjustment = clientWidth() - inner->clientWidth();
         return innerEditorElement()->scrollWidth() + adjustment;
     }
-    return RenderBlockFlow::scrollWidth();
+    return LayoutBlockFlow::scrollWidth();
 }
 
 LayoutUnit LayoutTextControlSingleLine::scrollHeight() const
@@ -401,21 +401,21 @@ LayoutUnit LayoutTextControlSingleLine::scrollHeight() const
         LayoutUnit adjustment = clientHeight() - inner->clientHeight();
         return innerEditorElement()->scrollHeight() + adjustment;
     }
-    return RenderBlockFlow::scrollHeight();
+    return LayoutBlockFlow::scrollHeight();
 }
 
 LayoutUnit LayoutTextControlSingleLine::scrollLeft() const
 {
     if (innerEditorElement())
         return innerEditorElement()->scrollLeft();
-    return RenderBlockFlow::scrollLeft();
+    return LayoutBlockFlow::scrollLeft();
 }
 
 LayoutUnit LayoutTextControlSingleLine::scrollTop() const
 {
     if (innerEditorElement())
         return innerEditorElement()->scrollTop();
-    return RenderBlockFlow::scrollTop();
+    return LayoutBlockFlow::scrollTop();
 }
 
 void LayoutTextControlSingleLine::setScrollLeft(LayoutUnit newLeft)

@@ -26,8 +26,8 @@
 #define LayoutTable_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/style/CollapsedBorderValue.h"
-#include "core/rendering/RenderBlock.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -40,7 +40,7 @@ class LayoutTableAlgorithm;
 
 enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 
-class LayoutTable final : public RenderBlock {
+class LayoutTable final : public LayoutBlock {
 public:
     explicit LayoutTable(Element*);
     virtual ~LayoutTable();
@@ -200,8 +200,8 @@ public:
     }
 
     // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
-    virtual LayoutUnit paddingEnd() const override { return static_cast<int>(RenderBlock::paddingEnd()); }
-    virtual LayoutUnit paddingStart() const override { return static_cast<int>(RenderBlock::paddingStart()); }
+    virtual LayoutUnit paddingEnd() const override { return static_cast<int>(LayoutBlock::paddingEnd()); }
+    virtual LayoutUnit paddingStart() const override { return static_cast<int>(LayoutBlock::paddingStart()); }
 
     LayoutUnit bordersPaddingAndSpacingInRowDirection() const
     {
@@ -285,7 +285,7 @@ protected:
 private:
     virtual const char* renderName() const override { return "LayoutTable"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }
 
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;

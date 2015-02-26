@@ -50,7 +50,7 @@
 namespace blink {
 
 LayoutView::LayoutView(Document* document)
-    : RenderBlockFlow(document)
+    : LayoutBlockFlow(document)
     , m_frameView(document->view())
     , m_selectionStart(nullptr)
     , m_selectionEnd(nullptr)
@@ -127,7 +127,7 @@ LayoutUnit LayoutView::availableLogicalHeight(AvailableLogicalHeightType heightT
     // If we have columns, then the available logical height is reduced to the column height.
     if (hasColumns())
         return columnInfo()->columnHeight();
-    return RenderBlockFlow::availableLogicalHeight(heightType);
+    return LayoutBlockFlow::availableLogicalHeight(heightType);
 }
 
 bool LayoutView::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
@@ -139,7 +139,7 @@ void LayoutView::layoutContent()
 {
     ASSERT(needsLayout());
 
-    RenderBlockFlow::layout();
+    LayoutBlockFlow::layout();
 
 #if ENABLE(ASSERT)
     checkLayoutState();
@@ -333,7 +333,7 @@ void LayoutView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
         Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
     }
-    RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
+    LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 void LayoutView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, PaintInvalidationReason invalidationReason) const
@@ -464,7 +464,7 @@ IntRect LayoutView::selectionBounds()
     // Now create a single bounding box rect that encloses the whole selection.
     LayoutRect selRect;
 
-    typedef HashSet<const RenderBlock*> VisitedContainingBlockSet;
+    typedef HashSet<const LayoutBlock*> VisitedContainingBlockSet;
     VisitedContainingBlockSet visitedContainingBlocks;
 
     commitPendingSelection();
@@ -474,7 +474,7 @@ IntRect LayoutView::selectionBounds()
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
             selRect.unite(selectionRectForRenderer(os));
-            const RenderBlock* cb = os->containingBlock();
+            const LayoutBlock* cb = os->containingBlock();
             while (cb && !cb->isLayoutView()) {
                 selRect.unite(selectionRectForRenderer(cb));
                 VisitedContainingBlockSet::AddResult addResult = visitedContainingBlocks.add(cb);
@@ -492,7 +492,7 @@ IntRect LayoutView::selectionBounds()
 
 void LayoutView::invalidatePaintForSelection()
 {
-    HashSet<RenderBlock*> processedBlocks;
+    HashSet<LayoutBlock*> processedBlocks;
 
     LayoutObject* end = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
     for (LayoutObject* o = m_selectionStart; o && o != end; o = o->nextInPreOrder()) {
@@ -504,7 +504,7 @@ void LayoutView::invalidatePaintForSelection()
         o->setShouldInvalidateSelection();
 
         // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
-        for (RenderBlock* block = o->containingBlock(); block && !block->isLayoutView(); block = block->containingBlock()) {
+        for (LayoutBlock* block = o->containingBlock(); block && !block->isLayoutView(); block = block->containingBlock()) {
             if (!processedBlocks.add(block).isNewEntry)
                 break;
             block->setShouldInvalidateSelection();
@@ -565,7 +565,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     // Blocks contain selected objects and fill gaps between them, either on the left, right, or in between lines and blocks.
     // In order to get the paint invalidation rect right, we have to examine left, middle, and right rects individually, since otherwise
     // the union of those rects might remain the same even when changes have occurred.
-    typedef HashMap<RenderBlock*, SelectionState> SelectedBlockMap;
+    typedef HashMap<LayoutBlock*, SelectionState> SelectedBlockMap;
     SelectedBlockMap oldSelectedBlocks;
     // FIXME: |newSelectedBlocks| doesn't really need to store the SelectionState, it's just more convenient
     // to have it use the same data structure as |oldSelectedBlocks|.
@@ -580,7 +580,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
             // Blocks are responsible for painting line gaps and margin gaps.  They must be examined as well.
             oldSelectedObjects.set(os, os->selectionState());
             if (blockPaintInvalidationMode == PaintInvalidationNewXOROld) {
-                RenderBlock* cb = os->containingBlock();
+                LayoutBlock* cb = os->containingBlock();
                 while (cb && !cb->isLayoutView()) {
                     SelectedBlockMap::AddResult result = oldSelectedBlocks.add(cb, cb->selectionState());
                     if (!result.isNewEntry)
@@ -633,7 +633,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     while (continueExploring) {
         if ((o->canBeSelectionLeaf() || o == start || o == end) && o->selectionState() != SelectionNone) {
             newSelectedObjects.set(o, o->selectionState());
-            RenderBlock* cb = o->containingBlock();
+            LayoutBlock* cb = o->containingBlock();
             while (cb && !cb->isLayoutView()) {
                 SelectedBlockMap::AddResult result = newSelectedBlocks.add(cb, cb->selectionState());
                 if (!result.isNewEntry)
@@ -669,7 +669,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     // Have any of the old blocks changed?
     SelectedBlockMap::iterator oldBlocksEnd = oldSelectedBlocks.end();
     for (SelectedBlockMap::iterator i = oldSelectedBlocks.begin(); i != oldBlocksEnd; ++i) {
-        RenderBlock* block = i->key;
+        LayoutBlock* block = i->key;
         SelectionState newSelectionState = block->selectionState();
         SelectionState oldSelectionState = i->value;
         if (newSelectionState != oldSelectionState) {
@@ -986,13 +986,13 @@ double LayoutView::layoutViewportHeight() const
 
 void LayoutView::willBeDestroyed()
 {
-    RenderBlockFlow::willBeDestroyed();
+    LayoutBlockFlow::willBeDestroyed();
     m_compositor.clear();
 }
 
 void LayoutView::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
 {
-    RenderBlockFlow::invalidateDisplayItemClients(displayItemList);
+    LayoutBlockFlow::invalidateDisplayItemClients(displayItemList);
     if (m_frameView)
         displayItemList->invalidate(m_frameView->displayItemClient());
 }

@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObjectInlines.h"
@@ -36,7 +37,6 @@
 #include "core/layout/style/ShadowList.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlineFlowBoxPainter.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -279,7 +279,7 @@ static inline bool isLastChildForRenderer(LayoutObject* ancestor, LayoutObject* 
 
     LayoutObject* curr = child;
     LayoutObject* parent = curr->parent();
-    while (parent && (!parent->isRenderBlock() || parent->isInline())) {
+    while (parent && (!parent->isLayoutBlock() || parent->isInline())) {
         if (parent->slowLastChild() != curr)
             return false;
         if (parent == ancestor)
@@ -295,7 +295,7 @@ static inline bool isLastChildForRenderer(LayoutObject* ancestor, LayoutObject* 
 static bool isAnsectorAndWithinBlock(LayoutObject* ancestor, LayoutObject* child)
 {
     LayoutObject* object = child;
-    while (object && (!object->isRenderBlock() || object->isInline())) {
+    while (object && (!object->isLayoutBlock() || object->isInline())) {
         if (object == ancestor)
             return true;
         object = object->parent();

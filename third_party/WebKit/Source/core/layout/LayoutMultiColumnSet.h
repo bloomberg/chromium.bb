@@ -72,7 +72,7 @@ public:
     virtual LayoutUnit pageLogicalWidth() const final { return flowThread()->logicalWidth(); }
     virtual LayoutUnit pageLogicalHeight() const final;
 
-    RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
+    LayoutBlockFlow* multiColumnBlockFlow() const { return toLayoutBlockFlow(parent()); }
     LayoutMultiColumnFlowThread* multiColumnFlowThread() const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(!flowThread() || flowThread()->isLayoutMultiColumnFlowThread());

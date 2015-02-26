@@ -28,7 +28,7 @@
 
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/layout/LayoutBlock.h"
 
 namespace blink {
 
@@ -174,8 +174,8 @@ bool PositionIterator::isCandidate() const
     if (isRenderedHTMLTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 
-    if (!isHTMLHtmlElement(*m_anchorNode) && renderer->isRenderBlockFlow()) {
-        if (toRenderBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
+    if (!isHTMLHtmlElement(*m_anchorNode) && renderer->isLayoutBlockFlow()) {
+        if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atStartOfNode() && !Position::nodeIsUserSelectNone(m_anchorNode);
             return m_anchorNode->hasEditableStyle() && !Position::nodeIsUserSelectNone(m_anchorNode) && Position(*this).atEditingBoundary();

@@ -325,7 +325,7 @@ bool Text::textRendererIsNeeded(const LayoutStyle& style, const LayoutObject& pa
         if (prev && !prev->isInline())
             return false;
     } else {
-        if (parent.isRenderBlock() && !parent.childrenInline() && (!prev || !prev->isInline()))
+        if (parent.isLayoutBlock() && !parent.childrenInline() && (!prev || !prev->isInline()))
             return false;
 
         // Avoiding creation of a Renderer for the text node is a non-essential memory optimization.

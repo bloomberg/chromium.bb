@@ -930,7 +930,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
     LayoutObject* prev = nullptr;
     LayoutObject* cur = renderer;
 
-    if (!cur->isLayoutInline() && !cur->isRenderBlock())
+    if (!cur->isLayoutInline() && !cur->isLayoutBlock())
         return nullptr;
 
     while (cur) {
@@ -938,7 +938,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
         if (cur->isLayoutInline())
             cur = toLayoutInline(cur)->continuation();
         else
-            cur = toRenderBlock(cur)->continuation();
+            cur = toLayoutBlock(cur)->continuation();
     }
 
     return prev;

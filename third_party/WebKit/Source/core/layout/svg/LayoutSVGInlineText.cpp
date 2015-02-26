@@ -157,7 +157,7 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
 
     float baseline = m_scaledFont.fontMetrics().floatAscent();
 
-    RenderBlock* containingBlock = this->containingBlock();
+    LayoutBlock* containingBlock = this->containingBlock();
     ASSERT(containingBlock);
 
     // Map local point to absolute point, as the character origins stored in the text fragments use absolute coordinates.

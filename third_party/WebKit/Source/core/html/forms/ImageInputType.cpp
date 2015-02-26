@@ -34,8 +34,8 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -124,7 +124,7 @@ void ImageInputType::handleDOMActivateEvent(Event* event)
 LayoutObject* ImageInputType::createRenderer(const LayoutStyle& style) const
 {
     if (m_useFallbackContent)
-        return new RenderBlockFlow(&element());
+        return new LayoutBlockFlow(&element());
     LayoutImage* image = new LayoutImage(&element());
     image->setImageResource(LayoutImageResource::create());
     return image;

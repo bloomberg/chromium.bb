@@ -21,13 +21,13 @@
 #include "core/layout/line/EllipsisBox.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/paint/EllipsisBoxPainter.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/TextRun.h"
 
@@ -40,10 +40,10 @@ void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
 InlineBox* EllipsisBox::markupBox() const
 {
-    if (!m_shouldPaintMarkupBox || !renderer().isRenderBlock())
+    if (!m_shouldPaintMarkupBox || !renderer().isLayoutBlock())
         return 0;
 
-    RenderBlock& block = toRenderBlock(renderer());
+    LayoutBlock& block = toLayoutBlock(renderer());
     RootInlineBox* lastLine = block.lineAtIndex(block.lineCount() - 1);
     if (!lastLine)
         return 0;

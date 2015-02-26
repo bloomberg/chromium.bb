@@ -182,7 +182,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         }
     }
 
-    RenderBlock* cb = o.containingBlock();
+    LayoutBlock* cb = o.containingBlock();
     bool adjustForTableCells = cb ? cb->isTableCell() : false;
 
     LayoutRect r;

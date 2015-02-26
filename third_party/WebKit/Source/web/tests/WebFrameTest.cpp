@@ -6613,7 +6613,7 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     context->notifyContextDestroyed();
 }
 
-TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
+TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
@@ -6624,12 +6624,12 @@ TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
     webView->layout();
 
     Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
-    RenderBlock* container = toRenderBlock(document->getElementById("container")->renderer());
+    LayoutBlock* container = toLayoutBlock(document->getElementById("container")->renderer());
     LayoutBox* percentHeightInAnonymous = toLayoutBox(document->getElementById("percent-height-in-anonymous")->renderer());
     LayoutBox* percentHeightDirectChild = toLayoutBox(document->getElementById("percent-height-direct-child")->renderer());
 
-    EXPECT_TRUE(RenderBlock::hasPercentHeightDescendant(percentHeightInAnonymous));
-    EXPECT_TRUE(RenderBlock::hasPercentHeightDescendant(percentHeightDirectChild));
+    EXPECT_TRUE(LayoutBlock::hasPercentHeightDescendant(percentHeightInAnonymous));
+    EXPECT_TRUE(LayoutBlock::hasPercentHeightDescendant(percentHeightDirectChild));
 
     ASSERT_TRUE(container->percentHeightDescendants());
     ASSERT_TRUE(container->hasPercentHeightDescendants());
@@ -6637,7 +6637,7 @@ TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
     EXPECT_TRUE(container->percentHeightDescendants()->contains(percentHeightInAnonymous));
     EXPECT_TRUE(container->percentHeightDescendants()->contains(percentHeightDirectChild));
 
-    RenderBlock* anonymousBlock = percentHeightInAnonymous->containingBlock();
+    LayoutBlock* anonymousBlock = percentHeightInAnonymous->containingBlock();
     EXPECT_TRUE(anonymousBlock->isAnonymous());
     EXPECT_FALSE(anonymousBlock->hasPercentHeightDescendants());
 }

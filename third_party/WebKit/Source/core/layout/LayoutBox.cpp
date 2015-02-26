@@ -136,7 +136,7 @@ void LayoutBox::willBeDestroyed()
     clearContainingBlockOverrideSize();
     clearExtraInlineAndBlockOffests();
 
-    RenderBlock::removePercentHeightDescendantIfNeeded(this);
+    LayoutBlock::removePercentHeightDescendantIfNeeded(this);
 
     ShapeOutsideInfo::removeInfo(*this);
 
@@ -151,10 +151,10 @@ void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
         return;
 
     if (isFloating()) {
-        RenderBlockFlow* parentBlockFlow = 0;
+        LayoutBlockFlow* parentBlockFlow = 0;
         for (LayoutObject* curr = parent(); curr && !curr->isLayoutView(); curr = curr->parent()) {
-            if (curr->isRenderBlockFlow()) {
-                RenderBlockFlow* currBlockFlow = toRenderBlockFlow(curr);
+            if (curr->isLayoutBlockFlow()) {
+                LayoutBlockFlow* currBlockFlow = toLayoutBlockFlow(curr);
                 if (!parentBlockFlow || currBlockFlow->containsFloat(this))
                     parentBlockFlow = currBlockFlow;
             }
@@ -167,7 +167,7 @@ void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
     }
 
     if (isOutOfFlowPositioned())
-        RenderBlock::removePositionedObject(this);
+        LayoutBlock::removePositionedObject(this);
 }
 
 void LayoutBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
@@ -215,11 +215,11 @@ void LayoutBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle
 
     const LayoutStyle& newStyle = styleRef();
     if (needsLayout() && oldStyle)
-        RenderBlock::removePercentHeightDescendantIfNeeded(this);
+        LayoutBlock::removePercentHeightDescendantIfNeeded(this);
 
-    if (RenderBlock::hasPercentHeightContainerMap() && slowFirstChild()
+    if (LayoutBlock::hasPercentHeightContainerMap() && slowFirstChild()
         && oldHorizontalWritingMode != isHorizontalWritingMode())
-        RenderBlock::clearPercentHeightDescendantsFrom(this);
+        LayoutBlock::clearPercentHeightDescendantsFrom(this);
 
     // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
     // new zoomed coordinate space.
@@ -312,7 +312,7 @@ void LayoutBox::updateFromStyle()
     setFloating(!isOutOfFlowPositioned() && styleToUse.isFloating());
 
     bool boxHasOverflowClip = false;
-    if (!styleToUse.isOverflowVisible() && isRenderBlock() && (rootLayerScrolls || !isViewObject)) {
+    if (!styleToUse.isOverflowVisible() && isLayoutBlock() && (rootLayerScrolls || !isViewObject)) {
         // If overflow has been propagated to the viewport, it has no effect here.
         if (node() != document().viewportDefiningElement())
             boxHasOverflowClip = true;
@@ -570,7 +570,7 @@ void LayoutBox::updateLayerTransformAfterLayout()
         layer()->updateTransformationMatrix();
 }
 
-LayoutUnit LayoutBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth, LayoutUnit availableWidth, RenderBlock* cb) const
+LayoutUnit LayoutBox::constrainLogicalWidthByMinMax(LayoutUnit logicalWidth, LayoutUnit availableWidth, LayoutBlock* cb) const
 {
     const LayoutStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxWidth().isMaxSizeNone())
@@ -1484,7 +1484,7 @@ static LayoutUnit portionOfMarginNotConsumedByFloat(LayoutUnit childMargin, Layo
     return offset - contentSide;
 }
 
-LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const RenderBlockFlow* cb) const
+LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const LayoutBlockFlow* cb) const
 {
     LayoutUnit logicalTopPosition = logicalTop();
     LayoutUnit startOffsetForContent = cb->startOffsetForContent();
@@ -1513,7 +1513,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForContent() const
     if (hasOverrideContainingBlockLogicalWidth())
         return overrideContainingBlockContentLogicalWidth();
 
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     return cb->availableLogicalWidth();
 }
 
@@ -1522,15 +1522,15 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForContent(AvailableLogicalHei
     if (hasOverrideContainingBlockLogicalHeight())
         return overrideContainingBlockContentLogicalHeight();
 
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     return cb->availableLogicalHeight(heightType);
 }
 
 LayoutUnit LayoutBox::containingBlockAvailableLineWidth() const
 {
-    RenderBlock* cb = containingBlock();
-    if (cb->isRenderBlockFlow())
-        return toRenderBlockFlow(cb)->availableLogicalWidthForLine(logicalTop(), false, availableLogicalHeight(IncludeMarginBorderPadding));
+    LayoutBlock* cb = containingBlock();
+    if (cb->isLayoutBlockFlow())
+        return toLayoutBlockFlow(cb)->availableLogicalWidthForLine(logicalTop(), false, availableLogicalHeight(IncludeMarginBorderPadding));
     return LayoutUnit();
 }
 
@@ -1539,7 +1539,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
     if (hasOverrideContainingBlockLogicalHeight())
         return overrideContainingBlockContentLogicalHeight();
 
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     if (cb->hasOverrideHeight())
         return cb->overrideLogicalContentHeight();
 
@@ -1638,7 +1638,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
 
     if (!isInline() || isReplaced()) {
         if (!style()->hasOutOfFlowPosition() && o->hasColumns()) {
-            const RenderBlock* block = toRenderBlock(o);
+            const LayoutBlock* block = toLayoutBlock(o);
             LayoutRect columnRect(frameRect());
             block->adjustStartEdgeForWritingModeIncludingColumns(columnRect);
             offset += toSize(columnRect.location());
@@ -1851,9 +1851,9 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
         topLeft += layer()->offsetForInFlowPosition();
     }
 
-    if (position != AbsolutePosition && position != FixedPosition && o->hasColumns() && o->isRenderBlockFlow()) {
+    if (position != AbsolutePosition && position != FixedPosition && o->hasColumns() && o->isLayoutBlockFlow()) {
         LayoutRect paintInvalidationRect(topLeft, rect.size());
-        toRenderBlock(o)->adjustRectForColumns(paintInvalidationRect);
+        toLayoutBlock(o)->adjustRectForColumns(paintInvalidationRect);
         topLeft = paintInvalidationRect.location();
         rect = paintInvalidationRect;
     }
@@ -1971,7 +1971,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     const LayoutStyle& styleToUse = styleRef();
     Length logicalWidthLength = treatAsReplaced ? Length(computeReplacedLogicalWidth(), Fixed) : styleToUse.logicalWidth();
 
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     LayoutUnit containerLogicalWidth = std::max(LayoutUnit(), containingBlockLogicalWidthForContent());
     bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
 
@@ -2062,7 +2062,7 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWid
     return 0;
 }
 
-LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const RenderBlock* cb) const
+LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const LayoutBlock* cb) const
 {
     if (!logicalWidth.isIntrinsicOrAuto()) {
         // FIXME: If the containing block flow is perpendicular to our direction we need to use the available logical height instead.
@@ -2076,8 +2076,8 @@ LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length&
     LayoutUnit marginEnd = 0;
     LayoutUnit logicalWidthResult = fillAvailableMeasure(availableLogicalWidth, marginStart, marginEnd);
 
-    if (shrinkToAvoidFloats() && cb->isRenderBlockFlow() && toRenderBlockFlow(cb)->containsFloats())
-        logicalWidthResult = std::min(logicalWidthResult, shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb)));
+    if (shrinkToAvoidFloats() && cb->isLayoutBlockFlow() && toLayoutBlockFlow(cb)->containsFloats())
+        logicalWidthResult = std::min(logicalWidthResult, shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toLayoutBlockFlow(cb)));
 
     if (widthType == MainOrPreferredSize && sizesLogicalWidthToFitContent(logicalWidth))
         return std::max(minPreferredLogicalWidth(), std::min(maxPreferredLogicalWidth(), logicalWidthResult));
@@ -2152,7 +2152,7 @@ bool LayoutBox::autoWidthShouldFitContent() const
         || isHTMLTextAreaElement(*node()) || (isHTMLLegendElement(*node()) && !style()->hasOutOfFlowPosition()));
 }
 
-void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection, const RenderBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd, Length marginStartLength, Length marginEndLength) const
+void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection, const LayoutBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd, Length marginStartLength, Length marginEndLength) const
 {
     if (flowDirection == BlockDirection || isFloating() || isInline()) {
         if (isTableCell() && flowDirection == BlockDirection) {
@@ -2185,7 +2185,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     LayoutUnit marginEndWidth = minimumValueForLength(marginEndLength, containerWidth);
 
     LayoutUnit availableWidth = containerWidth;
-    if (avoidsFloats() && containingBlock->isRenderBlockFlow() && toRenderBlockFlow(containingBlock)->containsFloats()) {
+    if (avoidsFloats() && containingBlock->isLayoutBlockFlow() && toLayoutBlockFlow(containingBlock)->containsFloats()) {
         availableWidth = containingBlockAvailableLineWidth();
         if (shrinkToAvoidFloats() && availableWidth < containerWidth) {
             marginStart = std::max(LayoutUnit(), marginStartWidth);
@@ -2268,7 +2268,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     if (isOutOfFlowPositioned()) {
         computePositionedLogicalHeight(computedValues);
     } else {
-        RenderBlock* cb = containingBlock();
+        LayoutBlock* cb = containingBlock();
 
         // If we are perpendicular to our containing block then we need to resolve our block-start and block-end margins so that if they
         // are 'auto' we are centred or aligned within the inline flow containing block: this is done by computing the margins as though they are inline.
@@ -2424,7 +2424,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     LayoutUnit availableHeight = -1;
 
     bool skippedAutoHeightContainingBlock = false;
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     const LayoutBox* containingBlockChild = this;
     LayoutUnit rootMarginBorderPaddingHeight = 0;
     while (!cb->isLayoutView() && skipContainingBlockForPercentHeightCalculation(cb)) {
@@ -2583,7 +2583,7 @@ bool LayoutBox::logicalHeightComputesAsNone(SizeType sizeType) const
     if (logicalHeight == initialLogicalHeight)
         return true;
 
-    if (RenderBlock* cb = containingBlockForAutoHeightDetection(logicalHeight))
+    if (LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeight))
         return cb->hasAutoHeightOrContainingBlockWithAutoHeight();
     return false;
 }
@@ -2612,12 +2612,12 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
         LayoutObject* cb = isOutOfFlowPositioned() ? container() : containingBlock();
         while (cb->isAnonymous())
             cb = cb->containingBlock();
-        if (cb->isRenderBlock())
-            toRenderBlock(cb)->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
+        if (cb->isLayoutBlock())
+            toLayoutBlock(cb)->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
 
         if (cb->isOutOfFlowPositioned() && cb->style()->height().isAuto() && !(cb->style()->top().isAuto() || cb->style()->bottom().isAuto())) {
-            ASSERT_WITH_SECURITY_IMPLICATION(cb->isRenderBlock());
-            RenderBlock* block = toRenderBlock(cb);
+            ASSERT_WITH_SECURITY_IMPLICATION(cb->isLayoutBlock());
+            LayoutBlock* block = toLayoutBlock(cb);
             LogicalExtentComputedValues computedValues;
             block->computeLogicalHeight(block->logicalHeight(), 0, computedValues);
             LayoutUnit newContentHeight = computedValues.m_extent - block->borderAndPaddingLogicalHeight() - block->scrollbarLogicalHeight();
@@ -2645,7 +2645,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
                     availableHeight = std::max(availableHeight, intrinsicLogicalHeight());
                     return valueForLength(logicalHeight, availableHeight - borderAndPaddingLogicalHeight());
                 }
-                toRenderBlock(cb)->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
+                toLayoutBlock(cb)->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
                 cb = cb->containingBlock();
             }
         }
@@ -2693,8 +2693,8 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
 
     // FIXME: Check logicalTop/logicalBottom here to correctly handle vertical writing-mode.
     // https://bugs.webkit.org/show_bug.cgi?id=46500
-    if (isRenderBlock() && isOutOfFlowPositioned() && style()->height().isAuto() && !(style()->top().isAuto() || style()->bottom().isAuto())) {
-        RenderBlock* block = const_cast<RenderBlock*>(toRenderBlock(this));
+    if (isLayoutBlock() && isOutOfFlowPositioned() && style()->height().isAuto() && !(style()->top().isAuto() || style()->bottom().isAuto())) {
+        LayoutBlock* block = const_cast<LayoutBlock*>(toLayoutBlock(this));
         LogicalExtentComputedValues computedValues;
         block->computeLogicalHeight(block->logicalHeight(), 0, computedValues);
         LayoutUnit newContentHeight = computedValues.m_extent - block->borderAndPaddingLogicalHeight() - block->scrollbarLogicalHeight();
@@ -2710,7 +2710,7 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
     return availableHeight;
 }
 
-void LayoutBox::computeAndSetBlockDirectionMargins(const RenderBlock* containingBlock)
+void LayoutBox::computeAndSetBlockDirectionMargins(const LayoutBlock* containingBlock)
 {
     LayoutUnit marginBefore;
     LayoutUnit marginAfter;
@@ -2784,8 +2784,8 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         return overrideContainingBlockContentLogicalHeight();
 
     if (containingBlock->isBox()) {
-        const RenderBlock* cb = containingBlock->isRenderBlock() ?
-            toRenderBlock(containingBlock) : containingBlock->containingBlock();
+        const LayoutBlock* cb = containingBlock->isLayoutBlock() ?
+            toLayoutBlock(containingBlock) : containingBlock->containingBlock();
         return cb->clientLogicalHeight();
     }
 
@@ -3806,7 +3806,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
         adjustedPoint.moveBy(location());
 
     for (LayoutObject* layoutObject = firstChild; layoutObject; layoutObject = layoutObject->nextSibling()) {
-        if ((!layoutObject->slowFirstChild() && !layoutObject->isInline() && !layoutObject->isRenderBlockFlow() )
+        if ((!layoutObject->slowFirstChild() && !layoutObject->isInline() && !layoutObject->isLayoutBlockFlow() )
             || layoutObject->style()->visibility() != VISIBLE)
             continue;
 
@@ -4195,9 +4195,9 @@ void LayoutBox::clearLayoutOverflow()
     m_overflow->setLayoutOverflow(noOverflowRect());
 }
 
-bool LayoutBox::logicalWidthIsResolvableFromBlock(const RenderBlock* containingBlock)
+bool LayoutBox::logicalWidthIsResolvableFromBlock(const LayoutBlock* containingBlock)
 {
-    const RenderBlock* cb = containingBlock;
+    const LayoutBlock* cb = containingBlock;
     while (!cb->isLayoutView() && !cb->isOutOfFlowPositioned() && (cb->style()->logicalWidth().isAuto() || cb->isAnonymousBlock()))
         cb = cb->containingBlock();
 
@@ -4233,14 +4233,14 @@ inline static bool percentageLogicalHeightIsResolvable(const LayoutBox* box)
     return LayoutBox::percentageLogicalHeightIsResolvableFromBlock(box->containingBlock(), box->isOutOfFlowPositioned());
 }
 
-bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const RenderBlock* containingBlock, bool isOutOfFlowPositioned)
+bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* containingBlock, bool isOutOfFlowPositioned)
 {
     // In quirks mode, blocks with auto height are skipped, and we keep looking for an enclosing
     // block that may have a specified height and then use it. In strict mode, this violates the
     // specification, which states that percentage heights just revert to auto if the containing
     // block has an auto height. We still skip anonymous containing blocks in both modes, though, and look
     // only at explicit containers.
-    const RenderBlock* cb = containingBlock;
+    const LayoutBlock* cb = containingBlock;
     bool inQuirksMode = cb->document().inQuirksMode();
     while (!cb->isLayoutView() && !cb->isBody() && !cb->isTableCell() && !cb->isOutOfFlowPositioned() && cb->style()->logicalHeight().isAuto()) {
         if (!inQuirksMode && !cb->isAnonymousBlock())
@@ -4483,12 +4483,12 @@ LayoutPoint LayoutBox::flipForWritingModeIncludingColumns(const LayoutPoint& poi
 {
     if (!hasColumns() || !style()->isFlippedBlocksWritingMode())
         return flipForWritingMode(point);
-    return toRenderBlock(this)->flipForWritingModeIncludingColumns(point);
+    return toLayoutBlock(this)->flipForWritingModeIncludingColumns(point);
 }
 
 LayoutPoint LayoutBox::topLeftLocation() const
 {
-    RenderBlock* containerBlock = containingBlock();
+    LayoutBlock* containerBlock = containingBlock();
     if (!containerBlock || containerBlock == this)
         return location();
     return containerBlock->flipForWritingModeForChild(this, location());
@@ -4562,7 +4562,7 @@ LayoutUnit LayoutBox::offsetFromLogicalTopOfFirstPage() const
     if (!layoutState && !flowThreadContainingBlock())
         return LayoutUnit();
 
-    RenderBlock* containerBlock = containingBlock();
+    LayoutBlock* containerBlock = containingBlock();
     return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();
 }
 

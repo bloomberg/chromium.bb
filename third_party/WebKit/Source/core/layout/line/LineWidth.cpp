@@ -30,12 +30,12 @@
 #include "config.h"
 #include "core/layout/line/LineWidth.h"
 
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutRubyRun.h"
-#include "core/rendering/RenderBlock.h"
 
 namespace blink {
 
-LineWidth::LineWidth(RenderBlockFlow& block, bool isFirstLine, IndentTextOrNot shouldIndentText)
+LineWidth::LineWidth(LayoutBlockFlow& block, bool isFirstLine, IndentTextOrNot shouldIndentText)
     : m_block(block)
     , m_uncommittedWidth(0)
     , m_committedWidth(0)
@@ -119,7 +119,7 @@ void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, LayoutObject* startRendere
     m_overhangWidth += startOverhang + endOverhang;
 }
 
-inline static float availableWidthAtOffset(const RenderBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText, float& newLineLeft,
+inline static float availableWidthAtOffset(const LayoutBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText, float& newLineLeft,
     float& newLineRight, const LayoutUnit& lineHeight = 0)
 {
     newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText, lineHeight).toFloat();

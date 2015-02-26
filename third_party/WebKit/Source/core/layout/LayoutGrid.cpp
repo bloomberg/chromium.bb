@@ -253,7 +253,7 @@ public:
 };
 
 LayoutGrid::LayoutGrid(Element* element)
-    : RenderBlock(element)
+    : LayoutBlock(element)
     , m_gridIsDirty(true)
     , m_orderIterator(this)
 {
@@ -266,7 +266,7 @@ LayoutGrid::~LayoutGrid()
 
 void LayoutGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
-    RenderBlock::addChild(newChild, beforeChild);
+    LayoutBlock::addChild(newChild, beforeChild);
 
     if (gridIsDirty())
         return;
@@ -278,7 +278,7 @@ void LayoutGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 
 void LayoutGrid::removeChild(LayoutObject* child)
 {
-    RenderBlock::removeChild(child);
+    LayoutBlock::removeChild(child);
 
     if (gridIsDirty())
         return;
@@ -290,7 +290,7 @@ void LayoutGrid::removeChild(LayoutObject* child)
 
 void LayoutGrid::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(diff, oldStyle);
+    LayoutBlock::styleDidChange(diff, oldStyle);
     if (!oldStyle)
         return;
 
@@ -1210,7 +1210,7 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
         }
     }
 
-    RenderBlock::layoutPositionedObjects(relayoutChildren, info);
+    LayoutBlock::layoutPositionedObjects(relayoutChildren, info);
 }
 
 void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, GridTrackSizingDirection direction, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth)

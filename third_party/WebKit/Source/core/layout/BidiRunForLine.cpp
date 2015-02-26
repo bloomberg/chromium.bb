@@ -39,7 +39,7 @@ static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
     LayoutObject* next = current;
     while (current) {
         if (isIsolated(current->style()->unicodeBidi())
-            && (current->isLayoutInline() || current->isRenderBlock())) {
+            && (current->isLayoutInline() || current->isLayoutBlock())) {
             if (current != root)
                 current = 0;
             else

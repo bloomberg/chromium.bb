@@ -144,7 +144,7 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnFlowThread::containingColu
 
 void LayoutMultiColumnFlowThread::populate()
 {
-    RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     ASSERT(!nextSibling());
     // Reparent children preceding the flow thread into the flow thread. It's multicol content
     // now. At this point there's obviously nothing after the flow thread, but renderers (column
@@ -154,7 +154,7 @@ void LayoutMultiColumnFlowThread::populate()
 
 void LayoutMultiColumnFlowThread::evacuateAndDestroy()
 {
-    RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     m_isBeingEvacuated = true;
 
     // Remove all sets and spanners.
@@ -232,7 +232,7 @@ void LayoutMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
 
     m_needsColumnHeightsRecalculation = false;
     if (!needsLayout()) {
-        // Just before the multicol container (our parent RenderBlockFlow) finishes laying out, it
+        // Just before the multicol container (our parent LayoutBlockFlow) finishes laying out, it
         // will call recalculateColumnHeights() on us unconditionally, but we only want that method
         // to do any work if we actually laid out the flow thread. Otherwise, the balancing
         // machinery would kick in needlessly, and trigger additional layout passes. Furthermore, we
@@ -301,7 +301,7 @@ void LayoutMultiColumnFlowThread::columnRuleStyleDidChange()
 
 void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const
 {
-    RenderBlock* columnBlock = multiColumnBlockFlow();
+    LayoutBlock* columnBlock = multiColumnBlockFlow();
     const LayoutStyle* columnStyle = columnBlock->style();
     LayoutUnit availableWidth = columnBlock->contentLogicalWidth();
     LayoutUnit columnGap = columnBlock->columnGap();
@@ -323,9 +323,9 @@ void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
 
 void LayoutMultiColumnFlowThread::createAndInsertMultiColumnSet(LayoutBox* insertBefore)
 {
-    RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     LayoutMultiColumnSet* newSet = LayoutMultiColumnSet::createAnonymous(*this, multicolContainer->styleRef());
-    multicolContainer->RenderBlock::addChild(newSet, insertBefore);
+    multicolContainer->LayoutBlock::addChild(newSet, insertBefore);
     invalidateRegions();
 
     // We cannot handle immediate column set siblings (and there's no need for it, either).
@@ -336,9 +336,9 @@ void LayoutMultiColumnFlowThread::createAndInsertMultiColumnSet(LayoutBox* inser
 
 void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore)
 {
-    RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     LayoutMultiColumnSpannerPlaceholder* newPlaceholder = LayoutMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->styleRef(), *spanner);
-    multicolContainer->RenderBlock::addChild(newPlaceholder, insertBefore);
+    multicolContainer->LayoutBlock::addChild(newPlaceholder, insertBefore);
     spanner->setSpannerPlaceholder(*newPlaceholder);
 }
 
@@ -355,13 +355,13 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
     if (descendant->style()->columnSpan() != ColumnSpanAll || !descendant->isBox() || descendant->isInline() || descendant->isFloatingOrOutOfFlowPositioned())
         return false;
 
-    if (!descendant->containingBlock()->isRenderBlockFlow()) {
+    if (!descendant->containingBlock()->isLayoutBlockFlow()) {
         // Needs to be in a block-flow container, and not e.g. a table.
         return false;
     }
 
     // This looks like a spanner, but if we're inside something unbreakable, it's not to be treated as one.
-    for (RenderBlock* ancestor = descendant->containingBlock(); ancestor; ancestor = ancestor->containingBlock()) {
+    for (LayoutBlock* ancestor = descendant->containingBlock(); ancestor; ancestor = ancestor->containingBlock()) {
         if (ancestor->isLayoutFlowThread()) {
             ASSERT(ancestor == this);
             return true;
@@ -587,7 +587,7 @@ void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()
     // The min/max intrinsic widths calculated really tell how much space elements need when
     // laid out inside the columns. In order to eventually end up with the desired column width,
     // we need to convert them to values pertaining to the multicol container.
-    const RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    const LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     const LayoutStyle* multicolStyle = multicolContainer->style();
     int columnCount = multicolStyle->hasAutoColumnCount() ? 1 : multicolStyle->columnCount();
     LayoutUnit columnWidth;

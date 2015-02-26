@@ -9,15 +9,15 @@ namespace blink {
 
 class LayoutPoint;
 struct PaintInfo;
-class RenderBlockFlow;
+class LayoutBlockFlow;
 
 class BlockFlowPainter {
 public:
-    BlockFlowPainter(RenderBlockFlow& renderBlockFlow) : m_renderBlockFlow(renderBlockFlow) { }
+    BlockFlowPainter(LayoutBlockFlow& layoutBlockFlow) : m_layoutBlockFlow(layoutBlockFlow) { }
     void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase);
     void paintSelection(const PaintInfo&, const LayoutPoint&);
 private:
-    RenderBlockFlow& m_renderBlockFlow;
+    LayoutBlockFlow& m_layoutBlockFlow;
 };
 
 } // namespace blink

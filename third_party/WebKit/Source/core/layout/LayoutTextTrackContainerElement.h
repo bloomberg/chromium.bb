@@ -29,12 +29,12 @@
 #define LayoutTextTrackContainerElement_h
 
 #include "core/html/shadow/MediaControlElements.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
 namespace blink {
 
-class LayoutTextTrackContainerElement final : public RenderBlockFlow {
+class LayoutTextTrackContainerElement final : public LayoutBlockFlow {
 public:
     LayoutTextTrackContainerElement(Element*);
 

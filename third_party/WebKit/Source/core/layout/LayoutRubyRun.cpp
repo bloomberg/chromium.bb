@@ -39,7 +39,7 @@
 namespace blink {
 
 LayoutRubyRun::LayoutRubyRun()
-    : RenderBlockFlow(0)
+    : LayoutBlockFlow(0)
 {
     setReplaced(true);
     setInline(true);
@@ -83,7 +83,7 @@ LayoutRubyBase* LayoutRubyRun::rubyBaseSafe()
     LayoutRubyBase* base = rubyBase();
     if (!base) {
         base = createRubyBase();
-        RenderBlockFlow::addChild(base);
+        LayoutBlockFlow::addChild(base);
     }
     return base;
 }
@@ -102,7 +102,7 @@ void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild)
             // LayoutRuby has already ascertained that we can add the child here.
             ASSERT(!hasRubyText());
             // prepend ruby texts as first child
-            RenderBlockFlow::addChild(child, firstChild());
+            LayoutBlockFlow::addChild(child, firstChild());
         }  else if (beforeChild->isRubyText()) {
             // New text is inserted just before another.
             // In this case the new text takes the place of the old one, and
@@ -110,14 +110,14 @@ void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild)
             ASSERT(beforeChild->parent() == this);
             LayoutObject* ruby = parent();
             ASSERT(ruby->isRuby());
-            RenderBlock* newRun = staticCreateRubyRun(ruby);
+            LayoutBlock* newRun = staticCreateRubyRun(ruby);
             ruby->addChild(newRun, nextSibling());
             // Add the new ruby text and move the old one to the new run
             // Note: Doing it in this order and not using LayoutRubyRun's methods,
             // in order to avoid automatic removal of the ruby run in case there is no
             // other child besides the old ruby text.
-            RenderBlockFlow::addChild(child, beforeChild);
-            RenderBlockFlow::removeChild(beforeChild);
+            LayoutBlockFlow::addChild(child, beforeChild);
+            LayoutBlockFlow::removeChild(beforeChild);
             newRun->addChild(beforeChild);
         } else if (hasRubyBase()) {
             // Insertion before a ruby base object.
@@ -163,13 +163,13 @@ void LayoutRubyRun::removeChild(LayoutObject* child)
         }
     }
 
-    RenderBlockFlow::removeChild(child);
+    LayoutBlockFlow::removeChild(child);
 
     if (!beingDestroyed() && !documentBeingDestroyed()) {
         // Check if our base (if any) is now empty. If so, destroy it.
-        RenderBlock* base = rubyBase();
+        LayoutBlock* base = rubyBase();
         if (base && !base->firstChild()) {
-            RenderBlockFlow::removeChild(base);
+            LayoutBlockFlow::removeChild(base);
             base->deleteLineBoxTree();
             base->destroy();
         }
@@ -215,7 +215,7 @@ LayoutObject* LayoutRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, S
 
 void LayoutRubyRun::layout()
 {
-    RenderBlockFlow::layout();
+    LayoutBlockFlow::layout();
 
     LayoutRubyText* rt = rubyText();
     if (!rt)

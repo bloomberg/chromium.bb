@@ -134,7 +134,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRectWillBeLay
 
 void SVGRootInlineBox::layoutRootBox(const FloatRectWillBeLayoutRect& childRect)
 {
-    RenderBlockFlow& parentBlock = block();
+    LayoutBlockFlow& parentBlock = block();
 
     // Finally, assign the root block position, now that all content is laid out.
     // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once

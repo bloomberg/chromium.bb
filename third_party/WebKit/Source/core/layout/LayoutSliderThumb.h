@@ -33,19 +33,19 @@
 #define LayoutSliderThumb_h
 
 #include "core/html/shadow/SliderThumbElement.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class SliderThumbElement;
 
-class LayoutSliderThumb final : public RenderBlockFlow {
+class LayoutSliderThumb final : public LayoutBlockFlow {
 public:
     LayoutSliderThumb(SliderThumbElement*);
     void updateAppearance(const LayoutStyle& parentStyle);
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSliderThumb || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSliderThumb || LayoutBlockFlow::isOfType(type); }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSliderThumb, isSliderThumb());

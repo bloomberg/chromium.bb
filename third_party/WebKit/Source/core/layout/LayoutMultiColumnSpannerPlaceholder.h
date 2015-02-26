@@ -19,7 +19,7 @@ public:
 
     static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const LayoutStyle& parentStyle, LayoutBox&);
 
-    LayoutFlowThread* flowThread() const { return toRenderBlockFlow(parent())->multiColumnFlowThread(); }
+    LayoutFlowThread* flowThread() const { return toLayoutBlockFlow(parent())->multiColumnFlowThread(); }
 
     LayoutBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
     void updateMarginProperties();

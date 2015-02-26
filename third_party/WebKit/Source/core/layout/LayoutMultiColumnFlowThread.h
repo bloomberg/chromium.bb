@@ -37,7 +37,7 @@ class LayoutMultiColumnSpannerPlaceholder;
 enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
 
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
-// the actual multicol container (i.e. the RenderBlockFlow whose style computes to non-auto
+// the actual multicol container (i.e. the LayoutBlockFlow whose style computes to non-auto
 // column-count and/or column-width). LayoutMultiColumnFlowThread is the heart of the multicol
 // implementation, and there is only one instance per multicol container. Child content of the
 // multicol container is parented into the flow thread at the time of renderer insertion.
@@ -63,7 +63,7 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // containing block is the multicol container.
 //
 // Some invariants for the render tree structure for multicol:
-// - A multicol container is always a RenderBlockFlow
+// - A multicol container is always a LayoutBlockFlow
 // - Every multicol container has one and only one LayoutMultiColumnFlowThread
 // - All multicol DOM children and pseudo-elements associated with the multicol container are
 //   reparented into the flow thread
@@ -122,7 +122,7 @@ public:
 
     virtual bool isLayoutMultiColumnFlowThread() const override final { return true; }
 
-    RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
+    LayoutBlockFlow* multiColumnBlockFlow() const { return toLayoutBlockFlow(parent()); }
 
     LayoutMultiColumnSet* firstMultiColumnSet() const;
     LayoutMultiColumnSet* lastMultiColumnSet() const;

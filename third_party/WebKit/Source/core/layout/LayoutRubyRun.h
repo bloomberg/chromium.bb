@@ -31,7 +31,7 @@
 #ifndef LayoutRubyRun_h
 #define LayoutRubyRun_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ class LayoutRubyText;
 // LayoutRubyRun are 'inline-block/table' like objects,and wrap a single pairing of a ruby base with its ruby text(s).
 // See LayoutRuby.h for further comments on the structure
 
-class LayoutRubyRun final : public RenderBlockFlow {
+class LayoutRubyRun final : public LayoutBlockFlow {
 public:
     virtual ~LayoutRubyRun();
 
@@ -68,10 +68,10 @@ protected:
 private:
     LayoutRubyRun();
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyRun || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyRun || LayoutBlockFlow::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutRubyRun (anonymous)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
+    virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyRun, isRubyRun());

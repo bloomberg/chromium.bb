@@ -30,17 +30,17 @@
 #ifndef LayoutRegion_h
 #define LayoutRegion_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class LayoutFlowThread;
 
-class LayoutRegion : public RenderBlockFlow {
+class LayoutRegion : public LayoutBlockFlow {
 public:
     explicit LayoutRegion(Element*, LayoutFlowThread*);
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutRegion || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutRegion || LayoutBlockFlow::isOfType(type); }
 
     virtual LayoutRect flowThreadPortionRect() const = 0;
     LayoutRect flowThreadPortionOverflowRect() const;

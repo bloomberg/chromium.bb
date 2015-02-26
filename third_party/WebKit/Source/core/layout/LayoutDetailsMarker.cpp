@@ -32,7 +32,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutDetailsMarker::LayoutDetailsMarker(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 

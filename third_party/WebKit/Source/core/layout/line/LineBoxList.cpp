@@ -198,7 +198,7 @@ bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& 
     if (hitTestAction != HitTestForeground)
         return false;
 
-    ASSERT(renderer->isRenderBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could hit test like this is if it has a layer.
+    ASSERT(renderer->isLayoutBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could hit test like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
     if (!firstLineBox())
@@ -231,7 +231,7 @@ bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& 
 
 void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObject* child)
 {
-    if (!container->parent() || (container->isRenderBlock() && (container->selfNeedsLayout() || !container->isRenderBlockFlow())))
+    if (!container->parent() || (container->isLayoutBlock() && (container->selfNeedsLayout() || !container->isLayoutBlockFlow())))
         return;
 
     LayoutInline* inlineContainer = container->isLayoutInline() ? toLayoutInline(container) : 0;
@@ -302,7 +302,7 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
         // dirty the adjacent lines that might be affected
         // NOTE: we dirty the previous line because RootInlineBox objects cache
         // the address of the first object on the next line after a BR, which we may be
-        // invalidating here.  For more info, see how RenderBlock::layoutInlineChildren
+        // invalidating here.  For more info, see how LayoutBlock::layoutInlineChildren
         // calls setLineBreakInfo with the result of findNextLineBreak.  findNextLineBreak,
         // despite the name, actually returns the first LayoutObject after the BR.
         // <rdar://problem/3849947> "Typing after pasting line does not appear until after window resize."

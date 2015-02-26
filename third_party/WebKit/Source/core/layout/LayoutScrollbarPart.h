@@ -26,14 +26,14 @@
 #ifndef LayoutScrollbarPart_h
 #define LayoutScrollbarPart_h
 
-#include "core/rendering/RenderBlock.h"
+#include "core/layout/LayoutBlock.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
 class LayoutScrollbar;
 
-class LayoutScrollbarPart final : public RenderBlock {
+class LayoutScrollbarPart final : public LayoutBlock {
 public:
     static LayoutScrollbarPart* createAnonymous(Document*, LayoutScrollbar* = 0, ScrollbarPart = NoPart);
 
@@ -48,31 +48,31 @@ public:
     // Scrollbar parts needs to be rendered at device pixel boundaries.
     virtual LayoutRectOutsets marginBoxOutsets() const override
     {
-        ASSERT(isIntegerValue(RenderBlock::marginBoxOutsets().top()));
-        return RenderBlock::marginBoxOutsets();
+        ASSERT(isIntegerValue(LayoutBlock::marginBoxOutsets().top()));
+        return LayoutBlock::marginBoxOutsets();
     }
     virtual LayoutUnit marginTop() const override
     {
-        ASSERT(isIntegerValue(RenderBlock::marginTop()));
-        return RenderBlock::marginTop();
+        ASSERT(isIntegerValue(LayoutBlock::marginTop()));
+        return LayoutBlock::marginTop();
     }
     virtual LayoutUnit marginBottom() const override
     {
-        ASSERT(isIntegerValue(RenderBlock::marginBottom()));
-        return RenderBlock::marginBottom();
+        ASSERT(isIntegerValue(LayoutBlock::marginBottom()));
+        return LayoutBlock::marginBottom();
     }
     virtual LayoutUnit marginLeft() const override
     {
-        ASSERT(isIntegerValue(RenderBlock::marginLeft()));
-        return RenderBlock::marginLeft();
+        ASSERT(isIntegerValue(LayoutBlock::marginLeft()));
+        return LayoutBlock::marginLeft();
     }
     virtual LayoutUnit marginRight() const override
     {
-        ASSERT(isIntegerValue(RenderBlock::marginRight()));
-        return RenderBlock::marginRight();
+        ASSERT(isIntegerValue(LayoutBlock::marginRight()));
+        return LayoutBlock::marginRight();
     }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || LayoutBlock::isOfType(type); }
     LayoutObject* rendererOwningScrollbar() const;
 
 protected:

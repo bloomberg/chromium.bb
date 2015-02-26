@@ -38,7 +38,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutListItem::LayoutListItem(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
     , m_marker(nullptr)
     , m_hasExplicitValue(false)
     , m_isValueUpToDate(false)
@@ -49,7 +49,7 @@ LayoutListItem::LayoutListItem(Element* element)
 
 void LayoutListItem::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlockFlow::styleDidChange(diff, oldStyle);
+    LayoutBlockFlow::styleDidChange(diff, oldStyle);
 
     if (style()->listStyleType() != NoneListStyle
         || (style()->listStyleImage() && !style()->listStyleImage()->errorOccurred())) {
@@ -68,19 +68,19 @@ void LayoutListItem::willBeDestroyed()
         m_marker->destroy();
         m_marker = nullptr;
     }
-    RenderBlockFlow::willBeDestroyed();
+    LayoutBlockFlow::willBeDestroyed();
 }
 
 void LayoutListItem::insertedIntoTree()
 {
-    RenderBlockFlow::insertedIntoTree();
+    LayoutBlockFlow::insertedIntoTree();
 
     updateListMarkerNumbers();
 }
 
 void LayoutListItem::willBeRemovedFromTree()
 {
-    RenderBlockFlow::willBeRemovedFromTree();
+    LayoutBlockFlow::willBeRemovedFromTree();
 
     updateListMarkerNumbers();
 }
@@ -216,7 +216,7 @@ bool LayoutListItem::isEmpty() const
     return lastChild() == m_marker;
 }
 
-static LayoutObject* getParentOfFirstLineBox(RenderBlockFlow* curr, LayoutObject* marker)
+static LayoutObject* getParentOfFirstLineBox(LayoutBlockFlow* curr, LayoutObject* marker)
 {
     LayoutObject* firstChild = curr->firstChild();
     if (!firstChild)
@@ -233,14 +233,14 @@ static LayoutObject* getParentOfFirstLineBox(RenderBlockFlow* curr, LayoutObject
         if (currChild->isFloating() || currChild->isOutOfFlowPositioned())
             continue;
 
-        if (!currChild->isRenderBlockFlow() || (currChild->isBox() && toLayoutBox(currChild)->isWritingModeRoot()))
+        if (!currChild->isLayoutBlockFlow() || (currChild->isBox() && toLayoutBox(currChild)->isWritingModeRoot()))
             break;
 
         if (curr->isListItem() && inQuirksMode && currChild->node()
             && (isHTMLUListElement(*currChild->node()) || isHTMLOListElement(*currChild->node())))
             break;
 
-        LayoutObject* lineBox = getParentOfFirstLineBox(toRenderBlockFlow(currChild), marker);
+        LayoutObject* lineBox = getParentOfFirstLineBox(toLayoutBlockFlow(currChild), marker);
         if (lineBox)
             return lineBox;
     }
@@ -300,7 +300,7 @@ bool LayoutListItem::updateMarkerLocation()
         lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
         m_marker->updateMarginsAndContent();
         // If markerParent is an anonymous block with no children, destroy it.
-        if (markerParent && markerParent->isAnonymousBlock() && !toRenderBlock(markerParent)->firstChild() && !toRenderBlock(markerParent)->continuation())
+        if (markerParent && markerParent->isAnonymousBlock() && !toLayoutBlock(markerParent)->firstChild() && !toLayoutBlock(markerParent)->continuation())
             markerParent->destroy();
         return true;
     }
@@ -322,12 +322,12 @@ void LayoutListItem::layout()
         updateMarkerLocationAndInvalidateWidth();
     }
 
-    RenderBlockFlow::layout();
+    LayoutBlockFlow::layout();
 }
 
 void LayoutListItem::addOverflowFromChildren()
 {
-    RenderBlockFlow::addOverflowFromChildren();
+    LayoutBlockFlow::addOverflowFromChildren();
     positionListMarker();
 }
 
@@ -407,11 +407,11 @@ void LayoutListItem::positionListMarker()
             bool propagateLayoutOverflow = true;
             do {
                 o = o->parentBox();
-                if (o->isRenderBlock()) {
+                if (o->isLayoutBlock()) {
                     if (propagateVisualOverflow)
-                        toRenderBlock(o)->addContentsVisualOverflow(markerRect);
+                        toLayoutBlock(o)->addContentsVisualOverflow(markerRect);
                     if (propagateLayoutOverflow)
-                        toRenderBlock(o)->addLayoutOverflow(markerRect);
+                        toLayoutBlock(o)->addLayoutOverflow(markerRect);
                 }
                 if (o->hasOverflowClip()) {
                     propagateLayoutOverflow = false;
@@ -430,7 +430,7 @@ void LayoutListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (!logicalHeight() && hasOverflowClip())
         return;
 
-    RenderBlockFlow::paint(paintInfo, paintOffset);
+    LayoutBlockFlow::paint(paintInfo, paintOffset);
 }
 
 const String& LayoutListItem::markerText() const

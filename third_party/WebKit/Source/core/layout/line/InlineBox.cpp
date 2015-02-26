@@ -20,12 +20,12 @@
 #include "config.h"
 #include "core/layout/line/InlineBox.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/Partitions.h"
 #include "platform/fonts/FontMetrics.h"
 
@@ -313,7 +313,7 @@ FloatPointWillBeLayoutPoint InlineBox::locationIncludingFlipping()
     if (!UNLIKELY(renderer().hasFlippedBlocksWritingMode()))
         return FloatPointWillBeLayoutPoint(x(), y());
 
-    RenderBlockFlow& block = root().block();
+    LayoutBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
         return FloatPointWillBeLayoutPoint(x(), block.size().height() - size().height() - y());
 

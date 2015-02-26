@@ -28,24 +28,24 @@
 #include "core/dom/Fullscreen.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderBlockFlow.h"
 
 #include "public/platform/WebScreenInfo.h"
 
 using namespace blink;
 
-class RenderFullScreenPlaceholder final : public RenderBlockFlow {
+class RenderFullScreenPlaceholder final : public LayoutBlockFlow {
 public:
     RenderFullScreenPlaceholder(RenderFullScreen* owner)
-        : RenderBlockFlow(0)
+        : LayoutBlockFlow(0)
         , m_owner(owner)
     {
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreenPlaceholder || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
     virtual void willBeDestroyed() override;
     RenderFullScreen* m_owner;
 };
@@ -53,7 +53,7 @@ private:
 void RenderFullScreenPlaceholder::willBeDestroyed()
 {
     m_owner->setPlaceholder(0);
-    RenderBlockFlow::willBeDestroyed();
+    LayoutBlockFlow::willBeDestroyed();
 }
 
 RenderFullScreen::RenderFullScreen()
@@ -136,7 +136,7 @@ LayoutObject* RenderFullScreen::wrapRenderer(LayoutObject* object, LayoutObject*
         // |object->parent()| can be null if the object is not yet attached
         // to |parent|.
         if (LayoutObject* parent = object->parent()) {
-            RenderBlock* containingBlock = object->containingBlock();
+            LayoutBlock* containingBlock = object->containingBlock();
             ASSERT(containingBlock);
             // Since we are moving the |object| to a new parent |fullscreenRenderer|,
             // the line box tree underneath our |containingBlock| is not longer valid.
@@ -184,7 +184,7 @@ void RenderFullScreen::unwrapRenderer()
     destroy();
 }
 
-void RenderFullScreen::setPlaceholder(RenderBlock* placeholder)
+void RenderFullScreen::setPlaceholder(LayoutBlock* placeholder)
 {
     m_placeholder = placeholder;
 }

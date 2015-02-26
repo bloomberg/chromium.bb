@@ -101,7 +101,7 @@ public:
     LayoutUnit logicalWidth() const { return style()->isHorizontalWritingMode() ? m_frameRect.width() : m_frameRect.height(); }
     LayoutUnit logicalHeight() const { return style()->isHorizontalWritingMode() ? m_frameRect.height() : m_frameRect.width(); }
 
-    LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit, LayoutUnit, RenderBlock*) const;
+    LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit, LayoutUnit, LayoutBlock*) const;
     LayoutUnit constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const;
     LayoutUnit constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const;
 
@@ -386,10 +386,10 @@ public:
     };
     // Resolve auto margins in the chosen direction of the containing block so that objects can be pushed to the start, middle or end
     // of the containing block.
-    void computeMarginsForDirection(MarginDirection forDirection, const RenderBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd, Length marginStartLength, Length marginStartEnd) const;
+    void computeMarginsForDirection(MarginDirection forDirection, const LayoutBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd, Length marginStartLength, Length marginStartEnd) const;
 
     // Used to resolve margins in the containing block's block-flow direction.
-    void computeAndSetBlockDirectionMargins(const RenderBlock* containingBlock);
+    void computeAndSetBlockDirectionMargins(const LayoutBlock* containingBlock);
 
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const;
 
@@ -441,9 +441,9 @@ public:
     // of a containing block).  HTML4 buttons, <select>s, <input>s, legends, and floating/compact elements do this.
     bool sizesLogicalWidthToFitContent(const Length& logicalWidth) const;
 
-    LayoutUnit shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const RenderBlockFlow* cb) const;
+    LayoutUnit shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const LayoutBlockFlow* cb) const;
 
-    LayoutUnit computeLogicalWidthUsing(SizeType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const RenderBlock* containingBlock) const;
+    LayoutUnit computeLogicalWidthUsing(SizeType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const LayoutBlock* containingBlock) const;
     LayoutUnit computeLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const;
     LayoutUnit computeContentLogicalHeight(const Length& height, LayoutUnit intrinsicContentHeight) const;
     LayoutUnit computeContentAndScrollbarLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const;
@@ -455,9 +455,9 @@ public:
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const;
     virtual LayoutUnit computeReplacedLogicalHeight() const;
 
-    static bool logicalWidthIsResolvableFromBlock(const RenderBlock* containingBlock);
+    static bool logicalWidthIsResolvableFromBlock(const LayoutBlock* containingBlock);
     bool hasDefiniteLogicalWidth() const;
-    static bool percentageLogicalHeightIsResolvableFromBlock(const RenderBlock* containingBlock, bool outOfFlowPositioned);
+    static bool percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* containingBlock, bool outOfFlowPositioned);
     bool hasDefiniteLogicalHeight() const;
     LayoutUnit computePercentageLogicalHeight(const Length& height) const;
 

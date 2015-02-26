@@ -130,9 +130,9 @@ private:
 
     void moveChildrenToIgnoringContinuation(LayoutInline* to, LayoutObject* startChild);
 
-    void splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
+    void splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock, LayoutBlock* middleBlock,
         LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
-    void splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
+    void splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
         LayoutObject* newChild, LayoutBoxModelObject* oldCont);
 
     virtual void layout() override final { ASSERT_NOT_REACHED(); } // Do nothing for layout()

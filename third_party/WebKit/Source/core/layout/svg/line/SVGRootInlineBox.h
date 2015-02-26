@@ -32,7 +32,7 @@ namespace blink {
 
 class SVGRootInlineBox final : public RootInlineBox {
 public:
-    SVGRootInlineBox(RenderBlockFlow& block)
+    SVGRootInlineBox(LayoutBlockFlow& block)
         : RootInlineBox(block)
         , m_logicalHeight(0)
     {

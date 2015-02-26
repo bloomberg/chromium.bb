@@ -36,7 +36,7 @@
 #include "core/html/HTMLSummaryElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -77,7 +77,7 @@ void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender)
 
 LayoutObject* HTMLDetailsElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderBlockFlow(this);
+    return new LayoutBlockFlow(this);
 }
 
 void HTMLDetailsElement::didAddClosedShadowRoot(ShadowRoot& root)

@@ -44,9 +44,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/ContentType.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/MIMETypeRegistry.h"
@@ -339,7 +339,7 @@ LayoutObject* HTMLImageElement::createRenderer(const LayoutStyle& style)
         return LayoutObject::createObject(this, style);
 
     if (m_useFallbackContent)
-        return new RenderBlockFlow(this);
+        return new LayoutBlockFlow(this);
 
     LayoutImage* image = new LayoutImage(this);
     image->setImageResource(LayoutImageResource::create());

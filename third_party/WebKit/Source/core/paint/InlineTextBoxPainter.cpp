@@ -12,12 +12,12 @@
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/TextPainter.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderCombineText.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 

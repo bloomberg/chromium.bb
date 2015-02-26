@@ -31,18 +31,18 @@
 #ifndef LayoutRubyText_h
 #define LayoutRubyText_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
-class LayoutRubyText final : public RenderBlockFlow {
+class LayoutRubyText final : public LayoutBlockFlow {
 public:
     LayoutRubyText(Element*);
     virtual ~LayoutRubyText();
 
     virtual const char* renderName() const override { return "LayoutRubyText"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyText || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyText || LayoutBlockFlow::isOfType(type); }
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 

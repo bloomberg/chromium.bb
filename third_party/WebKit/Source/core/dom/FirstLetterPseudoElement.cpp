@@ -108,7 +108,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
     if (!parentRenderer
         || !parentRenderer->style()->hasPseudoStyle(FIRST_LETTER)
         || !parentRenderer->canHaveGeneratedChildren()
-        || !(parentRenderer->isRenderBlockFlow() || parentRenderer->isRenderButton()))
+        || !(parentRenderer->isLayoutBlockFlow() || parentRenderer->isRenderButton()))
         return nullptr;
 
     // Drill down into our children and look for our first text child.

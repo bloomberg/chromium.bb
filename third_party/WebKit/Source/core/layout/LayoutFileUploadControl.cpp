@@ -46,7 +46,7 @@ using namespace HTMLNames;
 const int defaultWidthNumChars = 34;
 
 LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
-    : RenderBlockFlow(input)
+    : LayoutBlockFlow(input)
     , m_canReceiveDroppedFiles(input->canReceiveDroppedFiles())
 {
 }

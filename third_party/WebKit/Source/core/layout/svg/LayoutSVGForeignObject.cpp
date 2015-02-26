@@ -106,7 +106,7 @@ void LayoutSVGForeignObject::layout()
     setLocation(roundedIntPoint(viewportLocation));
 
     bool layoutChanged = everHadLayout() && selfNeedsLayout();
-    RenderBlock::layout();
+    LayoutBlock::layout();
     ASSERT(!needsLayout());
 
     // If our bounds changed, notify the parents.
@@ -136,9 +136,9 @@ bool LayoutSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, Hit
 
     // FOs establish a stacking context, so we need to hit-test all layers.
     HitTestLocation hitTestLocation(roundedLayoutPoint(localPoint));
-    return RenderBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestForeground)
-        || RenderBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestFloat)
-        || RenderBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestChildBlockBackgrounds);
+    return LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestForeground)
+        || LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestFloat)
+        || LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), HitTestChildBlockBackgrounds);
 }
 
 }

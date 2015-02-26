@@ -31,13 +31,13 @@
 #ifndef LayoutListBox_h
 #define LayoutListBox_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class HTMLSelectElement;
 
-class LayoutListBox final : public RenderBlockFlow {
+class LayoutListBox final : public LayoutBlockFlow {
 public:
     explicit LayoutListBox(Element*);
     virtual ~LayoutListBox();
@@ -52,7 +52,7 @@ private:
 
     virtual const char* renderName() const override { return "LayoutListBox"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListBox || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListBox || LayoutBlockFlow::isOfType(type); }
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;

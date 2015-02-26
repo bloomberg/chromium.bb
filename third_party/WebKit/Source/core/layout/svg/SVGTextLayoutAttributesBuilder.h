@@ -34,7 +34,7 @@ class SVGTextPositioningElement;
 //
 // It extracts the x/y/dx/dy/rotate values from the SVGTextPositioningElements in the DOM.
 // These values are propagated to the corresponding LayoutSVGInlineText renderers.
-// The first layout phase only extracts the relevant information needed in RenderBlockLineLayout
+// The first layout phase only extracts the relevant information needed in LayoutBlockFlowLine
 // to create the InlineBox tree based on text chunk boundaries & BiDi information.
 // The second layout phase is carried out by SVGTextLayoutEngine.
 

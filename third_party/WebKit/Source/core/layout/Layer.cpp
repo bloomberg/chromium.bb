@@ -424,7 +424,7 @@ static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* rendere
 {
     LayoutView* view = renderer->view();
     LayoutBoxModelObject* prevBlock = renderer;
-    RenderBlock* containingBlock;
+    LayoutBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();
         containingBlock && containingBlock != view && containingBlock != ancestorColumnsRenderer;
         containingBlock = containingBlock->containingBlock())
@@ -529,7 +529,7 @@ void Layer::updatePagination()
     // we find one, then we just check its pagination status.
     if (usesRegionBasedColumns) {
         LayoutView* view = renderer()->view();
-        RenderBlock* containingBlock;
+        LayoutBlock* containingBlock;
         for (containingBlock = renderer()->containingBlock();
             containingBlock && containingBlock != view;
             containingBlock = containingBlock->containingBlock()) {
@@ -1452,8 +1452,8 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
             return ancestorLayer;
         }
     } else if (renderer->isColumnSpanAll()) {
-        RenderBlock* multicolContainer = renderer->containingBlock();
-        ASSERT(toRenderBlockFlow(multicolContainer)->multiColumnFlowThread());
+        LayoutBlock* multicolContainer = renderer->containingBlock();
+        ASSERT(toLayoutBlockFlow(multicolContainer)->multiColumnFlowThread());
         parentLayer = multicolContainer->layer();
         ASSERT(parentLayer);
     } else {
@@ -2124,7 +2124,7 @@ Layer* Layer::hitTestChildLayerColumns(Layer* childLayer, Layer* rootLayer, cons
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset,
     const Vector<Layer*>& columnLayers, size_t columnIndex)
 {
-    RenderBlock* columnBlock = toRenderBlock(columnLayers[columnIndex]->renderer());
+    LayoutBlock* columnBlock = toLayoutBlock(columnLayers[columnIndex]->renderer());
 
     ASSERT(columnBlock && columnBlock->hasColumns());
     if (!columnBlock || !columnBlock->hasColumns())
@@ -2271,11 +2271,11 @@ void Layer::invalidatePaintForBlockSelectionGaps()
 
 IntRect Layer::blockSelectionGapsBounds() const
 {
-    if (!renderer()->isRenderBlockFlow())
+    if (!renderer()->isLayoutBlockFlow())
         return IntRect();
 
-    RenderBlockFlow* renderBlockFlow = toRenderBlockFlow(renderer());
-    LayoutRect gapRects = renderBlockFlow->selectionGapRectsForPaintInvalidation(renderBlockFlow);
+    LayoutBlockFlow* layoutBlockFlow = toLayoutBlockFlow(renderer());
+    LayoutRect gapRects = layoutBlockFlow->selectionGapRectsForPaintInvalidation(layoutBlockFlow);
 
     return pixelSnappedIntRect(gapRects);
 }
@@ -2286,10 +2286,10 @@ bool Layer::hasBlockSelectionGapBounds() const
     // at the moment because it causes invalid queries to layout-dependent code (crbug.com/372802).
     // ASSERT(renderer()->document().lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
-    if (!renderer()->isRenderBlock())
+    if (!renderer()->isLayoutBlock())
         return false;
 
-    return toRenderBlock(renderer())->shouldPaintSelectionGaps();
+    return toLayoutBlock(renderer())->shouldPaintSelectionGaps();
 }
 
 bool Layer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const Layer* rootLayer, const LayoutPoint* offsetFromRoot) const

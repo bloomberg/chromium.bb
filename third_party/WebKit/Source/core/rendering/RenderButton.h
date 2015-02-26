@@ -42,7 +42,7 @@ public:
 
     virtual void addChild(LayoutObject* newChild, LayoutObject *beforeChild = 0) override;
     virtual void removeChild(LayoutObject*) override;
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
+    virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { }
     virtual bool createsAnonymousWrapper() const override { return true; }
 
     virtual bool canHaveGeneratedChildren() const override;
@@ -56,7 +56,7 @@ private:
 
     virtual bool hasLineIfEmpty() const override { return isHTMLInputElement(node()); }
 
-    RenderBlock* m_inner;
+    LayoutBlock* m_inner;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderButton, isRenderButton());

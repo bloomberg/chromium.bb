@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/InlinePainter.h"
 
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
@@ -14,7 +15,6 @@
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutRect bounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         // FIXME: Use tighter bounds.
-        RenderBlock* cb = m_layoutInline.containingBlock();
+        LayoutBlock* cb = m_layoutInline.containingBlock();
         bounds = cb->visualOverflowRect();
         bounds.moveBy(paintOffset);
     }

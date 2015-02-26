@@ -683,8 +683,8 @@ void LayerScrollableArea::updateAfterLayout()
                 m_inOverflowRelayout = true;
                 SubtreeLayoutScope layoutScope(box());
                 layoutScope.setNeedsLayout(&box());
-                if (box().isRenderBlock()) {
-                    RenderBlock& block = toRenderBlock(box());
+                if (box().isLayoutBlock()) {
+                    LayoutBlock& block = toLayoutBlock(box());
                     block.scrollbarsChanged(autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
                     block.layoutBlock(true);
                 } else {

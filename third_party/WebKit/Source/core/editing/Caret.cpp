@@ -33,8 +33,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -123,7 +123,7 @@ static inline bool caretRendersInsideNode(Node* node)
     return node && !isRenderedTableElement(node) && !editingIgnoresContent(node);
 }
 
-RenderBlock* CaretBase::caretRenderer(Node* node)
+LayoutBlock* CaretBase::caretRenderer(Node* node)
 {
     if (!node)
         return 0;
@@ -133,11 +133,11 @@ RenderBlock* CaretBase::caretRenderer(Node* node)
         return 0;
 
     // if caretNode is a block and caret is inside it then caret should be painted by that block
-    bool paintedByBlock = renderer->isRenderBlock() && caretRendersInsideNode(node);
-    return paintedByBlock ? toRenderBlock(renderer) : renderer->containingBlock();
+    bool paintedByBlock = renderer->isLayoutBlock() && caretRendersInsideNode(node);
+    return paintedByBlock ? toLayoutBlock(renderer) : renderer->containingBlock();
 }
 
-static void mapCaretRectToCaretPainter(LayoutObject* caretRenderer, RenderBlock* caretPainter, LayoutRect& caretRect)
+static void mapCaretRectToCaretPainter(LayoutObject* caretRenderer, LayoutBlock* caretPainter, LayoutRect& caretRect)
 {
     // FIXME: This shouldn't be called on un-rooted subtrees.
     // FIXME: This should probably just use mapLocalToContainer.
@@ -175,7 +175,7 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
 
     // Get the renderer that will be responsible for painting the caret
     // (which is either the renderer we just found, or one of its containers).
-    RenderBlock* caretPainter = caretRenderer(caretPosition.position().deprecatedNode());
+    LayoutBlock* caretPainter = caretRenderer(caretPosition.position().deprecatedNode());
 
     mapCaretRectToCaretPainter(renderer, caretPainter, m_caretLocalRect);
 
@@ -187,14 +187,14 @@ bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caret
     return updateCaretRect(document, PositionWithAffinity(caretPosition.deepEquivalent(), caretPosition.affinity()));
 }
 
-RenderBlock* DragCaretController::caretRenderer() const
+LayoutBlock* DragCaretController::caretRenderer() const
 {
     return CaretBase::caretRenderer(m_position.deepEquivalent().deprecatedNode());
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) const
 {
-    RenderBlock* caretPainter = caretRenderer(node);
+    LayoutBlock* caretPainter = caretRenderer(node);
     if (!caretPainter)
         return IntRect();
 
@@ -205,7 +205,7 @@ IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect
 
 void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
 {
-    RenderBlock* caretPainter = caretRenderer(node);
+    LayoutBlock* caretPainter = caretRenderer(node);
     if (!caretPainter)
         return;
 
@@ -257,7 +257,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
         return;
 
     LayoutRect drawingRect = localCaretRectWithoutUpdate();
-    if (RenderBlock* renderer = caretRenderer(node))
+    if (LayoutBlock* renderer = caretRenderer(node))
         renderer->flipForWritingMode(drawingRect);
     drawingRect.moveBy(roundedIntPoint(paintOffset));
     LayoutRect caret = intersection(drawingRect, clipRect);

@@ -37,10 +37,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderText.h"
 #include "platform/Logging.h"
 #include "wtf/text/CString.h"
@@ -855,8 +855,8 @@ bool Position::isCandidate() const
     if (isHTMLHtmlElement(*m_anchorNode))
         return false;
 
-    if (renderer->isRenderBlockFlow() || renderer->isFlexibleBox()) {
-        if (toRenderBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
+    if (renderer->isLayoutBlockFlow() || renderer->isFlexibleBox()) {
+        if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atFirstEditingPositionForNode() && !Position::nodeIsUserSelectNone(deprecatedNode());
             return m_anchorNode->hasEditableStyle() && !Position::nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
@@ -1021,9 +1021,9 @@ static bool isNonTextLeafChild(LayoutObject* object)
 
 static InlineTextBox* searchAheadForBetterMatch(LayoutObject* renderer)
 {
-    RenderBlock* container = renderer->containingBlock();
+    LayoutBlock* container = renderer->containingBlock();
     for (LayoutObject* next = renderer->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
-        if (next->isRenderBlock())
+        if (next->isLayoutBlock())
             return 0;
         if (next->isBR())
             return 0;
@@ -1073,7 +1073,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
 
     if (!renderer->isText()) {
         inlineBox = 0;
-        if (canHaveChildrenForEditing(deprecatedNode()) && renderer->isRenderBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(renderer)) {
+        if (canHaveChildrenForEditing(deprecatedNode()) && renderer->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(renderer)) {
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
             // of LayoutObject::createVisiblePosition().
@@ -1226,7 +1226,7 @@ TextDirection Position::primaryDirection() const
 {
     TextDirection primaryDirection = LTR;
     for (const LayoutObject* r = m_anchorNode->renderer(); r; r = r->parent()) {
-        if (r->isRenderBlockFlow()) {
+        if (r->isLayoutBlockFlow()) {
             primaryDirection = r->style()->direction();
             break;
         }

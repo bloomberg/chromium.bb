@@ -37,7 +37,7 @@
 namespace blink {
 
 LayoutRubyBase::LayoutRubyBase()
-    : RenderBlockFlow(0)
+    : LayoutBlockFlow(0)
 {
     setInline(false);
 }
@@ -84,7 +84,7 @@ void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* be
     if (!firstChild())
         return;
 
-    RenderBlock* toBlock;
+    LayoutBlock* toBlock;
     if (toBase->childrenInline()) {
         // The standard and easy case: move the children into the target base
         toBlock = toBase;
@@ -93,7 +93,7 @@ void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* be
         // If toBase has a suitable block, we re-use it, otherwise create a new one.
         LayoutObject* lastChild = toBase->lastChild();
         if (lastChild && lastChild->isAnonymousBlock() && lastChild->childrenInline()) {
-            toBlock = toRenderBlock(lastChild);
+            toBlock = toLayoutBlock(lastChild);
         } else {
             toBlock = toBase->createAnonymousBlock();
             toBase->children()->appendChildNode(toBase, toBlock);
@@ -119,8 +119,8 @@ void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* bef
     LayoutObject* lastChildThere = toBase->lastChild();
     if (firstChildHere->isAnonymousBlock() && firstChildHere->childrenInline()
         && lastChildThere && lastChildThere->isAnonymousBlock() && lastChildThere->childrenInline()) {
-        RenderBlock* anonBlockHere = toRenderBlock(firstChildHere);
-        RenderBlock* anonBlockThere = toRenderBlock(lastChildThere);
+        LayoutBlock* anonBlockHere = toLayoutBlock(firstChildHere);
+        LayoutBlock* anonBlockThere = toLayoutBlock(lastChildThere);
         anonBlockHere->moveAllChildrenTo(anonBlockThere, anonBlockThere->children());
         anonBlockHere->deleteLineBoxTree();
         anonBlockHere->destroy();

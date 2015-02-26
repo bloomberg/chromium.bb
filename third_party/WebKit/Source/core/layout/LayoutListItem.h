@@ -23,14 +23,14 @@
 #ifndef LayoutListItem_h
 #define LayoutListItem_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class HTMLOListElement;
 class LayoutListMarker;
 
-class LayoutListItem final : public RenderBlockFlow {
+class LayoutListItem final : public LayoutBlockFlow {
 public:
     explicit LayoutListItem(Element*);
 
@@ -63,7 +63,7 @@ public:
 private:
     virtual const char* renderName() const override { return "LayoutListItem"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListItem || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListItem || LayoutBlockFlow::isOfType(type); }
 
     virtual void willBeDestroyed() override;
 

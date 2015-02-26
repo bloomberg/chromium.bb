@@ -783,14 +783,14 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
         return false;
 
     // Need to make an exception for table row elements, because they are neither
-    // "inline" or "RenderBlock", but we want newlines for them.
+    // "inline" or "LayoutBlock", but we want newlines for them.
     if (r->isTableRow()) {
         LayoutTable* t = toLayoutTableRow(r)->table();
         if (t && !t->isInline())
             return true;
     }
 
-    return !r->isInline() && r->isRenderBlock()
+    return !r->isInline() && r->isLayoutBlock()
         && !r->isFloatingOrOutOfFlowPositioned() && !r->isBody() && !r->isRubyText();
 }
 
@@ -891,7 +891,7 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
     // Additionally, if the range we are iterating over contains huge sections of unrendered content,
     // we would create VisiblePositions on every call to this function without this check.
     if (!m_node->renderer() || m_node->renderer()->style()->visibility() != VISIBLE
-        || (m_node->renderer()->isRenderBlockFlow() && !toRenderBlock(m_node->renderer())->size().height() && !isHTMLBodyElement(*m_node)))
+        || (m_node->renderer()->isLayoutBlockFlow() && !toLayoutBlock(m_node->renderer())->size().height() && !isHTMLBodyElement(*m_node)))
         return false;
 
     // The startPos.isNotNull() check is needed because the start could be before the body,

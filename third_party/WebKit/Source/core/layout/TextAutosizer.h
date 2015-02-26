@@ -45,7 +45,7 @@ namespace blink {
 class Document;
 class LayoutListItem;
 class LayoutListMarker;
-class RenderBlock;
+class LayoutBlock;
 
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/TextAutosizer
@@ -61,19 +61,19 @@ public:
 
     void updatePageInfoInAllFrames();
     void updatePageInfo();
-    void record(const RenderBlock*);
-    void destroy(const RenderBlock*);
+    void record(const LayoutBlock*);
+    void destroy(const LayoutBlock*);
     void inflateListItem(LayoutListItem*, LayoutListMarker*);
 
     DECLARE_TRACE();
 
     class LayoutScope {
     public:
-        explicit LayoutScope(RenderBlock*);
+        explicit LayoutScope(LayoutBlock*);
         ~LayoutScope();
     protected:
         TextAutosizer* m_textAutosizer;
-        RenderBlock* m_block;
+        LayoutBlock* m_block;
     };
 
     class TableLayoutScope : LayoutScope {
@@ -91,7 +91,7 @@ public:
     };
 
 private:
-    typedef HashSet<const RenderBlock*> BlockSet;
+    typedef HashSet<const LayoutBlock*> BlockSet;
 
     enum HasEnoughTextToAutosize {
         UnknownAmountOfText,
@@ -148,7 +148,7 @@ private:
     };
 
     struct Cluster {
-        explicit Cluster(const RenderBlock* root, BlockFlags flags, Cluster* parent, Supercluster* supercluster = 0)
+        explicit Cluster(const LayoutBlock* root, BlockFlags flags, Cluster* parent, Supercluster* supercluster = 0)
             : m_root(root)
             , m_flags(flags)
             , m_deepestBlockContainingAllText(0)
@@ -160,11 +160,11 @@ private:
         {
         }
 
-        const RenderBlock* const m_root;
+        const LayoutBlock* const m_root;
         BlockFlags m_flags;
         // The deepest block containing all text is computed lazily (see:
         // deepestBlockContainingAllText). A value of 0 indicates the value has not been computed yet.
-        const RenderBlock* m_deepestBlockContainingAllText;
+        const LayoutBlock* m_deepestBlockContainingAllText;
         Cluster* m_parent;
         // The multiplier is computed lazily (see: clusterMultiplier) because it must be calculated
         // after the lowest block containing all text has entered layout (the
@@ -212,7 +212,7 @@ private:
     class FingerprintMapper {
     public:
         void add(const LayoutObject*, Fingerprint);
-        void addTentativeClusterRoot(const RenderBlock*, Fingerprint);
+        void addTentativeClusterRoot(const LayoutBlock*, Fingerprint);
         // Returns true if any BlockSet was modified or freed by the removal.
         bool remove(const LayoutObject*);
         Fingerprint get(const LayoutObject*);
@@ -250,39 +250,39 @@ private:
 
     explicit TextAutosizer(const Document*);
 
-    void beginLayout(RenderBlock*);
-    void endLayout(RenderBlock*);
+    void beginLayout(LayoutBlock*);
+    void endLayout(LayoutBlock*);
     void inflateAutoTable(LayoutTable*);
     float inflate(LayoutObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
     bool shouldHandleLayout() const;
     IntSize windowSize() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();
-    BeginLayoutBehavior prepareForLayout(const RenderBlock*);
+    BeginLayoutBehavior prepareForLayout(const LayoutBlock*);
     void prepareClusterStack(const LayoutObject*);
-    bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
-    bool superclusterHasEnoughTextToAutosize(Supercluster*, const RenderBlock* widthProvider = 0);
-    bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
+    bool clusterHasEnoughTextToAutosize(Cluster*, const LayoutBlock* widthProvider = 0);
+    bool superclusterHasEnoughTextToAutosize(Supercluster*, const LayoutBlock* widthProvider = 0);
+    bool clusterWouldHaveEnoughTextToAutosize(const LayoutBlock* root, const LayoutBlock* widthProvider = 0);
     Fingerprint getFingerprint(const LayoutObject*);
     Fingerprint computeFingerprint(const LayoutObject*);
-    Cluster* maybeCreateCluster(const RenderBlock*);
-    Supercluster* getSupercluster(const RenderBlock*);
+    Cluster* maybeCreateCluster(const LayoutBlock*);
+    Supercluster* getSupercluster(const LayoutBlock*);
     float clusterMultiplier(Cluster*);
     float superclusterMultiplier(Cluster*);
     // A cluster's width provider is typically the deepest block containing all text.
     // There are exceptions, such as tables and table cells which use the table itself for width.
-    const RenderBlock* clusterWidthProvider(const RenderBlock*) const;
-    const RenderBlock* maxClusterWidthProvider(const Supercluster*, const RenderBlock* currentRoot) const;
+    const LayoutBlock* clusterWidthProvider(const LayoutBlock*) const;
+    const LayoutBlock* maxClusterWidthProvider(const Supercluster*, const LayoutBlock* currentRoot) const;
     // Typically this returns a block's computed width. In the case of tables layout, this
     // width is not yet known so the fixed width is used if it's available, or the containing
     // block's width otherwise.
-    float widthFromBlock(const RenderBlock*) const;
-    float multiplierFromBlock(const RenderBlock*);
+    float widthFromBlock(const LayoutBlock*) const;
+    float multiplierFromBlock(const LayoutBlock*);
     void applyMultiplier(LayoutObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
     Cluster* currentCluster() const;
-    const RenderBlock* deepestBlockContainingAllText(Cluster*);
-    const RenderBlock* deepestBlockContainingAllText(const RenderBlock*) const;
+    const LayoutBlock* deepestBlockContainingAllText(Cluster*);
+    const LayoutBlock* deepestBlockContainingAllText(const LayoutBlock*) const;
     // Returns the first text leaf that is in the current cluster. We attempt to not include text
     // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
     // The TraversalDirection controls whether we return the first or the last text leaf.
@@ -293,7 +293,7 @@ private:
 #endif
 
     RawPtrWillBeMember<const Document> m_document;
-    const RenderBlock* m_firstBlockToBeginLayout;
+    const LayoutBlock* m_firstBlockToBeginLayout;
 #if ENABLE(ASSERT)
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
 #endif

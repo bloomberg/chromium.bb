@@ -2230,7 +2230,7 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout)
 
     FrameView* frameView = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
 
-    // Auto-resizing used to ASSERT(needsLayout()) in RenderBlockFlow::layout. This EXPECT is
+    // Auto-resizing used to ASSERT(needsLayout()) in LayoutBlockFlow::layout. This EXPECT is
     // merely a dummy. The real test is that we don't trigger asserts in debug builds.
     EXPECT_FALSE(frameView->needsLayout());
 };

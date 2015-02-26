@@ -25,9 +25,9 @@
 #ifndef LayoutTableCell_h
 #define LayoutTableCell_h
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTableSection.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
 class SubtreeLayoutScope;
 
-class LayoutTableCell final : public RenderBlockFlow {
+class LayoutTableCell final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCell(Element*);
 
@@ -147,7 +147,7 @@ public:
     virtual LayoutUnit paddingRight() const override;
 
     // FIXME: For now we just assume the cell has the same block flow direction as the table. It's likely we'll
-    // create an extra anonymous RenderBlock to handle mixing directionality anyway, in which case we can lock
+    // create an extra anonymous LayoutBlock to handle mixing directionality anyway, in which case we can lock
     // the block flow directionality of the cells to the table's directionality.
     virtual LayoutUnit paddingBefore() const override;
     virtual LayoutUnit paddingAfter() const override;
@@ -223,7 +223,7 @@ protected:
 private:
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || LayoutBlockFlow::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 

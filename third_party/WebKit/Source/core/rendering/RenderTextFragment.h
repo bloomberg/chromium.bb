@@ -73,7 +73,7 @@ public:
     bool isRemainingTextRenderer() const { return m_isRemainingTextRenderer; }
 
 private:
-    RenderBlock* blockForAccompanyingFirstLetter() const;
+    LayoutBlock* blockForAccompanyingFirstLetter() const;
     virtual UChar previousCharacter() const override;
 
     Text* associatedTextNode() const;

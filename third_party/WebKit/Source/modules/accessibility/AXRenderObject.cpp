@@ -85,7 +85,7 @@ static inline LayoutObject* firstChildInContinuation(const LayoutInline& rendere
     LayoutBoxModelObject* r = renderer.continuation();
 
     while (r) {
-        if (r->isRenderBlock())
+        if (r->isLayoutBlock())
             return r;
         if (LayoutObject* child = r->slowFirstChild())
             return child;
@@ -124,8 +124,8 @@ static inline LayoutInline* startOfContinuations(LayoutObject* r)
     }
 
     // Blocks with a previous continuation always have a next continuation
-    if (r->isRenderBlock() && toRenderBlock(r)->inlineElementContinuation())
-        return toLayoutInline(toRenderBlock(r)->inlineElementContinuation()->node()->renderer());
+    if (r->isLayoutBlock() && toLayoutBlock(r)->inlineElementContinuation())
+        return toLayoutInline(toLayoutBlock(r)->inlineElementContinuation()->node()->renderer());
 
     return 0;
 }
@@ -135,7 +135,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
     LayoutObject* prev = renderer;
     LayoutObject* cur = renderer;
 
-    if (!cur->isLayoutInline() && !cur->isRenderBlock())
+    if (!cur->isLayoutInline() && !cur->isLayoutBlock())
         return renderer;
 
     while (cur) {
@@ -144,7 +144,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
             cur = toLayoutInline(cur)->inlineElementContinuation();
             ASSERT(cur || !toLayoutInline(prev)->continuation());
         } else {
-            cur = toRenderBlock(cur)->inlineElementContinuation();
+            cur = toLayoutBlock(cur)->inlineElementContinuation();
         }
     }
 
@@ -162,8 +162,8 @@ static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
     ASSERT(renderer);
     if (renderer->isLayoutInline() && !renderer->isReplaced())
         return toLayoutInline(renderer)->continuation();
-    if (renderer->isRenderBlock())
-        return toRenderBlock(renderer)->inlineElementContinuation();
+    if (renderer->isLayoutBlock())
+        return toLayoutBlock(renderer)->inlineElementContinuation();
     return 0;
 }
 
@@ -375,7 +375,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (role != UnknownRole)
         return role;
 
-    if (m_renderer->isRenderBlockFlow())
+    if (m_renderer->isLayoutBlockFlow())
         return GroupRole;
 
     // If the element does not have role, but it has ARIA attributes, accessibility should fallback to exposing it as a group.
@@ -679,8 +679,8 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (isHTMLSpanElement(node))
         return true;
 
-    if (m_renderer->isRenderBlockFlow() && m_renderer->childrenInline() && !canSetFocusAttribute())
-        return !toRenderBlockFlow(m_renderer)->firstLineBox() && !mouseButtonListener();
+    if (m_renderer->isLayoutBlockFlow() && m_renderer->childrenInline() && !canSetFocusAttribute())
+        return !toLayoutBlockFlow(m_renderer)->firstLineBox() && !mouseButtonListener();
 
     // ignore images seemingly used as spacers
     if (isImage()) {
@@ -1471,14 +1471,14 @@ AXObject* AXRenderObject::nextSibling() const
 
     LayoutObject* nextSibling = 0;
 
-    LayoutInline* inlineContinuation = m_renderer->isRenderBlock() ? toRenderBlock(m_renderer)->inlineElementContinuation() : 0;
+    LayoutInline* inlineContinuation = m_renderer->isLayoutBlock() ? toLayoutBlock(m_renderer)->inlineElementContinuation() : 0;
     if (inlineContinuation) {
         // Case 1: node is a block and has an inline continuation. Next sibling is the inline continuation's first child.
         nextSibling = firstChildConsideringContinuation(inlineContinuation);
     } else if (m_renderer->isAnonymousBlock() && lastChildHasContinuation(m_renderer)) {
         // Case 2: Anonymous block parent of the start of a continuation - skip all the way to
         // after the parent of the end, since everything in between will be linked up via the continuation.
-        LayoutObject* lastParent = endOfContinuations(toRenderBlock(m_renderer)->lastChild())->parent();
+        LayoutObject* lastParent = endOfContinuations(toLayoutBlock(m_renderer)->lastChild())->parent();
         while (lastChildHasContinuation(lastParent))
             lastParent = endOfContinuations(lastParent->slowLastChild())->parent();
         nextSibling = lastParent->nextSibling();
@@ -1493,7 +1493,7 @@ AXObject* AXRenderObject::nextSibling() const
         // Case 5: node has no next sibling, and its parent is an inline with a continuation.
         LayoutObject* continuation = toLayoutInline(m_renderer->parent())->continuation();
 
-        if (continuation->isRenderBlock()) {
+        if (continuation->isLayoutBlock()) {
             // Case 5a: continuation is a block - in this case the block itself is the next sibling.
             nextSibling = continuation;
         } else {
@@ -1623,7 +1623,7 @@ Element* AXRenderObject::anchorElement() const
     // Search up the render tree for a LayoutObject with a DOM node. Defer to an earlier continuation, though.
     for (currRenderer = m_renderer; currRenderer && !currRenderer->node(); currRenderer = currRenderer->parent()) {
         if (currRenderer->isAnonymousBlock()) {
-            LayoutObject* continuation = toRenderBlock(currRenderer)->continuation();
+            LayoutObject* continuation = toLayoutBlock(currRenderer)->continuation();
             if (continuation)
                 return cache->getOrCreate(continuation)->anchorElement();
         }
@@ -2064,7 +2064,7 @@ LayoutObject* AXRenderObject::renderParentObject() const
     if (!m_renderer)
         return 0;
 
-    LayoutObject* startOfConts = m_renderer->isRenderBlock() ? startOfContinuations(m_renderer) : 0;
+    LayoutObject* startOfConts = m_renderer->isLayoutBlock() ? startOfContinuations(m_renderer) : 0;
     if (startOfConts) {
         // Case 1: node is a block and is an inline's continuation. Parent
         // is the start of the continuation chain.

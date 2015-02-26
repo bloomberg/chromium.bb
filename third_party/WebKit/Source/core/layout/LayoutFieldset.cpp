@@ -39,13 +39,13 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutFieldset::LayoutFieldset(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 
 void LayoutFieldset::computePreferredLogicalWidths()
 {
-    RenderBlockFlow::computePreferredLogicalWidths();
+    LayoutBlockFlow::computePreferredLogicalWidths();
     if (LayoutBox* legend = findLegend()) {
         int legendMinWidth = legend->minPreferredLogicalWidth();
 

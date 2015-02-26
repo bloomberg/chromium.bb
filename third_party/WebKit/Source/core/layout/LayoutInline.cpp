@@ -27,6 +27,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutTheme.h"
@@ -38,7 +39,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
@@ -74,8 +74,8 @@ void LayoutInline::willBeDestroyed()
     if (parent() && style()->visibility() == VISIBLE && style()->hasOutline()) {
         bool containingBlockPaintsContinuationOutline = continuation() || isInlineElementContinuation();
         if (containingBlockPaintsContinuationOutline) {
-            if (RenderBlock* cb = containingBlock()) {
-                if (RenderBlock* cbCb = cb->containingBlock())
+            if (LayoutBlock* cb = containingBlock()) {
+                if (LayoutBlock* cbCb = cb->containingBlock())
                     ASSERT(!cbCb->paintsContinuationOutline(this));
             }
         }
@@ -128,7 +128,7 @@ LayoutInline* LayoutInline::inlineElementContinuation() const
     LayoutBoxModelObject* continuation = this->continuation();
     if (!continuation || continuation->isInline())
         return toLayoutInline(continuation);
-    return toRenderBlock(continuation)->inlineElementContinuation();
+    return toLayoutBlock(continuation)->inlineElementContinuation();
 }
 
 void LayoutInline::updateFromStyle()
@@ -156,7 +156,7 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
 static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const LayoutStyle& newStyle, const LayoutStyle& oldStyle)
 {
     for (;block && block->isAnonymousBlock(); block = block->nextSibling()) {
-        if (!toRenderBlock(block)->isAnonymousBlockContinuation())
+        if (!toLayoutBlock(block)->isAnonymousBlockContinuation())
             continue;
 
         RefPtr<LayoutStyle> newBlockStyle;
@@ -170,7 +170,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
             // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
             // their containing anonymous block should keep its in-flow positioning.
             if (oldStyle.hasInFlowPosition()
-                && inFlowPositionedInlineAncestor(toRenderBlock(block)->inlineElementContinuation()))
+                && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
                 continue;
             if (!newBlockStyle)
                 newBlockStyle = LayoutStyle::clone(block->styleRef());
@@ -293,7 +293,7 @@ static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
 {
     if (renderer->isInline() && !renderer->isReplaced())
         return toLayoutInline(renderer)->continuation();
-    return toRenderBlock(renderer)->inlineElementContinuation();
+    return toLayoutBlock(renderer)->inlineElementContinuation();
 }
 
 LayoutBoxModelObject* LayoutInline::continuationBefore(LayoutObject* beforeChild)
@@ -343,7 +343,7 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
         if (!newStyle->isOutlineEquivalent(style()))
             newStyle->setOutlineFromStyle(*style());
 
-        RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&document());
+        LayoutBlockFlow* newBox = LayoutBlockFlow::createAnonymous(&document());
         newBox->setStyle(newStyle.release());
         LayoutBoxModelObject* oldContinuation = continuation();
         setContinuation(newBox);
@@ -375,9 +375,8 @@ void LayoutInline::moveChildrenToIgnoringContinuation(LayoutInline* to, LayoutOb
     }
 }
 
-void LayoutInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
-    RenderBlock* middleBlock,
-    LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
+void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
+    LayoutBlock* middleBlock, LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
 {
     ASSERT(isDescendantOf(fromBlock));
 
@@ -457,11 +456,11 @@ void LayoutInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
     moveChildrenToIgnoringContinuation(cloneInline, beforeChild);
 }
 
-void LayoutInline::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
+void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
     LayoutObject* newChild, LayoutBoxModelObject* oldCont)
 {
-    RenderBlock* pre = 0;
-    RenderBlock* block = containingBlock();
+    LayoutBlock* pre = 0;
+    LayoutBlock* block = containingBlock();
 
     // Delete our line boxes before we do the inline split into continuations.
     block->deleteLineBoxTree();
@@ -471,8 +470,8 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox
         // We can reuse this block and make it the preBlock of the next continuation.
         pre = block;
         pre->removePositionedObjects(0);
-        if (pre->isRenderBlockFlow())
-            toRenderBlockFlow(pre)->removeFloatingObjects();
+        if (pre->isLayoutBlockFlow())
+            toLayoutBlockFlow(pre)->removeFloatingObjects();
         block = block->containingBlock();
     } else {
         // No anonymous block available for use.  Make one.
@@ -480,7 +479,7 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox
         madeNewBeforeBlock = true;
     }
 
-    RenderBlock* post = toRenderBlock(pre->createAnonymousBoxWithSameTypeAs(block));
+    LayoutBlock* post = toLayoutBlock(pre->createAnonymousBoxWithSameTypeAs(block));
 
     LayoutObject* boxFirst = madeNewBeforeBlock ? block->firstChild() : pre->nextSibling();
     if (madeNewBeforeBlock)
@@ -518,7 +517,7 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox
 void LayoutInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     LayoutBoxModelObject* flow = continuationBefore(beforeChild);
-    ASSERT(!beforeChild || beforeChild->parent()->isRenderBlock() || beforeChild->parent()->isLayoutInline());
+    ASSERT(!beforeChild || beforeChild->parent()->isLayoutBlock() || beforeChild->parent()->isLayoutInline());
     LayoutBoxModelObject* beforeChildParent = 0;
     if (beforeChild) {
         beforeChildParent = toLayoutBoxModelObject(beforeChild->parent());
@@ -837,7 +836,7 @@ bool LayoutInline::hitTestCulledInline(const HitTestRequest& request, HitTestRes
 PositionWithAffinity LayoutInline::positionForPoint(const LayoutPoint& point)
 {
     // FIXME: Does not deal with relative positioned inlines (should it?)
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     if (firstLineBoxIncludingCulling()) {
         // This inline actually has a line box.  We must have clicked in the border/padding of one of these boxes.  We
         // should try to find a result by asking our containing block.
@@ -848,10 +847,10 @@ PositionWithAffinity LayoutInline::positionForPoint(const LayoutPoint& point)
     LayoutPoint parentBlockPoint = cb->location() + point;
     LayoutBoxModelObject* c = continuation();
     while (c) {
-        LayoutBox* contBlock = c->isInline() ? c->containingBlock() : toRenderBlock(c);
+        LayoutBox* contBlock = c->isInline() ? c->containingBlock() : toLayoutBlock(c);
         if (c->isInline() || c->slowFirstChild())
             return c->positionForPoint(parentBlockPoint - contBlock->locationOffset());
-        c = toRenderBlock(c)->inlineElementContinuation();
+        c = toLayoutBlock(c)->inlineElementContinuation();
     }
 
     return LayoutBoxModelObject::positionForPoint(point);
@@ -1041,7 +1040,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
     while (endContinuation->inlineElementContinuation())
         endContinuation = endContinuation->inlineElementContinuation();
 
-    for (RenderBlock* currBlock = containingBlock(); currBlock && currBlock->isAnonymousBlock(); currBlock = toRenderBlock(currBlock->nextSibling())) {
+    for (LayoutBlock* currBlock = containingBlock(); currBlock && currBlock->isAnonymousBlock(); currBlock = toLayoutBlock(currBlock->nextSibling())) {
         for (LayoutObject* curr = currBlock->firstChild(); curr; curr = curr->nextSibling()) {
             LayoutRect rect = curr->clippedOverflowRectForPaintInvalidation(view());
             context(rect);
@@ -1116,8 +1115,8 @@ void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
 
     LayoutPoint topLeft = rect.location();
 
-    if (o->isRenderBlockFlow() && !style()->hasOutOfFlowPosition()) {
-        RenderBlock* cb = toRenderBlock(o);
+    if (o->isLayoutBlockFlow() && !style()->hasOutOfFlowPosition()) {
+        LayoutBlock* cb = toLayoutBlock(o);
         if (cb->hasColumns()) {
             LayoutRect paintInvalidationRect(topLeft, rect.size());
             cb->adjustRectForColumns(paintInvalidationRect);
@@ -1234,7 +1233,7 @@ void LayoutInline::updateDragState(bool dragOn)
 void LayoutInline::childBecameNonInline(LayoutObject* child)
 {
     // We have to split the parent flow.
-    RenderBlock* newBox = containingBlock()->createAnonymousBlock();
+    LayoutBlock* newBox = containingBlock()->createAnonymousBlock();
     LayoutBoxModelObject* oldContinuation = continuation();
     setContinuation(newBox);
     LayoutObject* beforeChild = child->nextSibling();
@@ -1253,7 +1252,7 @@ void LayoutInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
         if (isInlineElementContinuation()) {
             // We're in the continuation of a split inline.  Adjust our local point to be in the coordinate space
             // of the principal renderer's containing block.  This will end up being the innerNonSharedNode.
-            RenderBlock* firstBlock = n->renderer()->containingBlock();
+            LayoutBlock* firstBlock = n->renderer()->containingBlock();
 
             // Get our containing block.
             LayoutBox* block = containingBlock();

@@ -152,11 +152,11 @@ void RenderMenuList::removeChild(LayoutObject* oldChild)
 
 void RenderMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(diff, oldStyle);
+    LayoutBlock::styleDidChange(diff, oldStyle);
 
     if (m_buttonText)
         m_buttonText->setStyle(style());
-    if (m_innerBlock) // RenderBlock handled updating the anonymous block's style.
+    if (m_innerBlock) // LayoutBlock handled updating the anonymous block's style.
         adjustInnerStyle();
 
     bool fontChanged = !oldStyle || oldStyle->font() != style()->font();

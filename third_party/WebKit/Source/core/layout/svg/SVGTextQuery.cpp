@@ -20,12 +20,12 @@
 #include "config.h"
 #include "core/layout/svg/SVGTextQuery.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
@@ -52,14 +52,14 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
     if (!renderer)
         return 0;
 
-    if (renderer->isRenderBlock()) {
+    if (renderer->isLayoutBlock()) {
         // If we're given a block element, it has to be a LayoutSVGText.
         ASSERT(renderer->isSVGText());
-        RenderBlockFlow* renderBlockFlow = toRenderBlockFlow(renderer);
+        LayoutBlockFlow* layoutBlockFlow = toLayoutBlockFlow(renderer);
 
         // LayoutSVGText only ever contains a single line box.
-        InlineFlowBox* flowBox = renderBlockFlow->firstLineBox();
-        ASSERT(flowBox == renderBlockFlow->lastLineBox());
+        InlineFlowBox* flowBox = layoutBlockFlow->firstLineBox();
+        ASSERT(flowBox == layoutBlockFlow->lastLineBox());
         return flowBox;
     }
 

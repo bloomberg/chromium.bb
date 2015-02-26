@@ -36,7 +36,7 @@
 namespace blink {
 
 LayoutScrollbarPart::LayoutScrollbarPart(LayoutScrollbar* scrollbar, ScrollbarPart part)
-    : RenderBlock(0)
+    : LayoutBlock(0)
     , m_scrollbar(scrollbar)
     , m_part(part)
 {
@@ -168,13 +168,13 @@ void LayoutScrollbarPart::computePreferredLogicalWidths()
 
 void LayoutScrollbarPart::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
-    RenderBlock::styleWillChange(diff, newStyle);
+    LayoutBlock::styleWillChange(diff, newStyle);
     setInline(false);
 }
 
 void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(diff, oldStyle);
+    LayoutBlock::styleDidChange(diff, oldStyle);
     setInline(false);
     clearPositionedState();
     setFloating(false);
@@ -195,7 +195,7 @@ void LayoutScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
             }
         }
 
-        RenderBlock::imageChanged(image, rect);
+        LayoutBlock::imageChanged(image, rect);
     }
 }
 

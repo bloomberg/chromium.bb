@@ -106,10 +106,10 @@ private:
     // For backwards compatibility, menulists need to do the regular block behavior.
     virtual int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const override
     {
-        return RenderBlock::baselinePosition(baseline, firstLine, direction, position);
+        return LayoutBlock::baselinePosition(baseline, firstLine, direction, position);
     }
-    virtual int firstLineBoxBaseline() const override { return RenderBlock::firstLineBoxBaseline(); }
-    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return RenderBlock::inlineBlockBaseline(direction); }
+    virtual int firstLineBoxBaseline() const override { return LayoutBlock::firstLineBoxBaseline(); }
+    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return LayoutBlock::inlineBlockBaseline(direction); }
 
     void getItemBackgroundColor(unsigned listIndex, Color&, bool& itemHasCustomBackgroundColor) const;
 
@@ -122,7 +122,7 @@ private:
     void didUpdateActiveOption(int optionIndex);
 
     RenderText* m_buttonText;
-    RenderBlock* m_innerBlock;
+    LayoutBlock* m_innerBlock;
 
     bool m_optionsChanged;
     int m_optionsWidth;

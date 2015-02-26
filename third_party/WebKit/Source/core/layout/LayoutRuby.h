@@ -31,8 +31,8 @@
 #ifndef LayoutRuby_h
 #define LayoutRuby_h
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
-#include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
@@ -69,7 +69,7 @@ private:
 };
 
 // <ruby> when used as 'display:block' or 'display:inline-block'
-class LayoutRubyAsBlock final : public RenderBlockFlow {
+class LayoutRubyAsBlock final : public LayoutBlockFlow {
 public:
     LayoutRubyAsBlock(Element*);
     virtual ~LayoutRubyAsBlock();
@@ -81,10 +81,10 @@ protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || LayoutBlockFlow::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutRuby (block)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { ASSERT_NOT_REACHED(); }
+    virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

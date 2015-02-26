@@ -30,7 +30,7 @@
 namespace blink {
 
 LayoutProgress::LayoutProgress(HTMLElement* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
     , m_position(HTMLProgressElement::InvalidPosition)
     , m_animationStartTime(0)
     , m_animationRepeatInterval(0)
@@ -50,7 +50,7 @@ void LayoutProgress::destroy()
         m_animationTimer.stop();
         m_animating = false;
     }
-    RenderBlockFlow::destroy();
+    LayoutBlockFlow::destroy();
 }
 
 void LayoutProgress::updateFromElement()
@@ -62,7 +62,7 @@ void LayoutProgress::updateFromElement()
 
     updateAnimationState();
     setShouldDoFullPaintInvalidation();
-    RenderBlockFlow::updateFromElement();
+    LayoutBlockFlow::updateFromElement();
 }
 
 double LayoutProgress::animationProgress() const

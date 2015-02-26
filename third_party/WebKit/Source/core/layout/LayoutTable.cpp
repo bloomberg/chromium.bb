@@ -50,7 +50,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutTable::LayoutTable(Element* element)
-    : RenderBlock(element)
+    : LayoutBlock(element)
     , m_head(0)
     , m_foot(0)
     , m_firstBody(0)
@@ -76,7 +76,7 @@ LayoutTable::~LayoutTable()
 
 void LayoutTable::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(diff, oldStyle);
+    LayoutBlock::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
     bool oldFixedTableLayout = oldStyle ? oldStyle->isFixedTableLayout() : false;
@@ -209,7 +209,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
 
 void LayoutTable::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
-    // We need to bypass the RenderBlock implementation and instead do a normal addChild() (or we
+    // We need to bypass the LayoutBlock implementation and instead do a normal addChild() (or we
     // won't get there at all), so that any missing anonymous table part renderers are
     // inserted. Otherwise we might end up with an insane render tree with inlines or blocks as
     // direct children of a table, which will break assumptions made all over the code, which may
@@ -266,7 +266,7 @@ void LayoutTable::updateLogicalWidth()
         setMarginEnd(computedValues.m_margins.m_end);
     }
 
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
 
     LayoutUnit availableLogicalWidth = containingBlockLogicalWidthForContent() + (isOutOfFlowPositioned() ? cb->paddingLogicalWidth() : LayoutUnit(0));
     bool hasPerpendicularContainingBlock = cb->style()->isHorizontalWritingMode() != style()->isHorizontalWritingMode();
@@ -283,8 +283,8 @@ void LayoutTable::updateLogicalWidth()
 
         // Subtract out our margins to get the available content width.
         LayoutUnit availableContentLogicalWidth = std::max<LayoutUnit>(0, containerWidthInInlineDirection - marginTotal);
-        if (shrinkToAvoidFloats() && cb->isRenderBlockFlow() && toRenderBlockFlow(cb)->containsFloats() && !hasPerpendicularContainingBlock)
-            availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb));
+        if (shrinkToAvoidFloats() && cb->isLayoutBlockFlow() && toLayoutBlockFlow(cb)->containsFloats() && !hasPerpendicularContainingBlock)
+            availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toLayoutBlockFlow(cb));
 
         // Ensure we aren't bigger than our available width.
         setLogicalWidth(std::min<int>(availableContentLogicalWidth, maxPreferredLogicalWidth()));
@@ -417,7 +417,7 @@ void LayoutTable::layout()
     if (simplifiedLayout())
         return;
 
-    // Note: LayoutTable is handled differently than other RenderBlocks and the LayoutScope
+    // Note: LayoutTable is handled differently than other LayoutBlocks and the LayoutScope
     //       must be created before the table begins laying out.
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
@@ -890,7 +890,7 @@ void LayoutTable::recalcSections() const
 int LayoutTable::calcBorderStart() const
 {
     if (!collapseBorders())
-        return RenderBlock::borderStart();
+        return LayoutBlock::borderStart();
 
     // Determined by the first cell of the first row. See the CSS 2.1 spec, section 17.6.2.
     if (!numEffCols())
@@ -944,7 +944,7 @@ int LayoutTable::calcBorderStart() const
 int LayoutTable::calcBorderEnd() const
 {
     if (!collapseBorders())
-        return RenderBlock::borderEnd();
+        return LayoutBlock::borderEnd();
 
     // Determined by the last cell of the first row. See the CSS 2.1 spec, section 17.6.2.
     if (!numEffCols())
@@ -1009,7 +1009,7 @@ int LayoutTable::borderBefore() const
         recalcSectionsIfNeeded();
         return outerBorderBefore();
     }
-    return RenderBlock::borderBefore();
+    return LayoutBlock::borderBefore();
 }
 
 int LayoutTable::borderAfter() const
@@ -1018,7 +1018,7 @@ int LayoutTable::borderAfter() const
         recalcSectionsIfNeeded();
         return outerBorderAfter();
     }
-    return RenderBlock::borderAfter();
+    return LayoutBlock::borderAfter();
 }
 
 int LayoutTable::outerBorderBefore() const
@@ -1287,7 +1287,7 @@ int LayoutTable::firstLineBoxBaseline() const
 
 LayoutRect LayoutTable::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy)
 {
-    LayoutRect rect = RenderBlock::overflowClipRect(location, relevancy);
+    LayoutRect rect = LayoutBlock::overflowClipRect(location, relevancy);
 
     // If we have a caption, expand the clip to include the caption.
     // FIXME: Technically this is wrong, but it's virtually impossible to fix this

@@ -43,6 +43,7 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutObject.h"
@@ -50,7 +51,6 @@
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/style/PathStyleMotionPath.h"
 #include "core/layout/style/ShadowList.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -579,7 +579,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
         // For grids we should consider every listed track, whether implicitly or explicitly created. If we don't have
         // any explicit track and there are no children then there are no implicit tracks. We cannot simply check the
         // number of rows/columns in our internal grid representation because it's always at least 1x1 (see r143331).
-        trackListIsEmpty = !toRenderBlock(renderer)->firstChild();
+        trackListIsEmpty = !toLayoutBlock(renderer)->firstChild();
     }
 
     if (trackListIsEmpty) {

@@ -29,14 +29,14 @@ namespace blink {
 
 class EllipsisBox;
 class HitTestResult;
-class RenderBlockFlow;
+class LayoutBlockFlow;
 
 struct BidiStatus;
 struct GapRects;
 
 class RootInlineBox : public InlineFlowBox {
 public:
-    explicit RootInlineBox(RenderBlockFlow&);
+    explicit RootInlineBox(LayoutBlockFlow&);
 
     virtual void destroy() override final;
 
@@ -115,9 +115,9 @@ public:
     InlineBox* firstSelectedBox() const;
     InlineBox* lastSelectedBox() const;
 
-    GapRects lineSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo*) const;
+    GapRects lineSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo*) const;
 
-    RenderBlockFlow& block() const;
+    LayoutBlockFlow& block() const;
 
     InlineBox* closestLeafChildForPoint(const LayoutPoint&, bool onlyEditableLeaves);
     InlineBox* closestLeafChildForLogicalLeftPosition(LayoutUnit, bool onlyEditableLeaves = false);

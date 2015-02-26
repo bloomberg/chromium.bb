@@ -33,7 +33,7 @@ namespace blink {
 
 class TrailingFloatsRootInlineBox final : public RootInlineBox {
 public:
-    TrailingFloatsRootInlineBox(RenderBlockFlow& block)
+    TrailingFloatsRootInlineBox(LayoutBlockFlow& block)
         : RootInlineBox(block)
     {
         setHasVirtualLogicalHeight();

@@ -24,8 +24,8 @@
 #define InlineIterator_h
 
 #include "core/layout/BidiRun.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
 
@@ -283,7 +283,7 @@ static inline LayoutObject* bidiNextIncludingEmptyInlines(LayoutObject* root, La
     return bidiNextShared(root, current, observer, IncludeEmptyInlines, endOfInlinePtr);
 }
 
-static inline LayoutObject* bidiFirstSkippingEmptyInlines(RenderBlockFlow* root, BidiRunList<BidiRun>& runs, InlineBidiResolver* resolver = 0)
+static inline LayoutObject* bidiFirstSkippingEmptyInlines(LayoutBlockFlow* root, BidiRunList<BidiRun>& runs, InlineBidiResolver* resolver = 0)
 {
     LayoutObject* o = root->firstChild();
     if (!o)
@@ -311,7 +311,7 @@ static inline LayoutObject* bidiFirstSkippingEmptyInlines(RenderBlockFlow* root,
 }
 
 // FIXME: This method needs to be renamed when bidiNext finds a good name.
-static inline LayoutObject* bidiFirstIncludingEmptyInlines(RenderBlock* root)
+static inline LayoutObject* bidiFirstIncludingEmptyInlines(LayoutBlock* root)
 {
     LayoutObject* o = root->firstChild();
     // If either there are no children to walk, or the first one is correct
@@ -331,11 +331,11 @@ inline void InlineIterator::fastIncrementInTextNode()
         m_pos++;
 }
 
-// FIXME: This is used by RenderBlockFlow for simplified layout, and has nothing to do with bidi
+// FIXME: This is used by LayoutBlockFlow for simplified layout, and has nothing to do with bidi
 // it shouldn't use functions called bidiFirst and bidiNext.
 class InlineWalker {
 public:
-    InlineWalker(RenderBlock* root)
+    InlineWalker(LayoutBlock* root)
         : m_root(root)
         , m_current(0)
         , m_atEndOfInline(false)
@@ -344,7 +344,7 @@ public:
         m_current = bidiFirstIncludingEmptyInlines(m_root);
     }
 
-    RenderBlock* root() { return m_root; }
+    LayoutBlock* root() { return m_root; }
     LayoutObject* current() { return m_current; }
 
     bool atEndOfInline() { return m_atEndOfInline; }
@@ -357,7 +357,7 @@ public:
         return m_current;
     }
 private:
-    RenderBlock* m_root;
+    LayoutBlock* m_root;
     LayoutObject* m_current;
     bool m_atEndOfInline;
 };
@@ -603,7 +603,7 @@ public:
         // We only need to add a fake run for a given isolated span once during each call to createBidiRunsForLine.
         // We'll be called for every span inside the isolated span so we just ignore subsequent calls.
         // We also avoid creating a fake run until we hit a child that warrants one, e.g. we skip floats.
-        if (RenderBlockFlow::shouldSkipCreatingRunsForObject(obj))
+        if (LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
             return;
         if (!m_haveAddedFakeRunForRootIsolate) {
             BidiRun* run = addPlaceholderRunForIsolatedInline(resolver, obj, pos);
@@ -646,7 +646,7 @@ static void inline appendRunObjectIfNecessary(LayoutObject* obj, unsigned start,
 
 static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LayoutObject* obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
 {
-    if (start > end || RenderBlockFlow::shouldSkipCreatingRunsForObject(obj))
+    if (start > end || LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
         return;
 
     LineMidpointState& lineMidpointState = resolver.midpointState();

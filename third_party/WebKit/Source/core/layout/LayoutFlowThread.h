@@ -31,7 +31,7 @@
 #define LayoutFlowThread_h
 
 #include "core/layout/LayerFragment.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "wtf/ListHashSet.h"
 
 namespace blink {
@@ -47,7 +47,7 @@ typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 // and nodeAtPoint methods to this object. Each LayoutRegion will actually be a viewPort
 // of the LayoutFlowThread.
 
-class LayoutFlowThread: public RenderBlockFlow {
+class LayoutFlowThread: public LayoutBlockFlow {
 public:
     LayoutFlowThread();
     virtual ~LayoutFlowThread() { };

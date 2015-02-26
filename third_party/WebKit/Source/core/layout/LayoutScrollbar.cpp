@@ -191,8 +191,8 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy)
     if (newThickness != oldThickness) {
         setFrameRect(IntRect(location(), IntSize(isHorizontal ? width() : newThickness, isHorizontal ? newThickness : height())));
         if (LayoutBox* box = owningRenderer()) {
-            if (box->isRenderBlock())
-                toRenderBlock(box)->notifyScrollbarThicknessChanged();
+            if (box->isLayoutBlock())
+                toLayoutBlock(box)->notifyScrollbarThicknessChanged();
             box->setChildNeedsLayout();
         }
     }

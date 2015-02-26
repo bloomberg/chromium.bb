@@ -20,8 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderBlock_h
-#define RenderBlock_h
+#ifndef LayoutBlock_h
+#define LayoutBlock_h
 
 #include "core/layout/ColumnInfo.h"
 #include "core/layout/FloatingObjects.h"
@@ -43,29 +43,29 @@ class LayoutInline;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedRendererListHashSet;
-typedef WTF::HashMap<const RenderBlock*, OwnPtr<TrackedRendererListHashSet>> TrackedDescendantsMap;
-typedef WTF::HashMap<const LayoutBox*, OwnPtr<HashSet<RenderBlock*>>> TrackedContainerMap;
+typedef WTF::HashMap<const LayoutBlock*, OwnPtr<TrackedRendererListHashSet>> TrackedDescendantsMap;
+typedef WTF::HashMap<const LayoutBox*, OwnPtr<HashSet<LayoutBlock*>>> TrackedContainerMap;
 typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
-typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<LayoutInline*>>> ContinuationOutlineTableMap;
+typedef WTF::HashMap<LayoutBlock*, OwnPtr<ListHashSet<LayoutInline*>>> ContinuationOutlineTableMap;
 
 ContinuationOutlineTableMap* continuationOutlineTable();
 
-class RenderBlock : public LayoutBox {
+class LayoutBlock : public LayoutBox {
 public:
     friend class LineLayoutState;
 
 protected:
-    explicit RenderBlock(ContainerNode*);
-    virtual ~RenderBlock();
+    explicit LayoutBlock(ContainerNode*);
+    virtual ~LayoutBlock();
 
 public:
     LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
-    // If you have a RenderBlock, use firstChild or lastChild instead.
+    // If you have a LayoutBlock, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -90,7 +90,7 @@ protected:
     RootInlineBox* lastRootBox() const { return static_cast<RootInlineBox*>(lastLineBox()); }
 
 public:
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
+    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual void deleteLineBoxTree();
 
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
@@ -100,7 +100,7 @@ public:
 
     void insertPositionedObject(LayoutBox*);
     static void removePositionedObject(LayoutBox*);
-    void removePositionedObjects(RenderBlock*, ContainingBlockState = SameContainingBlock);
+    void removePositionedObjects(LayoutBlock*, ContainingBlockState = SameContainingBlock);
 
     TrackedRendererListHashSet* positionedObjects() const;
     bool hasPositionedObjects() const
@@ -139,7 +139,7 @@ public:
 
     void markPositionedObjectsForLayout();
     // FIXME: Do we really need this to be virtual? It's just so we can call this on
-    // LayoutBoxes without needed to check whether they're RenderBlocks first.
+    // LayoutBoxes without needed to check whether they're LayoutBlocks first.
     virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&) override final;
 
     LayoutUnit textIndentOffset() const;
@@ -155,7 +155,7 @@ public:
     LayoutUnit blockDirectionOffset(const LayoutSize& offsetFromBlock) const;
     LayoutUnit inlineDirectionOffset(const LayoutSize& offsetFromBlock) const;
 
-    RenderBlock* blockBeforeWithinSelectionRoot(LayoutSize& offset) const;
+    LayoutBlock* blockBeforeWithinSelectionRoot(LayoutSize& offset) const;
 
     virtual void setSelectionState(SelectionState) override;
 
@@ -176,17 +176,17 @@ public:
     virtual LayoutBoxModelObject* virtualContinuation() const override final { return continuation(); }
     bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
     LayoutInline* inlineElementContinuation() const;
-    RenderBlock* blockElementContinuation() const;
+    LayoutBlock* blockElementContinuation() const;
 
     using LayoutBoxModelObject::continuation;
     using LayoutBoxModelObject::setContinuation;
 
-    static RenderBlock* createAnonymousWithParentRendererAndDisplay(const LayoutObject*, EDisplay = BLOCK);
-    static RenderBlockFlow* createAnonymousColumnsWithParentRenderer(const LayoutObject*);
-    static RenderBlockFlow* createAnonymousColumnSpanWithParentRenderer(const LayoutObject*);
-    RenderBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentRendererAndDisplay(this, display); }
-    RenderBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
-    RenderBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
+    static LayoutBlock* createAnonymousWithParentRendererAndDisplay(const LayoutObject*, EDisplay = BLOCK);
+    static LayoutBlockFlow* createAnonymousColumnsWithParentRenderer(const LayoutObject*);
+    static LayoutBlockFlow* createAnonymousColumnSpanWithParentRenderer(const LayoutObject*);
+    LayoutBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentRendererAndDisplay(this, display); }
+    LayoutBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
+    LayoutBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
 
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
@@ -228,8 +228,8 @@ public:
     LayoutUnit startOffsetForContent() const { return style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
     LayoutUnit endOffsetForContent() const { return !style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
 
-    virtual LayoutUnit logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
-    virtual LayoutUnit logicalRightSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
+    virtual LayoutUnit logicalLeftSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const;
+    virtual LayoutUnit logicalRightSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const;
 
 #if ENABLE(ASSERT)
     void checkPositionedObjectsNeedLayout();
@@ -268,7 +268,7 @@ public:
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
     virtual void paintChildren(const PaintInfo&, const LayoutPoint&);
 
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
+    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool) { }
     virtual void paintSelection(const PaintInfo&, const LayoutPoint&) { }
 
@@ -329,12 +329,12 @@ private:
 
     virtual const char* renderName() const override;
 
-    virtual bool isRenderBlock() const override final { return true; }
+    virtual bool isLayoutBlock() const override final { return true; }
 
     void makeChildrenNonInline(LayoutObject* insertionPoint = 0);
-    virtual void removeLeftoverAnonymousBlock(RenderBlock* child);
+    virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
-    static void collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* child);
+    static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
 
     virtual void dirtyLinesFromChangedChild(LayoutObject* child) override final { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
 
@@ -359,7 +359,7 @@ private:
 
     bool hitTestColumns(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
+    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual bool hitTestFloats(const HitTestRequest&, HitTestResult&, const HitTestLocation&, const LayoutPoint&) { return false; }
 
     virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset);
@@ -368,7 +368,7 @@ private:
 
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
     // children.
-    virtual RenderBlock* firstLineBlock() const override;
+    virtual LayoutBlock* firstLineBlock() const override;
 
     virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const override final;
 
@@ -378,8 +378,8 @@ private:
 
     bool isSelectionRoot() const;
 
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
-    virtual void clipOutFloatingObjects(const RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const { };
+    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
+    virtual void clipOutFloatingObjects(const LayoutBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const { };
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
@@ -398,16 +398,16 @@ private:
     PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
 
     void calcColumnWidth();
-    void makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, RenderBlockFlow* newBlockBox, LayoutObject* newChild);
+    void makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox, LayoutObject* newChild);
 
-    void splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
+    void splitBlocks(LayoutBlock* fromBlock, LayoutBlock* toBlock, LayoutBlock* middleBlock,
         LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
-    void splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
+    void splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
         LayoutObject* newChild, LayoutBoxModelObject* oldCont);
-    RenderBlock* clone() const;
-    RenderBlock* continuationBefore(LayoutObject* beforeChild);
-    RenderBlockFlow* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
-    RenderBlockFlow* columnsBlockForSpanningElement(LayoutObject* newChild);
+    LayoutBlock* clone() const;
+    LayoutBlock* continuationBefore(LayoutObject* beforeChild);
+    LayoutBlockFlow* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
+    LayoutBlockFlow* columnsBlockForSpanningElement(LayoutObject* newChild);
 
     // End helper functions and structs used by layoutBlockChildren.
 
@@ -456,7 +456,7 @@ protected:
 
     LayoutUnit m_pageLogicalOffset;
 
-    unsigned m_hasMarginBeforeQuirk : 1; // Note these quirk values can't be put in RenderBlockRareData since they are set too frequently.
+    unsigned m_hasMarginBeforeQuirk : 1; // Note these quirk values can't be put in LayoutBlockRareData since they are set too frequently.
     unsigned m_hasMarginAfterQuirk : 1;
     unsigned m_beingDestroyed : 1;
     unsigned m_hasMarkupTruncation : 1;
@@ -467,16 +467,16 @@ protected:
     // LayoutRubyBase objects need to be able to split and merge, moving their children around
     // (calling moveChildTo, moveAllChildrenTo, and makeChildrenNonInline).
     friend class LayoutRubyBase;
-    // FIXME-BLOCKFLOW: Remove this when the line layout stuff has all moved out of RenderBlock
+    // FIXME-BLOCKFLOW: Remove this when the line layout stuff has all moved out of LayoutBlock
     friend class LineBreaker;
 
     // FIXME: This is temporary as we move code that accesses block flow
-    // member variables out of RenderBlock and into RenderBlockFlow.
-    friend class RenderBlockFlow;
+    // member variables out of LayoutBlock and into LayoutBlockFlow.
+    friend class LayoutBlockFlow;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, isLayoutBlock());
 
 } // namespace blink
 
-#endif // RenderBlock_h
+#endif // LayoutBlock_h

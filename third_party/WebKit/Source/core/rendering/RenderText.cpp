@@ -33,12 +33,12 @@
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderCombineText.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
@@ -667,7 +667,7 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
     if (extraWidthToEndOfLine)
         *extraWidthToEndOfLine = (box->root().logicalWidth() + rootLeft) - (left + 1);
 
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     const LayoutStyle& cbStyle = cb->styleRef();
 
     float leftEdge;
@@ -1226,7 +1226,7 @@ void RenderText::setSelectionState(SelectionState state)
     }
 
     // The containing block can be null in case of an orphaned tree.
-    RenderBlock* containingBlock = this->containingBlock();
+    LayoutBlock* containingBlock = this->containingBlock();
     if (containingBlock && !containingBlock->isLayoutView())
         containingBlock->setSelectionState(state);
 }
@@ -1610,7 +1610,7 @@ LayoutRect RenderText::selectionRectForPaintInvalidation(const LayoutBoxModelObj
 
     if (selectionState() == SelectionNone)
         return LayoutRect();
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     if (!cb)
         return LayoutRect();
 

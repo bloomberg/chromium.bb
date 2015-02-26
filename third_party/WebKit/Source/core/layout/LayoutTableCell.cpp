@@ -42,7 +42,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-struct SameSizeAsLayoutTableCell : public RenderBlockFlow {
+struct SameSizeAsLayoutTableCell : public LayoutBlockFlow {
     unsigned bitfields;
     int paddings[2];
 };
@@ -51,7 +51,7 @@ static_assert(sizeof(LayoutTableCell) == sizeof(SameSizeAsLayoutTableCell), "Lay
 static_assert(sizeof(CollapsedBorderValue) == 8, "CollapsedBorderValue should stay small");
 
 LayoutTableCell::LayoutTableCell(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
     , m_column(unsetColumnIndex)
     , m_cellWidthChanged(false)
     , m_intrinsicPaddingBefore(0)
@@ -64,7 +64,7 @@ LayoutTableCell::LayoutTableCell(Element* element)
 
 void LayoutTableCell::willBeRemovedFromTree()
 {
-    RenderBlockFlow::willBeRemovedFromTree();
+    LayoutBlockFlow::willBeRemovedFromTree();
 
     section()->setNeedsCellRecalc();
     section()->removeCachedCollapsedBorders(this);
@@ -145,7 +145,7 @@ void LayoutTableCell::computePreferredLogicalWidths()
     // grids.  We must refresh those grids before the child cells try to use them.
     table()->recalcSectionsIfNeeded();
 
-    RenderBlockFlow::computePreferredLogicalWidths();
+    LayoutBlockFlow::computePreferredLogicalWidths();
     if (node() && style()->autoWrap()) {
         // See if nowrap was set.
         Length w = styleOrColLogicalWidth();
@@ -305,7 +305,7 @@ LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o, const Lay
 {
     ASSERT(o == container());
 
-    LayoutSize offset = RenderBlockFlow::offsetFromContainer(o, point, offsetDependsOnPoint);
+    LayoutSize offset = LayoutBlockFlow::offsetFromContainer(o, point, offsetDependsOnPoint);
     if (parent())
         offset -= parentBox()->locationOffset();
 
@@ -319,7 +319,7 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
     // the table is going to recalculate the grid, relayout and issue a paint invalidation of its current rect, which
     // includes any outside borders of this cell.
     if (!table()->collapseBorders() || table()->needsSectionRecalc())
-        return RenderBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+        return LayoutBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 
     bool rtl = !styleForCellFlow().isLeftToRightDirection();
     int outlineSize = style()->outlineSize();
@@ -365,7 +365,7 @@ void LayoutTableCell::mapRectToPaintInvalidationBacking(const LayoutBoxModelObje
     r.setY(r.y());
     if ((!paintInvalidationState || !paintInvalidationState->canMapToContainer(paintInvalidationContainer)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
+    LayoutBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
 }
 
 LayoutUnit LayoutTableCell::cellBaselinePosition() const
@@ -383,7 +383,7 @@ void LayoutTableCell::styleDidChange(StyleDifference diff, const LayoutStyle* ol
 {
     ASSERT(style()->display() == TABLE_CELL);
 
-    RenderBlockFlow::styleDidChange(diff, oldStyle);
+    LayoutBlockFlow::styleDidChange(diff, oldStyle);
     setHasBoxDecorationBackground(true);
 
     if (parent() && section() && oldStyle && style()->height() != oldStyle->height())
@@ -854,44 +854,44 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
 
 int LayoutTableCell::borderLeft() const
 {
-    return table()->collapseBorders() ? borderHalfLeft(false) : RenderBlockFlow::borderLeft();
+    return table()->collapseBorders() ? borderHalfLeft(false) : LayoutBlockFlow::borderLeft();
 }
 
 int LayoutTableCell::borderRight() const
 {
-    return table()->collapseBorders() ? borderHalfRight(false) : RenderBlockFlow::borderRight();
+    return table()->collapseBorders() ? borderHalfRight(false) : LayoutBlockFlow::borderRight();
 }
 
 int LayoutTableCell::borderTop() const
 {
-    return table()->collapseBorders() ? borderHalfTop(false) : RenderBlockFlow::borderTop();
+    return table()->collapseBorders() ? borderHalfTop(false) : LayoutBlockFlow::borderTop();
 }
 
 int LayoutTableCell::borderBottom() const
 {
-    return table()->collapseBorders() ? borderHalfBottom(false) : RenderBlockFlow::borderBottom();
+    return table()->collapseBorders() ? borderHalfBottom(false) : LayoutBlockFlow::borderBottom();
 }
 
 // FIXME: https://bugs.webkit.org/show_bug.cgi?id=46191, make the collapsed border drawing
 // work with different block flow values instead of being hard-coded to top-to-bottom.
 int LayoutTableCell::borderStart() const
 {
-    return table()->collapseBorders() ? borderHalfStart(false) : RenderBlockFlow::borderStart();
+    return table()->collapseBorders() ? borderHalfStart(false) : LayoutBlockFlow::borderStart();
 }
 
 int LayoutTableCell::borderEnd() const
 {
-    return table()->collapseBorders() ? borderHalfEnd(false) : RenderBlockFlow::borderEnd();
+    return table()->collapseBorders() ? borderHalfEnd(false) : LayoutBlockFlow::borderEnd();
 }
 
 int LayoutTableCell::borderBefore() const
 {
-    return table()->collapseBorders() ? borderHalfBefore(false) : RenderBlockFlow::borderBefore();
+    return table()->collapseBorders() ? borderHalfBefore(false) : LayoutBlockFlow::borderBefore();
 }
 
 int LayoutTableCell::borderAfter() const
 {
-    return table()->collapseBorders() ? borderHalfAfter(false) : RenderBlockFlow::borderAfter();
+    return table()->collapseBorders() ? borderHalfAfter(false) : LayoutBlockFlow::borderAfter();
 }
 
 int LayoutTableCell::borderHalfLeft(bool outer) const

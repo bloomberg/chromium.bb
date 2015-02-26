@@ -32,9 +32,9 @@
 
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/FloatingObjects.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutImage.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
 
@@ -278,7 +278,7 @@ bool ShapeOutsideInfo::isEnabledFor(const LayoutBox& box)
 
     return false;
 }
-ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const RenderBlockFlow& containingBlock, const FloatingObject& floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
+ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const LayoutBlockFlow& containingBlock, const FloatingObject& floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
 {
     ASSERT(lineHeight >= 0);
 

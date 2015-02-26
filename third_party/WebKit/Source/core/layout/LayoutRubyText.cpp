@@ -36,7 +36,7 @@
 namespace blink {
 
 LayoutRubyText::LayoutRubyText(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 
@@ -54,7 +54,7 @@ ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
     ETextAlign textAlign = style()->textAlign();
     // FIXME: This check is bogus since user can set the initial value.
     if (textAlign != LayoutStyle::initialTextAlign())
-        return RenderBlockFlow::textAlignmentForLine(endsWithSoftBreak);
+        return LayoutBlockFlow::textAlignmentForLine(endsWithSoftBreak);
 
     // The default behavior is to allow ruby text to expand if it is shorter than the ruby base.
     return JUSTIFY;
@@ -65,7 +65,7 @@ void LayoutRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportuni
     ETextAlign textAlign = style()->textAlign();
     // FIXME: This check is bogus since user can set the initial value.
     if (textAlign != LayoutStyle::initialTextAlign())
-        return RenderBlockFlow::adjustInlineDirectionLineBounds(expansionOpportunityCount, logicalLeft, logicalWidth);
+        return LayoutBlockFlow::adjustInlineDirectionLineBounds(expansionOpportunityCount, logicalLeft, logicalWidth);
 
     int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth();
     if (maxPreferredLogicalWidth >= logicalWidth)

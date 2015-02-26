@@ -211,7 +211,7 @@ protected:
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
 
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;
-    RenderBlock* containingBlockForAutoHeightDetection(Length logicalHeight) const;
+    LayoutBlock* containingBlockForAutoHeightDetection(Length logicalHeight) const;
 
     void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
 

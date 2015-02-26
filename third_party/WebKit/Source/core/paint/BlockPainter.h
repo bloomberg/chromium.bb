@@ -12,13 +12,13 @@ class InlineBox;
 class LayoutPoint;
 class LayoutRect;
 class RenderFlexibleBox;
-class RenderBlock;
+class LayoutBlock;
 class LayoutBox;
 class LayoutObject;
 
 class BlockPainter {
 public:
-    BlockPainter(RenderBlock& block) : m_renderBlock(block) { }
+    BlockPainter(LayoutBlock& block) : m_layoutBlock(block) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintObject(const PaintInfo&, const LayoutPoint&);
@@ -44,7 +44,7 @@ private:
     void paintSelection(const PaintInfo&, const LayoutPoint&);
     void paintContinuationOutlines(const PaintInfo&, const LayoutPoint&);
 
-    RenderBlock& m_renderBlock;
+    LayoutBlock& m_layoutBlock;
 };
 
 } // namespace blink

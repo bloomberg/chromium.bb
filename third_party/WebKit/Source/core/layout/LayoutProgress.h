@@ -21,13 +21,13 @@
 #ifndef LayoutProgress_h
 #define LayoutProgress_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class HTMLProgressElement;
 
-class LayoutProgress final : public RenderBlockFlow {
+class LayoutProgress final : public LayoutBlockFlow {
 public:
     explicit LayoutProgress(HTMLElement*);
     virtual ~LayoutProgress();
@@ -43,7 +43,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "LayoutProgress"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type); }
 
     void animationTimerFired(Timer<LayoutProgress>*);
     void updateAnimationState();

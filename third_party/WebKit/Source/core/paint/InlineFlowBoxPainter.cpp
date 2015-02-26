@@ -6,12 +6,12 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 
@@ -32,13 +32,13 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         if (m_inlineFlowBox.renderer().style()->visibility() == VISIBLE && m_inlineFlowBox.renderer().style()->hasOutline() && !m_inlineFlowBox.isRootInlineBox()) {
             LayoutInline& inlineFlow = toLayoutInline(m_inlineFlowBox.renderer());
 
-            RenderBlock* cb = 0;
+            LayoutBlock* cb = 0;
             bool containingBlockPaintsContinuationOutline = inlineFlow.continuation() || inlineFlow.isInlineElementContinuation();
             if (containingBlockPaintsContinuationOutline) {
                 // FIXME: See https://bugs.webkit.org/show_bug.cgi?id=54690. We currently don't reconnect inline continuations
                 // after a child removal. As a result, those merged inlines do not get seperated and hence not get enclosed by
                 // anonymous blocks. In this case, it is better to bail out and paint it ourself.
-                RenderBlock* enclosingAnonymousBlock = m_inlineFlowBox.renderer().containingBlock();
+                LayoutBlock* enclosingAnonymousBlock = m_inlineFlowBox.renderer().containingBlock();
                 if (!enclosingAnonymousBlock->isAnonymousBlock()) {
                     containingBlockPaintsContinuationOutline = false;
                 } else {

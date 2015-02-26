@@ -183,7 +183,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
         return new LayoutInline(element);
     case BLOCK:
     case INLINE_BLOCK:
-        return new RenderBlockFlow(element);
+        return new LayoutBlockFlow(element);
     case LIST_ITEM:
         return new LayoutListItem(element);
     case TABLE:
@@ -632,8 +632,8 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
         return false;
 
     // SVG renderers need to be invalidated when their children are laid out.
-    // RenderBlocks with line boxes are responsible to invalidate them so we can't ignore them.
-    if (isSVG() || (isRenderBlockFlow() && toRenderBlockFlow(this)->firstLineBox()))
+    // LayoutBlocks with line boxes are responsible to invalidate them so we can't ignore them.
+    if (isSVG() || (isLayoutBlockFlow() && toLayoutBlockFlow(this)->firstLineBox()))
         return false;
 
     // In case scrollbars got repositioned (which will typically happen if the layout object got
@@ -644,7 +644,7 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
     return rendererHasNoBoxEffect();
 }
 
-RenderBlock* LayoutObject::firstLineBlock() const
+LayoutBlock* LayoutObject::firstLineBlock() const
 {
     return 0;
 }
@@ -692,9 +692,9 @@ void LayoutObject::markContainingBlocksForLayout(bool scheduleRelayout, LayoutOb
         if (!container && !object->isLayoutView())
             return;
         if (!last->isText() && last->style()->hasOutOfFlowPosition()) {
-            bool willSkipRelativelyPositionedInlines = !object->isRenderBlock() || object->isAnonymousBlock();
-            // Skip relatively positioned inlines and anonymous blocks to get to the enclosing RenderBlock.
-            while (object && (!object->isRenderBlock() || object->isAnonymousBlock()))
+            bool willSkipRelativelyPositionedInlines = !object->isLayoutBlock() || object->isAnonymousBlock();
+            // Skip relatively positioned inlines and anonymous blocks to get to the enclosing LayoutBlock.
+            while (object && (!object->isLayoutBlock() || object->isAnonymousBlock()))
                 object = object->container();
             if (!object || object->posChildNeedsLayout())
                 return;
@@ -739,8 +739,8 @@ void LayoutObject::checkBlockPositionedObjectsNeedLayout()
 {
     ASSERT(!needsLayout());
 
-    if (isRenderBlock())
-        toRenderBlock(this)->checkPositionedObjectsNeedLayout();
+    if (isLayoutBlock())
+        toLayoutBlock(this)->checkPositionedObjectsNeedLayout();
 }
 #endif
 
@@ -778,7 +778,7 @@ void LayoutObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-RenderBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
 {
     ASSERT(!paintInvalidationContainerSkipped || !*paintInvalidationContainerSkipped);
     ASSERT(!isText());
@@ -791,10 +791,10 @@ RenderBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject*
     }
 
     ASSERT(!ancestor || !ancestor->isAnonymousBlock());
-    return toRenderBlock(ancestor);
+    return toLayoutBlock(ancestor);
 }
 
-RenderBlock* LayoutObject::containingBlock() const
+LayoutBlock* LayoutObject::containingBlock() const
 {
     LayoutObject* o = parent();
     if (!o && isLayoutScrollbarPart())
@@ -805,7 +805,7 @@ RenderBlock* LayoutObject::containingBlock() const
         while (o) {
             // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
             // to return the inline itself.  This allows us to avoid having a positioned objects
-            // list in all LayoutInlines and lets us return a strongly-typed RenderBlock* result
+            // list in all LayoutInlines and lets us return a strongly-typed LayoutBlock* result
             // from this method.  The container() method can actually be used to obtain the
             // inline directly.
             if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
@@ -822,7 +822,7 @@ RenderBlock* LayoutObject::containingBlock() const
             o = o->parent();
         }
 
-        if (o && !o->isRenderBlock())
+        if (o && !o->isLayoutBlock())
             o = o->containingBlock();
 
         while (o && o->isAnonymousBlock())
@@ -830,14 +830,14 @@ RenderBlock* LayoutObject::containingBlock() const
     } else if (isColumnSpanAll()) {
         o = spannerPlaceholder()->containingBlock();
     } else {
-        while (o && ((o->isInline() && !o->isReplaced()) || !o->isRenderBlock()))
+        while (o && ((o->isInline() && !o->isReplaced()) || !o->isLayoutBlock()))
             o = o->parent();
     }
 
-    if (!o || !o->isRenderBlock())
+    if (!o || !o->isLayoutBlock())
         return 0; // This can still happen in case of an orphaned tree
 
-    return toRenderBlock(o);
+    return toLayoutBlock(o);
 }
 
 bool LayoutObject::canRenderBorderImage() const
@@ -1384,8 +1384,8 @@ void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
     }
 
     if (LayoutObject* o = parent()) {
-        if (o->isRenderBlockFlow()) {
-            RenderBlock* cb = toRenderBlock(o);
+        if (o->isLayoutBlockFlow()) {
+            LayoutBlock* cb = toLayoutBlock(o);
             if (cb->hasColumns())
                 cb->adjustRectForColumns(rect);
         }
@@ -1524,7 +1524,7 @@ void LayoutObject::handleDynamicFloatPositionChange()
             toLayoutBoxModelObject(parent())->childBecameNonInline(this);
         } else {
             // An anonymous block must be made to wrap this inline.
-            RenderBlock* block = toRenderBlock(parent())->createAnonymousBlock();
+            LayoutBlock* block = toLayoutBlock(parent())->createAnonymousBlock();
             LayoutObjectChildList* childlist = parent()->virtualChildren();
             childlist->insertChildNode(parent(), block, this);
             block->children()->appendChildNode(block, childlist->removeChildNode(parent(), this));
@@ -1608,7 +1608,7 @@ void LayoutObject::setPseudoStyle(PassRefPtr<LayoutStyle> pseudoStyle)
 
 void LayoutObject::markContainingBlocksForOverflowRecalc()
 {
-    for (RenderBlock* container = containingBlock(); container && !container->childNeedsOverflowRecalcAfterStyleChange(); container = container->containingBlock())
+    for (LayoutBlock* container = containingBlock(); container && !container->childNeedsOverflowRecalcAfterStyleChange(); container = container->containingBlock())
         container->setChildNeedsOverflowRecalcAfterStyleChange(true);
 }
 
@@ -1673,7 +1673,7 @@ void LayoutObject::setStyle(PassRefPtr<LayoutStyle> style)
     }
 
     if (diff.transformChanged() && !needsLayout()) {
-        if (RenderBlock* container = containingBlock())
+        if (LayoutBlock* container = containingBlock())
             container->setNeedsOverflowRecalcAfterStyleChange();
     }
 
@@ -1721,7 +1721,7 @@ void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newS
 
         s_affectsParentBlock = isFloatingOrOutOfFlowPositioned()
             && (!newStyle.isFloating() && !newStyle.hasOutOfFlowPosition())
-            && parent() && (parent()->isRenderBlockFlow() || parent()->isLayoutInline());
+            && parent() && (parent()->isLayoutBlockFlow() || parent()->isLayoutInline());
 
         // Clearing these bits is required to avoid leaving stale renderers.
         // FIXME: We shouldn't need that hack if our logic was totally correct.
@@ -1836,7 +1836,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (!child->isAnonymous() || child->style()->styleType() != NOPSEUDO)
             continue;
 
-        if (blockChildrenOnly && !child->isRenderBlock())
+        if (blockChildrenOnly && !child->isLayoutBlock())
             continue;
 
         if (child->isRenderFullScreen() || child->isRenderFullScreenPlaceholder())
@@ -1854,7 +1854,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
 
         // Preserve the position style of anonymous block continuations as they can have relative position when
         // they contain block descendants of relative positioned inlines.
-        if (child->isRelPositioned() && toRenderBlock(child)->isAnonymousBlockContinuation())
+        if (child->isRelPositioned() && toLayoutBlock(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
         updateAnonymousChildStyle(*child, *newStyle);
@@ -2440,8 +2440,8 @@ void LayoutObject::destroyAndCleanupAnonymousWrappers()
 
     LayoutObject* destroyRoot = this;
     for (LayoutObject* destroyRootParent = destroyRoot->parent(); destroyRootParent && destroyRootParent->isAnonymous(); destroyRoot = destroyRootParent, destroyRootParent = destroyRootParent->parent()) {
-        // Anonymous block continuations are tracked and destroyed elsewhere (see the bottom of RenderBlock::removeChild)
-        if (destroyRootParent->isRenderBlock() && toRenderBlock(destroyRootParent)->isAnonymousBlockContinuation())
+        // Anonymous block continuations are tracked and destroyed elsewhere (see the bottom of LayoutBlock::removeChild)
+        if (destroyRootParent->isLayoutBlock() && toLayoutBlock(destroyRootParent)->isAnonymousBlockContinuation())
             break;
         // A flow thread is tracked by its containing block. Whether its children are removed or not is irrelevant.
         if (destroyRootParent->isLayoutFlowThread())
@@ -2620,8 +2620,8 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
     if (renderer->isBeforeOrAfterContent())
         rendererForFirstLineStyle = renderer->parent();
 
-    if (rendererForFirstLineStyle->isRenderBlockFlow() || rendererForFirstLineStyle->isRenderButton()) {
-        if (RenderBlock* firstLineBlock = rendererForFirstLineStyle->firstLineBlock()) {
+    if (rendererForFirstLineStyle->isLayoutBlockFlow() || rendererForFirstLineStyle->isRenderButton()) {
+        if (LayoutBlock* firstLineBlock = rendererForFirstLineStyle->firstLineBlock()) {
             if (type == Cached)
                 return firstLineBlock->getCachedPseudoStyle(FIRST_LINE, style);
             return firstLineBlock->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE), style, firstLineBlock == renderer ? style : 0);
@@ -2752,8 +2752,8 @@ void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
         if (curr->isRubyText())
             return;
         curr = curr->parent();
-        if (curr && curr->isAnonymousBlock() && toRenderBlock(curr)->continuation())
-            curr = toRenderBlock(curr)->continuation();
+        if (curr && curr->isAnonymousBlock() && toLayoutBlock(curr)->continuation())
+            curr = toLayoutBlock(curr)->continuation();
     } while (curr && decorations && (!quirksMode || !curr->node() || (!isHTMLAnchorElement(*curr->node()) && !isHTMLFontElement(*curr->node()))));
 
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).
@@ -2992,7 +2992,7 @@ bool LayoutObject::canUpdateSelectionOnRootLineBoxes() const
     if (needsLayout())
         return false;
 
-    const RenderBlock* containingBlock = this->containingBlock();
+    const LayoutBlock* containingBlock = this->containingBlock();
     return containingBlock ? !containingBlock->needsLayout() : false;
 }
 

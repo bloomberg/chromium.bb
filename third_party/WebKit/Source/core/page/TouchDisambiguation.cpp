@@ -40,8 +40,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderBlock.h"
 #include <algorithm>
 #include <cmath>
 
@@ -109,7 +109,7 @@ void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector
             continue;
 
         // Blacklist all of the Node's containers.
-        for (RenderBlock* container = renderer->containingBlock(); container; container = container->containingBlock()) {
+        for (LayoutBlock* container = renderer->containingBlock(); container; container = container->containingBlock()) {
             Node* containerNode = container->node();
             if (!containerNode)
                 continue;

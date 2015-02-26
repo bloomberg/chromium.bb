@@ -26,7 +26,7 @@
 #ifndef LayoutVTTCue_h
 #define LayoutVTTCue_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 class VTTCue;
 class VTTCueBox;
 
-class LayoutVTTCue final : public RenderBlockFlow {
+class LayoutVTTCue final : public LayoutBlockFlow {
 public:
     explicit LayoutVTTCue(VTTCueBox*);
 

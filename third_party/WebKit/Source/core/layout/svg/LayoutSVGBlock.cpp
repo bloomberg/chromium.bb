@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 
@@ -48,10 +48,10 @@ LayoutRect LayoutSVGBlock::visualOverflowRect() const
 
 void LayoutSVGBlock::updateFromStyle()
 {
-    RenderBlock::updateFromStyle();
+    LayoutBlock::updateFromStyle();
 
     // LayoutSVGlock, used by Render(SVGText|ForeignObject), is not allowed to call setHasOverflowClip(true).
-    // RenderBlock assumes a layer to be present when the overflow clip functionality is requested. Both
+    // LayoutBlock assumes a layer to be present when the overflow clip functionality is requested. Both
     // Render(SVGText|ForeignObject) return 'NoLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
     //
     // If we want to support overflow rules for <foreignObject> we can choose between two solutions:
@@ -74,7 +74,7 @@ void LayoutSVGBlock::absoluteRects(Vector<IntRect>&, const LayoutPoint&) const
 void LayoutSVGBlock::willBeDestroyed()
 {
     SVGResourcesCache::clientDestroyed(this);
-    RenderBlockFlow::willBeDestroyed();
+    LayoutBlockFlow::willBeDestroyed();
 }
 
 void LayoutSVGBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
@@ -88,7 +88,7 @@ void LayoutSVGBlock::styleDidChange(StyleDifference diff, const LayoutStyle* old
             parent()->descendantIsolationRequirementsChanged(style()->hasBlendMode() ? DescendantIsolationRequired : DescendantIsolationNeedsUpdate);
     }
 
-    RenderBlock::styleDidChange(diff, oldStyle);
+    LayoutBlock::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
@@ -140,7 +140,7 @@ void LayoutSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintI
     }
 
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
-    RenderBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
+    LayoutBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 void LayoutSVGBlock::updatePaintInfoRect(IntRect& rect)

@@ -9,6 +9,7 @@
 #include "core/layout/ClipPathOperation.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
@@ -19,7 +20,6 @@
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -471,7 +471,7 @@ static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* rendere
 {
     LayoutView* view = renderer->view();
     LayoutBoxModelObject* prevBlock = renderer;
-    RenderBlock* containingBlock;
+    LayoutBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();
         containingBlock && containingBlock != view && containingBlock != ancestorColumnsRenderer;
         containingBlock = containingBlock->containingBlock())
@@ -514,7 +514,7 @@ void LayerPainter::paintPaginatedChildLayer(GraphicsContext* context, const Laye
 void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const LayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags, const Vector<Layer*>& columnLayers, size_t colIndex)
 {
-    RenderBlock* columnBlock = toRenderBlock(columnLayers[colIndex]->renderer());
+    LayoutBlock* columnBlock = toLayoutBlock(columnLayers[colIndex]->renderer());
 
     ASSERT(columnBlock && columnBlock->hasColumns());
     if (!columnBlock || !columnBlock->hasColumns())

@@ -33,13 +33,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderBlockFlow_h
-#define RenderBlockFlow_h
+#ifndef LayoutBlockFlow_h
+#define LayoutBlockFlow_h
 
 #include "core/layout/FloatingObjects.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/style/LayoutStyleConstants.h"
-#include "core/rendering/RenderBlock.h"
 
 namespace blink {
 
@@ -52,14 +52,14 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 template <class Run> class BidiRunList;
 
-class RenderBlockFlow : public RenderBlock {
+class LayoutBlockFlow : public LayoutBlock {
 public:
-    explicit RenderBlockFlow(ContainerNode*);
-    virtual ~RenderBlockFlow();
+    explicit LayoutBlockFlow(ContainerNode*);
+    virtual ~LayoutBlockFlow();
 
-    static RenderBlockFlow* createAnonymous(Document*);
+    static LayoutBlockFlow* createAnonymous(Document*);
 
-    virtual bool isRenderBlockFlow() const override final { return true; }
+    virtual bool isLayoutBlockFlow() const override final { return true; }
 
     virtual void layoutBlock(bool relayoutChildren) override;
 
@@ -90,16 +90,16 @@ public:
             : logicalWidth() - logicalRightOffsetForLine(position, shouldIndentText, logicalHeight);
     }
 
-    // FIXME-BLOCKFLOW: Move this into RenderBlockFlow once there are no calls
-    // in RenderBlock. http://crbug.com/393945, http://crbug.com/302024
-    using RenderBlock::lineBoxes;
-    using RenderBlock::firstLineBox;
-    using RenderBlock::lastLineBox;
-    using RenderBlock::firstRootBox;
-    using RenderBlock::lastRootBox;
+    // FIXME-BLOCKFLOW: Move this into LayoutBlockFlow once there are no calls
+    // in LayoutBlock. http://crbug.com/393945, http://crbug.com/302024
+    using LayoutBlock::lineBoxes;
+    using LayoutBlock::firstLineBox;
+    using LayoutBlock::lastLineBox;
+    using LayoutBlock::firstRootBox;
+    using LayoutBlock::lastRootBox;
 
-    virtual LayoutUnit logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const override;
-    virtual LayoutUnit logicalRightSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const override;
+    virtual LayoutUnit logicalLeftSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const override;
+    virtual LayoutUnit logicalRightSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const override;
 
     RootInlineBox* createAndAppendRootInlineBox();
 
@@ -113,7 +113,7 @@ public:
 
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
 
-    void moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert);
+    void moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, bool fullRemoveInsert);
 
     bool generatesLineBoxesForInlineChild(LayoutObject*);
 
@@ -182,21 +182,21 @@ public:
     void computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth);
 
     virtual bool shouldPaintSelectionGaps() const override final;
-    LayoutRect logicalLeftSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutRect logicalLeftSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         const LayoutObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
-    LayoutRect logicalRightSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutRect logicalRightSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         const LayoutObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
     void getSelectionGapInfo(SelectionState, bool& leftGap, bool& rightGap) const;
 
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override final;
     GapRects selectionGapRectsForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const;
-    GapRects selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    GapRects selectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
-    GapRects inlineSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    GapRects inlineSelectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
-    GapRects blockSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    GapRects blockSelectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
-    LayoutRect blockSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutRect blockSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit lastLogicalTop, LayoutUnit lastLogicalLeft, LayoutUnit lastLogicalRight, LayoutUnit logicalBottom, const PaintInfo*) const;
 
     LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
@@ -289,8 +289,8 @@ private:
 
     bool hasOverhangingFloats() { return parent() && !hasColumns() && containsFloats() && lowestFloatLogicalBottom() > logicalHeight(); }
     bool hasOverhangingFloat(LayoutBox*);
-    void addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit xoffset, LayoutUnit yoffset);
-    void addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats);
+    void addIntrudingFloats(LayoutBlockFlow* prev, LayoutUnit xoffset, LayoutUnit yoffset);
+    void addOverhangingFloats(LayoutBlockFlow* child, bool makeChildPaintOtherFloats);
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type = FloatingObject::FloatLeftRight) const;
     LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatMarginBoxOffset) const;
@@ -301,7 +301,7 @@ private:
     virtual void invalidatePaintForOverflow() override final;
     virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase = false) override final;
     virtual void paintSelection(const PaintInfo&, const LayoutPoint&) override final;
-    virtual void clipOutFloatingObjects(const RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const override;
+    virtual void clipOutFloatingObjects(const LayoutBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const override;
     void clearFloats(EClear);
 
     LayoutUnit logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit logicalHeight) const;
@@ -340,6 +340,8 @@ private:
     void clearDidBreakAtLineToAvoidWidow();
     void setDidBreakAtLineToAvoidWidow();
     bool didBreakAtLineToAvoidWidow() const { return m_rareData && m_rareData->m_didBreakAtLineToAvoidWidow; }
+
+    virtual const char* renderName() const override;
 
 public:
     struct FloatWithRect {
@@ -384,10 +386,10 @@ public:
     MarginValues marginValuesForChild(LayoutBox& child) const;
 
     // Allocated only when some of these fields have non-default values
-    struct RenderBlockFlowRareData {
-        WTF_MAKE_NONCOPYABLE(RenderBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED;
+    struct LayoutBlockFlowRareData {
+        WTF_MAKE_NONCOPYABLE(LayoutBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED;
     public:
-        RenderBlockFlowRareData(const RenderBlockFlow* block)
+        LayoutBlockFlowRareData(const LayoutBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
             , m_paginationStrut(0)
             , m_multiColumnFlowThread(nullptr)
@@ -398,19 +400,19 @@ public:
         {
         }
 
-        static LayoutUnit positiveMarginBeforeDefault(const RenderBlockFlow* block)
+        static LayoutUnit positiveMarginBeforeDefault(const LayoutBlockFlow* block)
         {
             return std::max<LayoutUnit>(block->marginBefore(), 0);
         }
-        static LayoutUnit negativeMarginBeforeDefault(const RenderBlockFlow* block)
+        static LayoutUnit negativeMarginBeforeDefault(const LayoutBlockFlow* block)
         {
             return std::max<LayoutUnit>(-block->marginBefore(), 0);
         }
-        static LayoutUnit positiveMarginAfterDefault(const RenderBlockFlow* block)
+        static LayoutUnit positiveMarginAfterDefault(const LayoutBlockFlow* block)
         {
             return std::max<LayoutUnit>(block->marginAfter(), 0);
         }
-        static LayoutUnit negativeMarginAfterDefault(const RenderBlockFlow* block)
+        static LayoutUnit negativeMarginAfterDefault(const LayoutBlockFlow* block)
         {
             return std::max<LayoutUnit>(-block->marginAfter(), 0);
         }
@@ -431,10 +433,10 @@ public:
 
 
 protected:
-    LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : RenderBlockFlowRareData::positiveMarginBeforeDefault(this); }
-    LayoutUnit maxNegativeMarginBefore() const { return m_rareData ? m_rareData->m_margins.negativeMarginBefore() : RenderBlockFlowRareData::negativeMarginBeforeDefault(this); }
-    LayoutUnit maxPositiveMarginAfter() const { return m_rareData ? m_rareData->m_margins.positiveMarginAfter() : RenderBlockFlowRareData::positiveMarginAfterDefault(this); }
-    LayoutUnit maxNegativeMarginAfter() const { return m_rareData ? m_rareData->m_margins.negativeMarginAfter() : RenderBlockFlowRareData::negativeMarginAfterDefault(this); }
+    LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : LayoutBlockFlowRareData::positiveMarginBeforeDefault(this); }
+    LayoutUnit maxNegativeMarginBefore() const { return m_rareData ? m_rareData->m_margins.negativeMarginBefore() : LayoutBlockFlowRareData::negativeMarginBeforeDefault(this); }
+    LayoutUnit maxPositiveMarginAfter() const { return m_rareData ? m_rareData->m_margins.positiveMarginAfter() : LayoutBlockFlowRareData::positiveMarginAfterDefault(this); }
+    LayoutUnit maxNegativeMarginAfter() const { return m_rareData ? m_rareData->m_margins.negativeMarginAfter() : LayoutBlockFlowRareData::negativeMarginAfterDefault(this); }
 
     void setMaxMarginBeforeValues(LayoutUnit pos, LayoutUnit neg);
     void setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg);
@@ -454,8 +456,8 @@ protected:
     void initMaxMarginValues()
     {
         if (m_rareData) {
-            m_rareData->m_margins = MarginValues(RenderBlockFlowRareData::positiveMarginBeforeDefault(this) , RenderBlockFlowRareData::negativeMarginBeforeDefault(this),
-                RenderBlockFlowRareData::positiveMarginAfterDefault(this), RenderBlockFlowRareData::negativeMarginAfterDefault(this));
+            m_rareData->m_margins = MarginValues(LayoutBlockFlowRareData::positiveMarginBeforeDefault(this) , LayoutBlockFlowRareData::negativeMarginBeforeDefault(this),
+                LayoutBlockFlowRareData::positiveMarginAfterDefault(this), LayoutBlockFlowRareData::negativeMarginAfterDefault(this));
 
             m_rareData->m_discardMarginBefore = false;
             m_rareData->m_discardMarginAfter = false;
@@ -486,7 +488,7 @@ private:
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;
 
-    RenderBlockFlowRareData& ensureRareData();
+    LayoutBlockFlowRareData& ensureRareData();
 
     LayoutUnit m_paintInvalidationLogicalTop;
     LayoutUnit m_paintInvalidationLogicalBottom;
@@ -494,7 +496,7 @@ private:
     virtual bool isSelfCollapsingBlock() const override;
 
 protected:
-    OwnPtr<RenderBlockFlowRareData> m_rareData;
+    OwnPtr<LayoutBlockFlowRareData> m_rareData;
     OwnPtr<FloatingObjects> m_floatingObjects;
 
     friend class BreakingContext; // FIXME: It uses insertFloatingObject and positionNewFloatOnLine, if we move those out from the private scope/add a helper to LineBreaker, we can remove this friend
@@ -503,9 +505,9 @@ protected:
     friend class LineWidth; // needs to know FloatingObject
 
 // FIXME-BLOCKFLOW: These methods have implementations in
-// RenderBlockLineLayout. They should be moved to the proper header once the
-// line layout code is separated from RenderBlock and RenderBlockFlow.
-// START METHODS DEFINED IN RenderBlockLineLayout
+// LayoutBlockFlowLine. They should be moved to the proper header once the
+// line layout code is separated from LayoutBlock and LayoutBlockFlow.
+// START METHODS DEFINED IN LayoutBlockFlowLine
 private:
     InlineFlowBox* createLineBoxes(LayoutObject*, const LineInfo&, InlineBox* childBox);
     RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
@@ -535,12 +537,12 @@ private:
     bool positionNewFloatOnLine(FloatingObject* newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
     void positionDialog();
 
-// END METHODS DEFINED IN RenderBlockLineLayout
+// END METHODS DEFINED IN LayoutBlockFlowLine
 
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBlockFlow, isRenderBlockFlow());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlockFlow, isLayoutBlockFlow());
 
 } // namespace blink
 
-#endif // RenderBlockFlow_h
+#endif // LayoutBlockFlow_h

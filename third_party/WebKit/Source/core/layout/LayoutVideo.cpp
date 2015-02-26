@@ -201,7 +201,7 @@ bool LayoutVideo::supportsAcceleratedRendering() const
     return !!mediaElement()->platformLayer();
 }
 
-static const RenderBlock* rendererPlaceholder(const LayoutObject* renderer)
+static const LayoutBlock* rendererPlaceholder(const LayoutObject* renderer)
 {
     LayoutObject* parent = renderer->parent();
     if (!parent)
@@ -216,28 +216,28 @@ static const RenderBlock* rendererPlaceholder(const LayoutObject* renderer)
 
 LayoutUnit LayoutVideo::offsetLeft() const
 {
-    if (const RenderBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = rendererPlaceholder(this))
         return block->offsetLeft();
     return LayoutMedia::offsetLeft();
 }
 
 LayoutUnit LayoutVideo::offsetTop() const
 {
-    if (const RenderBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = rendererPlaceholder(this))
         return block->offsetTop();
     return LayoutMedia::offsetTop();
 }
 
 LayoutUnit LayoutVideo::offsetWidth() const
 {
-    if (const RenderBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = rendererPlaceholder(this))
         return block->offsetWidth();
     return LayoutMedia::offsetWidth();
 }
 
 LayoutUnit LayoutVideo::offsetHeight() const
 {
-    if (const RenderBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = rendererPlaceholder(this))
         return block->offsetHeight();
     return LayoutMedia::offsetHeight();
 }

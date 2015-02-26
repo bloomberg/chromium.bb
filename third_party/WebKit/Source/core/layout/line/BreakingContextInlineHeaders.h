@@ -49,7 +49,7 @@ const unsigned cMaxLineDepth = 200;
 
 class BreakingContext {
 public:
-    BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, LayoutTextInfo& inLayoutTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, RenderBlockFlow* block)
+    BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, LayoutTextInfo& inLayoutTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, LayoutBlockFlow* block)
         : m_resolver(resolver)
         , m_current(resolver.position())
         , m_lineBreak(resolver.position())
@@ -115,7 +115,7 @@ private:
     InlineIterator m_lineBreak;
     InlineIterator m_startOfIgnoredSpaces;
 
-    RenderBlockFlow* m_block;
+    LayoutBlockFlow* m_block;
     LayoutObject* m_lastObject;
     LayoutObject* m_nextObject;
 
@@ -198,7 +198,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
     return notJustWhitespace || isEmptyInline(it.object());
 }
 
-inline void setStaticPositions(RenderBlockFlow* block, LayoutBox* child)
+inline void setStaticPositions(LayoutBlockFlow* block, LayoutBox* child)
 {
     ASSERT(child->isOutOfFlowPositioned());
     // FIXME: The math here is actually not really right. It's a best-guess approximation that
@@ -386,7 +386,7 @@ inline void BreakingContext::handleFloat()
 
 // This is currently just used for list markers and inline flows that have line boxes. Neither should
 // have an effect on whitespace at the start of the line.
-inline bool shouldSkipWhitespaceAfterStartObject(RenderBlockFlow* block, LayoutObject* o, LineMidpointState& lineMidpointState)
+inline bool shouldSkipWhitespaceAfterStartObject(LayoutBlockFlow* block, LayoutObject* o, LineMidpointState& lineMidpointState)
 {
     LayoutObject* next = bidiNextSkippingEmptyInlines(block, o);
     while (next && next->isFloatingOrOutOfFlowPositioned())

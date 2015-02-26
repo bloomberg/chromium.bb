@@ -25,7 +25,7 @@
 namespace blink {
 
 LayoutTableCaption::LayoutTableCaption(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 
@@ -35,20 +35,20 @@ LayoutTableCaption::~LayoutTableCaption()
 
 LayoutUnit LayoutTableCaption::containingBlockLogicalWidthForContent() const
 {
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     return cb->logicalWidth();
 }
 
 void LayoutTableCaption::insertedIntoTree()
 {
-    RenderBlockFlow::insertedIntoTree();
+    LayoutBlockFlow::insertedIntoTree();
 
     table()->addCaption(this);
 }
 
 void LayoutTableCaption::willBeRemovedFromTree()
 {
-    RenderBlockFlow::willBeRemovedFromTree();
+    LayoutBlockFlow::willBeRemovedFromTree();
 
     table()->removeCaption(this);
 }

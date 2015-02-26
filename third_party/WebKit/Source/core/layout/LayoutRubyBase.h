@@ -31,13 +31,13 @@
 #ifndef LayoutRubyBase_h
 #define LayoutRubyBase_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class LayoutRubyRun;
 
-class LayoutRubyBase final : public RenderBlockFlow {
+class LayoutRubyBase final : public LayoutBlockFlow {
 public:
     virtual ~LayoutRubyBase();
 
@@ -45,7 +45,7 @@ public:
 
     virtual const char* renderName() const override { return "LayoutRubyBase (anonymous)"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || LayoutBlockFlow::isOfType(type); }
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 

@@ -37,7 +37,7 @@
 namespace blink {
 
 LayoutFlowThread::LayoutFlowThread()
-    : RenderBlockFlow(0)
+    : LayoutBlockFlow(0)
     , m_regionsInvalidated(false)
     , m_regionsHaveUniformLogicalHeight(true)
     , m_pageLogicalSizeChanged(false)
@@ -102,13 +102,13 @@ void LayoutFlowThread::mapRectToPaintInvalidationBacking(const LayoutBoxModelObj
     flipForWritingMode(rect);
     rect = fragmentsBoundingBox(rect);
     flipForWritingMode(rect);
-    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 void LayoutFlowThread::layout()
 {
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
-    RenderBlockFlow::layout();
+    LayoutBlockFlow::layout();
     m_pageLogicalSizeChanged = false;
 }
 
@@ -127,7 +127,7 @@ bool LayoutFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult&
 {
     if (hitTestAction == HitTestBlockBackground)
         return false;
-    return RenderBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction);
+    return LayoutBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction);
 }
 
 LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)

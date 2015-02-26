@@ -71,7 +71,7 @@ struct RenderFlexibleBox::Violation {
 
 
 RenderFlexibleBox::RenderFlexibleBox(Element* element)
-    : RenderBlock(element)
+    : LayoutBlock(element)
     , m_orderIterator(this)
     , m_numberOfInFlowChildrenOnFirstLine(-1)
 {
@@ -199,13 +199,13 @@ int RenderFlexibleBox::inlineBlockBaseline(LineDirectionMode direction) const
 
 void RenderFlexibleBox::removeChild(LayoutObject* child)
 {
-    RenderBlock::removeChild(child);
+    LayoutBlock::removeChild(child);
     m_intrinsicSizeAlongMainAxis.remove(child);
 }
 
 void RenderFlexibleBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(diff, oldStyle);
+    LayoutBlock::styleDidChange(diff, oldStyle);
 
     if (oldStyle && oldStyle->alignItems() == ItemPositionStretch && diff.needsFullLayout()) {
         // Flex items that were previously stretching need to be relayed out so we can compute new available cross axis space.
@@ -237,7 +237,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
 
         m_numberOfInFlowChildrenOnFirstLine = -1;
 
-        RenderBlock::startDelayUpdateScrollInfo();
+        LayoutBlock::startDelayUpdateScrollInfo();
 
         prepareOrderIteratorAndMargins();
 
@@ -246,7 +246,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
 
         layoutFlexItems(relayoutChildren);
 
-        RenderBlock::finishDelayUpdateScrollInfo();
+        LayoutBlock::finishDelayUpdateScrollInfo();
 
         if (logicalHeight() != previousHeight)
             relayoutChildren = true;

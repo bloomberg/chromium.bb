@@ -1174,7 +1174,7 @@ bool isNonTableCellHTMLBlockElement(const Node* node)
 bool isBlockFlowElement(const Node& node)
 {
     LayoutObject* renderer = node.renderer();
-    return node.isElementNode() && renderer && renderer->isRenderBlockFlow();
+    return node.isElementNode() && renderer && renderer->isLayoutBlockFlow();
 }
 
 Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selection)

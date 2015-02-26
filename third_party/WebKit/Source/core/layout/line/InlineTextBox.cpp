@@ -25,13 +25,13 @@
 
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBR.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "wtf/Vector.h"
@@ -339,7 +339,7 @@ bool InlineTextBox::getEmphasisMarkPosition(const LayoutStyle& style, TextEmphas
     if (emphasisPosition == TextEmphasisPositionUnder)
         return true; // Ruby text is always over, so it cannot suppress emphasis marks under.
 
-    RenderBlock* containingBlock = renderer().containingBlock();
+    LayoutBlock* containingBlock = renderer().containingBlock();
     if (!containingBlock->isRubyBase())
         return true; // This text is not inside a ruby base, so it does not have ruby text over it.
 
@@ -397,7 +397,7 @@ int InlineTextBox::caretMaxOffset() const
 
 FloatWillBeLayoutUnit InlineTextBox::textPos() const
 {
-    // When computing the width of a text run, RenderBlock::computeInlineDirectionPositionsForLine() doesn't include the actual offset
+    // When computing the width of a text run, LayoutBlock::computeInlineDirectionPositionsForLine() doesn't include the actual offset
     // from the containing block edge in its measurement. textPos() should be consistent so the text are rendered in the same width.
     if (logicalLeft() == 0)
         return 0;

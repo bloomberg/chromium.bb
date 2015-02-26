@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class RenderBlockFlow;
+class LayoutBlockFlow;
 class LayoutBox;
 class FloatingObject;
 
@@ -95,7 +95,7 @@ public:
     static PassOwnPtr<ShapeOutsideInfo> createInfo(const LayoutBox& renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
     static bool isEnabledFor(const LayoutBox&);
 
-    ShapeOutsideDeltas computeDeltasForContainingBlockLine(const RenderBlockFlow&, const FloatingObject&, LayoutUnit lineTop, LayoutUnit lineHeight);
+    ShapeOutsideDeltas computeDeltasForContainingBlockLine(const LayoutBlockFlow&, const FloatingObject&, LayoutUnit lineTop, LayoutUnit lineHeight);
 
     static ShapeOutsideInfo& ensureInfo(const LayoutBox& key)
     {

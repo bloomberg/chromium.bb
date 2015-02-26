@@ -295,7 +295,7 @@ LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit 
     // layout pass too, but there's really nothing we can do there until the flow thread has been
     // laid out anyway.
     if (m_columnSet.previousSiblingMultiColumnSet()) {
-        RenderBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
+        LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
         LayoutUnit contentLogicalTop = m_columnSet.logicalTop() - multicolBlock->borderAndPaddingBefore();
         height -= contentLogicalTop;
     }
@@ -305,7 +305,7 @@ LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit 
 
 LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
 {
-    RenderBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
+    LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
     LayoutStyle* multicolStyle = multicolBlock->style();
     LayoutUnit availableHeight = m_columnSet.multiColumnFlowThread()->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutFlowThread::maxLogicalHeight();

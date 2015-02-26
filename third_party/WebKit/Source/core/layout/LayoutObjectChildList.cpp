@@ -117,7 +117,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
 {
     ASSERT(!newChild->parent());
     ASSERT(this == owner->virtualChildren());
-    ASSERT(!owner->isRenderBlockFlow() || (!newChild->isTableSection() && !newChild->isTableRow() && !newChild->isTableCell()));
+    ASSERT(!owner->isLayoutBlockFlow() || (!newChild->isTableSection() && !newChild->isTableRow() && !newChild->isTableCell()));
 
     while (beforeChild && beforeChild->parent() && beforeChild->parent() != owner)
         beforeChild = beforeChild->parent();

@@ -23,6 +23,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
@@ -30,7 +31,6 @@
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/RootInlineBoxPainter.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/text/BidiResolver.h"
 #include "wtf/unicode/Unicode.h"
 
@@ -47,7 +47,7 @@ static_assert(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), "RootInl
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = 0;
 
-RootInlineBox::RootInlineBox(RenderBlockFlow& block)
+RootInlineBox::RootInlineBox(LayoutBlockFlow& block)
     : InlineFlowBox(block)
     , m_lineBreakPos(0)
     , m_lineBreakObj(0)
@@ -280,7 +280,7 @@ LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
     return result;
 }
 
-GapRects RootInlineBox::lineSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo* paintInfo) const
+GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo* paintInfo) const
 {
     LayoutObject::SelectionState lineState = selectionState();
 
@@ -410,9 +410,9 @@ LayoutUnit RootInlineBox::selectionTopAdjustedForPrecedingBlock() const
         return top;
 
     LayoutSize offsetToBlockBefore;
-    if (RenderBlock* block = root().block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
-        if (block->isRenderBlockFlow()) {
-            if (RootInlineBox* lastLine = toRenderBlockFlow(block)->lastRootBox()) {
+    if (LayoutBlock* block = root().block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
+        if (block->isLayoutBlockFlow()) {
+            if (RootInlineBox* lastLine = toLayoutBlockFlow(block)->lastRootBox()) {
                 LayoutObject::SelectionState lastLineSelectionState = lastLine->selectionState();
                 if (lastLineSelectionState != LayoutObject::SelectionInside && lastLineSelectionState != LayoutObject::SelectionStart)
                     return top;
@@ -457,9 +457,9 @@ LayoutUnit RootInlineBox::blockDirectionPointInLine() const
     return !block().style()->isFlippedBlocksWritingMode() ? std::max(lineTop(), selectionTop()) : std::min(lineBottom(), selectionBottom());
 }
 
-RenderBlockFlow& RootInlineBox::block() const
+LayoutBlockFlow& RootInlineBox::block() const
 {
-    return toRenderBlockFlow(renderer());
+    return toLayoutBlockFlow(renderer());
 }
 
 static bool isEditableLeaf(InlineBox* leaf)

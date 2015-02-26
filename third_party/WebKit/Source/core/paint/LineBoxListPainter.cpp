@@ -22,7 +22,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
         && paintInfo.phase != PaintPhaseMask)
         return;
 
-    ASSERT(renderer->isRenderBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could paint like this is if it has a layer.
+    ASSERT(renderer->isLayoutBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could paint like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
     if (!m_lineBoxList.firstLineBox())

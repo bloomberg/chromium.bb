@@ -23,13 +23,13 @@
 #ifndef LayoutDeprecatedFlexibleBox_h
 #define LayoutDeprecatedFlexibleBox_h
 
-#include "core/rendering/RenderBlock.h"
+#include "core/layout/LayoutBlock.h"
 
 namespace blink {
 
 class FlexBoxIterator;
 
-class LayoutDeprecatedFlexibleBox final : public RenderBlock {
+class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
 public:
     LayoutDeprecatedFlexibleBox(Element&);
     virtual ~LayoutDeprecatedFlexibleBox();

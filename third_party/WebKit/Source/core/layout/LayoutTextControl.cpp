@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutTextControl::LayoutTextControl(HTMLTextFormControlElement* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
     ASSERT(element);
 }
@@ -57,18 +57,18 @@ void LayoutTextControl::addChild(LayoutObject* newChild, LayoutObject* beforeChi
     // make us paint the placeholder first. (See https://trac.webkit.org/changeset/118733)
     Node* node = newChild->node();
     if (node && node->isElementNode() && toElement(node)->shadowPseudoId() == "-webkit-input-placeholder")
-        RenderBlockFlow::addChild(newChild, firstChild());
+        LayoutBlockFlow::addChild(newChild, firstChild());
     else
-        RenderBlockFlow::addChild(newChild, beforeChild);
+        LayoutBlockFlow::addChild(newChild, beforeChild);
 }
 
 void LayoutTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBlockFlow::styleDidChange(diff, oldStyle);
+    LayoutBlockFlow::styleDidChange(diff, oldStyle);
     Element* innerEditor = innerEditorElement();
     if (!innerEditor)
         return;
-    RenderBlock* innerEditorRenderer = toRenderBlock(innerEditor->renderer());
+    LayoutBlock* innerEditorRenderer = toLayoutBlock(innerEditor->renderer());
     if (innerEditorRenderer) {
         // We may have set the width and the height in the old style in layout().
         // Reset them now to avoid getting a spurious layout hint.

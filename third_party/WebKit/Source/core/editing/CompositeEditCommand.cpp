@@ -69,9 +69,9 @@
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSpanElement.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderText.h"
 
 namespace blink {
@@ -843,7 +843,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlacehold
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
+    // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(container->renderer());
 
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
@@ -856,7 +856,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlacehold
     if (pos.isNull())
         return nullptr;
 
-    // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
+    // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(pos.deprecatedNode()->renderer());
 
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
@@ -872,12 +872,12 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderI
     document().updateLayoutIgnorePendingStylesheets();
 
     LayoutObject* renderer = container->renderer();
-    if (!renderer || !renderer->isRenderBlockFlow())
+    if (!renderer || !renderer->isLayoutBlockFlow())
         return nullptr;
 
     // append the placeholder to make sure it follows
     // any unrendered blocks
-    RenderBlockFlow* block = toRenderBlockFlow(renderer);
+    LayoutBlockFlow* block = toLayoutBlockFlow(renderer);
     if (block->size().height() == 0 || (block->isListItem() && toLayoutListItem(block)->isEmpty()))
         return appendBlockPlaceholder(container);
 

@@ -24,9 +24,9 @@
 #include "config.h"
 #include "core/layout/FloatingObjects.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
-#include "core/rendering/RenderBlockFlow.h"
 
 using namespace WTF;
 
@@ -102,7 +102,7 @@ class ComputeFloatOffsetAdapter {
 public:
     typedef FloatingObjectInterval IntervalType;
 
-    ComputeFloatOffsetAdapter(const RenderBlockFlow* renderer, int lineTop, int lineBottom, LayoutUnit offset)
+    ComputeFloatOffsetAdapter(const LayoutBlockFlow* renderer, int lineTop, int lineBottom, LayoutUnit offset)
         : m_renderer(renderer)
         , m_lineTop(lineTop)
         , m_lineBottom(lineBottom)
@@ -122,7 +122,7 @@ public:
 protected:
     virtual bool updateOffsetIfNeeded(const FloatingObject&) = 0;
 
-    const RenderBlockFlow* m_renderer;
+    const LayoutBlockFlow* m_renderer;
     int m_lineTop;
     int m_lineBottom;
     LayoutUnit m_offset;
@@ -132,7 +132,7 @@ protected:
 template <FloatingObject::Type FloatTypeValue>
 class ComputeFloatOffsetForFloatLayoutAdapter : public ComputeFloatOffsetAdapter<FloatTypeValue> {
 public:
-    ComputeFloatOffsetForFloatLayoutAdapter(const RenderBlockFlow* renderer, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
+    ComputeFloatOffsetForFloatLayoutAdapter(const LayoutBlockFlow* renderer, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
         : ComputeFloatOffsetAdapter<FloatTypeValue>(renderer, lineTop, lineBottom, offset)
     {
     }
@@ -148,7 +148,7 @@ protected:
 template <FloatingObject::Type FloatTypeValue>
 class ComputeFloatOffsetForLineLayoutAdapter : public ComputeFloatOffsetAdapter<FloatTypeValue> {
 public:
-    ComputeFloatOffsetForLineLayoutAdapter(const RenderBlockFlow* renderer, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
+    ComputeFloatOffsetForLineLayoutAdapter(const LayoutBlockFlow* renderer, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
         : ComputeFloatOffsetAdapter<FloatTypeValue>(renderer, lineTop, lineBottom, offset)
     {
     }
@@ -173,7 +173,7 @@ void FloatingObjects::clearLineBoxTreePointers()
     }
 }
 
-FloatingObjects::FloatingObjects(const RenderBlockFlow* renderer, bool horizontalWritingMode)
+FloatingObjects::FloatingObjects(const LayoutBlockFlow* renderer, bool horizontalWritingMode)
     : m_placedFloatsTree(UninitializedTree)
     , m_leftObjectsCount(0)
     , m_rightObjectsCount(0)

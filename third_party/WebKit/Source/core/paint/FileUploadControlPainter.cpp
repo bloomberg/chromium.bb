@@ -74,7 +74,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
     }
 
     // Paint the children.
-    m_renderFileUploadControl.RenderBlockFlow::paintObject(paintInfo, paintOffset);
+    m_renderFileUploadControl.LayoutBlockFlow::paintObject(paintInfo, paintOffset);
 }
 
 } // namespace blink

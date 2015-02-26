@@ -30,7 +30,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutMeter::LayoutMeter(HTMLElement* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 

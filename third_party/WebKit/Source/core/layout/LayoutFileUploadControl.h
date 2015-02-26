@@ -21,7 +21,7 @@
 #ifndef LayoutFileUploadControl_h
 #define LayoutFileUploadControl_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
@@ -31,12 +31,12 @@ class HTMLInputElement;
 // sufficient space to draw a file icon and filename. The RenderButton has a shadow node
 // associated with it to receive click/hover events.
 
-class LayoutFileUploadControl final : public RenderBlockFlow {
+class LayoutFileUploadControl final : public LayoutBlockFlow {
 public:
     LayoutFileUploadControl(HTMLInputElement*);
     virtual ~LayoutFileUploadControl();
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFileUploadControl || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFileUploadControl || LayoutBlockFlow::isOfType(type); }
 
     String buttonValue();
     String fileTextValue() const;

@@ -95,12 +95,12 @@ LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) co
 int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
-    // We want to call the RenderBlock version of firstLineBoxBaseline to
+    // We want to call the LayoutBlock version of firstLineBoxBaseline to
     // avoid RenderFlexibleBox synthesizing a baseline that we don't want.
     // We use this check as a proxy for "are there any line boxes in this button"
-    if (!hasLineIfEmpty() && RenderBlock::firstLineBoxBaseline() == -1) {
+    if (!hasLineIfEmpty() && LayoutBlock::firstLineBoxBaseline() == -1) {
         // To ensure that we have a consistent baseline when we have no children,
-        // even when we have the anonymous RenderBlock child, we calculate the
+        // even when we have the anonymous LayoutBlock child, we calculate the
         // baseline for the empty case manually here.
         if (direction == HorizontalLine) {
             return marginTop() + size().height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight();

@@ -26,9 +26,9 @@
 #ifndef LayoutGrid_h
 #define LayoutGrid_h
 
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
 #include "core/layout/style/GridResolvedPosition.h"
-#include "core/rendering/RenderBlock.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ struct GridSpan;
 class GridTrack;
 class GridItemWithSpan;
 
-class LayoutGrid final : public RenderBlock {
+class LayoutGrid final : public LayoutBlock {
 public:
     LayoutGrid(Element*);
     virtual ~LayoutGrid();
@@ -62,7 +62,7 @@ public:
 
     typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
 

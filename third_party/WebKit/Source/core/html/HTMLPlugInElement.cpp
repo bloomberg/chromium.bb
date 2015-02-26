@@ -38,6 +38,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
@@ -48,7 +49,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginPlaceholder.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -278,7 +278,7 @@ LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
     }
 
     if (usePlaceholderContent())
-        return new RenderBlockFlow(this);
+        return new LayoutBlockFlow(this);
 
     return new LayoutEmbeddedObject(this);
 }

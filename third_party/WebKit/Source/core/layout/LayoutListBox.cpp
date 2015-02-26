@@ -71,7 +71,7 @@ const int defaultSize = 4;
 const int defaultPaddingBottom = 1;
 
 LayoutListBox::LayoutListBox(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
     ASSERT(element);
     ASSERT(element->isHTMLElement());
@@ -142,7 +142,7 @@ void LayoutListBox::stopAutoscroll()
 
 void LayoutListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    RenderBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
+    LayoutBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
     if (style()->width().isPercent())
         minLogicalWidth = 0;
 }

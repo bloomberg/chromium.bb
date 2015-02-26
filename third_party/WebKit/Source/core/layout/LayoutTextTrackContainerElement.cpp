@@ -35,13 +35,13 @@
 namespace blink {
 
 LayoutTextTrackContainerElement::LayoutTextTrackContainerElement(Element* element)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
 {
 }
 
 void LayoutTextTrackContainerElement::layout()
 {
-    RenderBlockFlow::layout();
+    LayoutBlockFlow::layout();
     if (style()->display() == NONE)
         return;
 

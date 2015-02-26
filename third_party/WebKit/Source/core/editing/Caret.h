@@ -36,7 +36,7 @@ namespace blink {
 class LocalFrame;
 class GraphicsContext;
 class PositionWithAffinity;
-class RenderBlock;
+class LayoutBlock;
 class LayoutView;
 
 class CaretBase {
@@ -65,7 +65,7 @@ protected:
     CaretVisibility caretVisibility() const { return m_caretVisibility; }
 
 protected:
-    static RenderBlock* caretRenderer(Node*);
+    static LayoutBlock* caretRenderer(Node*);
     static void invalidateLocalCaretRect(Node*, const LayoutRect&);
 
 private:
@@ -79,7 +79,7 @@ class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretC
 public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 
-    RenderBlock* caretRenderer() const;
+    LayoutBlock* caretRenderer() const;
     void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
     bool isContentEditable() const { return m_position.rootEditableElement(); }

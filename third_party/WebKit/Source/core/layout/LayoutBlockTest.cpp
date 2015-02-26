@@ -3,20 +3,20 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/layout/LayoutBlock.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTestHelper.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
-class RenderBlockTest : public RenderingTest {
+class LayoutBlockTest : public RenderingTest {
 };
 
-TEST_F(RenderBlockTest, RenderNameCalledWithNullStyle)
+TEST_F(LayoutBlockTest, RenderNameCalledWithNullStyle)
 {
-    LayoutObject* obj = RenderBlockFlow::createAnonymous(&document());
+    LayoutObject* obj = LayoutBlockFlow::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
     EXPECT_STREQ("RenderBlock (generated)", obj->renderName());
     obj->destroy();

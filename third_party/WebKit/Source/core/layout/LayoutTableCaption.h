@@ -20,20 +20,20 @@
 #ifndef LayoutTableCaption_h
 #define LayoutTableCaption_h
 
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class LayoutTable;
 
-class LayoutTableCaption final : public RenderBlockFlow {
+class LayoutTableCaption final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCaption(Element*);
     virtual ~LayoutTableCaption();
     virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCaption || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCaption || LayoutBlockFlow::isOfType(type); }
 
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;

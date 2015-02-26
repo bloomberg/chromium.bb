@@ -17,7 +17,7 @@ class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
 public:
     static LayoutPagedFlowThread* createAnonymous(Document&, const LayoutStyle& parentStyle);
 
-    RenderBlockFlow* pagedBlockFlow() const { return toRenderBlockFlow(parent()); }
+    LayoutBlockFlow* pagedBlockFlow() const { return toLayoutBlockFlow(parent()); }
 
     virtual bool isLayoutPagedFlowThread() const override { return true; }
     virtual const char* renderName() const override;

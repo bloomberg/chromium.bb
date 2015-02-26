@@ -42,9 +42,9 @@
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
@@ -716,7 +716,7 @@ static VisiblePosition startPositionForLine(const VisiblePosition& c, LineEndpoi
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
         Position p = c.deepEquivalent();
-        if (p.deprecatedNode()->renderer() && p.deprecatedNode()->renderer()->isRenderBlock() && !p.deprecatedEditingOffset())
+        if (p.deprecatedNode()->renderer() && p.deprecatedNode()->renderer()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
 
         return VisiblePosition();
@@ -784,7 +784,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
         Position p = c.deepEquivalent();
-        if (p.deprecatedNode()->renderer() && p.deprecatedNode()->renderer()->isRenderBlock() && !p.deprecatedEditingOffset())
+        if (p.deprecatedNode()->renderer() && p.deprecatedNode()->renderer()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
         return VisiblePosition();
     }
@@ -903,7 +903,7 @@ bool isLogicalEndOfLine(const VisiblePosition &p)
 static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, LayoutUnit lineDirectionPoint)
 {
     ASSERT(root);
-    RenderBlockFlow& containingBlock = root->block();
+    LayoutBlockFlow& containingBlock = root->block();
     FloatPoint absoluteBlockPoint = containingBlock.localToAbsolute(FloatPoint());
     if (containingBlock.hasOverflowClip())
         absoluteBlockPoint -= containingBlock.scrolledContentOffset();

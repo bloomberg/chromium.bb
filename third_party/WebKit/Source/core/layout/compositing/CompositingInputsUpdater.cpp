@@ -6,9 +6,9 @@
 #include "core/layout/compositing/CompositingInputsUpdater.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
-#include "core/rendering/RenderBlock.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {

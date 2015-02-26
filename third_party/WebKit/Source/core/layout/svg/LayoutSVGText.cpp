@@ -360,8 +360,8 @@ void LayoutSVGText::layout()
 
     checkLayoutAttributesConsistency(this, m_layoutAttributes);
 
-    // Reduced version of RenderBlock::layoutBlock(), which only takes care of SVG text.
-    // All if branches that could cause early exit in RenderBlocks layoutBlock() method are turned into assertions.
+    // Reduced version of LayoutBlock::layoutBlock(), which only takes care of SVG text.
+    // All if branches that could cause early exit in LayoutBlocks layoutBlock() method are turned into assertions.
     ASSERT(!isInline());
     ASSERT(!simplifiedLayout());
     ASSERT(!scrollsOverflow());
@@ -428,7 +428,7 @@ bool LayoutSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResul
                 return false;
 
             HitTestLocation hitTestLocation(LayoutPoint(flooredIntPoint(localPoint)));
-            return RenderBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), hitTestAction);
+            return LayoutBlock::nodeAtPoint(request, result, hitTestLocation, LayoutPoint(), hitTestAction);
         }
     }
 

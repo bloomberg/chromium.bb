@@ -226,7 +226,7 @@ static inline void appendZoomableSubtargets(Node* node, SubtargetGeometryList& s
     quads.append(renderer->localToAbsoluteQuad(borderBoxRect));
     if (borderBoxRect != contentBoxRect)
         quads.append(renderer->localToAbsoluteQuad(contentBoxRect));
-    // FIXME: For RenderBlocks, add column boxes and content boxes cleared for floats.
+    // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for floats.
 
     Vector<FloatQuad>::const_iterator it = quads.begin();
     const Vector<FloatQuad>::const_iterator end = quads.end();

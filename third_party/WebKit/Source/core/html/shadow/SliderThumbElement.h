@@ -34,7 +34,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "wtf/Forward.h"
 
 namespace blink {

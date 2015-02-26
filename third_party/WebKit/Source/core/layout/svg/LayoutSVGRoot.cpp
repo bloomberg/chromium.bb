@@ -215,7 +215,7 @@ void LayoutSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint&
 
 void LayoutSVGRoot::willBeDestroyed()
 {
-    RenderBlock::removePercentHeightDescendant(const_cast<LayoutSVGRoot*>(this));
+    LayoutBlock::removePercentHeightDescendant(const_cast<LayoutSVGRoot*>(this));
 
     SVGResourcesCache::clientDestroyed(this);
     LayoutReplaced::willBeDestroyed();

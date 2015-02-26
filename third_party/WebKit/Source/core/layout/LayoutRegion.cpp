@@ -35,7 +35,7 @@
 namespace blink {
 
 LayoutRegion::LayoutRegion(Element* element, LayoutFlowThread* flowThread)
-    : RenderBlockFlow(element)
+    : LayoutBlockFlow(element)
     , m_flowThread(flowThread)
     , m_isValid(false)
 {
@@ -102,7 +102,7 @@ bool LayoutRegion::isLastRegion() const
 
 void LayoutRegion::layoutBlock(bool relayoutChildren)
 {
-    RenderBlockFlow::layoutBlock(relayoutChildren);
+    LayoutBlockFlow::layoutBlock(relayoutChildren);
 
     // FIXME: We need to find a way to set up overflow properly. Our flow thread hasn't gotten a layout
     // yet, so we can't look to it for correct information. It's possible we could wait until after the LayoutFlowThread
@@ -117,7 +117,7 @@ void LayoutRegion::layoutBlock(bool relayoutChildren)
 void LayoutRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     if (!isValid()) {
-        RenderBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
+        LayoutBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
         return;
     }
 

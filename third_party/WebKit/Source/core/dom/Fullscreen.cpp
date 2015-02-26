@@ -492,7 +492,7 @@ void Fullscreen::setFullScreenRenderer(RenderFullScreen* renderer)
     if (renderer && m_savedPlaceholderLayoutStyle) {
         renderer->createPlaceholder(m_savedPlaceholderLayoutStyle.release(), m_savedPlaceholderFrameRect);
     } else if (renderer && m_fullScreenRenderer && m_fullScreenRenderer->placeholder()) {
-        RenderBlock* placeholder = m_fullScreenRenderer->placeholder();
+        LayoutBlock* placeholder = m_fullScreenRenderer->placeholder();
         renderer->createPlaceholder(LayoutStyle::clone(placeholder->styleRef()), placeholder->frameRect());
     }
 

@@ -24,9 +24,9 @@
 
 #include "core/dom/Position.h"
 #include "core/frame/FrameView.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/PaintInvalidationState.h"
-#include "core/rendering/RenderBlockFlow.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
@@ -42,7 +42,7 @@ class LayoutQuote;
 // It's dimensions match that of the logical viewport (which may be different from
 // the visible viewport in fixed-layout mode), and it is always at position (0,0)
 // relative to the document (and so isn't necessarily in view).
-class LayoutView final : public RenderBlockFlow {
+class LayoutView final : public LayoutBlockFlow {
 public:
     explicit LayoutView(Document*);
     virtual ~LayoutView();
@@ -56,7 +56,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderView"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type); }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 

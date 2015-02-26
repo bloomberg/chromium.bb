@@ -32,10 +32,10 @@
 
 namespace blink {
 
-class RenderBlockFlow;
+class LayoutBlockFlow;
 class LayoutBox;
 
-// FIXME this should be removed once RenderBlockFlow::nextFloatLogicalBottomBelow doesn't need it anymore. (Bug 123931)
+// FIXME this should be removed once LayoutBlockFlow::nextFloatLogicalBottomBelow doesn't need it anymore. (Bug 123931)
 enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
 
 class FloatingObject {
@@ -135,7 +135,7 @@ typedef HashMap<LayoutBox*, OwnPtr<FloatingObject>> RendererToFloatInfoMap;
 class FloatingObjects {
     WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;
 public:
-    FloatingObjects(const RenderBlockFlow*, bool horizontalWritingMode);
+    FloatingObjects(const LayoutBlockFlow*, bool horizontalWritingMode);
     ~FloatingObjects();
 
     void clear();
@@ -181,7 +181,7 @@ private:
     unsigned m_leftObjectsCount;
     unsigned m_rightObjectsCount;
     bool m_horizontalWritingMode;
-    const RenderBlockFlow* m_renderer;
+    const LayoutBlockFlow* m_renderer;
 
     struct FloatBottomCachedValue {
         FloatBottomCachedValue();

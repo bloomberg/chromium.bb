@@ -36,7 +36,7 @@ struct LayoutTextInfo;
 class LineBreaker {
 public:
     friend class BreakingContext;
-    LineBreaker(RenderBlockFlow* block)
+    LineBreaker(LayoutBlockFlow* block)
         : m_block(block)
     {
         reset();
@@ -53,7 +53,7 @@ private:
 
     void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
 
-    RenderBlockFlow* m_block;
+    LayoutBlockFlow* m_block;
     bool m_hyphenated;
     EClear m_clear;
     Vector<LayoutBox*> m_positionedObjects;

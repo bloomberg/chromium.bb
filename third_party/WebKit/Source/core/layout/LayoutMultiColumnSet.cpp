@@ -187,7 +187,7 @@ void LayoutMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTo
 
 LayoutUnit LayoutMultiColumnSet::columnGap() const
 {
-    RenderBlockFlow* parentBlock = multiColumnBlockFlow();
+    LayoutBlockFlow* parentBlock = multiColumnBlockFlow();
     if (parentBlock->style()->hasNormalColumnGap())
         return parentBlock->style()->fontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return parentBlock->style()->columnGap();

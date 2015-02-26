@@ -32,7 +32,7 @@
 
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/layout/LayoutBlock.h"
 
 namespace blink {
 

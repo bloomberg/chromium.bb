@@ -37,8 +37,8 @@ public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderFullScreen || RenderFlexibleBox::isOfType(type); }
     virtual const char* renderName() const override { return "RenderFullScreen"; }
 
-    void setPlaceholder(RenderBlock*);
-    RenderBlock* placeholder() { return m_placeholder; }
+    void setPlaceholder(LayoutBlock*);
+    LayoutBlock* placeholder() { return m_placeholder; }
     void createPlaceholder(PassRefPtr<LayoutStyle>, const LayoutRect& frameRect);
 
 
@@ -52,7 +52,7 @@ private:
     virtual void willBeDestroyed() override;
 
 protected:
-    RenderBlock* m_placeholder;
+    LayoutBlock* m_placeholder;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFullScreen, isRenderFullScreen());

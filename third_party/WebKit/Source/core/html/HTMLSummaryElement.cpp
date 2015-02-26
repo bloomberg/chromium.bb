@@ -30,7 +30,7 @@
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
@@ -50,7 +50,7 @@ HTMLSummaryElement::HTMLSummaryElement(Document& document)
 
 LayoutObject* HTMLSummaryElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderBlockFlow(this);
+    return new LayoutBlockFlow(this);
 }
 
 void HTMLSummaryElement::didAddClosedShadowRoot(ShadowRoot& root)

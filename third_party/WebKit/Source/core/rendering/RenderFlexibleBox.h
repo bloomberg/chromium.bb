@@ -31,12 +31,12 @@
 #ifndef RenderFlexibleBox_h
 #define RenderFlexibleBox_h
 
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
-#include "core/rendering/RenderBlock.h"
 
 namespace blink {
 
-class RenderFlexibleBox : public RenderBlock {
+class RenderFlexibleBox : public LayoutBlock {
 public:
     RenderFlexibleBox(Element*);
     virtual ~RenderFlexibleBox();

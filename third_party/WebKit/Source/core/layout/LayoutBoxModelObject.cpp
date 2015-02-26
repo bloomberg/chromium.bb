@@ -28,6 +28,7 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutInline.h"
@@ -39,7 +40,6 @@
 #include "core/layout/style/BorderEdge.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
@@ -76,7 +76,7 @@ void LayoutBoxModelObject::setSelectionState(SelectionState state)
     // FIXME: We should consider whether it is OK propagating to ancestor LayoutInlines.
     // This is a workaround for http://webkit.org/b/32123
     // The containing block can be null in case of an orphaned tree.
-    RenderBlock* containingBlock = this->containingBlock();
+    LayoutBlock* containingBlock = this->containingBlock();
     if (containingBlock && !containingBlock->isLayoutView())
         containingBlock->setSelectionState(state);
 }
@@ -327,7 +327,7 @@ static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
     if (!child->isAnonymousBlock() || !child->isRelPositioned())
         return LayoutSize();
     LayoutSize offset;
-    LayoutObject* p = toRenderBlock(child)->inlineElementContinuation();
+    LayoutObject* p = toLayoutBlock(child)->inlineElementContinuation();
     while (p && p->isLayoutInline()) {
         if (p->isRelPositioned()) {
             LayoutInline* layoutInline = toLayoutInline(p);
@@ -338,7 +338,7 @@ static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
     return offset;
 }
 
-RenderBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length logicalHeight) const
+LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length logicalHeight) const
 {
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
@@ -348,7 +348,7 @@ RenderBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
 
     // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
     // the closest non-anonymous ancestor box is used instead.
-    RenderBlock* cb = containingBlock();
+    LayoutBlock* cb = containingBlock();
     while (cb->isAnonymous())
         cb = cb->containingBlock();
 
@@ -380,7 +380,7 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
         return false;
 
     // If the height of the containing block computes to 'auto', then it hasn't been 'specified explicitly'.
-    if (RenderBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength))
+    if (LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength))
         return cb->hasAutoHeightOrContainingBlockWithAutoHeight();
     return false;
 }
@@ -389,7 +389,7 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const
 {
     LayoutSize offset = accumulateInFlowPositionOffsets(this);
 
-    RenderBlock* containingBlock = this->containingBlock();
+    LayoutBlock* containingBlock = this->containingBlock();
 
     // Objects that shrink to avoid floats normally use available line width when computing containing block width.  However
     // in the case of relative positioning using percentages, we can't do this.  The offset should always be resolved using the
@@ -765,7 +765,7 @@ void LayoutBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
     LayoutSize containerOffset = offsetFromContainer(o, LayoutPoint());
 
     if (!style()->hasOutOfFlowPosition() && o->hasColumns()) {
-        RenderBlock* block = toRenderBlock(o);
+        LayoutBlock* block = toLayoutBlock(o);
         LayoutPoint point(roundedLayoutPoint(transformState.mappedPoint()));
         point -= containerOffset;
         block->adjustForColumnRect(containerOffset, point);
@@ -822,11 +822,11 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject, L
 {
     // We assume that callers have cleared their positioned objects list for child moves (!fullRemoveInsert) so the
     // positioned renderer maps don't become stale. It would be too slow to do the map lookup on each call.
-    ASSERT(!fullRemoveInsert || !isRenderBlock() || !toRenderBlock(this)->hasPositionedObjects());
+    ASSERT(!fullRemoveInsert || !isLayoutBlock() || !toLayoutBlock(this)->hasPositionedObjects());
 
     ASSERT(this == child->parent());
     ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
-    if (fullRemoveInsert && (toBoxModelObject->isRenderBlock() || toBoxModelObject->isLayoutInline())) {
+    if (fullRemoveInsert && (toBoxModelObject->isLayoutBlock() || toBoxModelObject->isLayoutInline())) {
         // Takes care of adding the new child correctly if toBlock and fromBlock
         // have different kind of children (block vs inline).
         toBoxModelObject->addChild(virtualChildren()->removeChildNode(this, child), beforeChild);
@@ -840,11 +840,11 @@ void LayoutBoxModelObject::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject
     // This condition is rarely hit since this function is usually called on
     // anonymous blocks which can no longer carry positioned objects (see r120761)
     // or when fullRemoveInsert is false.
-    if (fullRemoveInsert && isRenderBlock()) {
-        RenderBlock* block = toRenderBlock(this);
+    if (fullRemoveInsert && isLayoutBlock()) {
+        LayoutBlock* block = toLayoutBlock(this);
         block->removePositionedObjects(0);
-        if (block->isRenderBlockFlow())
-            toRenderBlockFlow(block)->removeFloatingObjects();
+        if (block->isLayoutBlockFlow())
+            toLayoutBlockFlow(block)->removeFloatingObjects();
     }
 
     ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
