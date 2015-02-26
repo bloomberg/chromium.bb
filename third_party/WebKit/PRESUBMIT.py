@@ -349,7 +349,7 @@ def GetPreferredTryMasters(project, change):
             'android_blink_compile_dbg': set(['defaulttests']),
             'android_blink_compile_rel': set(['defaulttests']),
             'android_chromium_gn_compile_rel': set(['defaulttests']),
-            'linux_blink_dbg': set(['defaulttests']),
+            'linux_blink_compile_dbg': set(['defaulttests']),
             'linux_blink_rel': set(['defaulttests']),
             'linux_chromium_gn_rel': set(['defaulttests']),
             'mac_blink_compile_dbg': set(['defaulttests']),
