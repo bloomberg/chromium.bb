@@ -461,10 +461,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
     functionTemplate->SetHiddenPrototype(true);
     instanceTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
-    // Set access check callbacks, but turned off initially.
-    // When a context is detached from a frame, turn on the access check.
-    // Turning on checks also invalidates inline caches of the object.
-    instanceTemplate->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)), false);
     {% elif interface_name in [
            'HTMLDocument', 'DedicatedWorkerGlobalScope',
            'SharedWorkerGlobalScope', 'ServiceWorkerGlobalScope'] %}

@@ -139,10 +139,6 @@ void WindowProxy::clearForNavigation()
     ScriptState::Scope scope(m_scriptState.get());
 
     m_document.clear();
-
-    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(m_global.newLocal(m_isolate), m_isolate);
-    ASSERT(!windowWrapper.IsEmpty());
-    windowWrapper->TurnOnAccessCheck();
     disposeContext(DetachGlobal);
 }
 
