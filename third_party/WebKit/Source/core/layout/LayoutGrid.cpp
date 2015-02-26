@@ -401,12 +401,6 @@ void LayoutGrid::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection direction, GridSizingData& sizingData)
-{
-    LayoutUnit availableLogicalSpace = (direction == ForColumns) ? availableLogicalWidth() : availableLogicalHeight(IncludeMarginBorderPadding);
-    computeUsedBreadthOfGridTracks(direction, sizingData, availableLogicalSpace);
-}
-
 bool LayoutGrid::gridElementIsShrinkToFit()
 {
     return isFloatingOrOutOfFlowPositioned();
@@ -1110,7 +1104,7 @@ void LayoutGrid::layoutGridItems()
     computeUsedBreadthOfGridTracks(ForRows, sizingData, availableSpaceForRows);
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForRows, sizingData.rowTracks));
 
-    populateGridPositions(sizingData, availableSpaceForColumns, availableSpaceForRows);
+    populateGridPositions(sizingData);
     m_gridItemsOverflowingGridArea.resize(0);
 
     LayoutUnit columnOffset = contentPositionAndDistributionColumnOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), style()->justifyContentOverflowAlignment(), m_columnPositions.size() - 1);
@@ -1267,7 +1261,7 @@ LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrack
     return gridAreaBreadth;
 }
 
-void LayoutGrid::populateGridPositions(const GridSizingData& sizingData, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows)
+void LayoutGrid::populateGridPositions(const GridSizingData& sizingData)
 {
     unsigned numberOfColumnTracks = sizingData.columnTracks.size();
     unsigned numberOfRowTracks = sizingData.rowTracks.size();
