@@ -274,7 +274,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       Oobe.getInstance().headerHidden = false;
       this.isShown_ = true;
       if (this.isWebviewSignin && !this.loading)
-        this.gaiaAuthHost_.setFocus();
+        this.gaiaAuthHost_.sendFocusReady();
     },
 
     /**
@@ -460,7 +460,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onAuthReady_: function() {
       this.loading = false;
       if (this.isWebviewSignin && this.isShown_)
-        this.gaiaAuthHost_.setFocus();
+        this.gaiaAuthHost_.sendFocusReady();
       this.clearLoadingTimer_();
 
       // Show deferred error bubble.
