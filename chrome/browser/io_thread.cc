@@ -134,10 +134,8 @@ const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 //  eventual SPDY/4 deployment.
 const char kSpdyFieldTrialName[] = "SPDY";
 const char kSpdyFieldTrialHoldbackGroupNamePrefix[] = "SpdyDisabled";
-const char kSpdyFieldTrialHoldbackControlGroupName[] = "Control";
 const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
-const char kSpdyFieldTrialSpdy4ControlGroupName[] = "Spdy4Control";
 
 // Field trial for Cache-Control: stale-while-revalidate directive.
 const char kStaleWhileRevalidateFieldTrialName[] = "StaleWhileRevalidate";
@@ -843,10 +841,6 @@ void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
   if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
     // TODO(jgraettinger): Use net::NextProtosHttpOnly() instead?
     net::HttpStreamFactory::set_spdy_enabled(false);
-  } else if (spdy_trial_group == kSpdyFieldTrialHoldbackControlGroupName) {
-    // Use the current SPDY default (SPDY/3.1).
-    globals->next_protos = net::NextProtosSpdy31();
-    globals->use_alternate_protocols.set(true);
   } else if (spdy_trial_group.starts_with(
                  kSpdyFieldTrialSpdy31GroupNamePrefix)) {
     globals->next_protos = net::NextProtosSpdy31();
@@ -854,10 +848,6 @@ void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
   } else if (spdy_trial_group.starts_with(
                  kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos = net::NextProtosSpdy4Http2();
-    globals->use_alternate_protocols.set(true);
-  } else if (spdy_trial_group == kSpdyFieldTrialSpdy4ControlGroupName) {
-    // This control group is pinned at SPDY/3.1.
-    globals->next_protos = net::NextProtosSpdy31();
     globals->use_alternate_protocols.set(true);
   } else {
     // By default, enable HTTP/2.

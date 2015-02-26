@@ -87,9 +87,9 @@ TEST_F(IOThreadTest, SpdyFieldTrialHoldbackEnabled) {
   EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
 }
 
-TEST_F(IOThreadTest, SpdyFieldTrialHoldbackControl) {
+TEST_F(IOThreadTest, SpdyFieldTrialSpdy31Enabled) {
   bool use_alternate_protocols = false;
-  IOThreadPeer::ConfigureSpdyFromTrial("Control", &globals_);
+  IOThreadPeer::ConfigureSpdyFromTrial("Spdy31Enabled", &globals_);
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11,
                           net::kProtoQUIC1SPDY3,
@@ -106,17 +106,6 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
                           net::kProtoQUIC1SPDY3,
                           net::kProtoSPDY31,
                           net::kProtoSPDY4_14));
-  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
-  EXPECT_TRUE(use_alternate_protocols);
-}
-
-TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Control) {
-  bool use_alternate_protocols = false;
-  IOThreadPeer::ConfigureSpdyFromTrial("Spdy4Control", &globals_);
-  EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11,
-                          net::kProtoQUIC1SPDY3,
-                          net::kProtoSPDY31));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
 }
