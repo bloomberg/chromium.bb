@@ -4,9 +4,9 @@ layer at (0,0) size 800x252
   RenderBlock {HTML} at (0,0) size 800x252
     RenderBody {BODY} at (8,8) size 784x236
       RenderBlock (anonymous) at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 779x35
-          text run at (0,0) width 411: "Test for empty buttons, which inherit from LayoutFlexibleBox. "
-          text run at (410,0) width 369: "Empty <input> buttons should not collapse, which makes"
+        RenderText {#text} at (0,0) size 778x35
+          text run at (0,0) width 410: "Test for empty buttons, which inherit from LayoutFlexibleBox. "
+          text run at (409,0) width 369: "Empty <input> buttons should not collapse, which makes"
           text run at (0,18) width 498: "them different from most flex boxes. Empty <button>s should collapse. Note "
         RenderInline {A} at (0,0) size 77x17 [color=#0000EE]
           RenderText {#text} at (497,18) size 77x17
