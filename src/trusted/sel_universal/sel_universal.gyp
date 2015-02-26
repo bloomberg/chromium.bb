@@ -9,8 +9,6 @@
   ],
   'variables': {
       'src_files': ['parsing.cc',
-                    'pnacl_emu_coordinator.cc',
-                    'pnacl_emu_handler.cc',
                     'pnacl_emu_stream.cc',
                     'replay_handler.cc',
                     'rpc_universal_system.cc',

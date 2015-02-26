@@ -16,8 +16,6 @@ if env.Bit('linux') and env.Bit('build_x86'):
 #       on mac (nonnacl_util_c)
 env.ComponentProgram('sel_universal',
                      ['parsing.cc',
-                      'pnacl_emu_coordinator.cc',
-                      'pnacl_emu_handler.cc',
                       'pnacl_emu_stream.cc',
                       'replay_handler.cc',
                       'rpc_universal_system.cc',

@@ -292,9 +292,6 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
   // new names
-  loop.AddHandler("pnacl_emu_initialize", HandlerPnaclEmuInitialize);
-  loop.AddHandler("pnacl_emu_add_varname_mapping",
-                  HandlerPnaclEmuAddVarnameMapping);
   loop.AddHandler("stream_file", HandlerPnaclFileStream);
 
   loop.AddHandler("hard_shutdown", HandlerHardShutdown);
