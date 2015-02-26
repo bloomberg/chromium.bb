@@ -458,7 +458,6 @@ html[dir='rtl'] .blocked-indicator {
   background-position-x: right;
 }
 
-<if expr="not is_android">
 /* TODO(sergiu): If this is the final icon replace it with a separate resource.
  */
 .entry .blocked-indicator {
@@ -469,7 +468,6 @@ html[dir='rtl'] .blocked-indicator {
 .blocked-indicator .title {
   color: rgb(151, 156, 160);
 }
-</if>
 
 .site-domain button:hover {
   text-decoration: none;

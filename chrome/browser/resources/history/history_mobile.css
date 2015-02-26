@@ -201,6 +201,10 @@ input {
   line-height: 1.3;
 }
 
+.entry .visit-entry.blocked-indicator {
+  line-height: 2;
+}
+
 .entry .visit-entry :-webkit-any(a, .domain) {
   display: block;
   margin-left: 0;
@@ -211,6 +215,10 @@ input {
   padding-right: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.entry .visit-entry.blocked-indicator a {
+  display: inline;
 }
 
 .entry .domain {

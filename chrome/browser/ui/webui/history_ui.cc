@@ -191,10 +191,14 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("entrySummary", IDS_HISTORY_ENTRY_SUMMARY);
   source->AddBoolean("isFullHistorySyncEnabled",
                      WebHistoryServiceFactory::GetForProfile(profile) != NULL);
-  source->AddBoolean("groupByDomain",
-                     profile->IsSupervised() ||
-                         base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kHistoryEnableGroupByDomain));
+  bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHistoryEnableGroupByDomain);
+  // Supervised users get the "group by domain" version, but not on mobile,
+  // because that version isn't adjusted for small screens yet. crbug.com/452859
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  group_by_domain = group_by_domain || profile->IsSupervised();
+#endif
+  source->AddBoolean("groupByDomain", group_by_domain);
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);

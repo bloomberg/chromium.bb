@@ -192,8 +192,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   this.id_ = this.model_.getNextVisitId();
   var self = this;
 
-  // Only create the checkbox if it can be used either to delete an entry or to
-  // block/allow it.
+  // Only create the checkbox if it can be used to delete an entry.
   if (this.model_.editingEntriesAllowed) {
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -277,21 +276,23 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   }
 
   if (isMobileVersion()) {
-    var removeButton = createElementWithClassName('button', 'remove-entry');
-    removeButton.setAttribute('aria-label',
-                              loadTimeData.getString('removeFromHistory'));
-    removeButton.classList.add('custom-appearance');
-    removeButton.addEventListener(
-        'click', this.removeEntryFromHistory_.bind(this));
-    entryBox.appendChild(removeButton);
+    if (this.model_.editingEntriesAllowed) {
+      var removeButton = createElementWithClassName('button', 'remove-entry');
+      removeButton.setAttribute('aria-label',
+                                loadTimeData.getString('removeFromHistory'));
+      removeButton.classList.add('custom-appearance');
+      removeButton.addEventListener(
+          'click', this.removeEntryFromHistory_.bind(this));
+      entryBox.appendChild(removeButton);
 
-    // Support clicking anywhere inside the entry box.
-    entryBox.addEventListener('click', function(e) {
-      if (!e.defaultPrevented) {
-        self.titleLink.focus();
-        self.titleLink.click();
-      }
-    });
+      // Support clicking anywhere inside the entry box.
+      entryBox.addEventListener('click', function(e) {
+        if (!e.defaultPrevented) {
+          self.titleLink.focus();
+          self.titleLink.click();
+        }
+      });
+    }
   } else {
     var dropDown = createElementWithClassName('button', 'drop-down');
     dropDown.value = 'Open action menu';
