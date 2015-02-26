@@ -37,3 +37,6 @@ crbug.com/461187 [ Linux ] virtual/gpu/fast/canvas/canvas-path-context-clip.html
 crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
 
 crbug.com/461041 [ Linux ] fast/forms/calendar-picker/month-picker-ax.html [ Timeout Pass ]
+
+# Times out on MSAN
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Pass Timeout ]
