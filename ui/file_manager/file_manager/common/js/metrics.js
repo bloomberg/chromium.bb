@@ -70,3 +70,16 @@ metrics.umaEnabledFilter_ = function(hit) {
     hit.cancel();
   }
 };
+
+/**
+ * Clears the previously set analytics user id.
+ */
+metrics.clearUserId = function() {
+  chrome.storage.local.remove(
+     'google-analytics.analytics.user-id',
+     function () {
+       if (chrome.runtime.lastError) {
+         throw new Error(chrome.runtime.lastError.message);
+       }
+     });
+};
