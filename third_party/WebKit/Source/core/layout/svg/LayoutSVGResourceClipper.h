@@ -65,8 +65,8 @@ public:
 
 private:
     bool tryPathOnlyClipping(DisplayItemClient, GraphicsContext*, const AffineTransform&, const FloatRect&);
-    void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
-    void createPicture(GraphicsContext*);
+    void drawClipMaskContent(GraphicsContext*, DisplayItemClient, const FloatRect& targetBoundingBox);
+    PassRefPtr<const SkPicture> createPicture();
     void calculateClipContentPaintInvalidationRect();
 
     RefPtr<const SkPicture> m_clipContentPicture;

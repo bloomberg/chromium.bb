@@ -224,6 +224,11 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "svg/clip-path",
+    "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "svg/masking",
     "args": ["--enable-slimming-paint"]
   },

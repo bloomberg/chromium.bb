@@ -17,9 +17,14 @@ class LayoutObject;
 
 class CompositingRecorder {
 public:
-    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const SkXfermode::Mode, const float, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
+    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
 
     ~CompositingRecorder();
+
+    // FIXME: These helpers only exist to ease the transition to slimming paint
+    //        and should be removed once slimming paint is enabled by default.
+    static void beginCompositing(GraphicsContext*, DisplayItemClient, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
+    static void endCompositing(GraphicsContext*, DisplayItemClient);
 
 private:
     DisplayItemClient m_client;

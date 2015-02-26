@@ -30,11 +30,14 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/paint/CompositingRecorder.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
+#include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/TemporaryChange.h"
 
@@ -173,34 +176,29 @@ bool LayoutSVGResourceClipper::applyClippingToContext(LayoutObject* target, cons
     // Fall back to masking.
     clipperState = ClipperAppliedMask;
 
-    // Mask layer start
-    context->beginTransparencyLayer(1, &paintInvalidationRect);
+    // Begin compositing the clip mask.
+    CompositingRecorder::beginCompositing(context, target->displayItemClient(), SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     {
-        GraphicsContextStateSaver maskContentSaver(*context);
-        context->concatCTM(animatedLocalTransform);
+        TransformRecorder recorder(*context, target->displayItemClient(), animatedLocalTransform);
 
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
         LayoutSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
         ClipperState clipPathClipperState = ClipperNotApplied;
         if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
-            // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
-            //   a) pop saveLayers also
-            //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
-            // Then we should be able to replace this mess with a single, top-level GCSS.
-            maskContentSaver.restore();
-            context->endLayer();
+            // End the clip mask's compositor.
+            CompositingRecorder::endCompositing(context, target->displayItemClient());
             return false;
         }
 
-        drawClipMaskContent(context, targetBoundingBox);
+        drawClipMaskContent(context, target->displayItemClient(), targetBoundingBox);
 
         if (clipPathClipper)
             clipPathClipper->postApplyStatefulResource(this, context, clipPathClipperState);
     }
 
     // Masked content layer start.
-    context->beginLayer(1, SkXfermode::kSrcIn_Mode, &paintInvalidationRect);
+    CompositingRecorder::beginCompositing(context, target->displayItemClient(), SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
 
     return true;
 }
@@ -220,17 +218,18 @@ void LayoutSVGResourceClipper::postApplyStatefulResource(LayoutObject* target, G
         }
         break;
     case ClipperAppliedMask:
-        // Transfer content layer -> mask layer (SrcIn)
-        context->endLayer();
-        // Transfer mask layer -> bg layer (SrcOver)
-        context->endLayer();
+        // Transfer content -> clip mask (SrcIn)
+        CompositingRecorder::endCompositing(context, target->displayItemClient());
+
+        // Transfer clip mask -> bg (SrcOver)
+        CompositingRecorder::endCompositing(context, target->displayItemClient());
         break;
     default:
         ASSERT_NOT_REACHED();
     }
 }
 
-void LayoutSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, const FloatRect& targetBoundingBox)
+void LayoutSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, DisplayItemClient client, const FloatRect& targetBoundingBox)
 {
     ASSERT(context);
 
@@ -238,27 +237,37 @@ void LayoutSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
     if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
         contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
-        context->concatCTM(contentTransformation);
     }
 
     if (!m_clipContentPicture) {
         SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        createPicture(context);
+        m_clipContentPicture = createPicture();
     }
 
-    context->drawPicture(m_clipContentPicture.get());
+    TransformRecorder recorder(*context, client, contentTransformation);
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(context->displayItemList());
+        context->displayItemList()->add(DrawingDisplayItem::create(client, DisplayItem::SVGClip, m_clipContentPicture));
+    } else {
+        DrawingDisplayItem clipPicture(client, DisplayItem::SVGClip, m_clipContentPicture);
+        clipPicture.replay(context);
+    }
 }
 
-void LayoutSVGResourceClipper::createPicture(GraphicsContext* context)
+PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createPicture()
 {
-    ASSERT(context);
     ASSERT(frame());
 
     // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
     FloatRect bounds = strokeBoundingBox();
-    context->beginRecording(bounds);
+
+    OwnPtr<DisplayItemList> displayItemList;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        displayItemList = DisplayItemList::create();
+    GraphicsContext context(nullptr, displayItemList.get());
+    context.beginRecording(bounds);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         LayoutObject* renderer = childElement->renderer();
@@ -284,7 +293,7 @@ void LayoutSVGResourceClipper::createPicture(GraphicsContext* context)
         if (!renderer->isSVGShape() && !renderer->isSVGText())
             continue;
 
-        context->setFillRule(newClipRule);
+        context.setFillRule(newClipRule);
 
         if (isUseElement)
             renderer = childElement->renderer();
@@ -294,11 +303,13 @@ void LayoutSVGResourceClipper::createPicture(GraphicsContext* context)
         // - masker/filter not applied when rendering the children
         // - fill is set to the initial fill paint server (solid, black)
         // - stroke is set to the initial stroke paint server (none)
-        PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorRenderingClipPathAsMask);
+        PaintInfo info(&context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorRenderingClipPathAsMask);
         renderer->paint(info, IntPoint());
     }
 
-    m_clipContentPicture = context->endRecording();
+    if (displayItemList)
+        displayItemList->replay(&context);
+    return context.endRecording();
 }
 
 void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()

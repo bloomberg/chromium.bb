@@ -67,6 +67,7 @@ public:
         PopupListBoxBackground,
         PopupListBoxRow,
         Resizer,
+        SVGClip,
         SVGFilter,
         SVGMask,
         ScrollbarCorner,
