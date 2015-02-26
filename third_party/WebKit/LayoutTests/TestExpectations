@@ -30,10 +30,22 @@ crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.htm
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
+# Invisible filter gradient pixel changes
+crbug.com/449628 css3/filters/filter-change-repaint-composited.html [ NeedsRebaseline ]
+crbug.com/449628 virtual/slimmingpaint/css3/filters/filter-change-repaint-composited.html [ NeedsRebaseline ]
+
 crbug.com/456357 virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure ]
 crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ ImageOnlyFailure ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll-parents.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll-self.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/fast/backgrounds/obscured-background-child-style-change.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-color.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-color.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-color.html [ ImageOnlyFailure ]
+crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ ImageOnlyFailure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
