@@ -106,8 +106,6 @@ class WebURLLoaderMockFactory {
   typedef std::map<GURL, ResponseInfo> URLToResponseMap;
   URLToResponseMap url_to_reponse_info_;
 
-  blink::WebURLRequest last_handled_asynchronous_request_;
-
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactory);
 };
 

@@ -76,7 +76,6 @@ void WebURLLoaderMockFactory::UnregisterAllURLs() {
 }
 
 void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
-  last_handled_asynchronous_request_.reset();
   // Serving a request might trigger more requests, so we cannot iterate on
   // pending_loaders_ as it might get modified.
   while (!pending_loaders_.empty()) {
@@ -86,7 +85,6 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     WebURLResponse response;
     WebURLError error;
     WebData data;
-    last_handled_asynchronous_request_ = request;
     LoadRequest(request, &response, &error, &data);
     // Follow any redirects while the loader is still active.
     while (response.httpStatusCode() >= 300 &&
@@ -94,7 +92,6 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
       WebURLRequest newRequest = loader->ServeRedirect(response);
       if (!IsPending(loader) || loader->isDeferred())
         break;
-      last_handled_asynchronous_request_ = newRequest;
       LoadRequest(newRequest, &response, &error, &data);
     }
     // Serve the request if the loader is still active.
@@ -104,11 +101,6 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     pending_loaders_.erase(loader);
   }
   base::RunLoop().RunUntilIdle();
-}
-
-blink::WebURLRequest
-WebURLLoaderMockFactory::GetLastHandledAsynchronousRequest() {
-  return last_handled_asynchronous_request_;
 }
 
 bool WebURLLoaderMockFactory::IsMockedURL(const blink::WebURL& url) {
