@@ -221,14 +221,13 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
     {# impl #}
-    {% if attribute.put_forwards %}
+    {% if attribute.is_put_forwards %}
     {{cpp_class}}* proxyImpl = {{v8_class}}::toImpl(holder);
     {{attribute.cpp_type}} impl = WTF::getPtr(proxyImpl->{{attribute.name}}());
     if (!impl)
         return;
     {% elif attribute.is_replaceable %}
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
-    {{cpp_class}}ForceSetAttributeOnThis(propertyName, v8Value, info);
     {% elif not attribute.is_static %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     {% endif %}
@@ -392,26 +391,25 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 {% macro attribute_configuration(attribute) %}
 {% set getter_callback =
        '%sV8Internal::%sAttributeGetterCallback' %
-            (cpp_class_or_partial, attribute.name)
+           (cpp_class_or_partial, attribute.name)
        if not attribute.constructor_type else
        ('%sV8Internal::%sConstructorGetterCallback' %
-            (cpp_class_or_partial, attribute.name)
+           (cpp_class_or_partial, attribute.name)
         if attribute.needs_constructor_getter_callback else
-       '%sV8Internal::%sConstructorGetter' % (cpp_class_or_partial, cpp_class)) %}
+        '%sV8Internal::%sConstructorGetter' % (cpp_class_or_partial, cpp_class)) %}
 {% set getter_callback_for_main_world =
        '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
-            (cpp_class_or_partial, attribute.name)
+           (cpp_class_or_partial, attribute.name)
        if attribute.is_per_world_bindings else '0' %}
 {% set setter_callback = attribute.setter_callback %}
 {% set setter_callback_for_main_world =
        '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
            (cpp_class_or_partial, attribute.name)
-       if attribute.is_per_world_bindings and
-          (not attribute.is_read_only or attribute.put_forwards) else '0' %}
+       if attribute.is_per_world_bindings and attribute.has_setter else '0' %}
 {% set wrapper_type_info =
        'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
-            attribute.constructor_type
-        if attribute.constructor_type else '0' %}
+           attribute.constructor_type
+       if attribute.constructor_type else '0' %}
 {% set access_control = 'static_cast<v8::AccessControl>(%s)' %
                         ' | '.join(attribute.access_control_list) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %

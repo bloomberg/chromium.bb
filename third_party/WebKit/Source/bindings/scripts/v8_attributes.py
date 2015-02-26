@@ -94,6 +94,7 @@ def attribute_context(interface, attribute):
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),
+        'has_setter': has_setter(attribute),
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
@@ -112,6 +113,7 @@ def attribute_context(interface, attribute):
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
+        'is_put_forwards': 'PutForwards' in extended_attributes,
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
@@ -126,7 +128,6 @@ def attribute_context(interface, attribute):
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', bailout_return_value='false', isolate='scriptState->isolate()'),
         'property_attributes': property_attributes(interface, attribute),
-        'put_forwards': 'PutForwards' in extended_attributes,
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
         'reflect_missing': extended_attributes.get('ReflectMissing'),
@@ -144,8 +145,7 @@ def attribute_context(interface, attribute):
         return context
     if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
-    if (not has_custom_setter(attribute) and
-        (not attribute.is_read_only or 'PutForwards' in extended_attributes)):
+    if not has_custom_setter(attribute) and has_setter(attribute):
         setter_context(interface, attribute, context)
 
     return context
@@ -306,6 +306,10 @@ def setter_context(interface, attribute, context):
                             'Attribute "%s" is not present in interface "%s"' %
                             (target_attribute_name, target_interface_name))
 
+    if 'Replaceable' in attribute.extended_attributes:
+        context['cpp_setter'] = '%sForceSetAttributeOnThis(propertyName, v8Value, info)' % cpp_name(interface)
+        return
+
     extended_attributes = attribute.extended_attributes
     idl_type = attribute.idl_type
 
@@ -425,20 +429,23 @@ def scoped_content_attribute_name(interface, attribute):
 # Attribute configuration
 ################################################################################
 
-# [PutForwards], [Replaceable]
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
     cpp_class_name_or_partial = cpp_name_or_partial(interface)
 
-    extended_attributes = attribute.extended_attributes
+    if not has_setter(attribute):
+        return '0'
     if (is_constructor_attribute(attribute)):
         return '%sV8Internal::%sForceSetAttributeOnThisCallback' % (
             cpp_class_name_or_partial, cpp_class_name)
-    if (attribute.is_read_only and
-            'PutForwards' not in extended_attributes and
-            'Replaceable' not in extended_attributes):
-        return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name_or_partial, attribute.name)
+
+
+# [PutForwards], [Replaceable]
+def has_setter(attribute):
+    return (not attribute.is_read_only or
+            'PutForwards' in attribute.extended_attributes or
+            'Replaceable' in attribute.extended_attributes)
 
 
 # [DoNotCheckSecurity], [Unforgeable]
@@ -451,9 +458,7 @@ def access_control_list(interface, attribute):
             access_control.append('v8::ALL_CAN_WRITE')
         else:
             access_control.append('v8::ALL_CAN_READ')
-            if (not attribute.is_read_only or
-                'PutForwards' in extended_attributes or
-                'Replaceable' in extended_attributes):
+            if has_setter(attribute):
                 access_control.append('v8::ALL_CAN_WRITE')
     if is_unforgeable(interface, attribute):
         access_control.append('v8::PROHIBITS_OVERWRITING')

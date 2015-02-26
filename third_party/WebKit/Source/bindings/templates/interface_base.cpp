@@ -92,9 +92,7 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
-{% if (not attribute.is_read_only or
-       attribute.put_forwards or
-       attribute.is_replaceable) %}
+{% if attribute.has_setter %}
 {% if not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
@@ -498,7 +496,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
 {% endfor %}
 {% for attribute in attributes if attribute.is_implemented_in_private_script %}
 {{attribute_getter_implemented_in_private_script(attribute)}}
-{% if not attribute.is_read_only or attribute.put_forwards %}
+{% if attribute.has_setter %}
 {{attribute_setter_implemented_in_private_script(attribute)}}
 {% endif %}
 {% endfor %}
