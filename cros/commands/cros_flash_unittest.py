@@ -189,7 +189,7 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def SetupCommandMock(self, cmd_args):
     """Setup comand mock."""
     self.cmd_mock = MockFlashCommand(
-        cmd_args, base_args=['--cache-dir', self.tempdir])
+        cmd_args, base_args=['--cache-dir', self.tempdir, '--debug'])
     self.StartPatcher(self.cmd_mock)
 
   def setUp(self):
@@ -233,8 +233,10 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testNonLocalImagePath(self):
     """Tests that we try to get the image path using xbuddy."""
     self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch.object(dev_server_wrapper,
-                           'GetImagePathWithXbuddy') as mock_xbuddy:
+    with mock.patch.object(
+        dev_server_wrapper,
+        'GetImagePathWithXbuddy',
+        return_value='translated/xbuddy/path') as mock_xbuddy:
       with mock.patch('os.path.isfile', return_value=False):
         with mock.patch('os.path.isdir', return_value=False):
           self.cmd_mock.inst.Run()

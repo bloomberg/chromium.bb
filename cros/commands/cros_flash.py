@@ -898,5 +898,7 @@ Examples:
       logging.error('Cros Flash failed before completing.')
       if self.options.debug:
         raise
+      else:
+        raise SystemExit(1)
     else:
       logging.info('Cros Flash completed successfully.')

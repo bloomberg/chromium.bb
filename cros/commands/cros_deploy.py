@@ -1020,5 +1020,7 @@ For more information of cros build usage:
                      '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
       if self.options.debug:
         raise
+      else:
+        raise SystemExit(1)
     else:
       logging.info('Cros Deploy completed successfully.')
