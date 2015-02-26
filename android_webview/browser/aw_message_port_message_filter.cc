@@ -35,6 +35,7 @@ bool AwMessagePortMessageFilter::OnMessageReceived(
                         AwMessagePortService::OnConvertedWebToAppMessage)
     IPC_MESSAGE_HANDLER(AwMessagePortHostMsg_ConvertedAppToWebMessage,
                         OnConvertedAppToWebMessage)
+    IPC_MESSAGE_HANDLER(AwMessagePortHostMsg_ClosePortAck, OnClosePortAck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -44,8 +45,15 @@ void AwMessagePortMessageFilter::OnConvertedAppToWebMessage(
     int msg_port_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
+
   MessagePortProvider::PostMessageToPort(msg_port_id, message,
       sent_message_port_ids);
+}
+
+void AwMessagePortMessageFilter::OnClosePortAck(int message_port_id) {
+  MessagePortProvider::ClosePort(message_port_id);
+  AwBrowserContext::GetDefault()->GetMessagePortService()->
+      CleanupPort(message_port_id);
 }
 
 void AwMessagePortMessageFilter::OnDestruct() const {
@@ -60,6 +68,10 @@ void AwMessagePortMessageFilter::SendAppToWebMessage(
       route_id_,
       msg_port_route_id, // same as the port id
       message, sent_message_port_ids));
+}
+
+void AwMessagePortMessageFilter::SendClosePortMessage(int message_port_id) {
+  Send(new AwMessagePortMsg_ClosePort(route_id_, message_port_id));
 }
 
 void AwMessagePortMessageFilter::SendMessage(

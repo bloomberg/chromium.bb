@@ -47,6 +47,9 @@ class CONTENT_EXPORT MessagePortProvider {
                                 const base::string16& data,
                                 const std::vector<int>& sent_ports);
 
+  // Close the message port. Should be called on IO thread.
+  static void ClosePort(int message_port_id);
+
   // Cleanup the message ports that belong to the closing delegate.
   static void OnMessagePortDelegateClosing(MessagePortDelegate * delegate);
 

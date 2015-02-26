@@ -90,6 +90,13 @@ void MessagePortProvider::PostMessageToPort(
 }
 
 // static
+void MessagePortProvider::ClosePort(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MessagePortService* msp = MessagePortService::GetInstance();
+  msp->ClosePort(message_port_id);
+}
+
+// static
 void MessagePortProvider::OnMessagePortDelegateClosing(
     MessagePortDelegate* delegate) {
   MessagePortService::GetInstance()->OnMessagePortDelegateClosing(delegate);

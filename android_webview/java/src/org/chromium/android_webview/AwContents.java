@@ -1809,10 +1809,17 @@ public class AwContents implements SmartClipProvider,
                 sentPorts);
     }
 
-    /**
-     * Posts a message to the destination frame for real. The unique message port
-     * ids of any transferred port should be known at this time.
-     */
+    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
+    @Override
+    public boolean isPostMessageSenderReady() {
+        return true;
+    }
+
+    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
+    @Override
+    public void onPostMessageQueueEmpty() { }
+
+    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
     @Override
     public void postMessageToWeb(String frameName, String message, String targetOrigin,
             int[] sentPortIds) {

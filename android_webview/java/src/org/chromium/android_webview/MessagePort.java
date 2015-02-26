@@ -22,17 +22,17 @@ import android.util.Log;
  * 3. Transferring the pending port via postMessageToFrame will cause the message (and all
  *    subsequent messages posted via postMessageToFrame) to be queued until the port is ready.
  *
- * A message port should be closed by the app when it is not needed any more. This will free
- * any resources used by it. A closed port cannot receive/send messages and cannot be transferred.
- * close() can be called multiple times.
- *
  * A message port can be in transferred state while a transfer is pending or complete. An
  * application cannot use a transferred port to post messages. If a transferred port
  * receives messages, they will be queued. This state is not visible to embedder app.
  *
+ * A message port should be closed by the app when it is not needed any more. This will free
+ * any resources used by it. A closed port cannot receive/send messages and cannot be transferred.
+ * close() can be called multiple times. A transferred port cannot be closed by the application,
+ * since the ownership is also transferred during the transfer. Closing a transferred port will
+ * throw an exception.
+ *
  * TODO(sgurun) implement queueing messages while a port is in transfer
- * TODO(sgurun) implement freeing resources in content/message_port_service when a port is
- * closed
  */
 public class MessagePort implements PostMessageSender.PostMessageSenderDelegate {
 
@@ -43,23 +43,6 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         public abstract void onMessage(String message);
     };
 
-    /**
-     * A specialized PostMessageSender for message channel message port.
-     */
-    private static class MessagePortPostMessageSender extends PostMessageSender {
-
-        private MessagePort mSender;
-
-        public MessagePortPostMessageSender(MessagePort sender, AwMessagePortService service) {
-            super(sender, service);
-            mSender = sender;
-        }
-        @Override
-        protected boolean senderIsReady() {
-            return mSender.isReady();
-        }
-    }
-
     private static final String TAG = "MessagePort";
     private static final int PENDING = -1;
     private int mPortId = PENDING;
@@ -67,11 +50,11 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     private AwMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
-    private MessagePortPostMessageSender mPostMessageSender;
+    private PostMessageSender mPostMessageSender;
 
     public MessagePort(AwMessagePortService messagePortService) {
         mMessagePortService = messagePortService;
-        mPostMessageSender = new MessagePortPostMessageSender(this, mMessagePortService);
+        mPostMessageSender = new PostMessageSender(this, mMessagePortService);
         mMessagePortService.addObserver(mPostMessageSender);
     }
 
@@ -88,11 +71,17 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     public void close() {
-        if (!mClosed) {
-            mClosed = true;
-            mMessagePortService.removeObserver(mPostMessageSender);
-            // TODO(sgurun) remove the port from AwMessagePortService and write a test
-            // to verify it.
+        if (mTransferred) {
+            throw new IllegalStateException("Port is already transferred");
+        }
+        if (mClosed) return;
+        mClosed = true;
+        // If the port is already ready, and no messages are waiting in the
+        // queue to be transferred, onPostMessageQueueEmpty() callback is not
+        // received (it is received only after messages are purged). In this
+        // case do the cleanup here.
+        if (isReady() && mPostMessageSender.isMessageQueueEmpty()) {
+            cleanup();
         }
     }
 
@@ -130,7 +119,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         }
         if (msgPorts != null) {
             for (MessagePort port : msgPorts) {
-                if (port.portId() == mPortId) {
+                if (port.equals(this)) {
                     throw new IllegalStateException("Source port cannot be transferred");
                 }
             }
@@ -138,9 +127,30 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         mPostMessageSender.postMessage(null, message, null, msgPorts);
     }
 
+    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
+    @Override
+    public boolean isPostMessageSenderReady() {
+        return isReady();
+    }
+
+    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
+    @Override
+    public void onPostMessageQueueEmpty() {
+        if (isClosed()) {
+            cleanup();
+        }
+    }
+
+    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
     @Override
     public void postMessageToWeb(String frameName, String message, String targetOrigin,
             int[] sentPortIds) {
         mMessagePortService.postMessage(mPortId, message, sentPortIds);
+    }
+
+    private void cleanup() {
+        mMessagePortService.removeObserver(mPostMessageSender);
+        mPostMessageSender = null;
+        mMessagePortService.closePort(mPortId);
     }
 }

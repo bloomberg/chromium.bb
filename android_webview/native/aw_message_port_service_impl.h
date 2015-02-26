@@ -39,10 +39,12 @@ class AwMessagePortServiceImpl : public AwMessagePortService {
       const std::vector<int>& sent_message_port_ids) override;
   void OnMessagePortMessageFilterClosing(
       AwMessagePortMessageFilter* filter) override;
+  void CleanupPort(int message_port_id) override;
 
   // Methods called from Java.
   void PostAppToWebMessage(JNIEnv* env, jobject object, int sender_id,
       jstring message, jintArray sent_ports);
+  void ClosePort(JNIEnv* env, jobject object, int message_port_id);
 
   void RemoveSentPorts(const std::vector<int>& sent_ports);
 
@@ -60,6 +62,7 @@ private:
       int* port1,
       int* port2);
   void AddPort(int message_port_id, AwMessagePortMessageFilter* filter);
+  void PostClosePortMessage(int message_port_id);
 
   JavaObjectWeakGlobalRef java_ref_;
   typedef std::map<int, AwMessagePortMessageFilter*> MessagePorts;

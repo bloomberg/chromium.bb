@@ -122,6 +122,52 @@ public class PostMessageTest extends AwTestBase {
             + "   </script>"
             + "</body></html>";
 
+    // Concats all the data fields of the received messages and makes it
+    // available as page title.
+    private static final String TITLE_FROM_POSTMESSAGE_TO_FRAME =
+            "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        var received = '';"
+            + "        onmessage = function (e) {"
+            + "            received += e.data;"
+            + "            document.title = received;"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    // Concats all the data fields of the received messages to the transferred channel
+    // and makes it available as page title.
+    private static final String TITLE_FROM_POSTMESSAGE_TO_CHANNEL =
+            "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        var received = '';"
+            + "        onmessage = function (e) {"
+            + "            var myport = e.ports[0];"
+            + "            myport.onmessage = function (f) {"
+            + "                received = received + f.data;"
+            + "                document.title = received;"
+            + "            }"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    // Call on non-UI thread.
+    private void expectTitle(final String title) throws Throwable {
+        assertTrue("Received title " + mAwContents.getTitle() + " while expecting " + title,
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return ThreadUtils.runOnUiThreadBlockingNoException(
+                                new Callable<Boolean>() {
+                                    @Override
+                                    public Boolean call() throws Exception {
+                                        return mAwContents.getTitle().equals(title);
+                                    }
+                                });
+                    }
+                }));
+    }
+
     private void loadPage(String page) throws Throwable {
         final String url = mWebServer.setResponse("/test.html", page,
                 CommonResources.getTextHtmlHeaders(true));
@@ -269,6 +315,96 @@ public class PostMessageTest extends AwTestBase {
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // Verify messages posted before closing a port is received at the destination port.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testMessagesPostedBeforeClosingPortAreTransferred() throws Throwable {
+        loadPage(TITLE_FROM_POSTMESSAGE_TO_CHANNEL);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
+                channel[0].postMessage("2", null);
+                channel[0].postMessage("3", null);
+                channel[0].close();
+            }
+        });
+        expectTitle("23");
+    }
+
+    // Verify a transferred port using postmessagetoframe cannot be closed.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testClosingTransferredPortToFrameThrowsAnException() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
+                try {
+                    channel[1].close();
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // Verify a transferred port using postmessagetoframe cannot be closed.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testClosingTransferredPortToChannelThrowsAnException() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel1 = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel1[1]});
+                MessagePort[] channel2 = mAwContents.createMessageChannel();
+                channel1[0].postMessage("2", new MessagePort[]{channel2[0]});
+                try {
+                    channel2[0].close();
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // Create two message channels, and while they are in pending state, transfer the
+    // second one in the first one.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPendingPortCanBeTransferredInPendingPort() throws Throwable {
+        loadPage(TITLE_FROM_POSTMESSAGE_TO_CHANNEL);
+        final TestMessagePort testPort =
+                new TestMessagePort(getAwBrowserContext().getMessagePortService());
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel1 = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel1[1]});
+                MessagePort[] channel2 = mAwContents.createMessageChannel();
+                channel1[0].postMessage("2", new MessagePort[]{channel2[0]});
+            }
+        });
+        expectTitle("2");
     }
 
     private static class ChannelContainer {
@@ -475,42 +611,12 @@ public class PostMessageTest extends AwTestBase {
         assertEquals(HELLO, channelContainer.getMessage());
     }
 
-    // concats all the data fields of the received messages and makes it
-    // available as page title.
-    private static final String TITLE_PAGE =
-            "<!DOCTYPE html><html><body>"
-            + "    <script>"
-            + "        var received = \"\";"
-            + "        onmessage = function (e) {"
-            + "            received = received + e.data;"
-            + "            document.title = received;"
-            + "        }"
-            + "   </script>"
-            + "</body></html>";
-
-    // Call on non-UI thread.
-    private void expectTitle(final String title) throws Throwable {
-        assertTrue("Received title " + mAwContents.getTitle() + " while expecting " + title,
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ThreadUtils.runOnUiThreadBlockingNoException(
-                                new Callable<Boolean>() {
-                                    @Override
-                                    public Boolean call() throws Exception {
-                                        return mAwContents.getTitle().equals(title);
-                                    }
-                                });
-                    }
-                }));
-    }
-
     // Post a message with a pending port to a frame and then post a bunch of messages
     // after that. Make sure that they are not ordered at the receiver side.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToFrameNotReordersMessages() throws Throwable {
-        loadPage(TITLE_PAGE);
+        loadPage(TITLE_FROM_POSTMESSAGE_TO_FRAME);
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -586,7 +692,7 @@ public class PostMessageTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToFrameNotSendsPendingMessages() throws Throwable {
-        loadPage(TITLE_PAGE);
+        loadPage(TITLE_FROM_POSTMESSAGE_TO_FRAME);
         final TestMessagePort testPort =
                 new TestMessagePort(getAwBrowserContext().getMessagePortService());
         runTestOnUiThread(new Runnable() {

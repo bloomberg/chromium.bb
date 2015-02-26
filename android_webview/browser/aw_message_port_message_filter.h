@@ -26,13 +26,13 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
   void SendAppToWebMessage(int msg_port_route_id,
                            const base::string16& message,
                            const std::vector<int>& sent_message_port_ids);
+  void SendClosePortMessage(int message_port_id);
 
   // MessagePortDelegate implementation.
   void SendMessage(int msg_port_route_id,
                    const base::string16& message,
                    const std::vector<int>& sent_message_port_ids) override;
   void SendMessagesAreQueued(int route_id) override;
-
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<AwMessagePortMessageFilter>;
@@ -41,6 +41,7 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
       int msg_port_id,
       const base::string16& message,
       const std::vector<int>& sent_message_port_ids);
+  void OnClosePortAck(int message_port_id);
 
   ~AwMessagePortMessageFilter() override;
 

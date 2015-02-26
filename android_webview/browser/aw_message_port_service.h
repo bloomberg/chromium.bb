@@ -25,6 +25,8 @@ class AwMessagePortService  {
 
   virtual void OnMessagePortMessageFilterClosing(
       AwMessagePortMessageFilter* filter) = 0;
+
+  virtual void CleanupPort(int message_port_id) = 0;
 };
 
 }  // namespace android_webview

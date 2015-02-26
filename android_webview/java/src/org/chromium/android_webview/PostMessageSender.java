@@ -22,6 +22,16 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
          */
         void postMessageToWeb(String frameName, String message, String targetOrigin,
                 int[] sentPortIds);
+
+        /*
+         * Whether the post message sender is ready to post messages.
+         */
+        boolean isPostMessageSenderReady();
+
+        /*
+         * Informs that all messages are posted and message queue is empty.
+         */
+        void onPostMessageQueueEmpty();
     };
 
     // A struct to store Message parameters that are sent from App to Web.
@@ -54,6 +64,12 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
         mService = service;
     }
 
+    // TODO(sgurun) in code review it was found this was implemented wrongly
+    // as mMessageQueue.size() > 0. write a test to catch this.
+    public boolean isMessageQueueEmpty() {
+        return mMessageQueue.size() == 0;
+    }
+
     // Return true if any sent port is pending.
     private boolean anySentPortIsPending(MessagePort[] sentPorts) {
         if (sentPorts != null) {
@@ -66,11 +82,6 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
         return false;
     }
 
-    // By default the sender is always ready.
-    protected boolean senderIsReady() {
-        return true;
-    }
-
     // A message to a frame is queued if:
     // 1. Sender is not ready to post. When posting messages to frames, sender is always
     // ready. However, when posting messages using message channels, sender may be in
@@ -80,7 +91,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     private boolean shouldQueueMessage(MessagePort[] sentPorts) {
         // if messages to frames are already in queue mode, simply queue it, no need to
         // check ports.
-        if (mMessageQueue.size() > 0 || !senderIsReady()) {
+        if (mMessageQueue.size() > 0 || !mDelegate.isPostMessageSenderReady()) {
             return true;
         }
         if (anySentPortIsPending(sentPorts)) {
@@ -131,7 +142,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     public void onMessageChannelCreated() {
         PostMessageParams msg;
 
-        if (!senderIsReady()) {
+        if (!mDelegate.isPostMessageSenderReady()) {
             return;
         }
 
@@ -143,5 +154,6 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
             mMessageQueue.remove();
             postMessageToWeb(msg.frameName, msg.message, msg.targetOrigin, msg.sentPorts);
         }
+        mDelegate.onPostMessageQueueEmpty();
     }
 }

@@ -34,6 +34,7 @@ bool AwMessagePortClient::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(AwMessagePortClient, message)
     IPC_MESSAGE_HANDLER(AwMessagePortMsg_WebToAppMessage, OnWebToAppMessage)
     IPC_MESSAGE_HANDLER(AwMessagePortMsg_AppToWebMessage, OnAppToWebMessage)
+    IPC_MESSAGE_HANDLER(AwMessagePortMsg_ClosePort, OnClosePort)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -93,6 +94,11 @@ void AwMessagePortClient::OnAppToWebMessage(
   Send(new AwMessagePortHostMsg_ConvertedAppToWebMessage(
       render_frame()->GetRoutingID(), message_port_id,
       result, sent_message_port_ids));
+}
+
+void AwMessagePortClient::OnClosePort(int message_port_id) {
+  Send(new AwMessagePortHostMsg_ClosePortAck(render_frame()->GetRoutingID(),
+                                             message_port_id));
 }
 
 }

@@ -92,6 +92,12 @@ public class AwMessagePortService {
         private SparseArray<MessagePort> mMessagePorts = new SparseArray<MessagePort>();
         private Object mLock = new Object();
 
+        public void remove(int portId) {
+            synchronized (mLock) {
+                mMessagePorts.remove(portId);
+            }
+        }
+
         public void put(int portId, MessagePort m) {
             synchronized (mLock) {
                 mMessagePorts.put(portId, m);
@@ -123,12 +129,17 @@ public class AwMessagePortService {
         mObserverList.removeObserver(observer);
     }
 
+    public void closePort(int messagePortId) {
+        mPortStorage.remove(messagePortId);
+        if (mNativeMessagePortService == 0) return;
+        nativeClosePort(mNativeMessagePortService, messagePortId);
+    }
+
     public void postMessage(int senderId, String message, int[] sentPorts) {
         // verify that webview still owns the port (not transferred)
         if (mPortStorage.get(senderId) == null) {
             throw new IllegalStateException("Cannot post to unknown port " + senderId);
         }
-        removeSentPorts(sentPorts);
         if (mNativeMessagePortService == 0) return;
         nativePostAppToWebMessage(mNativeMessagePortService, senderId, message, sentPorts);
     }
@@ -141,7 +152,7 @@ public class AwMessagePortService {
                 if (p == null) {
                     throw new IllegalStateException("Cannot transfer unknown port " + port);
                 }
-                mPortStorage.put(port, null);
+                mPortStorage.remove(port);
             }
         }
     }
@@ -190,4 +201,6 @@ public class AwMessagePortService {
     private native long nativeInitAwMessagePortService();
     private native void nativePostAppToWebMessage(long nativeAwMessagePortServiceImpl,
             int senderId, String message, int[] portIds);
+    private native void nativeClosePort(long nativeAwMessagePortServiceImpl,
+            int messagePortId);
 }

@@ -58,6 +58,12 @@ IPC_MESSAGE_ROUTED3(AwMessagePortMsg_AppToWebMessage,
                     base::string16 /* message */,
                     std::vector<int> /* sent message port_ids */)
 
+// Used to defer message port closing until after all in-flight messages
+// are flushed from renderer to browser. Renderer piggy-backs the message
+// to browser.
+IPC_MESSAGE_ROUTED1(AwMessagePortMsg_ClosePort,
+                    int /* message port id */)
+
 //-----------------------------------------------------------------------------
 // These are messages sent from the renderer to the browser process.
 
@@ -72,3 +78,7 @@ IPC_MESSAGE_ROUTED3(AwMessagePortHostMsg_ConvertedAppToWebMessage,
                     int /* recipient message port id */,
                     base::string16 /* converted message */,
                     std::vector<int> /* sent message port_ids */)
+
+// Response to AwMessagePortMsg_ClosePort
+IPC_MESSAGE_ROUTED1(AwMessagePortHostMsg_ClosePortAck,
+                    int /* message port id */)

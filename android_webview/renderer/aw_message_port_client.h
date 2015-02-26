@@ -30,6 +30,7 @@ class AwMessagePortClient : public content::RenderFrameObserver {
   void OnAppToWebMessage(int message_port_id,
                          const base::string16& message,
                          const std::vector<int>& sent_message_port_ids);
+  void OnClosePort(int message_port_id);
 
   DISALLOW_COPY_AND_ASSIGN(AwMessagePortClient);
 };

@@ -135,6 +135,21 @@ void AwMessagePortServiceImpl::PostAppToWebMessage(JNIEnv* env, jobject obj,
                  base::Owned(j_sent_ports)));
 }
 
+// The message port service cannot immediately close the port, because
+// it is possible that messages are still queued in the renderer process
+// waiting for a conversion. Instead, it sends a special message with
+// a flag which indicates that this message port should be closed.
+void AwMessagePortServiceImpl::ClosePort(JNIEnv* env, jobject obj,
+    int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&AwMessagePortServiceImpl::PostClosePortMessage,
+                 base::Unretained(this),
+                 message_port_id));
+}
+
 void AwMessagePortServiceImpl::RemoveSentPorts(
     const std::vector<int>& sent_ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -151,6 +166,15 @@ void AwMessagePortServiceImpl::PostAppToWebMessageOnIOThread(
   ports_[sender_id]->SendAppToWebMessage(sender_id, *message, *sent_ports);
 }
 
+void AwMessagePortServiceImpl::PostClosePortMessage(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ports_[message_port_id]->SendClosePortMessage(message_port_id);
+}
+
+void AwMessagePortServiceImpl::CleanupPort(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ports_.erase(message_port_id);
+}
 
 void AwMessagePortServiceImpl::CreateMessageChannelOnIOThread(
     scoped_refptr<AwMessagePortMessageFilter> filter,
