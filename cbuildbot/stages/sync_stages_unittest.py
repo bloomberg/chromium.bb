@@ -589,6 +589,17 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
     self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
 
+  def testNoLaunchClosedTree(self):
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=False)
+
+    # Create a change that is ready to be tested.
+    change = self._PrepareChangesWithPendingVerifications()[0]
+    change.approval_timestamp = 0
+
+    # Change should still be pending.
+    self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
+    self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_PENDING)
+
   def testDontTestSubmittedPatches(self):
     # Create a change that has been submitted.
     change = self._PrepareChangesWithPendingVerifications()[0]

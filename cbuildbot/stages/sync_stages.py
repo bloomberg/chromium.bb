@@ -1386,9 +1386,14 @@ class PreCQLauncherStage(SyncStage):
         k: v for k, v in progress_map.iteritems()
         if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED}
 
+    is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
     for plan, config in self.GetDisjointTransactionsToTest(
         pool, launchable_progress_map):
-      self.LaunchTrybot(plan, config)
+      if is_tree_open:
+        self.LaunchTrybot(plan, config)
+      else:
+        logging.info('Tree is closed, not launching config %s for plan %s.',
+                     config, cros_patch.GetChangesAsString(plan))
 
     # Mark passed changes as passed
     self.UpdateChangeStatuses(will_pass, constants.CL_STATUS_PASSED)
