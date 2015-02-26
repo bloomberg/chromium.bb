@@ -68,4 +68,14 @@
     <color name="compositor_tab_title_bar_shadow">#AAFFFFFF</color>
     <color name="compositor_tab_title_bar_shadow_incognito">#88000000</color>
 
+    <!-- First Run Experience Colors -->
+    <color name="fre_text_color">#000000</color>
+    <color name="fre_light_text_color">#494949</color>
+    <color name="fre_title_color">#161616</color>
+
+    <!-- NTP Colors. Used on the bookmarks and recent tabs pages. -->
+    <color name="ntp_bg">#fff</color>
+
+    <!-- Signin promo screen colors -->
+    <color name="illustration_background_color">#4FC3F7</color>
 </resources>

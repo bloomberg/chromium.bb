@@ -1241,6 +1241,53 @@ Drag from top to exit.
         Don't ask again for this card
       </message>
 
+      <!-- First Run strings -->
+      <message name="IDS_FRE_SET_UP_CHROME" desc="Header text shown when the user is first setting up Chrome">
+        Set up Chrome
+      </message>
+      <message name="IDS_FRE_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page">
+        Select an account to get your tabs, bookmarks, history, and other settings on all your devices.
+      </message>
+      <message name="IDS_FRE_SKIP_TEXT" desc="Text for second page skip button">
+        No thanks
+      </message>
+      <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
+        Sign in
+      </message>
+      <message name="IDS_FRE_DONE" desc="Button to dismiss the sign-in screen once the user is done">
+        Done
+      </message>
+      <message name="IDS_FRE_SETTINGS" desc="Button that opens Chrome settings">
+        Settings
+      </message>
+      <message name="IDS_FRE_ADD_ACCOUNT" desc="Text for adding another Google Account">
+        Add account
+      </message>
+      <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
+        Make Chrome yours
+      </message>
+      <message name="IDS_FRE_NO_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page when there are no accounts on the device.">
+        Add an account to get your tabs, bookmarks, history, and other settings on all your devices.
+      </message>
+      <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY_VARIANT" desc="A variant of summary for the signin promo; lists reasons to sign in to Chrome.">
+        Sign in to access all your web stuff from any device
+      </message>
+      <message name="IDS_FRE_NO_ACCOUNTS" desc="Text for spinner when there is no google accounts [CHAR-LIMIT=40]">
+        Add an account
+      </message>
+      <message name="IDS_FRE_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
+        Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
+      </message>
+      <message name="IDS_FRE_SIGNED_IN_DESCRIPTION" desc="Explanation of what gets synced after the user signed in">
+        Your tabs, bookmarks, history and other settings will be synced to your Google Account.
+      </message>
+      <message name="IDS_FRE_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
+        Your parents help manage these settings.
+      </message>
+      <message name="IDS_ACCESSIBILITY_FRE_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
+        Choose account
+      </message>
+
     </messages>
   </release>
 </grit>
