@@ -1860,6 +1860,8 @@ crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Cr
 
 crbug.com/460374 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ ImageOnlyFailure ]
 
+crbug.com/462147 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/45621.html [ Pass ImageOnlyFailure ]
