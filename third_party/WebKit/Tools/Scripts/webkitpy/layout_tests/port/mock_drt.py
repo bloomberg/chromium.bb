@@ -138,6 +138,11 @@ class MockDRTPort(object):
         suite = self.__delegate.lookup_virtual_suite(test_name)
         return suite.args + ['--virtual-test-suite-name', suite.name, '--virtual-test-suite-base', suite.base]
 
+    def lookup_virtual_reference_args(self, test_name):
+        suite = self.__delegate.lookup_virtual_suite(test_name)
+        return suite.reference_args + ['--virtual-test-suite-name', suite.name, '--virtual-test-suite-base', suite.base]
+
+
 def main(argv, host, stdin, stdout, stderr):
     """Run the tests."""
 

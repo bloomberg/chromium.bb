@@ -1610,10 +1610,22 @@ class Port(object):
                 return suite.args
         return []
 
+    def lookup_virtual_reference_args(self, test_name):
+        for suite in self.virtual_test_suites():
+            if test_name.startswith(suite.name):
+                return suite.reference_args
+        return []
+
     def lookup_physical_test_args(self, test_name):
         for suite in self.physical_test_suites():
             if test_name.startswith(suite.name):
                 return suite.args
+        return []
+
+    def lookup_physical_reference_args(self, test_name):
+        for suite in self.physical_test_suites():
+            if test_name.startswith(suite.name):
+                return suite.reference_args
         return []
 
     def should_run_as_pixel_test(self, test_input):
@@ -1719,25 +1731,27 @@ class Port(object):
         return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
 class VirtualTestSuite(object):
-    def __init__(self, prefix=None, base=None, args=None):
+    def __init__(self, prefix=None, base=None, args=None, reference_args=None):
         assert base
         assert args
         assert prefix.find('/') == -1, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
         self.name = 'virtual/' + prefix + '/' + base
         self.base = base
         self.args = args
+        self.reference_args = args if reference_args is None else reference_args
         self.tests = {}
 
     def __repr__(self):
-        return "VirtualTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)
+        return "VirtualTestSuite('%s', '%s', %s, %s)" % (self.name, self.base, self.args, self.reference_args)
 
 
 class PhysicalTestSuite(object):
-    def __init__(self, base, args):
+    def __init__(self, base, args, reference_args=None):
         self.name = base
         self.base = base
         self.args = args
+        self.reference_args = args if reference_args is None else reference_args
         self.tests = set()
 
     def __repr__(self):
-        return "PhysicalTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)
+        return "PhysicalTestSuite('%s', '%s', %s, %s)" % (self.name, self.base, self.args, self.reference_args)

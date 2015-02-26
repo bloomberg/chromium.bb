@@ -484,6 +484,17 @@ class VirtualTestSuiteTest(unittest.TestCase):
         self.assertEqual(suite.name, 'virtual/suite/base/foo')
         self.assertEqual(suite.base, 'base/foo')
         self.assertEqual(suite.args, ['--args'])
+        self.assertEqual(suite.reference_args, suite.args)
+
+    def test_empty_reference_args(self):
+        suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'], reference_args=[])
+        self.assertEqual(suite.args, ['--args'])
+        self.assertEqual(suite.reference_args, [])
+
+    def test_non_empty_reference_args(self):
+        suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'], reference_args=['--reference-args'])
+        self.assertEqual(suite.args, ['--args'])
+        self.assertEqual(suite.reference_args, ['--reference-args'])
 
     def test_no_slash(self):
         self.assertRaises(AssertionError, VirtualTestSuite, prefix='suite/bar', base='base/foo', args=['--args'])
