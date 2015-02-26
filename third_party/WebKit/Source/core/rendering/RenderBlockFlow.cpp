@@ -1853,7 +1853,7 @@ void RenderBlockFlow::markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove)
     FloatingObjectSetIterator end = floatingObjectSet.end();
 
     for (LayoutObject* next = nextSibling(); next; next = next->nextSibling()) {
-        if (!next->isRenderBlockFlow() || next->isFloatingOrOutOfFlowPositioned() || toRenderBlockFlow(next)->avoidsFloats())
+        if (!next->isRenderBlockFlow() || (!floatToRemove && (next->isFloatingOrOutOfFlowPositioned() || toRenderBlockFlow(next)->avoidsFloats())))
             continue;
 
         RenderBlockFlow* nextBlock = toRenderBlockFlow(next);
