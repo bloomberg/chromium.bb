@@ -49,9 +49,9 @@ var pxTabLength = pxLeadingSpan.getBoundingClientRect().left - pxPre.getBounding
 var emTabLength = emLeadingSpan.getBoundingClientRect().left - emPre.getBoundingClientRect().left;
 var intTabLength = intLeadingSpan.getBoundingClientRect().left - intPre.getBoundingClientRect().left;
 
-shouldBe("pxTabLength", "pxExpected", false, 0.005);
-shouldBe("emTabLength", "emExpected", false, 0.005);
-shouldBe("intTabLength", "intExpected", false, 0.005);
+shouldBe("pxTabLength", "pxExpected", false, 0.02);
+shouldBe("emTabLength", "emExpected", false, 0.02);
+shouldBe("intTabLength", "intExpected", false, 0.02);
 
 // Tests with a tab character after leading text.
 
@@ -76,9 +76,9 @@ pxTabLength = pxTrailingSpan.getBoundingClientRect().left - pxLeadingSpan.getBou
 emTabLength = emTrailingSpan.getBoundingClientRect().left - emLeadingSpan.getBoundingClientRect().right;
 intTabLength = intTrailingSpan.getBoundingClientRect().left - intLeadingSpan.getBoundingClientRect().right;
 
-shouldBe("pxTabLength", "pxExpected", false, 0.005);
-shouldBe("emTabLength", "emExpected", false, 0.005);
-shouldBe("intTabLength", "intExpected", false, 0.005);
+shouldBe("pxTabLength", "pxExpected", false, 0.02);
+shouldBe("emTabLength", "emExpected", false, 0.02);
+shouldBe("intTabLength", "intExpected", false, 0.02);
     </script>
   </body>
 </html>
