@@ -63,7 +63,7 @@ class Page2(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page2, self).__init__(
-      url='http://groupcloned.com/test/plain/list-animation-simple.html',
+      url='file://key_silk_cases/list_animation_simple.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
