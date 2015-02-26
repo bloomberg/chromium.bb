@@ -38,14 +38,12 @@ html[dir='rtl'] .trash > .lid {
   -webkit-transform-origin: 107% 100%;
 }
 
-.trash:focus > .lid,
-.trash:hover > .lid {
+.trash:-webkit-any(:focus, :hover, .open) > .lid {
   -webkit-transform: rotate(-45deg);
   -webkit-transition: -webkit-transform 250ms;
 }
 
-html[dir='rtl'] .trash:focus > .lid,
-html[dir='rtl'] .trash:hover > .lid {
+html[dir='rtl'] .trash:-webkit-any(:focus, :hover, .open) > .lid {
   -webkit-transform: rotate(45deg);
 }
 

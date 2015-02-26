@@ -36,7 +36,7 @@ var ExtensionDataResponse;
 var webuiResponded = false;
 
 cr.define('extensions', function() {
-  var ExtensionsList = options.ExtensionsList;
+  var ExtensionList = extensions.ExtensionList;
 
   // Implements the DragWrapper handler interface.
   var dragWrapperHandler = {
@@ -339,9 +339,8 @@ cr.define('extensions', function() {
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
 
-    ExtensionsList.prototype.data_ = extensionsData;
-    var extensionList = $('extension-settings-list');
-    ExtensionsList.decorate(extensionList);
+    ExtensionList.prototype.data_ = extensionsData;
+    ExtensionList.decorate($('extension-settings-list'));
   };
 
   // Indicate that warning |message| has occured for pack of |crx_path| and

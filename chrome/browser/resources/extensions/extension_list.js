@@ -197,7 +197,7 @@ ExtensionFocusRow.prototype = {
   },
 };
 
-cr.define('options', function() {
+cr.define('extensions', function() {
   'use strict';
 
   /**
@@ -206,7 +206,7 @@ cr.define('options', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var ExtensionsList = cr.ui.define('div');
+  var ExtensionList = cr.ui.define('div');
 
   /**
    * @type {Object<string, number>} A map from extension id to last reloaded
@@ -216,7 +216,7 @@ cr.define('options', function() {
    */
   var extensionReloadedTimestamp = {};
 
-  ExtensionsList.prototype = {
+  ExtensionList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     /**
@@ -449,6 +449,8 @@ cr.define('options', function() {
       trash.hidden = extension.managedInstall;
       trash.setAttribute('column-type', 'trash');
       trash.addEventListener('click', function(e) {
+        trash.classList.add('open');
+        trash.classList.toggle('mouse-clicked', e.detail > 0);
         chrome.send('extensionSettingsUninstall', [extension.id]);
       });
       row.querySelector('.enable-controls').appendChild(trash);
@@ -882,7 +884,14 @@ cr.define('options', function() {
     },
   };
 
+  ExtensionList.uninstallCancel = function() {
+    var trash = document.querySelector('.trash.open');
+    if (trash.classList.contains('mouse-clicked'))
+      trash.blur();
+    trash.classList.remove('open');
+  };
+
   return {
-    ExtensionsList: ExtensionsList
+    ExtensionList: ExtensionList
   };
 });

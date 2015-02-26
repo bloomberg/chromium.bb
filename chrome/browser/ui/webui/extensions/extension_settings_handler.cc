@@ -841,6 +841,7 @@ void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
 
 void ExtensionSettingsHandler::ExtensionUninstallCanceled() {
   extension_id_prompting_ = "";
+  web_ui()->CallJavascriptFunction("extensions.ExtensionList.uninstallCancel");
 }
 
 void ExtensionSettingsHandler::ExtensionWarningsChanged() {
