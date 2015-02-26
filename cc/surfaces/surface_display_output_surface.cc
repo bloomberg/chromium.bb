@@ -46,7 +46,7 @@ void SurfaceDisplayOutputSurface::ReceivedVSyncParameters(
 void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
-  if (frame_size != display_size_) {
+  if (frame_size.IsEmpty() || frame_size != display_size_) {
     if (!surface_id_.is_null()) {
       factory_.Destroy(surface_id_);
     }
