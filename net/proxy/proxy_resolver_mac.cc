@@ -120,8 +120,7 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
   CFRunLoopAddSource(CFRunLoopGetCurrent(), runloop_source.get(),
                      private_runloop_mode);
   CFRunLoopRunInMode(private_runloop_mode, DBL_MAX, false);
-  CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runloop_source.get(),
-                        private_runloop_mode);
+  CFRunLoopSourceInvalidate(runloop_source.get());
   DCHECK(result != NULL);
 
   if (CFGetTypeID(result) == CFErrorGetTypeID()) {
