@@ -174,9 +174,9 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema32(self):
-    """Run the CQ test with schema version 32."""
-    self._PrepareFreshDatabase(32)
+  def testCQWithSchema39(self):
+    """Run the CQ test with schema version 39."""
+    self._PrepareFreshDatabase(39)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -429,7 +429,7 @@ class BuildTableTest(CIDBIntegrationTest):
 
   def testInsertWithDeadline(self):
     """Test deadline setting/querying API."""
-    self._PrepareFreshDatabase(32)
+    self._PrepareFreshDatabase(39)
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
     build_id = bot_db.InsertBuild('build_name',
@@ -463,7 +463,7 @@ class BuildTableTest(CIDBIntegrationTest):
   def testExtendDeadline(self):
     """Test that a deadline in the future can be extended."""
 
-    #self._PrepareFreshDatabase(32)
+    self._PrepareFreshDatabase(39)
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
     build_id = bot_db.InsertBuild('build_name',
@@ -506,7 +506,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(32)
+    self._PrepareFreshDatabase(39)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
