@@ -47,9 +47,6 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   virtual void appendEndFloatClipItem();
   virtual void appendTransformItem(const SkMatrix44& matrix);
   virtual void appendEndTransformItem();
-  virtual void appendTransparencyItem(float opacity,
-                                      blink::WebBlendMode blend_mode);
-  virtual void appendEndTransparencyItem();
   // TODO(pdr): Remove this once the blink-side callers have been removed.
   virtual void appendCompositingItem(float opacity,
                                      SkXfermode::Mode,

@@ -502,8 +502,6 @@
         'resources/transferable_resource.h',
         'resources/transform_display_item.cc',
         'resources/transform_display_item.h',
-        'resources/transparency_display_item.cc',
-        'resources/transparency_display_item.h',
         'resources/ui_resource_bitmap.cc',
         'resources/ui_resource_bitmap.h',
         'resources/ui_resource_client.h',
