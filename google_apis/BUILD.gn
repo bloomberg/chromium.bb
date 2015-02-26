@@ -196,7 +196,7 @@ source_set("test_support") {
 }
 
 if (!is_win || link_chrome_on_windows) {
-  test("google_apis_unittest") {
+  test("google_apis_unittests") {
     sources = [
       "gaia/gaia_auth_fetcher_unittest.cc",
       "gaia/gaia_auth_util_unittest.cc",

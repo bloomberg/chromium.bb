@@ -298,3 +298,70 @@ group("gn_all") {
     ]
   }
 }
+
+if (is_linux) {
+  # This group corresponds to the list of tests run on the waterfall for
+  # desktop Linux GYP builds from testing/buildbot/chromium.linux.json. It's
+  # here to help track GYP -> GN conversion progress.
+  group("linux_default_tests") {
+    testonly = true
+    deps = [
+      # chromedriver_unittests  TODO(GYP)
+      # components_browsertests  TODO(GYP)
+      # device_unittests  TODO(GYP)
+      # nacl_loader_unittests  TODO(GYP)
+      # ppapi_unittests  TODO(GYP)
+      # remoting_unittests  TODO(GYP)
+
+      "//base:base_unittests",  # PASSES (*) 2/25/2015
+      "//cc:cc_unittests",  # PASSES 2/25/2015
+      "//chrome/test:browser_tests",
+      "//chrome/test:interactive_ui_tests",
+      "//chrome/test:sync_integration_tests",  # TODO(GYP) multiple crashes.
+      "//chrome/test:unit_tests",  # PASSES 2/25/2015
+      "//components:components_unittests",  # TODO(GYP) multiple crashes.
+      "//content/test:content_browsertests",
+      "//content/test:content_unittests",  # PASSES 2/25/2015
+      "//crypto:crypto_unittests",  # PASSES 2/25/2015
+      "//dbus:dbus_unittests",  # PASSES 2/25/2015
+      "//extensions:extensions_browsertests",  # PASSES 2/25/2015
+      "//extensions:extensions_unittests",  # PASSES 2/25/2015
+      "//extensions/shell:app_shell_unittests",  # PASSES 2/25/2015
+      "//google_apis/gcm:gcm_unit_tests",  # PASSES 2/25/2015
+      "//google_apis:google_apis_unittests",  # PASSES 2/25/2015
+      "//gpu:gpu_unittests",  # PASSES 2/25/2015
+      "//ipc:ipc_tests",  # PASSES 2/25/2015
+      "//ipc/mojo:ipc_mojo_unittests",  # PASSES 2/25/2015
+      "//jingle:jingle_unittests",  # PASSES 2/25/2015
+      "//media/cast:cast_unittests",  # PASSES 2/25/2015
+      "//media:media_unittests",  # TODO(GYP) MidiManagerTest fails.
+      "//mojo/common:mojo_common_unittests",  # PASSES 2/25/2015
+      "//net:net_unittests",  # PASSES 2/25/2015
+      "//printing:printing_unittests",  # PASSES 2/25/2015
+      "//sandbox/linux:sandbox_linux_unittests",  # PASSES 2/25/2015
+      "//skia:skia_unittests",  # PASSES 2/25/2015
+      "//sql:sql_unittests",  # PASSES 2/25/2015
+      "//sync:sync_unit_tests",  # PASSES 2/25/2015
+      "//third_party/cacheinvalidation:cacheinvalidation_unittests",  # PASSES 2/25/2015
+      "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",  # PASSES 2/25/2015
+      "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",  # PASSES 2/25/2015
+      "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",  # PASSES 2/25/2015
+      "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",  # PASSES 2/25/2015
+      "//ui/accessibility:accessibility_unittests",  # PASSES 2/25/2015
+      "//ui/app_list:app_list_unittests",  # PASSES 2/25/2015
+      "//ui/aura:aura_unittests",  # PASSES 2/25/2015
+      "//ui/base:ui_base_unittests",  # TODO(GYP) ResourceBundleTest.* fails.
+      "//ui/compositor:compositor_unittests",  # PASSES 2/25/2015
+      "//ui/display:display_unittests",  # PASSES 2/25/2015
+      "//ui/events:events_unittests",  # PASSES 2/25/2015
+      "//ui/gfx:gfx_unittests",  # PASSES 2/25/2015
+      "//ui/touch_selection:ui_touch_selection_unittests",  # PASSES 2/25/2015
+      "//ui/views:views_unittests",  # PASSES (*) 2/25/2015
+      "//ui/wm:wm_unittests",  # PASSES 2/25/2015
+      "//url:url_unittests",  # PASSES 2/25/2015
+
+      # Note:
+      # (*) Fails but failures match GYP build at time of testing.
+    ]
+  }
+}
