@@ -400,7 +400,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
    */
   var onComplete = function(destinationEntry) {
     this.cancelCallback_ = null;
-    this.markAsCopied_(entry, destinationEntry);
+    this.markAsCopied_(entry, /** @type {!FileEntry} */ (destinationEntry));
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
     resolver.resolve(destinationEntry);
   };
