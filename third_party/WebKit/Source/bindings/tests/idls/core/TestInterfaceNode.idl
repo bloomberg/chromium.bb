@@ -29,6 +29,8 @@
  */
 
 interface TestInterfaceNode : Node {
+    inherit attribute DOMString nodeName;
+
     attribute DOMString stringAttribute;
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     attribute EventHandler eventHandlerAttribute;
