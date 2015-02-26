@@ -9,6 +9,15 @@
   <structure name="IDR_CR_ELEMENTS_CR_CHECKBOX_JS"
              file="../../webui/resources/cr_elements/cr_checkbox/cr_checkbox.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_COLLAPSE_CSS"
+             file="../../webui/resources/cr_elements/cr_collapse/cr_collapse.css"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_COLLAPSE_HTML"
+             file="../../webui/resources/cr_elements/cr_collapse/cr_collapse.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_COLLAPSE_JS"
+             file="../../webui/resources/cr_elements/cr_collapse/cr_collapse.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_DROPDOWN_MENU_CSS"
              file="../../webui/resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.css"
              type="chrome_html" />

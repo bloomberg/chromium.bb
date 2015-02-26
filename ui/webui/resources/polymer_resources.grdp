@@ -39,6 +39,15 @@
   <structure name="IDR_POLYMER_CORE_ANIMATION_WEB_ANIMATIONS_HTML"
              file="../../../third_party/polymer/components-chromium/core-animation/web-animations.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_COLLAPSE_CORE_COLLAPSE_CSS"
+             file="../../../third_party/polymer/components-chromium/core-collapse/core-collapse.css"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_COLLAPSE_CORE_COLLAPSE_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/core-collapse/core-collapse-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_COLLAPSE_CORE_COLLAPSE_HTML"
+             file="../../../third_party/polymer/components-chromium/core-collapse/core-collapse.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_DROPDOWN_CORE_DROPDOWN_EXTRACTED_JS"
              file="../../../third_party/polymer/components-chromium/core-dropdown/core-dropdown-extracted.js"
              type="chrome_html" />

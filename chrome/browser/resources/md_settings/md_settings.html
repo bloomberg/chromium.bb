@@ -9,6 +9,8 @@
   <link rel="import"
       href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
   <link rel="import"
+      href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
+  <link rel="import"
       href="chrome://resources/cr_elements/cr_toggle_button/cr_toggle_button.html">
   <link rel="import"
       href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
@@ -18,7 +20,6 @@
     <h1>Settings</h1>
   </header>
   <div class="main">
-    <paper-button id="manage-button" raised>Manage</paper-button>
     <cr-toggle-button checked></cr-toggle-button>
     <cr-checkbox checked></cr-checkbox>
     <section>
@@ -31,6 +32,21 @@
         </core-menu>
       </cr-dropdown-menu>
     </section>
+    <section>
+      <h2>cr-collapse</h2>
+      <paper-button id="manage-button" raised onclick="toggleCollapse();">
+        Toggle Collapse
+      </paper-button>
+      <cr-collapse id="collapse">
+        <div>collapsed content</div>
+      </cr-collapse>
+    </section>
   </div>
+  <script>
+    var collapse = document.getElementById('collapse');
+    function toggleCollapse() {
+      collapse.toggle();
+    }
+  </script>
 </body>
 </html>
