@@ -34,7 +34,7 @@
 
 #include "core/layout/LayoutRubyBase.h"
 #include "core/layout/LayoutRubyText.h"
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 
 namespace blink {
 
@@ -297,9 +297,9 @@ void LayoutRubyRun::getOverhang(bool firstLine, LayoutObject* startRenderer, Lay
     // and no more than half the font size.
     int halfWidthOfFontSize = rubyText->style(firstLine)->fontSize() / 2;
     if (startOverhang)
-        startOverhang = std::min<int>(startOverhang, std::min<int>(toRenderText(startRenderer)->minLogicalWidth(), halfWidthOfFontSize));
+        startOverhang = std::min<int>(startOverhang, std::min<int>(toLayoutText(startRenderer)->minLogicalWidth(), halfWidthOfFontSize));
     if (endOverhang)
-        endOverhang = std::min<int>(endOverhang, std::min<int>(toRenderText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
+        endOverhang = std::min<int>(endOverhang, std::min<int>(toLayoutText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
 }
 
 } // namespace blink

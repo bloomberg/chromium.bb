@@ -289,10 +289,10 @@ void RenderMenuList::setText(const String& s)
             DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new RenderText(&document(), s.impl());
+            m_buttonText = new LayoutText(&document(), s.impl());
             m_buttonText->setStyle(style());
             // We need to set the text explicitly though it was specified in the
-            // constructor because RenderText doesn't refer to the text
+            // constructor because LayoutText doesn't refer to the text
             // specified in the constructor in a case of re-transforming.
             m_buttonText->setText(s.impl(), true);
             addChild(m_buttonText);

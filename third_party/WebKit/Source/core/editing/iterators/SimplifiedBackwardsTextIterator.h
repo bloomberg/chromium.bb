@@ -33,8 +33,8 @@
 
 namespace blink {
 
-class RenderText;
-class RenderTextFragment;
+class LayoutText;
+class LayoutTextFragment;
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
 // at points where replaced elements break up the text flow. The text comes back in
@@ -72,7 +72,7 @@ private:
     void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
     void exitNode();
     bool handleTextNode();
-    RenderText* handleFirstLetter(int& startOffset, int& offsetInNode);
+    LayoutText* handleFirstLetter(int& startOffset, int& offsetInNode);
     bool handleReplacedElement();
     bool handleNonTextNode();
     void emitCharacter(UChar, Node*, int startOffset, int endOffset);

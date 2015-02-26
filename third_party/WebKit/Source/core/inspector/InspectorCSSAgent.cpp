@@ -61,11 +61,11 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
+#include "core/layout/LayoutText.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderText.h"
-#include "core/rendering/RenderTextFragment.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
@@ -797,7 +797,7 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     style = inspectorStyle->buildArrayForComputedStyle();
 }
 
-void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, HashCountedSet<String>* fontStats)
+void InspectorCSSAgent::collectPlatformFontsForRenderer(LayoutText* renderer, HashCountedSet<String>* fontStats)
 {
     for (InlineTextBox* box = renderer->firstTextBox(); box; box = box->nextTextBox()) {
         const LayoutStyle& style = renderer->styleRef(box->isFirstLineStyle());
@@ -838,7 +838,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
 
     HashCountedSet<String> fontStats;
     for (size_t i = 0; i < textNodes.size(); ++i) {
-        RenderText* renderer = textNodes[i]->renderer();
+        LayoutText* renderer = textNodes[i]->renderer();
         collectPlatformFontsForRenderer(renderer, &fontStats);
 
         if (!renderer->isTextFragment())
@@ -855,7 +855,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
 
         // The first-letter pseudoElement only has one child, which is the
         // first-letter renderer.
-        collectPlatformFontsForRenderer(toRenderText(previous->slowFirstChild()), &fontStats);
+        collectPlatformFontsForRenderer(toLayoutText(previous->slowFirstChild()), &fontStats);
     }
 
     platformFonts = TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>::create();

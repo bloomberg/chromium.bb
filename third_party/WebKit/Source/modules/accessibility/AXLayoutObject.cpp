@@ -57,11 +57,11 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderTextFragment.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -596,7 +596,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
         AXObject* parent = parentObjectUnignored();
         if (parent && (parent->ariaRoleAttribute() == MenuItemRole || parent->ariaRoleAttribute() == MenuButtonRole))
             return true;
-        RenderText* renderText = toRenderText(m_renderer);
+        LayoutText* renderText = toLayoutText(m_renderer);
         if (m_renderer->isBR() || !renderText->firstTextBox())
             return true;
 
@@ -1203,7 +1203,7 @@ String AXLayoutObject::textUnderElement(TextUnderElementMode mode) const
         return toLayoutFileUploadControl(m_renderer)->buttonValue();
 
     if (m_renderer->isText())
-        return toRenderText(m_renderer)->plainText();
+        return toLayoutText(m_renderer)->plainText();
 
     return AXNodeObject::textUnderElement(mode);
 }
@@ -1881,13 +1881,13 @@ void AXLayoutObject::addInlineTextBoxChildren(bool force)
         return;
 
     if (renderer()->needsLayout()) {
-        // If a RenderText needs layout, its inline text boxes are either
+        // If a LayoutText needs layout, its inline text boxes are either
         // nonexistent or invalid, so defer until the layout happens and
         // the renderer calls AXObjectCacheImpl::inlineTextBoxesUpdated.
         return;
     }
 
-    RenderText* renderText = toRenderText(renderer());
+    LayoutText* renderText = toLayoutText(renderer());
     for (RefPtr<AbstractInlineTextBox> box = renderText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
         AXObject* axObject = axObjectCache()->getOrCreate(box.get());
         if (!axObject->accessibilityIsIgnored())
@@ -2384,7 +2384,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
     LayoutRect result;
     if (obj->isText()) {
         Vector<FloatQuad> quads;
-        toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
+        toLayoutText(obj)->absoluteQuads(quads, 0, LayoutText::ClipToEllipsis);
         result = LayoutRect(boundingBoxForQuads(obj, quads));
     } else if (isWebArea() || obj->isSVGRoot()) {
         result = LayoutRect(obj->absoluteBoundingBoxRect());

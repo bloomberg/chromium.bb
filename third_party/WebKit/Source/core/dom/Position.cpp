@@ -39,9 +39,9 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderText.h"
 #include "platform/Logging.h"
 #include "wtf/text/CString.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -59,7 +59,7 @@ static Node* nextRenderedEditable(Node* node)
             continue;
         if (!node->hasEditableStyle())
             continue;
-        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
+        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toLayoutText(renderer)->firstTextBox()))
             return node;
     }
     return 0;
@@ -73,7 +73,7 @@ static Node* previousRenderedEditable(Node* node)
             continue;
         if (!node->hasEditableStyle())
             continue;
-        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
+        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toLayoutText(renderer)->firstTextBox()))
             return node;
     }
     return 0;
@@ -467,7 +467,7 @@ int Position::renderedOffset() const
         return m_offset;
 
     int result = 0;
-    RenderText* textRenderer = toRenderText(deprecatedNode()->renderer());
+    LayoutText* textRenderer = toLayoutText(deprecatedNode()->renderer());
     for (InlineTextBox *box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
         int start = box->start();
         int end = box->start() + box->len();
@@ -596,7 +596,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
         }
 
         // return current position if it is in rendered text
-        if (renderer->isText() && toRenderText(renderer)->firstTextBox()) {
+        if (renderer->isText() && toLayoutText(renderer)->firstTextBox()) {
             if (currentNode != startNode) {
                 // This assertion fires in layout tests in the case-transform.html test because
                 // of a mix-up between offsets in the text in the DOM tree with text in the
@@ -607,7 +607,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
-            RenderText* textRenderer = toRenderText(renderer);
+            LayoutText* textRenderer = toLayoutText(renderer);
             InlineTextBox* lastTextBox = textRenderer->lastTextBox();
             for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->start() + box->len()) {
@@ -724,14 +724,14 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
         }
 
         // return current position if it is in rendered text
-        if (renderer->isText() && toRenderText(renderer)->firstTextBox()) {
+        if (renderer->isText() && toLayoutText(renderer)->firstTextBox()) {
             if (currentNode != startNode) {
                 ASSERT(currentPos.atStartOfNode());
                 return createLegacyEditingPosition(currentNode, renderer->caretMinOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
-            RenderText* textRenderer = toRenderText(renderer);
+            LayoutText* textRenderer = toLayoutText(renderer);
             InlineTextBox* lastTextBox = textRenderer->lastTextBox();
             for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->end()) {
@@ -784,7 +784,7 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* render
     LayoutObject* stop = renderer->nextInPreOrderAfterChildren();
     for (LayoutObject *o = renderer->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
         if (o->nonPseudoNode()) {
-            if ((o->isText() && boundingBoxLogicalHeight(o, toRenderText(o)->linesBoundingBox()))
+            if ((o->isText() && boundingBoxLogicalHeight(o, toLayoutText(o)->linesBoundingBox()))
                 || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
                 || (o->isLayoutInline() && isEmptyInline(o) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
                 return true;
@@ -879,7 +879,7 @@ bool Position::inRenderedText() const
     if (!renderer)
         return false;
 
-    RenderText *textRenderer = toRenderText(renderer);
+    LayoutText* textRenderer = toLayoutText(renderer);
     for (InlineTextBox *box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
         if (m_offset < static_cast<int>(box->start()) && !textRenderer->containsReversedText()) {
             // The offset we're looking for is before this node
@@ -904,7 +904,7 @@ bool Position::isRenderedCharacter() const
     if (!renderer)
         return false;
 
-    RenderText* textRenderer = toRenderText(renderer);
+    LayoutText* textRenderer = toLayoutText(renderer);
     for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
         if (m_offset < static_cast<int>(box->start()) && !textRenderer->containsReversedText()) {
             // The offset we're looking for is before this node
@@ -1032,7 +1032,7 @@ static InlineTextBox* searchAheadForBetterMatch(LayoutObject* renderer)
         if (next->isText()) {
             InlineTextBox* match = 0;
             int minOffset = INT_MAX;
-            for (InlineTextBox* box = toRenderText(next)->firstTextBox(); box; box = box->nextTextBox()) {
+            for (InlineTextBox* box = toLayoutText(next)->firstTextBox(); box; box = box->nextTextBox()) {
                 int caretMinOffset = box->caretMinOffset();
                 if (caretMinOffset < minOffset) {
                     match = box;
@@ -1093,7 +1093,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
                 return;
         }
     } else {
-        RenderText* textRenderer = toRenderText(renderer);
+        LayoutText* textRenderer = toLayoutText(renderer);
 
         InlineTextBox* box;
         InlineTextBox* candidate = 0;

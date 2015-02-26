@@ -172,7 +172,7 @@ void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
 
 TextRun SVGInlineTextBox::constructTextRun(const LayoutStyle& style, const SVGTextFragment& fragment) const
 {
-    RenderText* text = &renderer();
+    LayoutText* text = &renderer();
 
     // FIXME(crbug.com/264211): This should not be necessary but can occur if we
     //                          layout during layout. Remove this when 264211 is fixed.

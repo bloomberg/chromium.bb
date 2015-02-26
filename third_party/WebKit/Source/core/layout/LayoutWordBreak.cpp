@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutWordBreak::LayoutWordBreak(HTMLElement* element)
-    : RenderText(element, StringImpl::empty())
+    : LayoutText(element, StringImpl::empty())
 {
 }
 

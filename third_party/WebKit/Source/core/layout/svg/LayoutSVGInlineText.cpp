@@ -60,7 +60,7 @@ static PassRefPtr<StringImpl> applySVGWhitespaceRules(PassRefPtr<StringImpl> str
 }
 
 LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
-    : RenderText(n, applySVGWhitespaceRules(string, false))
+    : LayoutText(n, applySVGWhitespaceRules(string, false))
     , m_scalingFactor(1)
     , m_layoutAttributes(this)
 {
@@ -68,14 +68,14 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
 
 void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
-    RenderText::setTextInternal(text);
+    LayoutText::setTextInternal(text);
     if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         textRenderer->subtreeTextDidChange(this);
 }
 
 void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderText::styleDidChange(diff, oldStyle);
+    LayoutText::styleDidChange(diff, oldStyle);
     updateScaledFont();
 
     bool newPreserves = style() ? style()->whiteSpace() == PRE : false;
@@ -244,7 +244,7 @@ LayoutRect LayoutSVGInlineText::clippedOverflowRectForPaintInvalidation(const La
 
 PassRefPtr<StringImpl> LayoutSVGInlineText::originalText() const
 {
-    RefPtr<StringImpl> result = RenderText::originalText();
+    RefPtr<StringImpl> result = LayoutText::originalText();
     if (!result)
         return nullptr;
     return applySVGWhitespaceRules(result, style() && style()->whiteSpace() == PRE);

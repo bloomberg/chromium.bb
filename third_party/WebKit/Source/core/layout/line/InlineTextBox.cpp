@@ -414,7 +414,7 @@ int InlineTextBox::offsetForPosition(FloatWillBeLayoutUnit lineOffset, bool incl
     if (lineOffset - logicalLeft() < 0)
         return isLeftToRightDirection() ? 0 : len();
 
-    RenderText& text = renderer();
+    LayoutText& text = renderer();
     const LayoutStyle& style = text.styleRef(isFirstLineStyle());
     const Font& font = style.font();
     return font.offsetForPosition(constructTextRun(style, font), lineOffset - logicalLeft(), includePartialGlyphs);
@@ -428,7 +428,7 @@ FloatWillBeLayoutUnit InlineTextBox::positionForOffset(int offset) const
     if (isLineBreak())
         return logicalLeft();
 
-    RenderText& text = renderer();
+    LayoutText& text = renderer();
     const LayoutStyle& styleToUse = text.styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
@@ -532,7 +532,7 @@ const char* InlineTextBox::boxName() const
 
 void InlineTextBox::showBox(int printedCharacters) const
 {
-    const RenderText& obj = renderer();
+    const LayoutText& obj = renderer();
     String value = obj.text();
     value = value.substring(start(), len());
     value.replaceWithLiteral('\\', "\\\\");

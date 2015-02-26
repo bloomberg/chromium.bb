@@ -32,7 +32,7 @@ namespace blink {
 
 class Element;
 class LayoutObject;
-class RenderTextFragment;
+class LayoutTextFragment;
 
 class FirstLetterPseudoElement final : public PseudoElement {
     WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
@@ -47,8 +47,8 @@ public:
     static LayoutObject* firstLetterTextRenderer(const Element&);
     static unsigned firstLetterLength(const String&);
 
-    void setRemainingTextRenderer(RenderTextFragment*);
-    RenderTextFragment* remainingTextRenderer() const { return m_remainingTextRenderer; }
+    void setRemainingTextRenderer(LayoutTextFragment*);
+    LayoutTextFragment* remainingTextRenderer() const { return m_remainingTextRenderer; }
 
     void updateTextFragments();
 
@@ -63,7 +63,7 @@ private:
     void attachFirstLetterTextRenderers();
     LayoutStyle* styleForFirstLetter(LayoutObject*);
 
-    RenderTextFragment* m_remainingTextRenderer;
+    LayoutTextFragment* m_remainingTextRenderer;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement, isFirstLetterPseudoElement());

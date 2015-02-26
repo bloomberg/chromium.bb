@@ -384,7 +384,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* f
     for (InlineBox* curr = firstChild; curr && curr != lastChild; curr = curr->nextOnLine()) {
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
-            RenderText& rt = text->renderer();
+            LayoutText& rt = text->renderer();
             FloatWillBeLayoutUnit space;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
@@ -942,7 +942,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
 
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
-            RenderText& rt = text->renderer();
+            LayoutText& rt = text->renderer();
             if (rt.isBR())
                 continue;
             // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once

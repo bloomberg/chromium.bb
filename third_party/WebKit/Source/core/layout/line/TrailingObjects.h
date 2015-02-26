@@ -30,7 +30,7 @@ namespace blink {
 
 class InlineIterator;
 class LayoutObject;
-class RenderText;
+class LayoutText;
 
 struct BidiRun;
 
@@ -59,7 +59,7 @@ public:
     {
     }
 
-    void setTrailingWhitespace(RenderText* whitespace)
+    void setTrailingWhitespace(LayoutText* whitespace)
     {
         ASSERT(whitespace);
         m_whitespace = whitespace;
@@ -85,7 +85,7 @@ public:
     void updateMidpointsForTrailingObjects(LineMidpointState&, const InlineIterator& lBreak, CollapseFirstSpaceOrNot);
 
 private:
-    RenderText* m_whitespace;
+    LayoutText* m_whitespace;
     Vector<LayoutObject*, 4> m_objects;
 };
 

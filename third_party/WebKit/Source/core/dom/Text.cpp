@@ -33,9 +33,9 @@
 #include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/layout/LayoutText.h"
+#include "core/layout/LayoutTextCombine.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/rendering/RenderCombineText.h"
-#include "core/rendering/RenderText.h"
 #include "core/svg/SVGForeignObjectElement.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -350,15 +350,15 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-RenderText* Text::createTextRenderer(LayoutStyle* style)
+LayoutText* Text::createTextRenderer(LayoutStyle* style)
 {
     if (isSVGText(this))
         return new LayoutSVGInlineText(this, dataImpl());
 
     if (style->hasTextCombine())
-        return new RenderCombineText(this, dataImpl());
+        return new LayoutTextCombine(this, dataImpl());
 
-    return new RenderText(this, dataImpl());
+    return new LayoutText(this, dataImpl());
 }
 
 void Text::attach(const AttachContext& context)
@@ -400,7 +400,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
 
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
-    if (RenderText* renderer = this->renderer()) {
+    if (LayoutText* renderer = this->renderer()) {
         if (change != NoChange || needsStyleRecalc())
             renderer->setStyle(document().ensureStyleResolver().styleForText(this));
         if (needsStyleRecalc())
@@ -427,7 +427,7 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
 {
     if (!inActiveDocument())
         return;
-    RenderText* textRenderer = renderer();
+    LayoutText* textRenderer = renderer();
     if (!textRenderer || !textRendererIsNeeded(*textRenderer->style(), *textRenderer->parent())) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.

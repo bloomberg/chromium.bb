@@ -29,6 +29,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
+#include "core/layout/LayoutTextCombine.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -39,7 +40,6 @@
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/line/WordMeasurement.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/rendering/RenderCombineText.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
@@ -308,7 +308,7 @@ inline LayoutUnit borderPaddingMarginEnd(LayoutInline* child)
 
 inline bool shouldAddBorderPaddingMargin(LayoutObject* child, bool &checkSide)
 {
-    if (!child || (child->isText() && !toRenderText(child)->textLength()))
+    if (!child || (child->isText() && !toLayoutText(child)->textLength()))
         return true;
     checkSide = false;
     return checkSide;
@@ -392,8 +392,8 @@ inline bool shouldSkipWhitespaceAfterStartObject(LayoutBlockFlow* block, LayoutO
     while (next && next->isFloatingOrOutOfFlowPositioned())
         next = bidiNextSkippingEmptyInlines(block, next);
 
-    if (next && !next->isBR() && next->isText() && toRenderText(next)->textLength() > 0) {
-        RenderText* nextText = toRenderText(next);
+    if (next && !next->isBR() && next->isText() && toLayoutText(next)->textLength() > 0) {
+        LayoutText* nextText = toLayoutText(next);
         UChar nextChar = nextText->characterAt(0);
         if (nextText->style()->isCollapsibleWhiteSpace(nextChar)) {
             lineMidpointState.startIgnoringSpaces(InlineIterator(0, o, 0));
@@ -495,7 +495,7 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
     return 0;
 }
 
-inline float measureHyphenWidth(RenderText* renderer, const Font& font, TextDirection textDirection)
+inline float measureHyphenWidth(LayoutText* renderer, const Font& font, TextDirection textDirection)
 {
     const LayoutStyle& style = renderer->styleRef();
     return font.width(constructTextRun(renderer, font,
@@ -508,7 +508,7 @@ ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::Direction dir
         || direction == WTF::Unicode::RightToLeftArabic ? RTL : LTR;
 }
 
-ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, const Font& font, float xPos, bool isFixedPitch, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = 0)
+ALWAYS_INLINE float textWidth(LayoutText* text, unsigned from, unsigned len, const Font& font, float xPos, bool isFixedPitch, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = 0)
 {
     GlyphOverflow glyphOverflow;
     if (isFixedPitch || (!from && len == text->textLength()) || text->style()->hasTextCombine())
@@ -526,7 +526,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     if (!m_current.offset())
         m_appliedStartWidth = false;
 
-    RenderText* renderText = toRenderText(m_current.object());
+    LayoutText* renderText = toLayoutText(m_current.object());
 
     bool isSVGText = renderText->isSVGInlineText();
 
@@ -683,7 +683,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                         m_lineInfo.setPreviousLineBrokeCleanly(true);
                         wordMeasurement.endOffset = m_lineBreak.offset();
                     }
-                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object()->isText() && toRenderText(m_lineBreak.object())->textLength() && toRenderText(m_lineBreak.object())->characterAt(m_lineBreak.offset() - 1) == softHyphen)
+                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object()->isText() && toLayoutText(m_lineBreak.object())->textLength() && toLayoutText(m_lineBreak.object())->characterAt(m_lineBreak.offset() - 1) == softHyphen)
                         hyphenated = true;
                     if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
                         if (charWidth) {
@@ -779,7 +779,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         }
 
         if (m_collapseWhiteSpace && m_currentCharacterIsSpace && !m_ignoringSpaces)
-            m_trailingObjects.setTrailingWhitespace(toRenderText(m_current.object()));
+            m_trailingObjects.setTrailingWhitespace(toLayoutText(m_current.object()));
         else if (!m_currentStyle->collapseWhiteSpace() || !m_currentCharacterIsSpace)
             m_trailingObjects.clear();
 
@@ -826,7 +826,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
         if (m_autoWrap && m_currentCharacterIsSpace) {
             checkForBreak = true;
         } else {
-            RenderText* nextText = toRenderText(m_nextObject);
+            LayoutText* nextText = toLayoutText(m_nextObject);
             if (nextText->textLength()) {
                 UChar c = nextText->characterAt(0);
                 // If the next item on the line is text, and if we did not end with

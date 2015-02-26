@@ -26,13 +26,14 @@
 #include "core/layout/BidiRun.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
+
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
 
 // This class is used to LayoutInline subtrees, stepping by character within the
-// text children. InlineIterator will use bidiNext to find the next RenderText
+// text children. InlineIterator will use bidiNext to find the next LayoutText
 // optionally notifying a BidiResolver every time it steps into/out of a LayoutInline.
 class InlineIterator {
 public:
@@ -87,8 +88,8 @@ public:
 
     inline bool atTextParagraphSeparator() const
     {
-        return m_obj && m_obj->preservesNewline() && m_obj->isText() && toRenderText(m_obj)->textLength()
-            && !toRenderText(m_obj)->isWordBreak() && toRenderText(m_obj)->characterAt(m_pos) == '\n';
+        return m_obj && m_obj->preservesNewline() && m_obj->isText() && toLayoutText(m_obj)->textLength()
+            && !toLayoutText(m_obj)->isWordBreak() && toLayoutText(m_obj)->characterAt(m_pos) == '\n';
     }
 
     inline bool atParagraphSeparator() const
@@ -193,7 +194,7 @@ static bool isEmptyInline(LayoutObject* object)
     for (LayoutObject* curr = toLayoutInline(object)->firstChild(); curr; curr = curr->nextSibling()) {
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue;
-        if (curr->isText() && toRenderText(curr)->isAllCollapsibleWhitespace())
+        if (curr->isText() && toLayoutText(curr)->isAllCollapsibleWhitespace())
             continue;
 
         if (!isEmptyInline(curr))
@@ -326,7 +327,7 @@ inline void InlineIterator::fastIncrementInTextNode()
 {
     ASSERT(m_obj);
     ASSERT(m_obj->isText());
-    ASSERT(m_pos <= toRenderText(m_obj)->textLength());
+    ASSERT(m_pos <= toLayoutText(m_obj)->textLength());
     if (m_pos < INT_MAX)
         m_pos++;
 }
@@ -390,7 +391,7 @@ inline void InlineIterator::increment(InlineBidiResolver* resolver, IncrementRul
 
     if (m_obj->isText()) {
         fastIncrementInTextNode();
-        if (m_pos < toRenderText(m_obj)->textLength())
+        if (m_pos < toLayoutText(m_obj)->textLength())
             return;
     }
     // bidiNext can return 0, so use moveTo instead of moveToStartOf
@@ -407,7 +408,7 @@ inline UChar InlineIterator::characterAt(unsigned index) const
     if (!m_obj || !m_obj->isText())
         return 0;
 
-    return toRenderText(m_obj)->characterAt(index);
+    return toLayoutText(m_obj)->characterAt(index);
 }
 
 inline UChar InlineIterator::current() const
@@ -452,7 +453,7 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
     return inEndOfLine;
 }
 
-static inline bool isCollapsibleSpace(UChar character, RenderText* renderer)
+static inline bool isCollapsibleSpace(UChar character, LayoutText* renderer)
 {
     if (character == ' ' || character == '\t' || character == softHyphen)
         return true;
@@ -462,7 +463,7 @@ static inline bool isCollapsibleSpace(UChar character, RenderText* renderer)
 }
 
 template <typename CharacterType>
-static inline int findFirstTrailingSpace(RenderText* lastText, const CharacterType* characters, int start, int stop)
+static inline int findFirstTrailingSpace(LayoutText* lastText, const CharacterType* characters, int start, int stop)
 {
     int firstSpace = stop;
     while (firstSpace > start) {
@@ -483,7 +484,7 @@ inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run)
     if (!lastObject->isText())
         return run->m_stop;
 
-    RenderText* lastText = toRenderText(lastObject);
+    LayoutText* lastText = toLayoutText(lastObject);
     int firstSpace;
     if (lastText->is8Bit())
         firstSpace = findFirstTrailingSpace(lastText, lastText->characters8(), run->start(), run->stop());

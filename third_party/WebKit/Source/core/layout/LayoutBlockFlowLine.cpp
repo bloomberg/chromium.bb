@@ -69,7 +69,7 @@ static inline InlineBox* createInlineBoxForRenderer(LayoutObject* obj, bool isRo
 static inline InlineTextBox* createInlineBoxForText(BidiRun& run, bool isOnlyRun)
 {
     ASSERT(run.m_object->isText());
-    RenderText* text = toRenderText(run.m_object);
+    LayoutText* text = toLayoutText(run.m_object);
     InlineTextBox* textBox = text->createInlineTextBox(run.m_start, run.m_stop - run.m_start);
     // We only treat a box as text for a <br> if we are on a line by ourself or in strict mode
     // (Note the use of strict mode.  In "almost strict" mode, we don't treat the box for <br> as text.)
@@ -84,7 +84,7 @@ static inline InlineTextBox* createInlineBoxForText(BidiRun& run, bool isOnlyRun
 static inline void dirtyLineBoxesForRenderer(LayoutObject* o, bool fullLayout)
 {
     if (o->isText()) {
-        RenderText* renderText = toRenderText(o);
+        LayoutText* renderText = toLayoutText(o);
         renderText->dirtyOrDeleteLineBoxesIfNeeded(fullLayout);
     } else {
         toLayoutInline(o)->dirtyLineBoxes(fullLayout);
@@ -183,7 +183,7 @@ static bool reachedEndOfTextRenderer(const BidiRunList<BidiRun>& bidiRuns)
     LayoutObject* r = run->m_object;
     if (!r->isText() || r->isBR())
         return false;
-    RenderText* renderText = toRenderText(r);
+    LayoutText* renderText = toLayoutText(r);
     unsigned length = renderText->textLength();
     if (pos >= length)
         return true;
@@ -367,7 +367,7 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* renderer
     setMarginEndForChild(*renderer, -endOverhang);
 }
 
-static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* run, RenderText* renderer, float xPos, const LineInfo& lineInfo,
+static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* run, LayoutText* renderer, float xPos, const LineInfo& lineInfo,
     GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache, WordMeasurements& wordMeasurements)
 {
     HashSet<const SimpleFontData*> fallbackFonts;
@@ -597,7 +597,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                 // Similarly, line break boxes have no effect on the width.
         }
         if (r->m_object->isText()) {
-            RenderText* rt = toRenderText(r->m_object);
+            LayoutText* rt = toLayoutText(r->m_object);
             if (textAlign == JUSTIFY && r != trailingSpaceRun && textJustify != TextJustifyNone) {
                 if (!isAfterExpansion)
                     toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
@@ -664,7 +664,7 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
         // Position is used to properly position both replaced elements and
         // to update the static normal flow x/y of positioned elements.
         if (r->m_object->isText())
-            toRenderText(r->m_object)->positionLineBox(r->m_box);
+            toLayoutText(r->m_object)->positionLineBox(r->m_box);
         else if (r->m_object->isBox())
             toLayoutBox(r->m_object)->positionLineBox(r->m_box);
     }
@@ -1176,7 +1176,7 @@ static inline void stripTrailingSpace(FloatWillBeLayoutUnit& inlineMax, FloatWil
         // the first white-space character and subtracting its width. Subsequent
         // white-space characters have been collapsed into the first one (which
         // can be either a space or a tab character).
-        RenderText* text = toRenderText(trailingSpaceChild);
+        LayoutText* text = toLayoutText(trailingSpaceChild);
         UChar trailingWhitespaceChar = ' ';
         for (unsigned i = text->textLength(); i > 0; i--) {
             UChar c = text->characterAt(i - 1);
@@ -1393,7 +1393,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 }
             } else if (child->isText()) {
                 // Case (3). Text.
-                RenderText* t = toRenderText(child);
+                LayoutText* t = toLayoutText(child);
 
                 if (t->isWordBreak()) {
                     minLogicalWidth = std::max(minLogicalWidth, inlineMin.toLayoutUnit());
@@ -1715,7 +1715,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             // We have a dirty line.
             if (RootInlineBox* prevRootBox = curr->prevRootBox()) {
                 // We have a previous line.
-                if (!dirtiedByFloat && (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() || (prevRootBox->lineBreakObj()->isText() && prevRootBox->lineBreakPos() >= toRenderText(prevRootBox->lineBreakObj())->textLength()))) {
+                if (!dirtiedByFloat && (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() || (prevRootBox->lineBreakObj()->isText() && prevRootBox->lineBreakPos() >= toLayoutText(prevRootBox->lineBreakObj())->textLength()))) {
                     // The previous line didn't break cleanly or broke at a newline
                     // that has been deleted, so treat it as dirty too.
                     curr = prevRootBox;

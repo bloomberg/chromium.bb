@@ -21,7 +21,7 @@
 #ifndef LayoutBR_h
 #define LayoutBR_h
 
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 
 /*
  * The whole class here is a hack to get <br> working, as long as we don't have support for
@@ -29,7 +29,7 @@
  */
 namespace blink {
 
-class LayoutBR final : public RenderText {
+class LayoutBR final : public LayoutText {
 public:
     explicit LayoutBR(Node*);
     virtual ~LayoutBR();
@@ -44,7 +44,7 @@ public:
     int lineHeight(bool firstLine) const;
 
     // overrides
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || RenderText::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || LayoutText::isOfType(type); }
 
     virtual int caretMinOffset() const override;
     virtual int caretMaxOffset() const override;

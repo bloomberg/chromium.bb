@@ -22,12 +22,12 @@
 #ifndef LayoutSVGInlineText_h
 #define LayoutSVGInlineText_h
 
+#include "core/layout/LayoutText.h"
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
-#include "core/rendering/RenderText.h"
 
 namespace blink {
 
-class LayoutSVGInlineText final : public RenderText {
+class LayoutSVGInlineText final : public LayoutText {
 public:
     LayoutSVGInlineText(Node*, PassRefPtr<StringImpl>);
 
@@ -53,7 +53,7 @@ private:
 
     virtual FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || RenderText::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || LayoutText::isOfType(type); }
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override;

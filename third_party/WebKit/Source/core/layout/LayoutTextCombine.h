@@ -18,20 +18,20 @@
  *
  */
 
-#ifndef RenderCombineText_h
-#define RenderCombineText_h
+#ifndef LayoutTextCombine_h
+#define LayoutTextCombine_h
 
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 #include "platform/fonts/Font.h"
 
 namespace blink {
 
-// RenderCombineText uses different coordinate systems for layout and inlineTextBox,
+// LayoutTextCombine uses different coordinate systems for layout and inlineTextBox,
 // because it is treated as 1em-box character in vertical flow for the layout,
 // while its inline box is in horizontal flow.
-class RenderCombineText final : public RenderText {
+class LayoutTextCombine final : public LayoutText {
 public:
-    RenderCombineText(Node*, PassRefPtr<StringImpl>);
+    LayoutTextCombine(Node*, PassRefPtr<StringImpl>);
 
     void updateFont();
     bool isCombined() const { return m_isCombined; }
@@ -59,21 +59,21 @@ private:
     bool m_needsFontUpdate : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderCombineText, isCombineText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextCombine, isCombineText());
 
-inline float RenderCombineText::inlineWidthForLayout() const
+inline float LayoutTextCombine::inlineWidthForLayout() const
 {
     ASSERT(!m_needsFontUpdate);
     return m_combinedTextWidth;
 }
 
-inline float RenderCombineText::offsetX(const FloatRect& boxRect) const
+inline float LayoutTextCombine::offsetX(const FloatRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     return (boxRect.height() - m_combinedTextWidth / m_scaleX) / 2;
 }
 
-inline float RenderCombineText::offsetXNoScale(const FloatRect& boxRect) const
+inline float LayoutTextCombine::offsetXNoScale(const FloatRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     return (boxRect.height() - m_combinedTextWidth) / 2;
@@ -82,4 +82,4 @@ inline float RenderCombineText::offsetXNoScale(const FloatRect& boxRect) const
 
 } // namespace blink
 
-#endif // RenderCombineText_h
+#endif // LayoutTextCombine_h

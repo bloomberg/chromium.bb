@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -14,7 +15,6 @@
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/SubtreeRecorder.h"
-#include "core/rendering/RenderText.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -436,7 +436,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
     LayoutObject* htmlRenderer = document().documentElement()->renderer();
     Element* div = toElement(document().body()->firstChild());
     LayoutObject* divRenderer = document().body()->firstChild()->renderer();
-    InlineTextBox* textInlineBox = toRenderText(div->firstChild()->renderer())->firstTextBox();
+    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->renderer())->firstTextBox();
 
     SkCanvas canvas(800, 600);
     GraphicsContext context(&canvas, &rootDisplayItemList());
@@ -472,7 +472,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
     LayoutObject* bodyRenderer = document().body()->renderer();
     Element* div = toElement(document().body()->firstChild());
     LayoutObject* divRenderer = document().body()->firstChild()->renderer();
-    InlineTextBox* textInlineBox = toRenderText(div->firstChild()->renderer())->firstTextBox();
+    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->renderer())->firstTextBox();
 
     SkCanvas canvas(800, 600);
     GraphicsContext context(&canvas, &rootDisplayItemList());

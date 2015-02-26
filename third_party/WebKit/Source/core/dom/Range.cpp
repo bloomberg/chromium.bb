@@ -43,7 +43,7 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/geometry/FloatQuad.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -1433,7 +1433,7 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight, RangeInFi
         LayoutObject* r = node->renderer();
         if (!r || !r->isText())
             continue;
-        RenderText* renderText = toRenderText(r);
+        LayoutText* renderText = toLayoutText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
         int endOffset = node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
         bool isFixed = false;
@@ -1461,7 +1461,7 @@ void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight, RangeIn
         LayoutObject* r = node->renderer();
         if (!r || !r->isText())
             continue;
-        RenderText* renderText = toRenderText(r);
+        LayoutText* renderText = toLayoutText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
         int endOffset = node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
         bool isFixed = false;
@@ -1735,7 +1735,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 }
             }
         } else if (node->isTextNode()) {
-            if (RenderText* renderText = toText(node)->renderer()) {
+            if (LayoutText* renderText = toText(node)->renderer()) {
                 int startOffset = (node == startContainer) ? m_start.offset() : 0;
                 int endOffset = (node == endContainer) ? m_end.offset() : INT_MAX;
 

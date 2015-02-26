@@ -13,12 +13,12 @@
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/TextPainter.h"
-#include "core/rendering/RenderCombineText.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
@@ -108,10 +108,10 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     FloatRect boxRect(boxOrigin, FloatSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
 
     bool shouldRotate = false;
-    RenderCombineText* combinedText = nullptr;
+    LayoutTextCombine* combinedText = nullptr;
     if (!m_inlineTextBox.isHorizontal()) {
         if (styleToUse.hasTextCombine() && m_inlineTextBox.renderer().isCombineText()) {
-            combinedText = &toRenderCombineText(m_inlineTextBox.renderer());
+            combinedText = &toLayoutTextCombine(m_inlineTextBox.renderer());
             if (!combinedText->isCombined())
                 combinedText = nullptr;
         }
@@ -433,7 +433,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext* pt, const FloatP
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
-void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const FloatRect& boxRect, const LayoutStyle& style, const Font& font, Color textColor, RenderCombineText* combinedText)
+void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const FloatRect& boxRect, const LayoutStyle& style, const Font& font, Color textColor, LayoutTextCombine* combinedText)
 {
     // See if we have a selection to paint at all.
     int sPos, ePos;
@@ -468,7 +468,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const FloatR
 
     if (options == InlineTextBoxPainter::PaintOptions::CombinedText) {
         ASSERT(combinedText);
-        // We can't use the height of m_inlineTextBox because RenderCombineText's inlineTextBox is horizontal within vertical flow
+        // We can't use the height of m_inlineTextBox because LayoutTextCombine's inlineTextBox is horizontal within vertical flow
         FloatRect clipRect = boxRect;
         combinedText->transformLayoutRect(clipRect);
         context->clip(clipRect);

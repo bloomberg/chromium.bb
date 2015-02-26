@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderCombineText.h"
+#include "core/layout/LayoutTextCombine.h"
 
 #include "core/layout/TextRunConstructor.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -28,8 +28,8 @@ namespace blink {
 
 const float textCombineMargin = 1.1f; // Allow em + 10% margin
 
-RenderCombineText::RenderCombineText(Node* node, PassRefPtr<StringImpl> string)
-    : RenderText(node, string)
+LayoutTextCombine::LayoutTextCombine(Node* node, PassRefPtr<StringImpl> string)
+    : LayoutText(node, string)
     , m_combinedTextWidth(0)
     , m_scaleX(1.0f)
     , m_isCombined(false)
@@ -37,22 +37,22 @@ RenderCombineText::RenderCombineText(Node* node, PassRefPtr<StringImpl> string)
 {
 }
 
-void RenderCombineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutTextCombine::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     setStyleInternal(LayoutStyle::clone(styleRef()));
-    RenderText::styleDidChange(diff, oldStyle);
+    LayoutText::styleDidChange(diff, oldStyle);
 
     updateIsCombined();
 }
 
-void RenderCombineText::setTextInternal(PassRefPtr<StringImpl> text)
+void LayoutTextCombine::setTextInternal(PassRefPtr<StringImpl> text)
 {
-    RenderText::setTextInternal(text);
+    LayoutText::setTextInternal(text);
 
     updateIsCombined();
 }
 
-float RenderCombineText::width(unsigned from, unsigned length, const Font& font, float xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font, float xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     if (!length)
         return 0;
@@ -63,7 +63,7 @@ float RenderCombineText::width(unsigned from, unsigned length, const Font& font,
     if (m_isCombined)
         return font.fontDescription().computedSize();
 
-    return RenderText::width(from, length, font, xPosition, direction, fallbackFonts, glyphOverflow);
+    return LayoutText::width(from, length, font, xPosition, direction, fallbackFonts, glyphOverflow);
 }
 
 void scaleHorizontallyAndTranslate(GraphicsContext& context, float scaleX, float centerX, float offsetX, float offsetY)
@@ -71,7 +71,7 @@ void scaleHorizontallyAndTranslate(GraphicsContext& context, float scaleX, float
     context.concatCTM(AffineTransform(scaleX, 0, 0, 1, centerX * (1.0f - scaleX) + offsetX * scaleX, offsetY));
 }
 
-void RenderCombineText::transformToInlineCoordinates(GraphicsContext& context, const FloatRect& boxRect) const
+void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, const FloatRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     ASSERT(m_isCombined);
@@ -86,14 +86,14 @@ void RenderCombineText::transformToInlineCoordinates(GraphicsContext& context, c
     scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX(boxRect), offsetY());
 }
 
-void RenderCombineText::transformLayoutRect(FloatRect& boxRect) const
+void LayoutTextCombine::transformLayoutRect(FloatRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     ASSERT(m_isCombined);
     boxRect.move(offsetXNoScale(boxRect), offsetY());
 }
 
-void RenderCombineText::updateIsCombined()
+void LayoutTextCombine::updateIsCombined()
 {
     // CSS3 spec says text-combine works only in vertical writing mode.
     m_isCombined = !style()->isHorizontalWritingMode()
@@ -104,7 +104,7 @@ void RenderCombineText::updateIsCombined()
         m_needsFontUpdate = true;
 }
 
-void RenderCombineText::updateFont()
+void LayoutTextCombine::updateFont()
 {
     if (!m_needsFontUpdate)
         return;

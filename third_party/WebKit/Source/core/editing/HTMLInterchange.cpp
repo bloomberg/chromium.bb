@@ -29,7 +29,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/htmlediting.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 

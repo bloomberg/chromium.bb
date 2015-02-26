@@ -36,8 +36,8 @@
 #include "core/dom/Text.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
-#include "core/rendering/RenderText.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -153,7 +153,7 @@ void RenderTreeBuilderForText::createRenderer()
 
     ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
 
-    RenderText* newRenderer = m_node->createTextRenderer(style);
+    LayoutText* newRenderer = m_node->createTextRenderer(style);
     if (!parentRenderer->isChildAllowed(newRenderer, *style)) {
         newRenderer->destroy();
         return;

@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/layout/LayoutQuote.h"
 
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
-#include "core/rendering/RenderTextFragment.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
 
@@ -263,24 +263,24 @@ void LayoutQuote::updateText()
 
     m_text = text;
 
-    RenderTextFragment* fragment = findFragmentChild();
+    LayoutTextFragment* fragment = findFragmentChild();
     if (fragment) {
         fragment->setStyle(style());
         fragment->setContentString(m_text.impl());
     } else {
-        fragment = new RenderTextFragment(&document(), m_text.impl());
+        fragment = new LayoutTextFragment(&document(), m_text.impl());
         fragment->setStyle(style());
         addChild(fragment);
     }
 }
 
-RenderTextFragment* LayoutQuote::findFragmentChild() const
+LayoutTextFragment* LayoutQuote::findFragmentChild() const
 {
     // We walk from the end of the child list because, if we've had a first-letter
     // renderer inserted then the remaining text will be at the end.
     while (LayoutObject* child = lastChild()) {
-        if (child->isText() && toRenderText(child)->isTextFragment())
-            return toRenderTextFragment(child);
+        if (child->isText() && toLayoutText(child)->isTextFragment())
+            return toLayoutTextFragment(child);
     }
 
     return nullptr;

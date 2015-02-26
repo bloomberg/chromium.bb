@@ -22,14 +22,14 @@
 #ifndef LayoutCounter_h
 #define LayoutCounter_h
 
+#include "core/layout/LayoutText.h"
 #include "core/layout/style/CounterContent.h"
-#include "core/rendering/RenderText.h"
 
 namespace blink {
 
 class CounterNode;
 
-class LayoutCounter final : public RenderText {
+class LayoutCounter final : public LayoutText {
 public:
     LayoutCounter(Document*, const CounterContent&);
     virtual ~LayoutCounter();
@@ -48,7 +48,7 @@ protected:
 
 private:
     virtual const char* renderName() const override;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCounter || RenderText::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCounter || LayoutText::isOfType(type); }
     virtual PassRefPtr<StringImpl> originalText() const override;
 
     // Removes the reference to the CounterNode associated with this renderer.

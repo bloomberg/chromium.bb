@@ -28,7 +28,7 @@
 namespace blink {
 
 class ExceptionState;
-class RenderText;
+class LayoutText;
 
 class Text : public CharacterData {
     DEFINE_WRAPPERTYPEINFO();
@@ -38,7 +38,7 @@ public:
     static PassRefPtrWillBeRawPtr<Text> create(Document&, const String&);
     static PassRefPtrWillBeRawPtr<Text> createEditingText(Document&, const String&);
 
-    RenderText* renderer() const;
+    LayoutText* renderer() const;
 
     // mergeNextSiblingNodesIfPossible() merges next sibling nodes if possible
     // then returns a node not merged.
@@ -52,7 +52,7 @@ public:
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
     bool textRendererIsNeeded(const LayoutStyle&, const LayoutObject& parent);
-    RenderText* createTextRenderer(LayoutStyle*);
+    LayoutText* createTextRenderer(LayoutStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
     virtual void attach(const AttachContext& = AttachContext()) override final;

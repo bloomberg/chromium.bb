@@ -30,8 +30,8 @@
 #include "modules/accessibility/AXInlineTextBox.h"
 
 #include "core/dom/Range.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/RenderText.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/LayoutUnit.h"
 
@@ -127,7 +127,7 @@ AXObject* AXInlineTextBox::computeParent() const
     if (!m_inlineTextBox || !m_axObjectCache)
         return 0;
 
-    RenderText* renderText = m_inlineTextBox->renderText();
+    LayoutText* renderText = m_inlineTextBox->renderText();
     return m_axObjectCache->getOrCreate(renderText);
 }
 

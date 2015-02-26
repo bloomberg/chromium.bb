@@ -13,27 +13,27 @@ layer at (276,0) size 524x600
       RenderBlock (anonymous) at (65,0) size 37x584
         RenderInline {SPAN} at (0,0) size 36x438
           RenderInline {SPAN} at (0,0) size 36x46
-            RenderCombineText {#text} at (0,0) size 36x46
+            LayoutTextCombine {#text} at (0,0) size 36x46
               text run at (0,0) width 46: "ON"
           RenderText {#text} at (0,46) size 36x84
             text run at (0,46) width 84: "=\x{897F}\x{66A6}"
           RenderInline {SPAN} at (0,0) size 36x64
-            RenderCombineText {#text} at (0,130) size 36x64
+            LayoutTextCombine {#text} at (0,130) size 36x64
               text run at (0,130) width 64: "2010"
           RenderText {#text} at (0,194) size 36x33
             text run at (0,194) width 33: "\x{5E74}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (0,227) size 36x32
+            LayoutTextCombine {#text} at (0,227) size 36x32
               text run at (0,227) width 32: "\x{FFFC}"
           RenderText {#text} at (0,259) size 36x33
             text run at (0,259) width 33: "\x{6708}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (0,292) size 36x32
+            LayoutTextCombine {#text} at (0,292) size 36x32
               text run at (0,292) width 32: "\x{FFFC}"
           RenderText {#text} at (0,324) size 36x33
             text run at (0,324) width 33: "\x{65E5}"
           RenderInline {SPAN} at (0,0) size 36x48
-            RenderCombineText {#text} at (0,357) size 36x48
+            LayoutTextCombine {#text} at (0,357) size 36x48
               text run at (0,357) width 48: "365"
           RenderText {#text} at (0,405) size 36x33
             text run at (0,405) width 33: "\x{56DE}"
@@ -42,27 +42,27 @@ layer at (276,0) size 524x600
       RenderBlock (anonymous) at (120,0) size 37x584
         RenderInline {SPAN} at (0,0) size 36x468
           RenderInline {SPAN} at (0,0) size 36x76
-            RenderCombineText {#text} at (0,0) size 36x76
+            LayoutTextCombine {#text} at (0,0) size 36x76
               text run at (0,0) width 76: "Times"
           RenderText {#text} at (0,76) size 36x84
             text run at (0,76) width 84: "=\x{897F}\x{66A6}"
           RenderInline {SPAN} at (0,0) size 36x64
-            RenderCombineText {#text} at (0,160) size 36x64
+            LayoutTextCombine {#text} at (0,160) size 36x64
               text run at (0,160) width 64: "2010"
           RenderText {#text} at (0,224) size 36x33
             text run at (0,224) width 33: "\x{5E74}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (0,257) size 36x32
+            LayoutTextCombine {#text} at (0,257) size 36x32
               text run at (0,257) width 32: "\x{FFFC}"
           RenderText {#text} at (0,289) size 36x33
             text run at (0,289) width 33: "\x{6708}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (0,322) size 36x32
+            LayoutTextCombine {#text} at (0,322) size 36x32
               text run at (0,322) width 32: "\x{FFFC}"
           RenderText {#text} at (0,354) size 36x33
             text run at (0,354) width 33: "\x{65E5}"
           RenderInline {SPAN} at (0,0) size 36x48
-            RenderCombineText {#text} at (0,387) size 36x48
+            LayoutTextCombine {#text} at (0,387) size 36x48
               text run at (0,387) width 48: "365"
           RenderText {#text} at (0,435) size 36x33
             text run at (0,435) width 33: "\x{56DE}"
@@ -75,24 +75,24 @@ layer at (276,0) size 524x600
         LayoutBR {BR} at (13,225) size 19x0
         RenderInline {SPAN} at (0,0) size 36x224
           RenderInline {SPAN} at (0,0) size 36x46
-            RenderCombineText {#text} at (37,0) size 36x46
+            LayoutTextCombine {#text} at (37,0) size 36x46
               text run at (37,0) width 46: "ON"
           RenderText {#text} at (37,46) size 36x18
             text run at (37,46) width 18: "="
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (37,64) size 36x32
+            LayoutTextCombine {#text} at (37,64) size 36x32
               text run at (37,64) width 32: "\x{FFFC}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (37,96) size 36x32
+            LayoutTextCombine {#text} at (37,96) size 36x32
               text run at (37,96) width 32: "\x{FFFC}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (37,128) size 36x32
+            LayoutTextCombine {#text} at (37,128) size 36x32
               text run at (37,128) width 32: "\x{FFFC}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (37,160) size 36x32
+            LayoutTextCombine {#text} at (37,160) size 36x32
               text run at (37,160) width 32: "\x{FFFC}"
           RenderInline {SPAN} at (0,0) size 36x32
-            RenderCombineText {#text} at (37,192) size 36x32
+            LayoutTextCombine {#text} at (37,192) size 36x32
               text run at (37,192) width 32: "\x{FFFC}"
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (265,0) size 219x584
@@ -102,17 +102,17 @@ layer at (276,0) size 524x600
             RenderText {#text} at (1,1) size 27x100
               text run at (1,1) width 100: "float:right:"
             RenderInline {SPAN} at (0,0) size 27x48
-              RenderCombineText {#text} at (1,101) size 27x48
+              LayoutTextCombine {#text} at (1,101) size 27x48
                 text run at (1,101) width 48: "2010"
             RenderText {#text} at (1,149) size 27x24
               text run at (1,149) width 24: "\x{5E74}"
             RenderInline {SPAN} at (0,0) size 27x24
-              RenderCombineText {#text} at (1,173) size 27x24
+              LayoutTextCombine {#text} at (1,173) size 27x24
                 text run at (1,173) width 24: "\x{FFFC}"
             RenderText {#text} at (1,197) size 27x24
               text run at (1,197) width 24: "\x{6708}"
             RenderInline {SPAN} at (0,0) size 27x24
-              RenderCombineText {#text} at (1,221) size 27x24
+              LayoutTextCombine {#text} at (1,221) size 27x24
                 text run at (1,221) width 24: "\x{FFFC}"
             RenderText {#text} at (1,245) size 27x24
               text run at (1,245) width 24: "\x{65E5}"

@@ -38,7 +38,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLQuoteElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 
 namespace blink {
 

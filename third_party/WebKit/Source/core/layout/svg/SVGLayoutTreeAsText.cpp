@@ -456,7 +456,7 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     }
 }
 
-static inline void writeSVGInlineTextBoxes(TextStream& ts, const RenderText& text, int indent)
+static inline void writeSVGInlineTextBoxes(TextStream& ts, const LayoutText& text, int indent)
 {
     for (InlineTextBox* box = text.firstTextBox(); box; box = box->nextTextBox()) {
         if (!box->isSVGInlineTextBox())

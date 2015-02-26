@@ -38,7 +38,7 @@ namespace blink {
 
 AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap* AbstractInlineTextBox::gAbstractInlineTextBoxMap = 0;
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::getOrCreate(RenderText* renderText, InlineTextBox* inlineTextBox)
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::getOrCreate(LayoutText* renderText, InlineTextBox* inlineTextBox)
 {
     if (!inlineTextBox)
         return nullptr;

@@ -189,7 +189,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
     if (o.isText()) {
         // FIXME: Would be better to dump the bounding box x and y rather than the first run's x and y, but that would involve updating
         // many test results.
-        const RenderText& text = toRenderText(o);
+        const LayoutText& text = toLayoutText(o);
         IntRect linesBox = text.linesBoundingBox();
         r = LayoutRect(IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height()));
         if (adjustForTableCells && !text.firstTextBox())
@@ -404,7 +404,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
     }
 }
 
-static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBox& run)
+static void writeTextRun(TextStream& ts, const LayoutText& o, const InlineTextBox& run)
 {
     // FIXME: For now use an "enclosingIntRect" model for x, y and logicalWidth, although this makes it harder
     // to detect any changes caused by the conversion to floating point. :(
@@ -470,7 +470,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
     ts << "\n";
 
     if (o.isText() && !o.isBR()) {
-        const RenderText& text = toRenderText(o);
+        const LayoutText& text = toLayoutText(o);
         for (InlineTextBox* box = text.firstTextBox(); box; box = box->nextTextBox()) {
             writeIndent(ts, indent + 1);
             writeTextRun(ts, text, *box);
@@ -752,7 +752,7 @@ static void writeCounterValuesFromChildren(TextStream& stream, LayoutObject* par
             if (!isFirstCounter)
                 stream << " ";
             isFirstCounter = false;
-            String str(toRenderText(child)->text());
+            String str(toLayoutText(child)->text());
             stream << str;
         }
     }

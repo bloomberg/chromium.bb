@@ -611,7 +611,7 @@ String listMarkerText(EListStyleType type, int value)
         return toSymbolic(value, asterisksSymbols);
     }
     // We use the same characters for text security.
-    // See RenderText::setInternalString.
+    // See LayoutText::setInternalString.
     case Circle:
         return String(&whiteBullet, 1);
     case Disc:

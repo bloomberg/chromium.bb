@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/layout/TextRunConstructor.h"
 
+#include "core/layout/LayoutText.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderText.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
@@ -73,14 +73,14 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const UChar* c
     return constructTextRunInternal(context, font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const RenderText* text, const LayoutStyle& style, TextDirection direction)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, const LayoutStyle& style, TextDirection direction)
 {
     if (text->is8Bit())
         return constructTextRunInternal(context, font, text->characters8(), text->textLength(), style, direction);
     return constructTextRunInternal(context, font, text->characters16(), text->textLength(), style, direction);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, const LayoutStyle& style, TextDirection direction)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const LayoutStyle& style, TextDirection direction)
 {
     ASSERT(offset + length <= text->textLength());
     if (text->is8Bit())
@@ -104,7 +104,7 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const String& 
     return constructTextRun(context, font, string, style, determineDirectionality(string, hasStrongDirectionality), flags);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, const LayoutStyle& style)
+TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const LayoutStyle& style)
 {
     ASSERT(offset + length <= text->textLength());
     TextRun run = text->is8Bit()

@@ -28,7 +28,7 @@
 namespace blink {
 
 class Font;
-class RenderText;
+class LayoutText;
 
 struct LayoutTextInfo {
     LayoutTextInfo()
@@ -37,7 +37,7 @@ struct LayoutTextInfo {
     {
     }
 
-    RenderText* m_text;
+    LayoutText* m_text;
     LazyLineBreakIterator m_lineBreakIterator;
     const Font* m_font;
 };

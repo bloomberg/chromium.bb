@@ -345,7 +345,7 @@ static CounterNode* makeCounterNode(LayoutObject& object, const AtomicString& id
 }
 
 LayoutCounter::LayoutCounter(Document* node, const CounterContent& counter)
-    : RenderText(node, StringImpl::empty())
+    : LayoutText(node, StringImpl::empty())
     , m_counter(counter)
     , m_counterNode(0)
     , m_nextForSameCounter(0)
@@ -363,14 +363,14 @@ void LayoutCounter::destroy()
         m_counterNode->removeRenderer(this);
         ASSERT(!m_counterNode);
     }
-    RenderText::destroy();
+    LayoutText::destroy();
 }
 
 void LayoutCounter::willBeDestroyed()
 {
     if (view())
         view()->removeLayoutCounter();
-    RenderText::willBeDestroyed();
+    LayoutText::willBeDestroyed();
 }
 
 const char* LayoutCounter::renderName() const

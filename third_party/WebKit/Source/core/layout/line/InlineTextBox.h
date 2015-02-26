@@ -23,9 +23,9 @@
 #ifndef InlineTextBox_h
 #define InlineTextBox_h
 
+#include "core/layout/LayoutText.h" // so textRenderer() can be inline
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineBox.h"
-#include "core/rendering/RenderText.h" // so textRenderer() can be inline
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 
@@ -50,7 +50,7 @@ public:
         setIsText(true);
     }
 
-    RenderText& renderer() const { return toRenderText(InlineBox::renderer()); }
+    LayoutText& renderer() const { return toLayoutText(InlineBox::renderer()); }
 
     virtual void destroy() override final;
 

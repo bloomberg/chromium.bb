@@ -32,7 +32,7 @@
 namespace blink {
 
 class HTMLSelectElement;
-class RenderText;
+class LayoutText;
 
 class RenderMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
 
@@ -121,7 +121,7 @@ private:
 
     void didUpdateActiveOption(int optionIndex);
 
-    RenderText* m_buttonText;
+    LayoutText* m_buttonText;
     LayoutBlock* m_innerBlock;
 
     bool m_optionsChanged;

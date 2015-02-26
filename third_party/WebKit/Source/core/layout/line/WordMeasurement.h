@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class RenderText;
+class LayoutText;
 
 class WordMeasurement {
 public:
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    RenderText* renderer;
+    LayoutText* renderer;
     float width;
     int startOffset;
     int endOffset;

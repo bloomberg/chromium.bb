@@ -338,7 +338,7 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     }
 
     if (newChild->isText() && newChild->style()->textTransform() == CAPITALIZE)
-        toRenderText(newChild)->transformText();
+        toLayoutText(newChild)->transformText();
 
     // SVG creates renderers for <g display="none">, as SVG requires children of hidden
     // <g>s to have renderers - at least that's how our implementation works. Consider:
@@ -1434,8 +1434,8 @@ void LayoutObject::showLayoutObject(int printedCharacters) const
 {
     printedCharacters += fprintf(stderr, "%s %p", renderName(), this);
 
-    if (isText() && toRenderText(this)->isTextFragment())
-        printedCharacters += fprintf(stderr, " \"%s\" ", toRenderText(this)->text().ascii().data());
+    if (isText() && toLayoutText(this)->isTextFragment())
+        printedCharacters += fprintf(stderr, " \"%s\" ", toLayoutText(this)->text().ascii().data());
 
     if (node()) {
         if (printedCharacters)
@@ -1562,7 +1562,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
 
     if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()) {
         if (style()->hasBorder() || style()->hasOutline()
-            || (isText() && !toRenderText(this)->isAllCollapsibleWhitespace()))
+            || (isText() && !toLayoutText(this)->isAllCollapsibleWhitespace()))
             diff.setNeedsPaintInvalidationObject();
     }
 
@@ -1655,8 +1655,8 @@ void LayoutObject::setStyle(PassRefPtr<LayoutStyle> style)
 
     styleDidChange(diff, oldStyle.get());
 
-    // FIXME: |this| might be destroyed here. This can currently happen for a RenderTextFragment when
-    // its first-letter block gets an update in RenderTextFragment::styleDidChange. For RenderTextFragment(s),
+    // FIXME: |this| might be destroyed here. This can currently happen for a LayoutTextFragment when
+    // its first-letter block gets an update in LayoutTextFragment::styleDidChange. For LayoutTextFragment(s),
     // we will safely bail out with the doesNotNeedLayoutOrPaintInvalidation flag. We might want to broaden
     // this condition in the future as we move renderer changes out of layout and into style changes.
     if (doesNotNeedLayoutOrPaintInvalidation)

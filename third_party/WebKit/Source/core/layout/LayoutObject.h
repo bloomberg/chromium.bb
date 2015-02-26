@@ -505,7 +505,7 @@ public:
     {
         // This function is kept in sync with anonymous block creation conditions in
         // LayoutBlock::createAnonymousBlock(). This includes creating an anonymous
-        // LayoutBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
+        // LayoutBlock having a BLOCK or BOX display. Other classes such as LayoutTextFragment
         // are not LayoutBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
         return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
             && !isLayoutFullScreen()
@@ -1194,7 +1194,7 @@ protected:
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
-    // owned by this object, including the object itself, RenderText/LayoutInline line boxes, scrollbars, etc.,
+    // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, scrollbars, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded().
     virtual void invalidateDisplayItemClients(DisplayItemList*) const;
 

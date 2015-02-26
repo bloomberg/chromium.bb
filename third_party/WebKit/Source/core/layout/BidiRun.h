@@ -24,7 +24,7 @@
 #ifndef BidiRun_h
 #define BidiRun_h
 
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 #include "platform/text/BidiResolver.h"
 #include "wtf/StdLibExtras.h"
 

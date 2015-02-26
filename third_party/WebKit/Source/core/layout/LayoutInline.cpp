@@ -260,7 +260,7 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox, int, LayoutUnit* e
     if (firstChild()) {
         // This condition is possible if the LayoutInline is at an editing boundary,
         // i.e. the VisiblePosition is:
-        //   <LayoutInline editingBoundary=true>|<RenderText> </RenderText></LayoutInline>
+        //   <LayoutInline editingBoundary=true>|<LayoutText> </LayoutText></LayoutInline>
         // FIXME: need to figure out how to make this return a valid rect, note that
         // there are no line boxes created in the above case.
         return LayoutRect();
@@ -619,7 +619,7 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
                 }
             }
         } else if (curr->isText()) {
-            RenderText* currText = toRenderText(curr);
+            LayoutText* currText = toLayoutText(curr);
             for (InlineTextBox* childText = currText->firstTextBox(); childText; childText = childText->nextTextBox()) {
                 RootInlineBox& rootBox = childText->root();
                 int logicalTop = rootBox.logicalTop() + (rootBox.renderer().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
@@ -926,7 +926,7 @@ InlineBox* LayoutInline::culledInlineFirstLineBox() const
             if (result)
                 return result;
         } else if (curr->isText()) {
-            RenderText* currText = toRenderText(curr);
+            LayoutText* currText = toLayoutText(curr);
             if (currText->firstTextBox())
                 return currText->firstTextBox();
         }
@@ -950,7 +950,7 @@ InlineBox* LayoutInline::culledInlineLastLineBox() const
             if (result)
                 return result;
         } else if (curr->isText()) {
-            RenderText* currText = toRenderText(curr);
+            LayoutText* currText = toLayoutText(curr);
             if (currText->lastTextBox())
                 return currText->lastTextBox();
         }
@@ -992,7 +992,7 @@ LayoutRect LayoutInline::culledInlineVisualOverflowBoundingBox() const
         } else if (curr->isText()) {
             // FIXME; Overflow from text boxes is lost. We will need to cache this information in
             // InlineTextBoxes.
-            RenderText* currText = toRenderText(curr);
+            LayoutText* currText = toLayoutText(curr);
             result.uniteIfNonZero(currText->linesVisualOverflowBoundingBox());
         }
     }
@@ -1288,7 +1288,7 @@ void LayoutInline::dirtyLineBoxes(bool fullLayout)
                     for (InlineFlowBox* childLine = currInline->firstLineBox(); childLine; childLine = childLine->nextLineBox())
                         childLine->root().markDirty();
                 } else if (curr->isText()) {
-                    RenderText* currText = toRenderText(curr);
+                    LayoutText* currText = toLayoutText(curr);
                     for (InlineTextBox* childText = currText->firstTextBox(); childText; childText = childText->nextTextBox())
                         childText->root().markDirty();
                 }

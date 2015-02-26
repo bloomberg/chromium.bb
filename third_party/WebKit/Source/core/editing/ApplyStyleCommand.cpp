@@ -47,7 +47,7 @@
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 #include "platform/heap/Handle.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -1040,7 +1040,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
         return;
     }
 
-    if (node->renderer()->isText() && toRenderText(node->renderer())->isAllCollapsibleWhitespace())
+    if (node->renderer()->isText() && toLayoutText(node->renderer())->isAllCollapsibleWhitespace())
         return;
 
     // We can't wrap node with the styled element here because new styled element will never be removed if we did.

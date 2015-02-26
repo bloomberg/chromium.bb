@@ -31,8 +31,8 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderText.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
@@ -166,7 +166,7 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
         return appendBasicSubtargetsForNode(node, subtargets);
 
     Text* textNode = toText(node);
-    RenderText* textRenderer = textNode->renderer();
+    LayoutText* textRenderer = textNode->renderer();
 
     if (textRenderer->frame()->editor().behavior().shouldSelectOnContextualMenuClick()) {
         // Make subtargets out of every word.

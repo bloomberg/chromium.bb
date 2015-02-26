@@ -71,8 +71,8 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutListItem.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderText.h"
 
 namespace blink {
 
@@ -621,7 +621,7 @@ bool CompositeEditCommand::canRebalance(const Position& position) const
     if (textNode->length() == 0)
         return false;
 
-    RenderText* renderer = textNode->renderer();
+    LayoutText* renderer = textNode->renderer();
     if (renderer && !renderer->style()->collapseWhiteSpace())
         return false;
 
@@ -690,7 +690,7 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
 
     if (textNode->length() == 0)
         return;
-    RenderText* renderer = textNode->renderer();
+    LayoutText* renderer = textNode->renderer();
     if (renderer && !renderer->style()->collapseWhiteSpace())
         return;
 
@@ -733,7 +733,7 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
 
     document().updateLayout();
 
-    RenderText* textRenderer = textNode->renderer();
+    LayoutText* textRenderer = textNode->renderer();
     if (!textRenderer)
         return;
 

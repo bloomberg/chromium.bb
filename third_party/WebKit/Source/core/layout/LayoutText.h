@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderText_h
-#define RenderText_h
+#ifndef LayoutText_h
+#define LayoutText_h
 
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
@@ -36,14 +36,14 @@ namespace blink {
 class AbstractInlineTextBox;
 class InlineTextBox;
 
-class RenderText : public LayoutObject {
+class LayoutText : public LayoutObject {
 public:
     // FIXME: If the node argument is not a Text node or the string argument is
     // not the content of the Text node, updating text-transform property
     // doesn't re-transform the string.
-    RenderText(Node*, PassRefPtr<StringImpl>);
+    LayoutText(Node*, PassRefPtr<StringImpl>);
 #if ENABLE(ASSERT)
-    virtual ~RenderText();
+    virtual ~LayoutText();
 #endif
 
     virtual const char* renderName() const override;
@@ -162,7 +162,7 @@ private:
 
     bool computeCanUseSimpleFontCodePath() const;
 
-    // Make length() private so that callers that have a RenderText*
+    // Make length() private so that callers that have a LayoutText*
     // will use the more efficient textLength() instead, while
     // callers with a LayoutObject* can continue to use length().
     virtual unsigned length() const override final { return textLength(); }
@@ -191,10 +191,11 @@ private:
     bool m_hasBreakableStart : 1;
     bool m_hasBreakableEnd : 1;
     bool m_hasEndWhiteSpace : 1;
-    bool m_linesDirty : 1; // This bit indicates that the text run has already dirtied specific
-                           // line boxes, and this hint will enable layoutInlineChildren to avoid
-                           // just dirtying everything when character data is modified (e.g., appended/inserted
-                           // or removed).
+    // This bit indicates that the text run has already dirtied specific
+    // line boxes, and this hint will enable layoutInlineChildren to avoid
+    // just dirtying everything when character data is modified (e.g., appended/inserted
+    // or removed).
+    bool m_linesDirty : 1;
     bool m_containsReversedText : 1;
     bool m_isAllASCII : 1;
     bool m_canUseSimpleFontCodePath : 1;
@@ -211,13 +212,13 @@ private:
     InlineTextBox* m_lastTextBox;
 };
 
-inline UChar RenderText::uncheckedCharacterAt(unsigned i) const
+inline UChar LayoutText::uncheckedCharacterAt(unsigned i) const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(i < textLength());
     return is8Bit() ? characters8()[i] : characters16()[i];
 }
 
-inline UChar RenderText::characterAt(unsigned i) const
+inline UChar LayoutText::characterAt(unsigned i) const
 {
     if (i >= textLength())
         return 0;
@@ -225,21 +226,21 @@ inline UChar RenderText::characterAt(unsigned i) const
     return uncheckedCharacterAt(i);
 }
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderText, isText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, isText());
 
 #if !ENABLE(ASSERT)
-inline void RenderText::checkConsistency() const
+inline void LayoutText::checkConsistency() const
 {
 }
 #endif
 
-inline RenderText* Text::renderer() const
+inline LayoutText* Text::renderer() const
 {
-    return toRenderText(CharacterData::renderer());
+    return toLayoutText(CharacterData::renderer());
 }
 
 void applyTextTransform(const LayoutStyle*, String&, UChar);
 
 } // namespace blink
 
-#endif // RenderText_h
+#endif // LayoutText_h

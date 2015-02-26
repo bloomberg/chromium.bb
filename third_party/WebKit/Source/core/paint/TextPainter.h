@@ -19,7 +19,7 @@ namespace blink {
 class Font;
 class GraphicsContext;
 class GraphicsContextStateSaver;
-class RenderCombineText;
+class LayoutTextCombine;
 class LayoutObject;
 class LayoutStyle;
 class ShadowList;
@@ -34,7 +34,7 @@ public:
     ~TextPainter();
 
     void setEmphasisMark(const AtomicString&, TextEmphasisPosition);
-    void setCombinedText(RenderCombineText* combinedText) { m_combinedText = combinedText; }
+    void setCombinedText(LayoutTextCombine* combinedText) { m_combinedText = combinedText; }
 
     static void updateGraphicsContext(GraphicsContext*, const Style&, bool horizontal, GraphicsContextStateSaver&);
 
@@ -87,7 +87,7 @@ private:
     bool m_horizontal;
     AtomicString m_emphasisMark;
     int m_emphasisMarkOffset;
-    RenderCombineText* m_combinedText;
+    LayoutTextCombine* m_combinedText;
 };
 
 inline AffineTransform TextPainter::rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection rotationDirection)

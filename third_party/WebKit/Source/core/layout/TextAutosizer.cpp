@@ -194,7 +194,7 @@ static bool blockIsRowOfLinks(const LayoutBlock* block)
 
     while (renderer) {
         if (!isPotentialClusterRoot(renderer)) {
-            if (renderer->isText() && toRenderText(renderer)->text().stripWhiteSpace().length() > 3)
+            if (renderer->isText() && toLayoutText(renderer)->text().stripWhiteSpace().length() > 3)
                 return false;
             if (!renderer->isInline() || renderer->isBR())
                 return false;
@@ -654,7 +654,7 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const Layou
             // Note: Using text().stripWhiteSpace().length() instead of renderedTextLength() because
             // the lineboxes will not be built until layout. These values can be different.
             // Note: This is an approximation assuming each character is 1em wide.
-            length += toRenderText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
+            length += toLayoutText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
 
             if (length >= minimumTextLengthToAutosize) {
                 cluster->m_hasEnoughTextToAutosize = HasEnoughText;

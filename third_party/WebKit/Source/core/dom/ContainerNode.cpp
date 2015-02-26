@@ -46,10 +46,10 @@
 #include "core/html/RadioNodeList.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderText.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
 
@@ -901,12 +901,12 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
             return true;
         }
 
-        if (p->node() && p->node() == this && o->isText() && !o->isBR() && !toRenderText(o)->firstTextBox()) {
+        if (p->node() && p->node() == this && o->isText() && !o->isBR() && !toLayoutText(o)->firstTextBox()) {
             // Do nothing - skip unrendered whitespace that is a child or next sibling of the anchor.
         } else if ((o->isText() && !o->isBR()) || o->isReplaced()) {
             point = FloatPoint();
-            if (o->isText() && toRenderText(o)->firstTextBox()) {
-                point.move(toRenderText(o)->linesBoundingBox().x(), toRenderText(o)->firstTextBox()->root().lineTop().toFloat());
+            if (o->isText() && toLayoutText(o)->firstTextBox()) {
+                point.move(toLayoutText(o)->linesBoundingBox().x(), toLayoutText(o)->firstTextBox()->root().lineTop().toFloat());
             } else if (o->isBox()) {
                 LayoutBox* box = toLayoutBox(o);
                 point.moveBy(box->location());
@@ -993,7 +993,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
         if (o->isText() || o->isReplaced()) {
             point = FloatPoint();
             if (o->isText()) {
-                RenderText* text = toRenderText(o);
+                LayoutText* text = toLayoutText(o);
                 IntRect linesBox = text->linesBoundingBox();
                 if (!linesBox.maxX() && !linesBox.maxY())
                     continue;

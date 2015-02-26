@@ -21,7 +21,7 @@ class GraphicsContext;
 class InlineTextBox;
 class LayoutPoint;
 class LayoutStyle;
-class RenderCombineText;
+class LayoutTextCombine;
 
 class InlineTextBoxPainter {
 public:
@@ -40,7 +40,7 @@ private:
     void paintCompositionBackgrounds(GraphicsContext*, const FloatPoint& boxOrigin, const LayoutStyle&, const Font&, bool useCustomUnderlines);
     void paintSingleCompositionBackgroundRun(GraphicsContext*, const FloatPoint& boxOrigin, const LayoutStyle&, const Font&, Color backgroundColor, int startPos, int endPos);
     template <PaintOptions>
-    void paintSelection(GraphicsContext*, const FloatRect& boxRect, const LayoutStyle&, const Font&, Color textColor, RenderCombineText* = nullptr);
+    void paintSelection(GraphicsContext*, const FloatRect& boxRect, const LayoutStyle&, const Font&, Color textColor, LayoutTextCombine* = nullptr);
     void paintDecoration(GraphicsContext*, const FloatPoint& boxOrigin, TextDecoration);
     void paintCompositionUnderline(GraphicsContext*, const FloatPoint& boxOrigin, const CompositionUnderline&);
     unsigned underlinePaintStart(const CompositionUnderline&);

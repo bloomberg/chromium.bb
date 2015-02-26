@@ -36,8 +36,8 @@
 namespace blink {
 
 class InlineTextBox;
-class RenderText;
-class RenderTextFragment;
+class LayoutText;
+class LayoutTextFragment;
 
 String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
@@ -133,10 +133,10 @@ private:
     bool handleReplacedElement();
     bool handleNonTextNode();
     void handleTextBox();
-    void handleTextNodeFirstLetter(RenderTextFragment*);
-    bool hasVisibleTextNode(RenderText*);
+    void handleTextNodeFirstLetter(LayoutTextFragment*);
+    bool hasVisibleTextNode(LayoutText*);
     void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
-    void emitText(Node* textNode, RenderText* renderer, int textStartOffset, int textEndOffset);
+    void emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset);
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
@@ -168,8 +168,8 @@ private:
     // Used when iteration over :first-letter text to save pointer to
     // remaining text box.
     InlineTextBox* m_remainingTextBox;
-    // Used to point to RenderText object for :first-letter.
-    RawPtrWillBeMember<RenderText> m_firstLetterText;
+    // Used to point to LayoutText object for :first-letter.
+    RawPtrWillBeMember<LayoutText> m_firstLetterText;
 
     // Used to do the whitespace collapsing logic.
     RawPtrWillBeMember<Text> m_lastTextNode;

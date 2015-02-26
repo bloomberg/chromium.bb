@@ -36,7 +36,7 @@ static PassRefPtr<StringImpl> newlineString()
 }
 
 LayoutBR::LayoutBR(Node* node)
-    : RenderText(node, newlineString())
+    : LayoutText(node, newlineString())
 {
 }
 
@@ -52,7 +52,7 @@ int LayoutBR::lineHeight(bool firstLine) const
 
 void LayoutBR::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderText::styleDidChange(diff, oldStyle);
+    LayoutText::styleDidChange(diff, oldStyle);
 }
 
 int LayoutBR::caretMinOffset() const

@@ -449,7 +449,7 @@ PassRefPtr<StringImpl> StringImpl::create(const LChar* string)
 bool StringImpl::containsOnlyWhitespace()
 {
     // FIXME: The definition of whitespace here includes a number of characters
-    // that are not whitespace from the point of view of RenderText; I wonder if
+    // that are not whitespace from the point of view of LayoutText; I wonder if
     // that's a problem in practice.
     if (is8Bit()) {
         for (unsigned i = 0; i < m_length; ++i) {

@@ -46,8 +46,8 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTextControl.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderTextFragment.h"
 #include "platform/fonts/Font.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -446,7 +446,7 @@ bool TextIterator::handleTextNode()
         return false;
 
     Text* textNode = toText(m_node);
-    RenderText* renderer = textNode->renderer();
+    LayoutText* renderer = textNode->renderer();
 
     m_lastTextNode = textNode;
     String str = renderer->text();
@@ -459,7 +459,7 @@ bool TextIterator::handleTextNode()
             return false;
         }
         if (!m_handledFirstLetter && renderer->isTextFragment() && !m_offset) {
-            handleTextNodeFirstLetter(toRenderTextFragment(renderer));
+            handleTextNodeFirstLetter(toLayoutTextFragment(renderer));
             if (m_firstLetterText) {
                 String firstLetter = m_firstLetterText->text();
                 emitText(textNode, m_firstLetterText, m_offset, m_offset + firstLetter.length());
@@ -486,7 +486,7 @@ bool TextIterator::handleTextNode()
 
     bool shouldHandleFirstLetter = !m_handledFirstLetter && renderer->isTextFragment() && !m_offset;
     if (shouldHandleFirstLetter)
-        handleTextNodeFirstLetter(toRenderTextFragment(renderer));
+        handleTextNodeFirstLetter(toLayoutTextFragment(renderer));
 
     if (!renderer->firstTextBox() && str.length() > 0 && !shouldHandleFirstLetter) {
         if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
@@ -515,7 +515,7 @@ bool TextIterator::handleTextNode()
 
 void TextIterator::handleTextBox()
 {
-    RenderText* renderer = m_firstLetterText ? m_firstLetterText.get() : toRenderText(m_node->renderer());
+    LayoutText* renderer = m_firstLetterText ? m_firstLetterText.get() : toLayoutText(m_node->renderer());
 
     if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility) {
         m_textBox = 0;
@@ -612,7 +612,7 @@ void TextIterator::handleTextBox()
     }
 }
 
-void TextIterator::handleTextNodeFirstLetter(RenderTextFragment* renderer)
+void TextIterator::handleTextNodeFirstLetter(LayoutTextFragment* renderer)
 {
     m_handledFirstLetter = true;
 
@@ -631,9 +631,9 @@ void TextIterator::handleTextNodeFirstLetter(RenderTextFragment* renderer)
     ASSERT(firstLetter);
 
     m_remainingTextBox = m_textBox;
-    m_textBox = toRenderText(firstLetter)->firstTextBox();
+    m_textBox = toLayoutText(firstLetter)->firstTextBox();
     m_sortedTextBoxes.clear();
-    m_firstLetterText = toRenderText(firstLetter);
+    m_firstLetterText = toLayoutText(firstLetter);
 }
 
 bool TextIterator::supportsAltText(Node* m_node)
@@ -705,7 +705,7 @@ bool TextIterator::handleReplacedElement()
     return true;
 }
 
-bool TextIterator::hasVisibleTextNode(RenderText* renderer)
+bool TextIterator::hasVisibleTextNode(LayoutText* renderer)
 {
     if (renderer->style()->visibility() == VISIBLE)
         return true;
@@ -713,7 +713,7 @@ bool TextIterator::hasVisibleTextNode(RenderText* renderer)
     if (!renderer->isTextFragment())
         return false;
 
-    RenderTextFragment* fragment = toRenderTextFragment(renderer);
+    LayoutTextFragment* fragment = toLayoutTextFragment(renderer);
     if (!fragment->isRemainingTextRenderer())
         return false;
 
@@ -1011,7 +1011,7 @@ void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, 
     m_lastCharacter = c;
 }
 
-void TextIterator::emitText(Node* textNode, RenderText* renderer, int textStartOffset, int textEndOffset)
+void TextIterator::emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset)
 {
     m_text = m_emitsOriginalText ? renderer->originalText() : renderer->text();
     ASSERT(!m_text.isEmpty());

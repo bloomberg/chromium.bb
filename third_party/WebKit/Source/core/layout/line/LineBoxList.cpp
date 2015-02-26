@@ -266,7 +266,7 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
             if (wrapper)
                 box = &wrapper->root();
         } else if (curr->isText()) {
-            InlineTextBox* textBox = toRenderText(curr)->lastTextBox();
+            InlineTextBox* textBox = toLayoutText(curr)->lastTextBox();
             if (textBox)
                 box = &textBox->root();
         } else if (curr->isLayoutInline()) {

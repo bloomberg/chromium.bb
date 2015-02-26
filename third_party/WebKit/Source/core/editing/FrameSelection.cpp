@@ -59,6 +59,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -68,7 +69,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/rendering/RenderText.h"
 #include "platform/SecureTextInput.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -394,8 +394,8 @@ static Position updatePositionAfterAdoptingTextReplacement(const Position& posit
         positionOffset = positionOffset - oldLength + newLength;
 
     // Due to case folding (http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt),
-    // RenderText length may be different from Text length.  A correct implementation
-    // would translate the RenderText offset to a Text offset; this is just a safety
+    // LayoutText length may be different from Text length.  A correct implementation
+    // would translate the LayoutText offset to a Text offset; this is just a safety
     // precaution to avoid offset values that run off the end of the Text.
     if (positionOffset > node->length())
         positionOffset = node->length();

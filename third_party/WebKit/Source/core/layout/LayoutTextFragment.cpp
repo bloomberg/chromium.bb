@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTextFragment.h"
+#include "core/layout/LayoutTextFragment.h"
 
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/PseudoElement.h"
@@ -32,8 +32,8 @@
 
 namespace blink {
 
-RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str, int startOffset, int length)
-    : RenderText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
+LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str, int startOffset, int length)
+    : LayoutText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
     , m_start(startOffset)
     , m_end(length)
     , m_isRemainingTextRenderer(false)
@@ -42,8 +42,8 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str, int startOff
 {
 }
 
-RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str)
-    : RenderText(node, str)
+LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
+    : LayoutText(node, str)
     , m_start(0)
     , m_end(str ? str->length() : 0)
     , m_isRemainingTextRenderer(false)
@@ -52,32 +52,32 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str)
 {
 }
 
-RenderTextFragment::~RenderTextFragment()
+LayoutTextFragment::~LayoutTextFragment()
 {
     ASSERT(!m_firstLetterPseudoElement);
 }
 
-void RenderTextFragment::destroy()
+void LayoutTextFragment::destroy()
 {
     if (m_isRemainingTextRenderer && m_firstLetterPseudoElement)
         m_firstLetterPseudoElement->setRemainingTextRenderer(nullptr);
     m_firstLetterPseudoElement = nullptr;
-    RenderText::destroy();
+    LayoutText::destroy();
 }
 
-PassRefPtr<StringImpl> RenderTextFragment::completeText() const
+PassRefPtr<StringImpl> LayoutTextFragment::completeText() const
 {
     Text* text = associatedTextNode();
     return text ? text->dataImpl() : contentString();
 }
 
-void RenderTextFragment::setContentString(StringImpl* str)
+void LayoutTextFragment::setContentString(StringImpl* str)
 {
     m_contentString = str;
     setText(str);
 }
 
-PassRefPtr<StringImpl> RenderTextFragment::originalText() const
+PassRefPtr<StringImpl> LayoutTextFragment::originalText() const
 {
     RefPtr<StringImpl> result = completeText();
     if (!result)
@@ -85,9 +85,9 @@ PassRefPtr<StringImpl> RenderTextFragment::originalText() const
     return result->substring(start(), end());
 }
 
-void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
+void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
 {
-    RenderText::setText(text, force);
+    LayoutText::setText(text, force);
 
     m_start = 0;
     m_end = textLength();
@@ -105,24 +105,24 @@ void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
     }
 }
 
-void RenderTextFragment::setTextFragment(PassRefPtr<StringImpl> text, unsigned start, unsigned length)
+void LayoutTextFragment::setTextFragment(PassRefPtr<StringImpl> text, unsigned start, unsigned length)
 {
-    RenderText::setText(text, false);
+    LayoutText::setText(text, false);
 
     m_start = start;
     m_end = length;
 }
 
-void RenderTextFragment::transformText()
+void LayoutTextFragment::transformText()
 {
-    // Note, we have to call RenderText::setText here because, if we use our
+    // Note, we have to call LayoutText::setText here because, if we use our
     // version we will, potentially, screw up the first-letter settings where
     // we only use portions of the string.
     if (RefPtr<StringImpl> textToTransform = originalText())
-        RenderText::setText(textToTransform.release(), true);
+        LayoutText::setText(textToTransform.release(), true);
 }
 
-UChar RenderTextFragment::previousCharacter() const
+UChar LayoutTextFragment::previousCharacter() const
 {
     if (start()) {
         StringImpl* original = completeText().get();
@@ -130,12 +130,12 @@ UChar RenderTextFragment::previousCharacter() const
             return (*original)[start() - 1];
     }
 
-    return RenderText::previousCharacter();
+    return LayoutText::previousCharacter();
 }
 
 // If this is the renderer for a first-letter pseudoNode then we have to look
 // at the node for the remaining text to find our content.
-Text* RenderTextFragment::associatedTextNode() const
+Text* LayoutTextFragment::associatedTextNode() const
 {
     Node* node = this->firstLetterPseudoElement();
     if (m_isRemainingTextRenderer || !node) {

@@ -55,7 +55,7 @@ static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
     while (current) {
         next = 0;
         if (isIteratorTarget(current) && !(current->isText()
-            && toRenderText(current)->isAllCollapsibleWhitespace()))
+            && toLayoutText(current)->isAllCollapsibleWhitespace()))
             break;
 
         if (!isIteratorTarget(current)

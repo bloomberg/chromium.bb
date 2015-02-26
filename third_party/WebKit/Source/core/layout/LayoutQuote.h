@@ -30,7 +30,7 @@
 namespace blink {
 
 class Document;
-class RenderTextFragment;
+class LayoutTextFragment;
 
 class LayoutQuote final : public LayoutInline {
 public:
@@ -53,7 +53,7 @@ private:
     void updateDepth();
     bool isAttached() { return m_attached; }
 
-    RenderTextFragment* findFragmentChild() const;
+    LayoutTextFragment* findFragmentChild() const;
 
     QuoteType m_type;
     int m_depth;

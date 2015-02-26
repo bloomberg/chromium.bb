@@ -52,7 +52,7 @@ class InspectorFrontend;
 class InspectorResourceAgent;
 class MediaList;
 class Node;
-class RenderText;
+class LayoutText;
 
 class InspectorCSSAgent final
     : public InspectorBaseAgent<InspectorCSSAgent>
@@ -167,7 +167,7 @@ private:
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
     void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&, StyleSheetsUpdateType);
 
-    void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
+    void collectPlatformFontsForRenderer(LayoutText*, HashCountedSet<String>*);
 
     InspectorStyleSheet* bindStyleSheet(CSSStyleSheet*);
     String unbindStyleSheet(InspectorStyleSheet*);

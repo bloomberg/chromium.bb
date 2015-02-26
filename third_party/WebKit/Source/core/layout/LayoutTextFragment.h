@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef RenderTextFragment_h
-#define RenderTextFragment_h
+#ifndef LayoutTextFragment_h
+#define LayoutTextFragment_h
 
-#include "core/rendering/RenderText.h"
+#include "core/layout/LayoutText.h"
 
 namespace blink {
 
@@ -33,11 +33,11 @@ class FirstLetterPseudoElement;
 // first letter and that must therefore have different styles (and positions in the render tree).
 // We cache offsets so that text transformations can be applied in such a way that we can recover
 // the original unaltered string from our corresponding DOM node.
-class RenderTextFragment final : public RenderText {
+class LayoutTextFragment final : public LayoutText {
 public:
-    RenderTextFragment(Node*, StringImpl*, int startOffset, int length);
-    RenderTextFragment(Node*, StringImpl*);
-    virtual ~RenderTextFragment();
+    LayoutTextFragment(Node*, StringImpl*, int startOffset, int length);
+    LayoutTextFragment(Node*, StringImpl*);
+    virtual ~LayoutTextFragment();
     virtual void destroy() override;
 
     virtual bool isTextFragment() const override { return true; }
@@ -53,7 +53,7 @@ public:
     StringImpl* contentString() const { return m_contentString.get(); }
     // The complete text is all of the text in the associated DOM text node.
     PassRefPtr<StringImpl> completeText() const;
-    // The fragment text is the text which will be used by this RenderTextFragment. For
+    // The fragment text is the text which will be used by this LayoutTextFragment. For
     // things like first-letter this may differ from the completeText as we maybe using
     // only a portion of the text nodes content.
 
@@ -64,6 +64,7 @@ public:
 
     virtual void transformText() override;
 
+    // FIXME: Rename to LayoutTextFragment
     virtual const char* renderName() const override final { return "RenderTextFragment"; }
 
     void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
@@ -87,8 +88,8 @@ private:
     FirstLetterPseudoElement* m_firstLetterPseudoElement;
 };
 
-DEFINE_TYPE_CASTS(RenderTextFragment, LayoutObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());
+DEFINE_TYPE_CASTS(LayoutTextFragment, LayoutObject, object, toLayoutText(object)->isTextFragment(), toLayoutText(object).isTextFragment());
 
 } // namespace blink
 
-#endif // RenderTextFragment_h
+#endif // LayoutTextFragment_h
