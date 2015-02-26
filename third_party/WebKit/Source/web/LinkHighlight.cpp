@@ -176,7 +176,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     // should use their intristic height and expand the linebox  as needed. To get an
     // appropriately sized highlight we descend into the children and have them add their
     // boxes.
-    if (renderer->isRenderInline()) {
+    if (renderer->isLayoutInline()) {
         for (Node* child = NodeRenderingTraversal::firstChild(node); child; child = NodeRenderingTraversal::nextSibling(*child))
             computeQuads(*child, outQuads);
     } else {

@@ -6,12 +6,12 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 
@@ -30,7 +30,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         // Add ourselves to the paint info struct's list of inlines that need to paint their
         // outlines.
         if (m_inlineFlowBox.renderer().style()->visibility() == VISIBLE && m_inlineFlowBox.renderer().style()->hasOutline() && !m_inlineFlowBox.isRootInlineBox()) {
-            RenderInline& inlineFlow = toRenderInline(m_inlineFlowBox.renderer());
+            LayoutInline& inlineFlow = toLayoutInline(m_inlineFlowBox.renderer());
 
             RenderBlock* cb = 0;
             bool containingBlockPaintsContinuationOutline = inlineFlow.continuation() || inlineFlow.isInlineElementContinuation();
@@ -55,7 +55,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             if (containingBlockPaintsContinuationOutline) {
                 // Add ourselves to the containing block of the entire continuation so that it can
                 // paint us atomically.
-                cb->addContinuationWithOutline(toRenderInline(m_inlineFlowBox.renderer().node()->renderer()));
+                cb->addContinuationWithOutline(toLayoutInline(m_inlineFlowBox.renderer().node()->renderer()));
             } else if (!inlineFlow.isInlineElementContinuation()) {
                 paintInfo.outlineObjects()->add(&inlineFlow);
             }

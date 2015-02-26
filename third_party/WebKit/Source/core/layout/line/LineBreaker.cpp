@@ -83,7 +83,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo
             context.handleOutOfFlowPositioned(m_positionedObjects);
         } else if (context.currentObject()->isFloating()) {
             context.handleFloat();
-        } else if (context.currentObject()->isRenderInline()) {
+        } else if (context.currentObject()->isLayoutInline()) {
             context.handleEmptyInline();
         } else if (context.currentObject()->isReplaced()) {
             context.handleReplaced();

@@ -385,7 +385,7 @@ public:
     virtual bool isRenderBlock() const { return false; }
     virtual bool isRenderBlockFlow() const { return false; }
     virtual bool isLayoutFlowThread() const { return false; }
-    virtual bool isRenderInline() const { return false; }
+    virtual bool isLayoutInline() const { return false; }
     virtual bool isLayoutPart() const { return false; }
 
     bool isDocumentElement() const { return document().documentElement() == m_node; }
@@ -410,15 +410,15 @@ public:
     bool hasColumns() const { return m_bitfields.hasColumns(); }
     void setHasColumns(bool b = true) { m_bitfields.setHasColumns(b); }
 
-    bool alwaysCreateLineBoxesForRenderInline() const
+    bool alwaysCreateLineBoxesForLayoutInline() const
     {
-        ASSERT(isRenderInline());
-        return m_bitfields.alwaysCreateLineBoxesForRenderInline();
+        ASSERT(isLayoutInline());
+        return m_bitfields.alwaysCreateLineBoxesForLayoutInline();
     }
-    void setAlwaysCreateLineBoxesForRenderInline(bool alwaysCreateLineBoxes)
+    void setAlwaysCreateLineBoxesForLayoutInline(bool alwaysCreateLineBoxes)
     {
-        ASSERT(isRenderInline());
-        m_bitfields.setAlwaysCreateLineBoxesForRenderInline(alwaysCreateLineBoxes);
+        ASSERT(isLayoutInline());
+        m_bitfields.setAlwaysCreateLineBoxesForLayoutInline(alwaysCreateLineBoxes);
     }
 
     bool ancestorLineBoxDirty() const { return m_bitfields.ancestorLineBoxDirty(); }
@@ -1093,7 +1093,7 @@ protected:
         LayoutObjectLayoutGrid,
         LayoutObjectLayoutIFrame,
         LayoutObjectLayoutImage,
-        LayoutObjectRenderInline,
+        LayoutObjectLayoutInline,
         LayoutObjectLayoutMultiColumnSet,
         LayoutObjectLayoutMultiColumnSpannerPlaceholder,
         LayoutObjectLayoutPart,
@@ -1194,7 +1194,7 @@ protected:
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
-    // owned by this object, including the object itself, RenderText/RenderInline line boxes, scrollbars, etc.,
+    // owned by this object, including the object itself, RenderText/LayoutInline line boxes, scrollbars, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded().
     virtual void invalidateDisplayItemClients(DisplayItemList*) const;
 
@@ -1298,7 +1298,7 @@ private:
             , m_hasPendingResourceUpdate(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
-            , m_alwaysCreateLineBoxesForRenderInline(false)
+            , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
@@ -1347,8 +1347,8 @@ private:
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
         ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
 
-        // from RenderInline
-        ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForRenderInline, AlwaysCreateLineBoxesForRenderInline);
+        // from LayoutInline
+        ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForLayoutInline, AlwaysCreateLineBoxesForLayoutInline);
 
     private:
         unsigned m_positionedState : 2; // PositionedState

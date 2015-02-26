@@ -30,6 +30,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRegion.h"
 #include "core/layout/LayoutView.h"
@@ -39,7 +40,6 @@
 #include "core/layout/style/ShadowList.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
@@ -73,7 +73,7 @@ void LayoutBoxModelObject::setSelectionState(SelectionState state)
     else
         LayoutObject::setSelectionState(state);
 
-    // FIXME: We should consider whether it is OK propagating to ancestor RenderInlines.
+    // FIXME: We should consider whether it is OK propagating to ancestor LayoutInlines.
     // This is a workaround for http://webkit.org/b/32123
     // The containing block can be null in case of an orphaned tree.
     RenderBlock* containingBlock = this->containingBlock();
@@ -328,10 +328,10 @@ static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
         return LayoutSize();
     LayoutSize offset;
     LayoutObject* p = toRenderBlock(child)->inlineElementContinuation();
-    while (p && p->isRenderInline()) {
+    while (p && p->isLayoutInline()) {
         if (p->isRelPositioned()) {
-            RenderInline* renderInline = toRenderInline(p);
-            offset += renderInline->offsetForInFlowPosition();
+            LayoutInline* layoutInline = toLayoutInline(p);
+            offset += layoutInline->offsetForInFlowPosition();
         }
         p = p->parent();
     }
@@ -474,14 +474,14 @@ LayoutSize LayoutBoxModelObject::offsetForInFlowPosition() const
 
 LayoutUnit LayoutBoxModelObject::offsetLeft() const
 {
-    // Note that RenderInline and LayoutBox override this to pass a different
+    // Note that LayoutInline and LayoutBox override this to pass a different
     // startPoint to adjustedPositionRelativeToOffsetParent.
     return adjustedPositionRelativeToOffsetParent(LayoutPoint()).x();
 }
 
 LayoutUnit LayoutBoxModelObject::offsetTop() const
 {
-    // Note that RenderInline and LayoutBox override this to pass a different
+    // Note that LayoutInline and LayoutBox override this to pass a different
     // startPoint to adjustedPositionRelativeToOffsetParent.
     return adjustedPositionRelativeToOffsetParent(LayoutPoint()).y();
 }
@@ -790,7 +790,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
     if (!container)
         return 0;
 
-    bool isInline = isRenderInline();
+    bool isInline = isLayoutInline();
     bool isFixedPos = !isInline && style()->position() == FixedPosition;
     bool hasTransform = !isInline && hasLayer() && layer()->transform();
 
@@ -826,7 +826,7 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject, L
 
     ASSERT(this == child->parent());
     ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
-    if (fullRemoveInsert && (toBoxModelObject->isRenderBlock() || toBoxModelObject->isRenderInline())) {
+    if (fullRemoveInsert && (toBoxModelObject->isRenderBlock() || toBoxModelObject->isLayoutInline())) {
         // Takes care of adding the new child correctly if toBlock and fromBlock
         // have different kind of children (block vs inline).
         toBoxModelObject->addChild(virtualChildren()->removeChildNode(this, child), beforeChild);

@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderInline.h"
+#include "core/layout/LayoutInline.h"
 
 #include "core/layout/LayoutTestHelper.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
-class RenderInlineTest : public RenderingTest {
+class LayoutInlineTest : public RenderingTest {
 };
 
-TEST_F(RenderInlineTest, RenderNameCalledWithNullStyle)
+TEST_F(LayoutInlineTest, RenderNameCalledWithNullStyle)
 {
-    LayoutObject* obj = RenderInline::createAnonymous(&document());
+    LayoutObject* obj = LayoutInline::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
     EXPECT_STREQ("RenderInline (generated)", obj->renderName());
     obj->destroy();

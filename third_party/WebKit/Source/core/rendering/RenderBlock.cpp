@@ -44,6 +44,7 @@
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGrid.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRegion.h"
 #include "core/layout/LayoutTableCell.h"
@@ -63,7 +64,6 @@
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
@@ -389,7 +389,7 @@ void RenderBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
             // the inline elements position in PaintInvalidationState.
             if (box->style()->position() == AbsolutePosition) {
                 LayoutObject* container = box->container(&paintInvalidationContainerForChild, 0);
-                if (container->isRelPositioned() && container->isRenderInline()) {
+                if (container->isRelPositioned() && container->isLayoutInline()) {
                     // FIXME: We should be able to use PaintInvalidationState for this.
                     // Currently, we will place absolutely positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
@@ -1247,8 +1247,8 @@ void RenderBlock::removeChild(LayoutObject* oldChild)
                 // Found our previous continuation. We just need to point it to
                 // |this|'s next continuation.
                 LayoutBoxModelObject* nextContinuation = continuation();
-                if (curr->isRenderInline())
-                    toRenderInline(curr)->setContinuation(nextContinuation);
+                if (curr->isLayoutInline())
+                    toLayoutInline(curr)->setContinuation(nextContinuation);
                 else if (curr->isRenderBlock())
                     toRenderBlock(curr)->setContinuation(nextContinuation);
                 else
@@ -1563,7 +1563,7 @@ void RenderBlock::simplifiedNormalFlowLayout()
                     RootInlineBox& box = toLayoutBox(o)->inlineBoxWrapper()->root();
                     lineBoxes.add(&box);
                 }
-            } else if (o->isText() || (o->isRenderInline() && !walker.atEndOfInline())) {
+            } else if (o->isText() || (o->isLayoutInline() && !walker.atEndOfInline())) {
                 o->clearNeedsLayout();
             }
         }
@@ -1782,10 +1782,10 @@ void RenderBlock::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pai
     BlockPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-RenderInline* RenderBlock::inlineElementContinuation() const
+LayoutInline* RenderBlock::inlineElementContinuation() const
 {
     LayoutBoxModelObject* continuation = this->continuation();
-    return continuation && continuation->isInline() ? toRenderInline(continuation) : 0;
+    return continuation && continuation->isInline() ? toLayoutInline(continuation) : 0;
 }
 
 RenderBlock* RenderBlock::blockElementContinuation() const
@@ -1805,16 +1805,16 @@ ContinuationOutlineTableMap* continuationOutlineTable()
     return &table;
 }
 
-void RenderBlock::addContinuationWithOutline(RenderInline* flow)
+void RenderBlock::addContinuationWithOutline(LayoutInline* flow)
 {
     // We can't make this work if the inline is in a layer.  We'll just rely on the broken
     // way of painting.
     ASSERT(!flow->layer() && !flow->isInlineElementContinuation());
 
     ContinuationOutlineTableMap* table = continuationOutlineTable();
-    ListHashSet<RenderInline*>* continuations = table->get(this);
+    ListHashSet<LayoutInline*>* continuations = table->get(this);
     if (!continuations) {
-        continuations = new ListHashSet<RenderInline*>;
+        continuations = new ListHashSet<LayoutInline*>;
         table->set(this, adoptPtr(continuations));
     }
 
@@ -3551,7 +3551,7 @@ void RenderBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
         // FIXME: This is wrong. The principal renderer may not be the continuation preceding this block.
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
-        bool prevInlineHasLineBox = toRenderInline(inlineElementContinuation()->node()->renderer())->firstLineBox();
+        bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation()->node()->renderer())->firstLineBox();
         LayoutUnit topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
         LayoutRect rect(additionalOffset, size());
@@ -3925,13 +3925,13 @@ void RenderBlock::checkPositionedObjectsNeedLayout()
     }
 }
 
-bool RenderBlock::paintsContinuationOutline(RenderInline* flow)
+bool RenderBlock::paintsContinuationOutline(LayoutInline* flow)
 {
     ContinuationOutlineTableMap* table = continuationOutlineTable();
     if (table->isEmpty())
         return false;
 
-    ListHashSet<RenderInline*>* continuations = table->get(this);
+    ListHashSet<LayoutInline*>* continuations = table->get(this);
     if (!continuations)
         return false;
 

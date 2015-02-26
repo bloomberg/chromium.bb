@@ -57,6 +57,7 @@
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutImageResourceStyleImage.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObjectInlines.h"
@@ -77,7 +78,6 @@
 #include "core/page/Page.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -180,7 +180,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const LayoutStyle& st
     case NONE:
         return 0;
     case INLINE:
-        return new RenderInline(element);
+        return new LayoutInline(element);
     case BLOCK:
     case INLINE_BLOCK:
         return new RenderBlockFlow(element);
@@ -805,7 +805,7 @@ RenderBlock* LayoutObject::containingBlock() const
         while (o) {
             // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
             // to return the inline itself.  This allows us to avoid having a positioned objects
-            // list in all RenderInlines and lets us return a strongly-typed RenderBlock* result
+            // list in all LayoutInlines and lets us return a strongly-typed RenderBlock* result
             // from this method.  The container() method can actually be used to obtain the
             // inline directly.
             if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
@@ -1594,7 +1594,7 @@ void LayoutObject::setPseudoStyle(PassRefPtr<LayoutStyle> pseudoStyle)
     // the pseudo element doesn't change the size of the image. In all other cases we
     // can just share the style.
     //
-    // Quotes are also RenderInline, so we need to create an inherited style to avoid
+    // Quotes are also LayoutInline, so we need to create an inherited style to avoid
     // getting an inline with positioning or an invalid display.
     //
     if (isImage() || isQuote()) {
@@ -1722,7 +1722,7 @@ void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newS
 
         s_affectsParentBlock = isFloatingOrOutOfFlowPositioned()
             && (!newStyle.isFloating() && !newStyle.hasOutOfFlowPosition())
-            && parent() && (parent()->isRenderBlockFlow() || parent()->isRenderInline());
+            && parent() && (parent()->isRenderBlockFlow() || parent()->isLayoutInline());
 
         // Clearing these bits is required to avoid leaving stale renderers.
         // FIXME: We shouldn't need that hack if our logic was totally correct.
@@ -2627,7 +2627,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
                 return firstLineBlock->getCachedPseudoStyle(FIRST_LINE, style);
             return firstLineBlock->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE), style, firstLineBlock == renderer ? style : 0);
         }
-    } else if (!rendererForFirstLineStyle->isAnonymous() && rendererForFirstLineStyle->isRenderInline()
+    } else if (!rendererForFirstLineStyle->isAnonymous() && rendererForFirstLineStyle->isLayoutInline()
         && !rendererForFirstLineStyle->node()->isFirstLetterPseudoElement()) {
         LayoutStyle* parentStyle = rendererForFirstLineStyle->parent()->firstLineStyle();
         if (parentStyle != rendererForFirstLineStyle->parent()->style()) {

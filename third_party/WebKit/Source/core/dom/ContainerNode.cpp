@@ -45,10 +45,10 @@
 #include "core/html/HTMLTagCollection.h"
 #include "core/html/RadioNodeList.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -930,13 +930,13 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
     LayoutObject* prev = nullptr;
     LayoutObject* cur = renderer;
 
-    if (!cur->isRenderInline() && !cur->isRenderBlock())
+    if (!cur->isLayoutInline() && !cur->isRenderBlock())
         return nullptr;
 
     while (cur) {
         prev = cur;
-        if (cur->isRenderInline())
-            cur = toRenderInline(cur)->continuation();
+        if (cur->isLayoutInline())
+            cur = toLayoutInline(cur)->continuation();
         else
             cur = toRenderBlock(cur)->continuation();
     }

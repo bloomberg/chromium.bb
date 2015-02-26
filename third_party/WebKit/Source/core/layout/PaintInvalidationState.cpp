@@ -6,10 +6,10 @@
 #include "core/layout/PaintInvalidationState.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/Partitions.h"
 
 namespace blink {
@@ -63,8 +63,8 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
 
             if (renderer.isOutOfFlowPositioned() && !fixed) {
                 if (LayoutObject* container = renderer.container()) {
-                    if (container->style()->hasInFlowPosition() && container->isRenderInline())
-                        m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(toLayoutBox(renderer));
+                    if (container->style()->hasInFlowPosition() && container->isLayoutInline())
+                        m_paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(renderer));
                 }
             }
 

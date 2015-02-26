@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderInline_h
-#define RenderInline_h
+#ifndef LayoutInline_h
+#define LayoutInline_h
 
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutBoxModelObject.h"
@@ -30,16 +30,16 @@
 
 namespace blink {
 
-class RenderInline : public LayoutBoxModelObject {
+class LayoutInline : public LayoutBoxModelObject {
 public:
-    explicit RenderInline(Element*);
+    explicit LayoutInline(Element*);
 
-    static RenderInline* createAnonymous(Document*);
+    static LayoutInline* createAnonymous(Document*);
 
     LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
-    // If you have a RenderInline, use firstChild or lastChild instead.
+    // If you have a LayoutInline, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -78,7 +78,7 @@ public:
     InlineBox* lastLineBoxIncludingCulling() const { return alwaysCreateLineBoxes() ? lastLineBox() : culledInlineLastLineBox(); }
 
     virtual LayoutBoxModelObject* virtualContinuation() const override final { return continuation(); }
-    RenderInline* inlineElementContinuation() const;
+    LayoutInline* inlineElementContinuation() const;
 
     virtual void updateDragState(bool dragOn) override final;
 
@@ -89,8 +89,8 @@ public:
     using LayoutBoxModelObject::continuation;
     using LayoutBoxModelObject::setContinuation;
 
-    bool alwaysCreateLineBoxes() const { return alwaysCreateLineBoxesForRenderInline(); }
-    void setAlwaysCreateLineBoxes(bool alwaysCreateLineBoxes = true) { setAlwaysCreateLineBoxesForRenderInline(alwaysCreateLineBoxes); }
+    bool alwaysCreateLineBoxes() const { return alwaysCreateLineBoxesForLayoutInline(); }
+    void setAlwaysCreateLineBoxes(bool alwaysCreateLineBoxes = true) { setAlwaysCreateLineBoxesForLayoutInline(alwaysCreateLineBoxes); }
     void updateAlwaysCreateLineBoxes(bool fullLayout);
 
     virtual LayoutRect localCaretRect(InlineBox*, int, LayoutUnit* extraWidthToEndOfLine) override final;
@@ -114,7 +114,7 @@ private:
 
     virtual const char* renderName() const override;
 
-    virtual bool isRenderInline() const override final { return true; }
+    virtual bool isLayoutInline() const override final { return true; }
 
     LayoutRect culledInlineVisualOverflowBoundingBox() const;
     InlineBox* culledInlineFirstLineBox() const;
@@ -123,12 +123,12 @@ private:
     template<typename GeneratorContext>
     void generateLineBoxRects(GeneratorContext& yield) const;
     template<typename GeneratorContext>
-    void generateCulledLineBoxRects(GeneratorContext& yield, const RenderInline* container) const;
+    void generateCulledLineBoxRects(GeneratorContext& yield, const LayoutInline* container) const;
 
     void addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild);
     virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) override final;
 
-    void moveChildrenToIgnoringContinuation(RenderInline* to, LayoutObject* startChild);
+    void moveChildrenToIgnoringContinuation(LayoutInline* to, LayoutObject* startChild);
 
     void splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
         LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
@@ -184,7 +184,7 @@ private:
 
     virtual void updateFromStyle() override final;
 
-    RenderInline* clone() const;
+    LayoutInline* clone() const;
 
     LayoutBoxModelObject* continuationBefore(LayoutObject* beforeChild);
 
@@ -192,8 +192,8 @@ private:
     LineBoxList m_lineBoxes; // All of the line boxes created for this inline flow.  For example, <i>Hello<br>world.</i> will have two <i> line boxes.
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderInline, isRenderInline());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutInline, isLayoutInline());
 
 } // namespace blink
 
-#endif // RenderInline_h
+#endif // LayoutInline_h

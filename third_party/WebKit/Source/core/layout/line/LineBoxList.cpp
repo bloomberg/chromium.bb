@@ -30,12 +30,12 @@
 #include "core/layout/line/LineBoxList.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
-#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
@@ -198,7 +198,7 @@ bool LineBoxList::hitTest(LayoutBoxModelObject* renderer, const HitTestRequest& 
     if (hitTestAction != HitTestForeground)
         return false;
 
-    ASSERT(renderer->isRenderBlock() || (renderer->isRenderInline() && renderer->hasLayer())); // The only way an inline could hit test like this is if it has a layer.
+    ASSERT(renderer->isRenderBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could hit test like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
     if (!firstLineBox())
@@ -234,7 +234,7 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
     if (!container->parent() || (container->isRenderBlock() && (container->selfNeedsLayout() || !container->isRenderBlockFlow())))
         return;
 
-    RenderInline* inlineContainer = container->isRenderInline() ? toRenderInline(container) : 0;
+    LayoutInline* inlineContainer = container->isLayoutInline() ? toLayoutInline(container) : 0;
     InlineBox* firstBox = inlineContainer ? inlineContainer->firstLineBoxIncludingCulling() : firstLineBox();
 
     // If we have no first line box, then just bail early.
@@ -269,8 +269,8 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
             InlineTextBox* textBox = toRenderText(curr)->lastTextBox();
             if (textBox)
                 box = &textBox->root();
-        } else if (curr->isRenderInline()) {
-            InlineBox* lastSiblingBox = toRenderInline(curr)->lastLineBoxIncludingCulling();
+        } else if (curr->isLayoutInline()) {
+            InlineBox* lastSiblingBox = toLayoutInline(curr)->lastLineBoxIncludingCulling();
             if (lastSiblingBox)
                 box = &lastSiblingBox->root();
         }

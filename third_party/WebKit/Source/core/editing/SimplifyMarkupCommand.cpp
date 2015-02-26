@@ -28,9 +28,9 @@
 
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
@@ -68,7 +68,7 @@ void SimplifyMarkupCommand::doApply()
             if (!currentNode)
                 break;
 
-            if (!currentNode->renderer() || !currentNode->renderer()->isRenderInline() || toRenderInline(currentNode->renderer())->alwaysCreateLineBoxes())
+            if (!currentNode->renderer() || !currentNode->renderer()->isLayoutInline() || toLayoutInline(currentNode->renderer())->alwaysCreateLineBoxes())
                 continue;
 
             if (currentNode->firstChild() != currentNode->lastChild()) {

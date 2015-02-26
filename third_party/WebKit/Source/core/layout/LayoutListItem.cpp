@@ -227,7 +227,7 @@ static LayoutObject* getParentOfFirstLineBox(RenderBlockFlow* curr, LayoutObject
         if (currChild == marker)
             continue;
 
-        if (currChild->isInline() && (!currChild->isRenderInline() || curr->generatesLineBoxesForInlineChild(currChild)))
+        if (currChild->isInline() && (!currChild->isLayoutInline() || curr->generatesLineBoxesForInlineChild(currChild)))
             return curr;
 
         if (currChild->isFloating() || currChild->isOutOfFlowPositioned())

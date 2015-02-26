@@ -23,6 +23,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/VerticalPositionCache.h"
@@ -30,7 +31,6 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/RootInlineBoxPainter.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/text/BidiResolver.h"
 #include "wtf/unicode/Unicode.h"
 
@@ -522,12 +522,12 @@ BidiStatus RootInlineBox::lineBreakBidiStatus() const
 
 void RootInlineBox::setLineBreakInfo(LayoutObject* obj, unsigned breakPos, const BidiStatus& status)
 {
-    // When setting lineBreakObj, the LayoutObject must not be a RenderInline
+    // When setting lineBreakObj, the LayoutObject must not be a LayoutInline
     // with no line boxes, otherwise all sorts of invariants are broken later.
     // This has security implications because if the LayoutObject does not
-    // point to at least one line box, then that RenderInline can be deleted
+    // point to at least one line box, then that LayoutInline can be deleted
     // later without resetting the lineBreakObj, leading to use-after-free.
-    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj->isText() || !(obj->isRenderInline() && obj->isBox() && !toLayoutBox(obj)->inlineBoxWrapper()));
+    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj->isText() || !(obj->isLayoutInline() && obj->isBox() && !toLayoutBox(obj)->inlineBoxWrapper()));
 
     m_lineBreakObj = obj;
     m_lineBreakPos = breakPos;
@@ -707,8 +707,8 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
         firstLine = false;
 
     // Check the cache.
-    bool isRenderInline = renderer->isRenderInline();
-    if (isRenderInline && !firstLine) {
+    bool isLayoutInline = renderer->isLayoutInline();
+    if (isLayoutInline && !firstLine) {
         LayoutUnit verticalPosition = verticalPositionCache.get(renderer, baselineType());
         if (verticalPosition != PositionUndefined)
             return verticalPosition;
@@ -720,7 +720,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
         return 0;
 
     LayoutObject* parent = renderer->parent();
-    if (parent->isRenderInline() && parent->style()->verticalAlign() != TOP && parent->style()->verticalAlign() != BOTTOM)
+    if (parent->isLayoutInline() && parent->style()->verticalAlign() != TOP && parent->style()->verticalAlign() != BOTTOM)
         verticalPosition = box->parent()->logicalTop();
 
     if (verticalAlign != BASELINE) {
@@ -757,7 +757,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     }
 
     // Store the cached value.
-    if (isRenderInline && !firstLine)
+    if (isLayoutInline && !firstLine)
         verticalPositionCache.set(renderer, baselineType(), verticalPosition);
 
     return verticalPosition;

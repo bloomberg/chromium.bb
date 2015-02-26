@@ -1317,7 +1317,7 @@ void RenderText::transformText()
 
 static inline bool isInlineFlowOrEmptyText(const LayoutObject* o)
 {
-    if (o->isRenderInline())
+    if (o->isLayoutInline())
         return true;
     if (!o->isText())
         return false;

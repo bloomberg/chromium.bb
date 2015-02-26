@@ -22,7 +22,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
         && paintInfo.phase != PaintPhaseMask)
         return;
 
-    ASSERT(renderer->isRenderBlock() || (renderer->isRenderInline() && renderer->hasLayer())); // The only way an inline could paint like this is if it has a layer.
+    ASSERT(renderer->isRenderBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could paint like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
     if (!m_lineBoxList.firstLineBox())
@@ -32,7 +32,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
         return;
 
     PaintInfo info(paintInfo);
-    ListHashSet<RenderInline*> outlineObjects;
+    ListHashSet<LayoutInline*> outlineObjects;
     info.setOutlineObjects(&outlineObjects);
 
     // See if our root lines intersect with the dirty rect. If so, then we paint
@@ -46,7 +46,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
     }
 
     if (info.phase == PaintPhaseOutline || info.phase == PaintPhaseSelfOutline || info.phase == PaintPhaseChildOutlines) {
-        for (RenderInline* flow : *info.outlineObjects())
+        for (LayoutInline* flow : *info.outlineObjects())
             InlinePainter(*flow).paintOutline(info, paintOffset);
         info.outlineObjects()->clear();
     }

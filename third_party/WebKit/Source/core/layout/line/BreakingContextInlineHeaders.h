@@ -25,6 +25,7 @@
 #define BreakingContextInlineHeaders_h
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
@@ -39,7 +40,6 @@
 #include "core/layout/line/WordMeasurement.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/rendering/RenderCombineText.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
@@ -163,7 +163,7 @@ inline bool shouldCollapseWhiteSpace(const LayoutStyle& style, const LineInfo& l
         || (whitespacePosition == TrailingWhitespace && style.whiteSpace() == PRE_WRAP && (!lineInfo.isEmpty() || !lineInfo.previousLineBrokeCleanly()));
 }
 
-inline bool requiresLineBoxForContent(RenderInline* flow, const LineInfo& lineInfo)
+inline bool requiresLineBoxForContent(LayoutInline* flow, const LineInfo& lineInfo)
 {
     LayoutObject* parent = flow->parent();
     if (flow->document().inNoQuirksMode()
@@ -179,7 +179,7 @@ inline bool alwaysRequiresLineBox(LayoutObject* flow)
     // FIXME: Right now, we only allow line boxes for inlines that are truly empty.
     // We need to fix this, though, because at the very least, inlines containing only
     // ignorable whitespace should should also have line boxes.
-    return isEmptyInline(flow) && toRenderInline(flow)->hasInlineDirectionBordersPaddingOrMargin();
+    return isEmptyInline(flow) && toLayoutInline(flow)->hasInlineDirectionBordersPaddingOrMargin();
 }
 
 inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo = LineInfo(), WhitespacePosition whitespacePosition = LeadingWhitespace)
@@ -187,7 +187,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
     if (it.object()->isFloatingOrOutOfFlowPositioned())
         return false;
 
-    if (it.object()->isRenderInline() && !alwaysRequiresLineBox(it.object()) && !requiresLineBoxForContent(toRenderInline(it.object()), lineInfo))
+    if (it.object()->isLayoutInline() && !alwaysRequiresLineBox(it.object()) && !requiresLineBoxForContent(toLayoutInline(it.object()), lineInfo))
         return false;
 
     if (!shouldCollapseWhiteSpace(it.object()->styleRef(), lineInfo, whitespacePosition) || it.object()->isBR())
@@ -205,12 +205,12 @@ inline void setStaticPositions(RenderBlockFlow* block, LayoutBox* child)
     // will work for the common cases
     LayoutObject* containerBlock = child->container();
     LayoutUnit blockHeight = block->logicalHeight();
-    if (containerBlock->isRenderInline()) {
+    if (containerBlock->isLayoutInline()) {
         // A relative positioned inline encloses us. In this case, we also have to determine our
         // position as though we were an inline. Set |staticInlinePosition| and |staticBlockPosition| on the relative positioned
         // inline so that we can obtain the value later.
-        toRenderInline(containerBlock)->layer()->setStaticInlinePosition(block->startAlignedOffsetForLine(blockHeight, false));
-        toRenderInline(containerBlock)->layer()->setStaticBlockPosition(blockHeight);
+        toLayoutInline(containerBlock)->layer()->setStaticInlinePosition(block->startAlignedOffsetForLine(blockHeight, false));
+        toLayoutInline(containerBlock)->layer()->setStaticBlockPosition(blockHeight);
 
         // If |child| is a leading or trailing positioned object this is its only opportunity to ensure it moves with an inline
         // container changing width.
@@ -296,12 +296,12 @@ inline void BreakingContext::handleBR(EClear& clear)
     m_atEnd = true;
 }
 
-inline LayoutUnit borderPaddingMarginStart(RenderInline* child)
+inline LayoutUnit borderPaddingMarginStart(LayoutInline* child)
 {
     return child->marginStart() + child->paddingStart() + child->borderStart();
 }
 
-inline LayoutUnit borderPaddingMarginEnd(RenderInline* child)
+inline LayoutUnit borderPaddingMarginEnd(LayoutInline* child)
 {
     return child->marginEnd() + child->paddingEnd() + child->borderEnd();
 }
@@ -319,13 +319,13 @@ inline LayoutUnit inlineLogicalWidth(LayoutObject* child, bool start = true, boo
     unsigned lineDepth = 1;
     LayoutUnit extraWidth = 0;
     LayoutObject* parent = child->parent();
-    while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
-        RenderInline* parentAsRenderInline = toRenderInline(parent);
-        if (!isEmptyInline(parentAsRenderInline)) {
+    while (parent->isLayoutInline() && lineDepth++ < cMaxLineDepth) {
+        LayoutInline* parentAsLayoutInline = toLayoutInline(parent);
+        if (!isEmptyInline(parentAsLayoutInline)) {
             if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
-                extraWidth += borderPaddingMarginStart(parentAsRenderInline);
+                extraWidth += borderPaddingMarginStart(parentAsLayoutInline);
             if (end && shouldAddBorderPaddingMargin(child->nextSibling(), end))
-                extraWidth += borderPaddingMarginEnd(parentAsRenderInline);
+                extraWidth += borderPaddingMarginEnd(parentAsLayoutInline);
             if (!start && !end)
                 return extraWidth;
         }
@@ -351,7 +351,7 @@ inline void BreakingContext::handleOutOfFlowPositioned(Vector<LayoutBox*>& posit
 
     // If we're ignoring spaces, we have to stop and include this object and
     // then start ignoring spaces again.
-    if (isInlineType || box->container()->isRenderInline()) {
+    if (isInlineType || box->container()->isLayoutInline()) {
         if (m_ignoringSpaces)
             m_lineMidpointState.ensureLineBoxInsideIgnoredSpaces(box);
         m_trailingObjects.appendObjectIfNeeded(box);
@@ -409,7 +409,7 @@ inline void BreakingContext::handleEmptyInline()
     // This should only end up being called on empty inlines
     ASSERT(isEmptyInline(m_current.object()));
 
-    RenderInline* flowBox = toRenderInline(m_current.object());
+    LayoutInline* flowBox = toLayoutInline(m_current.object());
 
     bool requiresLineBox = alwaysRequiresLineBox(m_current.object());
     if (requiresLineBox || requiresLineBoxForContent(flowBox, m_lineInfo)) {

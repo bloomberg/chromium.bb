@@ -37,10 +37,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
 #include "platform/Logging.h"
 #include "wtf/text/CString.h"
@@ -786,7 +786,7 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* render
         if (o->nonPseudoNode()) {
             if ((o->isText() && boundingBoxLogicalHeight(o, toRenderText(o)->linesBoundingBox()))
                 || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
-                || (o->isRenderInline() && isEmptyInline(o) && boundingBoxLogicalHeight(o, toRenderInline(o)->linesBoundingBox())))
+                || (o->isLayoutInline() && isEmptyInline(o) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
                 return true;
         }
     return false;

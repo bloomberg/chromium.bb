@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutRubyBase.h"
@@ -36,7 +37,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -266,7 +266,7 @@ void InlineFlowBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUn
 
 LineBoxList* InlineFlowBox::lineBoxes() const
 {
-    return toRenderInline(renderer()).lineBoxes();
+    return toLayoutInline(renderer()).lineBoxes();
 }
 
 static inline bool isLastChildForRenderer(LayoutObject* ancestor, LayoutObject* child)
@@ -327,7 +327,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
         }
 
         if (!lineBoxList->lastLineBox()->isConstructed()) {
-            RenderInline& inlineFlow = toRenderInline(renderer());
+            LayoutInline& inlineFlow = toLayoutInline(renderer());
             bool isLastObjectOnLine = !isAnsectorAndWithinBlock(&renderer(), logicallyLastRunRenderer) || (isLastChildForRenderer(&renderer(), logicallyLastRunRenderer) && !isLogicallyLastRunWrapped);
 
             // We include the border under these conditions:
@@ -415,7 +415,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* f
                 }
                 continue; // The positioned object has no effect on the width.
             }
-            if (curr->renderer().isRenderInline()) {
+            if (curr->renderer().isLayoutInline()) {
                 InlineFlowBox* flow = toInlineFlowBox(curr);
                 logicalLeft += flow->marginLogicalLeft();
                 if (knownToHaveNoOverflow())
@@ -950,7 +950,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
             LayoutRect textBoxOverflow(text->logicalFrameRect().enclosingLayoutRect());
             addTextBoxVisualOverflow(text, textBoxDataMap, textBoxOverflow);
             logicalVisualOverflow.unite(textBoxOverflow);
-        } else if (curr->renderer().isRenderInline()) {
+        } else if (curr->renderer().isLayoutInline()) {
             InlineFlowBox* flow = toInlineFlowBox(curr);
             flow->computeOverflow(lineTop, lineBottom, textBoxDataMap);
             if (!flow->boxModelObject()->hasSelfPaintingLayer())
@@ -1026,7 +1026,7 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
             if (newParent != culledParent) {
                 if (!newParent || !newParent->isDescendantOf(culledParent)) {
                     while (culledParent && culledParent != renderer() && culledParent != newParent) {
-                        if (culledParent->isRenderInline() && toRenderInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
+                        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
                             return true;
                         culledParent = culledParent->parent();
                     }
@@ -1041,7 +1041,7 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     }
     // Check any culled ancestor of the final children tested.
     while (culledParent && culledParent != renderer()) {
-        if (culledParent->isRenderInline() && toRenderInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
+        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
             return true;
         culledParent = culledParent->parent();
     }

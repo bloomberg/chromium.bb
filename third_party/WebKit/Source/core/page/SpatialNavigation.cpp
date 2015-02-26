@@ -494,7 +494,7 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
     if (isHTMLAreaElement(*firstCandidate.focusableNode) || isHTMLAreaElement(*secondCandidate.focusableNode))
         return false;
 
-    if (!firstCandidate.visibleNode->renderer()->isRenderInline() || !secondCandidate.visibleNode->renderer()->isRenderInline())
+    if (!firstCandidate.visibleNode->renderer()->isLayoutInline() || !secondCandidate.visibleNode->renderer()->isLayoutInline())
         return false;
 
     if (firstCandidate.visibleNode->renderer()->containingBlock() != secondCandidate.visibleNode->renderer()->containingBlock())

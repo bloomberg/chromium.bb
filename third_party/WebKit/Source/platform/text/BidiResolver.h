@@ -61,7 +61,7 @@ public:
         addMidpoint(midpoint);
     }
 
-    // When ignoring spaces, this needs to be called for objects that need line boxes such as RenderInlines or
+    // When ignoring spaces, this needs to be called for objects that need line boxes such as LayoutInlines or
     // hard line breaks to ensure that they're not ignored.
     void ensureLineBoxInsideIgnoredSpaces(LayoutObject* renderer)
     {

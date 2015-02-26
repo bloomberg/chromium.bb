@@ -53,13 +53,13 @@
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -80,7 +80,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static inline LayoutObject* firstChildInContinuation(const RenderInline& renderer)
+static inline LayoutObject* firstChildInContinuation(const LayoutInline& renderer)
 {
     LayoutBoxModelObject* r = renderer.continuation();
 
@@ -89,7 +89,7 @@ static inline LayoutObject* firstChildInContinuation(const RenderInline& rendere
             return r;
         if (LayoutObject* child = r->slowFirstChild())
             return child;
-        r = toRenderInline(r)->continuation();
+        r = toLayoutInline(r)->continuation();
     }
 
     return 0;
@@ -101,10 +101,10 @@ static inline bool isInlineWithContinuation(LayoutObject* object)
         return false;
 
     LayoutBoxModelObject* renderer = toLayoutBoxModelObject(object);
-    if (!renderer->isRenderInline())
+    if (!renderer->isLayoutInline())
         return false;
 
-    return toRenderInline(renderer)->continuation();
+    return toLayoutInline(renderer)->continuation();
 }
 
 static inline LayoutObject* firstChildConsideringContinuation(LayoutObject* renderer)
@@ -112,20 +112,20 @@ static inline LayoutObject* firstChildConsideringContinuation(LayoutObject* rend
     LayoutObject* firstChild = renderer->slowFirstChild();
 
     if (!firstChild && isInlineWithContinuation(renderer))
-        firstChild = firstChildInContinuation(toRenderInline(*renderer));
+        firstChild = firstChildInContinuation(toLayoutInline(*renderer));
 
     return firstChild;
 }
 
-static inline RenderInline* startOfContinuations(LayoutObject* r)
+static inline LayoutInline* startOfContinuations(LayoutObject* r)
 {
     if (r->isInlineElementContinuation()) {
-        return toRenderInline(r->node()->renderer());
+        return toLayoutInline(r->node()->renderer());
     }
 
     // Blocks with a previous continuation always have a next continuation
     if (r->isRenderBlock() && toRenderBlock(r)->inlineElementContinuation())
-        return toRenderInline(toRenderBlock(r)->inlineElementContinuation()->node()->renderer());
+        return toLayoutInline(toRenderBlock(r)->inlineElementContinuation()->node()->renderer());
 
     return 0;
 }
@@ -135,14 +135,14 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
     LayoutObject* prev = renderer;
     LayoutObject* cur = renderer;
 
-    if (!cur->isRenderInline() && !cur->isRenderBlock())
+    if (!cur->isLayoutInline() && !cur->isRenderBlock())
         return renderer;
 
     while (cur) {
         prev = cur;
-        if (cur->isRenderInline()) {
-            cur = toRenderInline(cur)->inlineElementContinuation();
-            ASSERT(cur || !toRenderInline(prev)->continuation());
+        if (cur->isLayoutInline()) {
+            cur = toLayoutInline(cur)->inlineElementContinuation();
+            ASSERT(cur || !toLayoutInline(prev)->continuation());
         } else {
             cur = toRenderBlock(cur)->inlineElementContinuation();
         }
@@ -160,8 +160,8 @@ static inline bool lastChildHasContinuation(LayoutObject* renderer)
 static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
 {
     ASSERT(renderer);
-    if (renderer->isRenderInline() && !renderer->isReplaced())
-        return toRenderInline(renderer)->continuation();
+    if (renderer->isLayoutInline() && !renderer->isReplaced())
+        return toLayoutInline(renderer)->continuation();
     if (renderer->isRenderBlock())
         return toRenderBlock(renderer)->inlineElementContinuation();
     return 0;
@@ -1471,7 +1471,7 @@ AXObject* AXRenderObject::nextSibling() const
 
     LayoutObject* nextSibling = 0;
 
-    RenderInline* inlineContinuation = m_renderer->isRenderBlock() ? toRenderBlock(m_renderer)->inlineElementContinuation() : 0;
+    LayoutInline* inlineContinuation = m_renderer->isRenderBlock() ? toRenderBlock(m_renderer)->inlineElementContinuation() : 0;
     if (inlineContinuation) {
         // Case 1: node is a block and has an inline continuation. Next sibling is the inline continuation's first child.
         nextSibling = firstChildConsideringContinuation(inlineContinuation);
@@ -1491,7 +1491,7 @@ AXObject* AXRenderObject::nextSibling() const
         nextSibling = endOfContinuations(m_renderer)->nextSibling();
     } else if (isInlineWithContinuation(m_renderer->parent())) {
         // Case 5: node has no next sibling, and its parent is an inline with a continuation.
-        LayoutObject* continuation = toRenderInline(m_renderer->parent())->continuation();
+        LayoutObject* continuation = toLayoutInline(m_renderer->parent())->continuation();
 
         if (continuation->isRenderBlock()) {
             // Case 5a: continuation is a block - in this case the block itself is the next sibling.
@@ -2072,7 +2072,7 @@ LayoutObject* AXRenderObject::renderParentObject() const
     }
 
     LayoutObject* parent = m_renderer->parent();
-    startOfConts = parent && parent->isRenderInline() ? startOfContinuations(parent) : 0;
+    startOfConts = parent && parent->isLayoutInline() ? startOfContinuations(parent) : 0;
     if (startOfConts) {
         // Case 2: node's parent is an inline which is some node's continuation; parent is
         // the earliest node in the continuation chain.

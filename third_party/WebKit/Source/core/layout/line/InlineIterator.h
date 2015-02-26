@@ -24,16 +24,16 @@
 #define InlineIterator_h
 
 #include "core/layout/BidiRun.h"
+#include "core/layout/LayoutInline.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
 
-// This class is used to RenderInline subtrees, stepping by character within the
+// This class is used to LayoutInline subtrees, stepping by character within the
 // text children. InlineIterator will use bidiNext to find the next RenderText
-// optionally notifying a BidiResolver every time it steps into/out of a RenderInline.
+// optionally notifying a BidiResolver every time it steps into/out of a LayoutInline.
 class InlineIterator {
 public:
     enum IncrementRule {
@@ -130,7 +130,7 @@ static inline WTF::Unicode::Direction embedCharFromDirection(TextDirection dir, 
 template <class Observer>
 static inline void notifyObserverEnteredObject(Observer* observer, LayoutObject* object)
 {
-    if (!observer || !object || !object->isRenderInline())
+    if (!observer || !object || !object->isLayoutInline())
         return;
 
     const LayoutStyle& style = object->styleRef();
@@ -157,7 +157,7 @@ static inline void notifyObserverEnteredObject(Observer* observer, LayoutObject*
 template <class Observer>
 static inline void notifyObserverWillExitObject(Observer* observer, LayoutObject* object)
 {
-    if (!observer || !object || !object->isRenderInline())
+    if (!observer || !object || !object->isLayoutInline())
         return;
 
     EUnicodeBidi unicodeBidi = object->style()->unicodeBidi();
@@ -187,10 +187,10 @@ enum EmptyInlineBehavior {
 
 static bool isEmptyInline(LayoutObject* object)
 {
-    if (!object->isRenderInline())
+    if (!object->isLayoutInline())
         return false;
 
-    for (LayoutObject* curr = toRenderInline(object)->firstChild(); curr; curr = curr->nextSibling()) {
+    for (LayoutObject* curr = toLayoutInline(object)->firstChild(); curr; curr = curr->nextSibling()) {
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue;
         if (curr->isText() && toRenderText(curr)->isAllCollapsibleWhitespace())
@@ -223,7 +223,7 @@ static inline LayoutObject* bidiNextShared(LayoutObject* root, LayoutObject* cur
         // We hit this when either current has no children, or when current is not a renderer we care about.
         if (!next) {
             // If it is a renderer we care about, and we're doing our inline-walk, return it.
-            if (emptyInlineBehavior == IncludeEmptyInlines && !oldEndOfInline && current->isRenderInline()) {
+            if (emptyInlineBehavior == IncludeEmptyInlines && !oldEndOfInline && current->isLayoutInline()) {
                 next = current;
                 endOfInline = true;
                 break;
@@ -239,7 +239,7 @@ static inline LayoutObject* bidiNextShared(LayoutObject* root, LayoutObject* cur
                 }
 
                 current = current->parent();
-                if (emptyInlineBehavior == IncludeEmptyInlines && current && current != root && current->isRenderInline()) {
+                if (emptyInlineBehavior == IncludeEmptyInlines && current && current != root && current->isLayoutInline()) {
                     next = current;
                     endOfInline = true;
                     break;
@@ -252,7 +252,7 @@ static inline LayoutObject* bidiNextShared(LayoutObject* root, LayoutObject* cur
 
         if (isIteratorTarget(next)
             || ((emptyInlineBehavior == IncludeEmptyInlines || isEmptyInline(next)) // Always return EMPTY inlines.
-                && next->isRenderInline()))
+                && next->isLayoutInline()))
             break;
         current = next;
     }
@@ -289,7 +289,7 @@ static inline LayoutObject* bidiFirstSkippingEmptyInlines(RenderBlockFlow* root,
     if (!o)
         return 0;
 
-    if (o->isRenderInline()) {
+    if (o->isLayoutInline()) {
         notifyObserverEnteredObject(resolver, o);
         if (!isEmptyInline(o)) {
             o = bidiNextSkippingEmptyInlines(root, o, resolver);
@@ -316,7 +316,7 @@ static inline LayoutObject* bidiFirstIncludingEmptyInlines(RenderBlock* root)
     LayoutObject* o = root->firstChild();
     // If either there are no children to walk, or the first one is correct
     // then just return it.
-    if (!o || o->isRenderInline() || isIteratorTarget(o))
+    if (!o || o->isLayoutInline() || isIteratorTarget(o))
         return o;
 
     return bidiNextIncludingEmptyInlines(root, o);
@@ -516,7 +516,7 @@ inline bool InlineBidiResolver::needsToApplyL1Rule(BidiRunList<BidiRun>& runs)
 static inline bool isIsolatedInline(LayoutObject* object)
 {
     ASSERT(object);
-    return object->isRenderInline() && isIsolated(object->style()->unicodeBidi());
+    return object->isLayoutInline() && isIsolated(object->style()->unicodeBidi());
 }
 
 static inline LayoutObject* highestContainingIsolateWithinRoot(LayoutObject* object, LayoutObject* root)

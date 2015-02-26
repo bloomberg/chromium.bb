@@ -38,6 +38,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutDetailsMarker.h"
 #include "core/layout/LayoutFileUploadControl.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutPart.h"
@@ -54,7 +55,6 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
-#include "core/rendering/RenderInline.h"
 #include "wtf/HexNumber.h"
 #include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -194,9 +194,9 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         r = IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height());
         if (adjustForTableCells && !text.firstTextBox())
             adjustForTableCells = false;
-    } else if (o.isRenderInline()) {
+    } else if (o.isLayoutInline()) {
         // FIXME: Would be better not to just dump 0, 0 as the x and y here.
-        const RenderInline& inlineFlow = toRenderInline(o);
+        const LayoutInline& inlineFlow = toLayoutInline(o);
         r = IntRect(0, 0, inlineFlow.linesBoundingBox().width(), inlineFlow.linesBoundingBox().height());
         adjustForTableCells = false;
     } else if (o.isTableCell()) {

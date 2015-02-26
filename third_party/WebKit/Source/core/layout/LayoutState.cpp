@@ -28,8 +28,8 @@
 
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/Partitions.h"
 
 namespace blink {
@@ -67,8 +67,8 @@ LayoutState::LayoutState(LayoutBox& renderer, const LayoutSize& offset, LayoutUn
 
     if (renderer.isOutOfFlowPositioned() && !fixed) {
         if (LayoutObject* container = renderer.container()) {
-            if (container->style()->hasInFlowPosition() && container->isRenderInline())
-                m_layoutOffset += toRenderInline(container)->offsetForInFlowPositionedInline(renderer);
+            if (container->style()->hasInFlowPosition() && container->isLayoutInline())
+                m_layoutOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(renderer);
         }
     }
     // If we establish a new page height, then cache the offset to the top of the first page.

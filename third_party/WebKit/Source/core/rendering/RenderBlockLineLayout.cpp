@@ -63,7 +63,7 @@ static inline InlineBox* createInlineBoxForRenderer(LayoutObject* obj, bool isRo
     if (obj->isBox())
         return toLayoutBox(obj)->createInlineBox();
 
-    return toRenderInline(obj)->createAndAppendInlineFlowBox();
+    return toLayoutInline(obj)->createAndAppendInlineFlowBox();
 }
 
 static inline InlineTextBox* createInlineBoxForText(BidiRun& run, bool isOnlyRun)
@@ -86,8 +86,9 @@ static inline void dirtyLineBoxesForRenderer(LayoutObject* o, bool fullLayout)
     if (o->isText()) {
         RenderText* renderText = toRenderText(o);
         renderText->dirtyOrDeleteLineBoxesIfNeeded(fullLayout);
-    } else
-        toRenderInline(o)->dirtyLineBoxes(fullLayout);
+    } else {
+        toLayoutInline(o)->dirtyLineBoxes(fullLayout);
+    }
 }
 
 static bool parentIsConstructedOrHaveNext(InlineFlowBox* parentBox)
@@ -109,9 +110,9 @@ InlineFlowBox* RenderBlockFlow::createLineBoxes(LayoutObject* obj, const LineInf
     InlineFlowBox* result = 0;
     bool hasDefaultLineBoxContain = style()->lineBoxContain() == LayoutStyle::initialLineBoxContain();
     do {
-        ASSERT_WITH_SECURITY_IMPLICATION(obj->isRenderInline() || obj == this);
+        ASSERT_WITH_SECURITY_IMPLICATION(obj->isLayoutInline() || obj == this);
 
-        RenderInline* inlineFlow = (obj != this) ? toRenderInline(obj) : 0;
+        LayoutInline* inlineFlow = (obj != this) ? toLayoutInline(obj) : 0;
 
         // Get the last box we made for this render object.
         parentBox = inlineFlow ? inlineFlow->lastLineBox() : toRenderBlock(obj)->lastLineBox();
@@ -615,7 +616,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
             setLogicalWidthForTextRun(lineBox, r, rt, totalLogicalWidth, lineInfo, textBoxDataMap, verticalPositionCache, wordMeasurements);
         } else {
             isAfterExpansion = false;
-            if (!r->m_object->isRenderInline()) {
+            if (!r->m_object->isLayoutInline()) {
                 LayoutBox* layoutBox = toLayoutBox(r->m_object);
                 if (layoutBox->isRubyRun())
                     setMarginsForRubyRun(r, toLayoutRubyRun(layoutBox), previousObject, lineInfo);
@@ -1110,7 +1111,7 @@ LayoutObject* InlineMinMaxIterator::next()
 
         if (!result) {
             // We hit the end of our inline. (It was empty, e.g., <span></span>.)
-            if (!oldEndOfInline && current->isRenderInline()) {
+            if (!oldEndOfInline && current->isLayoutInline()) {
                 result = current;
                 endOfInline = true;
                 break;
@@ -1121,7 +1122,7 @@ LayoutObject* InlineMinMaxIterator::next()
                 if (result)
                     break;
                 current = current->parent();
-                if (current && current != parent && current->isRenderInline()) {
+                if (current && current != parent && current->isLayoutInline()) {
                     result = current;
                     endOfInline = true;
                     break;
@@ -1132,7 +1133,7 @@ LayoutObject* InlineMinMaxIterator::next()
         if (!result)
             break;
 
-        if (!result->isOutOfFlowPositioned() && (result->isText() || result->isFloating() || result->isReplaced() || result->isRenderInline()))
+        if (!result->isOutOfFlowPositioned() && (result->isText() || result->isFloating() || result->isReplaced() || result->isLayoutInline()))
             break;
 
         current = result;
@@ -1285,10 +1286,10 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
 
             if (!child->isText()) {
                 // Case (1) and (2). Inline replaced and inline flow elements.
-                if (child->isRenderInline()) {
+                if (child->isLayoutInline()) {
                     // Add in padding/border/margin from the appropriate side of
                     // the element.
-                    FloatWillBeLayoutUnit bpm = getBorderPaddingMargin(toRenderInline(*child), childIterator.endOfInline);
+                    FloatWillBeLayoutUnit bpm = getBorderPaddingMargin(toLayoutInline(*child), childIterator.endOfInline);
                     childMin += bpm;
                     childMax += bpm;
 
@@ -1310,7 +1311,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 }
             }
 
-            if (!child->isRenderInline() && !child->isText()) {
+            if (!child->isLayoutInline() && !child->isText()) {
                 // Case (2). Inline replaced elements and floats.
                 // Go ahead and terminate the current line as far as
                 // minwidth is concerned.
@@ -1497,7 +1498,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
             addedTextIndent = true;
         }
 
-        if (!child->isText() && child->isRenderInline())
+        if (!child->isText() && child->isLayoutInline())
             isPrevChildInlineFlow = true;
         else
             isPrevChildInlineFlow = false;
@@ -1575,9 +1576,9 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                     else
                         o->layoutIfNeeded();
                 }
-            } else if (o->isText() || (o->isRenderInline() && !walker.atEndOfInline())) {
+            } else if (o->isText() || (o->isLayoutInline() && !walker.atEndOfInline())) {
                 if (!o->isText())
-                    toRenderInline(o)->updateAlwaysCreateLineBoxes(layoutState.isFullLayout());
+                    toLayoutInline(o)->updateAlwaysCreateLineBoxes(layoutState.isFullLayout());
                 if (layoutState.isFullLayout() || o->selfNeedsLayout())
                     dirtyLineBoxesForRenderer(o, layoutState.isFullLayout());
                 o->clearNeedsLayout();

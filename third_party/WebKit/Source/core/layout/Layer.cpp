@@ -60,6 +60,7 @@
 #include "core/layout/HitTestingTransformState.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutReplica.h"
 #include "core/layout/LayoutScrollbar.h"
@@ -72,7 +73,6 @@
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/LengthFunctions.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -809,8 +809,8 @@ bool Layer::updateLayerPosition()
     LayoutPoint localPoint;
     LayoutPoint inlineBoundingBoxOffset; // We don't put this into the Layer x/y for inlines, so we need to subtract it out when done.
 
-    if (renderer()->isInline() && renderer()->isRenderInline()) {
-        RenderInline* inlineFlow = toRenderInline(renderer());
+    if (renderer()->isInline() && renderer()->isLayoutInline()) {
+        LayoutInline* inlineFlow = toLayoutInline(renderer());
         IntRect lineBox = inlineFlow->linesBoundingBox();
         m_size = lineBox.size();
         inlineBoundingBoxOffset = lineBox.location();
@@ -848,8 +848,8 @@ bool Layer::updateLayerPosition()
             localPoint -= offset;
         }
 
-        if (positionedParent->renderer()->isRelPositioned() && positionedParent->renderer()->isRenderInline()) {
-            LayoutSize offset = toRenderInline(positionedParent->renderer())->offsetForInFlowPositionedInline(*toLayoutBox(renderer()));
+        if (positionedParent->renderer()->isRelPositioned() && positionedParent->renderer()->isLayoutInline()) {
+            LayoutSize offset = toLayoutInline(positionedParent->renderer())->offsetForInFlowPositionedInline(*toLayoutBox(renderer()));
             localPoint += offset;
         }
     } else if (parent()) {
@@ -2304,7 +2304,7 @@ bool Layer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect
     // can go ahead and return true.
     LayoutView* view = renderer()->view();
     ASSERT(view);
-    if (view && !renderer()->isRenderInline()) {
+    if (view && !renderer()->isLayoutInline()) {
         if (layerBounds.intersects(damageRect))
             return true;
     }
@@ -2326,8 +2326,8 @@ LayoutRect Layer::logicalBoundingBox() const
     // as part of our bounding box.  We do this because we are the responsible layer for both hit testing and painting those
     // floats.
     LayoutRect result;
-    if (renderer()->isInline() && renderer()->isRenderInline()) {
-        result = toRenderInline(renderer())->linesVisualOverflowBoundingBox();
+    if (renderer()->isInline() && renderer()->isLayoutInline()) {
+        result = toLayoutInline(renderer())->linesVisualOverflowBoundingBox();
     } else if (renderer()->isTableRow()) {
         // Our bounding box is just the union of all of our cells' border/overflow rects.
         for (LayoutObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
@@ -2684,7 +2684,7 @@ bool Layer::hasNonEmptyChildRenderers() const
     // so test for 0x0 RenderTexts here
     for (LayoutObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->hasLayer()) {
-            if (child->isRenderInline() || !child->isBox())
+            if (child->isLayoutInline() || !child->isBox())
                 return true;
 
             if (toLayoutBox(child)->size().width() > 0 || toLayoutBox(child)->size().height() > 0)

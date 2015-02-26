@@ -31,8 +31,8 @@
 #ifndef LayoutRuby_h
 #define LayoutRuby_h
 
+#include "core/layout/LayoutInline.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ namespace blink {
 // Generated :before/:after content is shunted into anonymous inline blocks
 
 // <ruby> when used as 'display:inline'
-class LayoutRubyAsInline final : public RenderInline {
+class LayoutRubyAsInline final : public LayoutInline {
 public:
     LayoutRubyAsInline(Element*);
     virtual ~LayoutRubyAsInline();
@@ -63,7 +63,7 @@ protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || RenderInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || LayoutInline::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutRuby (inline)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
 };

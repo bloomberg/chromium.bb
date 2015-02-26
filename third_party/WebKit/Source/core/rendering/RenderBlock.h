@@ -39,7 +39,7 @@ namespace blink {
 
 class LineLayoutState;
 struct PaintInfo;
-class RenderInline;
+class LayoutInline;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedRendererListHashSet;
@@ -49,7 +49,7 @@ typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
-typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<RenderInline*>>> ContinuationOutlineTableMap;
+typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<LayoutInline*>>> ContinuationOutlineTableMap;
 
 ContinuationOutlineTableMap* continuationOutlineTable();
 
@@ -171,11 +171,11 @@ public:
     virtual LayoutSize columnOffset(const LayoutPoint&) const override;
     void adjustForColumnRect(LayoutSize& offset, const LayoutPoint& locationInContainer) const;
 
-    void addContinuationWithOutline(RenderInline*);
+    void addContinuationWithOutline(LayoutInline*);
 
     virtual LayoutBoxModelObject* virtualContinuation() const override final { return continuation(); }
     bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
-    RenderInline* inlineElementContinuation() const;
+    LayoutInline* inlineElementContinuation() const;
     RenderBlock* blockElementContinuation() const;
 
     using LayoutBoxModelObject::continuation;
@@ -233,7 +233,7 @@ public:
 
 #if ENABLE(ASSERT)
     void checkPositionedObjectsNeedLayout();
-    bool paintsContinuationOutline(RenderInline* flow);
+    bool paintsContinuationOutline(LayoutInline* flow);
 #endif
 #ifndef NDEBUG
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0) const;

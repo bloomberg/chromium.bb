@@ -27,8 +27,8 @@
 #include "core/layout/LayoutVTTCue.h"
 
 #include "core/html/track/vtt/VTTCue.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutState.h"
-#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
@@ -69,9 +69,9 @@ private:
 
 InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
 {
-    if (!m_cueBox.firstChild()->isRenderInline())
+    if (!m_cueBox.firstChild()->isLayoutInline())
         return nullptr;
-    return toRenderInline(m_cueBox.firstChild())->firstLineBox();
+    return toLayoutInline(m_cueBox.firstChild())->firstLineBox();
 }
 
 LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& step) const

@@ -9,6 +9,7 @@
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/editing/Editor.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/style/ShadowList.h"
@@ -19,7 +20,6 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
@@ -68,8 +68,8 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
             paintTextFragments(paintInfo, parentRenderer);
     }
 
-    if (style.hasOutline() && parentRenderer.isRenderInline())
-        InlinePainter(toRenderInline(parentRenderer)).paintOutline(paintInfo, paintOffset);
+    if (style.hasOutline() && parentRenderer.isLayoutInline())
+        InlinePainter(toLayoutInline(parentRenderer)).paintOutline(paintInfo, paintOffset);
 }
 
 void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, LayoutObject& parentRenderer)

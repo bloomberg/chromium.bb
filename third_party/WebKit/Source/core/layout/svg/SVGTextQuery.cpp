@@ -20,12 +20,12 @@
 #include "config.h"
 #include "core/layout/svg/SVGTextQuery.h"
 
+#include "core/layout/LayoutInline.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
@@ -63,13 +63,13 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
         return flowBox;
     }
 
-    if (renderer->isRenderInline()) {
+    if (renderer->isLayoutInline()) {
         // We're given a LayoutSVGInline or objects that derive from it (LayoutSVGTSpan / LayoutSVGTextPath)
-        RenderInline* renderInline = toRenderInline(renderer);
+        LayoutInline* layoutInline = toLayoutInline(renderer);
 
         // LayoutSVGInline only ever contains a single line box.
-        InlineFlowBox* flowBox = renderInline->firstLineBox();
-        ASSERT(flowBox == renderInline->lastLineBox());
+        InlineFlowBox* flowBox = layoutInline->firstLineBox();
+        ASSERT(flowBox == layoutInline->lastLineBox());
         return flowBox;
     }
 

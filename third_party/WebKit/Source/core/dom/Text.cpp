@@ -320,7 +320,7 @@ bool Text::textRendererIsNeeded(const LayoutStyle& style, const LayoutObject& pa
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
 
-    if (parent.isRenderInline()) {
+    if (parent.isLayoutInline()) {
         // <span><div/> <div/></span>
         if (prev && !prev->isInline())
             return false;

@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutQuote::LayoutQuote(Document* node, QuoteType quote)
-    : RenderInline(0)
+    : LayoutInline(0)
     , m_type(quote)
     , m_depth(0)
     , m_next(nullptr)
@@ -51,18 +51,18 @@ LayoutQuote::~LayoutQuote()
 void LayoutQuote::willBeDestroyed()
 {
     detachQuote();
-    RenderInline::willBeDestroyed();
+    LayoutInline::willBeDestroyed();
 }
 
 void LayoutQuote::willBeRemovedFromTree()
 {
-    RenderInline::willBeRemovedFromTree();
+    LayoutInline::willBeRemovedFromTree();
     detachQuote();
 }
 
 void LayoutQuote::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderInline::styleDidChange(diff, oldStyle);
+    LayoutInline::styleDidChange(diff, oldStyle);
     updateText();
 }
 

@@ -478,7 +478,7 @@ bool LayoutStyle::diffNeedsFullLayoutAndPaintInvalidation(const LayoutStyle& oth
         // in us being a stacking context.
         if (hasAutoZIndex() != other.hasAutoZIndex() && rareNonInheritedData->hasOpacity() != other.rareNonInheritedData->hasOpacity()) {
             // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
-            // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
+            // We need to make sure SimplifiedLayout can operate correctly on LayoutInlines (we will need
             // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
             // In addition we need to solve the floating object issue when layers come and go. Right now
             // a full layout is necessary to keep floating object lists sane.

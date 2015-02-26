@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/InlinePainter.h"
 
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -14,38 +15,37 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
 
 void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderInline);
-    LineBoxListPainter(*m_renderInline.lineBoxes()).paint(&m_renderInline, paintInfo, paintOffset);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutInline);
+    LineBoxListPainter(*m_layoutInline.lineBoxes()).paint(&m_layoutInline, paintInfo, paintOffset);
 }
 
 void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    const LayoutStyle& styleToUse = m_renderInline.styleRef();
+    const LayoutStyle& styleToUse = m_layoutInline.styleRef();
     if (!styleToUse.hasOutline())
         return;
 
     LayoutRect bounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         // FIXME: Use tighter bounds.
-        RenderBlock* cb = m_renderInline.containingBlock();
+        RenderBlock* cb = m_layoutInline.containingBlock();
         bounds = cb->visualOverflowRect();
         bounds.moveBy(paintOffset);
     }
-    RenderDrawingRecorder recorder(paintInfo.context, m_renderInline, paintInfo.phase, bounds);
+    RenderDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
     if (recorder.canUseCachedDrawing())
         return;
 
     if (styleToUse.outlineStyleIsAuto()) {
-        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_renderInline)) {
+        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutInline)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-            ObjectPainter(m_renderInline).paintFocusRing(paintInfo, paintOffset, styleToUse);
+            ObjectPainter(m_layoutInline).paintFocusRing(paintInfo, paintOffset, styleToUse);
         }
         return;
     }
@@ -56,7 +56,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     Vector<LayoutRect> rects;
 
     rects.append(LayoutRect());
-    for (InlineFlowBox* curr = m_renderInline.firstLineBox(); curr; curr = curr->nextLineBox()) {
+    for (InlineFlowBox* curr = m_layoutInline.firstLineBox(); curr; curr = curr->nextLineBox()) {
         RootInlineBox& root = curr->root();
         LayoutUnit top = std::max<LayoutUnit>(root.lineTop(), curr->logicalTop());
         LayoutUnit bottom = std::min<LayoutUnit>(root.lineBottom(), curr->logicalBottom());
@@ -64,7 +64,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     }
     rects.append(LayoutRect());
 
-    Color outlineColor = m_renderInline.resolveColor(styleToUse, CSSPropertyOutlineColor);
+    Color outlineColor = m_layoutInline.resolveColor(styleToUse, CSSPropertyOutlineColor);
     bool useTransparencyLayer = outlineColor.hasAlpha();
 
     GraphicsContext* graphicsContext = paintInfo.context;
@@ -83,13 +83,13 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const LayoutPoint& paintOffset,
     const LayoutRect& lastline, const LayoutRect& thisline, const LayoutRect& nextline, const Color outlineColor)
 {
-    const LayoutStyle& styleToUse = m_renderInline.styleRef();
+    const LayoutStyle& styleToUse = m_layoutInline.styleRef();
     int outlineWidth = styleToUse.outlineWidth();
     EBorderStyle outlineStyle = styleToUse.outlineStyle();
 
     bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
-    int offset = m_renderInline.style()->outlineOffset();
+    int offset = m_layoutInline.style()->outlineOffset();
 
     LayoutRect box(LayoutPoint(paintOffset.x() + thisline.x() - offset, paintOffset.y() + thisline.y() - offset),
         LayoutSize(thisline.width() + offset, thisline.height() + offset));

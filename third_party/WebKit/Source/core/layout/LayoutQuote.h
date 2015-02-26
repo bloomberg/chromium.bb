@@ -22,17 +22,17 @@
 #ifndef LayoutQuote_h
 #define LayoutQuote_h
 
+#include "core/layout/LayoutInline.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/style/LayoutStyleConstants.h"
 #include "core/layout/style/QuotesData.h"
-#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
 class Document;
 class RenderTextFragment;
 
-class LayoutQuote final : public RenderInline {
+class LayoutQuote final : public LayoutInline {
 public:
     LayoutQuote(Document*, const QuoteType);
     virtual ~LayoutQuote();
@@ -43,7 +43,7 @@ private:
 
     virtual void willBeDestroyed() override;
     virtual const char* renderName() const override { return "LayoutQuote"; };
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || RenderInline::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || LayoutInline::isOfType(type); }
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
     virtual void willBeRemovedFromTree() override;
 

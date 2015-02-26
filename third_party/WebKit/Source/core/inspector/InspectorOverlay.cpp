@@ -42,6 +42,7 @@
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/layout/style/LayoutStyleConstants.h"
@@ -50,7 +51,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -249,7 +249,7 @@ static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad
     FrameView* containingView = renderer->frameView();
     if (!containingView)
         return false;
-    if (!renderer->isBox() && !renderer->isRenderInline())
+    if (!renderer->isBox() && !renderer->isLayoutInline())
         return false;
 
     LayoutRect contentBox;
@@ -276,17 +276,17 @@ static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad
         marginBox = LayoutRect(borderBox.x() - layoutBox->marginLeft(), borderBox.y() - layoutBox->marginTop(),
             borderBox.width() + layoutBox->marginWidth(), borderBox.height() + layoutBox->marginHeight());
     } else {
-        RenderInline* renderInline = toRenderInline(renderer);
+        LayoutInline* layoutInline = toLayoutInline(renderer);
 
-        // RenderInline's bounding box includes paddings and borders, excludes margins.
-        borderBox = renderInline->linesBoundingBox();
-        paddingBox = LayoutRect(borderBox.x() + renderInline->borderLeft(), borderBox.y() + renderInline->borderTop(),
-            borderBox.width() - renderInline->borderLeft() - renderInline->borderRight(), borderBox.height() - renderInline->borderTop() - renderInline->borderBottom());
-        contentBox = LayoutRect(paddingBox.x() + renderInline->paddingLeft(), paddingBox.y() + renderInline->paddingTop(),
-            paddingBox.width() - renderInline->paddingLeft() - renderInline->paddingRight(), paddingBox.height() - renderInline->paddingTop() - renderInline->paddingBottom());
+        // LayoutInline's bounding box includes paddings and borders, excludes margins.
+        borderBox = layoutInline->linesBoundingBox();
+        paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(), borderBox.y() + layoutInline->borderTop(),
+            borderBox.width() - layoutInline->borderLeft() - layoutInline->borderRight(), borderBox.height() - layoutInline->borderTop() - layoutInline->borderBottom());
+        contentBox = LayoutRect(paddingBox.x() + layoutInline->paddingLeft(), paddingBox.y() + layoutInline->paddingTop(),
+            paddingBox.width() - layoutInline->paddingLeft() - layoutInline->paddingRight(), paddingBox.height() - layoutInline->paddingTop() - layoutInline->paddingBottom());
         // Ignore marginTop and marginBottom for inlines.
-        marginBox = LayoutRect(borderBox.x() - renderInline->marginLeft(), borderBox.y(),
-            borderBox.width() + renderInline->marginWidth(), borderBox.height());
+        marginBox = LayoutRect(borderBox.x() - layoutInline->marginLeft(), borderBox.y(),
+            borderBox.width() + layoutInline->marginWidth(), borderBox.height());
     }
 
     *content = renderer->localToAbsoluteQuad(FloatRect(contentBox));

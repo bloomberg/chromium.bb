@@ -140,7 +140,7 @@ private:
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
     LayerCompositor* compositor() const;
-    // We can't return a LayoutBox as RenderInline can be a stacking context.
+    // We can't return a LayoutBox as LayoutInline can be a stacking context.
     LayoutBoxModelObject* renderer() const;
 
     Layer* m_layer;

@@ -14,11 +14,11 @@ class GraphicsContext;
 class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
-class RenderInline;
+class LayoutInline;
 
 class InlinePainter {
 public:
-    InlinePainter(RenderInline& renderInline) : m_renderInline(renderInline) { }
+    InlinePainter(LayoutInline& layoutInline) : m_layoutInline(layoutInline) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
@@ -26,7 +26,7 @@ public:
 private:
     void paintOutlineForLine(GraphicsContext*, const LayoutPoint&, const LayoutRect& prevLine, const LayoutRect& thisLine,
         const LayoutRect& nextLine, const Color);
-    RenderInline& m_renderInline;
+    LayoutInline& m_layoutInline;
 };
 
 } // namespace blink

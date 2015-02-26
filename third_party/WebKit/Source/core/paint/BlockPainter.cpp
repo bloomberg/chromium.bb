@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
@@ -25,7 +26,6 @@
 #include "core/paint/SubtreeRecorder.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -479,9 +479,9 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
 
 void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const LayoutPoint& paintOffset)
 {
-    RenderInline* inlineCont = m_renderBlock.inlineElementContinuation();
+    LayoutInline* inlineCont = m_renderBlock.inlineElementContinuation();
     if (inlineCont && inlineCont->style()->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
-        RenderInline* inlineRenderer = toRenderInline(inlineCont->node()->renderer());
+        LayoutInline* inlineRenderer = toLayoutInline(inlineCont->node()->renderer());
         RenderBlock* cb = m_renderBlock.containingBlock();
 
         bool inlineEnclosedInSelfPaintingLayer = false;
@@ -505,16 +505,16 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
     if (table->isEmpty())
         return;
 
-    OwnPtr<ListHashSet<RenderInline*> > continuations = table->take(&m_renderBlock);
+    OwnPtr<ListHashSet<LayoutInline*>> continuations = table->take(&m_renderBlock);
     if (!continuations)
         return;
 
     LayoutPoint accumulatedPaintOffset = paintOffset;
     // Paint each continuation outline.
-    ListHashSet<RenderInline*>::iterator end = continuations->end();
-    for (ListHashSet<RenderInline*>::iterator it = continuations->begin(); it != end; ++it) {
+    ListHashSet<LayoutInline*>::iterator end = continuations->end();
+    for (ListHashSet<LayoutInline*>::iterator it = continuations->begin(); it != end; ++it) {
         // Need to add in the coordinates of the intervening blocks.
-        RenderInline* flow = *it;
+        LayoutInline* flow = *it;
         RenderBlock* block = flow->containingBlock();
         for ( ; block && block != &m_renderBlock; block = block->containingBlock())
             accumulatedPaintOffset.moveBy(block->location());

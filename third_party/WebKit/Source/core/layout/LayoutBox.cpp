@@ -42,6 +42,7 @@
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutGrid.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
@@ -57,7 +58,6 @@
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderInline.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
@@ -1666,8 +1666,8 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
     if (o->hasOverflowClip())
         offset -= toLayoutBox(o)->scrolledContentOffset();
 
-    if (style()->position() == AbsolutePosition && o->isRelPositioned() && o->isRenderInline())
-        offset += toRenderInline(o)->offsetForInFlowPositionedInline(*this);
+    if (style()->position() == AbsolutePosition && o->isRelPositioned() && o->isLayoutInline())
+        offset += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
 
     return offset;
 }
@@ -1710,7 +1710,7 @@ void LayoutBox::positionLineBox(InlineBox* box)
         }
         markStaticPositionedBoxForLayout(box->isHorizontal(), originallyInline);
 
-        if (container()->isRenderInline())
+        if (container()->isLayoutInline())
             moveWithEdgeOfInlineContainerIfNecessary(box->isHorizontal());
 
         // Nuke the box.
@@ -1735,7 +1735,7 @@ void LayoutBox::markStaticPositionedBoxForLayout(bool isHorizontal, bool isInlin
 
 void LayoutBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)
 {
-    ASSERT(isOutOfFlowPositioned() && container()->isRenderInline() && container()->isRelPositioned());
+    ASSERT(isOutOfFlowPositioned() && container()->isLayoutInline() && container()->isRelPositioned());
     // If this object is inside a relative positioned inline and its inline position is an explicit offset from the edge of its container
     // then it will need to move if its inline container has changed width. We do not track if the width has changed
     // but if we are here then we are laying out lines inside it, so it probably has - mark our object for layout so that it can
@@ -1841,8 +1841,8 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
         topLeft.move(locationOffset());
     }
 
-    if (position == AbsolutePosition && o->isRelPositioned() && o->isRenderInline()) {
-        topLeft += toRenderInline(o)->offsetForInFlowPositionedInline(*this);
+    if (position == AbsolutePosition && o->isRelPositioned() && o->isLayoutInline()) {
+        topLeft += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
     } else if (styleToUse.hasInFlowPosition() && layer()) {
         // Apply the relative position offset when invalidating a rectangle.  The layer
         // is translated, but the render box isn't, so we need to do this to get the
@@ -2743,9 +2743,9 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
     if (containingBlock->isBox())
         return toLayoutBox(containingBlock)->clientLogicalWidth();
 
-    ASSERT(containingBlock->isRenderInline() && containingBlock->isRelPositioned());
+    ASSERT(containingBlock->isLayoutInline() && containingBlock->isRelPositioned());
 
-    const RenderInline* flow = toRenderInline(containingBlock);
+    const LayoutInline* flow = toLayoutInline(containingBlock);
     InlineFlowBox* first = flow->firstLineBox();
     InlineFlowBox* last = flow->lastLineBox();
 
@@ -2789,9 +2789,9 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         return cb->clientLogicalHeight();
     }
 
-    ASSERT(containingBlock->isRenderInline() && containingBlock->isRelPositioned());
+    ASSERT(containingBlock->isLayoutInline() && containingBlock->isRelPositioned());
 
-    const RenderInline* flow = toRenderInline(containingBlock);
+    const LayoutInline* flow = toLayoutInline(containingBlock);
     InlineFlowBox* first = flow->firstLineBox();
     InlineFlowBox* last = flow->lastLineBox();
 
@@ -3151,8 +3151,8 @@ void LayoutBox::computePositionedLogicalWidthUsing(Length logicalWidth, const La
     // positioned, inline because right now, it is using the logical left position
     // of the first line box when really it should use the last line box.  When
     // this is fixed elsewhere, this block should be removed.
-    if (containerBlock->isRenderInline() && !containerBlock->style()->isLeftToRightDirection()) {
-        const RenderInline* flow = toRenderInline(containerBlock);
+    if (containerBlock->isLayoutInline() && !containerBlock->style()->isLeftToRightDirection()) {
+        const LayoutInline* flow = toLayoutInline(containerBlock);
         InlineFlowBox* firstLine = flow->firstLineBox();
         InlineFlowBox* lastLine = flow->lastLineBox();
         if (firstLine && lastLine && firstLine != lastLine) {
@@ -3584,8 +3584,8 @@ void LayoutBox::computePositionedLogicalWidthReplaced(LogicalExtentComputedValue
     // positioned, inline containing block because right now, it is using the logical left position
     // of the first line box when really it should use the last line box.  When
     // this is fixed elsewhere, this block should be removed.
-    if (containerBlock->isRenderInline() && !containerBlock->style()->isLeftToRightDirection()) {
-        const RenderInline* flow = toRenderInline(containerBlock);
+    if (containerBlock->isLayoutInline() && !containerBlock->style()->isLeftToRightDirection()) {
+        const LayoutInline* flow = toLayoutInline(containerBlock);
         InlineFlowBox* firstLine = flow->firstLineBox();
         InlineFlowBox* lastLine = flow->lastLineBox();
         if (firstLine && lastLine && firstLine != lastLine) {

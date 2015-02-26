@@ -445,8 +445,8 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
     LayoutObject* child = 0;
     if (parent->isRenderBlock() && (parent->childrenInline() || behavior == DescendToInnerBlocks))
         child = toRenderBlock(parent)->firstChild();
-    else if (parent->isRenderInline())
-        child = toRenderInline(parent)->firstChild();
+    else if (parent->isLayoutInline())
+        child = toLayoutInline(parent)->firstChild();
 
     while (child) {
         if (child->isText()) {
@@ -457,9 +457,9 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
                 multiplier = cluster->m_flags & SUPPRESSING ? 1.0f : clusterMultiplier(cluster);
             applyMultiplier(child, multiplier);
             // FIXME: Investigate why MarkOnlyThis is sufficient.
-            if (parent->isRenderInline())
+            if (parent->isLayoutInline())
                 child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
-        } else if (child->isRenderInline()) {
+        } else if (child->isLayoutInline()) {
             multiplier = inflate(child, behavior, multiplier);
         } else if (child->isRenderBlock() && behavior == DescendToInnerBlocks
             && !classifyBlock(child, INDEPENDENT | EXPLICIT_WIDTH | SUPPRESSING)) {
