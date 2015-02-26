@@ -798,9 +798,11 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
         // to run them. Also, there may be some tasks stuck behind running
         // ones with the same sequence token, but additional threads won't
         // help this case.
-        if (shutdown_called_ &&
-            blocking_shutdown_pending_task_count_ == 0)
+        if (shutdown_called_ && blocking_shutdown_pending_task_count_ == 0) {
+          AutoUnlock unlock(lock_);
+          delete_these_outside_lock.clear();
           break;
+        }
         waiting_thread_count_++;
 
         switch (status) {

@@ -67,6 +67,23 @@ class ThreadBlocker {
   size_t unblock_counter_;
 };
 
+class DestructionDeadlockChecker
+    : public base::RefCountedThreadSafe<DestructionDeadlockChecker> {
+ public:
+  DestructionDeadlockChecker(const scoped_refptr<SequencedWorkerPool>& pool)
+      : pool_(pool) {}
+
+ protected:
+  virtual ~DestructionDeadlockChecker() {
+    // This method should not deadlock.
+    pool_->RunsTasksOnCurrentThread();
+  }
+
+ private:
+  scoped_refptr<SequencedWorkerPool> pool_;
+  friend class base::RefCountedThreadSafe<DestructionDeadlockChecker>;
+};
+
 class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
  public:
   TestTracker()
@@ -115,6 +132,20 @@ class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
         FROM_HERE, fast_task,
         SequencedWorkerPool::BLOCK_SHUTDOWN);
     SignalWorkerDone(id);
+  }
+
+  // This task posts itself back onto the SequencedWorkerPool before it
+  // finishes running. Each instance of the task maintains a strong reference
+  // to a DestructionDeadlockChecker. The DestructionDeadlockChecker is only
+  // destroyed when the task is destroyed without being run, which only happens
+  // during destruction of the SequencedWorkerPool.
+  void PostRepostingTask(
+      const scoped_refptr<SequencedWorkerPool>& pool,
+      const scoped_refptr<DestructionDeadlockChecker>& checker) {
+    Closure reposting_task =
+        base::Bind(&TestTracker::PostRepostingTask, this, pool, checker);
+    pool->PostWorkerTaskWithShutdownBehavior(
+        FROM_HERE, reposting_task, SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   }
 
   // Waits until the given number of tasks have started executing.
@@ -747,6 +778,21 @@ TEST_F(SequencedWorkerPoolTest, IsRunningOnCurrentThread) {
                  unsequenced_token, token1, pool(), unused_pool));
   pool()->Shutdown();
   unused_pool->Shutdown();
+}
+
+// Checks that tasks are destroyed in the right context during shutdown. If a
+// task is destroyed while SequencedWorkerPool's global lock is held,
+// SequencedWorkerPool might deadlock.
+TEST_F(SequencedWorkerPoolTest, AvoidsDeadlockOnShutdown) {
+  for (int i = 0; i < 4; ++i) {
+    scoped_refptr<DestructionDeadlockChecker> checker(
+        new DestructionDeadlockChecker(pool()));
+    tracker()->PostRepostingTask(pool(), checker);
+  }
+
+  // Shutting down the pool should destroy the DestructionDeadlockCheckers,
+  // which in turn should not deadlock in their destructors.
+  pool()->Shutdown();
 }
 
 // Verify that FlushForTesting works as intended.
