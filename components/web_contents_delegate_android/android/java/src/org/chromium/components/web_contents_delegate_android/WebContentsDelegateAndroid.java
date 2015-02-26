@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -25,16 +26,8 @@ public class WebContentsDelegateAndroid {
     // Equivalent of WebCore::WebConsoleMessage::LevelError.
     public static final int LOG_LEVEL_ERROR = 3;
 
-    // Flags passed to the WebContentsDelegateAndroid.navigationStateChanged to tell it
-    // what has changed. Should match the values in invalidate_type.h.
-    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_URL.
-    public static final int INVALIDATE_TYPE_URL = 1 << 0;
-    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_TAB.
-    public static final int INVALIDATE_TYPE_TAB = 1 << 1;
-    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_LOAD.
-    public static final int INVALIDATE_TYPE_LOAD = 1 << 2;
-    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_TITLE.
-    public static final int INVALIDATE_TYPE_TITLE = 1 << 3;
+    // TODO(mnaganov): Remove after getting rid of downstream usages.
+    public static final int INVALIDATE_TYPE_TAB = InvalidateTypes.TAB;
 
     // The most recent load progress callback received from WebContents, as a percentage.
     // Initialize to 100 to indicate that we're not in a loading state.

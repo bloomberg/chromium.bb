@@ -1239,6 +1239,19 @@ public class AwContents implements SmartClipProvider,
         return url;
     }
 
+    /**
+     * Gets the last committed URL. It represents the current page that is
+     * displayed in WebContents. It represents the current security context.
+     *
+     * @return The URL of the current page or null if it's empty.
+     */
+    public String getLastCommittedUrl() {
+        if (isDestroyed()) return null;
+        String url = mWebContents.getLastCommittedUrl();
+        if (url == null || url.trim().isEmpty()) return null;
+        return url;
+    }
+
     public void requestFocus() {
         mAwViewMethods.requestFocus();
     }
@@ -1829,6 +1842,11 @@ public class AwContents implements SmartClipProvider,
         MessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
         nativeCreateMessageChannel(mNativeAwContents, ports);
         return ports;
+    }
+
+    public boolean hasAccessedInitialDocument() {
+        if (isDestroyed()) return false;
+        return mWebContents.hasAccessedInitialDocument();
     }
 
     //--------------------------------------------------------------------------------------------

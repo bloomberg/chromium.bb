@@ -49,6 +49,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserver;
+import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -387,10 +388,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         @Override
         public void navigationStateChanged(int flags) {
-            if ((flags & INVALIDATE_TYPE_TITLE) != 0) {
+            if ((flags & InvalidateTypes.TITLE) != 0) {
                 for (TabObserver observer : mObservers) observer.onTitleUpdated(Tab.this);
             }
-            if ((flags & INVALIDATE_TYPE_URL) != 0) {
+            if ((flags & InvalidateTypes.URL) != 0) {
                 for (TabObserver observer : mObservers) observer.onUrlUpdated(Tab.this);
             }
         }

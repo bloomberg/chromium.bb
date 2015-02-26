@@ -23,6 +23,7 @@
         '../content/content.gyp:console_message_level_java',
         '../content/content.gyp:content_gamepad_mapping',
         '../content/content.gyp:gesture_event_type_java',
+        '../content/content.gyp:invalidate_types_java',
         '../content/content.gyp:navigation_controller_java',
         '../content/content.gyp:popup_item_type_java',
         '../content/content.gyp:result_codes_java',
