@@ -17,6 +17,7 @@ import datetime
 import glob
 import logging
 import os
+import random
 import time
 
 from chromite.cbuildbot import constants
@@ -30,6 +31,10 @@ from chromite.lib import parallel
 
 
 # pylint: disable=protected-access
+
+# Used to ensure that all build_number values we use are unique.
+def _random():
+  return random.randint(1, 1000000000)
 
 
 SERIES_0_TEST_DATA_PATH = os.path.join(
@@ -49,6 +54,7 @@ TEST_DB_CRED_READONLY = os.path.join(constants.SOURCE_ROOT,
 TEST_DB_CRED_BOT = os.path.join(constants.SOURCE_ROOT,
                                 'crostools', 'cidb',
                                 'cidb_test_bot')
+
 
 
 class CIDBIntegrationTest(cros_test_lib.TestCase):
@@ -81,6 +87,19 @@ class CIDBIntegrationTest(cros_test_lib.TestCase):
 
     return db
 
+  def _PrepareDatabase(self):
+    """Prepares a database at the latest known schema version.
+
+    If database already exists, do not delete existing database. This
+    optimization can save a lot of time, when used by tests that do not
+    require an empty database.
+    """
+    # Connect to now fresh database and apply migrations.
+    db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
+    db.ApplySchemaMigrations()
+
+    return db
+
 
 class CIDBMigrationsTest(CIDBIntegrationTest):
   """Test that all migrations apply correctly."""
@@ -100,9 +119,9 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
 
   def testActions(self):
     """Test that InsertCLActions accepts 0-, 1-, and multi-item lists."""
-    db = self._PrepareFreshDatabase()
-    build_id = db.InsertBuild('my builder', 'chromiumos', 12, 'my config',
-                              'my bot hostname')
+    db = self._PrepareDatabase()
+    build_id = db.InsertBuild('my builder', 'chromiumos', _random(),
+                              'my config', 'my bot hostname')
 
     a1 = clactions.CLAction.FromGerritPatchAndAction(
         metadata_lib.GerritPatchTuple(1, 1, True),
@@ -388,19 +407,19 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 
   def runTest(self):
     """Test basic buildStageTable and failureTable functionality."""
-    self._PrepareFreshDatabase()
+    self._PrepareDatabase()
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
     master_build_id = bot_db.InsertBuild('master build',
                                          constants.WATERFALL_INTERNAL,
-                                         1,
+                                         _random(),
                                          'master_config',
                                          'master.hostname')
 
     build_id = bot_db.InsertBuild('builder name',
                                   constants.WATERFALL_INTERNAL,
-                                  1,
+                                  _random(),
                                   'build_config',
                                   'bot_hostname',
                                   master_build_id=master_build_id)
@@ -442,12 +461,12 @@ class BuildTableTest(CIDBIntegrationTest):
 
   def testInsertWithDeadline(self):
     """Test deadline setting/querying API."""
-    self._PrepareFreshDatabase(39)
+    self._PrepareDatabase()
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
-                                  1,
+                                  _random(),
                                   'build_config',
                                   'bot_hostname',
                                   timeout_seconds=30 * 60)
@@ -456,7 +475,7 @@ class BuildTableTest(CIDBIntegrationTest):
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
-                                  2,
+                                  _random(),
                                   'build_config',
                                   'bot_hostname',
                                   timeout_seconds=1)
@@ -466,7 +485,7 @@ class BuildTableTest(CIDBIntegrationTest):
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
-                                  3,
+                                  _random(),
                                   'build_config',
                                   'bot_hostname')
     self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
@@ -476,12 +495,12 @@ class BuildTableTest(CIDBIntegrationTest):
   def testExtendDeadline(self):
     """Test that a deadline in the future can be extended."""
 
-    self._PrepareFreshDatabase(39)
+    self._PrepareDatabase()
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
-                                  1,
+                                  _random(),
                                   'build_config',
                                   'bot_hostname')
     self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
@@ -494,7 +513,7 @@ class BuildTableTest(CIDBIntegrationTest):
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
-                                  2,
+                                  _random(),
                                   'build_config',
                                   'bot_hostname',
                                   timeout_seconds=30 * 60)
