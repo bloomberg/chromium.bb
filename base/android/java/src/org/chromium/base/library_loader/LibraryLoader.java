@@ -42,7 +42,7 @@ public class LibraryLoader {
     private static final Object sLock = new Object();
 
     // The singleton instance of LibraryLoader.
-    private static LibraryLoader sInstance;
+    private static volatile LibraryLoader sInstance;
 
     // One-way switch becomes true when the libraries are loaded.
     private boolean mLoaded;
@@ -54,7 +54,9 @@ public class LibraryLoader {
     // One-way switch becomes true when the libraries are initialized (
     // by calling nativeLibraryLoaded, which forwards to LibraryLoaded(...) in
     // library_loader_hooks.cc).
-    private boolean mInitialized;
+    // Note that this member should remain a one-way switch, since it accessed from multiple
+    // threads without a lock.
+    private volatile boolean mInitialized;
 
     // One-way switches recording attempts to use Relro sharing in the browser.
     // The flags are used to report UMA stats later.
@@ -81,7 +83,9 @@ public class LibraryLoader {
     private boolean mLibraryIsMappableInApk = true;
 
     // The type of process the shared library is loaded in.
-    private int mLibraryProcessType;
+    // This member can be accessed from multiple threads simultaneously, so it have to be
+    // final (like now) or be protected in some way (volatile of synchronized).
+    private final int mLibraryProcessType;
 
     /**
      * @param libraryProcessType the process the shared library is loaded in. refer to
@@ -141,9 +145,7 @@ public class LibraryLoader {
      * Checks if library is fully loaded and initialized.
      */
     public static boolean isInitialized() {
-        synchronized (sLock) {
-            return sInstance != null && sInstance.mInitialized;
-        }
+        return sInstance != null && sInstance.mInitialized;
     }
 
     /**
@@ -377,10 +379,6 @@ public class LibraryLoader {
             Log.e(TAG, "error calling nativeLibraryLoaded");
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_FAILED_TO_REGISTER_JNI);
         }
-        // From this point on, native code is ready to use and checkIsReady()
-        // shouldn't complain from now on (and in fact, it's used by the
-        // following calls).
-        mInitialized = true;
 
         // The Chrome JNI is registered by now so we can switch the Java
         // command line over to delegating to native if it's necessary.
@@ -391,6 +389,13 @@ public class LibraryLoader {
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
+
+        // From this point on, native code is ready to use and checkIsReady()
+        // shouldn't complain from now on (and in fact, it's used by the
+        // following calls).
+        // Note that this flag can be accessed asynchronously, so any initialization
+        // must be performed before.
+        mInitialized = true;
     }
 
     // Called after all native initializations are complete.
@@ -455,10 +460,8 @@ public class LibraryLoader {
      */
     @CalledByNative
     public static int getLibraryProcessType() {
-        synchronized (sLock) {
-            if (sInstance == null) return LibraryProcessType.PROCESS_UNINITIALIZED;
-            return sInstance.mLibraryProcessType;
-        }
+        if (sInstance == null) return LibraryProcessType.PROCESS_UNINITIALIZED;
+        return sInstance.mLibraryProcessType;
     }
 
     private native void nativeInitCommandLine(String[] initCommandLine);
