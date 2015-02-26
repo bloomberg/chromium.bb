@@ -690,11 +690,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         (2) The new deadline requested is earlier than the original deadline.
     """
     return self._Execute(
-        'UPDATE buildTable SET deadline = NOW() + INTERVAL %s SECOND WHERE '
-        'id = %s AND '
+        'UPDATE buildTable SET deadline = NOW() + INTERVAL %d SECOND WHERE '
+        'id = %d AND '
         '(deadline = 0 OR deadline > NOW()) AND '
-        'NOW() + INTERVAL %s SECOND > deadline',
-        timeout_seconds, build_id, timeout_seconds).rowcount
+        'NOW() + INTERVAL %d SECOND > deadline'
+        % (timeout_seconds, build_id, timeout_seconds)
+        ).rowcount
 
   @minimum_schema(6)
   def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
@@ -711,7 +712,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     }
     return self._UpdateWhere(
         'boardPerBuildTable',
-        'build_id = %s and board = "%s"' % (build_id, board),
+        'build_id = %d and board = "%s"' % (build_id, board),
         update_dict)
 
   @minimum_schema(28)
@@ -789,7 +790,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     self._Execute(
         'UPDATE childConfigPerBuildTable '
         'SET status="%s", final=1 '
-        'WHERE (build_id, child_config) = (%s, "%s")' %
+        'WHERE (build_id, child_config) = (%d, "%s")' %
         (status, build_id, child_config))
 
 
@@ -821,7 +822,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._SelectWhere(
         'buildTable',
-        'id IN (%s)' % ','.join(str(x) for x in build_ids),
+        'id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
         ['id', 'build_config', 'start_time', 'finish_time', 'status',
          'waterfall', 'build_number', 'builder_name', 'full_version'])
 
@@ -838,7 +839,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       with keys (id, build_config, start_time, finish_time, status).
     """
     return self._SelectWhere('buildTable',
-                             'master_build_id = %s' % master_build_id,
+                             'master_build_id = %d' % master_build_id,
                              ['id', 'build_config', 'start_time',
                               'finish_time', 'status'])
 
@@ -860,7 +861,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
     results = self._Execute(
         'SELECT %s, b.build_config FROM buildStageTable bs JOIN buildTable b '
-        'ON build_id = b.id where b.master_build_id = %s' %
+        'ON build_id = b.id where b.master_build_id = %d' %
         (', '.join(bs_prepended_columns), master_build_id)).fetchall()
     columns = bs_table_columns + ['build_config']
     return [dict(zip(columns, values)) for values in results]
@@ -886,7 +887,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     # separately.
     r = self._Execute(
         'SELECT deadline >= NOW(), TIMEDIFF(deadline, NOW()) '
-        'from buildTable where id = %s' % build_id).fetchall()
+        'from buildTable where id = %d' % build_id).fetchall()
     if not r:
       return None
 
@@ -941,7 +942,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     if starting_build_number is not None:
       where_clauses.append('build_number >= %d' % starting_build_number)
     if ignore_build_id is not None:
-      where_clauses.append('id != %s' % ignore_build_id)
+      where_clauses.append('id != %d' % ignore_build_id)
     query = (
         'SELECT %s'
         ' FROM buildTable'
@@ -970,7 +971,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'blame_url', 'notes']
     where_or_clauses = []
     for build_id in build_ids:
-      where_or_clauses.append('build_id = %s' % build_id)
+      where_or_clauses.append('build_id = %d' % build_id)
     annotations = self._SelectWhere('annotationsTable',
                                     ' OR '.join(where_or_clauses),
                                     ['build_id'] + columns_to_report)
@@ -1006,7 +1007,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     for change in changes:
       change_number = int(change.gerrit_number)
       change_source = 'internal' if change.internal else 'external'
-      clauses.append('(change_number, change_source) = (%s, "%s")' %
+      clauses.append('(change_number, change_source) = (%d, "%s")' %
                      (change_number, change_source))
     clause = ' OR '.join(clauses)
     results = self._Execute(
@@ -1053,7 +1054,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       True if there is a failure reported for this build stage to cidb.
     """
     failures = self._SelectWhere('failureTable',
-                                 'build_stage_id = %s' % build_stage_id,
+                                 'build_stage_id = %d' % build_stage_id,
                                  ['id'])
     return bool(failures)
 
