@@ -97,7 +97,7 @@ cr.define('extensions', function() {
    * API function from developerPrivate, depending on whether this is being
    * used in the native chrome:extensions page or the Apps Developer Tool.
    * @see chrome/browser/ui/webui/extensions/extension_error_ui_util.h
-   * @param {Object} args The arguments to pass to openDevTools.
+   * @param {OpenDevToolsProperties} args The arguments to pass to openDevTools.
    * @private
    */
   RuntimeErrorContent.openDevtools_ = function(args) {
@@ -269,8 +269,8 @@ cr.define('extensions', function() {
           this.error_.stackTrace[this.currentFrameNode_.indexIntoTrace];
 
       RuntimeErrorContent.openDevtools_(
-          {renderProcessId: this.error_.renderProcessId,
-           renderViewId: this.error_.renderViewId,
+          {renderProcessId: this.error_.renderProcessId || -1,
+           renderViewId: this.error_.renderViewId || -1,
            url: stackFrame.url,
            lineNumber: stackFrame.lineNumber || 0,
            columnNumber: stackFrame.columnNumber || 0});
@@ -354,7 +354,8 @@ cr.define('extensions', function() {
    * API function from developerPrivate, depending on whether this is being
    * used in the native chrome:extensions page or the Apps Developer Tool.
    * @see chrome/browser/ui/webui/extensions/extension_error_ui_util.h
-   * @param {Object} args The arguments to pass to requestFileSource.
+   * @param {RequestFileSourceProperties} args The arguments to pass to
+   *     requestFileSource.
    */
   ExtensionErrorOverlay.requestFileSource = function(args) {
     if (chrome.send) {

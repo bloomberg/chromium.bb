@@ -679,7 +679,8 @@ bool DeveloperPrivateAllowFileAccessFunction::RunSync() {
   ManagementPolicy* management_policy = system->management_policy();
   const Extension* extension =
       ExtensionRegistry::Get(GetProfile())
-          ->GetExtensionById(params->item_id, ExtensionRegistry::EVERYTHING);
+          ->GetExtensionById(params->extension_id,
+                             ExtensionRegistry::EVERYTHING);
   bool result = true;
 
   if (!extension) {
@@ -707,7 +708,8 @@ bool DeveloperPrivateAllowIncognitoFunction::RunSync() {
 
   const Extension* extension =
       ExtensionRegistry::Get(GetProfile())
-          ->GetExtensionById(params->item_id, ExtensionRegistry::EVERYTHING);
+          ->GetExtensionById(params->extension_id,
+                             ExtensionRegistry::EVERYTHING);
   bool result = true;
 
   if (!extension)
@@ -725,9 +727,9 @@ bool DeveloperPrivateReloadFunction::RunSync() {
   scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  CHECK(!params->item_id.empty());
+  CHECK(!params->extension_id.empty());
   ExtensionService* service = GetExtensionService(GetProfile());
-  service->ReloadExtension(params->item_id);
+  service->ReloadExtension(params->extension_id);
   return true;
 }
 
@@ -931,9 +933,10 @@ bool DeveloperPrivatePackDirectoryFunction::RunAsync() {
       PackDirectory::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int flags = params->flags;
+  int flags = params->flags ? *params->flags : 0;
   item_path_str_ = params->path;
-  key_path_str_ = params->private_key_path;
+  if (params->private_key_path)
+    key_path_str_ = *params->private_key_path;
 
   base::FilePath root_directory =
       base::FilePath::FromUTF8Unsafe(item_path_str_);
@@ -1283,13 +1286,11 @@ DeveloperPrivateRequestFileSourceFunction::
 bool DeveloperPrivateRequestFileSourceFunction::RunAsync() {
   scoped_ptr<developer::RequestFileSource::Params> params(
       developer::RequestFileSource::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  EXTENSION_FUNCTION_VALIDATE(params);
 
-  base::DictionaryValue* dict = NULL;
-  if (!params->dict->GetAsDictionary(&dict)) {
-    NOTREACHED();
-    return false;
-  }
+  base::DictionaryValue* dict = nullptr;
+  // TODO(devlin): Use generated |params|.
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0u, &dict));
 
   AddRef();  // Balanced in LaunchCallback().
   error_ui_util::HandleRequestFileSource(
@@ -1313,13 +1314,11 @@ DeveloperPrivateOpenDevToolsFunction::~DeveloperPrivateOpenDevToolsFunction() {}
 bool DeveloperPrivateOpenDevToolsFunction::RunAsync() {
   scoped_ptr<developer::OpenDevTools::Params> params(
       developer::OpenDevTools::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  EXTENSION_FUNCTION_VALIDATE(params);
 
-  base::DictionaryValue* dict = NULL;
-  if (!params->dict->GetAsDictionary(&dict)) {
-    NOTREACHED();
-    return false;
-  }
+  base::DictionaryValue* dict = nullptr;
+  // TODO(devlin): Use generated |params|.
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0u, &dict));
 
   error_ui_util::HandleOpenDevTools(dict);
 

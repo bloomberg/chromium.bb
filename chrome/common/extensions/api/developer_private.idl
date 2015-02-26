@@ -75,6 +75,12 @@ namespace developerPrivate {
     boolean incognito;
   };
 
+  dictionary ReloadOptions {
+    // If false, an alert dialog will show in the event of a reload error.
+    // Defaults to false.
+    boolean failQuietly;
+  };
+
   enum PackStatus {
     SUCCESS,
     ERROR,
@@ -126,6 +132,65 @@ namespace developerPrivate {
     DOMString item_id;
   };
 
+  dictionary RequestFileSourceProperties {
+    // The ID of the extension owning the file.
+    DOMString extensionId;
+
+    // The path of the file, relative to the extension; e.g., manifest.json,
+    // script.js, or main.html.
+    DOMString pathSuffix;
+
+    // The error message which was thrown as a result of the error in the file.
+    DOMString message;
+
+    // The key in the manifest which caused the error (e.g., "permissions").
+    // (Required for "manifest.json" files)
+    DOMString? manifestKey;
+
+    // The specific portion of the manifest key which caused the error (e.g.,
+    // "foo" in the "permissions" key). (Optional for "manifest.json" file).
+    DOMString? manifestSpecific;
+
+    // The line number which caused the error (optional for non-manifest files).
+    long? lineNumber;
+  };
+
+  dictionary RequestFileSourceResponse {
+    // The region of the code which threw the error, and should be highlighted.
+    DOMString highlight;
+
+    // The region before the "highlight" portion.
+    // If the region which threw the error was not found, the full contents of
+    // the file will be in the "beforeHighlight" section.
+    DOMString beforeHighlight;
+
+    // The region after the "highlight" portion.
+    DOMString afterHighlight;
+
+    // A title for the file in the form '<extension name>: <file name>'.
+    DOMString title;
+
+    // The error message.
+    DOMString message;
+  };
+
+  dictionary OpenDevToolsProperties {
+    // The ID of the render view in which the error occurred.
+    long renderViewId;
+
+    // The ID of the process in which the error occurred.
+    long renderProcessId;
+
+    // The URL in which the error occurred.
+    DOMString? url;
+
+    // The line to focus the devtools at.
+    long? lineNumber;
+
+    // The column to focus the devtools at.
+    long? columnNumber;
+  };
+
   callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
@@ -133,102 +198,92 @@ namespace developerPrivate {
   callback PathCallback = void (DOMString path);
   callback PackCallback = void (PackDirectoryResponse response);
   callback VoidCallback = void();
-  callback AnyCallback = void (any result);
+  callback RequestFileSourceCallback =
+      void (RequestFileSourceResponse response);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
     // |callback| : Called with the boolean result, true if autoUpdate is
     // successful.
-    static void autoUpdate(BooleanCallback callback);
+    static void autoUpdate(optional BooleanCallback callback);
 
     // Returns information of all the extensions and apps installed.
-    // |include_disabled| : include disabled items.
-    // |include_terminated| : include terminated items.
+    // |includeDisabled| : include disabled items.
+    // |includeTerminated| : include terminated items.
     // |callback| : Called with items info.
-    static void getItemsInfo(boolean include_disabled,
-                             boolean include_terminated,
+    static void getItemsInfo(boolean includeDisabled,
+                             boolean includeTerminated,
                              ItemsInfoCallback callback);
 
-    // Opens a permissions dialog for given |itemId|.
-    static void showPermissionsDialog(DOMString itemId,
+    // Opens a permissions dialog.
+    // |extensionId| : The id of the extension to show permissions for.
+    static void showPermissionsDialog(DOMString extensionId,
                                       optional VoidCallback callback);
 
-    // Opens an inspect window for given |options|
+    // Opens a developer tools inspection window.
+    // |options| : The details about the inspection.
     static void inspect(InspectOptions options,
                         optional VoidCallback callback);
 
-    // Enable / Disable file access for a given |item_id|
-    static void allowFileAccess(DOMString item_id,
+    // Enables / Disables file access for an extension.
+    // |extensionId| : The id of the extension to set file access for.
+    // |allow| : Whether or not to allow file access for the extension.
+    static void allowFileAccess(DOMString extensionId,
                                 boolean allow,
                                 optional VoidCallback callback);
 
-    // Reloads a given item with |itemId|.
-    static void reload(DOMString itemId, optional VoidCallback callback);
+    // Reloads a given extension.
+    // |extensionId| : The id of the extension to reload.
+    // |options| : Additional configuration parameters.
+    static void reload(DOMString extensionId,
+                       optional ReloadOptions options,
+                       optional VoidCallback callback);
 
-    // Allow / Disallow item with |item_id| in incognito mode.
-    static void allowIncognito(DOMString item_id,
+    // Allows / Disallows an extension to run in incognito mode.
+    // |extensionId| : The id of the extension.
+    // |allow| : Whether or not the extension should be allowed incognito.
+    static void allowIncognito(DOMString extensionId,
                                boolean allow,
-                               VoidCallback callback);
+                               optional VoidCallback callback);
 
-    // Load a user selected unpacked item
+    // Loads a user-selected unpacked item.
     static void loadUnpacked(optional VoidCallback callback);
 
-    // Loads an extension / app from a given |directory|
-    static void loadDirectory([instanceOf=DirectoryEntry] object directory,
-                        PathCallback callback);
+    // Loads an extension / app.
+    // |directory| : The directory to load the extension from.
+    static void loadDirectory(
+        [instanceOf=DirectoryEntry] object directory,
+        PathCallback callback);
 
     // Open Dialog to browse to an entry.
-    // |select_type| : Select a file or a folder.
-    // |file_type| : Required file type. For Example pem type is for private
+    // |selectType| : Select a file or a folder.
+    // |fileType| : Required file type. For example, pem type is for private
     // key and load type is for an unpacked item.
     // |callback| : called with selected item's path.
-    static void choosePath(SelectType select_type,
-                           FileType file_type,
+    static void choosePath(SelectType selectType,
+                           FileType fileType,
                            PathCallback callback);
 
-    // Pack an item with given |path| and |private_key_path|
+    // Pack an extension.
+    // |rootPath| : The path of the extension.
+    // |privateKeyPath| : The path of the private key, if one is given.
+    // |flags| : Special flags to apply to the loading process, if any.
     // |callback| : called with the success result string.
     static void packDirectory(DOMString path,
-                              DOMString private_key_path,
-                              long flags,
-                              PackCallback callback);
+                              optional DOMString privateKeyPath,
+                              optional long flags,
+                              optional PackCallback callback);
 
     // Returns true if the profile is managed.
     static void isProfileManaged(BooleanCallback callback);
 
     // Reads and returns the contents of a file related to an extension which
-    // caused an error. The expected argument is a dictionary with the
-    // following entries:
-    // - pathSuffix: The path of the file, relative to the extension; e.g.,
-    //       manifest.json, script.js, or main.html.
-    // - extensionId: The ID of the extension owning the file.
-    // - errorMessage: The error message which was thrown as a result of the
-    //       error in the file.
-    // - manifestKey (required for "manifest.json" file): The key
-    //       in the manifest which caused the error (e.g., "permissions").
-    // - manifestSpecific (optional for "manifest.json" file): The specific
-    //       portion of the manifest key which caused the error (e.g., "foo" in
-    //       the "permissions" key).
-    // - lineNumber (optional for non-manifest files): The line number which
-    //       caused the error.
-    // The callback is called with a dictionary with three keys:
-    // - highlight: The region of the code which threw the error, and should
-    //       be highlighted.
-    // - beforeHighlight: The region before the "highlight" portion.
-    // - afterHighlight: The region after the "highlight" portion.
-    // - highlight: The region of the code which threw the error.
-    // If the region which threw the error was not found, the full contents of
-    // the file will be in the "beforeHighlight" section.
-    static void requestFileSource(any dict, AnyCallback callback);
+    // caused an error.
+    static void requestFileSource(RequestFileSourceProperties properties,
+                                  RequestFileSourceCallback callback);
 
-    // Open the developer tools to focus on a particular error. The expected
-    // argument is a dictionary with the following entries:
-    // - renderViewId: The ID of the render view in which the error occurred.
-    // - renderProcessId: The ID of the process in which the error occurred.
-    // - url (optional): The URL in which the error occurred.
-    // - lineNumber (optional): The line to focus the devtools at.
-    // - columnNumber (optional): The column to focus the devtools at.
-    static void openDevTools(any dict);
+    // Open the developer tools to focus on a particular error.
+    static void openDevTools(OpenDevToolsProperties properties);
   };
 
   interface Events {

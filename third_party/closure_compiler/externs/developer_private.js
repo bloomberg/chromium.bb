@@ -75,6 +75,13 @@ var ItemInfo;
 var InspectOptions;
 
 /**
+ * @typedef {{
+ *   failQuietly: boolean
+ * }}
+ */
+var ReloadOptions;
+
+/**
  * @typedef {string}
  */
 var PackStatus;
@@ -121,100 +128,139 @@ var ProjectInfo;
 var EventData;
 
 /**
+ * @typedef {{
+ *   extensionId: string,
+ *   pathSuffix: string,
+ *   message: string,
+ *   manifestKey: (string|undefined),
+ *   manifestSpecific: (string|undefined),
+ *   lineNumber: (number|undefined)
+ * }}
+ */
+var RequestFileSourceProperties;
+
+/**
+ * @typedef {{
+ *   highlight: string,
+ *   beforeHighlight: string,
+ *   afterHighlight: string,
+ *   title: string,
+ *   message: string
+ * }}
+ */
+var RequestFileSourceResponse;
+
+/**
+ * @typedef {{
+ *   renderViewId: number,
+ *   renderProcessId: number,
+ *   url: (string|undefined),
+ *   lineNumber: (number|undefined),
+ *   columnNumber: (number|undefined)
+ * }}
+ */
+var OpenDevToolsProperties;
+
+/**
  * @const
  */
 chrome.developerPrivate = {};
 
 /**
  * Runs auto update for extensions and apps immediately.
- * @param {Function} callback Called with the boolean result, true if
+ * @param {Function=} callback Called with the boolean result, true if
  * autoUpdate is successful.
  */
 chrome.developerPrivate.autoUpdate = function(callback) {};
 
 /**
  * Returns information of all the extensions and apps installed.
- * @param {boolean} include_disabled include disabled items.
- * @param {boolean} include_terminated include terminated items.
+ * @param {boolean} includeDisabled include disabled items.
+ * @param {boolean} includeTerminated include terminated items.
  * @param {Function} callback Called with items info.
  */
-chrome.developerPrivate.getItemsInfo = function(include_disabled, include_terminated, callback) {};
+chrome.developerPrivate.getItemsInfo = function(includeDisabled, includeTerminated, callback) {};
 
 /**
- * Opens a permissions dialog for given |itemId|.
- * @param {string} itemId
+ * Opens a permissions dialog.
+ * @param {string} extensionId The id of the extension to show permissions for.
  * @param {Function=} callback
  */
-chrome.developerPrivate.showPermissionsDialog = function(itemId, callback) {};
+chrome.developerPrivate.showPermissionsDialog = function(extensionId, callback) {};
 
 /**
- * Opens an inspect window for given |options|
- * @param {InspectOptions} options
+ * Opens a developer tools inspection window.
+ * @param {InspectOptions} options The details about the inspection.
  * @param {Function=} callback
  */
 chrome.developerPrivate.inspect = function(options, callback) {};
 
 /**
- * Enable / Disable file access for a given |item_id|
- * @param {string} item_id
- * @param {boolean} allow
+ * Enables / Disables file access for an extension.
+ * @param {string} extensionId The id of the extension to set file access for.
+ * @param {boolean} allow Whether or not to allow file access for the
+ * extension.
  * @param {Function=} callback
  */
-chrome.developerPrivate.allowFileAccess = function(item_id, allow, callback) {};
+chrome.developerPrivate.allowFileAccess = function(extensionId, allow, callback) {};
 
 /**
- * Reloads a given item with |itemId|.
- * @param {string} itemId
+ * Reloads a given extension.
+ * @param {string} extensionId The id of the extension to reload.
+ * @param {ReloadOptions=} options Additional configuration parameters.
  * @param {Function=} callback
  */
-chrome.developerPrivate.reload = function(itemId, callback) {};
+chrome.developerPrivate.reload = function(extensionId, options, callback) {};
 
 /**
- * Enable / Disable a given item with id |itemId|.
- * @param {string} itemId
- * @param {boolean} enable
+ * Enables / Disables a given extension.
+ * @param {string} extensionId The id of the extension to enable/disable.
+ * @param {boolean} enable Whether the extension should be enabled.
  * @param {Function=} callback
  */
-chrome.developerPrivate.enable = function(itemId, enable, callback) {};
+chrome.developerPrivate.enable = function(extensionId, enable, callback) {};
 
 /**
- * Allow / Disallow item with |item_id| in incognito mode.
- * @param {string} item_id
- * @param {boolean} allow
- * @param {Function} callback
+ * Allows / Disallows an extension to run in incognito mode.
+ * @param {string} extensionId The id of the extension.
+ * @param {boolean} allow Whether or not the extension should be allowed
+ * incognito.
+ * @param {Function=} callback
  */
-chrome.developerPrivate.allowIncognito = function(item_id, allow, callback) {};
+chrome.developerPrivate.allowIncognito = function(extensionId, allow, callback) {};
 
 /**
- * Load a user selected unpacked item
+ * Loads a user-selected unpacked item.
  * @param {Function=} callback
  */
 chrome.developerPrivate.loadUnpacked = function(callback) {};
 
 /**
- * Loads an extension / app from a given |directory|
- * @param {Object} directory
+ * Loads an extension / app.
+ * @param {Object} directory The directory to load the extension from.
  * @param {Function} callback
  */
 chrome.developerPrivate.loadDirectory = function(directory, callback) {};
 
 /**
  * Open Dialog to browse to an entry.
- * @param {SelectType} select_type Select a file or a folder.
- * @param {FileType} file_type Required file type. For Example pem type is for
+ * @param {SelectType} selectType Select a file or a folder.
+ * @param {FileType} fileType Required file type. For example, pem type is for
  * private key and load type is for an unpacked item.
  * @param {Function} callback called with selected item's path.
  */
-chrome.developerPrivate.choosePath = function(select_type, file_type, callback) {};
+chrome.developerPrivate.choosePath = function(selectType, fileType, callback) {};
 
 /**
- * Pack an item with given |path| and |private_key_path|
+ * Pack an extension.
  * @param {string} path
- * @param {string} private_key_path
- * @param {number} flags
- * @param {Function} callback called with the success result string.
+ * @param {string=} privateKeyPath The path of the private key, if one is
+ * given.
+ * @param {number=} flags Special flags to apply to the loading process, if
+ * any.
+ * @param {Function=} callback called with the success result string.
  */
-chrome.developerPrivate.packDirectory = function(path, private_key_path, flags, callback) {};
+chrome.developerPrivate.packDirectory = function(path, privateKeyPath, flags, callback) {};
 
 /**
  * Returns true if the profile is managed.
@@ -225,16 +271,16 @@ chrome.developerPrivate.isProfileManaged = function(callback) {};
 /**
  * Reads and returns the contents of a file related to an extension which
  * caused an error.
- * @param {?} dict
+ * @param {RequestFileSourceProperties} properties
  * @param {Function} callback
  */
-chrome.developerPrivate.requestFileSource = function(dict, callback) {};
+chrome.developerPrivate.requestFileSource = function(properties, callback) {};
 
 /**
  * Open the developer tools to focus on a particular error.
- * @param {?} dict
+ * @param {OpenDevToolsProperties} properties
  */
-chrome.developerPrivate.openDevTools = function(dict) {};
+chrome.developerPrivate.openDevTools = function(properties) {};
 
 /** @type {!ChromeEvent} */
 chrome.developerPrivate.onItemStateChanged;
