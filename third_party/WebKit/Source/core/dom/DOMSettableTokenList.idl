@@ -22,8 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface DOMSettableTokenList : DOMTokenList {
-    [ImplementedAs=item] getter DOMString? (unsigned long index);
-    attribute DOMString value;
-};
+// https://dom.spec.whatwg.org/#interface-domsettabletokenlist
 
+interface DOMSettableTokenList : DOMTokenList {
+    attribute DOMString value;
+
+    // FIXME: This getter is not in the spec.
+    [ImplementedAs=item] getter DOMString? (unsigned long index);
+};
