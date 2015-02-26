@@ -79,7 +79,6 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/constants.h"
@@ -699,9 +698,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsAllowOnAllUrls",
       base::Bind(&ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsUninstall",
-      base::Bind(&ExtensionSettingsHandler::HandleUninstallMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsOptions",
       base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
                  AsWeakPtr()));
@@ -806,42 +802,6 @@ void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
 
 void ExtensionSettingsHandler::OnExtensionManagementSettingsChanged() {
   MaybeUpdateAfterNotification();
-}
-
-void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
-  DCHECK(!extension_id_prompting_.empty());
-
-  bool was_terminated = false;
-
-  // The extension can be uninstalled in another window while the UI was
-  // showing. Do nothing in that case.
-  const Extension* extension =
-      extension_service_->GetExtensionById(extension_id_prompting_, true);
-  if (!extension) {
-    extension =
-        ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->GetExtensionById(
-            extension_id_prompting_, ExtensionRegistry::TERMINATED);
-    was_terminated = true;
-  }
-  if (!extension)
-    return;
-
-  extension_service_->UninstallExtension(
-      extension_id_prompting_,
-      extensions::UNINSTALL_REASON_USER_INITIATED,
-      base::Bind(&base::DoNothing),
-      NULL);  // Error.
-  extension_id_prompting_ = "";
-
-  // There will be no EXTENSION_UNLOADED notification for terminated
-  // extensions as they were already unloaded.
-  if (was_terminated)
-    HandleRequestExtensionsData(NULL);
-}
-
-void ExtensionSettingsHandler::ExtensionUninstallCanceled() {
-  extension_id_prompting_ = "";
-  web_ui()->CallJavascriptFunction("extensions.ExtensionList.uninstallCancel");
 }
 
 void ExtensionSettingsHandler::ExtensionWarningsChanged() {
@@ -1136,31 +1096,6 @@ void ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage(
                                      allow_str == "true");
 }
 
-void ExtensionSettingsHandler::HandleUninstallMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
-  const Extension* extension =
-      extension_service_->GetInstalledExtension(extension_id);
-  if (!extension)
-    return;
-
-  if (!management_policy_->UserMayModifySettings(extension, NULL) ||
-      management_policy_->MustRemainInstalled(extension, NULL)) {
-    LOG(ERROR) << "An attempt was made to uninstall an extension that is "
-               << "non-usermanagable. Extension id : " << extension->id();
-    return;
-  }
-
-  if (!extension_id_prompting_.empty())
-    return;  // Only one prompt at a time.
-
-  extension_id_prompting_ = extension_id;
-
-  GetExtensionUninstallDialog()->ConfirmUninstall(extension);
-}
-
 void ExtensionSettingsHandler::HandleOptionsMessage(
     const base::ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
@@ -1447,19 +1382,6 @@ void ExtensionSettingsHandler::GetAppWindowPagesForExtensionProfile(
                       process->GetBrowserContext()->IsOffTheRecord(),
                       is_background_page && has_generated_background_page));
   }
-}
-
-ExtensionUninstallDialog*
-ExtensionSettingsHandler::GetExtensionUninstallDialog() {
-  if (!extension_uninstall_dialog_.get()) {
-    Browser* browser = chrome::FindBrowserWithWebContents(
-        web_ui()->GetWebContents());
-    extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(extension_service_->profile(),
-                                         browser->window()->GetNativeWindow(),
-                                         this));
-  }
-  return extension_uninstall_dialog_.get();
 }
 
 void ExtensionSettingsHandler::OnReinstallComplete(

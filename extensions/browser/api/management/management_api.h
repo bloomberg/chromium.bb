@@ -130,7 +130,7 @@ class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
   scoped_ptr<RequirementsChecker> requirements_checker_;
 };
 
-class ManagementUninstallFunctionBase : public AsyncManagementFunction {
+class ManagementUninstallFunctionBase : public UIThreadExtensionFunction {
  public:
   ManagementUninstallFunctionBase();
 
@@ -141,8 +141,8 @@ class ManagementUninstallFunctionBase : public AsyncManagementFunction {
 
  protected:
   ~ManagementUninstallFunctionBase() override;
-
-  bool Uninstall(const std::string& extension_id, bool show_confirm_dialog);
+  ResponseAction Uninstall(const std::string& extension_id,
+                           bool show_confirm_dialog);
 
  private:
   // If should_uninstall is true, this method does the actual uninstall.
@@ -150,7 +150,7 @@ class ManagementUninstallFunctionBase : public AsyncManagementFunction {
   // Accepted/Canceled callbacks. Otherwise, it's called directly from RunAsync.
   void Finish(bool should_uninstall);
 
-  std::string extension_id_;
+  std::string target_extension_id_;
 
   scoped_ptr<UninstallDialogDelegate> uninstall_dialog_;
 };
@@ -158,26 +158,22 @@ class ManagementUninstallFunctionBase : public AsyncManagementFunction {
 class ManagementUninstallFunction : public ManagementUninstallFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("management.uninstall", MANAGEMENT_UNINSTALL)
-
   ManagementUninstallFunction();
 
  private:
   ~ManagementUninstallFunction() override;
-
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("management.uninstallSelf",
                              MANAGEMENT_UNINSTALLSELF);
-
   ManagementUninstallSelfFunction();
 
  private:
   ~ManagementUninstallSelfFunction() override;
-
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {

@@ -511,45 +511,65 @@ ManagementUninstallFunctionBase::ManagementUninstallFunctionBase() {
 ManagementUninstallFunctionBase::~ManagementUninstallFunctionBase() {
 }
 
-bool ManagementUninstallFunctionBase::Uninstall(
+ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
     const std::string& target_extension_id,
     bool show_confirm_dialog) {
   const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
                                               ->Get(browser_context())
                                               ->GetDelegate();
-  extension_id_ = target_extension_id;
+  target_extension_id_ = target_extension_id;
   const Extension* target_extension =
       extensions::ExtensionRegistry::Get(browser_context())
-          ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
+          ->GetExtensionById(target_extension_id_,
+                             ExtensionRegistry::EVERYTHING);
   if (!target_extension ||
       ShouldNotBeVisible(target_extension, browser_context())) {
-    error_ =
-        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, extension_id_);
-    return false;
+    return RespondNow(Error(keys::kNoExtensionError, target_extension_id_));
   }
 
   ManagementPolicy* policy =
       ExtensionSystem::Get(browser_context())->management_policy();
   if (!policy->UserMayModifySettings(target_extension, nullptr) ||
       policy->MustRemainInstalled(target_extension, nullptr)) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kUserCantModifyError,
-                                            extension_id_);
-    return false;
+    return RespondNow(Error(keys::kUserCantModifyError, target_extension_id_));
   }
 
-  if (auto_confirm_for_test == DO_NOT_SKIP) {
-    if (show_confirm_dialog) {
+  // Note: null extension() means it's WebUI.
+  bool self_uninstall = extension() && extension_id() == target_extension_id_;
+  // We need to show a dialog for any extension uninstalling another extension.
+  show_confirm_dialog |= !self_uninstall;
+
+  if (show_confirm_dialog && !user_gesture())
+    return RespondNow(Error(keys::kGestureNeededForUninstallError));
+
+  if (show_confirm_dialog) {
+    if (auto_confirm_for_test == DO_NOT_SKIP) {
+      // We show the programmatic uninstall ui for extensions uninstalling
+      // other extensions.
+      bool show_programmatic_uninstall_ui = !self_uninstall && extension();
       AddRef();  // Balanced in ExtensionUninstallAccepted/Canceled
+      // TODO(devlin): A method called "UninstallFunctionDelegate" does not in
+      // any way imply that this actually creates a dialog and runs it.
       uninstall_dialog_ =
-          delegate->UninstallFunctionDelegate(this, target_extension_id);
+          delegate->UninstallFunctionDelegate(
+              this,
+              target_extension,
+              show_programmatic_uninstall_ui);
     } else {
-      Finish(true);
+      // Skip the confirm dialog for testing.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ManagementUninstallFunctionBase::Finish,
+                     this,
+                     auto_confirm_for_test == PROCEED));
     }
-  } else {
-    Finish(auto_confirm_for_test == PROCEED);
+  } else {  // No confirm dialog.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ManagementUninstallFunctionBase::Finish, this, true));
   }
 
-  return true;
+  return RespondLater();
 }
 
 // static
@@ -559,34 +579,32 @@ void ManagementUninstallFunctionBase::SetAutoConfirmForTest(
 }
 
 void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
-  if (should_uninstall) {
-    // The extension can be uninstalled in another window while the UI was
-    // showing. Do nothing in that case.
-    ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-    const Extension* extension = registry->GetExtensionById(
-        extension_id_, ExtensionRegistry::EVERYTHING);
-    if (!extension) {
-      error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
-                                              extension_id_);
-      SendResponse(false);
-    } else {
-      const ManagementAPIDelegate* delegate =
-          ManagementAPI::GetFactoryInstance()
-              ->Get(browser_context())
-              ->GetDelegate();
-      bool success = delegate->UninstallExtension(
-          browser_context(), extension_id_,
-          extensions::UNINSTALL_REASON_MANAGEMENT_API,
-          base::Bind(&base::DoNothing), NULL);
-
-      // TODO set error_ if !success
-      SendResponse(success);
-    }
-  } else {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kUninstallCanceledError,
-                                            extension_id_);
-    SendResponse(false);
+  if (!should_uninstall) {
+    Respond(Error(keys::kUninstallCanceledError, target_extension_id_));
+    return;
   }
+
+  // The extension can be uninstalled in another window while the UI was
+  // showing. Do nothing in that case.
+  const Extension* target_extension =
+      extensions::ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(target_extension_id_,
+                             ExtensionRegistry::EVERYTHING);
+  if (!target_extension) {
+    Respond(Error(keys::kNoExtensionError, target_extension_id_));
+    return;
+  }
+
+  const ManagementAPIDelegate* delegate =
+      ManagementAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetDelegate();
+  base::string16 error;
+  bool success = delegate->UninstallExtension(
+      browser_context(), target_extension_id_,
+      extensions::UNINSTALL_REASON_MANAGEMENT_API,
+      base::Bind(&base::DoNothing), &error);
+  Respond(success ? NoArguments() : Error(base::UTF16ToUTF8(error)));
 }
 
 void ManagementUninstallFunctionBase::ExtensionUninstallAccepted() {
@@ -605,24 +623,14 @@ ManagementUninstallFunction::ManagementUninstallFunction() {
 ManagementUninstallFunction::~ManagementUninstallFunction() {
 }
 
-bool ManagementUninstallFunction::RunAsync() {
+ExtensionFunction::ResponseAction ManagementUninstallFunction::Run() {
   scoped_ptr<management::Uninstall::Params> params(
       management::Uninstall::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(extension_.get());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool show_confirm_dialog = true;
-  // By default confirmation dialog isn't shown when uninstalling self, but this
-  // can be overridden with showConfirmDialog.
-  if (params->id == extension_->id()) {
-    show_confirm_dialog = params->options.get() &&
-                          params->options->show_confirm_dialog.get() &&
-                          *params->options->show_confirm_dialog;
-  }
-  if (show_confirm_dialog && !user_gesture()) {
-    error_ = keys::kGestureNeededForUninstallError;
-    return false;
-  }
+  bool show_confirm_dialog = params->options.get() &&
+                             params->options->show_confirm_dialog.get() &&
+                             *params->options->show_confirm_dialog;
   return Uninstall(params->id, show_confirm_dialog);
 }
 
@@ -632,14 +640,15 @@ ManagementUninstallSelfFunction::ManagementUninstallSelfFunction() {
 ManagementUninstallSelfFunction::~ManagementUninstallSelfFunction() {
 }
 
-bool ManagementUninstallSelfFunction::RunAsync() {
+ExtensionFunction::ResponseAction ManagementUninstallSelfFunction::Run() {
   scoped_ptr<management::UninstallSelf::Params> params(
       management::UninstallSelf::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(extension_.get());
 
-  bool show_confirm_dialog = false;
-  if (params->options.get() && params->options->show_confirm_dialog.get())
-    show_confirm_dialog = *params->options->show_confirm_dialog;
+  bool show_confirm_dialog = params->options.get() &&
+                             params->options->show_confirm_dialog.get() &&
+                             *params->options->show_confirm_dialog;
   return Uninstall(extension_->id(), show_confirm_dialog);
 }
 

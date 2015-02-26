@@ -85,6 +85,9 @@ class ExtensionServiceTestBase : public testing::Test {
   // Initialize an ExtensionService with autoupdate enabled.
   void InitializeExtensionServiceWithUpdater();
 
+  // Resets the browser thread bundle to one with |options|.
+  void ResetThreadBundle(int options);
+
   // TODO(rdevlin.cronin): Pull out more methods from ExtensionServiceTest that
   // are commonly used and/or reimplemented. For instance, methods to install
   // extensions from various locations, etc.
@@ -120,7 +123,10 @@ class ExtensionServiceTestBase : public testing::Test {
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
   // after thread_bundle_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+
+  // Whether or not the thread bundle was reset in the test.
+  bool did_reset_thread_bundle_;
 
   // The directory into which extensions are installed.
   base::FilePath extensions_install_dir_;

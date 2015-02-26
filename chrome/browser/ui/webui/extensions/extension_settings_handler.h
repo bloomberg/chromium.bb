@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -73,7 +72,6 @@ class ExtensionSettingsHandler
       public ExtensionManagement::Observer,
       public ExtensionPrefsObserver,
       public ExtensionRegistryObserver,
-      public ExtensionUninstallDialog::Delegate,
       public WarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
  public:
@@ -134,11 +132,6 @@ class ExtensionSettingsHandler
   // ExtensionManagement::Observer implementation.
   void OnExtensionManagementSettingsChanged() override;
 
-  // ExtensionUninstallDialog::Delegate implementation, used for receiving
-  // notification about uninstall confirmation dialog selections.
-  void ExtensionUninstallAccepted() override;
-  void ExtensionUninstallCanceled() override;
-
   // WarningService::Observer implementation.
   void ExtensionWarningsChanged() override;
 
@@ -182,9 +175,6 @@ class ExtensionSettingsHandler
   // Callback for "allowOnAllUrls" message.
   void HandleAllowOnAllUrlsMessage(const base::ListValue* args);
 
-  // Callback for "uninstall" message.
-  void HandleUninstallMessage(const base::ListValue* args);
-
   // Callback for "options" message.
   void HandleOptionsMessage(const base::ListValue* args);
 
@@ -227,10 +217,6 @@ class ExtensionSettingsHandler
                                             Profile* profile,
                                             std::vector<ExtensionPage>* result);
 
-  // Returns the ExtensionUninstallDialog object for this class, creating it if
-  // needed.
-  ExtensionUninstallDialog* GetExtensionUninstallDialog();
-
   // Called when the reinstallation is complete.
   void OnReinstallComplete(bool success,
                            const std::string& error,
@@ -250,9 +236,6 @@ class ExtensionSettingsHandler
 
   // A convenience member, filled once the extension_service_ is known.
   ManagementPolicy* management_policy_;
-
-  // Used to show confirmation UI for uninstalling extensions in incognito mode.
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;

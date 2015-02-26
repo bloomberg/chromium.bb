@@ -74,23 +74,19 @@ class ManagementUninstallFunctionUninstallDialogDelegate
  public:
   ManagementUninstallFunctionUninstallDialogDelegate(
       extensions::ManagementUninstallFunctionBase* function,
-      const std::string& target_extension_id)
+      const extensions::Extension* target_extension,
+      bool show_programmatic_uninstall_ui)
       : function_(function) {
-    const extensions::Extension* target_extension =
-        extensions::ExtensionRegistry::Get(function->browser_context())
-            ->GetExtensionById(target_extension_id,
-                               extensions::ExtensionRegistry::EVERYTHING);
-    content::WebContents* web_contents = function->GetAssociatedWebContents();
+    content::WebContents* web_contents = function->GetSenderWebContents();
     extension_uninstall_dialog_.reset(
         extensions::ExtensionUninstallDialog::Create(
             Profile::FromBrowserContext(function->browser_context()),
-            web_contents ? web_contents->GetTopLevelNativeWindow() : NULL,
+            web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr,
             this));
-    if (function->extension_id() != target_extension_id) {
+    if (show_programmatic_uninstall_ui) {
       extension_uninstall_dialog_->ConfirmProgrammaticUninstall(
           target_extension, function->extension());
     } else {
-      // If this is a self uninstall, show the generic uninstall dialog.
       extension_uninstall_dialog_->ConfirmUninstall(target_extension);
     }
   }
@@ -104,9 +100,11 @@ class ManagementUninstallFunctionUninstallDialogDelegate
     function_->ExtensionUninstallCanceled();
   }
 
- protected:
+ private:
   extensions::ManagementUninstallFunctionBase* function_;
   scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagementUninstallFunctionUninstallDialogDelegate);
 };
 
 class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
@@ -216,10 +214,11 @@ ChromeManagementAPIDelegate::CreateRequirementsChecker() const {
 scoped_ptr<extensions::UninstallDialogDelegate>
 ChromeManagementAPIDelegate::UninstallFunctionDelegate(
     extensions::ManagementUninstallFunctionBase* function,
-    const std::string& target_extension_id) const {
+    const extensions::Extension* target_extension,
+    bool show_programmatic_uninstall_ui) const {
   return scoped_ptr<extensions::UninstallDialogDelegate>(
       new ManagementUninstallFunctionUninstallDialogDelegate(
-          function, target_extension_id));
+          function, target_extension, show_programmatic_uninstall_ui));
 }
 
 bool ChromeManagementAPIDelegate::CreateAppShortcutFunctionDelegate(

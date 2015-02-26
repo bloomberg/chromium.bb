@@ -33,6 +33,9 @@ namespace extensions {
 
 namespace {
 
+// By default, we run on the IO loop.
+const int kThreadOptions = content::TestBrowserThreadBundle::IO_MAINLOOP;
+
 // Create a testing profile according to |params|.
 scoped_ptr<TestingProfile> BuildTestingProfile(
     const ExtensionServiceTestBase::ExtensionServiceInitParams& params) {
@@ -68,10 +71,10 @@ ExtensionServiceTestBase::ExtensionServiceInitParams::
       profile_is_supervised(false) {
 }
 
-// Our message loop may be used in tests which require it to be an IO loop.
 ExtensionServiceTestBase::ExtensionServiceTestBase()
     : service_(NULL),
-      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
+      did_reset_thread_bundle_(false),
       registry_(NULL) {
   base::FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
@@ -82,6 +85,11 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
 }
 
 ExtensionServiceTestBase::~ExtensionServiceTestBase() {
+  // Parts of destruction have to happen on an IO thread, so if the thread
+  // bundle is reset, we need to change it back.
+  if (did_reset_thread_bundle_)
+    ResetThreadBundle(kThreadOptions);
+
   // Why? Because |profile_| has to be destroyed before |at_exit_manager_|, but
   // is declared above it in the class definition since it's protected.
   profile_.reset();
@@ -168,6 +176,12 @@ void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
   params.autoupdate_enabled = true;
   InitializeExtensionService(params);
   service_->updater()->Start();
+}
+
+void ExtensionServiceTestBase::ResetThreadBundle(int options) {
+  did_reset_thread_bundle_ = true;
+  thread_bundle_.reset();
+  thread_bundle_.reset(new content::TestBrowserThreadBundle(options));
 }
 
 void ExtensionServiceTestBase::SetUp() {

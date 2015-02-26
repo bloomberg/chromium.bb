@@ -232,6 +232,14 @@ cr.define('extensions', function() {
     focusGrid_: new cr.ui.FocusGrid(),
 
     /**
+     * Indicates whether an uninstall dialog is being shown to prevent multiple
+     * dialogs from being displayed.
+     * @type {boolean}
+     * @private
+     */
+    uninstallIsShowing_: false,
+
+    /**
      * Necessary to only show the butterbar once.
      * @private {boolean}
      */
@@ -451,8 +459,16 @@ cr.define('extensions', function() {
       trash.addEventListener('click', function(e) {
         trash.classList.add('open');
         trash.classList.toggle('mouse-clicked', e.detail > 0);
-        chrome.send('extensionSettingsUninstall', [extension.id]);
-      });
+        if (this.uninstallIsShowing_)
+          return;
+        this.uninstallIsShowing_ = true;
+        chrome.management.uninstall(extension.id,
+                                    {showConfirmDialog: true},
+                                    function() {
+          // TODO(devlin): What should we do if the uninstall fails?
+          this.uninstallIsShowing_ = false;
+        }.bind(this));
+      }.bind(this));
       row.querySelector('.enable-controls').appendChild(trash);
 
       // Developer mode ////////////////////////////////////////////////////////
