@@ -6,129 +6,10 @@
 #include <algorithm>
 #include <vector>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/win/pe_image.h"
-#include "base/win/windows_version.h"
-
-namespace {
-
-class Expectations {
- public:
-  enum Value {
-    SECTIONS = 0,
-    IMPORTS_DLLS,
-    DELAY_DLLS,
-    EXPORTS,
-    IMPORTS,
-    DELAY_IMPORTS,
-    RELOCS
-  };
-
-  enum Arch {
-    ARCH_X86 = 0,
-    ARCH_X64,
-    ARCH_ALL
-  };
-
-  Expectations();
-
-  void SetDefault(Value value, int count);
-  void SetOverride(Value value, base::win::Version version,
-                   Arch arch, int count);
-  void SetOverride(Value value, base::win::Version version, int count);
-  void SetOverride(Value value, Arch arch, int count);
-
-  // returns -1 on failure.
-  int GetExpectation(Value value);
-
- private:
-  class Override {
-   public:
-    enum MatchType { MATCH_VERSION, MATCH_ARCH, MATCH_BOTH, MATCH_NONE };
-
-    Override(Value value, base::win::Version version, Arch arch, int count)
-      : value_(value), version_(version), arch_(arch), count_(count) {
-    };
-
-    bool Matches(Value value, base::win::Version version,
-                 Arch arch, MatchType type) {
-      if (value_ != value)
-        return false;
-
-      switch (type) {
-        case MATCH_BOTH:
-          return (arch == arch_ && version == version_);
-        case MATCH_ARCH:
-          return (arch == arch_ && version_ == base::win::VERSION_WIN_LAST);
-        case MATCH_VERSION:
-          return (arch_ == ARCH_ALL && version == version_);
-        case MATCH_NONE:
-          return (arch_ == ARCH_ALL && version_ == base::win::VERSION_WIN_LAST);
-      }
-      return false;
-    }
-
-    int GetCount() { return count_; }
-
-   private:
-    Value value_;
-    base::win::Version version_;
-    Arch arch_;
-    int count_;
-  };
-
-  bool MatchesMyArch(Arch arch);
-
-  std::vector<Override> overrides_;
-  Arch my_arch_;
-  base::win::Version my_version_;
-};
-
-Expectations::Expectations() {
-  my_version_ = base::win::GetVersion();
-#if defined(ARCH_CPU_64_BITS)
-  my_arch_ = ARCH_X64;
-#else
-  my_arch_ = ARCH_X86;
-#endif
-}
-
-int Expectations::GetExpectation(Value value) {
-  // Prefer OS version specificity over Arch specificity.
-  for (auto type : { Override::MATCH_BOTH,
-                     Override::MATCH_VERSION,
-                     Override::MATCH_ARCH,
-                     Override::MATCH_NONE }) {
-    for (auto override : overrides_) {
-      if (override.Matches(value, my_version_, my_arch_, type))
-        return override.GetCount();
-    }
-  }
-  return -1;
-}
-
-void Expectations::SetDefault(Value value, int count) {
-  SetOverride(value, base::win::VERSION_WIN_LAST, ARCH_ALL, count);
-}
-
-void Expectations::SetOverride(Value value,
-                               base::win::Version version,
-                               Arch arch,
-                               int count) {
-  overrides_.push_back(Override(value, version, arch, count));
-}
-
-void Expectations::SetOverride(Value value,
-                               base::win::Version version,
-                               int count) {
-  SetOverride(value, version, ARCH_ALL, count);
-}
-
-void Expectations::SetOverride(Value value, Arch arch, int count) {
-  SetOverride(value, base::win::VERSION_WIN_LAST, arch, count);
-}
-
-}  // namespace
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace win {
@@ -210,41 +91,35 @@ bool ExportsCallback(const PEImage& image,
 }  // namespace
 
 // Tests that we are able to enumerate stuff from a PE file, and that
-// the actual number of items found is within the expected range.
+// the actual number of items found matches an expected value.
 TEST(PEImageTest, EnumeratesPE) {
-  Expectations expectations;
+  base::FilePath pe_image_test_path;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &pe_image_test_path));
+  pe_image_test_path = pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image"));
 
-#ifndef NDEBUG
-  // Default Debug expectations.
-  expectations.SetDefault(Expectations::SECTIONS, 7);
-  expectations.SetDefault(Expectations::IMPORTS_DLLS, 3);
-  expectations.SetDefault(Expectations::DELAY_DLLS, 2);
-  expectations.SetDefault(Expectations::EXPORTS, 2);
-  expectations.SetDefault(Expectations::IMPORTS, 49);
-  expectations.SetDefault(Expectations::DELAY_IMPORTS, 2);
-  expectations.SetDefault(Expectations::RELOCS, 438);
-
-  // 64-bit Debug expectations.
-  expectations.SetOverride(Expectations::SECTIONS, Expectations::ARCH_X64, 8);
-  expectations.SetOverride(Expectations::IMPORTS, Expectations::ARCH_X64, 69);
-  expectations.SetOverride(Expectations::RELOCS, Expectations::ARCH_X64, 632);
+#if defined(ARCH_CPU_64_BITS)
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_64.dll"));
+  const int sections = 6;
+  const int imports_dlls = 2;
+  const int delay_dlls = 2;
+  const int exports = 2;
+  const int imports = 69;
+  const int delay_imports = 2;
+  const int relocs = 632;
 #else
-  // Default Release expectations.
-  expectations.SetDefault(Expectations::SECTIONS, 5);
-  expectations.SetDefault(Expectations::IMPORTS_DLLS, 2);
-  expectations.SetDefault(Expectations::DELAY_DLLS, 2);
-  expectations.SetDefault(Expectations::EXPORTS, 2);
-  expectations.SetDefault(Expectations::IMPORTS, 66);
-  expectations.SetDefault(Expectations::DELAY_IMPORTS, 2);
-  expectations.SetDefault(Expectations::RELOCS, 1586);
-
-  // 64-bit Release expectations.
-  expectations.SetOverride(Expectations::SECTIONS, Expectations::ARCH_X64, 6);
-  expectations.SetOverride(Expectations::IMPORTS, Expectations::ARCH_X64, 69);
-  expectations.SetOverride(Expectations::RELOCS, Expectations::ARCH_X64, 632);
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_32.dll"));
+  const int sections = 5;
+  const int imports_dlls = 2;
+  const int delay_dlls = 2;
+  const int exports = 2;
+  const int imports = 66;
+  const int delay_imports = 2;
+  const int relocs = 1586;
 #endif
 
-  HMODULE module = LoadLibrary(L"pe_image_test.dll");
+  HMODULE module = LoadLibrary(pe_image_test_path.value().c_str());
   ASSERT_TRUE(NULL != module);
 
   PEImage pe(module);
@@ -252,31 +127,31 @@ TEST(PEImageTest, EnumeratesPE) {
   EXPECT_TRUE(pe.VerifyMagic());
 
   pe.EnumSections(SectionsCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::SECTIONS), count);
+  EXPECT_EQ(sections, count);
 
   count = 0;
   pe.EnumImportChunks(ImportChunksCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::IMPORTS_DLLS), count);
+  EXPECT_EQ(imports_dlls, count);
 
   count = 0;
   pe.EnumDelayImportChunks(DelayImportChunksCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::DELAY_DLLS), count);
+  EXPECT_EQ(delay_dlls, count);
 
   count = 0;
   pe.EnumExports(ExportsCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::EXPORTS), count);
+  EXPECT_EQ(exports, count);
 
   count = 0;
   pe.EnumAllImports(ImportsCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::IMPORTS), count);
+  EXPECT_EQ(imports, count);
 
   count = 0;
   pe.EnumAllDelayImports(ImportsCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::DELAY_IMPORTS), count);
+  EXPECT_EQ(delay_imports, count);
 
   count = 0;
   pe.EnumRelocs(RelocsCallback, &count);
-  EXPECT_EQ(expectations.GetExpectation(Expectations::RELOCS), count);
+  EXPECT_EQ(relocs, count);
 
   FreeLibrary(module);
 }

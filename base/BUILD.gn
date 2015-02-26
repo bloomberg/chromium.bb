@@ -1163,6 +1163,8 @@ source_set("protect_file_posix") {
 }
 
 if (is_win) {
+  # Target to manually rebuild pe_image_test.dll which is checked into
+  # base/test/data/pe_image.
   shared_library("pe_image_test") {
     sources = [
       "win/pe_image_test.cc",
@@ -1485,10 +1487,6 @@ test("base_unittests") {
     set_sources_assignment_filter([])
     sources += [ "debug/proc_maps_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
-  }
-
-  if (is_win) {
-    deps += [ ":pe_image_test" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

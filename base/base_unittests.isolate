@@ -72,13 +72,6 @@
         ],
       },
     }],
-    ['OS=="win"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/pe_image_test.dll',
-        ],
-      },
-    }],
   ],
   'includes': [
     'base.isolate',
