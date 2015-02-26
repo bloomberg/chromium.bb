@@ -1087,12 +1087,6 @@
       'browser/ui/panels/stacked_panel_browsertest.cc',
     ],
     'chrome_automation_client_lib_sources': [
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/embedded_automation_extension.cc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/embedded_automation_extension.h',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/js.cc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/js.h',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/user_data_dir.cc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/user_data_dir.h',
       'test/chromedriver/chrome/adb.h',
       'test/chromedriver/chrome/adb_impl.cc',
       'test/chromedriver/chrome/adb_impl.h',
@@ -1201,8 +1195,6 @@
     'chrome_driver_lib_sources': [
       '../third_party/webdriver/atoms.cc',
       '../third_party/webdriver/atoms.h',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.cc',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.h',
       'common/chrome_constants.cc',
       'common/chrome_constants.h',
       'test/chromedriver/alert_commands.cc',
@@ -1671,6 +1663,7 @@
       ],  # conditions
     },
     {
+      # GN version: //chrome/test/chromedriver:automation_client_lib
       'target_name': 'automation_client_lib',
       'type': 'static_library',
       'hard_dependency': 1,
@@ -1697,9 +1690,16 @@
       },
       'sources': [
         '<@(chrome_automation_client_lib_sources)',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/embedded_automation_extension.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/embedded_automation_extension.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/js.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/js.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/user_data_dir.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/user_data_dir.h',
       ],
       'actions': [
         {
+          # GN version: //chrome/test/chromedriver:embed_js_in_cpp
           'action_name': 'embed_js_in_cpp',
           'inputs': [
             'test/chromedriver/cpp_source.py',
@@ -1729,6 +1729,7 @@
           'message': 'Generating sources for embedding js in chromedriver',
         },
         {
+          # GN version: //chrome/test/chromedriver:embed_user_data_dir_in_cpp
           'action_name': 'embed_user_data_dir_in_cpp',
           'inputs': [
             'test/chromedriver/cpp_source.py',
@@ -1750,6 +1751,7 @@
           'message': 'Generating sources for embedding user data dir in chromedriver',
         },
         {
+          # GN version: //chrome/test/chromedriver:embed_extension_in_cpp
           'action_name': 'embed_extension_in_cpp',
           'inputs': [
             'test/chromedriver/cpp_source.py',
@@ -1775,6 +1777,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //chrome/test/chromedriver:lib
       'target_name': 'chromedriver_lib',
       'type': 'static_library',
       'hard_dependency': 1,
@@ -1796,9 +1799,12 @@
       ],
       'sources': [
         '<@(chrome_driver_lib_sources)',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.h',
       ],
       'actions': [
         {
+          # GN version: //chrome/test/chromedriver:embed_version_in_cpp
           'action_name': 'embed_version_in_cpp',
           'inputs': [
             'test/chromedriver/cpp_source.py',
@@ -1836,6 +1842,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //chrome/test/chromedriver
       'target_name': 'chromedriver',
       'type': 'executable',
       'dependencies': [
@@ -1851,6 +1858,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //chrome/test/chromedriver:chromedriver_unittests
       'target_name': 'chromedriver_unittests',
       'type': 'executable',
       'dependencies': [
@@ -1876,6 +1884,7 @@
     # ChromeDriver tests that aren't run on the main buildbot. Available
     # as an optional test type on trybots.
     {
+      # GN version: //chrome/test/chromedriver:chromedriver_tests
       'target_name': 'chromedriver_tests',
       'type': 'executable',
       'dependencies': [
