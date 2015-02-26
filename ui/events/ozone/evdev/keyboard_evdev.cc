@@ -46,6 +46,10 @@ int EventFlagToEvdevModifier(int flag) {
   }
 }
 
+bool IsModifierLock(int evdev_modifier) {
+  return evdev_modifier == EVDEV_MODIFIER_CAPS_LOCK;
+}
+
 }  // namespace
 
 KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
@@ -118,15 +122,8 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
   if (modifier == EVDEV_MODIFIER_NONE)
     return;
 
-  // TODO post-X11: Revise remapping to not use EF_MOD3_DOWN.
-  // Currently EF_MOD3_DOWN means that the CapsLock key is currently down,
-  // and EF_CAPS_LOCK_DOWN means the caps lock state is enabled (and the
-  // key may or may not be down, but usually isn't). There does need to
-  // to be two different flags, since the physical CapsLock key is subject
-  // to remapping, but the caps lock state (which can be triggered in a
-  // variety of ways) is not.
-  if (modifier == EVDEV_MODIFIER_CAPS_LOCK)
-    modifiers_->UpdateModifier(EVDEV_MODIFIER_MOD3, down);
+  if (IsModifierLock(modifier))
+    modifiers_->UpdateModifierLock(modifier, down);
   else
     modifiers_->UpdateModifier(modifier, down);
 }
