@@ -149,7 +149,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_javaScriptPauseScheduled(false)
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
-    , m_inAsyncOperationForStepInto(false)
+    , m_pausingOnAsyncOperation(false)
     , m_listener(nullptr)
     , m_skippedStepFrameCount(0)
     , m_recursionLevelForStepOut(0)
@@ -1097,13 +1097,13 @@ int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& descriptio
     if (m_startingStepIntoAsync) {
         // We have successfully started a StepIntoAsync, so revoke the debugger's StepInto
         // and wait for the corresponding async operation breakpoint.
-        ASSERT(m_asyncOperationsForStepInto.isEmpty());
-        m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
+        ASSERT(m_pausingAsyncOperations.isEmpty());
+        m_pausingAsyncOperations.add(m_lastAsyncOperationId);
         m_startingStepIntoAsync = false;
         m_scheduledDebuggerStep = NoStep;
         scriptDebugServer().clearStepping();
-    } else if (m_inAsyncOperationForStepInto) {
-        m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
+    } else if (m_pausingOnAsyncOperation) {
+        m_pausingAsyncOperations.add(m_lastAsyncOperationId);
     }
 
     if (m_pausedScriptState)
@@ -1140,16 +1140,12 @@ void InspectorDebuggerAgent::traceAsyncCallbackStarting(int operationId)
         m_pendingTraceAsyncOperationCompleted = false;
         m_nestedAsyncCallCount = 1;
 
-        if (m_asyncOperationsForStepInto.contains(operationId)) {
-            m_inAsyncOperationForStepInto = true;
+        if (m_pausingAsyncOperations.contains(operationId) || m_asyncOperationBreakpoints.contains(operationId)) {
+            m_pausingOnAsyncOperation = true;
             m_scheduledDebuggerStep = StepInto;
             m_skippedStepFrameCount = 0;
             m_recursionLevelForStepFrame = 0;
             scriptDebugServer().setPauseOnNextStatement(true);
-        } else if (m_asyncOperationBreakpoints.contains(operationId)) {
-            RefPtr<JSONObject> data = JSONObject::create();
-            data->setNumber("operationId", operationId);
-            schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::AsyncOperation, data.release());
         }
     } else {
         if (m_currentAsyncCallChain)
@@ -1165,12 +1161,12 @@ void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
     --m_nestedAsyncCallCount;
     if (!m_nestedAsyncCallCount) {
         clearCurrentAsyncOperation();
-        if (!m_inAsyncOperationForStepInto)
+        if (!m_pausingOnAsyncOperation)
             return;
-        m_inAsyncOperationForStepInto = false;
+        m_pausingOnAsyncOperation = false;
         m_scheduledDebuggerStep = NoStep;
         scriptDebugServer().setPauseOnNextStatement(false);
-        if (m_asyncOperationsForStepInto.isEmpty())
+        if (m_startingStepIntoAsync && m_pausingAsyncOperations.isEmpty())
             clearStepIntoAsync();
     }
 }
@@ -1190,12 +1186,12 @@ void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
             }
         }
         m_asyncOperations.remove(operationId);
-        m_asyncOperationsForStepInto.remove(operationId);
         m_asyncOperationBreakpoints.remove(operationId);
+        m_pausingAsyncOperations.remove(operationId);
         shouldNotify = !m_asyncOperationNotifications.take(operationId);
     }
     if (m_startingStepIntoAsync) {
-        if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
+        if (!m_pausingOnAsyncOperation && m_pausingAsyncOperations.isEmpty())
             clearStepIntoAsync();
     }
     if (m_frontend && shouldNotify)
@@ -1546,6 +1542,10 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
             m_breakAuxData = injectedScript.wrapObject(exception, InspectorDebuggerAgent::backtraceObjectGroup)->openAccessors();
             // m_breakAuxData might be null after this.
         }
+    } else if (m_pausingOnAsyncOperation) {
+        m_breakReason = InspectorFrontend::Debugger::Reason::AsyncOperation;
+        m_breakAuxData = JSONObject::create();
+        m_breakAuxData->setNumber("operationId", m_currentAsyncOperationId);
     }
 
     RefPtr<Array<String> > hitBreakpointIds = Array<String>::create();
@@ -1631,8 +1631,8 @@ void InspectorDebuggerAgent::clear()
 void InspectorDebuggerAgent::clearStepIntoAsync()
 {
     m_startingStepIntoAsync = false;
-    m_asyncOperationsForStepInto.clear();
-    m_inAsyncOperationForStepInto = false;
+    m_pausingOnAsyncOperation = false;
+    m_pausingAsyncOperations.clear();
 }
 
 bool InspectorDebuggerAgent::assertPaused(ErrorString* errorString)

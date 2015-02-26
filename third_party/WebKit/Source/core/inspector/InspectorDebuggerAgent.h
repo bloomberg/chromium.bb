@@ -280,7 +280,7 @@ private:
     bool m_javaScriptPauseScheduled;
     bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;
-    bool m_inAsyncOperationForStepInto;
+    bool m_pausingOnAsyncOperation;
     RawPtrWillBeMember<Listener> m_listener;
 
     int m_skippedStepFrameCount;
@@ -296,9 +296,9 @@ private:
     using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;
     int m_lastAsyncOperationId;
-    HashSet<int> m_asyncOperationsForStepInto;
     ListHashSet<int> m_asyncOperationNotifications;
     HashSet<int> m_asyncOperationBreakpoints;
+    HashSet<int> m_pausingAsyncOperations;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
