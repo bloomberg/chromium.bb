@@ -53,7 +53,7 @@ public:
     // Manage storage for us.
     explicit AudioChannel(size_t length)
         : m_length(length)
-        , m_rawPointer(0)
+        , m_rawPointer(nullptr)
         , m_silent(true)
     {
         m_memBuffer = adoptPtr(new AudioFloatArray(length));
@@ -62,7 +62,7 @@ public:
     // A "blank" audio channel -- must call set() before it's useful...
     AudioChannel()
         : m_length(0)
-        , m_rawPointer(0)
+        , m_rawPointer(nullptr)
         , m_silent(true)
     {
     }

@@ -44,14 +44,14 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
         exceptionState.throwDOMException(
             NotSupportedError,
             "Workers are not supported.");
-        return 0;
+        return nullptr;
     }
 
     Document* document = toDocument(context);
 
     if (!numberOfFrames) {
         exceptionState.throwDOMException(SyntaxError, "number of frames cannot be zero.");
-        return 0;
+        return nullptr;
     }
 
     if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
@@ -64,7 +64,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
                 ExceptionMessages::InclusiveBound,
                 AudioContext::maxNumberOfChannels(),
                 ExceptionMessages::InclusiveBound));
-        return 0;
+        return nullptr;
     }
 
     if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate)) {

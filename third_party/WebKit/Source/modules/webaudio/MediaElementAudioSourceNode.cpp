@@ -64,7 +64,7 @@ MediaElementAudioSourceNode::~MediaElementAudioSourceNode()
 
 void MediaElementAudioSourceNode::dispose()
 {
-    m_mediaElement->setAudioSourceNode(0);
+    m_mediaElement->setAudioSourceNode(nullptr);
     uninitialize();
     AudioSourceNode::dispose();
 }

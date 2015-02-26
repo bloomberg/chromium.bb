@@ -43,7 +43,7 @@ namespace blink {
 ChannelMergerNode* ChannelMergerNode::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
 {
     if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
-        return 0;
+        return nullptr;
 
     return new ChannelMergerNode(context, sampleRate, numberOfInputs);
 }

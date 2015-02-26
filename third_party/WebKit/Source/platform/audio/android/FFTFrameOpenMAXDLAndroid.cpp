@@ -47,8 +47,8 @@ FFTFrame::FFTFrame(unsigned fftSize)
     , m_log2FFTSize(static_cast<unsigned>(log2(fftSize)))
     , m_realData(fftSize / 2)
     , m_imagData(fftSize / 2)
-    , m_forwardContext(0)
-    , m_inverseContext(0)
+    , m_forwardContext(nullptr)
+    , m_inverseContext(nullptr)
     , m_complexData(fftSize)
 {
     // We only allow power of two.
@@ -62,8 +62,8 @@ FFTFrame::FFTFrame(unsigned fftSize)
 FFTFrame::FFTFrame()
     : m_FFTSize(0)
     , m_log2FFTSize(0)
-    , m_forwardContext(0)
-    , m_inverseContext(0)
+    , m_forwardContext(nullptr)
+    , m_inverseContext(nullptr)
 {
 }
 
@@ -73,8 +73,8 @@ FFTFrame::FFTFrame(const FFTFrame& frame)
     , m_log2FFTSize(frame.m_log2FFTSize)
     , m_realData(frame.m_FFTSize / 2)
     , m_imagData(frame.m_FFTSize / 2)
-    , m_forwardContext(0)
-    , m_inverseContext(0)
+    , m_forwardContext(nullptr)
+    , m_inverseContext(nullptr)
     , m_complexData(frame.m_FFTSize)
 {
     m_forwardContext = contextForSize(m_log2FFTSize);
@@ -167,7 +167,7 @@ OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize)
         return context;
     }
 
-    return 0;
+    return nullptr;
 }
 
 } // namespace blink

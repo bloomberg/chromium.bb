@@ -160,7 +160,7 @@ void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* in
     // Normally, we'll just be dealing with mono sources.
     // If we have a stereo input, implement stereo panning with left source processed by left HRTF, and right source by right HRTF.
     const AudioChannel* inputChannelL = inputBus->channelByType(AudioBus::ChannelLeft);
-    const AudioChannel* inputChannelR = numInputChannels > 1 ? inputBus->channelByType(AudioBus::ChannelRight) : 0;
+    const AudioChannel* inputChannelR = numInputChannels > 1 ? inputBus->channelByType(AudioBus::ChannelRight) : nullptr;
 
     // Get source and destination pointers.
     const float* sourceL = inputChannelL->data();

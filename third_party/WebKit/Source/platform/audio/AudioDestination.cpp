@@ -166,7 +166,7 @@ void AudioDestination::render(const WebVector<float*>& sourceData, const WebVect
 
 void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess)
 {
-    AudioBus* sourceBus = 0;
+    AudioBus* sourceBus = nullptr;
     if (m_inputFifo->framesInFifo() >= framesToProcess) {
         m_inputFifo->consume(m_inputBus.get(), framesToProcess);
         sourceBus = m_inputBus.get();

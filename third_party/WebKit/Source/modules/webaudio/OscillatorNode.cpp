@@ -112,7 +112,7 @@ void OscillatorNode::setType(const String& type)
 
 bool OscillatorNode::setType(unsigned type)
 {
-    PeriodicWave* periodicWave = 0;
+    PeriodicWave* periodicWave = nullptr;
     float sampleRate = this->sampleRate();
 
     switch (type) {

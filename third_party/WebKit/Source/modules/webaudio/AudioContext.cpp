@@ -91,7 +91,7 @@ AudioContext* AudioContext::create(Document& document, ExceptionState& exception
         exceptionState.throwDOMException(
             SyntaxError,
             "number of hardware contexts reached maximum (" + String::number(MaxHardwareContexts) + ").");
-        return 0;
+        return nullptr;
     }
 
     AudioContext* audioContext = new AudioContext(&document);
@@ -320,7 +320,7 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
         exceptionState.throwDOMException(
             InvalidStateError,
             "invalid HTMLMedialElement.");
-        return 0;
+        return nullptr;
     }
 
     // First check if this media element already has a source node.
@@ -328,7 +328,7 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
         exceptionState.throwDOMException(
             InvalidStateError,
             "HTMLMediaElement already connected previously to a different MediaElementSourceNode.");
-        return 0;
+        return nullptr;
     }
 
     MediaElementAudioSourceNode* node = MediaElementAudioSourceNode::create(this, mediaElement);
@@ -352,7 +352,7 @@ MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* m
         exceptionState.throwDOMException(
             InvalidStateError,
             "invalid MediaStream source");
-        return 0;
+        return nullptr;
     }
 
     MediaStreamTrackVector audioTracks = mediaStream->getAudioTracks();
@@ -360,7 +360,7 @@ MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* m
         exceptionState.throwDOMException(
             InvalidStateError,
             "MediaStream has no audio track");
-        return 0;
+        return nullptr;
     }
 
     // Use the first audio track in the media stream.
@@ -453,7 +453,7 @@ ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size
                 "buffer size (" + String::number(bufferSize)
                 + ") must be a power of two between 256 and 16384.");
         }
-        return 0;
+        return nullptr;
     }
 
     refNode(node); // context keeps reference until we stop making javascript rendering callbacks
@@ -569,7 +569,7 @@ DelayNode* AudioContext::createDelay(double maxDelayTime, ExceptionState& except
 
     DelayNode* node = DelayNode::create(this, m_destinationNode->sampleRate(), maxDelayTime, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     return node;
 }
 
@@ -601,7 +601,7 @@ ChannelSplitterNode* AudioContext::createChannelSplitter(size_t numberOfOutputs,
             "number of outputs (" + String::number(numberOfOutputs)
             + ") must be between 1 and "
             + String::number(AudioContext::maxNumberOfChannels()) + ".");
-        return 0;
+        return nullptr;
     }
 
     return node;
@@ -634,7 +634,7 @@ ChannelMergerNode* AudioContext::createChannelMerger(size_t numberOfInputs, Exce
             "number of inputs (" + String::number(numberOfInputs)
             + ") must be between 1 and "
             + String::number(AudioContext::maxNumberOfChannels()) + ".");
-        return 0;
+        return nullptr;
     }
 
     return node;
@@ -669,14 +669,14 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
         exceptionState.throwDOMException(
             SyntaxError,
             "invalid real array");
-        return 0;
+        return nullptr;
     }
 
     if (!imag) {
         exceptionState.throwDOMException(
             SyntaxError,
             "invalid imaginary array");
-        return 0;
+        return nullptr;
     }
 
     if (real->length() > PeriodicWave::kMaxPeriodicWaveArraySize) {
@@ -689,7 +689,7 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
                 ExceptionMessages::InclusiveBound,
                 PeriodicWave::kMaxPeriodicWaveArraySize,
                 ExceptionMessages::InclusiveBound));
-        return 0;
+        return nullptr;
     }
 
     if (imag->length() > PeriodicWave::kMaxPeriodicWaveArraySize) {
@@ -702,7 +702,7 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
                 ExceptionMessages::InclusiveBound,
                 PeriodicWave::kMaxPeriodicWaveArraySize,
                 ExceptionMessages::InclusiveBound));
-        return 0;
+        return nullptr;
     }
 
     if (real->length() != imag->length()) {
@@ -711,7 +711,7 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
             "length of real array (" + String::number(real->length())
             + ") and length of imaginary array (" +  String::number(imag->length())
             + ") must match.");
-        return 0;
+        return nullptr;
     }
 
     return PeriodicWave::create(sampleRate(), real, imag);

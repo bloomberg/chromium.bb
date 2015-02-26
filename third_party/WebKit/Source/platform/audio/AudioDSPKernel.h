@@ -46,7 +46,7 @@ public:
     }
 
     AudioDSPKernel(float sampleRate)
-        : m_kernelProcessor(0)
+        : m_kernelProcessor(nullptr)
         , m_sampleRate(sampleRate)
     {
     }

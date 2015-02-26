@@ -42,7 +42,7 @@ namespace blink {
 
 const int kMaxFFTPow2Size = 24;
 
-FFTSetup* FFTFrame::fftSetups = 0;
+FFTSetup* FFTFrame::fftSetups = nullptr;
 
 // Normal constructor: allocates for a given fftSize
 FFTFrame::FFTFrame(unsigned fftSize)
@@ -150,7 +150,7 @@ void FFTFrame::cleanup()
     }
 
     free(fftSetups);
-    fftSetups = 0;
+    fftSetups = nullptr;
 }
 
 } // namespace blink

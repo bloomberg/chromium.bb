@@ -103,19 +103,19 @@ AudioChannel* AudioBus::channelByType(unsigned channelType)
 {
     // For now we only support canonical channel layouts...
     if (m_layout != LayoutCanonical)
-        return 0;
+        return nullptr;
 
     switch (numberOfChannels()) {
     case 1: // mono
         if (channelType == ChannelMono || channelType == ChannelLeft)
             return channel(0);
-        return 0;
+        return nullptr;
 
     case 2: // stereo
         switch (channelType) {
         case ChannelLeft: return channel(0);
         case ChannelRight: return channel(1);
-        default: return 0;
+        default: return nullptr;
         }
 
     case 4: // quad
@@ -124,7 +124,7 @@ AudioChannel* AudioBus::channelByType(unsigned channelType)
         case ChannelRight: return channel(1);
         case ChannelSurroundLeft: return channel(2);
         case ChannelSurroundRight: return channel(3);
-        default: return 0;
+        default: return nullptr;
         }
 
     case 5: // 5.0
@@ -134,7 +134,7 @@ AudioChannel* AudioBus::channelByType(unsigned channelType)
         case ChannelCenter: return channel(2);
         case ChannelSurroundLeft: return channel(3);
         case ChannelSurroundRight: return channel(4);
-        default: return 0;
+        default: return nullptr;
         }
 
     case 6: // 5.1
@@ -145,12 +145,12 @@ AudioChannel* AudioBus::channelByType(unsigned channelType)
         case ChannelLFE: return channel(3);
         case ChannelSurroundLeft: return channel(4);
         case ChannelSurroundRight: return channel(5);
-        default: return 0;
+        default: return nullptr;
         }
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 const AudioChannel* AudioBus::channelByType(unsigned type) const

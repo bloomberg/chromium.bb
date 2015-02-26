@@ -46,12 +46,12 @@ namespace blink {
 AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
     if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate) || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
-        return 0;
+        return nullptr;
 
     AudioBuffer* buffer = new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate);
 
     if (!buffer->createdSuccessfully(numberOfChannels))
-        return 0;
+        return nullptr;
     return buffer;
 }
 
@@ -67,7 +67,7 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
                 ExceptionMessages::InclusiveBound,
                 AudioContext::maxNumberOfChannels(),
                 ExceptionMessages::InclusiveBound));
-        return 0;
+        return nullptr;
     }
 
     if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate)) {
@@ -80,7 +80,7 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
                 ExceptionMessages::InclusiveBound,
                 AudioUtilities::maxAudioBufferSampleRate(),
                 ExceptionMessages::InclusiveBound));
-        return 0;
+        return nullptr;
     }
 
     if (!numberOfFrames) {
@@ -90,7 +90,7 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
                 "number of frames",
                 numberOfFrames,
                 static_cast<size_t>(0)));
-        return 0;
+        return nullptr;
     }
 
     AudioBuffer* audioBuffer = create(numberOfChannels, numberOfFrames, sampleRate);
@@ -117,17 +117,17 @@ AudioBuffer* AudioBuffer::createFromAudioFileData(const void* data, size_t dataS
             return buffer;
     }
 
-    return 0;
+    return nullptr;
 }
 
 AudioBuffer* AudioBuffer::createFromAudioBus(AudioBus* bus)
 {
     if (!bus)
-        return 0;
+        return nullptr;
     AudioBuffer* buffer = new AudioBuffer(bus);
     if (buffer->createdSuccessfully(bus->numberOfChannels()))
         return buffer;
-    return 0;
+    return nullptr;
 }
 
 bool AudioBuffer::createdSuccessfully(unsigned desiredNumberOfChannels) const
@@ -188,7 +188,7 @@ PassRefPtr<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channelIndex, E
 DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex)
 {
     if (channelIndex >= m_channels.size())
-        return 0;
+        return nullptr;
 
     return m_channels[channelIndex].get();
 }

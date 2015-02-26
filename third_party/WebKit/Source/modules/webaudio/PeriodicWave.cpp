@@ -57,7 +57,7 @@ PeriodicWave* PeriodicWave::create(float sampleRate, DOMFloat32Array* real, DOMF
         periodicWave->createBandLimitedTables(real->data(), imag->data(), numberOfComponents);
         return periodicWave;
     }
-    return 0;
+    return nullptr;
 }
 
 PeriodicWave* PeriodicWave::createSine(float sampleRate)

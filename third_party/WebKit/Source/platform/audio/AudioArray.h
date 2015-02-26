@@ -38,8 +38,8 @@ namespace blink {
 template<typename T>
 class AudioArray {
 public:
-    AudioArray() : m_allocation(0), m_alignedData(0), m_size(0) { }
-    explicit AudioArray(size_t n) : m_allocation(0), m_alignedData(0), m_size(0)
+    AudioArray() : m_allocation(nullptr), m_alignedData(nullptr), m_size(0) { }
+    explicit AudioArray(size_t n) : m_allocation(nullptr), m_alignedData(nullptr), m_size(0)
     {
         allocate(n);
     }
