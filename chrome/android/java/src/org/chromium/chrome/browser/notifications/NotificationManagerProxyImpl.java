@@ -24,7 +24,22 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     }
 
     @Override
+    public void cancel(String tag, int id) {
+        mNotificationManager.cancel(tag, id);
+    }
+
+    @Override
+    public void cancelAll() {
+        mNotificationManager.cancelAll();
+    }
+
+    @Override
     public void notify(int id, Notification notification) {
         mNotificationManager.notify(id, notification);
+    }
+
+    @Override
+    public void notify(String tag, int id, Notification notification) {
+        mNotificationManager.notify(tag, id, notification);
     }
 }

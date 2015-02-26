@@ -14,5 +14,8 @@ import android.app.Notification;
  */
 public interface NotificationManagerProxy {
     void cancel(int id);
+    void cancel(String tag, int id);
+    void cancelAll();
     void notify(int id, Notification notification);
+    void notify(String tag, int id, Notification notification);
 }

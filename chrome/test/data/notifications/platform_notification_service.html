@@ -5,8 +5,9 @@
     <title>Platform Notification Service BrowserTest service page</title>
   </head>
   <body>
-    <!-- This page is intended to be used by the
+    <!-- This page is intended to be used by the cross-platform
          PlatformNotificationServiceBrowserTest. -->
+    <script src="notification_test_utils.js"></script>
     <script>
       var messagePort = null,
           messageStack = [],
@@ -18,51 +19,6 @@
         Notification.requestPermission(function (level) {
           domAutomationController.send(level);
         });
-      }
-
-      // Returns a promise that will be resolved with an activated Service
-      // Worker, or rejects when the Service Worker could not be started. There
-      // will be a message port to and from the worker in |messagePort|.
-      // TODO(peter): Generalize this in some sort of Service Worker utility
-      // JavaScript file so that other tests can re-use the same logic.
-      function GetActivatedServiceWorker(script, scope) {
-        return navigator.serviceWorker.getRegistration(scope)
-            .then(function (registration) {
-              // Unregister any existing Service Worker.
-              if (registration)
-                return registration.unregister();
-            }).then(function () {
-              // Register the Service Worker again.
-              return navigator.serviceWorker.register(script, { scope: scope });
-            }).then(function (registration) {
-              if (registration.active) {
-                return registration;
-              } else if (registration.waiting || registration.installing) {
-                var worker = registration.waiting || registration.installing;
-                return new Promise(function (resolve) {
-                  worker.addEventListener('statechange', function () {
-                    if (worker.state === 'activated')
-                      resolve(registration);
-                  });
-                });
-              } else {
-                return Promise.reject('Service Worker in invalid state.');
-              }
-            }).then(function (registration) {
-              return new Promise(function (resolve) {
-                var channel = new MessageChannel();
-                channel.port1.addEventListener('message', function (event) {
-                  if (event.data == 'ready')
-                    resolve(registration);
-                });
-
-                registration.active.postMessage(channel.port2,
-                                                [ channel.port2 ]);
-
-                messagePort = channel.port1;
-                messagePort.start();
-              });
-            });
       }
 
       // Renews the registered Service Worker registration for this page, then

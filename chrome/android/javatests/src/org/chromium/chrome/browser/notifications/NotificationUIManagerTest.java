@@ -1,0 +1,170 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.notifications;
+
+import android.app.Notification;
+import android.os.Build;
+import android.test.suitebuilder.annotation.MediumTest;
+import android.util.SparseArray;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
+import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
+
+import java.util.concurrent.TimeoutException;
+
+/**
+ * Instrumentation tests for the Notification UI Manager implementation on Android.
+ *
+ * Web Notifications are only supported on Android JellyBean and beyond.
+ */
+@MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN)
+public class NotificationUIManagerTest extends ChromeShellTestBase {
+    private static final String NOTIFICATION_TEST_PAGE =
+            TestHttpServerClient.getUrl("chrome/test/data/notifications/android_test.html");
+    private static final String PERMISSION_GRANTED = "\"granted\"";
+
+    private MockNotificationManagerProxy mMockNotificationManager;
+
+    /**
+     * Sets the permission to use Web Notifications for the test HTTP server's origin to |setting|.
+     */
+    private void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting) {
+        final String origin = TestHttpServerClient.getUrl("");
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // The notification content setting does not consider the embedder origin.
+                PushNotificationInfo pushNotificationInfo = new PushNotificationInfo(origin, "");
+                pushNotificationInfo.setContentSetting(setting);
+            }
+        });
+    }
+
+    /**
+     * Runs the Javascript |code| in the current tab, and waits for the result to be available.
+     *
+     * @param code The JavaScript code to execute in the current tab.
+     * @return A JSON-formatted string with the result of executing the |code|.
+     */
+    private String runJavaScriptCodeInCurrentTab(String code) throws InterruptedException,
+                                                                     TimeoutException {
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getActivity().getActiveContentViewCore().getWebContents(), code);
+    }
+
+    /**
+     * Shows a notification with |title| and |options|, waits until it has been displayed and then
+     * returns the Notification object to the caller. Requires that only a single notification is
+     * being displayed in the notification manager.
+     *
+     * @param title Title of the Web Notification to show.
+     * @param options Optional map of options to include when showing the notification.
+     * @return The Android Notification object, as shown in the framework.
+     */
+    private Notification showAndGetNotification(String title, String options) throws Exception {
+        runJavaScriptCodeInCurrentTab("showNotification(\"" + title + "\", " + options + ");");
+        assertTrue(waitForNotificationManagerMutation());
+
+        SparseArray<Notification> notifications = mMockNotificationManager.getNotifications();
+        assertEquals(1, notifications.size());
+
+        return notifications.valueAt(0);
+    }
+
+    /**
+     * Waits for a mutation to occur in the mocked notification manager. This indicates that Chrome
+     * called into Android to notify or cancel a notification.
+     *
+     * @return Whether the wait was successful.
+     */
+    private boolean waitForNotificationManagerMutation() throws Exception {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mMockNotificationManager.getMutationCountAndDecrement() > 0;
+            }
+        });
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        mMockNotificationManager = new MockNotificationManagerProxy();
+        NotificationUIManager.overrideNotificationManagerForTesting(mMockNotificationManager);
+
+        launchChromeShellWithUrl(NOTIFICATION_TEST_PAGE);
+        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        NotificationUIManager.overrideNotificationManagerForTesting(null);
+
+        super.tearDown();
+    }
+
+    /**
+     * Verifies that the intended default properties of a notification will indeed be set on the
+     * Notification object that will be send to Android.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testDefaultNotificationProperties() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
+
+        String origin = TestHttpServerClient.getUrl("");
+
+        Notification notification = showAndGetNotification("MyNotification", "{ body: 'Hello' }");
+        assertNotNull(notification);
+
+        // Validate the contents of the notification.
+        assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals("Hello", notification.extras.getString(Notification.EXTRA_TEXT));
+        assertEquals(origin, notification.extras.getString(Notification.EXTRA_SUB_TEXT));
+
+        // Validate the appearance style of the notification. The EXTRA_TEMPLATE was inroduced
+        // in Android Lollipop, we cannot verify this in earlier versions.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            assertEquals("android.app.Notification$BigTextStyle",
+                    notification.extras.getString(Notification.EXTRA_TEMPLATE));
+        }
+
+        // Validate the notification's behavior.
+        assertEquals(Notification.DEFAULT_ALL, notification.defaults);
+        assertEquals(Notification.PRIORITY_DEFAULT, notification.priority);
+    }
+
+    /**
+     * Verifies that notifications which specify an icon will have that icon fetched, converted into
+     * a Bitmap and included as the large icon in the notification.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testShowNotificationWithIcon() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
+
+        Notification notification = showAndGetNotification("MyNotification", "{icon: 'icon.png'}");
+        assertNotNull(notification);
+
+        assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
+        assertNotNull(notification.largeIcon);
+
+        // These are the dimensions of //chrome/test/data/notifications/icon.png at 1x scale.
+        assertEquals(100, notification.largeIcon.getWidth());
+        assertEquals(100, notification.largeIcon.getHeight());
+    }
+}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Android Web Notifications Instrumentation test-page</title>
+  </head>
+  <body>
+    <!-- This page is used by the NotificationUIManagerTest instrumentation test
+         suite on Android. -->
+    <script src="notification_test_utils.js"></script>
+    <script>
+      function showNotification(title, options) {
+        GetActivatedServiceWorker('android_test_worker.js', location.pathname)
+            .then(function(registration) {
+              registration.showNotification(title, options);
+            });
+      }
+    </script>
+  </body>
+</html>

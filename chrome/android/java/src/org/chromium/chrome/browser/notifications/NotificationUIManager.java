@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -39,11 +40,12 @@ public class NotificationUIManager {
     private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
 
     private static NotificationUIManager sInstance;
+    private static NotificationManagerProxy sNotificationManagerOverride;
 
     private final long mNativeNotificationManager;
 
     private final Context mAppContext;
-    private final NotificationManager mNotificationManager;
+    private final NotificationManagerProxy mNotificationManager;
 
     private RoundedIconGenerator mIconGenerator;
 
@@ -65,12 +67,29 @@ public class NotificationUIManager {
         return sInstance;
     }
 
+    /**
+     * Overrides the notification manager which is to be used for displaying Notifications on the
+     * Android framework. Should only be used for testing. Tests are expected to clean up after
+     * themselves by setting this to NULL again.
+     *
+     * @param proxy The notification manager instance to use instead of the system's.
+     */
+    @VisibleForTesting
+    public static void overrideNotificationManagerForTesting(
+            NotificationManagerProxy notificationManager) {
+        sNotificationManagerOverride = notificationManager;
+    }
+
     private NotificationUIManager(long nativeNotificationManager, Context context) {
         mNativeNotificationManager = nativeNotificationManager;
         mAppContext = context.getApplicationContext();
 
-        mNotificationManager = (NotificationManager)
-                mAppContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (sNotificationManagerOverride != null) {
+            mNotificationManager = sNotificationManagerOverride;
+        } else {
+            mNotificationManager = new NotificationManagerProxyImpl(
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        }
 
         mLastNotificationId = 0;
     }
