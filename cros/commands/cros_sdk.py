@@ -10,6 +10,7 @@ import logging
 
 from chromite import cros
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -37,9 +38,13 @@ class SdkCommand(cros.CrosCommand):
     osutils.SafeMakedirs(sdk_dir)
 
     # Figure out what manifest to sync into repo.
-    manifest_url = cbuildbot_config.GetManifestVersionsRepoUrl(
-        False, read_only=True)
-    manifest_path = 'project-sdk/%s.xml' % version
+    if version == 'TOT':
+      manifest_url = constants.MANIFEST_URL
+      manifest_path = constants.PROJECT_MANIFEST
+    else:
+      manifest_url = cbuildbot_config.GetManifestVersionsRepoUrl(
+          False, read_only=True)
+      manifest_path = 'project-sdk/%s.xml' % version
 
     # Init new repo.
     repo = repository.RepoRepository(

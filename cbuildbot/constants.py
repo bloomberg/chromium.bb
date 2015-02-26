@@ -251,6 +251,7 @@ MANIFEST_INT_URL = '%s/%s' % (INTERNAL_GERRIT_URL, MANIFEST_INT_PROJECT)
 
 DEFAULT_MANIFEST = 'default.xml'
 OFFICIAL_MANIFEST = 'official.xml'
+PROJECT_MANIFEST = 'project_sdk.xml'
 LATEST_PROJECT_SDK_MANIFEST = 'project-sdk/latest.xml'
 LKGM_MANIFEST = 'LKGM/lkgm.xml'
 
