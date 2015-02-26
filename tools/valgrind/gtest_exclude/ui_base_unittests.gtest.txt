@@ -1,2 +1,0 @@
-# Hangs, fails on cros valgrind. crbug.com/427818
-TouchExplorationTest.*
