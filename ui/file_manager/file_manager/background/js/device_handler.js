@@ -485,19 +485,12 @@ DeviceHandler.prototype.onMount_ = function(event) {
                      * @this {DeviceHandler}
                      */
                     function(appEnabled) {
-                      // We don't want to auto-open two windows
-                      // when a user inserts a removable device.
-                      // If Photos App is enabled only show a notification.
-                      if (appEnabled) {
-                        if (metadata.deviceType && metadata.devicePath) {
-                          DeviceHandler.Notification.DEVICE_IMPORT.show(
-                              /** @type {string} */ (
-                                  metadata.devicePath));
-                        }
-                      } else {
+                      // We don't want to auto-open two windows when a user
+                      // inserts a removable device.  Only open Files app if
+                      // auto-import is disabled in Photos app.
+                      if (!appEnabled) {
                         this.openMediaDirectory_(
-                            metadata.volumeId,
-                            directory.fullPath);
+                            metadata.volumeId, directory.fullPath);
                       }
                     }.bind(this));
           }.bind(this))

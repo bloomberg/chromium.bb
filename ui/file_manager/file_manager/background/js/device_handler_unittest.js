@@ -152,49 +152,6 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
   reportPromise(resolver.promise, callback);
 }
 
-function testMediaDeviceWithImportEnabledAndPhotosAppImportEnabled(callback) {
-  var storage = new MockChromeStorageAPI();
-  chrome.commandLinePrivate.cloudImportDisabled = false;
-
-  setupFileSystem(
-      VolumeManagerCommon.VolumeType.REMOVABLE,
-      'blabbity',
-      [
-        '/DCIM/',
-        '/DCIM/grandma.jpg'
-      ]);
-
-  var promise = importer.handlePhotosAppMessage(true)
-      .then(
-          function() {
-            chrome.fileManagerPrivate.onMountCompleted.dispatch({
-              eventType: 'mount',
-              status: 'success',
-              volumeMetadata: {
-                volumeId: 'blabbity',
-                isParentDevice: true,
-                deviceType: 'usb',
-                devicePath: '/device/path',
-                deviceLabel: 'label',
-                hasMedia: true
-              },
-              shouldNotify: true
-            });
-
-            return chrome.notifications.resolver.promise.then(
-                function(notifications) {
-                  assertEquals(1, Object.keys(notifications).length);
-                  assertEquals(
-                      'DEVICE_IMPORT',
-                      notifications[
-                          'deviceImport:/device/path'].message,
-                      'Device notification did not have the right message.');
-                });
-          });
-
-  reportPromise(promise, callback);
-}
-
 function testMediaDeviceWithImportDisabled(callback) {
   chrome.commandLinePrivate.cloudImportDisabled = true;
 
