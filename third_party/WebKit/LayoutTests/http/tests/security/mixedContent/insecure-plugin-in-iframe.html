@@ -1,8 +1,10 @@
 <html>
 <body>
 <script>
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.overridePreference("WebKitAllowRunningInsecureContent", true);
+}
 onload = function() {
     if (window.internals)
         internals.updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(document.querySelector('iframe'));

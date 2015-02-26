@@ -1,8 +1,10 @@
 <html>
 <body>
 <script>
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.overridePreference("WebKitAllowRunningInsecureContent", true);
+}
 </script>
 <p>This test loads a secure iframe that loads an insecure iframe.  We should
 get a mixed content callback becase the child frame is HTTPS.</p>
