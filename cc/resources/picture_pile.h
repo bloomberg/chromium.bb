@@ -29,6 +29,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
                                    const gfx::Rect& visible_layer_rect,
                                    int frame_number,
                                    RecordingMode recording_mode) override;
+  void DidMoveToNewCompositor() override;
   scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd_text) const override;
   gfx::Size GetSize() const final;
@@ -56,6 +57,8 @@ class CC_EXPORT PicturePile : public RecordingSource {
     float GetInvalidationFrequencyForTesting() const {
       return GetInvalidationFrequency();
     }
+
+    void ResetInvalidationHistory();
 
    private:
     void AdvanceInvalidationHistory(int frame_number);

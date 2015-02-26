@@ -214,6 +214,11 @@ bool PicturePile::UpdateAndExpandInvalidation(
   return true;
 }
 
+void PicturePile::DidMoveToNewCompositor() {
+  for (auto& map_pair : picture_map_)
+    map_pair.second.ResetInvalidationHistory();
+}
+
 bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
                                              Region* invalidation,
                                              const gfx::Size& layer_size,
@@ -745,6 +750,11 @@ bool PicturePile::PictureInfo::NeedsRecording(int frame_number,
   return !picture_.get() &&
          ((distance_to_visible <= kFrequentInvalidationDistanceThreshold) ||
           (GetInvalidationFrequency() < kInvalidationFrequencyThreshold));
+}
+
+void PicturePile::PictureInfo::ResetInvalidationHistory() {
+  invalidation_history_.reset();
+  last_frame_number_ = 0;
 }
 
 void PicturePile::SetBufferPixels(int new_buffer_pixels) {

@@ -8,6 +8,7 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/resource_update_queue.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/impl_side_painting_settings.h"
@@ -109,6 +110,59 @@ TEST(PictureLayerTest, UseTileGridSize) {
       layer->GetRecordingSourceForTesting()->GetTileGridSizeForTesting();
   EXPECT_EQ(size.width(), 123);
   EXPECT_EQ(size.height(), 123);
+}
+
+// PicturePile uses the source frame number as a unit for measuring invalidation
+// frequency. When a pile moves between compositors, the frame number increases
+// non-monotonically. This executes that code path under this scenario allowing
+// for the code to verify correctness with DCHECKs.
+TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
+  LayerTreeSettings settings;
+  settings.single_thread_proxy_scheduler = false;
+
+  FakeLayerTreeHostClient host_client1(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client2(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+
+  MockContentLayerClient client;
+  scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(&client);
+
+  scoped_ptr<LayerTreeHost> host1 = LayerTreeHost::CreateSingleThreaded(
+      &host_client1, &host_client1, shared_bitmap_manager.get(), nullptr,
+      settings, base::MessageLoopProxy::current(), nullptr);
+  host_client1.SetLayerTreeHost(host1.get());
+
+  scoped_ptr<LayerTreeHost> host2 = LayerTreeHost::CreateSingleThreaded(
+      &host_client2, &host_client2, shared_bitmap_manager.get(), nullptr,
+      settings, base::MessageLoopProxy::current(), nullptr);
+  host_client2.SetLayerTreeHost(host2.get());
+
+  // The PictureLayer is put in one LayerTreeHost.
+  host1->SetRootLayer(layer);
+  // Do a main frame, record the picture layers.
+  EXPECT_EQ(0u, layer->update_count());
+  layer->SetNeedsDisplay();
+  host1->Composite(base::TimeTicks::Now());
+  EXPECT_EQ(1u, layer->update_count());
+  EXPECT_EQ(1, host1->source_frame_number());
+
+  // The source frame number in |host1| is now higher than host2.
+  layer->SetNeedsDisplay();
+  host1->Composite(base::TimeTicks::Now());
+  EXPECT_EQ(2u, layer->update_count());
+  EXPECT_EQ(2, host1->source_frame_number());
+
+  // Then moved to another LayerTreeHost.
+  host1->SetRootLayer(nullptr);
+  host2->SetRootLayer(layer);
+
+  // Do a main frame, record the picture layers. The frame number has changed
+  // non-monotonically.
+  layer->SetNeedsDisplay();
+  host2->Composite(base::TimeTicks::Now());
+  EXPECT_EQ(3u, layer->update_count());
+  EXPECT_EQ(1, host2->source_frame_number());
 }
 
 }  // namespace
