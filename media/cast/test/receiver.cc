@@ -89,21 +89,21 @@ std::string GetIpAddress(const std::string display_text) {
 void GetAudioSsrcs(FrameReceiverConfig* audio_config) {
   test::InputBuilder input_tx(
       "Choose audio sender SSRC.", DEFAULT_AUDIO_FEEDBACK_SSRC, 1, INT_MAX);
-  audio_config->feedback_ssrc = input_tx.GetIntInput();
+  audio_config->receiver_ssrc = input_tx.GetIntInput();
 
   test::InputBuilder input_rx(
       "Choose audio receiver SSRC.", DEFAULT_AUDIO_INCOMING_SSRC, 1, INT_MAX);
-  audio_config->incoming_ssrc = input_rx.GetIntInput();
+  audio_config->sender_ssrc = input_rx.GetIntInput();
 }
 
 void GetVideoSsrcs(FrameReceiverConfig* video_config) {
   test::InputBuilder input_tx(
       "Choose video sender SSRC.", DEFAULT_VIDEO_FEEDBACK_SSRC, 1, INT_MAX);
-  video_config->feedback_ssrc = input_tx.GetIntInput();
+  video_config->receiver_ssrc = input_tx.GetIntInput();
 
   test::InputBuilder input_rx(
       "Choose video receiver SSRC.", DEFAULT_VIDEO_INCOMING_SSRC, 1, INT_MAX);
-  video_config->incoming_ssrc = input_rx.GetIntInput();
+  video_config->sender_ssrc = input_rx.GetIntInput();
 }
 
 #if defined(USE_X11)

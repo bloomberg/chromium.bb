@@ -124,10 +124,10 @@ struct FrameReceiverConfig {
   ~FrameReceiverConfig();
 
   // The receiver's SSRC identifier.
-  uint32 feedback_ssrc;  // TODO(miu): Rename to receiver_ssrc for clarity.
+  uint32 receiver_ssrc;
 
   // The sender's SSRC identifier.
-  uint32 incoming_ssrc;  // TODO(miu): Rename to sender_ssrc for clarity.
+  uint32 sender_ssrc;
 
   // Mean interval (in milliseconds) between RTCP reports.
   // TODO(miu): Remove this since it's never not kDefaultRtcpIntervalMs.

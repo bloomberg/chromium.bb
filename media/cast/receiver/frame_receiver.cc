@@ -26,7 +26,7 @@ FrameReceiver::FrameReceiver(
     CastTransportSender* const transport)
     : cast_environment_(cast_environment),
       transport_(transport),
-      packet_parser_(config.incoming_ssrc, config.rtp_payload_type),
+      packet_parser_(config.sender_ssrc, config.rtp_payload_type),
       stats_(cast_environment->Clock()),
       event_media_type_(event_media_type),
       event_subscriber_(kReceiverRtcpEventHistorySize, event_media_type),
@@ -38,7 +38,7 @@ FrameReceiver::FrameReceiver(
       reports_are_scheduled_(false),
       framer_(cast_environment->Clock(),
               this,
-              config.incoming_ssrc,
+              config.sender_ssrc,
               true,
               config.rtp_max_delay_ms * config.target_frame_rate / 1000),
       rtcp_(RtcpCastMessageCallback(),
@@ -46,13 +46,13 @@ FrameReceiver::FrameReceiver(
             RtcpLogMessageCallback(),
             cast_environment_->Clock(),
             NULL,
-            config.feedback_ssrc,
-            config.incoming_ssrc),
+            config.receiver_ssrc,
+            config.sender_ssrc),
       is_waiting_for_consecutive_frame_(false),
       lip_sync_drift_(ClockDriftSmoother::GetDefaultTimeConstant()),
       rtcp_interval_(base::TimeDelta::FromMilliseconds(config.rtcp_interval)),
       weak_factory_(this) {
-  transport_->AddValidSsrc(config.incoming_ssrc);
+  transport_->AddValidSsrc(config.sender_ssrc);
   DCHECK_GT(config.rtp_max_delay_ms, 0);
   DCHECK_GT(config.target_frame_rate, 0);
   decryptor_.Initialize(config.aes_key, config.aes_iv_mask);

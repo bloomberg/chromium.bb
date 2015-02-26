@@ -27,8 +27,8 @@ namespace cast {
 
 FrameReceiverConfig GetDefaultAudioReceiverConfig() {
   FrameReceiverConfig config;
-  config.feedback_ssrc = 2;
-  config.incoming_ssrc = 1;
+  config.receiver_ssrc = 2;
+  config.sender_ssrc = 1;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
   config.rtp_payload_type = 127;
   config.rtp_timebase = 48000;
@@ -40,8 +40,8 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig() {
 
 FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   FrameReceiverConfig config;
-  config.feedback_ssrc = 12;
-  config.incoming_ssrc = 11;
+  config.receiver_ssrc = 12;
+  config.sender_ssrc = 11;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
   config.rtp_payload_type = 96;
   config.rtp_timebase = kVideoFrequency;
@@ -54,8 +54,8 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
 AudioSenderConfig GetDefaultAudioSenderConfig() {
   FrameReceiverConfig recv_config = GetDefaultAudioReceiverConfig();
   AudioSenderConfig config;
-  config.ssrc = recv_config.incoming_ssrc;
-  config.receiver_ssrc = recv_config.feedback_ssrc;
+  config.ssrc = recv_config.sender_ssrc;
+  config.receiver_ssrc = recv_config.receiver_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
   config.frequency = recv_config.rtp_timebase;
@@ -70,8 +70,8 @@ AudioSenderConfig GetDefaultAudioSenderConfig() {
 VideoSenderConfig GetDefaultVideoSenderConfig() {
   FrameReceiverConfig recv_config = GetDefaultVideoReceiverConfig();
   VideoSenderConfig config;
-  config.ssrc = recv_config.incoming_ssrc;
-  config.receiver_ssrc = recv_config.feedback_ssrc;
+  config.ssrc = recv_config.sender_ssrc;
+  config.receiver_ssrc = recv_config.receiver_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
   config.max_bitrate = 4000000;

@@ -126,7 +126,7 @@ class FrameReceiverTest : public ::testing::Test {
     uint32 ntp_fraction;
     ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
     TestRtcpPacketBuilder rtcp_packet;
-    rtcp_packet.AddSrWithNtp(config_.incoming_ssrc,
+    rtcp_packet.AddSrWithNtp(config_.sender_ssrc,
                              ntp_seconds, ntp_fraction,
                              static_cast<uint32>(rtp_timestamp));
     ASSERT_TRUE(receiver_->ProcessPacket(rtcp_packet.GetPacket().Pass()));

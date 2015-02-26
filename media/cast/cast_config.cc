@@ -58,8 +58,8 @@ AudioSenderConfig::AudioSenderConfig()
 AudioSenderConfig::~AudioSenderConfig() {}
 
 FrameReceiverConfig::FrameReceiverConfig()
-    : feedback_ssrc(0),
-      incoming_ssrc(0),
+    : receiver_ssrc(0),
+      sender_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
       rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
       rtp_payload_type(0),

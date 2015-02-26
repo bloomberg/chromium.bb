@@ -467,9 +467,9 @@ class End2EndTest : public ::testing::Test {
     audio_sender_config_.bitrate = kDefaultAudioEncoderBitrate;
     audio_sender_config_.codec = audio_codec;
 
-    audio_receiver_config_.feedback_ssrc =
+    audio_receiver_config_.receiver_ssrc =
         audio_sender_config_.receiver_ssrc;
-    audio_receiver_config_.incoming_ssrc = audio_sender_config_.ssrc;
+    audio_receiver_config_.sender_ssrc = audio_sender_config_.ssrc;
     audio_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     audio_receiver_config_.rtp_payload_type =
         audio_sender_config_.rtp_payload_type;
@@ -497,9 +497,9 @@ class End2EndTest : public ::testing::Test {
         max_number_of_video_buffers_used;
     video_sender_config_.codec = video_codec;
 
-    video_receiver_config_.feedback_ssrc =
+    video_receiver_config_.receiver_ssrc =
         video_sender_config_.receiver_ssrc;
-    video_receiver_config_.incoming_ssrc = video_sender_config_.ssrc;
+    video_receiver_config_.sender_ssrc = video_sender_config_.ssrc;
     video_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     video_receiver_config_.rtp_payload_type =
         video_sender_config_.rtp_payload_type;
