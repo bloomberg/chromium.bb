@@ -128,7 +128,7 @@ public class ToolbarProgressBar extends SmoothProgressBar {
      * @return Whether or not this progress bar has animations running for showing/hiding itself.
      */
     @VisibleForTesting
-    boolean isAnimatingForShowOrHide() {
+    public boolean isAnimatingForShowOrHide() {
         return (mShowAnimator != null && mShowAnimator.isStarted())
                 || (mHideAnimator != null && mHideAnimator.isStarted());
     }
