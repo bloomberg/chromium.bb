@@ -421,7 +421,7 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
 {
     if (!canUseFastQuery(rootNode)) {
         if (m_crossesTreeBoundary) {
-            rootNode.document().updateDistributionForNodeIfNeeded(&rootNode);
+            rootNode.updateDistribution();
             executeSlowTraversingShadowTree<SelectorQueryTrait>(rootNode, output);
         } else {
             executeSlow<SelectorQueryTrait>(rootNode, output);

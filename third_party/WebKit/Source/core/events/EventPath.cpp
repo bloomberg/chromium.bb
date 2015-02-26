@@ -83,7 +83,7 @@ void EventPath::calculatePath()
 {
     ASSERT(m_node);
     ASSERT(m_nodeEventContexts.isEmpty());
-    m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node.get()));
+    m_node->updateDistribution();
 
     Node* current = m_node;
     addNodeEventContext(*current);

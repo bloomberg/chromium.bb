@@ -503,7 +503,7 @@ void Node::remove(ExceptionState& exceptionState)
 
 void Node::normalize()
 {
-    document().updateDistributionForNodeIfNeeded(this);
+    updateDistribution();
 
     // Go through the subtree beneath us, normalizing all nodes. This means that
     // any two adjacent text nodes are merged and any empty text nodes are removed.
@@ -646,6 +646,26 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
     return nullptr;
 }
 #endif
+
+void Node::updateDistribution()
+{
+    TRACE_EVENT0("blink", "Node::updateDistribution");
+    ScriptForbiddenScope forbidScript;
+
+    if (inDocument()) {
+        if (document().childNeedsDistributionRecalc()) {
+            document().recalcDistribution();
+        }
+        return;
+    }
+    Node* root = this;
+    while (Node* host = root->shadowHost())
+        root = host;
+    while (Node* ancestor = root->parentOrShadowHostNode())
+        root = ancestor;
+    if (root->childNeedsDistributionRecalc())
+        root->recalcDistribution();
+}
 
 void Node::recalcDistribution()
 {
@@ -2282,7 +2302,7 @@ void Node::updateAncestorConnectedSubframeCountForInsertion() const
 
 PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
 {
-    document().updateDistributionForNodeIfNeeded(this);
+    updateDistribution();
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(*this, insertionPoints);
     WillBeHeapVector<RefPtrWillBeMember<Node>> filteredInsertionPoints;

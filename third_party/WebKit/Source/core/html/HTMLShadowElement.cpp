@@ -57,7 +57,7 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
     if (!containingRoot)
         return nullptr;
 
-    document().updateDistributionForNodeIfNeeded(this);
+    updateDistribution();
 
     ShadowRoot* older = containingRoot->olderShadowRoot();
     if (!older || !older->shouldExposeToBindings() || older->shadowInsertionPointOfYoungerShadowRoot() != this)
@@ -81,4 +81,3 @@ Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode
 }
 
 } // namespace blink
-

@@ -378,6 +378,7 @@ public:
     void clearNeedsStyleInvalidation() { clearFlag(NeedsStyleInvalidationFlag); }
     void setNeedsStyleInvalidation();
 
+    void updateDistribution();
     void recalcDistribution();
 
     bool svgFilterNeedsLayerUpdate() const { return getFlag(SVGFilterNeedsLayerUpdateFlag); }

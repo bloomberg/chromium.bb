@@ -175,7 +175,7 @@ bool InsertionPoint::isContentInsertionPoint() const
 
 PassRefPtrWillBeRawPtr<StaticNodeList> InsertionPoint::getDistributedNodes()
 {
-    document().updateDistributionForNodeIfNeeded(this);
+    updateDistribution();
 
     WillBeHeapVector<RefPtrWillBeMember<Node> > nodes;
     nodes.reserveInitialCapacity(m_distribution.size());

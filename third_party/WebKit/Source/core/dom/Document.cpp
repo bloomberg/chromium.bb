@@ -1582,16 +1582,6 @@ bool Document::hasPendingForcedStyleRecalc() const
     return hasPendingStyleRecalc() && !inStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
 }
 
-void Document::updateDistributionIfNeeded()
-{
-    ScriptForbiddenScope forbidScript;
-
-    if (!childNeedsDistributionRecalc())
-        return;
-    TRACE_EVENT0("blink", "Document::updateDistributionIfNeeded");
-    recalcDistribution();
-}
-
 void Document::updateStyleInvalidationIfNeeded()
 {
     ScriptForbiddenScope forbidScript;
@@ -1604,23 +1594,6 @@ void Document::updateStyleInvalidationIfNeeded()
     ASSERT(styleResolver());
 
     styleResolver()->ruleFeatureSet().styleInvalidator().invalidate(*this);
-}
-
-void Document::updateDistributionForNodeIfNeeded(Node* node)
-{
-    ScriptForbiddenScope forbidScript;
-
-    if (node->inDocument()) {
-        updateDistributionIfNeeded();
-        return;
-    }
-    Node* root = node;
-    while (Node* host = root->shadowHost())
-        root = host;
-    while (Node* ancestor = root->parentOrShadowHostNode())
-        root = ancestor;
-    if (root->childNeedsDistributionRecalc())
-        root->recalcDistribution();
 }
 
 void Document::setupFontBuilder(LayoutStyle& documentStyle)
@@ -1760,7 +1733,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     DocumentAnimations::updateAnimationTimingIfNeeded(*this);
     evaluateMediaQueryListIfNeeded();
     updateUseShadowTreesIfNeeded();
-    updateDistributionIfNeeded();
+    updateDistribution();
     updateStyleInvalidationIfNeeded();
 
     // FIXME: We should update style on our ancestor chain before proceeding
@@ -1965,7 +1938,7 @@ PassRefPtr<LayoutStyle> Document::styleForElementIgnoringPendingStylesheets(Elem
 
 PassRefPtr<LayoutStyle> Document::styleForPage(int pageIndex)
 {
-    updateDistributionIfNeeded();
+    updateDistribution();
     return ensureStyleResolver().styleForPage(pageIndex);
 }
 
@@ -3381,7 +3354,7 @@ void Document::hoveredNodeDetached(Node* node)
     if (!m_hoverNode)
         return;
 
-    m_hoverNode->document().updateDistributionForNodeIfNeeded(m_hoverNode.get());
+    m_hoverNode->updateDistribution();
     if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(*m_hoverNode)))
         return;
 

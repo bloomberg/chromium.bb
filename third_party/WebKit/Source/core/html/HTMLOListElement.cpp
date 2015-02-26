@@ -98,7 +98,7 @@ void HTMLOListElement::updateItemValues()
 {
     if (!renderer())
         return;
-    document().updateDistributionForNodeIfNeeded(this);
+    updateDistribution();
     LayoutListItem::updateItemValuesForOrderedList(this);
 }
 

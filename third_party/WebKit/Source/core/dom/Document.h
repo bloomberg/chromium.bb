@@ -480,8 +480,6 @@ public:
     PassRefPtr<LayoutStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<LayoutStyle> styleForPage(int pageIndex);
 
-    void updateDistributionForNodeIfNeeded(Node*);
-
     // Returns true if page box (margin boxes and page borders) is visible.
     bool isPageBoxVisible(int pageIndex);
 
@@ -1095,7 +1093,7 @@ private:
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 
     bool dirtyElementsForLayerUpdate();
-    void updateDistributionIfNeeded();
+
     void updateUseShadowTreesIfNeeded();
     void evaluateMediaQueryListIfNeeded();
 

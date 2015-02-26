@@ -69,7 +69,7 @@ void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element* elemen
 {
     ASSERT(element);
     ensureKeyframeGroups();
-    element->document().updateDistributionForNodeIfNeeded(element);
+    element->updateDistribution();
     ensureInterpolationEffect(element);
 }
 
