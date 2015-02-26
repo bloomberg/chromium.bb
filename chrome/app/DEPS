@@ -27,4 +27,5 @@ include_rules = [
   "+policy",  # For generated headers and source
   "+remoting/client/plugin",
   "+sandbox",
+  "+syzygy/kasko/api",
 ]

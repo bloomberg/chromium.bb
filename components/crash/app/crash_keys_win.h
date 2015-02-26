@@ -49,6 +49,11 @@ class CrashKeysWin {
   void SetCrashKeyValue(const std::wstring& key, const std::wstring& value);
   void ClearCrashKeyValue(const std::wstring& key);
 
+  const std::vector<google_breakpad::CustomInfoEntry>& custom_info_entries()
+      const {
+    return custom_entries_;
+  }
+
   static CrashKeysWin* keeper() { return keeper_; }
 
  private:

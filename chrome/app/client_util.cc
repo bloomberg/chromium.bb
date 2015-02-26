@@ -27,6 +27,7 @@
 #include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
+#include "chrome/app/kasko_client.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -265,9 +266,16 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 class ChromeDllLoader : public MainDllLoader {
  protected:
+  // MainDllLoader implementation.
   void OnBeforeLaunch(const std::string& process_type,
                       const base::FilePath& dll_path) override;
   int OnBeforeExit(int return_code, const base::FilePath& dll_path) override;
+
+ private:
+  scoped_ptr<ChromeWatcherClient> chrome_watcher_client_;
+#if defined(SYZYASAN)
+  scoped_ptr<KaskoClient> kasko_client_;
+#endif
 };
 
 void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
@@ -279,11 +287,13 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
     if (g_chrome_crash_client.Get().GetCollectStatsConsent()) {
       base::FilePath exe_path;
       if (PathService::Get(base::FILE_EXE, &exe_path)) {
-        ChromeWatcherClient watcher_client(
-            base::Bind(&GenerateChromeWatcherCommandLine, exe_path));
-        watcher_client.LaunchWatcher();
-      } else {
-        NOTREACHED();
+        chrome_watcher_client_.reset(new ChromeWatcherClient(
+            base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
+        if (chrome_watcher_client_->LaunchWatcher()) {
+#if defined(SYZYASAN)
+          kasko_client_.reset(new KaskoClient(chrome_watcher_client_.get()));
+#endif
+        }
       }
     }
   }
@@ -297,6 +307,12 @@ int ChromeDllLoader::OnBeforeExit(int return_code,
   if (chrome::RESULT_CODE_NORMAL_EXIT_CANCEL == return_code) {
     ClearDidRun(dll_path);
   }
+
+#if defined(SYZYASAN)
+  kasko_client_.reset();
+#endif
+  chrome_watcher_client_.reset();
+
   return return_code;
 }
 

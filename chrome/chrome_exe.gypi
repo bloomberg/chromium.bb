@@ -72,6 +72,8 @@
         'app/chrome_watcher_command_line_win.h',
         'app/client_util.cc',
         'app/client_util.h',
+        'app/kasko_client.cc',
+        'app/kasko_client.h',
         'app/signature_validator_win.cc',
         'app/signature_validator_win.h',
       ],
@@ -107,6 +109,13 @@
             'chrome_watcher',
             'chrome_watcher_client',
             '../components/components.gyp:browser_watcher_client',
+          ],
+          'conditions': [
+            ['syzyasan==1', {
+              'dependencies': [
+                'kasko_dll',
+              ],
+            }],
           ],
         }],
         ['OS == "android"', {

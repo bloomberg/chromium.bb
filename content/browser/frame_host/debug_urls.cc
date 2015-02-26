@@ -4,6 +4,10 @@
 
 #include "content/browser/frame_host/debug_urls.h"
 
+#if defined(SYZYASAN)
+#include <windows.h>
+#endif
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -34,6 +38,10 @@ const char kAsanUseAfterFree[] = "/browser-use-after-free";
 #if defined(SYZYASAN)
 const char kAsanCorruptHeapBlock[] = "/browser-corrupt-heap-block";
 const char kAsanCorruptHeap[] = "/browser-corrupt-heap";
+
+// Define the Kasko debug URLs.
+const char kKaskoCrashDomain[] = "kasko";
+const char kKaskoSendReport[] = "/send-report";
 #endif
 
 void HandlePpapiFlashDebugURL(const GURL& url) {
@@ -50,6 +58,35 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
     else
       (*iter)->Send(new PpapiMsg_Hang());
   }
+#endif
+}
+
+bool IsKaskoDebugURL(const GURL& url) {
+#if defined(SYZYASAN)
+  return (url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
+          url.DomainIs(kKaskoCrashDomain, sizeof(kKaskoCrashDomain) - 1) &&
+          url.path() == kKaskoSendReport);
+#else
+  return false;
+#endif
+}
+
+void HandleKaskoDebugURL() {
+#if defined(SYZYASAN)
+  // Signature of an enhanced crash reporting function.
+  typedef void(__cdecl * ReportCrashWithProtobufPtr)(EXCEPTION_POINTERS*,
+                                                     const char*);
+
+  HMODULE exe_hmodule = ::GetModuleHandle(NULL);
+  ReportCrashWithProtobufPtr report_crash_with_protobuf =
+      reinterpret_cast<ReportCrashWithProtobufPtr>(
+          ::GetProcAddress(exe_hmodule, "ReportCrashWithProtobuf"));
+  if (report_crash_with_protobuf)
+    report_crash_with_protobuf(NULL, "Invoked from debug url.");
+  else
+    NOTREACHED();
+#else
+  NOTIMPLEMENTED();
 #endif
 }
 
@@ -124,6 +161,11 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
 
   if (IsAsanDebugURL(url))
     return HandleAsanDebugURL(url);
+
+  if (IsKaskoDebugURL(url)) {
+    HandleKaskoDebugURL();
+    return true;
+  }
 
   if (url == GURL(kChromeUIBrowserCrashURL)) {
     // Induce an intentional crash in the browser process.
