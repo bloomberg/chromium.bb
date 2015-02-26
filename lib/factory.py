@@ -6,6 +6,9 @@
 
 from __future__ import print_function
 
+import functools
+
+
 class ObjectFactoryIllegalOperation(Exception):
   """Raised when attemping an illegal ObjectFactory operation."""
 
@@ -110,6 +113,7 @@ def CachedFunctionCall(function):
   """Wraps a parameterless |function| in a cache."""
   cached_value = []
 
+  @functools.wraps(function)
   def wrapper():
     if not cached_value:
       cached_value.append(function())
