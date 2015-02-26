@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutTableAlgorithmAuto_h
-#define LayoutTableAlgorithmAuto_h
+#ifndef TableLayoutAlgorithmAuto_h
+#define TableLayoutAlgorithmAuto_h
 
-#include "core/layout/LayoutTableAlgorithm.h"
+#include "core/layout/TableLayoutAlgorithm.h"
 #include "platform/LayoutUnit.h"
 #include "platform/Length.h"
 #include "wtf/Vector.h"
@@ -31,10 +31,10 @@ namespace blink {
 class LayoutTable;
 class LayoutTableCell;
 
-class LayoutTableAlgorithmAuto final : public LayoutTableAlgorithm {
+class TableLayoutAlgorithmAuto final : public TableLayoutAlgorithm {
 public:
-    LayoutTableAlgorithmAuto(LayoutTable*);
-    virtual ~LayoutTableAlgorithmAuto();
+    TableLayoutAlgorithmAuto(LayoutTable*);
+    virtual ~TableLayoutAlgorithmAuto();
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
@@ -78,4 +78,4 @@ private:
 
 } // namespace blink
 
-#endif // LayoutTableAlgorithmAuto
+#endif // TableLayoutAlgorithmAuto

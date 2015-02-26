@@ -36,7 +36,7 @@ class LayoutTableCol;
 class LayoutTableCaption;
 class LayoutTableCell;
 class LayoutTableSection;
-class LayoutTableAlgorithm;
+class TableLayoutAlgorithm;
 
 enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 
@@ -325,7 +325,7 @@ private:
     mutable LayoutTableSection* m_foot;
     mutable LayoutTableSection* m_firstBody;
 
-    OwnPtr<LayoutTableAlgorithm> m_tableLayout;
+    OwnPtr<TableLayoutAlgorithm> m_tableLayout;
 
     CollapsedBorderValues m_collapsedBorders;
     const CollapsedBorderValue* m_currentBorder;

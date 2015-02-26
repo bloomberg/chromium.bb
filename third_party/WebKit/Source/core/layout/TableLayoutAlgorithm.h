@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutTableAlgorithm_h
-#define LayoutTableAlgorithm_h
+#ifndef TableLayoutAlgorithm_h
+#define TableLayoutAlgorithm_h
 
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
@@ -29,15 +29,15 @@ namespace blink {
 class LayoutUnit;
 class LayoutTable;
 
-class LayoutTableAlgorithm {
-    WTF_MAKE_NONCOPYABLE(LayoutTableAlgorithm); WTF_MAKE_FAST_ALLOCATED;
+class TableLayoutAlgorithm {
+    WTF_MAKE_NONCOPYABLE(TableLayoutAlgorithm); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit LayoutTableAlgorithm(LayoutTable* table)
+    explicit TableLayoutAlgorithm(LayoutTable* table)
         : m_table(table)
     {
     }
 
-    virtual ~LayoutTableAlgorithm() { }
+    virtual ~TableLayoutAlgorithm() { }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) = 0;
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const = 0;
@@ -54,4 +54,4 @@ protected:
 
 } // namespace blink
 
-#endif // LayoutTableAlgorithm_h
+#endif // TableLayoutAlgorithm_h

@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/layout/LayoutTableAlgorithmAuto.h"
+#include "core/layout/TableLayoutAlgorithmAuto.h"
 
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
@@ -30,18 +30,18 @@
 
 namespace blink {
 
-LayoutTableAlgorithmAuto::LayoutTableAlgorithmAuto(LayoutTable* table)
-    : LayoutTableAlgorithm(table)
+TableLayoutAlgorithmAuto::TableLayoutAlgorithmAuto(LayoutTable* table)
+    : TableLayoutAlgorithm(table)
     , m_hasPercent(false)
     , m_effectiveLogicalWidthDirty(true)
 {
 }
 
-LayoutTableAlgorithmAuto::~LayoutTableAlgorithmAuto()
+TableLayoutAlgorithmAuto::~TableLayoutAlgorithmAuto()
 {
 }
 
-void LayoutTableAlgorithmAuto::recalcColumn(unsigned effCol)
+void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
 {
     Layout& columnLayout = m_layoutStruct[effCol];
 
@@ -137,7 +137,7 @@ void LayoutTableAlgorithmAuto::recalcColumn(unsigned effCol)
     columnLayout.maxLogicalWidth = std::max(columnLayout.maxLogicalWidth, columnLayout.minLogicalWidth);
 }
 
-void LayoutTableAlgorithmAuto::fullRecalc()
+void TableLayoutAlgorithmAuto::fullRecalc()
 {
     m_hasPercent = false;
     m_effectiveLogicalWidthDirty = true;
@@ -207,7 +207,7 @@ static bool shouldScaleColumns(LayoutTable* table)
     return scale;
 }
 
-void LayoutTableAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
+void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
 {
     TextAutosizer::TableLayoutScope textAutosizerTableLayoutScope(m_table);
 
@@ -249,7 +249,7 @@ void LayoutTableAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidt
     maxWidth = std::max<int>(maxWidth, spanMaxLogicalWidth);
 }
 
-void LayoutTableAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
+void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
 {
     Length tableLogicalWidth = m_table->style()->logicalWidth();
     if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
@@ -274,7 +274,7 @@ void LayoutTableAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minW
   This method takes care of colspans.
   effWidth is the same as width for cells without colspans. If we have colspans, they get modified.
  */
-int LayoutTableAlgorithmAuto::calcEffectiveLogicalWidth()
+int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
 {
     int maxLogicalWidth = 0;
 
@@ -469,7 +469,7 @@ int LayoutTableAlgorithmAuto::calcEffectiveLogicalWidth()
 /* gets all cells that originate in a column and have a cellspan > 1
    Sorts them by increasing cellspan
 */
-void LayoutTableAlgorithmAuto::insertSpanCell(LayoutTableCell *cell)
+void TableLayoutAlgorithmAuto::insertSpanCell(LayoutTableCell *cell)
 {
     ASSERT_ARG(cell, cell && cell->colSpan() != 1);
     if (!cell || cell->colSpan() == 1)
@@ -493,7 +493,7 @@ void LayoutTableAlgorithmAuto::insertSpanCell(LayoutTableCell *cell)
 }
 
 
-void LayoutTableAlgorithmAuto::layout()
+void TableLayoutAlgorithmAuto::layout()
 {
     // table layout based on the values collected in the layout structure.
     int tableLogicalWidth = m_table->logicalWidth() - m_table->bordersPaddingAndSpacingInRowDirection();
