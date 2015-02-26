@@ -880,9 +880,10 @@ void WebViewGuest::NavigateGuest(const std::string& src,
   if (src.empty())
     return;
 
-  GURL url = ResolveURL(src);
-
-  LoadURLWithParams(url, content::Referrer(),
+  // Resolve the |src| relative to the base URL of the owner.
+  GURL owner_base_url(GetOwnerSiteURL().GetWithEmptyPath());
+  LoadURLWithParams(owner_base_url.Resolve(src),
+                    content::Referrer(),
                     ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                     force_navigation);
 }
@@ -1249,16 +1250,6 @@ void WebViewGuest::RequestNewWindowPermission(
                                    weak_ptr_factory_.GetWeakPtr(),
                                    guest->guest_instance_id()),
                                    false /* allowed_by_default */);
-}
-
-GURL WebViewGuest::ResolveURL(const std::string& src) {
-  if (!in_extension())
-    return GURL(src);
-
-  GURL default_url(base::StringPrintf("%s://%s/",
-                                      kExtensionScheme,
-                                      owner_extension_id().c_str()));
-  return default_url.Resolve(src);
 }
 
 void WebViewGuest::OnWebViewNewWindowResponse(
