@@ -5,6 +5,7 @@
 #include "ui/views/examples/label_example.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -89,8 +90,9 @@ void LabelExample::CreateExampleView(View* container) {
 
   label = new Label(ASCIIToUTF16("A Courier-18 label with shadows."));
   label->SetFontList(gfx::FontList("Courier, 18px"));
-  gfx::ShadowValues shadows(1, gfx::ShadowValue(gfx::Point(), 1, SK_ColorRED));
-  gfx::ShadowValue shadow(gfx::Point(2, 2), 0, SK_ColorGRAY);
+  gfx::ShadowValues shadows(1,
+                            gfx::ShadowValue(gfx::Vector2d(), 1, SK_ColorRED));
+  gfx::ShadowValue shadow(gfx::Vector2d(2, 2), 0, SK_ColorGRAY);
   shadows.push_back(shadow);
   label->SetShadows(shadows);
   container->AddChildView(label);
@@ -116,8 +118,8 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
   } else if (button == shadows_) {
     gfx::ShadowValues shadows;
     if (shadows_->checked()) {
-      shadows.push_back(gfx::ShadowValue(gfx::Point(), 1, SK_ColorRED));
-      shadows.push_back(gfx::ShadowValue(gfx::Point(2, 2), 0, SK_ColorGRAY));
+      shadows.push_back(gfx::ShadowValue(gfx::Vector2d(), 1, SK_ColorRED));
+      shadows.push_back(gfx::ShadowValue(gfx::Vector2d(2, 2), 0, SK_ColorGRAY));
     }
     custom_label_->SetShadows(shadows);
   }

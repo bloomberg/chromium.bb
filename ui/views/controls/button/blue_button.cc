@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/blue_button.h"
 
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -36,12 +37,10 @@ void BlueButton::ResetColorsFromNativeTheme() {
         GetSystemColor(ui::NativeTheme::kColorId_BlueButtonDisabledColor));
 
     label()->SetShadows(gfx::ShadowValues(
-        1,
-        gfx::ShadowValue(
-            gfx::Point(0, 1),
-            0,
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_BlueButtonShadowColor))));
+        1, gfx::ShadowValue(
+               gfx::Vector2d(0, 1), 0,
+               GetNativeTheme()->GetSystemColor(
+                   ui::NativeTheme::kColorId_BlueButtonShadowColor))));
   }
 }
 

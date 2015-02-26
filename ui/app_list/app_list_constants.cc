@@ -151,13 +151,13 @@ gfx::ShadowValue GetShadowForZHeight(int z_height) {
 
   switch (z_height) {
     case 1:
-      return gfx::ShadowValue(gfx::Point(0, 1), 2,
+      return gfx::ShadowValue(gfx::Vector2d(0, 1), 2,
                               SkColorSetARGB(0x4C, 0, 0, 0));
     case 2:
-      return gfx::ShadowValue(gfx::Point(0, 2), 4,
+      return gfx::ShadowValue(gfx::Vector2d(0, 2), 4,
                               SkColorSetARGB(0x33, 0, 0, 0));
     default:
-      return gfx::ShadowValue(gfx::Point(0, 8), 12,
+      return gfx::ShadowValue(gfx::Vector2d(0, 8), 12,
                               SkColorSetARGB(0x3F, 0, 0, 0));
   }
 }

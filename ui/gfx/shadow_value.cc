@@ -8,7 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace gfx {
 
@@ -17,20 +17,18 @@ ShadowValue::ShadowValue()
       color_(0) {
 }
 
-ShadowValue::ShadowValue(const gfx::Point& offset,
+ShadowValue::ShadowValue(const gfx::Vector2d& offset,
                          double blur,
                          SkColor color)
-    : offset_(offset),
-      blur_(blur),
-      color_(color) {
+    : offset_(offset), blur_(blur), color_(color) {
 }
 
 ShadowValue::~ShadowValue() {
 }
 
 ShadowValue ShadowValue::Scale(float scale) const {
-  gfx::Point scaled_offset =
-      gfx::ToFlooredPoint(gfx::ScalePoint(offset_, scale));
+  gfx::Vector2d scaled_offset =
+      gfx::ToFlooredVector2d(gfx::ScaleVector2d(offset_, scale));
   return ShadowValue(scaled_offset, blur_ * scale, color_);
 }
 

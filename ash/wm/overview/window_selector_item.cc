@@ -422,7 +422,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   window_label_button_view_->set_animate_on_state_change(false);
   window_label_button_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   window_label_button_view_->SetTextShadows(gfx::ShadowValues(
-      1, gfx::ShadowValue(gfx::Point(0, kVerticalShadowOffset), kShadowBlur,
+      1, gfx::ShadowValue(gfx::Vector2d(0, kVerticalShadowOffset), kShadowBlur,
                           kLabelShadow)));
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   window_label_button_view_->SetFontList(

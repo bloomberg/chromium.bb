@@ -10,6 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button.h"
@@ -48,8 +49,11 @@ void SetDragImage(const GURL& url,
       widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
   button.SetTextColor(views::Button::STATE_NORMAL,
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor));
-  gfx::ShadowValues shadows(10, gfx::ShadowValue(gfx::Point(0,0), 1.0f,
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelBackgroundColor)));
+  gfx::ShadowValues shadows(
+      10,
+      gfx::ShadowValue(gfx::Vector2d(0, 0), 1.0f,
+                       theme->GetSystemColor(
+                           ui::NativeTheme::kColorId_LabelBackgroundColor)));
   button.SetTextShadows(shadows);
   button.SetMaxSize(gfx::Size(kLinkDragImageMaxWidth, 0));
   if (icon.isNull()) {

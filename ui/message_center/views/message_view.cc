@@ -128,7 +128,7 @@ gfx::Insets MessageView::GetShadowInsets() {
 
 void MessageView::CreateShadowBorder() {
   SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(
-      gfx::ShadowValue(gfx::Point(0, kShadowOffset), kShadowBlur,
+      gfx::ShadowValue(gfx::Vector2d(0, kShadowOffset), kShadowBlur,
                        message_center::kShadowColor))));
 }
 

@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/shadow_value.h"
 
 namespace gfx {
@@ -21,32 +22,32 @@ TEST(ShadowValueTest, GetMargin) {
     {
       Insets(-2, -2, -2, -2),
       1,
-      { ShadowValue(gfx::Point(0, 0), 4, 0), },
+      { ShadowValue(gfx::Vector2d(0, 0), 4, 0), },
     },
     {
       Insets(0, -1, -4, -3),
       1,
-      { ShadowValue(gfx::Point(1, 2), 4, 0), },
+      { ShadowValue(gfx::Vector2d(1, 2), 4, 0), },
     },
     {
       Insets(-4, -3, 0, -1),
       1,
-      { ShadowValue(gfx::Point(-1, -2), 4, 0), },
+      { ShadowValue(gfx::Vector2d(-1, -2), 4, 0), },
     },
     {
       Insets(0, -1, -5, -4),
       2,
       {
-        ShadowValue(gfx::Point(1, 2), 4, 0),
-        ShadowValue(gfx::Point(2, 3), 4, 0),
+        ShadowValue(gfx::Vector2d(1, 2), 4, 0),
+        ShadowValue(gfx::Vector2d(2, 3), 4, 0),
       },
     },
     {
       Insets(-4, -3, -5, -4),
       2,
       {
-        ShadowValue(gfx::Point(-1, -2), 4, 0),
-        ShadowValue(gfx::Point(2, 3), 4, 0),
+        ShadowValue(gfx::Vector2d(-1, -2), 4, 0),
+        ShadowValue(gfx::Vector2d(2, 3), 4, 0),
       },
     },
   };

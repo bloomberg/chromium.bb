@@ -86,6 +86,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
 
@@ -1453,7 +1454,7 @@ gfx::Image AutofillDialogControllerImpl::GetGeneratedCardImage(
   gfx::Font font(l10n_util::GetStringUTF8(IDS_FIXED_FONT_FAMILY), 18);
   gfx::FontList font_list(font);
   gfx::ShadowValues shadows;
-  shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1), 1.0, SK_ColorBLACK));
+  shadows.push_back(gfx::ShadowValue(gfx::Vector2d(0, 1), 1.0, SK_ColorBLACK));
   canvas.DrawStringRectWithShadows(
       card_number,
       font_list,

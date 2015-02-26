@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -24,12 +24,12 @@ typedef std::vector<ShadowValue> ShadowValues;
 class GFX_EXPORT ShadowValue {
  public:
   ShadowValue();
-  ShadowValue(const gfx::Point& offset, double blur, SkColor color);
+  ShadowValue(const gfx::Vector2d& offset, double blur, SkColor color);
   ~ShadowValue();
 
   int x() const { return offset_.x(); }
   int y() const { return offset_.y(); }
-  const gfx::Point& offset() const { return offset_; }
+  const gfx::Vector2d& offset() const { return offset_; }
   double blur() const { return blur_; }
   SkColor color() const { return color_; }
 
@@ -42,7 +42,7 @@ class GFX_EXPORT ShadowValue {
   static Insets GetMargin(const ShadowValues& shadows);
 
  private:
-  gfx::Point offset_;
+  gfx::Vector2d offset_;
 
   // Blur amount of the shadow in pixels. If underlying implementation supports
   // (e.g. Skia), it can have fraction part such as 0.5 pixel. The value

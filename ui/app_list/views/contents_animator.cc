@@ -95,10 +95,10 @@ void ContentsAnimator::UpdateSearchBoxForDefaultAnimation(double progress,
   gfx::ShadowValue target_shadow = GetSearchBoxShadowForState(to_state);
 
   SearchBoxView* search_box = contents_view()->GetSearchBoxView();
-  gfx::Point offset(gfx::Tween::LinearIntValueBetween(
-                        progress, original_shadow.x(), target_shadow.x()),
-                    gfx::Tween::LinearIntValueBetween(
-                        progress, original_shadow.y(), target_shadow.y()));
+  gfx::Vector2d offset(gfx::Tween::LinearIntValueBetween(
+                           progress, original_shadow.x(), target_shadow.x()),
+                       gfx::Tween::LinearIntValueBetween(
+                           progress, original_shadow.y(), target_shadow.y()));
   search_box->SetShadow(gfx::ShadowValue(
       offset, gfx::Tween::LinearIntValueBetween(
                   progress, original_shadow.blur(), target_shadow.blur()),

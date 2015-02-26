@@ -25,6 +25,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform_util.h"
@@ -55,11 +56,9 @@ const float kDraggingIconScale = 1.5f;
 const int kMouseDragUIDelayInMs = 200;
 
 const gfx::ShadowValues& GetIconShadows() {
-  CR_DEFINE_STATIC_LOCAL(
-      const gfx::ShadowValues,
-      icon_shadows,
-      (1,
-       gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0))));
+  CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
+                         (1, gfx::ShadowValue(gfx::Vector2d(0, 2), 2,
+                                              SkColorSetARGB(0x24, 0, 0, 0))));
   return icon_shadows;
 }
 

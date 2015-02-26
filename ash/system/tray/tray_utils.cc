@@ -7,6 +7,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 
@@ -18,7 +19,8 @@ void SetupLabelForTray(views::Label* label) {
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
   label->SetShadows(gfx::ShadowValues(
-      1, gfx::ShadowValue(gfx::Point(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
+      1,
+      gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
 }
 
 void SetTrayImageItemBorder(views::View* tray_view,

@@ -9,6 +9,7 @@
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -412,7 +413,7 @@ void LabelButton::ResetColorsFromNativeTheme() {
         ui::NativeTheme::kColorId_ButtonBackgroundColor));
     label_->SetAutoColorReadabilityEnabled(false);
     label_->SetShadows(gfx::ShadowValues(
-        1, gfx::ShadowValue(gfx::Point(0, 1), 0, kStyleButtonShadowColor)));
+        1, gfx::ShadowValue(gfx::Vector2d(0, 1), 0, kStyleButtonShadowColor)));
 #endif
     label_->set_background(NULL);
   } else {

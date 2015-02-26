@@ -13,6 +13,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -183,8 +184,11 @@ void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
 
   // If the button has no text, clear the text shadows to make sure the
   // image is centered correctly.
-  SetTextShadows(use_generic_button ? gfx::ShadowValues() : gfx::ShadowValues(
-      10, gfx::ShadowValue(gfx::Point(), 1.0f, SK_ColorDKGRAY)));
+  SetTextShadows(
+      use_generic_button
+          ? gfx::ShadowValues()
+          : gfx::ShadowValues(
+                10, gfx::ShadowValue(gfx::Vector2d(), 1.0f, SK_ColorDKGRAY)));
 
   // We want the button to resize if the new text is shorter.
   SetMinSize(gfx::Size());
