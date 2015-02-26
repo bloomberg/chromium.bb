@@ -12,6 +12,10 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
+namespace dbus {
+class FileDescriptor;
+}
+
 namespace chromeos {
 
 // PermissionBrokerClient is used to communicate with the permission broker, a
@@ -41,6 +45,38 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   virtual void RequestPathAccess(const std::string& path,
                                  int interface_id,
                                  const ResultCallback& callback) = 0;
+
+  // Requests the |port| be opened on the firewall for incoming TCP/IP
+  // connections received on |interface| (an empty string indicates all
+  // interfaces). An open pipe must be passed as |lifeline_fd| so that the
+  // permission broker can monitor the lifetime of the calling process.
+  virtual void RequestTcpPortAccess(uint16 port,
+                                    const std::string& interface,
+                                    const dbus::FileDescriptor& lifeline_fd,
+                                    const ResultCallback& callback) = 0;
+
+  // Requests the |port| be opened on the firewall for incoming UDP packets
+  // received on |interface| (an empty string indicates all interfaces). An open
+  // pipe must be passed as |lifeline_fd| so that the permission broker can
+  // monitor the lifetime of the calling process.
+  virtual void RequestUdpPortAccess(uint16 port,
+                                    const std::string& interface,
+                                    const dbus::FileDescriptor& lifeline_fd,
+                                    const ResultCallback& callback) = 0;
+
+  // Releases a request for an open firewall port for TCP/IP connections. The
+  // |port| and |interface| parameters must be the same as a previous call to
+  // RequestTcpPortAccess.
+  virtual void ReleaseTcpPort(uint16 port,
+                              const std::string& interface,
+                              const ResultCallback& callback) = 0;
+
+  // Releases a request for an open firewall port for UDP packets. The |port|
+  // and |interface| parameters must be the same as a previous call to
+  // RequestUdpPortAccess.
+  virtual void ReleaseUdpPort(uint16 port,
+                              const std::string& interface,
+                              const ResultCallback& callback) = 0;
 
  protected:
   PermissionBrokerClient();

@@ -14,7 +14,11 @@
 using permission_broker::kPermissionBrokerInterface;
 using permission_broker::kPermissionBrokerServiceName;
 using permission_broker::kPermissionBrokerServicePath;
+using permission_broker::kReleaseTcpPort;
+using permission_broker::kReleaseUdpPort;
 using permission_broker::kRequestPathAccess;
+using permission_broker::kRequestTcpPortAccess;
+using permission_broker::kRequestUdpPortAccess;
 
 namespace chromeos {
 
@@ -32,6 +36,60 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     writer.AppendInt32(interface_id);
     proxy_->CallMethod(&method_call,
                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void RequestTcpPortAccess(uint16 port,
+                            const std::string& interface,
+                            const dbus::FileDescriptor& lifeline_fd,
+                            const ResultCallback& callback) override {
+    dbus::MethodCall method_call(kPermissionBrokerInterface,
+                                 kRequestTcpPortAccess);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint16(port);
+    writer.AppendString(interface);
+    writer.AppendFileDescriptor(lifeline_fd);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void RequestUdpPortAccess(uint16 port,
+                            const std::string& interface,
+                            const dbus::FileDescriptor& lifeline_fd,
+                            const ResultCallback& callback) override {
+    dbus::MethodCall method_call(kPermissionBrokerInterface,
+                                 kRequestUdpPortAccess);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint16(port);
+    writer.AppendString(interface);
+    writer.AppendFileDescriptor(lifeline_fd);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void ReleaseTcpPort(uint16 port,
+                      const std::string& interface,
+                      const ResultCallback& callback) override {
+    dbus::MethodCall method_call(kPermissionBrokerInterface, kReleaseTcpPort);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint16(port);
+    writer.AppendString(interface);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void ReleaseUdpPort(uint16 port,
+                      const std::string& interface,
+                      const ResultCallback& callback) override {
+    dbus::MethodCall method_call(kPermissionBrokerInterface, kReleaseUdpPort);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint16(port);
+    writer.AppendString(interface);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&PermissionBrokerClientImpl::OnResponse,
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }

@@ -21,4 +21,34 @@ void FakePermissionBrokerClient::RequestPathAccess(
   callback.Run(false);
 }
 
+void FakePermissionBrokerClient::RequestTcpPortAccess(
+    uint16 port,
+    const std::string& interface,
+    const dbus::FileDescriptor& lifeline_fd,
+    const ResultCallback& callback) {
+  callback.Run(false);
+}
+
+void FakePermissionBrokerClient::RequestUdpPortAccess(
+    uint16 port,
+    const std::string& interface,
+    const dbus::FileDescriptor& lifeline_fd,
+    const ResultCallback& callback) {
+  callback.Run(false);
+}
+
+void FakePermissionBrokerClient::ReleaseTcpPort(
+    uint16 port,
+    const std::string& interface,
+    const ResultCallback& callback) {
+  callback.Run(false);
+}
+
+void FakePermissionBrokerClient::ReleaseUdpPort(
+    uint16 port,
+    const std::string& interface,
+    const ResultCallback& callback) {
+  callback.Run(false);
+}
+
 }  // namespace chromeos
