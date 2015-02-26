@@ -235,8 +235,12 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
         if os.path.isdir(out_dir) and not file_path.rmtree(out_dir):
           result = result or 1
       except OSError:
-        # The error was already printed out. Report it but that's it.
-        on_error.report(None)
+        # The error was already printed out. Report it but that's it. Only
+        # report on non-Windows or on Windows when the process had succeeded.
+        # Due to the way file sharing works on Windows, it's sadly expected that
+        # file deletion may fail when a test failed.
+        if sys.platform != 'win32' or not result:
+          on_error.report(None)
         result = 1
 
   return result
