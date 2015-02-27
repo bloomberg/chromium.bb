@@ -64,10 +64,11 @@ enum VTVDASessionFailureType {
   SFT_SUCCESSFULLY_INITIALIZED = 0,
   SFT_PLATFORM_ERROR = 1,
   SFT_INVALID_STREAM = 2,
-  SFT_UNSUPPORTED_STREAM = 3,
+  SFT_UNSUPPORTED_STREAM_PARAMETERS = 3,
   SFT_DECODE_ERROR = 4,
+  SFT_UNSUPPORTED_STREAM = 5,
   // Must always be equal to largest entry logged.
-  SFT_MAX = SFT_DECODE_ERROR
+  SFT_MAX = SFT_UNSUPPORTED_STREAM
 };
 
 static void ReportInitializationFailure(
@@ -450,7 +451,7 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
       &callback_,           // output_callback
       session_.InitializeInto());
   if (status) {
-    ReportSessionFailure(SFT_UNSUPPORTED_STREAM);
+    ReportSessionFailure(SFT_UNSUPPORTED_STREAM_PARAMETERS);
     NOTIFY_STATUS("VTDecompressionSessionCreate()", status);
     return false;
   }
@@ -503,9 +504,15 @@ void VTVideoDecodeAccelerator::DecodeTask(
     media::H264Parser::Result result = parser_.AdvanceToNextNALU(&nalu);
     if (result == media::H264Parser::kEOStream)
       break;
+    if (result == media::H264Parser::kUnsupportedStream) {
+      ReportSessionFailure(SFT_UNSUPPORTED_STREAM);
+      DLOG(ERROR) << "Unsupported H.264 stream";
+      NotifyError(PLATFORM_FAILURE);
+      return;
+    }
     if (result != media::H264Parser::kOk) {
       ReportSessionFailure(SFT_INVALID_STREAM);
-      DLOG(ERROR) << "Failed to find H.264 NALU";
+      DLOG(ERROR) << "Failed to parse H.264 stream";
       NotifyError(UNREADABLE_INPUT);
       return;
     }
@@ -514,7 +521,14 @@ void VTVideoDecodeAccelerator::DecodeTask(
         last_sps_.assign(nalu.data, nalu.data + nalu.size);
         last_spsext_.clear();
         config_changed = true;
-        if (parser_.ParseSPS(&last_sps_id_) != media::H264Parser::kOk) {
+        result = parser_.ParseSPS(&last_sps_id_);
+        if (result == media::H264Parser::kUnsupportedStream) {
+          ReportSessionFailure(SFT_UNSUPPORTED_STREAM);
+          DLOG(ERROR) << "Unsupported SPS";
+          NotifyError(PLATFORM_FAILURE);
+          return;
+        }
+        if (result != media::H264Parser::kOk) {
           ReportSessionFailure(SFT_INVALID_STREAM);
           DLOG(ERROR) << "Could not parse SPS";
           NotifyError(UNREADABLE_INPUT);
@@ -531,7 +545,14 @@ void VTVideoDecodeAccelerator::DecodeTask(
       case media::H264NALU::kPPS:
         last_pps_.assign(nalu.data, nalu.data + nalu.size);
         config_changed = true;
-        if (parser_.ParsePPS(&last_pps_id_) != media::H264Parser::kOk) {
+        result = parser_.ParsePPS(&last_pps_id_);
+        if (result == media::H264Parser::kUnsupportedStream) {
+          ReportSessionFailure(SFT_UNSUPPORTED_STREAM);
+          DLOG(ERROR) << "Unsupported PPS";
+          NotifyError(PLATFORM_FAILURE);
+          return;
+        }
+        if (result != media::H264Parser::kOk) {
           ReportSessionFailure(SFT_INVALID_STREAM);
           DLOG(ERROR) << "Could not parse PPS";
           NotifyError(UNREADABLE_INPUT);
@@ -552,6 +573,12 @@ void VTVideoDecodeAccelerator::DecodeTask(
         if (!has_slice) {
           media::H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
+          if (result == media::H264Parser::kUnsupportedStream) {
+            ReportSessionFailure(SFT_UNSUPPORTED_STREAM);
+            DLOG(ERROR) << "Unsupported slice header";
+            NotifyError(PLATFORM_FAILURE);
+            return;
+          }
           if (result != media::H264Parser::kOk) {
             ReportSessionFailure(SFT_INVALID_STREAM);
             DLOG(ERROR) << "Could not parse slice header";
