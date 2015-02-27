@@ -157,7 +157,7 @@ remoting.Identity.prototype.getUserInfo = function() {
  *     address or rejected with a remoting.Error.
  */
 remoting.Identity.prototype.getEmail = function() {
-  this.getUserInfo().then(function(userInfo) {
+  return this.getUserInfo().then(function(userInfo) {
     return userInfo.email;
   });
 };
