@@ -264,12 +264,14 @@ int drmSLLookupNeighbors(void *l, unsigned long key,
 			 unsigned long *next_key, void **next_value)
 {
     SkipListPtr   list = (SkipListPtr)l;
-    SLEntryPtr    update[SL_MAX_LEVEL + 1];
+    SLEntryPtr    update[SL_MAX_LEVEL + 1] = {0};
     int           retcode = 0;
+
+    SLLocate(list, key, update);
 
     *prev_key   = *next_key   = key;
     *prev_value = *next_value = NULL;
-	
+
     if (update[0]) {
 	*prev_key   = update[0]->key;
 	*prev_value = update[0]->value;
