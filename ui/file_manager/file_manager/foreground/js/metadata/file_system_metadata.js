@@ -82,39 +82,78 @@ FileSystemMetadata.prototype.get = function(entries, names) {
     }
   }
 
+  // Group property names.
   var fileSystemPropertyNames = [];
   var externalPropertyNames = [];
   var contentPropertyNames = [];
+  var fallbackContentPropertyNames = [];
   for (var i = 0; i < names.length; i++) {
-    var validName = false;
-    if (FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(names[i]) !== -1) {
-      fileSystemPropertyNames.push(names[i]);
-      validName = true;
+    var name = names[i];
+    var isFileSystemProperty =
+        FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
+    var isExternalProperty =
+        ExternalMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
+    var isContentProperty =
+        ContentMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
+    assert(isFileSystemProperty || isExternalProperty || isContentProperty);
+    assert(!(isFileSystemProperty && isContentProperty));
+    // If the property can be obtained both from ExternalProvider and from
+    // ContentProvider, we can obtain the property from ExternalProvider without
+    // fetching file content. On the other hand, the values from
+    // ExternalProvider may be out of sync if the file is 'dirty'. Thus we
+    // fallback to ContentProvider if the file is dirty. See below.
+    if (isExternalProperty && isContentProperty) {
+      externalPropertyNames.push(name);
+      fallbackContentPropertyNames.push(name);
+      continue;
     }
-    if (ExternalMetadataProvider.PROPERTY_NAMES.indexOf(names[i]) !== -1) {
-      externalPropertyNames.push(names[i]);
-      validName = true;
-    }
-    if (ContentMetadataProvider.PROPERTY_NAMES.indexOf(names[i]) !== -1) {
-      assert(!validName);
-      contentPropertyNames.push(names[i]);
-      validName = true;
-    }
-    assert(validName);
+    if (isFileSystemProperty)
+      fileSystemPropertyNames.push(name);
+    if (isExternalProperty)
+      externalPropertyNames.push(name);
+    if (isContentProperty)
+      contentPropertyNames.push(name);
   }
-  return Promise.all([
-    this.fileSystemMetadataProvider_.get(localEntries, fileSystemPropertyNames),
-    this.externalMetadataProvider_.get(externalEntries, externalPropertyNames),
-    this.contentMetadataProvider_.get(entries, contentPropertyNames)
-  ]).then(function(results) {
+
+  // Obtain each group of property names.
+  var resultPromises = [];
+  var get = function(provider, entries, names) {
+    return provider.get(entries, names).then(function(results) {
+      return {entries: entries, results: results};
+    });
+  };
+  resultPromises.push(get(
+      this.fileSystemMetadataProvider_, localEntries, fileSystemPropertyNames));
+  resultPromises.push(get(
+      this.externalMetadataProvider_, externalEntries, externalPropertyNames));
+  resultPromises.push(get(
+      this.contentMetadataProvider_, entries, contentPropertyNames));
+  if (fallbackContentPropertyNames.length) {
+    var dirtyEntriesPromise = this.externalMetadataProvider_.get(
+        externalEntries, ['dirty']).then(function(results) {
+          return externalEntries.filter(function(entry, index) {
+            return results[index].dirty;
+          });
+        });
+    resultPromises.push(dirtyEntriesPromise.then(function(dirtyEntries) {
+      return get(
+          this.contentMetadataProvider_,
+          localEntries.concat(dirtyEntries),
+          fallbackContentPropertyNames);
+    }.bind(this)));
+  }
+
+  // Merge results.
+  return Promise.all(resultPromises).then(function(resultsList) {
     var integratedResults = {};
-    for (var i = 0; i < 3; i++) {
-      var entryList = [localEntries, externalEntries, entries][i];
-      for (var j = 0; j < entryList.length; j++) {
-        var url = entryList[j].toURL();
+    for (var i = 0; i < resultsList.length; i++) {
+      var inEntries = resultsList[i].entries;
+      var results = resultsList[i].results;
+      for (var j = 0; j < inEntries.length; j++) {
+        var url = inEntries[j].toURL();
         integratedResults[url] = integratedResults[url] || new MetadataItem();
-        for (var name in results[i][j]) {
-          integratedResults[url][name] = results[i][j][name];
+        for (var name in results[j]) {
+          integratedResults[url][name] = results[j][name];
         }
       }
     }

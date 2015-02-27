@@ -58,6 +58,8 @@ ContentMetadataProvider.PROPERTY_NAMES = [
   'contentThumbnailUrl',
   'exifLittleEndian',
   'ifd',
+  'imageHeight',
+  'imageWidth',
   'mediaArtist',
   'mediaMimeType',
   'mediaTitle'
