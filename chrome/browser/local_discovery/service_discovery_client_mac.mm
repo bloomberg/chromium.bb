@@ -306,19 +306,20 @@ ServiceResolverImplMac::NetServiceContainer::StartResolvingOnDiscoveryThread() {
   if (service_)
     return;
 
-  if (ExtractServiceInfo(service_name_, true, &instance, &type, &domain)) {
-    VLOG(1) << "ServiceResolverImplMac::ServiceResolverImplMac::"
-            << "StartResolvingOnDiscoveryThread: Success";
-    delegate_.reset([[NetServiceDelegate alloc] initWithContainer:this]);
-    service_.reset(
-        [[NSNetService alloc]
-            initWithDomain:[[NSString alloc] initWithUTF8String:domain.c_str()]
-            type:[[NSString alloc] initWithUTF8String:type.c_str()]
-            name:[[NSString alloc] initWithUTF8String:instance.c_str()]]);
-    [service_ setDelegate:delegate_];
+  if (!ExtractServiceInfo(service_name_, true, &instance, &type, &domain))
+    return OnResolveUpdate(ServiceResolver::STATUS_KNOWN_NONEXISTENT);
 
-    [service_ resolveWithTimeout:kResolveTimeout];
-  }
+  VLOG(1) << "ServiceResolverImplMac::ServiceResolverImplMac::"
+          << "StartResolvingOnDiscoveryThread: Success";
+  delegate_.reset([[NetServiceDelegate alloc] initWithContainer:this]);
+  service_.reset(
+      [[NSNetService alloc]
+          initWithDomain:[[NSString alloc] initWithUTF8String:domain.c_str()]
+          type:[[NSString alloc] initWithUTF8String:type.c_str()]
+          name:[[NSString alloc] initWithUTF8String:instance.c_str()]]);
+  [service_ setDelegate:delegate_];
+
+  [service_ resolveWithTimeout:kResolveTimeout];
 
   VLOG(1) << "ServiceResolverImplMac::NetServiceContainer::"
           << "StartResolvingOnDiscoveryThread: " << service_name_
