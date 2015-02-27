@@ -335,3 +335,8 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
       url(../images/volumes/hard_drive_active.png) 1x,
       url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
+
+.tree-row:not([selected]) [volume-type-icon='provided'] {
+  /* Apply the rgb(90, 90, 90) mask. */
+  -webkit-filter: contrast(0) brightness(0.7143);
+}
