@@ -5,6 +5,21 @@
 assert(is_linux, "This file should only be referenced on Linux")
 
 import("//build/config/features.gni")
+import("//build/config/linux/pkg_config.gni")
+
+pkg_config("gtk") {
+  # Gtk requires gmodule, but it does not list it as a dependency in some
+  # misconfigured systems.
+  packages = [
+    "gmodule-2.0",
+    "gtk+-2.0",
+    "gthread-2.0",
+  ]
+}
+
+pkg_config("gtkprint") {
+  packages = [ "gtk+-unix-print-2.0" ]
+}
 
 component("libgtk2ui") {
   sources = [
@@ -64,6 +79,8 @@ component("libgtk2ui") {
   defines = [ "LIBGTK2UI_IMPLEMENTATION" ]
 
   configs += [
+    ":gtk",
+    ":gtkprint",
     "//build/config/linux:gconf",
     "//printing:cups",
   ]
@@ -92,8 +109,6 @@ component("libgtk2ui") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//base:i18n",
-    "//build/config/linux/gtk",
-    "//build/config/linux/gtk:gtkprint",
     "//chrome/app/theme:theme_resources",
     "//chrome:extra_resources",
     "//chrome:resources",

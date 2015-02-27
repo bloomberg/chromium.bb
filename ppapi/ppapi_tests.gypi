@@ -5,7 +5,6 @@
 {
   'targets': [
     {
-      # GN version: //ppapi:ppapi_tests
       'target_name': 'ppapi_tests',
       'type': 'loadable_module',
       'include_dirs': [
@@ -107,7 +106,6 @@
     },
 
     {
-      # GN version: //ppapi:ppapi_perftests
       'target_name': 'ppapi_perftests',
       'type': 'executable',
       'variables': {
@@ -134,7 +132,6 @@
       ],
     },
     {
-      # GN version: //ppapi:ppapi_unittests
       'target_name': 'ppapi_unittests',
       'type': 'executable',
       'variables': {
@@ -156,7 +153,6 @@
         '../ui/surface/surface.gyp:surface',
       ],
       'sources': [
-        # Note: sources list duplicated in GN build.
         'host/resource_message_filter_unittest.cc',
         'proxy/device_enumeration_resource_helper_unittest.cc',
         'proxy/file_chooser_resource_unittest.cc',

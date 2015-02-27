@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//remoting/remoting_srcs.gni")
+static_library("base") {
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("../remoting_srcs.gypi") ],
+                            "scope",
+                            [ "../remoting_srcs.gypi" ])
 
-source_set("base") {
-  sources = rebase_path(remoting_srcs_gypi_values.remoting_base_sources,
-                        ".",
-                        "//remoting")
+  sources = rebase_path(gypi_values.remoting_base_sources, ".", "//remoting")
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -24,42 +25,10 @@ source_set("base") {
     "//remoting/resources",
     "//third_party/libvpx",
     "//third_party/libyuv",
+    "//third_party/opus",
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/base",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-
-  sources = [
-    "auth_token_util_unittest.cc",
-    "auto_thread_task_runner_unittest.cc",
-    "auto_thread_unittest.cc",
-    "breakpad_win_unittest.cc",
-    "buffered_socket_writer_unittest.cc",
-    "capabilities_unittest.cc",
-    "compound_buffer_unittest.cc",
-    "rate_counter_unittest.cc",
-    "rsa_key_pair_unittest.cc",
-    "run_all_unittests.cc",
-    "running_average_unittest.cc",
-    "test_rsa_key_pair.h",
-    "typed_buffer_unittest.cc",
-    "util_unittest.cc",
-  ]
-
-  if (is_win || is_mac || is_chromeos) {
-    sources += [ "resources_unittest.cc" ]
-  }
-
-  deps = [
-    ":base",
-    "//base",
-    "//net:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/libyuv",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }

@@ -4,19 +4,15 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//remoting/remoting_srcs.gni")
+import("//remoting/remoting_version.gni")
 
-# This must be a static library instead of a source set because
-# remoting_unittests requires that remoting_me2me_host.cc not be pulled in,
-# which in turn depends on remoting_me2me_host_static which isn't part of that
-# build.
-#
-# TODO fix this, successful builds should not depend on static libraries
-# stripping code.
 static_library("host") {
-  sources = rebase_path(remoting_host_srcs_gypi_values.remoting_host_sources,
-                        ".",
-                        "//remoting")
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("../remoting_host_srcs.gypi") ],
+                            "scope",
+                            [ "../remoting_host_srcs.gypi" ])
+
+  sources = rebase_path(gypi_values.remoting_host_sources, ".", "//remoting")
 
   libs = []
 
@@ -44,12 +40,9 @@ static_library("host") {
 
   if (use_x11) {
     configs += [
+      #TODO : (kelvinp) Add GTK to the configs.
       "//build/config/linux:x11",
-      "//build/config/linux:xrandr",
     ]
-    if (!is_chromeos) {
-      deps += [ "//build/config/linux/gtk" ]
-    }
   } else {
     sources -= [
       "clipboard_x11.cc",
@@ -114,116 +107,6 @@ static_library("host") {
       "//third_party/webrtc/modules/desktop_capture",
     ]
 
-    sources += rebase_path(remoting_host_srcs_gypi_values.remoting_cast_sources,
-                           ".",
-                           "//remoting")
+    sources += rebase_path(gypi_values.remoting_cast_sources, ".", "//remoting")
   }
-}
-
-source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "fake_desktop_capturer.cc",
-    "fake_desktop_capturer.h",
-    "fake_desktop_environment.cc",
-    "fake_desktop_environment.h",
-    "fake_host_extension.cc",
-    "fake_host_extension.h",
-    "fake_host_status_monitor.h",
-    "fake_host_status_monitor.h",
-    "fake_mouse_cursor_monitor.cc",
-    "fake_mouse_cursor_monitor.h",
-  ]
-
-  deps = [
-    "//remoting/proto",
-  ]
-  public_deps = [
-    ":host",
-  ]
-
-  if (enable_webrtc) {
-    public_deps += [
-      "//third_party/libjingle:libpeerconnection",
-      "//third_party/webrtc/modules/desktop_capture",
-    ]
-  }
-}
-
-# The host portions of the remoting unit tests.
-source_set("unit_tests") {
-  testonly = true
-
-  sources = [
-    "audio_pump_unittest.cc",
-    "audio_silence_detector_unittest.cc",
-    "capture_scheduler_unittest.cc",
-    "chromeos/aura_desktop_capturer_unittest.cc",
-    "chromeos/clipboard_aura_unittest.cc",
-    "chromoting_host_context_unittest.cc",
-    "chromoting_host_unittest.cc",
-    "client_session_unittest.cc",
-    "config_file_watcher_unittest.cc",
-    "daemon_process_unittest.cc",
-    "desktop_process_unittest.cc",
-    "desktop_shape_tracker_unittest.cc",
-    "gnubby_auth_handler_posix_unittest.cc",
-    "heartbeat_sender_unittest.cc",
-    "host_change_notification_listener_unittest.cc",
-    "host_config_unittest.cc",
-    "host_extension_session_manager_unittest.cc",
-    "host_mock_objects.cc",
-    "host_status_logger_unittest.cc",
-    "ipc_desktop_environment_unittest.cc",
-    "it2me/it2me_confirmation_dialog_proxy_unittest.cc",
-    "it2me/it2me_native_messaging_host_unittest.cc",
-    "linux/audio_pipe_reader_unittest.cc",
-    "linux/unicode_to_keysym_unittest.cc",
-    "linux/x_server_clipboard_unittest.cc",
-    "local_input_monitor_unittest.cc",
-    "mouse_shape_pump_unittest.cc",
-    "native_messaging/native_messaging_reader_unittest.cc",
-    "native_messaging/native_messaging_writer_unittest.cc",
-    "pairing_registry_delegate_linux_unittest.cc",
-    "pairing_registry_delegate_win_unittest.cc",
-    "pin_hash_unittest.cc",
-    "policy_watcher_unittest.cc",
-    "register_support_host_request_unittest.cc",
-    "remote_input_filter_unittest.cc",
-    "resizing_host_observer_unittest.cc",
-    "screen_resolution_unittest.cc",
-    "server_log_entry_host_unittest.cc",
-    "setup/me2me_native_messaging_host_unittest.cc",
-    "setup/oauth_helper_unittest.cc",
-    "setup/pin_validator_unittest.cc",
-    "shaped_desktop_capturer_unittest.cc",
-    "token_validator_factory_impl_unittest.cc",
-    "video_frame_pump_unittest.cc",
-    "video_frame_recorder_unittest.cc",
-    "win/rdp_client_unittest.cc",
-    "win/worker_process_launcher.cc",
-    "win/worker_process_launcher.h",
-    "win/worker_process_launcher_unittest.cc",
-  ]
-
-  if (use_ozone || is_chromeos) {
-    sources -= [ "local_input_monitor_unittest.cc" ]
-  }
-  if (is_chromeos) {
-    sources -= [ "linux/x_server_clipboard_unittest.cc" ]
-  }
-
-  deps = [
-    ":host",
-    ":test_support",
-    "//components/policy:policy_component_test_support",
-    "//remoting/host/setup",
-    "//remoting/host/it2me:common",
-    "//remoting/host/native_messaging",
-    "//remoting/proto",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
 }

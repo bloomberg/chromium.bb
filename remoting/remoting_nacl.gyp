@@ -116,7 +116,6 @@
       'sources': [
         '../ui/events/keycodes/dom4/keycode_converter.cc',
         '<@(remoting_base_sources)',
-        '<@(remoting_codec_sources)',
         '<@(remoting_client_plugin_sources)',
         '<@(remoting_client_sources)',
         '<@(remoting_protocol_sources)',
