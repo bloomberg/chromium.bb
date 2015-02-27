@@ -492,7 +492,7 @@ class ToughVideoCasesPageSet(page_set_module.PageSet):
   """
   def __init__(self):
     super(ToughVideoCasesPageSet, self).__init__(
-            bucket=page_set_module.INTERNAL_BUCKET)
+            bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddUserStory(Page1(self))
     self.AddUserStory(Page2(self))
