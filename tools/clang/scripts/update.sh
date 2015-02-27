@@ -161,6 +161,11 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
     with_android=
   fi
 
+  if [[ "${OS}" == "Linux" ]] && [[ -z ${gcc_toolchain:-''} ]]; then
+    # Set gcc_toolchain on Linux; llvm-symbolizer needs the bundled libstdc++.
+    gcc_toolchain="$(dirname $(dirname $(which gcc)))"
+  fi
+
   echo "LLVM_FORCE_HEAD_REVISION was set; using r${CLANG_REVISION}"
 fi
 
