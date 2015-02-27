@@ -37,6 +37,10 @@ extern "C" {
 #define EGL_FIXED_SIZE_ANGLE 0x3201
 #endif
 
+#if !defined(EGL_OPENGL_ES3_BIT)
+#define EGL_OPENGL_ES3_BIT 0x00000040
+#endif
+
 #if defined(OS_WIN)
 // From ANGLE's egl/eglext.h.
 
@@ -172,13 +176,18 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
-  static const EGLint kConfigAttribs[] = {
+  EGLint renderable_type = EGL_OPENGL_ES2_BIT;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnsafeES3APIs)) {
+    renderable_type = EGL_OPENGL_ES3_BIT;
+  }
+  const EGLint kConfigAttribs[] = {
     EGL_BUFFER_SIZE, 32,
     EGL_ALPHA_SIZE, 8,
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    EGL_RENDERABLE_TYPE, renderable_type,
     EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
     EGL_NONE
   };

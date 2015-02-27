@@ -65,9 +65,6 @@ const char kEnableSubscribeUniformExtension[] =
 const char kEnableThreadedTextureMailboxes[] =
     "enable-threaded-texture-mailboxes";
 
-// Enable OpenGL ES 3 APIs without proper service side validation.
-const char kEnableUnsafeES3APIs[] = "enable-unsafe-es3-apis";
-
 // Include ANGLE's intermediate representation (AST) output in shader
 // compilation info logs.
 const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
@@ -92,7 +89,6 @@ const char* kGpuSwitches[] = {
   kGpuProgramCacheSizeKb,
   kDisableGpuShaderDiskCache,
   kEnableShareGroupAsyncTextureUpload,
-  kEnableUnsafeES3APIs,
   kEnableSubscribeUniformExtension,
   kGLShaderIntermOutput,
   kEmulateShaderPrecision,

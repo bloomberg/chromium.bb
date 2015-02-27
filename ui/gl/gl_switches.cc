@@ -58,6 +58,9 @@ const char kUseGpuInTests[] = "use-gpu-in-tests";
 // On Windows only: use the WARP software rasterizer in the GPU process.
 const char kUseWarp[] = "use-warp";
 
+// Enable OpenGL ES 3 APIs without proper service side validation.
+const char kEnableUnsafeES3APIs[] = "enable-unsafe-es3-apis";
+
 // Disables GL drawing operations which produce pixel output. With this
 // the GL output will not be correct but tests will run faster.
 const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
@@ -74,6 +77,7 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
   kDisableD3D11,
   kEnableGPUServiceLogging,
   kEnableGPUServiceTracing,
+  kEnableUnsafeES3APIs,
   kGpuNoContextLost,
   kDisableGLDrawingForTests,
   kOverrideUseGLWithOSMesaForTests,

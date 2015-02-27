@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_context_egl.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
@@ -38,12 +39,18 @@ bool GLContextEGL::Initialize(
   DCHECK(compatible_surface);
   DCHECK(!context_);
 
-  static const EGLint kContextAttributes[] = {
-    EGL_CONTEXT_CLIENT_VERSION, 2,
+  EGLint context_client_version = 2;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnsafeES3APIs)) {
+    context_client_version = 3;
+  }
+
+  const EGLint kContextAttributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, context_client_version,
     EGL_NONE
   };
-  static const EGLint kContextRobustnessAttributes[] = {
-    EGL_CONTEXT_CLIENT_VERSION, 2,
+  const EGLint kContextRobustnessAttributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, context_client_version,
     EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT,
     EGL_LOSE_CONTEXT_ON_RESET_EXT,
     EGL_NONE
