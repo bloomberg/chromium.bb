@@ -117,8 +117,6 @@ public:
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
 
-    PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier();
-
     virtual EventTarget* errorEventTarget() = 0;
     virtual EventQueue* eventQueue() const = 0;
 
