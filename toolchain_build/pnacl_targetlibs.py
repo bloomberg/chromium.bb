@@ -559,8 +559,11 @@ def TargetLibs(bias_arch, is_canonical):
           ],
       }
     })
-    # We do not plan to support libstdcxx for direct-to-nacl since we are close
-    # to being able to remove it from PNaCl.
+
+  if bias_arch != 'le32':
+    # We do not need libstdc++ for biased bitcode because we don't use it for
+    # the IRT anymore. Direct-to-nacl has never supported it.
+    # TODO(dschuff): Remove it entirely after suitable deprecation warning.
     del libs[T('libstdcxx')]
 
   return libs
