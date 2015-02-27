@@ -75,7 +75,7 @@ public:
 private:
     explicit HTMLOptionElement(Document&);
 
-    virtual bool rendererIsFocusable() const override;
+    virtual bool supportsFocus() const override;
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;

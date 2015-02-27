@@ -99,12 +99,12 @@ void HTMLOptionElement::detach(const AttachContext& context)
     HTMLElement::detach(context);
 }
 
-bool HTMLOptionElement::rendererIsFocusable() const
+bool HTMLOptionElement::supportsFocus() const
 {
     RefPtrWillBeRawPtr<HTMLSelectElement> select = ownerSelectElement();
     if (select && select->usesMenuList())
         return false;
-    return HTMLElement::rendererIsFocusable();
+    return HTMLElement::supportsFocus();
 }
 
 String HTMLOptionElement::text() const
