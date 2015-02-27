@@ -105,7 +105,6 @@
       'test/test_web_graphics_context_3d_unittest.cc',
       'trees/blocking_task_runner_unittest.cc',
       'trees/damage_tracker_unittest.cc',
-      'trees/layer_sorter_unittest.cc',
       'trees/layer_tree_host_common_unittest.cc',
       'trees/layer_tree_host_impl_unittest.cc',
       'trees/layer_tree_host_pixeltest_blending.cc',

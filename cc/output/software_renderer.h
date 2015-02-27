@@ -52,7 +52,10 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
                      bool draw_rect_covers_full_surface) override;
   void ClearFramebuffer(DrawingFrame* frame,
                         bool has_external_stencil_test) override;
-  void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) override;
+
+  void DoDrawQuad(DrawingFrame* frame,
+                  const DrawQuad* quad,
+                  const gfx::QuadF* draw_region) override;
   void BeginDrawingFrame(DrawingFrame* frame) override;
   void FinishDrawingFrame(DrawingFrame* frame) override;
   bool FlippedFramebuffer(const DrawingFrame* frame) const override;

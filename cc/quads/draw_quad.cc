@@ -25,9 +25,7 @@
 namespace cc {
 
 DrawQuad::DrawQuad()
-    : material(INVALID),
-      needs_blending(false),
-      shared_quad_state() {
+    : material(INVALID), needs_blending(false), shared_quad_state(0) {
 }
 
 void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,

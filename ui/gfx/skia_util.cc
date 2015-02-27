@@ -11,6 +11,7 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
+#include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -197,6 +198,13 @@ void ConvertSkiaToRGBA(const unsigned char* skia,
       rgba[i + 3] = alpha;
     }
   }
+}
+
+void QuadFToSkPoints(const gfx::QuadF& quad, SkPoint points[4]) {
+  points[0] = SkPoint::Make(quad.p1().x(), quad.p1().y());
+  points[1] = SkPoint::Make(quad.p2().x(), quad.p2().y());
+  points[2] = SkPoint::Make(quad.p3().x(), quad.p3().y());
+  points[3] = SkPoint::Make(quad.p4().x(), quad.p4().y());
 }
 
 }  // namespace gfx
