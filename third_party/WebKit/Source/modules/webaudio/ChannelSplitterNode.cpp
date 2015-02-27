@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/ChannelSplitterNode.h"
 
 #include "modules/webaudio/AudioContext.h"

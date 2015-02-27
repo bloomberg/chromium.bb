@@ -24,15 +24,13 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioParam.h"
 
-#include "platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
+#include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -77,14 +75,16 @@ bool AudioParam::smooth()
         return true;
     }
 
-    if (useTimelineValue)
+    if (useTimelineValue) {
         m_smoothedValue = m_value;
-    else {
+    } else {
         // Dezipper - exponential approach.
         m_smoothedValue += (m_value - m_smoothedValue) * DefaultSmoothingConstant;
 
         // If we get close enough then snap to actual value.
-        if (fabs(m_smoothedValue - m_value) < SnapThreshold) // FIXME: the threshold needs to be adjustable depending on range - but this is OK general purpose value.
+        // FIXME: the threshold needs to be adjustable depending on range - but
+        // this is OK general purpose value.
+        if (fabs(m_smoothedValue - m_value) < SnapThreshold)
             m_smoothedValue = m_value;
     }
 

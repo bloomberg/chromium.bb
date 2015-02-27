@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/ScriptProcessorNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
@@ -202,7 +200,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
     if (!channelsAreGood)
         return;
 
-    for (unsigned i = 0; i < numberOfInputChannels; i++)
+    for (unsigned i = 0; i < numberOfInputChannels; ++i)
         m_internalInputBus->setChannelMemory(i, inputBuffer->getChannelData(i)->data() + m_bufferReadWriteIndex, framesToProcess);
 
     if (numberOfInputChannels)

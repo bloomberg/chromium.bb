@@ -27,14 +27,12 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/PeriodicWave.h"
 
+#include "modules/webaudio/OscillatorNode.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
-#include "modules/webaudio/OscillatorNode.h"
 #include <algorithm>
 
 namespace blink {
@@ -99,7 +97,7 @@ PeriodicWave::PeriodicWave(float sampleRate)
     m_rateScale = m_periodicWaveSize / m_sampleRate;
 }
 
-void PeriodicWave::waveDataForFundamentalFrequency(float fundamentalFrequency, float* &lowerWaveData, float* &higherWaveData, float& tableInterpolationFactor)
+void PeriodicWave::waveDataForFundamentalFrequency(float fundamentalFrequency, float*& lowerWaveData, float*& higherWaveData, float& tableInterpolationFactor)
 {
     // Negative frequencies are allowed, in which case we alias to the positive frequency.
     fundamentalFrequency = fabsf(fundamentalFrequency);

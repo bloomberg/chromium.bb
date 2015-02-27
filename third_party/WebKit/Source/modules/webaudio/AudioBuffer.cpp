@@ -27,9 +27,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioBuffer.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
@@ -111,7 +109,7 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
 AudioBuffer* AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
 {
     RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(data, dataSize, mixToMono, sampleRate);
-    if (bus.get()) {
+    if (bus) {
         AudioBuffer* buffer = new AudioBuffer(bus.get());
         if (buffer->createdSuccessfully(bus->numberOfChannels()))
             return buffer;

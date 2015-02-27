@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/WaveShaperDSPKernel.h"
 
 #include "wtf/MainThread.h"
@@ -75,7 +73,9 @@ void WaveShaperDSPKernel::process(const float* source, float* destination, size_
 
 void WaveShaperDSPKernel::processCurve(const float* source, float* destination, size_t framesToProcess)
 {
-    ASSERT(source && destination && waveShaperProcessor());
+    ASSERT(source);
+    ASSERT(destination);
+    ASSERT(waveShaperProcessor());
 
     DOMFloat32Array* curve = waveShaperProcessor()->curve();
     if (!curve) {

@@ -23,14 +23,12 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/BiquadDSPKernel.h"
 
 #include "platform/FloatConversion.h"
-#include <limits.h>
 #include "wtf/Vector.h"
+#include <limits.h>
 
 namespace blink {
 
@@ -112,7 +110,9 @@ void BiquadDSPKernel::updateCoefficients(double cutoffFrequency, double Q, doubl
 
 void BiquadDSPKernel::process(const float* source, float* destination, size_t framesToProcess)
 {
-    ASSERT(source && destination && biquadProcessor());
+    ASSERT(source);
+    ASSERT(destination);
+    ASSERT(biquadProcessor());
 
     // Recompute filter coefficients if any of the parameters have changed.
     // FIXME: as an optimization, implement a way that a Biquad object can simply copy its internal filter coefficients from another Biquad object.
@@ -130,10 +130,7 @@ void BiquadDSPKernel::process(const float* source, float* destination, size_t fr
     m_biquad.process(source, destination, framesToProcess);
 }
 
-void BiquadDSPKernel::getFrequencyResponse(int nFrequencies,
-                                           const float* frequencyHz,
-                                           float* magResponse,
-                                           float* phaseResponse)
+void BiquadDSPKernel::getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse)
 {
     bool isGood = nFrequencies > 0 && frequencyHz && magResponse && phaseResponse;
     ASSERT(isGood);

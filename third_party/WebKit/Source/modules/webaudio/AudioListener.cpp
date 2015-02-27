@@ -27,9 +27,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioListener.h"
 
 #include "modules/webaudio/PannerNode.h"
@@ -62,10 +60,8 @@ DEFINE_TRACE(AudioListener)
 void AudioListener::addPanner(PannerNode* panner)
 {
     ASSERT(isMainThread());
-    if (!panner)
-        return;
-
-    m_panners.append(panner);
+    if (panner)
+        m_panners.append(panner);
 }
 
 void AudioListener::removePanner(PannerNode* panner)
@@ -102,7 +98,7 @@ void AudioListener::markPannersAsDirty(unsigned type)
         m_panners[i]->markPannerAsDirty(type);
 }
 
-void AudioListener::setPosition(const FloatPoint3D &position)
+void AudioListener::setPosition(const FloatPoint3D& position)
 {
     if (m_position == position)
         return;
@@ -113,7 +109,7 @@ void AudioListener::setPosition(const FloatPoint3D &position)
     markPannersAsDirty(PannerNode::AzimuthElevationDirty | PannerNode::DistanceConeGainDirty | PannerNode::DopplerRateDirty);
 }
 
-void AudioListener::setOrientation(const FloatPoint3D &orientation)
+void AudioListener::setOrientation(const FloatPoint3D& orientation)
 {
     if (m_orientation == orientation)
         return;
@@ -124,7 +120,7 @@ void AudioListener::setOrientation(const FloatPoint3D &orientation)
     markPannersAsDirty(PannerNode::AzimuthElevationDirty);
 }
 
-void AudioListener::setUpVector(const FloatPoint3D &upVector)
+void AudioListener::setUpVector(const FloatPoint3D& upVector)
 {
     if (m_upVector == upVector)
         return;
@@ -135,7 +131,7 @@ void AudioListener::setUpVector(const FloatPoint3D &upVector)
     markPannersAsDirty(PannerNode::AzimuthElevationDirty);
 }
 
-void AudioListener::setVelocity(const FloatPoint3D &velocity)
+void AudioListener::setVelocity(const FloatPoint3D& velocity)
 {
     if (m_velocity == velocity)
         return;

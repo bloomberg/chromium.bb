@@ -25,8 +25,8 @@
 #ifndef DefaultAudioDestinationNode_h
 #define DefaultAudioDestinationNode_h
 
-#include "platform/audio/AudioDestination.h"
 #include "modules/webaudio/AudioDestinationNode.h"
+#include "platform/audio/AudioDestination.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {

@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 
 #include "modules/webaudio/AudioContext.h"
@@ -73,7 +71,8 @@ void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& e
 
 void AudioBasicInspectorNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
     ASSERT(input == this->input(0));
     if (input != this->input(0))

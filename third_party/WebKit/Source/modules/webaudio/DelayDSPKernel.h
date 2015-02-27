@@ -25,8 +25,8 @@
 #ifndef DelayDSPKernel_h
 #define DelayDSPKernel_h
 
-#include "platform/audio/AudioDelayDSPKernel.h"
 #include "modules/webaudio/DelayProcessor.h"
+#include "platform/audio/AudioDelayDSPKernel.h"
 
 namespace blink {
 

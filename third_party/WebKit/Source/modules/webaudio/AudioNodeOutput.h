@@ -25,9 +25,9 @@
 #ifndef AudioNodeOutput_h
 #define AudioNodeOutput_h
 
-#include "platform/audio/AudioBus.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
+#include "platform/audio/AudioBus.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 
@@ -141,7 +141,7 @@ private:
     typedef HeapHashMap<Member<AudioNodeInput>, Member<AudioNode>>::iterator InputsIterator;
     bool m_isEnabled;
 
-#if ENABLE_ASSERT
+#if ENABLE(ASSERT)
     bool m_didCallDispose;
 #endif
 

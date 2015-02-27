@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/DelayDSPKernel.h"
 
 #include "platform/audio/AudioUtilities.h"
@@ -39,12 +37,14 @@ const float SmoothingTimeConstant = 0.020f; // 20ms
 DelayDSPKernel::DelayDSPKernel(DelayProcessor* processor)
     : AudioDelayDSPKernel(processor, AudioNode::ProcessingSizeInFrames)
 {
-    ASSERT(processor && processor->sampleRate() > 0);
+    ASSERT(processor);
+    ASSERT(processor->sampleRate() > 0);
     if (!(processor && processor->sampleRate() > 0))
         return;
 
     m_maxDelayTime = processor->maxDelayTime();
-    ASSERT(m_maxDelayTime >= 0 && !std::isnan(m_maxDelayTime));
+    ASSERT(m_maxDelayTime >= 0);
+    ASSERT(!std::isnan(m_maxDelayTime));
     if (m_maxDelayTime < 0 || std::isnan(m_maxDelayTime))
         return;
 

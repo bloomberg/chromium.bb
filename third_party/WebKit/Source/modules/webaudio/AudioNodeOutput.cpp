@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioNodeOutput.h"
 
 #include "modules/webaudio/AudioContext.h"
@@ -105,7 +103,8 @@ void AudioNodeOutput::updateRenderingState()
 
 void AudioNodeOutput::updateNumberOfChannels()
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
     if (m_numberOfChannels != m_desiredNumberOfChannels) {
         m_numberOfChannels = m_desiredNumberOfChannels;
@@ -116,7 +115,8 @@ void AudioNodeOutput::updateNumberOfChannels()
 
 void AudioNodeOutput::propagateChannelCount()
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
     if (isChannelCountKnown()) {
         // Announce to any nodes we're connected to that we changed our channel count for its input.

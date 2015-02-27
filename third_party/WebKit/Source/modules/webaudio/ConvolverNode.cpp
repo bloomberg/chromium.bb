@@ -23,18 +23,16 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/ConvolverNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "platform/audio/Reverb.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/audio/Reverb.h"
 #include "wtf/MainThread.h"
 
 // Note about empirical tuning:
@@ -81,9 +79,9 @@ void ConvolverNode::process(size_t framesToProcess)
     // Synchronize with possible dynamic changes to the impulse response.
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked()) {
-        if (!isInitialized() || !m_reverb.get())
+        if (!isInitialized() || !m_reverb) {
             outputBus->zero();
-        else {
+        } else {
             // Process using the convolution engine.
             // Note that we can handle the case where nothing is connected to the input, in which case we'll just feed silence into the convolver.
             // FIXME:  If we wanted to get fancy we could try to factor in the 'tail time' and stop processing once the tail dies down if

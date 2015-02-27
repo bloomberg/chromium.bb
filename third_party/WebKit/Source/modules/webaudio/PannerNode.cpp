@@ -23,25 +23,23 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/PannerNode.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "platform/audio/HRTFPanner.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/audio/HRTFPanner.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
 
-static void fixNANs(double &x)
+static void fixNANs(double& x)
 {
     if (std::isnan(x) || std::isinf(x))
         x = 0.0;
@@ -425,8 +423,8 @@ double PannerNode::calculateDopplerRate()
     if (dopplerFactor > 0.0) {
         double speedOfSound = listener()->speedOfSound();
 
-        const FloatPoint3D &sourceVelocity = m_velocity;
-        const FloatPoint3D &listenerVelocity = listener()->velocity();
+        const FloatPoint3D& sourceVelocity = m_velocity;
+        const FloatPoint3D& listenerVelocity = listener()->velocity();
 
         // Don't bother if both source and listener have no velocity
         bool sourceHasVelocity = !sourceVelocity.isZero();

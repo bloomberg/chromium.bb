@@ -24,15 +24,13 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioParamTimeline.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "platform/audio/AudioUtilities.h"
 #include "platform/FloatConversion.h"
+#include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -224,9 +222,7 @@ float AudioParamTimeline::valuesForTimeRange(
         return defaultValue;
     }
 
-    float value = valuesForTimeRangeImpl(startTime, endTime, defaultValue, values, numberOfValues, sampleRate, controlRate);
-
-    return value;
+    return valuesForTimeRangeImpl(startTime, endTime, defaultValue, values, numberOfValues, sampleRate, controlRate);
 }
 
 float AudioParamTimeline::valuesForTimeRangeImpl(
@@ -319,7 +315,7 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
                 // AudioUtilities::timeToSampleFrame(currentTime - time1, sampleRate), but is more
                 // accurate, especially if multiplier is close to 1.
                 value = value1 * powf(value2 / value1,
-                                      AudioUtilities::timeToSampleFrame(currentTime - time1, sampleRate) / numSampleFrames);
+                    AudioUtilities::timeToSampleFrame(currentTime - time1, sampleRate) / numSampleFrames);
 
                 for (; writeIndex < fillToFrame; ++writeIndex) {
                     values[writeIndex] = value;

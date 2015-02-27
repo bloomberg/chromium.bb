@@ -23,16 +23,14 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioBasicProcessorNode.h"
 
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioProcessor.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioProcessor.h"
 
 namespace blink {
 
@@ -88,9 +86,9 @@ void AudioBasicProcessorNode::process(size_t framesToProcess)
 {
     AudioBus* destinationBus = output(0)->bus();
 
-    if (!isInitialized() || !processor() || processor()->numberOfChannels() != numberOfChannels())
+    if (!isInitialized() || !processor() || processor()->numberOfChannels() != numberOfChannels()) {
         destinationBus->zero();
-    else {
+    } else {
         AudioBus* sourceBus = input(0)->bus();
 
         // FIXME: if we take "tail time" into account, then we can avoid calling processor()->process() once the tail dies down.
@@ -113,7 +111,8 @@ void AudioBasicProcessorNode::pullInputs(size_t framesToProcess)
 // uninitialize and then re-initialize with the new channel count.
 void AudioBasicProcessorNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
     ASSERT(input == this->input(0));
     if (input != this->input(0))

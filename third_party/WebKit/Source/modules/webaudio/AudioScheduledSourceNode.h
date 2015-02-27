@@ -77,10 +77,7 @@ protected:
     // Each frame time is relative to the context's currentSampleFrame().
     // quantumFrameOffset    : Offset frame in this time quantum to start rendering.
     // nonSilentFramesToProcess : Number of frames rendering non-silence (will be <= quantumFrameSize).
-    void updateSchedulingInfo(size_t quantumFrameSize,
-                              AudioBus* outputBus,
-                              size_t& quantumFrameOffset,
-                              size_t& nonSilentFramesToProcess);
+    void updateSchedulingInfo(size_t quantumFrameSize, AudioBus* outputBus, size_t& quantumFrameOffset, size_t& nonSilentFramesToProcess);
 
     // Called when we have no more sound to play or the stop() time has been reached. No onEnded
     // event is called.

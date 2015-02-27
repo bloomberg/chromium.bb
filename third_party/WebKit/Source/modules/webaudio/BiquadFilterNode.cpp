@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/BiquadFilterNode.h"
 
 namespace blink {
@@ -96,15 +94,9 @@ void BiquadFilterNode::getFrequencyResponse(const DOMFloat32Array* frequencyHz, 
     if (!frequencyHz || !magResponse || !phaseResponse)
         return;
 
-    int n = std::min(frequencyHz->length(),
-                     std::min(magResponse->length(), phaseResponse->length()));
-
-    if (n) {
-        biquadProcessor()->getFrequencyResponse(n,
-                                                frequencyHz->data(),
-                                                magResponse->data(),
-                                                phaseResponse->data());
-    }
+    int n = std::min(frequencyHz->length(), std::min(magResponse->length(), phaseResponse->length()));
+    if (n)
+        biquadProcessor()->getFrequencyResponse(n, frequencyHz->data(), magResponse->data(), phaseResponse->data());
 }
 
 } // namespace blink

@@ -23,19 +23,17 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioBufferSourceNode.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
+#include "platform/audio/AudioUtilities.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -114,10 +112,7 @@ void AudioBufferSourceNode::process(size_t framesToProcess)
         size_t quantumFrameOffset;
         size_t bufferFramesToProcess;
 
-        updateSchedulingInfo(framesToProcess,
-                             outputBus,
-                             quantumFrameOffset,
-                             bufferFramesToProcess);
+        updateSchedulingInfo(framesToProcess, outputBus, quantumFrameOffset, bufferFramesToProcess);
 
         if (!bufferFramesToProcess) {
             outputBus->zero();
@@ -297,8 +292,9 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
                 if (loop()) {
                     // Make sure to wrap around at the end of the buffer.
                     readIndex2 = static_cast<unsigned>(virtualReadIndex + 1 - virtualDeltaFrames);
-                } else
+                } else {
                     readIndex2 = readIndex;
+                }
             }
 
             // Final sanity check on buffer access.

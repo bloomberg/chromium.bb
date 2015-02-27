@@ -25,11 +25,11 @@
 #ifndef BiquadProcessor_h
 #define BiquadProcessor_h
 
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "platform/audio/Biquad.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -59,10 +59,7 @@ public:
 
     // Get the magnitude and phase response of the filter at the given
     // set of frequencies (in Hz). The phase response is in radians.
-    void getFrequencyResponse(int nFrequencies,
-                              const float* frequencyHz,
-                              float* magResponse,
-                              float* phaseResponse);
+    void getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse);
 
     void checkForDirtyCoefficients();
 

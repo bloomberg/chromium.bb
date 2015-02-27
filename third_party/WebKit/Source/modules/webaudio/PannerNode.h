@@ -25,12 +25,12 @@
 #ifndef PannerNode_h
 #define PannerNode_h
 
+#include "modules/webaudio/AudioListener.h"
+#include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/Cone.h"
 #include "platform/audio/Distance.h"
 #include "platform/audio/Panner.h"
-#include "modules/webaudio/AudioListener.h"
-#include "modules/webaudio/AudioNode.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/HashMap.h"
 

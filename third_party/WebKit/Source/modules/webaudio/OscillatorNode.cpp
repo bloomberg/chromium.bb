@@ -23,16 +23,14 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/OscillatorNode.h"
 
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/VectorMath.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/PeriodicWave.h"
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/VectorMath.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include <algorithm>

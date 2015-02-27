@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioSummingJunction.h"
 
 #include "modules/webaudio/AudioContext.h"
@@ -74,14 +72,14 @@ void AudioSummingJunction::changedOutputs()
 
 void AudioSummingJunction::updateRenderingState()
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
     if (m_renderingStateNeedUpdating) {
         // Copy from m_outputs to m_renderingOutputs.
         m_renderingOutputs.resize(m_outputs.size());
         unsigned j = 0;
-        for (HashSet<AudioNodeOutput*>::iterator i = m_outputs.begin(); i != m_outputs.end(); ++i, ++j) {
-            AudioNodeOutput* output = *i;
-            m_renderingOutputs[j] = output;
+        for (AudioNodeOutput* output : m_outputs) {
+            m_renderingOutputs[j++] = output;
             output->updateRenderingState();
         }
 

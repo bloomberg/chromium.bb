@@ -27,9 +27,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/ChannelMergerNode.h"
 
 #include "modules/webaudio/AudioContext.h"
@@ -105,7 +103,8 @@ void ChannelMergerNode::process(size_t framesToProcess)
 // number of channels of our output.
 void ChannelMergerNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
     // Count how many channels we have all together from all of the inputs.
     unsigned numberOfOutputChannels = 0;

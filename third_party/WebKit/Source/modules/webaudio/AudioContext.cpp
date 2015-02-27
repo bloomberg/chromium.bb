@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioContext.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
@@ -846,7 +844,7 @@ void AudioContext::derefFinishedSourceNodes()
 {
     ASSERT(isGraphOwner());
     ASSERT(isAudioThread());
-    for (unsigned i = 0; i < m_finishedNodes.size(); i++)
+    for (unsigned i = 0; i < m_finishedNodes.size(); ++i)
         derefNode(m_finishedNodes[i]);
 
     m_finishedNodes.clear();
@@ -998,7 +996,8 @@ void AudioContext::handlePostRenderTasks()
 
 void AudioContext::handleDeferredAudioNodeTasks()
 {
-    ASSERT(isAudioThread() && isGraphOwner());
+    ASSERT(isAudioThread());
+    ASSERT(isGraphOwner());
 
     for (unsigned i = 0; i < m_deferredBreakConnectionList.size(); ++i)
         m_deferredBreakConnectionList[i]->breakConnectionWithLock();
@@ -1069,9 +1068,8 @@ void AudioContext::handleDirtyAudioSummingJunctions()
 {
     ASSERT(isGraphOwner());
 
-    for (HashSet<AudioSummingJunction*>::iterator i = m_dirtySummingJunctions.begin(); i != m_dirtySummingJunctions.end(); ++i)
-        (*i)->updateRenderingState();
-
+    for (AudioSummingJunction* junction : m_dirtySummingJunctions)
+        junction->updateRenderingState();
     m_dirtySummingJunctions.clear();
 }
 
@@ -1079,9 +1077,8 @@ void AudioContext::handleDirtyAudioNodeOutputs()
 {
     ASSERT(isGraphOwner());
 
-    for (HashSet<AudioNodeOutput*>::iterator i = m_dirtyAudioNodeOutputs.begin(); i != m_dirtyAudioNodeOutputs.end(); ++i)
-        (*i)->updateRenderingState();
-
+    for (AudioNodeOutput* output : m_dirtyAudioNodeOutputs)
+        output->updateRenderingState();
     m_dirtyAudioNodeOutputs.clear();
 }
 
@@ -1110,15 +1107,7 @@ void AudioContext::updateAutomaticPullNodes()
     ASSERT(isGraphOwner());
 
     if (m_automaticPullNodesNeedUpdating) {
-        // Copy from m_automaticPullNodes to m_renderingAutomaticPullNodes.
-        m_renderingAutomaticPullNodes.resize(m_automaticPullNodes.size());
-
-        unsigned j = 0;
-        for (HashSet<AudioNode*>::iterator i = m_automaticPullNodes.begin(); i != m_automaticPullNodes.end(); ++i, ++j) {
-            AudioNode* output = *i;
-            m_renderingAutomaticPullNodes[j] = output;
-        }
-
+        copyToVector(m_automaticPullNodes, m_renderingAutomaticPullNodes);
         m_automaticPullNodesNeedUpdating = false;
     }
 }
@@ -1194,7 +1183,6 @@ void AudioContext::resolvePromisesForSuspend()
     // Resolve any pending promises created by suspend()
     if (m_suspendResolvers.size() > 0)
         callOnMainThread(bind(&AudioContext::resolvePromisesForSuspendOnMainThread, this));
-
 }
 
 void AudioContext::rejectPendingResolvers()
@@ -1315,9 +1303,8 @@ void AudioContext::updateChangedChannelCountMode()
 {
     ASSERT(isGraphOwner());
 
-    for (HashSet<AudioNode*>::iterator k = m_deferredCountModeChange.begin(); k != m_deferredCountModeChange.end(); ++k)
-        (*k)->updateChannelCountMode();
-
+    for (AudioNode* node : m_deferredCountModeChange)
+        node->updateChannelCountMode();
     m_deferredCountModeChange.clear();
 }
 

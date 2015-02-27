@@ -23,16 +23,14 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioDestinationNode.h"
 
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DenormalDisabler.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/DenormalDisabler.h"
 
 namespace blink {
 
@@ -84,9 +82,9 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
     // all the way backwards through the rendering graph.
     AudioBus* renderedBus = input(0)->pull(destinationBus, numberOfFrames);
 
-    if (!renderedBus)
+    if (!renderedBus) {
         destinationBus->zero();
-    else if (renderedBus != destinationBus) {
+    } else if (renderedBus != destinationBus) {
         // in-place processing was not possible - so copy
         destinationBus->copyFrom(*renderedBus);
     }

@@ -25,8 +25,8 @@
 #ifndef ScriptProcessorNode_h
 #define ScriptProcessorNode_h
 
-#include "platform/audio/AudioBus.h"
 #include "modules/webaudio/AudioNode.h"
+#include "platform/audio/AudioBus.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

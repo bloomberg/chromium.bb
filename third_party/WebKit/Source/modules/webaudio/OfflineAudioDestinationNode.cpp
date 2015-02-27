@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
 #include "core/dom/CrossThreadTask.h"

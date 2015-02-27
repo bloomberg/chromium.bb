@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
@@ -159,7 +157,8 @@ void AudioNode::setNodeType(NodeType type)
     // Don't allow the node type to be changed to a different node type, after it's already been
     // set!  And the new type can't be unknown or end!
     ASSERT(m_nodeType == NodeTypeUnknown);
-    ASSERT(type != NodeTypeUnknown && type != NodeTypeEnd);
+    ASSERT(type != NodeTypeUnknown);
+    ASSERT(type != NodeTypeEnd);
 
     m_nodeType = type;
 
@@ -234,8 +233,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
         return;
     }
 
-    AudioNodeInput* input = destination->input(inputIndex);
-    input->connect(*output(outputIndex));
+    destination->input(inputIndex)->connect(*output(outputIndex));
 
     // Let context know that a connection has been made.
     context()->incrementConnectionCount();
@@ -290,8 +288,7 @@ void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
         return;
     }
 
-    AudioNodeOutput* output = this->output(outputIndex);
-    output->disconnectAll();
+    output(outputIndex)->disconnectAll();
 }
 
 void AudioNode::disconnectWithoutException(unsigned outputIndex)
@@ -300,10 +297,8 @@ void AudioNode::disconnectWithoutException(unsigned outputIndex)
     AudioContext::AutoLocker locker(context());
 
     // Sanity check input and output indices.
-    if (outputIndex < numberOfOutputs()) {
-        AudioNodeOutput* output = this->output(outputIndex);
-        output->disconnectAll();
-    }
+    if (outputIndex < numberOfOutputs())
+        output(outputIndex)->disconnectAll();
 }
 
 unsigned long AudioNode::channelCount()
@@ -427,9 +422,9 @@ void AudioNode::processIfNecessary(size_t framesToProcess)
         if (!silentInputs)
             m_lastNonSilentTime = (context()->currentSampleFrame() + framesToProcess) / static_cast<double>(m_sampleRate);
 
-        if (silentInputs && propagatesSilence())
+        if (silentInputs && propagatesSilence()) {
             silenceOutputs();
-        else {
+        } else {
             process(framesToProcess);
             unsilenceOutputs();
         }
@@ -438,7 +433,8 @@ void AudioNode::processIfNecessary(size_t framesToProcess)
 
 void AudioNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
     ASSERT(m_inputs.contains(input));
     if (!m_inputs.contains(input))

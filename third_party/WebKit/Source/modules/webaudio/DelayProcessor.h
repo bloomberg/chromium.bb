@@ -25,8 +25,8 @@
 #ifndef DelayProcessor_h
 #define DelayProcessor_h
 
-#include "platform/audio/AudioDSPKernelProcessor.h"
 #include "modules/webaudio/AudioParam.h"
+#include "platform/audio/AudioDSPKernelProcessor.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -43,10 +43,9 @@ public:
     virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 
     AudioParam* delayTime() const { return m_delayTime.get(); }
-
     double maxDelayTime() { return m_maxDelayTime; }
-private:
 
+private:
     Member<AudioParam> m_delayTime;
     double m_maxDelayTime;
 };

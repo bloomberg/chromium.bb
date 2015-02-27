@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
@@ -50,10 +48,8 @@ AudioScheduledSourceNode::AudioScheduledSourceNode(NodeType nodeType, AudioConte
 {
 }
 
-void AudioScheduledSourceNode::updateSchedulingInfo(size_t quantumFrameSize,
-                                                    AudioBus* outputBus,
-                                                    size_t& quantumFrameOffset,
-                                                    size_t& nonSilentFramesToProcess)
+void AudioScheduledSourceNode::updateSchedulingInfo(
+    size_t quantumFrameSize, AudioBus* outputBus, size_t& quantumFrameOffset, size_t& nonSilentFramesToProcess)
 {
     ASSERT(outputBus);
     if (!outputBus)

@@ -23,14 +23,12 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
 
-#include "platform/Logging.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/Logging.h"
 #include "wtf/Locker.h"
 
 namespace blink {
@@ -109,9 +107,9 @@ void MediaStreamAudioSourceNode::process(size_t numberOfFrames)
     // If we fail to acquire the lock then the MediaStream must be in the middle of
     // a format change, so we output silence in this case.
     MutexTryLocker tryLocker(m_processLock);
-    if (tryLocker.locked())
+    if (tryLocker.locked()) {
         audioSourceProvider()->provideInput(outputBus, numberOfFrames);
-    else {
+    } else {
         // We failed to acquire the lock.
         outputBus->zero();
     }

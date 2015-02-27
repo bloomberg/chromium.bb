@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/OfflineAudioContext.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

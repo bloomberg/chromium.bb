@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/WaveShaperNode.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

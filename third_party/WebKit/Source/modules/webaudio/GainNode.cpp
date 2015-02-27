@@ -23,14 +23,12 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/GainNode.h"
 
-#include "platform/audio/AudioBus.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/audio/AudioBus.h"
 
 namespace blink {
 
@@ -56,9 +54,9 @@ void GainNode::process(size_t framesToProcess)
     AudioBus* outputBus = output(0)->bus();
     ASSERT(outputBus);
 
-    if (!isInitialized() || !input(0)->isConnected())
+    if (!isInitialized() || !input(0)->isConnected()) {
         outputBus->zero();
-    else {
+    } else {
         AudioBus* inputBus = input(0)->bus();
 
         if (gain()->hasSampleAccurateValues()) {
@@ -83,9 +81,11 @@ void GainNode::process(size_t framesToProcess)
 // uninitialize and then re-initialize with the new channel count.
 void GainNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread() && context()->isGraphOwner());
+    ASSERT(context()->isAudioThread());
+    ASSERT(context()->isGraphOwner());
 
-    ASSERT(input && input == this->input(0));
+    ASSERT(input);
+    ASSERT(input == this->input(0));
     if (input != this->input(0))
         return;
 

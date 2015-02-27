@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/WaveShaperProcessor.h"
 
 #include "modules/webaudio/WaveShaperDSPKernel.h"

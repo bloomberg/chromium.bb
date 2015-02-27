@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "modules/webaudio/BiquadProcessor.h"
 
 #include "modules/webaudio/BiquadDSPKernel.h"
@@ -126,17 +124,13 @@ void BiquadProcessor::setType(FilterType type)
     }
 }
 
-void BiquadProcessor::getFrequencyResponse(int nFrequencies,
-                                           const float* frequencyHz,
-                                           float* magResponse,
-                                           float* phaseResponse)
+void BiquadProcessor::getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse)
 {
     // Compute the frequency response on a separate temporary kernel
     // to avoid interfering with the processing running in the audio
     // thread on the main kernels.
 
     OwnPtr<BiquadDSPKernel> responseKernel = adoptPtr(new BiquadDSPKernel(this));
-
     responseKernel->getFrequencyResponse(nFrequencies, frequencyHz, magResponse, phaseResponse);
 }
 

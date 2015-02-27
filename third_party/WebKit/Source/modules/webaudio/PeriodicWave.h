@@ -56,7 +56,7 @@ public:
     // at this fundamental frequency. The lower wave is the next range containing fewer partials than the higher wave.
     // Interpolation between these two tables can be made according to tableInterpolationFactor.
     // Where values from 0 -> 1 interpolate between lower -> higher.
-    void waveDataForFundamentalFrequency(float, float* &lowerWaveData, float* &higherWaveData, float& tableInterpolationFactor);
+    void waveDataForFundamentalFrequency(float, float*& lowerWaveData, float*& higherWaveData, float& tableInterpolationFactor);
 
     // Returns the scalar multiplier to the oscillator frequency to calculate wave buffer phase increment.
     float rateScale() const { return m_rateScale; }
