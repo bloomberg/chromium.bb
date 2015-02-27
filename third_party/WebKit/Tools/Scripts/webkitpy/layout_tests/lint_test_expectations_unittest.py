@@ -94,7 +94,7 @@ class LintTest(unittest.TestCase):
             res = lint_test_expectations.lint(host, options)
         finally:
             lint_test_expectations.tear_down_logging(logger, handler)
-        self.assertEqual(res, 0)
+        self.assertEqual(res, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
     def test_lint_test_files(self):
@@ -109,7 +109,7 @@ class LintTest(unittest.TestCase):
         logger, handler = lint_test_expectations.set_up_logging(logging_stream)
         try:
             res = lint_test_expectations.lint(host, options)
-            self.assertEqual(res, 0)
+            self.assertEqual(res, [])
         finally:
             lint_test_expectations.tear_down_logging(logger, handler)
 
@@ -163,7 +163,7 @@ class MainTest(unittest.TestCase):
     def setUp(self):
         self.orig_lint_fn = lint_test_expectations.lint
         self.orig_check_fn = lint_test_expectations.check_virtual_test_suites
-        lint_test_expectations.check_virtual_test_suites = lambda host, options: False
+        lint_test_expectations.check_virtual_test_suites = lambda host, options: []
 
         self.stdout = StringIO.StringIO()
         self.stderr = StringIO.StringIO()
@@ -173,13 +173,13 @@ class MainTest(unittest.TestCase):
         lint_test_expectations.check_virtual_test_suites = self.orig_check_fn
 
     def test_success(self):
-        lint_test_expectations.lint = lambda host, options: False
+        lint_test_expectations.lint = lambda host, options: []
         res = lint_test_expectations.main(['--platform', 'test'], self.stdout, self.stderr)
         self.assertTrue('Lint succeeded' in self.stderr.getvalue())
         self.assertEqual(res, 0)
 
     def test_failure(self):
-        lint_test_expectations.lint = lambda host, options: True
+        lint_test_expectations.lint = lambda host, options: ['test failure']
         res = lint_test_expectations.main(['--platform', 'test'], self.stdout, self.stderr)
         self.assertTrue('Lint failed' in self.stderr.getvalue())
         self.assertEqual(res, 1)

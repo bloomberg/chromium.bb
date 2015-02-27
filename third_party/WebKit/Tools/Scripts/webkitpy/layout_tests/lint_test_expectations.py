@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 import logging
 import optparse
 import signal
@@ -49,8 +50,8 @@ _log = logging.getLogger(__name__)
 def lint(host, options):
     ports_to_lint = [host.port_factory.get(name) for name in host.port_factory.all_port_names(options.platform)]
     files_linted = set()
-    lint_failed = False
 
+    failures = []
     for port_to_lint in ports_to_lint:
         expectations_dict = port_to_lint.expectations_dict()
 
@@ -63,13 +64,13 @@ def lint(host, options):
                     expectations_dict={expectations_file: expectations_dict[expectations_file]},
                     is_lint_mode=True)
             except test_expectations.ParseError as e:
-                lint_failed = True
                 _log.error('')
                 for warning in e.warnings:
                     _log.error(warning)
+                    failures.append('%s: %s' % (expectations_file, warning))
                 _log.error('')
             files_linted.add(expectations_file)
-    return lint_failed
+    return failures
 
 
 def check_virtual_test_suites(host, options):
@@ -78,16 +79,17 @@ def check_virtual_test_suites(host, options):
     layout_tests_dir = port.layout_tests_dir()
     virtual_suites = port.virtual_test_suites()
 
-    check_failed = False
+    failures = []
     for suite in virtual_suites:
         comps = [layout_tests_dir] + suite.name.split('/') + ['README.txt']
         path_to_readme = fs.join(*comps)
         if not fs.exists(path_to_readme):
-            _log.error('LayoutTests/%s/README.txt is missing (each virtual suite must have one).' % suite.name)
-            check_failed = True
-    if check_failed:
+            failure = 'LayoutTests/%s/README.txt is missing (each virtual suite must have one).' % suite.name
+            _log.error(failure)
+            failures.append(failure)
+    if failures:
         _log.error('')
-    return check_failed
+    return failures
 
 
 def set_up_logging(logging_stream):
@@ -105,9 +107,15 @@ def tear_down_logging(logger, handler):
 def run_checks(host, options, logging_stream):
     logger, handler = set_up_logging(logging_stream)
     try:
-        lint_failed = lint(host, options)
-        check_failed = check_virtual_test_suites(host, options)
-        if lint_failed or check_failed:
+        failures = []
+        failures.extend(lint(host, options))
+        failures.extend(check_virtual_test_suites(host, options))
+
+        if options.json:
+            with open(options.json, 'w') as f:
+                json.dump(failures, f)
+
+        if failures:
             _log.error('Lint failed.')
             return 1
         else:
@@ -119,6 +127,7 @@ def run_checks(host, options, logging_stream):
 
 def main(argv, _, stderr):
     parser = optparse.OptionParser(option_list=platform_options(use_globs=True))
+    parser.add_option('--json', help='Path to JSON output file')
     options, _ = parser.parse_args(argv)
 
     if options.platform and 'test' in options.platform:
