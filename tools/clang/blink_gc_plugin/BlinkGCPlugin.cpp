@@ -408,6 +408,18 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
   }
 
  private:
+  bool IsTraceCallName(const std::string& name) {
+    if (trace_->getName() == kTraceImplName)
+      return name == kTraceName;
+    if (trace_->getName() == kTraceAfterDispatchImplName)
+      return name == kTraceAfterDispatchName;
+    // Currently, a manually dispatched class cannot have mixin bases (having
+    // one would add a vtable which we explicitly check against). This means
+    // that we can only make calls to a trace method of the same name. Revisit
+    // this if our mixin/vtable assumption changes.
+    return name == trace_->getName();
+  }
+
   CXXRecordDecl* GetDependentTemplatedDecl(CXXDependentScopeMemberExpr* expr) {
     NestedNameSpecifier* qual = expr->getQualifier();
     if (!qual)
@@ -445,13 +457,12 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       return;
 
     // Check for Super<T>::trace(visitor)
-    if (call->getNumArgs() == 1 && fn_name == trace_->getName()) {
+    if (call->getNumArgs() == 1 && IsTraceCallName(fn_name)) {
       RecordInfo::Bases::iterator it = info_->GetBases().begin();
       for (; it != info_->GetBases().end(); ++it) {
         if (it->first->getName() == tmpl->getName())
           it->second.MarkTraced();
       }
-      return;
     }
 
     // Check for TraceIfNeeded<T>::trace(visitor, &field)
@@ -524,23 +535,12 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       func_name = callee->getMemberName().getAsString();
     }
 
-    if (trace_->getName() == kTraceImplName) {
-      if (func_name != kTraceName)
-        return false;
-    } else if (trace_->getName() == kTraceAfterDispatchImplName) {
-      if (func_name != kTraceAfterDispatchName)
-        return false;
-    } else {
-      // Currently, a manually dispatched class cannot have mixin bases (having
-      // one would add a vtable which we explicitly check against). This means
-      // that we can only make calls to a trace method of the same name. Revisit
-      // this if our mixin/vtable assumption changes.
-      if (func_name != trace_->getName())
-        return false;
-    }
-
     if (!callee_record)
       return false;
+
+    if (!IsTraceCallName(func_name))
+      return false;
+
     RecordInfo::Bases::iterator iter = info_->GetBases().find(callee_record);
     if (iter == info_->GetBases().end())
       return false;
