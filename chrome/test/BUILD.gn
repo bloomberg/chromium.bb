@@ -216,15 +216,13 @@ source_set("test_support_unit") {
 }
 
 if (!is_android && (!is_win || link_chrome_on_windows)) {
-  gypi_values = exec_script("//build/gypi_to_gn.py",
-                            [ rebase_path("../chrome_tests.gypi") ],
-                            "scope",
-                            [ "../chrome_tests.gypi" ])
+  import("//chrome/chrome_tests.gni")
 
   test("interactive_ui_tests") {
-    sources = rebase_path(gypi_values.chrome_interactive_ui_test_sources,
-                          ".",
-                          "//chrome")
+    sources =
+        rebase_path(chrome_tests_gypi_values.chrome_interactive_ui_test_sources,
+                    ".",
+                    "//chrome")
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
     ldflags = []
@@ -267,10 +265,10 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     ]
 
     if (toolkit_views) {
-      sources +=
-          rebase_path(gypi_values.chrome_interactive_ui_test_views_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_interactive_ui_test_views_sources,
+              ".",
+              "//chrome")
       deps += [
         "//ui/views",
         "//ui/views:test_support",
@@ -278,7 +276,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       ]
       if (!is_mac) {
         sources += rebase_path(
-                gypi_values.chrome_interactive_ui_test_views_non_mac_sources,
+                chrome_tests_gypi_values.chrome_interactive_ui_test_views_non_mac_sources,
                 ".",
                 "//chrome")
       }
@@ -306,16 +304,16 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     } else {
       # Everything but desktop Linux.
       sources += rebase_path(
-              gypi_values.chrome_interactive_ui_test_non_desktop_linux_sources,
+              chrome_tests_gypi_values.chrome_interactive_ui_test_non_desktop_linux_sources,
               ".",
               "//chrome")
     }
 
     if (is_chromeos) {
-      sources +=
-          rebase_path(gypi_values.chrome_interactive_ui_test_chromeos_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_interactive_ui_test_chromeos_sources,
+              ".",
+              "//chrome")
       sources += [ "../browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc" ]
       sources -= [
         # Use only the _chromeos version on ChromeOS.
@@ -344,15 +342,15 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       }
     } else {
       # ChromeOS doesn't use panels, everybody else does.
-      sources +=
-          rebase_path(gypi_values.chrome_interactive_ui_test_panels_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_interactive_ui_test_panels_sources,
+              ".",
+              "//chrome")
 
       # TODO(tapted): Include on mac when views panels are ported.
       if (toolkit_views && !is_mac) {
         sources += rebase_path(
-                gypi_values.chrome_interactive_ui_test_panels_views_sources,
+                chrome_tests_gypi_values.chrome_interactive_ui_test_panels_views_sources,
                 ".",
                 "//chrome")
       }
@@ -361,15 +359,16 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     if (!is_linux) {
       # Non-Linux platforms (Linux includes ChromeOS here).
       sources += rebase_path(
-              gypi_values.chrome_interactive_ui_test_non_linux_and_chromeos_sources,
+              chrome_tests_gypi_values.chrome_interactive_ui_test_non_linux_and_chromeos_sources,
               ".",
               "//chrome")
     }
 
     if (is_win) {
-      sources += rebase_path(gypi_values.chrome_interactive_ui_test_win_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_interactive_ui_test_win_sources,
+              ".",
+              "//chrome")
       sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
         "//chrome:chrome_version_resources",
@@ -400,22 +399,23 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     }
 
     if (enable_app_list) {
-      sources +=
-          rebase_path(gypi_values.chrome_interactive_ui_test_app_list_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_interactive_ui_test_app_list_sources,
+              ".",
+              "//chrome")
     }
 
     if (use_ash) {
-      sources += rebase_path(gypi_values.chrome_interactive_ui_test_ash_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_interactive_ui_test_ash_sources,
+              ".",
+              "//chrome")
       deps += [ "//ash:test_support" ]
     }
 
     if (enable_notifications) {
       sources += rebase_path(
-              gypi_values.chrome_interactive_ui_test_notifications_sources,
+              chrome_tests_gypi_values.chrome_interactive_ui_test_notifications_sources,
               ".",
               "//chrome")
 
@@ -448,9 +448,10 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
 
   source_set("sync_integration_test_support") {
     testonly = true
-    sources = rebase_path(gypi_values.test_support_sync_integration_sources,
-                          ".",
-                          "//chrome")
+    sources = rebase_path(
+            chrome_tests_gypi_values.test_support_sync_integration_sources,
+            ".",
+            "//chrome")
     public_deps = [
       "//chrome/browser",
     ]
@@ -567,9 +568,10 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     }
 
     js2webui("browser_tests_js_webui") {
-      sources = rebase_path(gypi_values.chrome_browser_tests_webui_js_sources,
-                            ".",
-                            "//chrome")
+      sources = rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_webui_js_sources,
+              ".",
+              "//chrome")
       if (is_chrome_branded) {
         # crbug.com/230471
         sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
@@ -598,11 +600,13 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       "base/browser_tests_main.cc",
     ]
     sources +=
-        rebase_path(gypi_values.chrome_browser_tests_sources, ".", "//chrome")
-    sources +=
-        rebase_path(gypi_values.chrome_browser_extensions_test_support_sources,
+        rebase_path(chrome_tests_gypi_values.chrome_browser_tests_sources,
                     ".",
                     "//chrome")
+    sources += rebase_path(
+            chrome_tests_gypi_values.chrome_browser_extensions_test_support_sources,
+            ".",
+            "//chrome")
 
     deps = [
       ":sync_integration_test_support",
@@ -757,21 +761,23 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       deps += [ "//ui/events:test_support" ]
     }
     if (toolkit_views) {
-      sources += rebase_path(gypi_values.chrome_browser_tests_views_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_views_sources,
+              ".",
+              "//chrome")
       deps += [ "//ui/views" ]
       if (!is_mac) {
-        sources +=
-            rebase_path(gypi_values.chrome_browser_tests_views_non_mac_sources,
-                        ".",
-                        "//chrome")
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_browser_tests_views_non_mac_sources,
+                ".",
+                "//chrome")
       }
     }
     if (is_chromeos) {
-      sources += rebase_path(gypi_values.chrome_browser_tests_chromeos_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_chromeos_sources,
+              ".",
+              "//chrome")
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
@@ -808,18 +814,20 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       }
     }
     if (enable_configuration_policy) {
-      sources += rebase_path(gypi_values.chrome_browser_tests_policy_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_policy_sources,
+              ".",
+              "//chrome")
     }
     if (enable_web_speech) {
-      sources += rebase_path(gypi_values.chrome_browser_tests_speech_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_speech_sources,
+              ".",
+              "//chrome")
     }
     if (safe_browsing_mode == 1) {
       sources += rebase_path(
-              gypi_values.chrome_browser_tests_full_safe_browsing_sources,
+              chrome_tests_gypi_values.chrome_browser_tests_full_safe_browsing_sources,
               ".",
               "//chrome")
       defines += [ "FULL_SAFE_BROWSING" ]
@@ -950,15 +958,16 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       ]
     }
     if (enable_app_list) {
-      sources += rebase_path(gypi_values.chrome_browser_tests_app_list_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_app_list_sources,
+              ".",
+              "//chrome")
     }
     if (enable_supervised_users) {
-      sources +=
-          rebase_path(gypi_values.chrome_browser_tests_supervised_user_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_supervised_user_sources,
+              ".",
+              "//chrome")
     }
     if (enable_pepper_cdms) {
       # Runtime dependencies.
@@ -1009,9 +1018,10 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       ]
     }
     if (enable_remoting) {
-      sources += rebase_path(gypi_values.chrome_browser_tests_remoting_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_remoting_sources,
+              ".",
+              "//chrome")
       #deps += [ "//remoting:remoting_webapp" ]  TODO(GYP)
     }
     if (use_x11) {
@@ -1021,7 +1031,9 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
 
   test("sync_integration_tests") {
     sources =
-        rebase_path(gypi_values.sync_integration_tests_sources, ".", "//chrome")
+        rebase_path(chrome_tests_gypi_values.sync_integration_tests_sources,
+                    ".",
+                    "//chrome")
 
     # TODO(phajdan.jr): Only temporary, to make transition easier.
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -1099,7 +1111,9 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
 
   test("sync_performance_tests") {
     sources =
-        rebase_path(gypi_values.sync_performance_tests_sources, ".", "//chrome")
+        rebase_path(chrome_tests_gypi_values.sync_performance_tests_sources,
+                    ".",
+                    "//chrome")
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 

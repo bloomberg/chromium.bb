@@ -32,7 +32,6 @@ group("gyp_all") {
 
   deps = [
     ":gn_all",
-    # "//chrome/test:chromedriver_unittests", # TODO(GYP)
     # "//components:components_browsertests", # TODO(GYP)
     # "//components/nacl:nacl_loader_unittests", # TODO(GYP)
     # "//google_apis:google_apis_unittests", # TODO(GYP)
@@ -61,6 +60,7 @@ group("gn_all") {
     "//chrome/test:interactive_ui_tests",
     "//chrome/test:sync_integration_tests",
     "//chrome/test:unit_tests",
+    "//chrome/test/chromedriver:chromedriver_unittests",
     "//components:components_unittests",
     "//content/shell:content_shell",
     "//content/test:content_browsertests",
@@ -214,6 +214,9 @@ group("gn_all") {
       "//chrome/test:interactive_ui_tests",  # TODO(GYP) ??
       "//chrome/test:sync_integration_tests",  # TODO(GYP) ??
       "//chrome/test:unit_tests",  # TODO(GYP)
+
+      # Chromedriver shouldn't be compiled on Android.
+      "//chrome/test/chromedriver:chromedriver_unittests",
       "//extensions:extensions_browsertests",
       "//extensions:extensions_unittests",
       "//google_apis/gcm:gcm_unit_tests",
@@ -306,7 +309,6 @@ if (is_linux) {
   group("linux_default_tests") {
     testonly = true
     deps = [
-      # chromedriver_unittests  TODO(GYP)
       # components_browsertests  TODO(GYP)
       # device_unittests  TODO(GYP)
       # nacl_loader_unittests  TODO(GYP)
@@ -317,8 +319,9 @@ if (is_linux) {
       "//cc:cc_unittests",  # PASSES 2/25/2015
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
-      "//chrome/test:sync_integration_tests",  # TODO(GYP) multiple crashes.
+      "//chrome/test:sync_integration_tests",  # Crashes for brettw in GN and GYP.
       "//chrome/test:unit_tests",  # PASSES 2/25/2015
+      "//chrome/test/chromedriver:chromedriver_unittests",  # PASSES 2/25/2015
       "//components:components_unittests",  # TODO(GYP) multiple crashes.
       "//content/test:content_browsertests",
       "//content/test:content_unittests",  # PASSES 2/25/2015
