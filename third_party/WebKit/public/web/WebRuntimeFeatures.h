@@ -140,8 +140,6 @@ public:
 
     BLINK_EXPORT static void enableLayerSquashing(bool) { }
 
-    BLINK_EXPORT static void enableShowModalDialog(bool);
-
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
 
     BLINK_EXPORT static void enableTextBlobs(bool);

@@ -130,7 +130,6 @@ PASS: canGetDescriptor(targetWindow, 'scrollBy') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'scrollTo') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'setInterval') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'setTimeout') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'showModalDialog') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'stop') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'blur') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'close') should be 'false' and is.

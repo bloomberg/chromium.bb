@@ -109,10 +109,6 @@ public:
     // Called to show the widget according to the given policy.
     virtual void show(WebNavigationPolicy) { }
 
-    // Called to block execution of the current thread until the widget is
-    // closed.
-    virtual void runModal() { }
-
     // Called to get/set the position of the widget in screen coordinates.
     virtual WebRect windowRect() { return WebRect(); }
     virtual void setWindowRect(const WebRect&) { }

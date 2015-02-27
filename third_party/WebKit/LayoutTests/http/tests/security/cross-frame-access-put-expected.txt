@@ -183,7 +183,6 @@ ALERT: PASS: window.scrollBy should be 'function scrollBy() { [native code] }' a
 ALERT: PASS: window.scrollTo should be 'function scrollTo() { [native code] }' and is.
 ALERT: PASS: window.setInterval should be 'function setInterval() { [native code] }' and is.
 ALERT: PASS: window.setTimeout should be 'function setTimeout() { [native code] }' and is.
-ALERT: PASS: window.showModalDialog matched the expected value.
 ALERT: PASS: window.stop should be 'function stop() { [native code] }' and is.
 This test checks cross-frame access security of window attribute setters (rdar://problem/5326791).
 
@@ -370,7 +369,6 @@ PASS: Unable to set property scrollBy: SecurityError: Blocked a frame with origi
 PASS: Unable to set property scrollTo: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property setInterval: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property setTimeout: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property showModalDialog: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property stop: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 MAIN WINDOW: !!-- Test ended--!!
 

@@ -302,17 +302,6 @@ void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
     m_webView->client()->show(policy);
 }
 
-bool ChromeClientImpl::canRunModal()
-{
-    return !!m_webView->client();
-}
-
-void ChromeClientImpl::runModal()
-{
-    if (m_webView->client())
-        m_webView->client()->runModal();
-}
-
 void ChromeClientImpl::setToolbarsVisible(bool value)
 {
     m_windowFeatures.toolBarVisible = value;
@@ -772,7 +761,7 @@ DOMWindow* ChromeClientImpl::pagePopupWindowForTesting() const
 
 bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
 {
-    const char* kDialogs[] = {"alert", "confirm", "prompt", "showModalDialog"};
+    const char* kDialogs[] = {"alert", "confirm", "prompt"};
     int dialog = static_cast<int>(dialogType);
     ASSERT_WITH_SECURITY_IMPLICATION(0 <= dialog && dialog < static_cast<int>(arraysize(kDialogs)));
 

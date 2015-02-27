@@ -54,7 +54,6 @@ PASS: captureEvents successfully shadowed
 PASS: releaseEvents successfully shadowed
 PASS: addEventListener successfully shadowed
 PASS: removeEventListener successfully shadowed
-PASS: showModalDialog successfully shadowed
 PASS: find successfully shadowed
 PASS: stop successfully shadowed
 PASS: Image successfully shadowed

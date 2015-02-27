@@ -63,10 +63,6 @@
                             DOMString name,
                             optional DOMString options);
 
-    [RuntimeEnabled=ShowModalDialog, Custom] any showModalDialog(DOMString url,
-                                       optional any dialogArgs,
-                                       optional DOMString featureArgs);
-
     void alert();
     void alert(DOMString message);
     boolean confirm(optional DOMString message = "");

@@ -129,8 +129,6 @@ ScriptedSpeech status=stable
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop
-// window.showModalDialog is deprecated and slated for removal. crbug.com/345831
-ShowModalDialog status=deprecated
 ServiceWorker status=stable
 ServiceWorkerCache status=stable
 ServiceWorkerClientAttributes status=stable

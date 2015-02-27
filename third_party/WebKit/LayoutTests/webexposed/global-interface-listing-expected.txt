@@ -3019,7 +3019,6 @@ interface Window
     method scrollTo
     method setInterval
     method setTimeout
-    method showModalDialog
     method stop
     method toString
     method webkitCancelAnimationFrame

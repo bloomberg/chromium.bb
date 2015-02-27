@@ -155,16 +155,11 @@ public:
 
     bool allowPopUp(); // Call on first window, not target window.
     static bool allowPopUp(LocalFrame& firstFrame);
-    static bool canShowModalDialogNow(const LocalFrame*);
 
     Element* frameElement() const;
 
     PassRefPtrWillBeRawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
         LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
-
-    typedef void (*PrepareDialogFunction)(LocalDOMWindow*, void* context);
-    void showModalDialog(const String& urlString, const String& dialogFeaturesString,
-        LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
 
     FrameConsole* frameConsole() const;
 

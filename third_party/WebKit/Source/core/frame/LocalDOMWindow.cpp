@@ -376,16 +376,6 @@ bool LocalDOMWindow::allowPopUp()
     return frame() && allowPopUp(*frame());
 }
 
-bool LocalDOMWindow::canShowModalDialogNow(const LocalFrame* frame)
-{
-    if (!frame)
-        return false;
-    FrameHost* host = frame->host();
-    if (!host)
-        return false;
-    return host->chrome().canRunModalNow();
-}
-
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindowLifecycleNotifier(this)
     , m_frameObserver(WindowFrameObserver::create(this, frame))
@@ -1764,32 +1754,6 @@ PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, 
     WindowFeatures windowFeatures(windowFeaturesString);
     LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
     return result ? result->domWindow() : nullptr;
-}
-
-void LocalDOMWindow::showModalDialog(const String& urlString, const String& dialogFeaturesString,
-    LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, PrepareDialogFunction function, void* functionContext)
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return;
-    LocalFrame* activeFrame = callingWindow->frame();
-    if (!activeFrame)
-        return;
-    LocalFrame* firstFrame = enteredWindow->frame();
-    if (!firstFrame)
-        return;
-
-    if (!canShowModalDialogNow(frame()) || !enteredWindow->allowPopUp())
-        return;
-
-    UseCounter::countDeprecation(frame(), UseCounter::ShowModalDialog);
-
-    WindowFeatures windowFeatures(dialogFeaturesString, screenAvailableRect(frame()->view()));
-    LocalFrame* dialogFrame = createWindow(urlString, emptyAtom, windowFeatures,
-        *callingWindow, *firstFrame, *frame(), function, functionContext);
-    if (!dialogFrame)
-        return;
-    UserGestureIndicatorDisabler disabler;
-    dialogFrame->host()->chrome().runModal();
 }
 
 DEFINE_TRACE(LocalDOMWindow)

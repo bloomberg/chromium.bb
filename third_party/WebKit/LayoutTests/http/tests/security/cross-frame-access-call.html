@@ -27,7 +27,6 @@ window.onload = function()
     // - Tests for the Window object - 
     shouldThrow("window.setTimeout.call(targetWindow, 'void(0);', 0)", '"SecurityError: Failed to execute \'setTimeout\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.setInterval.call(targetWindow, 'void(0);', 0)", '"SecurityError: Failed to execute \'setInterval\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
-    shouldThrow("window.showModalDialog.call(targetWindow);", '"SecurityError: Failed to execute \'showModalDialog\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.open.call(targetWindow, '')", '"SecurityError: Failed to execute \'open\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.getSelection.call(targetWindow)", '"SecurityError: Failed to execute \'getSelection\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.find.call(targetWindow, 'string', false, false, false, false, false, false)", '"SecurityError: Failed to execute \'find\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');

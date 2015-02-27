@@ -85,9 +85,6 @@ public:
     virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) override { return 0; }
     virtual void show(NavigationPolicy) override { }
 
-    virtual bool canRunModal() override { return false; }
-    virtual void runModal() override { }
-
     virtual void setToolbarsVisible(bool) override { }
     virtual bool toolbarsVisible() override { return false; }
 

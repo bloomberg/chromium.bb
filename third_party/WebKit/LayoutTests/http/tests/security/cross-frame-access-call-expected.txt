@@ -7,7 +7,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS window.setTimeout.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Failed to execute 'setTimeout' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS window.setInterval.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Failed to execute 'setInterval' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.showModalDialog.call(targetWindow); threw exception SecurityError: Failed to execute 'showModalDialog' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS window.open.call(targetWindow, '') threw exception SecurityError: Failed to execute 'open' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS window.getSelection.call(targetWindow) threw exception SecurityError: Failed to execute 'getSelection' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS window.find.call(targetWindow, 'string', false, false, false, false, false, false) threw exception SecurityError: Failed to execute 'find' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..

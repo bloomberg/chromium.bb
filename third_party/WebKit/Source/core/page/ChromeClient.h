@@ -96,9 +96,6 @@ public:
     virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) = 0;
     virtual void show(NavigationPolicy) = 0;
 
-    virtual bool canRunModal() = 0;
-    virtual void runModal() = 0;
-
     virtual void setToolbarsVisible(bool) = 0;
     virtual bool toolbarsVisible() = 0;
 

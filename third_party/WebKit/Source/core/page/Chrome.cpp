@@ -124,11 +124,6 @@ void Chrome::show(NavigationPolicy policy) const
     m_client->show(policy);
 }
 
-bool Chrome::canRunModal() const
-{
-    return m_client->canRunModal();
-}
-
 static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogType dialog, const String& message)
 {
     for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
@@ -139,21 +134,6 @@ static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogTyp
             return page->chrome().client().shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
     }
     return true;
-}
-
-bool Chrome::canRunModalNow() const
-{
-    return canRunModal() && canRunModalIfDuringPageDismissal(m_page, ChromeClient::HTMLDialog, String());
-}
-
-void Chrome::runModal() const
-{
-    // Defer callbacks in all the other pages, so we don't try to run JavaScript
-    // in a way that could interact with this view.
-    ScopedPageLoadDeferrer deferrer(m_page);
-
-    TimerBase::fireTimersInNestedEventLoop();
-    m_client->runModal();
 }
 
 void Chrome::setWindowFeatures(const WindowFeatures& features) const

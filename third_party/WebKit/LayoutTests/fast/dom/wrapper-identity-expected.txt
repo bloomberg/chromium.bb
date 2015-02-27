@@ -166,7 +166,6 @@ PASS var object = window['scrollbars']; isEqualJS(object, object); is true
 PASS var object = window['self']; isEqualJS(object, object); is true
 PASS var object = window['setInterval']; isEqualJS(object, object); is true
 PASS var object = window['setTimeout']; isEqualJS(object, object); is true
-PASS var object = window['showModalDialog']; isEqualJS(object, object); is true
 PASS var object = window['status']; isEqualJS(object, object); is true
 PASS var object = window['statusbar']; isEqualJS(object, object); is true
 PASS var object = window['stop']; isEqualJS(object, object); is true

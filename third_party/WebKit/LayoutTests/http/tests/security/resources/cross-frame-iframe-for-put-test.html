@@ -253,7 +253,6 @@
         var scrollToOld = window.scrollTo;
         var setIntervalOld = window.setInterval;
         var setTimeoutOld = window.setTimeout;
-        var showModalDialogOld = window.showModalDialog;
         var stopOld = window.stop;
 
         setTimeout(function() {
@@ -465,8 +464,6 @@
             shouldBe("window.setInterval", "setIntervalOld");
             shouldBe("window.setTimeout", "setTimeoutOld");
 
-            // showModalDialog is not implemented on all platforms for DumpRenderTree.  So don't display the values.
-            shouldBe("window.showModalDialog", "showModalDialogOld", true);
             shouldBe("window.stop", "stopOld");
         }, 0);
     </script>

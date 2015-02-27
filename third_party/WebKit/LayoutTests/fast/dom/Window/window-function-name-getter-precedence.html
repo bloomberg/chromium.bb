@@ -37,13 +37,7 @@
             element.id = functionName;
             document.body.appendChild(element);
 
-            // showModalDialog only works on mac in the DRT.  So run this test only if its defined and print output only on failure.
-            // This'll keep the output consistent on all platforms.
-            if (functionName == "showModalDialog") {
-                if (window.showModalDialog != undefined)
-                    shouldBe("typeof window." + functionName, "function", true);
-            } else
-                shouldBe("typeof window." + functionName, "function");
+            shouldBe("typeof window." + functionName, "function");
 
             document.body.removeChild(element);
         }
