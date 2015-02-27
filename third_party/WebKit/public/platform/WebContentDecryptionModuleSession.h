@@ -77,9 +77,7 @@ public:
     virtual void setClientInterface(Client*) = 0;
     virtual WebString sessionId() const = 0;
 
-    virtual void initializeNewSession(WebEncryptedMediaInitDataType, const unsigned char* initData, size_t initDataLength, WebEncryptedMediaSessionType, WebContentDecryptionModuleResult);
-    // FIXME: remove this version once Chromium updated to pass enums.
-    virtual void initializeNewSession(const WebString& initDataType, const unsigned char* initData, size_t initDataLength, const WebString& sessionType, WebContentDecryptionModuleResult) = 0;
+    virtual void initializeNewSession(WebEncryptedMediaInitDataType, const unsigned char* initData, size_t initDataLength, WebEncryptedMediaSessionType, WebContentDecryptionModuleResult) = 0;
     virtual void load(const WebString& sessionId, WebContentDecryptionModuleResult) = 0;
     virtual void update(const unsigned char* response, size_t responseLength, WebContentDecryptionModuleResult) = 0;
     virtual void close(WebContentDecryptionModuleResult) = 0;

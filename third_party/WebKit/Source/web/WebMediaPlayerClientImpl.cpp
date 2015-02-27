@@ -128,22 +128,6 @@ void WebMediaPlayerClientImpl::encrypted(WebEncryptedMediaInitDataType initDataT
     HTMLMediaElementEncryptedMedia::encrypted(mediaElement(), initDataType, initData, initDataLength);
 }
 
-// FIXME: Remove this once Chromium updated to use enum type.
-void WebMediaPlayerClientImpl::encrypted(const WebString& initDataType, const unsigned char* initData, unsigned initDataLength)
-{
-    WebEncryptedMediaInitDataType newInitDataType;
-    if (initDataType == "cenc") {
-        newInitDataType = WebEncryptedMediaInitDataType::Cenc;
-    } else if (initDataType == "webm") {
-        newInitDataType = WebEncryptedMediaInitDataType::Webm;
-    } else if (initDataType == "keyids") {
-        newInitDataType = WebEncryptedMediaInitDataType::Keyids;
-    } else {
-        newInitDataType = WebEncryptedMediaInitDataType::Unknown;
-    }
-    HTMLMediaElementEncryptedMedia::encrypted(mediaElement(), newInitDataType, initData, initDataLength);
-}
-
 void WebMediaPlayerClientImpl::didBlockPlaybackWaitingForKey()
 {
     HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey(mediaElement());
