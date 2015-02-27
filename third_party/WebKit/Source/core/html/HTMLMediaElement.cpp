@@ -597,13 +597,12 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 {
     WTF_LOG(Media, "HTMLMediaElement::removedFrom(%p, %p)", this, insertionPoint);
 
+    HTMLElement::removedFrom(insertionPoint);
     if (insertionPoint->inActiveDocument()) {
         configureMediaControls();
         if (m_networkState > NETWORK_EMPTY)
             pause();
     }
-
-    HTMLElement::removedFrom(insertionPoint);
 }
 
 void HTMLMediaElement::attach(const AttachContext& context)
