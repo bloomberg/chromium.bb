@@ -85,7 +85,8 @@ class VisualStateTest : public ContentBrowserTest {
 // This test verifies that visual state callbacks do not deadlock. In other
 // words, the visual state callback should be received even if there are no
 // pending updates or commits.
-IN_PROC_BROWSER_TEST_F(VisualStateTest, CallbackDoesNotDeadlock) {
+// Disabled due to cross-platform flakes; http://crbug.com/462580.
+IN_PROC_BROWSER_TEST_F(VisualStateTest, DISABLED_CallbackDoesNotDeadlock) {
   // This test relies on the fact that loading "about:blank" only requires a
   // single commit. We first load "about:blank" and wait for this single
   // commit. At that point we know that the page has stabilized and no
