@@ -910,6 +910,10 @@ void RenderWidgetCompositor::DidAbortSwapBuffers() {
 void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
   cc::ContextProvider* provider =
       compositor_deps_->GetSharedMainThreadContextProvider();
+  // provider can be NULL after the GPU process crashed enough times and we
+  // don't want to restart it any more (falling back to software).
+  if (!provider)
+    return;
   provider->ContextGL()->RateLimitOffscreenContextCHROMIUM();
 }
 
