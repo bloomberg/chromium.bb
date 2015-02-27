@@ -10,12 +10,14 @@
 
 #include "base/bind.h"
 #include "base/critical_closure.h"
+#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
@@ -54,6 +56,20 @@ void LogFailure(const FilePath& path, TempFileFailure failure_code,
 // static
 bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
                                               const std::string& data) {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, chrome gets killed when it cannot finish shutdown quickly,
+  // and this function seems to be one of the slowest shutdown steps.
+  // Include some info to the report for investigation. crbug.com/418627
+  // TODO(hashimoto): Remove this.
+  struct {
+    size_t data_size;
+    char path[128];
+  } file_info;
+  file_info.data_size = data.size();
+  base::strlcpy(file_info.path, path.value().c_str(),
+                arraysize(file_info.path));
+  base::debug::Alias(&file_info);
+#endif
   // Write the data to a temp file then rename to avoid data loss if we crash
   // while writing the file. Ensure that the temp file is on the same volume
   // as target file, so it can be moved in one step, and that the temp file
