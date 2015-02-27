@@ -1,6 +1,11 @@
-abarth@chromium.org
+# Blink API OWNERS
+darin@chromium.org
 dglazkov@chromium.org
-eseidel@chromium.org
+jochen@chromium.org
+tkent@chromium.org
+chrishtr@chromium.org
+pdr@chromium.org
+philipj@opera.com
 
 # For .gyp* / *.gn* changes only.
 dpranke@chromium.org
