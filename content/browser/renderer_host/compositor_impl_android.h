@@ -55,7 +55,6 @@ class CONTENT_EXPORT CompositorImpl
   // Compositor implementation.
   void SetRootLayer(scoped_refptr<cc::Layer> root) override;
   void SetSurface(jobject surface) override;
-  void SetVisible(bool visible) override;
   void setDeviceScaleFactor(float factor) override;
   void SetWindowBounds(const gfx::Size& size) override;
   void SetHasTransparentBackground(bool flag) override;
@@ -101,6 +100,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetNeedsAnimate() override;
 
   void SetWindowSurface(ANativeWindow* window);
+  void SetVisible(bool visible);
 
   enum CompositingTrigger {
     DO_NOT_COMPOSITE,
