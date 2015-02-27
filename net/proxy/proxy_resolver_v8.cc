@@ -431,11 +431,9 @@ class ProxyResolverV8::Context {
     v8::Context::Scope function_scope(context);
 
     v8::Local<v8::Value> function;
-    if (!GetFindProxyForURL(&function)) {
-      js_bindings()->OnError(
-          -1, base::ASCIIToUTF16("FindProxyForURL() is undefined."));
-      return ERR_PAC_SCRIPT_FAILED;
-    }
+    int rv = GetFindProxyForURL(&function);
+    if (rv != OK)
+      return rv;
 
     v8::Local<v8::Value> argv[] = {
       ASCIIStringToV8String(isolate_, query_url.spec()),
@@ -561,23 +559,41 @@ class ProxyResolverV8::Context {
     // At a minimum, the FindProxyForURL() function must be defined for this
     // to be a legitimiate PAC script.
     v8::Local<v8::Value> function;
-    if (!GetFindProxyForURL(&function)) {
+    return GetFindProxyForURL(&function);
+  }
+
+ private:
+  int GetFindProxyForURL(v8::Local<v8::Value>* function) {
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(isolate_, v8_context_);
+
+    v8::TryCatch try_catch;
+
+    *function =
+        context->Global()->Get(
+            ASCIILiteralToV8String(isolate_, "FindProxyForURL"));
+
+    if (try_catch.HasCaught())
+      HandleError(try_catch.Message());
+
+    // The value should only be empty if an exception was thrown. Code
+    // defensively just in case.
+    DCHECK_EQ(function->IsEmpty(), try_catch.HasCaught());
+    if (function->IsEmpty() || try_catch.HasCaught()) {
       js_bindings()->OnError(
-          -1, base::ASCIIToUTF16("FindProxyForURL() is undefined."));
+          -1,
+          base::ASCIIToUTF16("Accessing FindProxyForURL threw an exception."));
+      return ERR_PAC_SCRIPT_FAILED;
+    }
+
+    if (!(*function)->IsFunction()) {
+      js_bindings()->OnError(
+          -1, base::ASCIIToUTF16(
+                  "FindProxyForURL is undefined or not a function."));
       return ERR_PAC_SCRIPT_FAILED;
     }
 
     return OK;
-  }
-
- private:
-  bool GetFindProxyForURL(v8::Local<v8::Value>* function) {
-    v8::Local<v8::Context> context =
-        v8::Local<v8::Context>::New(isolate_, v8_context_);
-    *function =
-        context->Global()->Get(
-            ASCIILiteralToV8String(isolate_, "FindProxyForURL"));
-    return (*function)->IsFunction();
   }
 
   // Handle an exception thrown by V8.
