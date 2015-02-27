@@ -309,8 +309,7 @@ static_library("ui") {
     deps += [
       "//chrome/browser:jni_headers",
       "//crypto:platform",
-
-      #'../components/components.gyp:web_contents_delegate_android',  TODO(GYP)
+      "//components/web_contents_delegate_android",
     ]
     deps -= [
       "//chrome/browser/ui/views",
@@ -327,12 +326,11 @@ static_library("ui") {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_mac_sources, ".", "//chrome")
     deps += [
-      "//third_party/google_toolbox_for_mac",
-      "//third_party/mozilla",
       ":generate_localizer",
-
-      #'../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',  TODO(GYP)
-      #'../third_party/molokocacao/molokocacao.gyp:molokocacao',  TODO(GYP)
+      "//third_party/apple_sample_code",
+      "//third_party/google_toolbox_for_mac",
+      "//third_party/molokocacao",
+      "//third_party/mozilla",
     ]
     include_dirs = [ "$target_gen_dir" ]
     libs += [ "Quartz.framework" ]
