@@ -157,12 +157,6 @@ void PermissionsUpdater::RemovePermissions(
 void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
   CHECK(extension);
 
-  // We only maintain the granted permissions prefs for INTERNAL and LOAD
-  // extensions.
-  if (!Manifest::IsUnpackedLocation(extension->location()) &&
-      extension->location() != Manifest::INTERNAL)
-    return;
-
   ExtensionPrefs::Get(browser_context_)->AddGrantedPermissions(
       extension->id(),
       extension->permissions_data()->active_permissions().get());
