@@ -224,6 +224,8 @@ public final class EnhancedBookmarksBridge {
             callbackWrapper = new SalientImageCallback() {
                 @Override
                 public void onSalientImageReady(Bitmap image, String imageUrl) {
+                    if (mNativeEnhancedBookmarksBridge == 0) return;
+
                     if (image != null) {
                         mSalientImageCache.put(url, new Pair<String, Bitmap>(imageUrl, image));
                     }
