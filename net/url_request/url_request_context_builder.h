@@ -30,6 +30,10 @@
 #include "net/quic/quic_protocol.h"
 #include "net/socket/next_proto.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace net {
 
 class ChannelIDService;
@@ -187,6 +191,11 @@ class NET_EXPORT URLRequestContextBuilder {
       const scoped_refptr<CookieStore>& cookie_store,
       scoped_ptr<ChannelIDService> channel_id_service);
 
+  // Sets the task runner used to perform file operations. If not set, one will
+  // be created.
+  void SetFileTaskRunner(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
   URLRequestContext* Build();
 
  private:
@@ -214,6 +223,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool http_cache_enabled_;
   bool throttling_enabled_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
   base::FilePath transport_security_persister_path_;

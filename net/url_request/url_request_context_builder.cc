@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -127,29 +128,24 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
 
 class BasicURLRequestContext : public URLRequestContext {
  public:
-  BasicURLRequestContext()
-      : storage_(this) {}
+  explicit BasicURLRequestContext(
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
+      : file_task_runner_(file_task_runner), storage_(this) {}
 
   URLRequestContextStorage* storage() {
     return &storage_;
   }
 
-  base::Thread* GetCacheThread() {
-    if (!cache_thread_) {
-      cache_thread_.reset(new base::Thread("Network Cache Thread"));
-      cache_thread_->StartWithOptions(
-          base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    }
-    return cache_thread_.get();
-  }
-
-  base::Thread* GetFileThread() {
-    if (!file_thread_) {
+  scoped_refptr<base::SingleThreadTaskRunner>& GetFileTaskRunner() {
+    // Create a new thread to run file tasks, if needed.
+    if (!file_task_runner_) {
+      DCHECK(!file_thread_);
       file_thread_.reset(new base::Thread("Network File Thread"));
       file_thread_->StartWithOptions(
           base::Thread::Options(base::MessageLoop::TYPE_DEFAULT, 0));
+      file_task_runner_ = file_thread_->task_runner();
     }
-    return file_thread_.get();
+    return file_task_runner_;
   }
 
   void set_transport_security_persister(
@@ -161,9 +157,9 @@ class BasicURLRequestContext : public URLRequestContext {
   ~BasicURLRequestContext() override { AssertNoURLRequests(); }
 
  private:
-  // Threads should be torn down last.
-  scoped_ptr<base::Thread> cache_thread_;
+  // The thread should be torn down last.
   scoped_ptr<base::Thread> file_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   URLRequestContextStorage storage_;
   scoped_ptr<TransportSecurityPersister> transport_security_persister_;
@@ -239,8 +235,14 @@ void URLRequestContextBuilder::SetCookieAndChannelIdStores(
   channel_id_service_ = channel_id_service.Pass();
 }
 
+void URLRequestContextBuilder::SetFileTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  file_task_runner_ = task_runner;
+}
+
 URLRequestContext* URLRequestContextBuilder::Build() {
-  BasicURLRequestContext* context = new BasicURLRequestContext;
+  BasicURLRequestContext* context =
+      new BasicURLRequestContext(file_task_runner_);
   URLRequestContextStorage* storage = context->storage();
 
   storage->set_http_user_agent_settings(new StaticHttpUserAgentSettings(
@@ -273,10 +275,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     if (proxy_config_service_) {
       proxy_config_service = proxy_config_service_.release();
     } else {
-      proxy_config_service =
-          ProxyService::CreateSystemProxyConfigService(
-              base::ThreadTaskRunnerHandle::Get().get(),
-              context->GetFileThread()->task_runner());
+      proxy_config_service = ProxyService::CreateSystemProxyConfigService(
+          base::ThreadTaskRunnerHandle::Get().get(),
+          context->GetFileTaskRunner());
     }
   #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
     proxy_service_.reset(
@@ -305,20 +306,18 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     storage->set_cookie_store(new CookieMonster(NULL, NULL));
     // TODO(mmenke):  This always creates a file thread, even when it ends up
     // not being used.  Consider lazily creating the thread.
-    storage->set_channel_id_service(make_scoped_ptr(
-        new ChannelIDService(new DefaultChannelIDStore(NULL),
-                             context->GetFileThread()->message_loop_proxy())));
+    storage->set_channel_id_service(make_scoped_ptr(new ChannelIDService(
+        new DefaultChannelIDStore(NULL), context->GetFileTaskRunner())));
   }
 
   storage->set_transport_security_state(new net::TransportSecurityState());
   if (!transport_security_persister_path_.empty()) {
     context->set_transport_security_persister(
         make_scoped_ptr<TransportSecurityPersister>(
-            new TransportSecurityPersister(
-                context->transport_security_state(),
-                transport_security_persister_path_,
-                context->GetFileThread()->message_loop_proxy(),
-                false)));
+            new TransportSecurityPersister(context->transport_security_state(),
+                                           transport_security_persister_path_,
+                                           context->GetFileTaskRunner(),
+                                           false)));
   }
 
   storage->set_http_server_properties(
@@ -368,11 +367,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     HttpCache::BackendFactory* http_cache_backend = NULL;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
       http_cache_backend = new HttpCache::DefaultBackend(
-          DISK_CACHE,
-          net::CACHE_BACKEND_DEFAULT,
-          http_cache_params_.path,
-          http_cache_params_.max_size,
-          context->GetCacheThread()->task_runner());
+          DISK_CACHE, net::CACHE_BACKEND_DEFAULT, http_cache_params_.path,
+          http_cache_params_.max_size, context->GetFileTaskRunner());
     } else {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
@@ -395,8 +391,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 #if !defined(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
-    "file",
-    new FileProtocolHandler(context->GetFileThread()->message_loop_proxy()));
+        "file", new FileProtocolHandler(context->GetFileTaskRunner()));
   }
 #endif  // !defined(DISABLE_FILE_SUPPORT)
 
