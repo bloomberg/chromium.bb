@@ -213,7 +213,6 @@ void URLRequest::AppendChunkToUpload(const char* bytes,
 }
 
 void URLRequest::set_upload(scoped_ptr<UploadDataStream> upload) {
-  DCHECK(!upload->is_chunked());
   upload_data_stream_ = upload.Pass();
 }
 

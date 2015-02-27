@@ -119,7 +119,7 @@ class TestUploadDataProvider implements UploadDataProvider {
         mReadPending = true;
         mStarted = true;
 
-        final boolean finalChunk = (mChunked && mNextRead == mReads.size());
+        final boolean finalChunk = (mChunked && mNextRead == mReads.size() - 1);
         if (mNextRead < mReads.size()) {
             if ((byteBuffer.limit() - byteBuffer.position())
                     < mReads.get(mNextRead).length) {
@@ -128,7 +128,7 @@ class TestUploadDataProvider implements UploadDataProvider {
             }
             byteBuffer.put(mReads.get(mNextRead));
             ++mNextRead;
-        } else if (!finalChunk) {
+        } else {
             throw new IllegalStateException(
                     "Too many reads: " + mNextRead);
         }

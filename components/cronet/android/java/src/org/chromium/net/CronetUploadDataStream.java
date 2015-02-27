@@ -71,11 +71,6 @@ final class CronetUploadDataStream implements UploadDataSink {
         mExecutor = executor;
         mDataProvider = dataProvider;
         mLength = mDataProvider.getLength();
-        if (mLength < 0) {
-            // TODO(mmenke):  Add tests and remove this line.
-            throw new IllegalArgumentException(
-                    "Chunked uploads not supported.");
-        }
     }
 
     /**

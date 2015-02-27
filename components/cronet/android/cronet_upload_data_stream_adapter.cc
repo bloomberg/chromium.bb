@@ -87,7 +87,9 @@ void CronetUploadDataStreamAdapter::OnReadSuccess(int bytes_read,
   DCHECK(read_in_progress_);
   DCHECK(!rewind_in_progress_);
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
-  DCHECK(!is_chunked() || !final_chunk);
+  if (!is_chunked()) {
+    DCHECK(!final_chunk);
+  }
 
   read_in_progress_ = false;
 
