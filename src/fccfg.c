@@ -27,6 +27,7 @@
 #include "fcint.h"
 #include <dirent.h>
 #include <sys/types.h>
+#include "../fc-blanks/fcblanks.h"
 
 #if defined (_WIN32) && !defined (R_OK)
 #define R_OK 4
@@ -109,7 +110,7 @@ FcConfigCreate (void)
     if (!config->cacheDirs)
 	goto bail8;
 
-    config->blanks = 0;
+    config->blanks = &fcBlanks;
 
     config->substPattern = 0;
     config->substFont = 0;

@@ -53,6 +53,7 @@ m4_ifdef([PKG_INSTALLDIR], [PKG_INSTALLDIR], AC_SUBST([pkgconfigdir], ${libdir}/
 
 AM_MISSING_PROG([GIT], [git])
 AM_MISSING_PROG([GPERF], [gperf])
+AM_PATH_PYTHON
 
 AC_MSG_CHECKING([for RM macro])
 _predefined_rm=`make -p -f /dev/null 2>/dev/null|grep '^RM ='|sed -e 's/^RM = //'`
@@ -697,6 +698,7 @@ Makefile
 fontconfig/Makefile
 fc-lang/Makefile
 fc-glyphname/Makefile
+fc-blanks/Makefile
 fc-case/Makefile
 src/Makefile
 conf.d/Makefile
