@@ -170,6 +170,7 @@
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ImageLoader.h"
@@ -481,8 +482,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     }
 
     if (!m_fetcher)
-        m_fetcher = ResourceFetcher::create(0);
-    m_fetcher->setDocument(this);
+        m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
+    static_cast<FrameFetchContext&>(m_fetcher->context()).setDocument(this);
 
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
@@ -575,8 +576,9 @@ Document::~Document()
 
     // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
     // load the initial empty document and the SVGDocument with the same DocumentLoader).
-    if (m_fetcher->document() == this)
-        m_fetcher->setDocument(nullptr);
+    FrameFetchContext& context = static_cast<FrameFetchContext&>(m_fetcher->context());
+    if (context.document() == this)
+        context.setDocument(nullptr);
     m_fetcher.clear();
 
     // We must call clearRareData() here since a Document class inherits TreeScope

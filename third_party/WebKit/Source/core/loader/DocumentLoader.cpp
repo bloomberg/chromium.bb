@@ -46,6 +46,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/ThreadedDataReceiver.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
@@ -77,7 +78,7 @@ static bool isArchiveMIMEType(const String& mimeType)
 
 DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
     : m_frame(frame)
-    , m_fetcher(ResourceFetcher::create(this))
+    , m_fetcher(FrameFetchContext::createContextAndFetcher(this))
     , m_originalRequest(req)
     , m_substituteData(substituteData)
     , m_request(req)
@@ -106,7 +107,7 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || !isLoading());
-    m_fetcher->clearDocumentLoader();
+    static_cast<FrameFetchContext&>(m_fetcher->context()).clearDocumentLoader();
     clearMainResourceHandle();
     m_applicationCacheHost->dispose();
 }

@@ -35,6 +35,7 @@
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
@@ -67,8 +68,8 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
     ResourceRequest request(url);
     request.setRequestContext(blink::WebURLRequest::RequestContextPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
-    frame->loader().fetchContext().setFirstPartyForCookies(request);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::ping;
@@ -84,8 +85,8 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
-    frame->loader().fetchContext().setFirstPartyForCookies(request);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
     // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
@@ -112,8 +113,8 @@ void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, P
     request.setHTTPMethod("POST");
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
-    frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
-    frame->loader().fetchContext().setFirstPartyForCookies(request);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::violationreport;

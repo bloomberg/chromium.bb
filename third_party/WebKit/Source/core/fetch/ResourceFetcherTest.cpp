@@ -40,6 +40,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameFetchContext.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/ResourceRequest.h"
@@ -67,7 +68,7 @@ protected:
         documentLoader = DocumentLoader::create(0, ResourceRequest(secureURL), SubstituteData());
         document = Document::create();
         fetcher = documentLoader->fetcher();
-        fetcher->setDocument(document.get());
+        static_cast<FrameFetchContext&>(fetcher->context()).setDocument(document.get());
     }
 
     void expectUpgrade(const char* input, const char* expected)
@@ -252,7 +253,7 @@ protected:
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
         fetcher = documentLoader->fetcher();
-        fetcher->setDocument(document.get());
+        static_cast<FrameFetchContext&>(fetcher->context()).setDocument(document.get());
     }
 
     void expectHeader(const char* input, const char* headerName, bool isPresent, const char* headerValue)

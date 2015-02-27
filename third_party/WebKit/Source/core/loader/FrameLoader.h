@@ -52,7 +52,6 @@
 namespace blink {
 
 class DocumentLoader;
-class FetchContext;
 class Frame;
 class FrameLoaderClient;
 class ProgressTracker;
@@ -108,7 +107,6 @@ public:
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
-    FetchContext& fetchContext() const { return *m_fetchContext; }
 
     void receivedMainResourceError(DocumentLoader*, const ResourceError&);
 
@@ -223,7 +221,6 @@ private:
     RefPtr<DocumentLoader> m_documentLoader;
     RefPtr<DocumentLoader> m_provisionalDocumentLoader;
     RefPtr<DocumentLoader> m_policyDocumentLoader;
-    OwnPtrWillBeMember<FetchContext> m_fetchContext;
 
     RefPtrWillBeMember<HistoryItem> m_currentItem;
     RefPtrWillBeMember<HistoryItem> m_provisionalItem;

@@ -47,7 +47,6 @@ namespace blink {
     class Editor;
     class Element;
     class EventHandler;
-    class FetchContext;
     class FloatSize;
     class FrameConsole;
     class FrameDestructionObserver;
@@ -113,7 +112,6 @@ namespace blink {
         NavigationScheduler& navigationScheduler() const;
         FrameSelection& selection() const;
         InputMethodController& inputMethodController() const;
-        FetchContext& fetchContext() const { return loader().fetchContext(); }
         ScriptController& script() const;
         SpellChecker& spellChecker() const;
         FrameConsole& console() const;

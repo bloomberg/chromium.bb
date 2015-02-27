@@ -27,6 +27,7 @@
 #define ResourceFetcher_h
 
 #include "core/fetch/CachePolicy.h"
+#include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
@@ -45,7 +46,6 @@ namespace blink {
 class ArchiveResourceCollection;
 class CSSStyleSheetResource;
 class DocumentResource;
-class FetchContext;
 class FontResource;
 class ImageResource;
 class MHTMLArchive;
@@ -76,7 +76,7 @@ friend class ImageLoader;
 friend class ResourceCacheValidationSuppressor;
 
 public:
-    static PassRefPtrWillBeRawPtr<ResourceFetcher> create(DocumentLoader* documentLoader) { return adoptRefWillBeNoop(new ResourceFetcher(documentLoader)); }
+    static PassRefPtrWillBeRawPtr<ResourceFetcher> create(PassOwnPtrWillBeRawPtr<FetchContext> context) { return adoptRefWillBeNoop(new ResourceFetcher(context)); }
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
 
@@ -114,13 +114,12 @@ public:
 
     bool shouldDeferImageLoad(const KURL&) const;
 
-    LocalFrame* frame() const; // Can be null
-    FetchContext& context() const;
-    Document* document() const { return m_document; } // Can be null
-    void setDocument(RawPtr<Document> document) { m_document = document; }
+    FetchContext& context() const { return *m_context.get(); }
 
-    DocumentLoader* documentLoader() const { return m_documentLoader; }
-    void clearDocumentLoader() { m_documentLoader = nullptr; }
+    // DEPRECATED: ResourceFetcher should proxy all usage of major core/ objects through FetchContext.
+    LocalFrame* frame() const { return context().frame(); }
+    Document* document() const { return context().document(); }
+    DocumentLoader* documentLoader() const { return context().documentLoader(); }
 
     void garbageCollectDocumentResources();
 
@@ -182,7 +181,7 @@ private:
     friend class ResourceFetcherUpgradeTest;
     friend class ResourceFetcherHintsTest;
 
-    explicit ResourceFetcher(DocumentLoader*);
+    explicit ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext>);
 
     bool shouldLoadNewResource(Resource::Type) const;
 
@@ -219,13 +218,10 @@ private:
 
     void willTerminateResourceLoader(ResourceLoader*);
 
+    OwnPtrWillBeMember<FetchContext> m_context;
+
     HashSet<String> m_validatedURLs;
     mutable DocumentResourceMap m_documentResources;
-    // FIXME: Oilpan: Ideally this should just be a traced Member but that will
-    // currently leak because LayoutStyle and its data are not on the heap.
-    // See crbug.com/383860 for details.
-    RawPtrWillBeWeakMember<Document> m_document;
-    DocumentLoader* m_documentLoader;
 
     OwnPtr<ListHashSet<Resource*>> m_preloads;
     OwnPtrWillBeMember<ArchiveResourceCollection> m_archiveResourceCollection;

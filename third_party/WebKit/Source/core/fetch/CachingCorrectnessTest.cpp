@@ -37,6 +37,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameFetchContext.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/Platform.h"
 #include "wtf/OwnPtr.h"
@@ -145,8 +146,8 @@ private:
         const KURL kDocumentURL(ParsedURLString, "http://document.com/");
         m_documentLoader = DocumentLoader::create(0, ResourceRequest(kDocumentURL), SubstituteData());
         m_document = HTMLDocument::create();
-        m_fetcher = ResourceFetcher::create(m_documentLoader.get());
-        m_fetcher->setDocument(m_document.get());
+        m_fetcher = m_documentLoader->fetcher();
+        static_cast<FrameFetchContext&>(m_fetcher->context()).setDocument(m_document.get());
     }
 
     virtual void TearDown()

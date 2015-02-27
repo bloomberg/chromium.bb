@@ -32,6 +32,7 @@
 #define FrameFetchContext_h
 
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/PassOwnPtr.h"
@@ -48,10 +49,18 @@ class ResourceRequest;
 
 class FrameFetchContext final : public FetchContext {
 public:
-    static PassOwnPtrWillBeRawPtr<FrameFetchContext> create(LocalFrame* frame)
+    static PassRefPtrWillBeRawPtr<ResourceFetcher> createContextAndFetcher(DocumentLoader* loader)
     {
-        return adoptPtrWillBeNoop(new FrameFetchContext(frame));
+        return ResourceFetcher::create(adoptPtrWillBeNoop(new FrameFetchContext(loader)));
     }
+
+    ~FrameFetchContext();
+
+    LocalFrame* frame() const override; // Can be null
+    Document* document() const override { return m_document; } // Can be null
+    void setDocument(RawPtr<Document> document) { m_document = document; }
+    DocumentLoader* documentLoader() const override { return m_documentLoader; }
+    void clearDocumentLoader() { m_documentLoader = nullptr; }
 
     virtual void reportLocalLoadFailed(const KURL&) override;
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType) override;
@@ -70,10 +79,14 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit FrameFetchContext(LocalFrame*);
+    explicit FrameFetchContext(DocumentLoader*);
     inline DocumentLoader* ensureLoader(DocumentLoader*);
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    // FIXME: Oilpan: Ideally this should just be a traced Member but that will
+    // currently leak because LayoutStyle and its data are not on the heap.
+    // See crbug.com/383860 for details.
+    RawPtrWillBeWeakMember<Document> m_document;
+    DocumentLoader* m_documentLoader;
 };
 
 }

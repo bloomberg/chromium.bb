@@ -53,7 +53,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
@@ -256,9 +255,8 @@ static ResourceRequestCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
     return UseProtocolCachePolicy;
 }
 
-ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
-    : m_document(nullptr)
-    , m_documentLoader(documentLoader)
+ResourceFetcher::ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext> context)
+    : m_context(context)
     , m_garbageCollectDocumentResourcesTimer(this, &ResourceFetcher::garbageCollectDocumentResourcesTimerFired)
     , m_resourceTimingReportTimer(this, &ResourceFetcher::resourceTimingReportTimerFired)
     , m_autoLoadImages(true)
@@ -269,9 +267,6 @@ ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
 
 ResourceFetcher::~ResourceFetcher()
 {
-    m_documentLoader = nullptr;
-    m_document = nullptr;
-
     clearPreloads();
 
 #if !ENABLE(OILPAN)
@@ -286,22 +281,6 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);
     return m_documentResources.get(url).get();
-}
-
-LocalFrame* ResourceFetcher::frame() const
-{
-    if (m_documentLoader)
-        return m_documentLoader->frame();
-    if (m_document && m_document->importsController())
-        return m_document->importsController()->master()->frame();
-    return 0;
-}
-
-FetchContext& ResourceFetcher::context() const
-{
-    if (LocalFrame* frame = this->frame())
-        return frame->fetchContext();
-    return FetchContext::nullInstance();
 }
 
 ResourcePtr<Resource> ResourceFetcher::fetchSynchronously(FetchRequest& request)
@@ -504,10 +483,10 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
         ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
 
-    // m_document can be null, but not in any of the cases where csp is actually used below.
-    // ImageResourceTest.MultipartImage crashes w/o the m_document null check.
+    // document() can be null, but not in any of the cases where csp is actually used below.
+    // ImageResourceTest.MultipartImage crashes w/o the document() null check.
     // I believe it's the Resource::Raw case.
-    const ContentSecurityPolicy* csp = m_document ? m_document->contentSecurityPolicy() : nullptr;
+    const ContentSecurityPolicy* csp = document() ? document()->contentSecurityPolicy() : nullptr;
 
     // FIXME: This would be cleaner if moved this switch into an allowFromSource()
     // helper on this object which took a Resource::Type, then this block would
@@ -633,10 +612,10 @@ bool ResourceFetcher::isControlledByServiceWorker() const
     LocalFrame* localFrame = frame();
     if (!localFrame)
         return false;
-    ASSERT(m_documentLoader || localFrame->loader().documentLoader());
-    if (m_documentLoader)
-        return localFrame->loader().client()->isControlledByServiceWorker(*m_documentLoader);
-    // m_documentLoader is null while loading resources from the imported HTML.
+    ASSERT(documentLoader() || localFrame->loader().documentLoader());
+    if (documentLoader())
+        return localFrame->loader().client()->isControlledByServiceWorker(*documentLoader());
+    // documentLoader() is null while loading resources from the imported HTML.
     // In such cases whether the request is controlled by ServiceWorker or not
     // is determined by the document loader of the frame.
     return localFrame->loader().client()->isControlledByServiceWorker(*localFrame->loader().documentLoader());
@@ -647,10 +626,10 @@ int64_t ResourceFetcher::serviceWorkerID() const
     LocalFrame* localFrame = frame();
     if (!localFrame)
         return -1;
-    ASSERT(m_documentLoader || localFrame->loader().documentLoader());
-    if (m_documentLoader)
-        return localFrame->loader().client()->serviceWorkerID(*m_documentLoader);
-    // m_documentLoader is null while loading resources from the imported HTML.
+    ASSERT(documentLoader() || localFrame->loader().documentLoader());
+    if (documentLoader())
+        return localFrame->loader().client()->serviceWorkerID(*documentLoader());
+    // documentLoader() is null while loading resources from the imported HTML.
     // In such cases a service worker ID could be retrieved from the document
     // loader of the frame.
     return localFrame->loader().client()->serviceWorkerID(*localFrame->loader().documentLoader());
@@ -660,11 +639,11 @@ bool ResourceFetcher::shouldLoadNewResource(Resource::Type type) const
 {
     if (!frame())
         return false;
-    if (!m_documentLoader)
+    if (!documentLoader())
         return true;
     if (type == Resource::MainResource)
-        return m_documentLoader == frame()->loader().provisionalDocumentLoader();
-    return m_documentLoader == frame()->loader().documentLoader();
+        return documentLoader() == frame()->loader().provisionalDocumentLoader();
+    return documentLoader() == frame()->loader().documentLoader();
 }
 
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
@@ -687,7 +666,7 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
     if (type == ResourceLoadingFromCache)
         notifyLoadedFromMemoryCache(resource);
 
-    if (request.resourceRequest().url().protocolIsData() || (m_documentLoader && m_documentLoader->substituteData().isValid()))
+    if (request.resourceRequest().url().protocolIsData() || (documentLoader() && documentLoader()->substituteData().isValid()))
         return;
 
     if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() && !m_validatedURLs.contains(request.resourceRequest().url())) {
@@ -815,7 +794,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     // use.
     // Remove main resource from cache to prevent reuse.
     if (type == Resource::MainResource) {
-        ASSERT(policy != Use || m_documentLoader->substituteData().isValid());
+        ASSERT(policy != Use || documentLoader()->substituteData().isValid());
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
     }
@@ -863,16 +842,16 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
     if (request.isConditional())
         return ReloadIgnoringCacheData;
 
-    if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
+    if (documentLoader() && document() && !document()->loadEventFinished()) {
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
         // This policy should not be inherited by subresources.
-        ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().cachePolicy();
-        if (m_documentLoader->request().httpMethod() == "POST") {
+        ResourceRequestCachePolicy mainResourceCachePolicy = documentLoader()->request().cachePolicy();
+        if (documentLoader()->request().httpMethod() == "POST") {
             if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
                 return ReturnCacheDataElseLoad;
             return UseProtocolCachePolicy;
         }
-        return memoryCachePolicyToResourceRequestCachePolicy(context().cachePolicy(m_document));
+        return memoryCachePolicyToResourceRequestCachePolicy(context().cachePolicy(document()));
     }
     return UseProtocolCachePolicy;
 }
@@ -896,7 +875,7 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
 
 void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
 {
-    if (!m_document || !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
+    if (!document() || !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
         return;
 
     KURL url = fetchRequest.resourceRequest().url();
@@ -906,7 +885,7 @@ void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
     if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
 
-    if (m_document->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocolIs("http")) {
+    if (document()->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocolIs("http")) {
         // We always upgrade subresource requests and nested frames, we always upgrade form
         // submissions, and we always upgrade requests whose host matches the host of the
         // containing document's security origin.
@@ -916,7 +895,7 @@ void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
         if (request.frameType() == WebURLRequest::FrameTypeNone
             || request.frameType() == WebURLRequest::FrameTypeNested
             || request.requestContext() == WebURLRequest::RequestContextForm
-            || url.host() == m_document->securityOrigin()->host())
+            || url.host() == document()->securityOrigin()->host())
         {
             url.setProtocol("https");
             if (url.port() == 80)
@@ -928,11 +907,11 @@ void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
 
 void ResourceFetcher::addClientHintsIfNeccessary(FetchRequest& fetchRequest)
 {
-    if (!RuntimeEnabledFeatures::clientHintsEnabled() || !m_document || !frame())
+    if (!RuntimeEnabledFeatures::clientHintsEnabled() || !document() || !frame())
         return;
 
     if (frame()->shouldSendDPRHint())
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(document()->devicePixelRatio())));
 
     // FIXME: Send the RW hint based on the actual resource width, when we have it.
     if (frame()->shouldSendRWHint() && frame()->view())
@@ -1048,7 +1027,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Use;
 
     // If a main resource was populated from a SubstituteData load, use it.
-    if (type == Resource::MainResource && m_documentLoader->substituteData().isValid())
+    if (type == Resource::MainResource && documentLoader()->substituteData().isValid())
         return Use;
 
     if (!existingResource->canReuse(request))
@@ -1157,10 +1136,10 @@ void ResourceFetcher::printAccessDeniedMessage(const KURL& url) const
         return;
 
     String message;
-    if (!m_document || m_document->url().isNull())
+    if (!document() || document()->url().isNull())
         message = "Unsafe attempt to load URL " + url.elidedString() + '.';
     else
-        message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + m_document->url().elidedString() + ". Domains, protocols and ports must match.\n";
+        message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + document()->url().elidedString() + ". Domains, protocols and ports must match.\n";
 
     frame()->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
 }
@@ -1266,7 +1245,7 @@ void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
     // FIXME: If willSendRequest changes the request, we don't respect it.
     willSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
     InspectorInstrumentation::markResourceAsCached(frame(), identifier);
-    context().sendRemainingDelegateMessages(m_documentLoader, identifier, resource->response(), resource->encodedSize());
+    context().sendRemainingDelegateMessages(documentLoader(), identifier, resource->response(), resource->encodedSize());
 }
 
 int ResourceFetcher::requestCount() const
@@ -1284,7 +1263,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
 
     String encoding;
     if (type == Resource::Script || type == Resource::CSSStyleSheet) {
-        encoding = charset.isEmpty() ? m_document->charset().string() : charset;
+        encoding = charset.isEmpty() ? document()->charset().string() : charset;
 
         // RequestContext for Resource::Image is set in fetchImage below.
         determineRequestContext(request.mutableResourceRequest(), type);
@@ -1315,7 +1294,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
 
 bool ResourceFetcher::isPreloaded(const String& urlString) const
 {
-    const KURL& url = m_document->completeURL(urlString);
+    const KURL& url = document()->completeURL(urlString);
 
     if (m_preloads) {
         for (Resource* resource : *m_preloads) {
@@ -1376,7 +1355,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
     RefPtrWillBeRawPtr<Document> protectDocument(document());
-    RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
+    RefPtr<DocumentLoader> protectDocumentLoader(documentLoader());
     willTerminateResourceLoader(resource->loader());
 
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400 && document()) {
@@ -1388,7 +1367,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
             reportResourceTiming(info.get(), document(), resource->type() == Resource::MainResource);
         }
     }
-    context().dispatchDidFinishLoading(m_documentLoader, resource->identifier(), finishTime, encodedDataLength);
+    context().dispatchDidFinishLoading(documentLoader(), resource->identifier(), finishTime, encodedDataLength);
 }
 
 void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority, int intraPriorityValue)
@@ -1402,12 +1381,12 @@ void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceErr
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
     willTerminateResourceLoader(resource->loader());
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-    context().dispatchDidFail(m_documentLoader, resource->identifier(), error, isInternalRequest);
+    context().dispatchDidFail(documentLoader(), resource->identifier(), error, isInternalRequest);
 }
 
 void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    context().dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse, initiatorInfo);
+    context().dispatchWillSendRequest(documentLoader(), identifier, request, redirectResponse, initiatorInfo);
 }
 
 void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
@@ -1421,26 +1400,26 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
         if (!canRequest(resource->type(), resource->resourceRequest(), originalURL, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
             bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-            context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
+            context().dispatchDidFail(documentLoader(), resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
             return;
         }
     }
-    context().dispatchDidReceiveResponse(m_documentLoader, resource->identifier(), response, resource->loader());
+    context().dispatchDidReceiveResponse(documentLoader(), resource->identifier(), response, resource->loader());
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)
 {
-    context().dispatchDidReceiveData(m_documentLoader, resource->identifier(), data, dataLength, encodedDataLength);
+    context().dispatchDidReceiveData(documentLoader(), resource->identifier(), data, dataLength, encodedDataLength);
 }
 
 void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, int encodedDataLength)
 {
-    context().dispatchDidDownloadData(m_documentLoader, resource->identifier(), dataLength, encodedDataLength);
+    context().dispatchDidDownloadData(documentLoader(), resource->identifier(), dataLength, encodedDataLength);
 }
 
 void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
-    context().dispatchDidReceiveData(m_documentLoader, identifier, data, dataLength, encodedDataLength);
+    context().dispatchDidReceiveData(documentLoader(), identifier, data, dataLength, encodedDataLength);
 }
 
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
@@ -1478,8 +1457,8 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)
 {
-    if (m_documentLoader)
-        m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+    if (documentLoader())
+        documentLoader()->applicationCacheHost()->willStartLoadingResource(request);
 
     storeResourceTimingInitiatorInformation(resource);
     TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
@@ -1651,7 +1630,7 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
 
 DEFINE_TRACE(ResourceFetcher)
 {
-    visitor->trace(m_document);
+    visitor->trace(m_context);
     visitor->trace(m_archiveResourceCollection);
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);

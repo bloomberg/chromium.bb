@@ -42,6 +42,7 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
+class LocalFrame;
 class KURL;
 class ResourceError;
 class ResourceLoader;
@@ -61,6 +62,11 @@ public:
     FetchContext() { }
     virtual ~FetchContext() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
+
+    // Temporary while we remove references to these classes from ResourceFetcher.
+    virtual LocalFrame* frame() const { return nullptr; }
+    virtual Document* document() const { return nullptr; }
+    virtual DocumentLoader* documentLoader() const { return nullptr; }
 
     virtual void reportLocalLoadFailed(const KURL&);
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType);

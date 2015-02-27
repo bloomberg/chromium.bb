@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
@@ -46,14 +47,30 @@
 
 namespace blink {
 
-FrameFetchContext::FrameFetchContext(LocalFrame* frame)
-    : m_frame(frame)
+FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
+    : m_document(nullptr)
+    , m_documentLoader(loader)
 {
+}
+
+FrameFetchContext::~FrameFetchContext()
+{
+    m_document = nullptr;
+    m_documentLoader = nullptr;
+}
+
+LocalFrame* FrameFetchContext::frame() const
+{
+    if (m_documentLoader)
+        return m_documentLoader->frame();
+    if (m_document && m_document->importsController())
+        return m_document->importsController()->master()->frame();
+    return 0;
 }
 
 void FrameFetchContext::reportLocalLoadFailed(const KURL& url)
 {
-    FrameLoader::reportLocalLoadFailed(m_frame, url.elidedString());
+    FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
 }
 
 void FrameFetchContext::addAdditionalRequestHeaders(Document* document, ResourceRequest& request, FetchResourceType type)
@@ -76,27 +93,30 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
     if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
         return;
 
-    m_frame->loader().applyUserAgent(request);
+    frame()->loader().applyUserAgent(request);
 }
 
 void FrameFetchContext::setFirstPartyForCookies(ResourceRequest& request)
 {
-    if (m_frame->tree().top()->isLocalFrame())
-        request.setFirstPartyForCookies(toLocalFrame(m_frame->tree().top())->document()->firstPartyForCookies());
+    if (frame()->tree().top()->isLocalFrame())
+        request.setFirstPartyForCookies(toLocalFrame(frame()->tree().top())->document()->firstPartyForCookies());
 }
 
 CachePolicy FrameFetchContext::cachePolicy(Document* document) const
 {
+    if (!frame())
+        return CachePolicyVerify;
+
     if (document && document->loadEventFinished())
         return CachePolicyVerify;
 
-    FrameLoadType loadType = m_frame->loader().loadType();
+    FrameLoadType loadType = frame()->loader().loadType();
     if (loadType == FrameLoadTypeReloadFromOrigin)
         return CachePolicyReload;
 
-    Frame* parentFrame = m_frame->tree().parent();
+    Frame* parentFrame = frame()->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame()) {
-        CachePolicy parentCachePolicy = toLocalFrame(parentFrame)->loader().fetchContext().cachePolicy(toLocalFrame(parentFrame)->document());
+        CachePolicy parentCachePolicy = toLocalFrame(parentFrame)->document()->fetcher()->context().cachePolicy(toLocalFrame(parentFrame)->document());
         if (parentCachePolicy != CachePolicyVerify)
             return parentCachePolicy;
     }
@@ -117,70 +137,73 @@ CachePolicy FrameFetchContext::cachePolicy(Document* document) const
 // cannot see imported documents.
 inline DocumentLoader* FrameFetchContext::ensureLoader(DocumentLoader* loader)
 {
-    return loader ? loader : m_frame->loader().documentLoader();
+    return loader ? loader : frame()->loader().documentLoader();
 }
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    m_frame->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority, intraPriorityValue);
+    frame()->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority, intraPriorityValue);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    m_frame->loader().applyUserAgent(request);
-    m_frame->loader().client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", "data", InspectorSendRequestEvent::data(identifier, m_frame, request));
-    InspectorInstrumentation::willSendRequest(m_frame, identifier, ensureLoader(loader), request, redirectResponse, initiatorInfo);
+    frame()->loader().applyUserAgent(request);
+    frame()->loader().client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", "data", InspectorSendRequestEvent::data(identifier, frame(), request));
+    InspectorInstrumentation::willSendRequest(frame(), identifier, ensureLoader(loader), request, redirectResponse, initiatorInfo);
 }
 
 void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
 {
-    m_frame->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, response);
+    frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, response);
 }
 
 void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
 {
-    m_frame->loader().progress().incrementProgress(identifier, r);
-    m_frame->loader().client()->dispatchDidReceiveResponse(loader, identifier, r);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_frame, r));
+    frame()->loader().progress().incrementProgress(identifier, r);
+    frame()->loader().client()->dispatchDidReceiveResponse(loader, identifier, r);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, frame(), r));
     DocumentLoader* documentLoader = ensureLoader(loader);
-    InspectorInstrumentation::didReceiveResourceResponse(m_frame, identifier, documentLoader, r, resourceLoader);
+    InspectorInstrumentation::didReceiveResourceResponse(frame(), identifier, documentLoader, r, resourceLoader);
     // It is essential that inspector gets resource response BEFORE console.
-    m_frame->console().reportResourceResponseReceived(documentLoader, identifier, r);
+    frame()->console().reportResourceResponseReceived(documentLoader, identifier, r);
 }
 
 void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
-    m_frame->loader().progress().incrementProgress(identifier, dataLength);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, m_frame, encodedDataLength));
-    InspectorInstrumentation::didReceiveData(m_frame, identifier, data, dataLength, encodedDataLength);
+    frame()->loader().progress().incrementProgress(identifier, dataLength);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
+    InspectorInstrumentation::didReceiveData(frame(), identifier, data, dataLength, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)
 {
-    m_frame->loader().progress().incrementProgress(identifier, dataLength);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, m_frame, encodedDataLength));
-    InspectorInstrumentation::didReceiveData(m_frame, identifier, 0, dataLength, encodedDataLength);
+    frame()->loader().progress().incrementProgress(identifier, dataLength);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
+    InspectorInstrumentation::didReceiveData(frame(), identifier, 0, dataLength, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigned long identifier, double finishTime, int64_t encodedDataLength)
 {
-    m_frame->loader().progress().completeProgress(identifier);
-    m_frame->loader().client()->dispatchDidFinishLoading(loader, identifier);
+    frame()->loader().progress().completeProgress(identifier);
+    frame()->loader().client()->dispatchDidFinishLoading(loader, identifier);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(identifier, finishTime, false));
-    InspectorInstrumentation::didFinishLoading(m_frame, identifier, ensureLoader(loader), finishTime, encodedDataLength);
+    InspectorInstrumentation::didFinishLoading(frame(), identifier, ensureLoader(loader), finishTime, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidFail(DocumentLoader* loader, unsigned long identifier, const ResourceError& error, bool isInternalRequest)
 {
-    m_frame->loader().progress().completeProgress(identifier);
-    m_frame->loader().client()->dispatchDidFinishLoading(loader, identifier);
+    if (!frame())
+        return;
+
+    frame()->loader().progress().completeProgress(identifier);
+    frame()->loader().client()->dispatchDidFinishLoading(loader, identifier);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(identifier, 0, true));
-    InspectorInstrumentation::didFailLoading(m_frame, identifier, error);
+    InspectorInstrumentation::didFailLoading(frame(), identifier, error);
     // Notification to FrameConsole should come AFTER InspectorInstrumentation call, DevTools front-end relies on this.
     if (!isInternalRequest)
-        m_frame->console().didFailLoading(identifier, error);
+        frame()->console().didFailLoading(identifier, error);
 }
 
 void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& response, int dataLength)
@@ -196,7 +219,7 @@ void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, un
 
 DEFINE_TRACE(FrameFetchContext)
 {
-    visitor->trace(m_frame);
+    visitor->trace(m_document);
     FetchContext::trace(visitor);
 }
 

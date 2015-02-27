@@ -7,7 +7,9 @@
 
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/DOMArrayBufferView.h"
+#include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/DOMFormData.h"
@@ -75,8 +77,8 @@ public:
         request.setHTTPMethod("POST");
         request.setHTTPHeaderField("Cache-Control", "max-age=0");
         request.setAllowStoredCredentials(true);
-        frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
-        frame->loader().fetchContext().setFirstPartyForCookies(request);
+        frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+        frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
         payloadLength = entitySize;
         if (!beacon.serialize(request, allowance, payloadLength))
