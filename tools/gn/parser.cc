@@ -174,7 +174,7 @@ Token Parser::Consume(Token::Type* types,
 
   for (size_t i = 0; i < num_types; ++i) {
     if (cur_token().type() == types[i])
-      return tokens_[cur_++];
+      return Consume();
   }
   *err_ = Err(cur_token(), error_message);
   return Token(Location(), Token::INVALID, base::StringPiece());
