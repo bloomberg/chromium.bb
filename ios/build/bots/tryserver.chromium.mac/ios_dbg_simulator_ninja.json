@@ -20,6 +20,11 @@
       "os": "7.1"
     },
     {
+      "app": "ios_web_unittests",
+      "device type": "iPhone Retina (4-inch)",
+      "os": "7.1"
+    },
+    {
       "app": "base_unittests",
       "device type": "iPhone Retina (4-inch)",
       "os": "7.1"
