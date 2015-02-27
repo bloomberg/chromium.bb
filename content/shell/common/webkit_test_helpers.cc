@@ -77,7 +77,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->tabs_to_links = false;
   prefs->hyperlink_auditing_enabled = false;
   prefs->allow_displaying_insecure_content = true;
-  prefs->allow_running_insecure_content = true;
+  prefs->allow_running_insecure_content = false;
   prefs->disable_reading_from_canvas = false;
   prefs->strict_mixed_content_checking = false;
   prefs->strict_powerful_feature_restrictions = false;
