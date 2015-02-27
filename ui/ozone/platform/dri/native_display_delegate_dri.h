@@ -36,8 +36,6 @@ class NativeDisplayDelegateDri {
   void InitializeIOTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-  void ForceDPMSOn();
-
   // Returns a list of the connected displays. When this is called the list of
   // displays is refreshed.
   std::vector<DisplaySnapshot_Params> GetDisplays();

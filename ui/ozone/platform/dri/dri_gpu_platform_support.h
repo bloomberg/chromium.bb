@@ -67,7 +67,6 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location);
 
   // Display related IPC handlers.
-  void OnForceDPMSOn();
   void OnRefreshNativeDisplays();
   void OnConfigureNativeDisplay(int64_t id,
                                 const DisplayMode_Params& mode,

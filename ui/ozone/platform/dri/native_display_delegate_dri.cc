@@ -103,16 +103,6 @@ NativeDisplayDelegateDri::NativeDisplayDelegateDri(
 NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {
 }
 
-void NativeDisplayDelegateDri::ForceDPMSOn() {
-  for (size_t i = 0; i < cached_displays_.size(); ++i) {
-    DisplaySnapshotDri* dri_output = cached_displays_[i];
-    if (dri_output->dpms_property())
-      dri_output->drm()->SetProperty(dri_output->connector(),
-                                     dri_output->dpms_property()->prop_id,
-                                     DRM_MODE_DPMS_ON);
-  }
-}
-
 void NativeDisplayDelegateDri::InitializeIOTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK(!io_task_runner_);
@@ -317,6 +307,12 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshotDri& output,
               << " crtc=" << output.crtc()
               << " connector=" << output.connector();
       return false;
+    }
+
+    if (output.dpms_property()) {
+      output.drm()->SetProperty(output.connector(),
+                                output.dpms_property()->prop_id,
+                                DRM_MODE_DPMS_ON);
     }
   } else {
     if (output.dpms_property()) {

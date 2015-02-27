@@ -205,7 +205,6 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorSet, OnCursorSet)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorMove, OnCursorMove)
 
-  IPC_MESSAGE_HANDLER(OzoneGpuMsg_ForceDPMSOn, OnForceDPMSOn)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_RefreshNativeDisplays,
                       OnRefreshNativeDisplays)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_ConfigureNativeDisplay,
@@ -258,10 +257,6 @@ void DriGpuPlatformSupport::OnCursorSet(gfx::AcceleratedWidget widget,
 void DriGpuPlatformSupport::OnCursorMove(gfx::AcceleratedWidget widget,
                                          const gfx::Point& location) {
   window_manager_->GetWindowDelegate(widget)->MoveCursor(location);
-}
-
-void DriGpuPlatformSupport::OnForceDPMSOn() {
-  ndd_->ForceDPMSOn();
 }
 
 void DriGpuPlatformSupport::OnRefreshNativeDisplays() {
