@@ -8,7 +8,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
-#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "net/base/net_errors.h"
