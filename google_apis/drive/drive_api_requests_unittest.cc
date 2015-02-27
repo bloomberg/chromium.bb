@@ -47,7 +47,7 @@ const char kTestPermissionResponse[] =
 
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
-const char kTestDownloadPathPrefix[] = "/download/";
+const char kTestDownloadPathPrefix[] = "/host/";
 
 // Used as a GetContentCallback.
 void AppendContent(std::string* out,
@@ -102,8 +102,8 @@ class DriveApiRequestsTest : public testing::Test {
                    base::Unretained(this)));
 
     GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
-    url_generator_.reset(new DriveApiUrlGenerator(
-        test_base_url, test_base_url.Resolve(kTestDownloadPathPrefix)));
+    url_generator_.reset(
+        new DriveApiUrlGenerator(test_base_url, test_base_url));
 
     // Reset the server's expected behavior just in case.
     ResetExpectedResponse();

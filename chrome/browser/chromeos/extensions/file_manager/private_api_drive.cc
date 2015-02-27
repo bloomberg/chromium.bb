@@ -32,8 +32,10 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/auth_service.h"
+#include "google_apis/drive/drive_api_url_generator.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 
@@ -48,6 +50,7 @@ using file_manager::util::EntryDefinitionList;
 using file_manager::util::EntryDefinitionListCallback;
 using file_manager::util::FileDefinition;
 using file_manager::util::FileDefinitionList;
+using google_apis::DriveApiUrlGenerator;
 
 namespace extensions {
 namespace {
@@ -84,9 +87,14 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
       entry_proto.file_specific_info();
 
   if (!entry_proto.resource_id().empty()) {
-    properties->thumbnail_url.reset(
-        new std::string("https://www.googledrive.com/thumb/" +
-                        entry_proto.resource_id() + "?width=500&height=500"));
+    DriveApiUrlGenerator url_generator(
+        (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
+        (GURL(
+            google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)));
+    properties->thumbnail_url.reset(new std::string(
+        url_generator.GetThumbnailUrl(entry_proto.resource_id(),
+                                      500 /* width */,
+                                      500 /* height */).spec()));
   }
   if (file_specific_info.has_image_width()) {
     properties->image_width.reset(

@@ -107,6 +107,11 @@ class DriveApiUrlGenerator {
   // Generates a URL for adding permissions.
   GURL GetPermissionsInsertUrl(const std::string& resource_id) const;
 
+  // Generates a URL for a thumbnail with specified dimensions.
+  GURL GetThumbnailUrl(const std::string& resource_id,
+                       int width,
+                       int height) const;
+
  private:
   const GURL base_url_;
   const GURL base_download_url_;

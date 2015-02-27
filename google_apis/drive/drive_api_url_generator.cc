@@ -16,29 +16,30 @@ namespace google_apis {
 namespace {
 
 // Hard coded URLs for communication with a google drive server.
-const char kDriveV2AboutUrl[] = "/drive/v2/about";
-const char kDriveV2AppsUrl[] = "/drive/v2/apps";
-const char kDriveV2ChangelistUrl[] = "/drive/v2/changes";
-const char kDriveV2FilesUrl[] = "/drive/v2/files";
-const char kDriveV2FileUrlPrefix[] = "/drive/v2/files/";
-const char kDriveV2ChildrenUrlFormat[] = "/drive/v2/files/%s/children";
+const char kDriveV2AboutUrl[] = "drive/v2/about";
+const char kDriveV2AppsUrl[] = "drive/v2/apps";
+const char kDriveV2ChangelistUrl[] = "drive/v2/changes";
+const char kDriveV2FilesUrl[] = "drive/v2/files";
+const char kDriveV2FileUrlPrefix[] = "drive/v2/files/";
+const char kDriveV2ChildrenUrlFormat[] = "drive/v2/files/%s/children";
 const char kDriveV2ChildrenUrlForRemovalFormat[] =
-    "/drive/v2/files/%s/children/%s";
-const char kDriveV2FileCopyUrlFormat[] = "/drive/v2/files/%s/copy";
-const char kDriveV2FileDeleteUrlFormat[] = "/drive/v2/files/%s";
-const char kDriveV2FileTrashUrlFormat[] = "/drive/v2/files/%s/trash";
-const char kDriveV2UploadNewFileUrl[] = "/upload/drive/v2/files";
-const char kDriveV2UploadExistingFileUrlPrefix[] =
-    "/upload/drive/v2/files/";
-const char kDriveV2PermissionsUrlFormat[] = "/drive/v2/files/%s/permissions";
+    "drive/v2/files/%s/children/%s";
+const char kDriveV2FileCopyUrlFormat[] = "drive/v2/files/%s/copy";
+const char kDriveV2FileDeleteUrlFormat[] = "drive/v2/files/%s";
+const char kDriveV2FileTrashUrlFormat[] = "drive/v2/files/%s/trash";
+const char kDriveV2UploadNewFileUrl[] = "upload/drive/v2/files";
+const char kDriveV2UploadExistingFileUrlPrefix[] = "upload/drive/v2/files/";
+const char kDriveV2PermissionsUrlFormat[] = "drive/v2/files/%s/permissions";
+const char kDriveV2DownloadUrlFormat[] = "host/%s";
+const char kDriveV2ThumbnailUrlFormat[] = "thumb/%s?width=%d&height=%d";
 
 // apps.delete and file.authorize API is exposed through a special endpoint
 // v2internal that is accessible only by the official API key for Chrome.
-const char kDriveV2InternalAppsUrl[] = "/drive/v2internal/apps";
-const char kDriveV2AppsDeleteUrlFormat[] = "/drive/v2internal/apps/%s";
+const char kDriveV2InternalAppsUrl[] = "drive/v2internal/apps";
+const char kDriveV2AppsDeleteUrlFormat[] = "drive/v2internal/apps/%s";
 const char kDriveV2FilesAuthorizeUrlFormat[] =
-    "/drive/v2internal/files/%s/authorize?appId=%s";
-const char kDriveV2InternalFileUrlPrefix[] = "/drive/v2internal/files/";
+    "drive/v2internal/files/%s/authorize?appId=%s";
+const char kDriveV2InternalFileUrlPrefix[] = "drive/v2internal/files/";
 
 GURL AddResumableUploadParam(const GURL& url) {
   return net::AppendOrReplaceQueryParameter(url, "uploadType", "resumable");
@@ -63,8 +64,13 @@ DriveApiUrlGenerator::~DriveApiUrlGenerator() {
 
 const char DriveApiUrlGenerator::kBaseUrlForProduction[] =
     "https://www.googleapis.com";
+
 const char DriveApiUrlGenerator::kBaseDownloadUrlForProduction[] =
-    "https://www.googledrive.com/host/";
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+    "https://www.googledrive.com/p/";
+#else
+    "https://www.googledrive.com";
+#endif
 
 GURL DriveApiUrlGenerator::GetAboutGetUrl() const {
   return base_url_.Resolve(kDriveV2AboutUrl);
@@ -263,7 +269,8 @@ GURL DriveApiUrlGenerator::GetMultipartUploadExistingFileUrl(
 
 GURL DriveApiUrlGenerator::GenerateDownloadFileUrl(
     const std::string& resource_id) const {
-  return base_download_url_.Resolve(net::EscapePath(resource_id));
+  return base_download_url_.Resolve(base::StringPrintf(
+      kDriveV2DownloadUrlFormat, net::EscapePath(resource_id).c_str()));
 }
 
 GURL DriveApiUrlGenerator::GetPermissionsInsertUrl(
@@ -271,6 +278,14 @@ GURL DriveApiUrlGenerator::GetPermissionsInsertUrl(
   return base_url_.Resolve(
       base::StringPrintf(kDriveV2PermissionsUrlFormat,
                          net::EscapePath(resource_id).c_str()));
+}
+
+GURL DriveApiUrlGenerator::GetThumbnailUrl(const std::string& resource_id,
+                                           int width,
+                                           int height) const {
+  return base_download_url_.Resolve(
+      base::StringPrintf(kDriveV2ThumbnailUrlFormat,
+                         net::EscapePath(resource_id).c_str(), width, height));
 }
 
 }  // namespace google_apis
