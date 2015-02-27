@@ -59,7 +59,6 @@ namespace blink {
 class Frame;
 class OpenedFrameTracker;
 class Visitor;
-class WebContentSettingsClient;
 class WebData;
 class WebDataSource;
 class WebDocument;
@@ -162,7 +161,6 @@ public:
     virtual void setRemoteWebLayer(WebLayer*) = 0;
 
     // Initializes the various client interfaces.
-    virtual void setContentSettingsClient(WebContentSettingsClient*) = 0;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
     // The security origin of this frame.

@@ -36,7 +36,7 @@
 #include "platform/PermissionCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebPermissionCallbacks.h"
-#include "public/web/WebPermissionClient.h"
+#include "public/web/WebContentSettingsClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerPermissionClient.h"
 #include "wtf/text/WTFString.h"

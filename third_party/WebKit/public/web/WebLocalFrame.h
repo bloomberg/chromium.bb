@@ -11,8 +11,8 @@ namespace blink {
 
 enum class WebSandboxFlags;
 class WebAutofillClient;
+class WebContentSettingsClient;
 class WebFrameClient;
-class WebPermissionClient;
 class WebScriptExecutionCallback;
 struct WebPrintPresetOptions;
 
@@ -109,12 +109,12 @@ public:
     // the current base, this function will do nothing.
     virtual void moveRangeSelectionExtent(const WebPoint&, TextGranularity = CharacterGranularity) = 0;
 
-    // FIXME: This is a temporary code needed for the move from
-    // WebPermissionClient to WebContentSettingsClient. The embedder needs to
-    // update its code before this can get removed.
-    virtual void setPermissionClient(WebPermissionClient*) = 0;
+    // Content Settings -------------------------------------------------------
+
+    virtual void setContentSettingsClient(WebContentSettingsClient*) = 0;
 };
 
 } // namespace blink
 
 #endif // WebLocalFrame_h
+

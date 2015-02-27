@@ -36,7 +36,6 @@ public:
     virtual void setName(const WebString&) override;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const override;
     virtual void setRemoteWebLayer(WebLayer*) override;
-    virtual void setContentSettingsClient(WebContentSettingsClient*) override;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) override;
     virtual void setCanHaveScrollbars(bool) override;
     virtual WebSize scrollOffset() const override;

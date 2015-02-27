@@ -559,7 +559,7 @@ public:
     // WebGL ------------------------------------------------------
 
     // Asks the embedder whether WebGL is allowed for the given WebFrame.
-    // This call is placed here instead of WebPermissionClient because this
+    // This call is placed here instead of WebContentSettingsClient because this
     // class is implemented in content/, and putting it here avoids adding
     // more public content/ APIs.
     virtual bool allowWebGL(WebLocalFrame*, bool defaultValue) { return defaultValue; }

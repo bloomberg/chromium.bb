@@ -190,7 +190,6 @@
 #include "public/web/WebInputElement.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPerformance.h"
-#include "public/web/WebPermissionClient.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebPrintPresetOptions.h"
@@ -581,11 +580,6 @@ WebVector<WebIconURL> WebLocalFrameImpl::iconURLs(int iconTypesMask) const
 void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 {
     ASSERT_NOT_REACHED();
-}
-
-void WebLocalFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)
-{
-    setContentSettingsClient(permissionClient);
 }
 
 void WebLocalFrameImpl::setContentSettingsClient(WebContentSettingsClient* contentSettingsClient)

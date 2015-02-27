@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "public/web/WebPermissionClient.h"
+#include "public/web/WebContentSettingsClient.h"
 #include "web/WebLocalFrameImpl.h"
 
 namespace blink {
