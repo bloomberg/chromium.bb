@@ -25,30 +25,16 @@
 #ifndef InspectorConsoleAgent_h
 #define InspectorConsoleAgent_h
 
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptString.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/text/StringHash.h"
 
 namespace blink {
 
 class ConsoleMessage;
 class ConsoleMessageStorage;
-class DocumentLoader;
-class ExecutionContext;
-class LocalFrame;
-class InspectorFrontend;
 class InjectedScriptManager;
-class ScriptProfile;
-class ThreadableLoaderClient;
-class XMLHttpRequest;
 
 typedef String ErrorString;
 
@@ -69,11 +55,6 @@ public:
 
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();
-
-    void addProfileFinishedMessageToConsole(PassRefPtrWillBeRawPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
-    void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
-
-    virtual bool isWorkerAgent() = 0;
 
     virtual void setLastEvaluationResult(ErrorString*, const String& objectId) override;
 

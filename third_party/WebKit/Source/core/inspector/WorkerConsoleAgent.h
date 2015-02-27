@@ -51,8 +51,6 @@ public:
     virtual void enable(ErrorString*) override;
     virtual void clearMessages(ErrorString*) override;
 
-    virtual bool isWorkerAgent() override { return true; }
-
 protected:
     virtual ConsoleMessageStorage* messageStorage() override;
 
