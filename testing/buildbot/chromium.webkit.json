@@ -1,4 +1,12 @@
 {
+  "WebKit Linux": {
+    "scripts": [
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
   "Linux ChromiumOS Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
