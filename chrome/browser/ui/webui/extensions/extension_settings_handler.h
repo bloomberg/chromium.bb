@@ -157,9 +157,6 @@ class ExtensionSettingsHandler
   // Callback for "launch" message.
   void HandleLaunchMessage(const base::ListValue* args);
 
-  // Callback for "reload" message.
-  void HandleReloadMessage(const base::ListValue* args);
-
   // Callback for "repair" message.
   void HandleRepairMessage(const base::ListValue* args);
 
@@ -168,9 +165,6 @@ class ExtensionSettingsHandler
 
   // Callback for "enableErrorCollection" message.
   void HandleEnableErrorCollectionMessage(const base::ListValue* args);
-
-  // Callback for "allowFileAcces" message.
-  void HandleAllowFileAccessMessage(const base::ListValue* args);
 
   // Callback for "allowOnAllUrls" message.
   void HandleAllowOnAllUrlsMessage(const base::ListValue* args);

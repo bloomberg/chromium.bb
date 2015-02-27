@@ -90,11 +90,17 @@ namespace developer_private = api::developer_private;
 namespace {
 
 const char kNoSuchExtensionError[] = "No such extension.";
+const char kSupervisedUserError[] =
+    "Supervised users cannot modify extension settings.";
+const char kCannotModifyPolicyExtensionError[] =
+    "Cannot modify the extension by policy.";
+const char kRequiresUserGestureError[] =
+    "This action requires a user gesture.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 
-ExtensionService* GetExtensionService(Profile* profile) {
-  return ExtensionSystem::Get(profile)->extension_service();
+ExtensionService* GetExtensionService(content::BrowserContext* context) {
+  return ExtensionSystem::Get(context)->extension_service();
 }
 
 ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
@@ -331,6 +337,15 @@ void DeveloperPrivateAPI::OnListenerRemoved(
 }
 
 namespace api {
+
+DeveloperPrivateAPIFunction::~DeveloperPrivateAPIFunction() {
+}
+
+const Extension* DeveloperPrivateAPIFunction::GetExtensionById(
+    const std::string& id) {
+  return ExtensionRegistry::Get(browser_context())->GetExtensionById(
+      id, ExtensionRegistry::EVERYTHING);
+}
 
 bool DeveloperPrivateAutoUpdateFunction::RunSync() {
   ExtensionUpdater* updater = GetExtensionUpdater(GetProfile());
@@ -670,34 +685,36 @@ bool DeveloperPrivateGetItemsInfoFunction::RunAsync() {
 
 DeveloperPrivateGetItemsInfoFunction::~DeveloperPrivateGetItemsInfoFunction() {}
 
-bool DeveloperPrivateAllowFileAccessFunction::RunSync() {
+ExtensionFunction::ResponseAction
+DeveloperPrivateAllowFileAccessFunction::Run() {
   scoped_ptr<AllowFileAccess::Params> params(
       AllowFileAccess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  EXTENSION_FUNCTION_VALIDATE(user_gesture_);
+  const Extension* extension = GetExtensionById(params->extension_id);
 
-  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
-  ManagementPolicy* management_policy = system->management_policy();
-  const Extension* extension =
-      ExtensionRegistry::Get(GetProfile())
-          ->GetExtensionById(params->extension_id,
-                             ExtensionRegistry::EVERYTHING);
-  bool result = true;
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
 
-  if (!extension) {
-    result = false;
-  } else if (!management_policy->UserMayModifySettings(extension, NULL)) {
+  if (!user_gesture())
+    return RespondNow(Error(kRequiresUserGestureError));
+
+  if (util::IsExtensionSupervised(
+          extension, Profile::FromBrowserContext(browser_context()))) {
+    return RespondNow(Error(kSupervisedUserError));
+  }
+
+  ManagementPolicy* management_policy =
+      ExtensionSystem::Get(browser_context())->management_policy();
+  if (!management_policy->UserMayModifySettings(extension, nullptr)) {
     LOG(ERROR) << "Attempt to change allow file access of an extension that "
                << "non-usermanagable was made. Extension id : "
                << extension->id();
-    result = false;
-  } else {
-    util::SetAllowFileAccess(extension->id(), GetProfile(), params->allow);
-    result = true;
+    return RespondNow(Error(kCannotModifyPolicyExtensionError));
   }
 
-  return result;
+  util::SetAllowFileAccess(extension->id(), browser_context(), params->allow);
+  return RespondNow(NoArguments());
 }
 
 DeveloperPrivateAllowFileAccessFunction::
@@ -709,13 +726,13 @@ DeveloperPrivateAllowIncognitoFunction::Run() {
       AllowIncognito::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  const Extension* extension =
-      ExtensionRegistry::Get(browser_context())
-          ->GetExtensionById(params->extension_id,
-                             ExtensionRegistry::EVERYTHING);
+  const Extension* extension = GetExtensionById(params->extension_id);
 
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
+
+  if (!user_gesture())
+    return RespondNow(Error(kRequiresUserGestureError));
 
   // Should this take into account policy settings?
   util::SetIsIncognitoEnabled(
@@ -727,14 +744,25 @@ DeveloperPrivateAllowIncognitoFunction::Run() {
 DeveloperPrivateAllowIncognitoFunction::
     ~DeveloperPrivateAllowIncognitoFunction() {}
 
-bool DeveloperPrivateReloadFunction::RunSync() {
+ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  CHECK(!params->extension_id.empty());
-  ExtensionService* service = GetExtensionService(GetProfile());
-  service->ReloadExtension(params->extension_id);
-  return true;
+  const Extension* extension = GetExtensionById(params->extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  bool fail_quietly = params->options && params->options->fail_quietly;
+
+  ExtensionService* service = GetExtensionService(browser_context());
+  if (fail_quietly)
+    service->ReloadExtensionWithQuietFailure(params->extension_id);
+  else
+    service->ReloadExtension(params->extension_id);
+
+  // TODO(devlin): We shouldn't return until the extension has finished trying
+  // to reload (and then we could also return the error).
+  return RespondNow(NoArguments());
 }
 
 bool DeveloperPrivateShowPermissionsDialogFunction::RunSync() {

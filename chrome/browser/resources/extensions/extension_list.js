@@ -414,7 +414,7 @@ cr.define('extensions', function() {
 
       // The 'Reload' link.
       row.setupColumn('.reload-link', 'localReload', 'click', function(e) {
-        chrome.send('extensionSettingsReload', [extension.id]);
+        chrome.developerPrivate.reload(extension.id, {failQuietly: true});
         extensionReloadedTimestamp[extension.id] = Date.now();
       });
 

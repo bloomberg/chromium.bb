@@ -162,6 +162,15 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
 
 namespace api {
 
+class DeveloperPrivateAPIFunction : public UIThreadExtensionFunction {
+ protected:
+  ~DeveloperPrivateAPIFunction() override;
+
+  // Returns the extension with the given |id| from the registry, including
+  // all possible extensions (enabled, disabled, terminated, etc).
+  const Extension* GetExtensionById(const std::string& id);
+};
+
 class DeveloperPrivateAutoUpdateFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.autoUpdate",
@@ -228,7 +237,7 @@ class DeveloperPrivateInspectFunction : public ChromeSyncExtensionFunction {
 };
 
 class DeveloperPrivateAllowFileAccessFunction
-    : public ChromeSyncExtensionFunction {
+    : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.allowFileAccess",
                              DEVELOPERPRIVATE_ALLOWFILEACCESS);
@@ -237,11 +246,11 @@ class DeveloperPrivateAllowFileAccessFunction
   ~DeveloperPrivateAllowFileAccessFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class DeveloperPrivateAllowIncognitoFunction
-    : public UIThreadExtensionFunction {
+    : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.allowIncognito",
                              DEVELOPERPRIVATE_ALLOWINCOGNITO);
@@ -253,7 +262,7 @@ class DeveloperPrivateAllowIncognitoFunction
   ResponseAction Run() override;
 };
 
-class DeveloperPrivateReloadFunction : public ChromeSyncExtensionFunction {
+class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.reload",
                              DEVELOPERPRIVATE_RELOAD);
@@ -262,7 +271,7 @@ class DeveloperPrivateReloadFunction : public ChromeSyncExtensionFunction {
   ~DeveloperPrivateReloadFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class DeveloperPrivateShowPermissionsDialogFunction

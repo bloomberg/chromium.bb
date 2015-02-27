@@ -680,17 +680,11 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsLaunch",
       base::Bind(&ExtensionSettingsHandler::HandleLaunchMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsReload",
-      base::Bind(&ExtensionSettingsHandler::HandleReloadMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsRepair",
       base::Bind(&ExtensionSettingsHandler::HandleRepairMessage,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnableErrorCollection",
       base::Bind(&ExtensionSettingsHandler::HandleEnableErrorCollectionMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsAllowFileAccess",
-      base::Bind(&ExtensionSettingsHandler::HandleAllowFileAccessMessage,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsAllowOnAllUrls",
       base::Bind(&ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage,
@@ -995,13 +989,6 @@ void ExtensionSettingsHandler::HandleLaunchMessage(
                                   extensions::SOURCE_EXTENSIONS_PAGE));
 }
 
-void ExtensionSettingsHandler::HandleReloadMessage(
-    const base::ListValue* args) {
-  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
-  CHECK(!extension_id.empty());
-  extension_service_->ReloadExtensionWithQuietFailure(extension_id);
-}
-
 void ExtensionSettingsHandler::HandleRepairMessage(
     const base::ListValue* args) {
   std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
@@ -1024,31 +1011,6 @@ void ExtensionSettingsHandler::HandleEnableErrorCollectionMessage(
   bool enabled = enable_str == "true";
   ErrorConsole::Get(Profile::FromWebUI(web_ui()))
       ->SetReportingAllForExtension(extension_id, enabled);
-}
-
-void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
-  std::string extension_id, allow_str;
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &allow_str));
-  const Extension* extension =
-      extension_service_->GetInstalledExtension(extension_id);
-  if (!extension)
-    return;
-
-  if (util::IsExtensionSupervised(extension, Profile::FromWebUI(web_ui())))
-    return;
-
-  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
-    LOG(ERROR) << "An attempt was made to change allow file access of an"
-               << " extension that is non-usermanagable. Extension id : "
-               << extension->id();
-    return;
-  }
-
-  util::SetAllowFileAccess(
-      extension_id, extension_service_->profile(), allow_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage(
