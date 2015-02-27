@@ -68,7 +68,6 @@ public:
     Priority priority() const { return m_priority; }
     Element* target() const { return m_target; }
 
-    void notifySampledEffectRemovedFromAnimationStack();
 #if !ENABLE(OILPAN)
     void notifyElementDestroyed();
 #endif

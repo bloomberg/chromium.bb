@@ -90,7 +90,6 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         WillBeHeapVector<OwnPtrWillBeMember<SampledEffect> >& effects = animationStack->m_effects;
         // std::sort doesn't work with OwnPtrs
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
-        animationStack->simplifyEffects();
         for (const auto& effect : effects) {
             if (effect->priority() != priority || (suppressedAnimationPlayers && effect->animation() && suppressedAnimationPlayers->contains(effect->animation()->player())))
                 continue;
@@ -102,32 +101,6 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         copyNewAnimationsToActiveInterpolationMap(*newAnimations, result);
 
     return result;
-}
-
-void AnimationStack::simplifyEffects()
-{
-    // FIXME: This will need to be updated when we have 'add' keyframes.
-
-    BitArray<numCSSProperties> replacedProperties;
-    for (size_t i = m_effects.size(); i--; ) {
-        SampledEffect& effect = *m_effects[i];
-        effect.removeReplacedInterpolationsIfNeeded(replacedProperties);
-        if (!effect.canChange()) {
-            for (const auto& interpolation : effect.interpolations())
-                replacedProperties.set(toStyleInterpolation(interpolation.get())->id());
-        }
-    }
-
-    size_t dest = 0;
-    for (auto& effect : m_effects) {
-        if (!effect->interpolations().isEmpty()) {
-            m_effects[dest++].swap(effect);
-            continue;
-        }
-        if (effect->animation())
-            effect->animation()->notifySampledEffectRemovedFromAnimationStack();
-    }
-    m_effects.shrink(dest);
 }
 
 DEFINE_TRACE(AnimationStack)
