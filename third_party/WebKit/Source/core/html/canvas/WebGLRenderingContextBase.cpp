@@ -4638,7 +4638,7 @@ void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionNa
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     bool resetActiveUnit = false;
-    WebGLTexture::TextureExtensionFlag flag = static_cast<WebGLTexture::TextureExtensionFlag>(((extensionEnabled(OESTextureFloatLinearName) || isWebGL2OrHigher()) ? WebGLTexture::TextureFloatLinearExtensionEnabled : 0)
+    WebGLTexture::TextureExtensionFlag flag = static_cast<WebGLTexture::TextureExtensionFlag>((extensionEnabled(OESTextureFloatLinearName) ? WebGLTexture::TextureFloatLinearExtensionEnabled : 0)
         | ((extensionEnabled(OESTextureHalfFloatLinearName) || isWebGL2OrHigher()) ? WebGLTexture::TextureHalfFloatLinearExtensionEnabled : 0));
     for (unsigned ii = 0; ii < m_onePlusMaxNonDefaultTextureUnit; ++ii) {
         if ((m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag))
