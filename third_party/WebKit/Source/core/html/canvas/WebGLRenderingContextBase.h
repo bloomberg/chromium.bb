@@ -878,7 +878,7 @@ protected:
     bool validateBlendFuncFactors(const char* functionName, GLenum src, GLenum dst);
 
     // Helper function to validate a GL capability.
-    bool validateCapability(const char* functionName, GLenum);
+    virtual bool validateCapability(const char* functionName, GLenum);
 
     // Helper function to validate input parameters for uniform functions.
     bool validateUniformParameters(const char* functionName, const WebGLUniformLocation*, DOMFloat32Array*, GLsizei mod);
@@ -890,6 +890,8 @@ protected:
     // Helper function to validate the target for bufferData.
     // Return the current bound buffer to target, or 0 if the target is invalid.
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target);
+
+    virtual bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer*);
 
     // Helper function for tex{Sub}Image2D to make sure image is ready and wouldn't taint Origin.
     bool validateHTMLImageElement(const char* functionName, HTMLImageElement*, ExceptionState&);

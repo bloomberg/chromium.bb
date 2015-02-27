@@ -1113,6 +1113,28 @@ bool WebGLRenderingContextBase::checkObjectToBeBound(const char* functionName, W
     return true;
 }
 
+bool WebGLRenderingContextBase::validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer* buffer)
+{
+    if (buffer && buffer->getTarget() && buffer->getTarget() != target) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "buffers can not be used with multiple targets");
+        return false;
+    }
+
+    switch (target) {
+    case GL_ARRAY_BUFFER:
+        m_boundArrayBuffer = buffer;
+        break;
+    case GL_ELEMENT_ARRAY_BUFFER:
+        m_boundVertexArrayObject->setElementArrayBuffer(buffer);
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+
+    return true;
+}
+
 void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer)
 {
     bool deleted;
@@ -1120,18 +1142,8 @@ void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer)
         return;
     if (deleted)
         buffer = 0;
-    if (buffer && buffer->getTarget() && buffer->getTarget() != target) {
-        synthesizeGLError(GL_INVALID_OPERATION, "bindBuffer", "buffers can not be used with multiple targets");
+    if (!validateAndUpdateBufferBindTarget("bindBuffer", target, buffer))
         return;
-    }
-    if (target == GL_ARRAY_BUFFER)
-        m_boundArrayBuffer = buffer;
-    else if (target == GL_ELEMENT_ARRAY_BUFFER)
-        m_boundVertexArrayObject->setElementArrayBuffer(buffer);
-    else {
-        synthesizeGLError(GL_INVALID_ENUM, "bindBuffer", "invalid target");
-        return;
-    }
 
     webContext()->bindBuffer(target, objectOrZero(buffer));
     if (buffer)

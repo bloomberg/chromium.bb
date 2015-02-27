@@ -954,7 +954,14 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(WebGLProgram* program
     if (isContextLost() || !validateWebGLObject("transformFeedbackVaryings", program))
         return;
 
-    notImplemented();
+    Vector<CString> keepAlive; // Must keep these instances alive while looking at their data
+    Vector<const char*> varyingStrings;
+    for (size_t i = 0; i < varyings.size(); ++i) {
+        keepAlive.append(varyings[i].ascii());
+        varyingStrings.append(keepAlive.last().data());
+    }
+
+    webContext()->transformFeedbackVaryings(objectOrZero(program), varyings.size(), varyingStrings.data(), bufferMode);
 }
 
 PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLProgram* program, GLuint index)
@@ -987,7 +994,7 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, Web
     if (isContextLost() || !validateWebGLObject("bindBufferBase", buffer))
         return;
 
-    notImplemented();
+    webContext()->bindBufferBase(target, index, objectOrZero(buffer));
 }
 
 void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, WebGLBuffer* buffer, GLintptr offset, GLsizeiptr size)
@@ -995,7 +1002,7 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, We
     if (isContextLost() || !validateWebGLObject("bindBufferRange", buffer))
         return;
 
-    notImplemented();
+    webContext()->bindBufferRange(target, index, objectOrZero(buffer), offset, size);
 }
 
 ScriptValue WebGL2RenderingContextBase::getIndexedParameter(ScriptState* scriptState, GLenum target, GLuint index)
@@ -1147,6 +1154,46 @@ void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObjectOES* vert
         webContext()->bindVertexArrayOES(0);
         setBoundVertexArrayObject(nullptr);
     }
+}
+
+bool WebGL2RenderingContextBase::validateCapability(const char* functionName, GLenum cap)
+{
+    switch (cap) {
+    case GL_RASTERIZER_DISCARD:
+        return true;
+    default:
+        return WebGLRenderingContextBase::validateCapability(functionName, cap);
+    }
+}
+
+bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer* buffer)
+{
+    if (buffer && buffer->getTarget() && (buffer->getTarget() == GL_ELEMENT_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER) && buffer->getTarget() != target) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "element array buffers can not be bound to a different target");
+        return false;
+    }
+
+    switch (target) {
+    case GL_ARRAY_BUFFER:
+        m_boundArrayBuffer = buffer;
+        break;
+    case GL_ELEMENT_ARRAY_BUFFER:
+        m_boundVertexArrayObject->setElementArrayBuffer(buffer);
+        break;
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+    case GL_COPY_READ_BUFFER:
+    case GL_COPY_WRITE_BUFFER:
+    case GL_PIXEL_PACK_BUFFER:
+    case GL_PIXEL_UNPACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+        // FIXME: Some of these ES3 buffer targets may require additional state tracking.
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+
+    return true;
 }
 
 DEFINE_TRACE(WebGL2RenderingContextBase)
