@@ -155,7 +155,7 @@ static inline bool LayerIsInUnsorted3dRenderingContext(const Layer* layer) {
   return layer->Is3dSorted();
 }
 static inline bool LayerIsInUnsorted3dRenderingContext(const LayerImpl* layer) {
-  return layer->Is3dSorted();
+  return false;
 }
 
 template <typename LayerType>

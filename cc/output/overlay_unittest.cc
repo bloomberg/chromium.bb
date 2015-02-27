@@ -775,10 +775,7 @@ class OverlayInfoRendererGL : public GLRenderer {
                    0),
         expect_overlays_(false) {}
 
-  MOCK_METHOD3(DoDrawQuad,
-               void(DrawingFrame* frame,
-                    const DrawQuad* quad,
-                    const gfx::QuadF* draw_region));
+  MOCK_METHOD2(DoDrawQuad, void(DrawingFrame* frame, const DrawQuad* quad));
 
   using GLRenderer::BeginDrawingFrame;
 
@@ -878,7 +875,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
 
   // Candidate pass was taken out and extra skipped pass added,
   // so only draw 2 quads.
-  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(2);
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(2);
   EXPECT_CALL(scheduler_,
               Schedule(1,
                        gfx::OVERLAY_TRANSFORM_NONE,
@@ -916,7 +913,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadDrawn) {
   pass_list.push_back(pass.Pass());
 
   // 3 quads in the pass, all should draw.
-  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(3);
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(3);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
 
@@ -949,7 +946,7 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   pass_list.push_back(pass.Pass());
 
   // Should see no overlays.
-  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(3);
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(3);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
 

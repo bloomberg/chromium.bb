@@ -9,17 +9,13 @@
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/task_graph_runner.h"
-#include "ui/gfx/geometry/quad_f.h"
 
 namespace cc {
 
-class DrawPolygon;
 class ResourceProvider;
 
 // This is the base class for code shared between the GL and software
@@ -60,10 +56,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
   };
 
   void SetEnlargePassTextureAmountForTesting(const gfx::Vector2d& amount);
-  void DoDrawPolygon(const DrawPolygon& poly,
-                     DrawingFrame* frame,
-                     const gfx::Rect& render_pass_scissor,
-                     bool using_scissor_as_optimization);
 
  protected:
   DirectRenderer(RendererClient* client,
@@ -86,21 +78,16 @@ class CC_EXPORT DirectRenderer : public Renderer {
   gfx::Rect DeviceClipRectInWindowSpace(const DrawingFrame* frame) const;
   static gfx::Rect ComputeScissorRectForRenderPass(const DrawingFrame* frame);
   void SetScissorStateForQuad(const DrawingFrame* frame, const DrawQuad& quad);
-  bool ShouldSkipQuad(const DrawQuad& quad,
-                      const gfx::Rect& render_pass_scissor);
   void SetScissorStateForQuadWithRenderPassScissor(
       const DrawingFrame* frame,
       const DrawQuad& quad,
-      const gfx::Rect& render_pass_scissor);
+      const gfx::Rect& render_pass_scissor,
+      bool* should_skip_quad);
   void SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
                                      const gfx::Rect& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
 
-  void FlushPolygons(ScopedPtrDeque<DrawPolygon>* poly_list,
-                     DrawingFrame* frame,
-                     const gfx::Rect& render_pass_scissor,
-                     bool using_scissor_as_optimization);
   void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
   bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 
@@ -114,12 +101,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
                              bool draw_rect_covers_full_surface) = 0;
   virtual void ClearFramebuffer(DrawingFrame* frame,
                                 bool has_external_stencil_test) = 0;
-  // clip_region is a (possibly null) pointer to a quad in the same
-  // space as the quad. When non-null only the area of the quad that overlaps
-  // with clip_region will be drawn.
-  virtual void DoDrawQuad(DrawingFrame* frame,
-                          const DrawQuad* quad,
-                          const gfx::QuadF* clip_region) = 0;
+  virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) = 0;
   virtual void BeginDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingQuadList();

@@ -6,51 +6,42 @@
 #define CC_OUTPUT_GEOMETRY_BINDING_H_
 
 #include "base/basictypes.h"
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
-#include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
-class QuadF;
-class Quad;
-class QuadIndex;
-class PointF;
+class RectF;
+}
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
 }
 
 namespace cc {
 
-struct GeometryBindingVertex {
-  float a_position[3];
-  float a_texCoord[2];
-  // Index of the vertex, divide by 4 to have the matrix for this quad.
-  float a_index;
-};
+class GeometryBinding {
+ public:
+  GeometryBinding(gpu::gles2::GLES2Interface* gl,
+                  const gfx::RectF& quad_vertex_rect);
+  ~GeometryBinding();
 
-struct GeometryBindingQuad {
-  GeometryBindingVertex v0, v1, v2, v3;
-};
+  void PrepareForDraw();
 
-struct GeometryBindingQuadIndex {
-  uint16 data[6];
-};
-
-class DrawQuad;
-class DrawPolygon;
-
-struct GeometryBinding {
   // All layer shaders share the same attribute locations for the vertex
   // positions and texture coordinates. This allows switching shaders without
   // rebinding attribute arrays.
   static int PositionAttribLocation() { return 0; }
   static int TexCoordAttribLocation() { return 1; }
   static int TriangleIndexAttribLocation() { return 2; }
-};
 
-void SetupGLContext(gpu::gles2::GLES2Interface* gl,
-                    GLuint quad_elements_vbo,
-                    GLuint quad_vertices_vbo);
+ private:
+  gpu::gles2::GLES2Interface* gl_;
+
+  GLuint quad_vertices_vbo_;
+  GLuint quad_elements_vbo_;
+
+  DISALLOW_COPY_AND_ASSIGN(GeometryBinding);
+};
 
 }  // namespace cc
 

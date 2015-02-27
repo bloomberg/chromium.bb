@@ -12,8 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/output/bsp_tree.h"
-#include "cc/output/bsp_walk_action.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -301,27 +299,22 @@ void DirectRenderer::SetScissorStateForQuad(const DrawingFrame* frame,
   EnsureScissorTestDisabled();
 }
 
-bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
-                                    const gfx::Rect& render_pass_scissor) {
-  if (render_pass_scissor.IsEmpty())
-    return true;
-
-  if (quad.isClipped()) {
-    gfx::Rect r = quad.clipRect();
-    r.Intersect(render_pass_scissor);
-    return r.IsEmpty();
-  }
-
-  return false;
-}
-
 void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
     const DrawingFrame* frame,
     const DrawQuad& quad,
-    const gfx::Rect& render_pass_scissor) {
+    const gfx::Rect& render_pass_scissor,
+    bool* should_skip_quad) {
   gfx::Rect quad_scissor_rect = render_pass_scissor;
+
   if (quad.isClipped())
     quad_scissor_rect.Intersect(quad.clipRect());
+
+  if (quad_scissor_rect.IsEmpty()) {
+    *should_skip_quad = true;
+    return;
+  }
+
+  *should_skip_quad = false;
   SetScissorTestRectInDrawSpace(frame, quad_scissor_rect);
 }
 
@@ -336,46 +329,6 @@ void DirectRenderer::SetScissorTestRectInDrawSpace(
 }
 
 void DirectRenderer::FinishDrawingQuadList() {}
-
-void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
-                                   DrawingFrame* frame,
-                                   const gfx::Rect& render_pass_scissor,
-                                   bool using_scissor_as_optimization) {
-  if (using_scissor_as_optimization) {
-    SetScissorStateForQuadWithRenderPassScissor(frame, *poly.original_ref(),
-                                                render_pass_scissor);
-  } else {
-    SetScissorStateForQuad(frame, *poly.original_ref());
-  }
-
-  // If the poly has not been split, then it is just a normal DrawQuad,
-  // and we should save any extra processing that would have to be done.
-  if (!poly.is_split()) {
-    DoDrawQuad(frame, poly.original_ref(), NULL);
-    return;
-  }
-
-  std::vector<gfx::QuadF> quads;
-  poly.ToQuads2D(&quads);
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DoDrawQuad(frame, poly.original_ref(), &quads[i]);
-  }
-}
-
-void DirectRenderer::FlushPolygons(ScopedPtrDeque<DrawPolygon>* poly_list,
-                                   DrawingFrame* frame,
-                                   const gfx::Rect& render_pass_scissor,
-                                   bool using_scissor_as_optimization) {
-  if (poly_list->empty()) {
-    return;
-  }
-
-  BspTree bsp_tree(poly_list);
-  BspWalkActionDrawPolygon action_handler(this, frame, render_pass_scissor,
-                                          using_scissor_as_optimization);
-  bsp_tree.TraverseWithActionHandler(&action_handler);
-  DCHECK(poly_list->empty());
-}
 
 void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
                                     const RenderPass* render_pass) {
@@ -416,49 +369,21 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   }
 
   const QuadList& quad_list = render_pass->quad_list;
-  ScopedPtrDeque<DrawPolygon> poly_list;
-
-  int next_polygon_id = 0;
-  int last_sorting_context_id = 0;
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
     const DrawQuad& quad = **it;
-    gfx::QuadF send_quad(quad.visible_rect);
+    bool should_skip_quad = false;
 
-    if (using_scissor_as_optimization &&
-        ShouldSkipQuad(quad, render_pass_scissor)) {
-      continue;
-    }
-
-    if (last_sorting_context_id != quad.shared_quad_state->sorting_context_id) {
-      last_sorting_context_id = quad.shared_quad_state->sorting_context_id;
-      FlushPolygons(&poly_list, frame, render_pass_scissor,
-                    using_scissor_as_optimization);
-    }
-
-    // This layer is in a 3D sorting context so we add it to the list of
-    // polygons to go into the BSP tree.
-    if (quad.shared_quad_state->sorting_context_id != 0) {
-      scoped_ptr<DrawPolygon> new_polygon(new DrawPolygon(
-          *it, quad.visible_rect, quad.quadTransform(), next_polygon_id++));
-      if (new_polygon->points().size() > 2u) {
-        poly_list.push_back(new_polygon.Pass());
-      }
-      continue;
-    }
-
-    // We are not in a 3d sorting context, so we should draw the quad normally.
     if (using_scissor_as_optimization) {
-      SetScissorStateForQuadWithRenderPassScissor(frame, quad,
-                                                  render_pass_scissor);
+      SetScissorStateForQuadWithRenderPassScissor(
+          frame, quad, render_pass_scissor, &should_skip_quad);
     } else {
       SetScissorStateForQuad(frame, quad);
     }
 
-    DoDrawQuad(frame, &quad, nullptr);
+    if (!should_skip_quad)
+      DoDrawQuad(frame, &quad);
   }
-  FlushPolygons(&poly_list, frame, render_pass_scissor,
-                using_scissor_as_optimization);
   FinishDrawingQuadList();
 }
 
