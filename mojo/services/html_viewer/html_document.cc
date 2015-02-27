@@ -102,14 +102,16 @@ HTMLDocument::HTMLDocument(
     URLResponsePtr response,
     mojo::Shell* shell,
     scoped_refptr<base::MessageLoopProxy> compositor_thread,
-    WebMediaPlayerFactory* web_media_player_factory)
+    WebMediaPlayerFactory* web_media_player_factory,
+    bool is_headless)
     : response_(response.Pass()),
       shell_(shell),
       web_view_(nullptr),
       root_(nullptr),
       view_manager_client_factory_(shell_, this),
       compositor_thread_(compositor_thread),
-      web_media_player_factory_(web_media_player_factory) {
+      web_media_player_factory_(web_media_player_factory),
+      is_headless_(is_headless) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   exported_services_.Bind(services.Pass());
@@ -129,6 +131,7 @@ void HTMLDocument::OnEmbed(
     View* root,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
+  DCHECK(!is_headless_);
   root_ = root;
   embedder_service_provider_ = exposed_services.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
@@ -176,6 +179,12 @@ blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
 }
 
 void HTMLDocument::initializeLayerTreeView() {
+  if (is_headless_) {
+    web_layer_tree_view_impl_.reset(
+        new WebLayerTreeViewImpl(compositor_thread_, nullptr, nullptr));
+    return;
+  }
+
   ServiceProviderPtr surfaces_service_provider;
   shell_->ConnectToApplication("mojo:surfaces_service",
                                GetProxy(&surfaces_service_provider), nullptr);

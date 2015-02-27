@@ -64,7 +64,8 @@ class HTMLDocument : public blink::WebViewClient,
                mojo::URLResponsePtr response,
                mojo::Shell* shell,
                scoped_refptr<base::MessageLoopProxy> compositor_thread,
-               WebMediaPlayerFactory* web_media_player_factory);
+               WebMediaPlayerFactory* web_media_player_factory,
+               bool is_headless);
   virtual ~HTMLDocument();
 
  private:
@@ -144,6 +145,9 @@ class HTMLDocument : public blink::WebViewClient,
 
   // HTMLDocument owns these pointers.
   std::set<AxProviderImpl*> ax_provider_impls_;
+
+  // Set if the content will never be displayed.
+  bool is_headless_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };

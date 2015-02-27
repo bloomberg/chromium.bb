@@ -56,6 +56,9 @@ const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
 // Disables support for (unprefixed) Encrypted Media Extensions.
 const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
+// Prevents creation of any output surface.
+const char kIsHeadless[] = "is-headless";
+
 class HTMLViewer;
 
 class HTMLViewerApplication : public mojo::Application {
@@ -63,12 +66,14 @@ class HTMLViewerApplication : public mojo::Application {
   HTMLViewerApplication(InterfaceRequest<Application> request,
                         URLResponsePtr response,
                         scoped_refptr<base::MessageLoopProxy> compositor_thread,
-                        WebMediaPlayerFactory* web_media_player_factory)
+                        WebMediaPlayerFactory* web_media_player_factory,
+                        bool is_headless)
       : url_(response->url),
         binding_(this, request.Pass()),
         initial_response_(response.Pass()),
         compositor_thread_(compositor_thread),
-        web_media_player_factory_(web_media_player_factory) {}
+        web_media_player_factory_(web_media_player_factory),
+        is_headless_(is_headless) {}
 
   void Initialize(ShellPtr shell, Array<String> args) override {
     ServiceProviderPtr service_provider;
@@ -110,7 +115,8 @@ class HTMLViewerApplication : public mojo::Application {
                           InterfaceRequest<ServiceProvider> services,
                           URLResponsePtr response) {
     new HTMLDocument(services.Pass(), response.Pass(), shell_.get(),
-                     compositor_thread_, web_media_player_factory_);
+                     compositor_thread_, web_media_player_factory_,
+                     is_headless_);
   }
 
   String url_;
@@ -120,28 +126,31 @@ class HTMLViewerApplication : public mojo::Application {
   URLResponsePtr initial_response_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
   WebMediaPlayerFactory* web_media_player_factory_;
+  bool is_headless_;
 };
 
 class ContentHandlerImpl : public mojo::InterfaceImpl<ContentHandler> {
  public:
   ContentHandlerImpl(scoped_refptr<base::MessageLoopProxy> compositor_thread,
-                     WebMediaPlayerFactory* web_media_player_factory)
+                     WebMediaPlayerFactory* web_media_player_factory,
+                     bool is_headless)
       : compositor_thread_(compositor_thread),
-        web_media_player_factory_(web_media_player_factory) {}
+        web_media_player_factory_(web_media_player_factory),
+        is_headless_(is_headless) {}
   ~ContentHandlerImpl() override {}
 
  private:
   // Overridden from ContentHandler:
   void StartApplication(InterfaceRequest<mojo::Application> request,
                         URLResponsePtr response) override {
-    new HTMLViewerApplication(request.Pass(),
-                              response.Pass(),
-                              compositor_thread_,
-                              web_media_player_factory_);
+    new HTMLViewerApplication(request.Pass(), response.Pass(),
+                              compositor_thread_, web_media_player_factory_,
+                              is_headless_);
   }
 
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
   WebMediaPlayerFactory* web_media_player_factory_;
+  bool is_headless_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
 };
@@ -161,15 +170,9 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     gin::IsolateHolder::LoadV8Snapshot();
 #endif
     blink::initialize(blink_platform_.get());
-#if !defined(COMPONENT_BUILD)
     base::i18n::InitializeICU();
 
     ui::RegisterPathProvider();
-
-    base::FilePath ui_test_pak_path;
-    CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-#endif
 
     base::CommandLine::StringVector command_line_args;
 #if defined(OS_WIN)
@@ -194,6 +197,13 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     if (command_line->HasSwitch(kDisableEncryptedMedia))
       blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
+    is_headless_ = command_line->HasSwitch(kIsHeadless);
+    if (!is_headless_) {
+      base::FilePath ui_test_pak_path;
+      CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+      ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+    }
+
     compositor_thread_.Start();
     web_media_player_factory_.reset(new WebMediaPlayerFactory(
         compositor_thread_.message_loop_proxy(), enable_mojo_media_renderer));
@@ -209,13 +219,15 @@ class HTMLViewer : public mojo::ApplicationDelegate,
               mojo::InterfaceRequest<ContentHandler> request) override {
     BindToRequest(
         new ContentHandlerImpl(compositor_thread_.message_loop_proxy(),
-                               web_media_player_factory_.get()),
+                               web_media_player_factory_.get(), is_headless_),
         &request);
   }
 
   scoped_ptr<MojoBlinkPlatformImpl> blink_platform_;
   base::Thread compositor_thread_;
   scoped_ptr<WebMediaPlayerFactory> web_media_player_factory_;
+  // Set if the content will never be displayed.
+  bool is_headless_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };

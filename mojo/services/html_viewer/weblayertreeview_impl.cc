@@ -47,12 +47,14 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
                                         nullptr);
   DCHECK(layer_tree_host_);
 
-  mojo::CommandBufferPtr cb;
-  gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
-  scoped_refptr<cc::ContextProvider> context_provider(
-      new mojo::ContextProviderMojo(cb.PassMessagePipe()));
-  output_surface_.reset(
-      new mojo::OutputSurfaceMojo(this, context_provider, surface.Pass()));
+  if (surface && gpu_service) {
+    mojo::CommandBufferPtr cb;
+    gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
+    scoped_refptr<cc::ContextProvider> context_provider(
+        new mojo::ContextProviderMojo(cb.PassMessagePipe()));
+    output_surface_.reset(
+        new mojo::OutputSurfaceMojo(this, context_provider, surface.Pass()));
+  }
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
