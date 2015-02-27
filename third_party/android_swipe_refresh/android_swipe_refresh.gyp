@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
-  },
   'targets': [
     {
       'target_name': 'android_swipe_refresh_java',
