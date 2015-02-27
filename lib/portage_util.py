@@ -54,6 +54,16 @@ WORKON_EBUILD_SUFFIX = '-%s.ebuild' % WORKON_EBUILD_VERSION
 class MissingOverlayException(Exception):
   """This exception indicates that a needed overlay is missing."""
 
+def GetOverlayRoot(path):
+  """Get the overlay root folder for |path|.
+
+  For traditional portage overlays, the root folder is |path|.
+  For bricks, the root folder is in the 'packages' sub-folder.
+  """
+  if os.path.exists(os.path.join(path, 'config.json')):
+    # A brick has its overlay root in the packages subdirectory.
+    return os.path.join(path, 'packages')
+  return path
 
 def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   """Return the list of overlays to use for a given buildbot.
@@ -87,7 +97,8 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
 
       try:
         masters = cros_build_lib.LoadKeyValueFile(
-            '%s/metadata/layout.conf' % overlay)['masters'].split()
+            os.path.join(GetOverlayRoot(overlay), 'metadata',
+                         'layout.conf'))['masters'].split()
       except (KeyError, IOError):
         masters = []
       overlays[name] = {
@@ -254,7 +265,8 @@ def GetOverlayName(overlay):
   """Get the self-declared repo name for the |overlay| path."""
   try:
     return cros_build_lib.LoadKeyValueFile(
-        '%s/metadata/layout.conf' % overlay)['repo-name']
+        os.path.join(GetOverlayRoot(overlay), 'metadata',
+                     'layout.conf'))['repo-name']
   except (KeyError, IOError):
     # Not all layout.conf files have a repo-name, so don't make a fuss.
     try:
@@ -1079,8 +1091,9 @@ def RegenCache(overlay):
   if not repo_name:
     return
 
-  layout = cros_build_lib.LoadKeyValueFile('%s/metadata/layout.conf' % overlay,
-                                           ignore_missing=True)
+  layout = cros_build_lib.LoadKeyValueFile(
+      os.path.join(GetOverlayRoot(overlay), 'metadata', 'layout.conf'),
+      ignore_missing=True)
   if layout.get('cache-format') != 'md5-dict':
     return
 
