@@ -12,7 +12,10 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.UmaUtils;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
+import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
+import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.preferences.ChromeShellPreferences;
 
 import java.util.ArrayList;
@@ -44,6 +47,8 @@ public class ChromeShellApplication extends ChromiumApplication {
     };
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/chrome-shell-command-line";
 
+    private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
+
     ArrayList<ChromeShellApplicationObserver> mObservers;
 
     @Override
@@ -60,6 +65,11 @@ public class ChromeShellApplication extends ChromiumApplication {
 
         // Initialize the invalidations ID, just like we would in the downstream code.
         UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(this);
+
+        // Set up the identification generator for sync. The ID is actually generated
+        // in the SyncController constructor.
+        UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
+                new UuidBasedUniqueIdentificationGenerator(this, SESSIONS_UUID_PREF_KEY), false);
     }
 
     @Override
