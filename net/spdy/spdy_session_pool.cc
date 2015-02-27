@@ -65,10 +65,6 @@ SpdySessionPool::SpdySessionPool(
           HostPortPair::FromString(trusted_spdy_proxy)) {
   DCHECK(default_protocol_ >= kProtoSPDYMinimumVersion &&
          default_protocol_ <= kProtoSPDYMaximumVersion);
-  // TODO(michaeln): Remove ScopedTracker below once crbug.com/454983 is fixed
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 SpdySessionPool::SpdySessionPool"));
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);

@@ -625,10 +625,6 @@ QuicStreamFactory::QuicStreamFactory(
       task_runner_(nullptr),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
-  // TODO(michaeln): Remove ScopedTracker below once crbug.com/454983 is fixed
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 QuicStreamFactory::QuicStreamFactory"));
   crypto_config_.set_user_agent_id(user_agent_id);
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");

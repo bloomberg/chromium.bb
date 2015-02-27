@@ -253,10 +253,6 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
 net::URLRequestContext*
 ConstructSystemRequestContext(IOThread::Globals* globals,
                               net::NetLog* net_log) {
-  // TODO(michaeln): Remove ScopedTracker below once crbug.com/454983 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 ConstructSystemRequestContext"));
   net::URLRequestContext* context = new SystemURLRequestContext;
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
@@ -975,10 +971,6 @@ void IOThread::ClearHostCache() {
 
 void IOThread::InitializeNetworkSessionParams(
     net::HttpNetworkSession::Params* params) {
-  // TODO(michaeln): Remove ScopedTracker below once crbug.com/454983 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 IOThread::InitializeNetworkSessionParams"));
   InitializeNetworkSessionParamsFromGlobals(*globals_, params);
 }
 
@@ -1113,16 +1105,9 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   system_params.net_log = net_log_;
   system_params.proxy_service = globals_->system_proxy_service.get();
 
-  {
-    // TODO(michaeln): Remove after crbug.com/454983 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "454983 IOThread::InitSystemRequestContextOnIOThread"
-            ".HttpNetworkSession"));
-    globals_->system_http_transaction_factory.reset(
-        new net::HttpNetworkLayer(
-            new net::HttpNetworkSession(system_params)));
-  }
+  globals_->system_http_transaction_factory.reset(
+      new net::HttpNetworkLayer(
+          new net::HttpNetworkSession(system_params)));
   globals_->system_url_request_job_factory.reset(
       new net::URLRequestJobFactoryImpl());
   globals_->system_request_context.reset(
