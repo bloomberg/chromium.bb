@@ -153,6 +153,9 @@ class StartPageService : public KeyedService,
   void OnNetworkChanged(bool available);
   // Enables/disables voice recognition based on network and microphone state.
   void UpdateRecognitionState();
+  // Determines whether speech recognition should be enabled, based on the
+  // current state of the StartPageService.
+  bool ShouldEnableSpeechRecognition() const;
 
   Profile* profile_;
   scoped_ptr<content::WebContents> contents_;

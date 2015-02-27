@@ -321,7 +321,7 @@ void StartPageService::OnNetworkChanged(bool available) {
 }
 
 void StartPageService::UpdateRecognitionState() {
-  if (microphone_available_ && network_available_) {
+  if (ShouldEnableSpeechRecognition()) {
     if (state_ == SPEECH_RECOGNITION_OFF)
       OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
   } else {
@@ -346,6 +346,10 @@ void StartPageService::Init() {
 void StartPageService::LoadContentsIfNeeded() {
   if (!contents_)
     LoadContents();
+}
+
+bool StartPageService::ShouldEnableSpeechRecognition() const {
+  return microphone_available_ && network_available_;
 }
 
 void StartPageService::AppListShown() {
@@ -494,7 +498,7 @@ void StartPageService::OnSpeechRecognitionStateChanged(
   if (audio_status_ && !audio_status_->CanListen())
     new_state = SPEECH_RECOGNITION_OFF;
 #endif
-  if (!network_available_ || !microphone_available_)
+  if (!ShouldEnableSpeechRecognition())
     new_state = SPEECH_RECOGNITION_OFF;
 
   if (state_ == new_state)
