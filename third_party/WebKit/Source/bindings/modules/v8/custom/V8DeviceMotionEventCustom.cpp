@@ -102,16 +102,24 @@ DeviceMotionData::RotationRate* readRotationRateArgument(v8::Local<v8::Value> va
 
 void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "initDeviceMotionEvent", "DeviceMotionEvent", info.Holder(), info.GetIsolate());
     DeviceMotionEvent* impl = V8DeviceMotionEvent::toImpl(info.Holder());
     v8::Isolate* isolate = info.GetIsolate();
-    TOSTRING_VOID(V8StringResource<>, type, info[0]);
+    V8StringResource<> type(info[0]);
+    if (!type.prepare())
+        return;
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();
     DeviceMotionData::Acceleration* acceleration = readAccelerationArgument(info[3], isolate);
     DeviceMotionData::Acceleration* accelerationIncludingGravity = readAccelerationArgument(info[4], isolate);
     DeviceMotionData::RotationRate* rotationRate = readRotationRateArgument(info[5], isolate);
     bool intervalProvided = !isUndefinedOrNull(info[6]);
-    double interval = info[6]->NumberValue();
+    double interval = 0;
+    if (intervalProvided) {
+        interval = toRestrictedDouble(info[6], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
     DeviceMotionData* deviceMotionData = DeviceMotionData::create(acceleration, accelerationIncludingGravity, rotationRate, intervalProvided, interval);
     impl->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData);
 }
