@@ -81,12 +81,18 @@ void checked_memset(void *s, int c, unsigned n) {
     printf("Wrong memset return value: %p != %p\n", ret, s);
     exit(1);
   }
-  for (unsigned i = 0; i < n; ++i) {
-    char *dst_char = (char *)s + i;
+  char *s_char = (char *)s;
+  char *dst_char = s_char;
+  for (unsigned i = 0; i < n; ++i, ++dst_char) {
     if (*dst_char != c) {
-      printf("memmove failure: %p = %u\n", dst_char, *dst_char);
+      printf("memset failure: index %d (%p) = %u\n", i, dst_char, *dst_char);
+      dump_buf();
       exit(1);
     }
+  }
+  if (*dst_char == c) {
+    printf("memset failure: wrote %d past the end of buffer\n", c);
+    exit(1);
   }
 }
 
@@ -221,6 +227,21 @@ int main(void) {
   reset_buf();
   checked_memset(arrptr, 99, medium_length * 2);
   printf("104: %u\n", (unsigned)arrptr[medium_length * 2 - 1]);  /* expect 99 */
+
+  /* Test 105: memset large chunk, aligned address */
+  reset_buf();
+  checked_memset(arrptr, 99, large_length);
+  printf("105: %u\n", (unsigned)arrptr[large_length - 1]); /* expect 99 */
+
+  /* Test 106: memset large chunk, unaligned address */
+  reset_buf();
+  checked_memset(arrptr + 3, 99, large_length);
+  printf("106: %u\n", (unsigned)arrptr[large_length + 2]); /* expect 99 */
+
+  /* Test 107: memset zero size */
+  reset_buf();
+  checked_memset(arrptr, 99, 0);
+  printf("107: %u\n", (unsigned)arrptr[0]); /* expect 0 */
 
   /*
    * The non-overlapping logic of memmove is pretty much the same as memcpy.
