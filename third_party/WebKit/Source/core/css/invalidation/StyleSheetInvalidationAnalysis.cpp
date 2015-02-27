@@ -127,6 +127,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     case StyleRule::Keyframe:
     case StyleRule::Namespace:
     case StyleRule::Style:
+    case StyleRule::Unknown:
         break;
     }
     ASSERT_NOT_REACHED();

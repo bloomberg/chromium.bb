@@ -185,7 +185,7 @@ public:
     // Local functions which just call into CSSParserObserver if non-null.
     void startRule();
     void endRule(bool valid);
-    void startRuleHeader(CSSRuleSourceData::Type);
+    void startRuleHeader(StyleRule::Type);
     void endRuleHeader();
     void startSelector();
     void endSelector();
@@ -253,7 +253,7 @@ private:
 
     const String* m_source;
     TextPosition m_startPosition;
-    CSSRuleSourceData::Type m_ruleHeaderType;
+    StyleRule::Type m_ruleHeaderType;
     unsigned m_ruleHeaderStartOffset;
     int m_ruleHeaderStartLineNumber;
     OwnPtr<Vector<unsigned> > m_lineEndings;

@@ -36,9 +36,9 @@ CSSParserImpl::CSSParserImpl(const CSSParserContext& context, const String& stri
 bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
     CSSParserImpl parser(context, string);
-    CSSRuleSourceData::Type ruleType = CSSRuleSourceData::STYLE_RULE;
+    StyleRule::Type ruleType = StyleRule::Style;
     if (declaration->cssParserMode() == CSSViewportRuleMode)
-        ruleType = CSSRuleSourceData::VIEWPORT_RULE;
+        ruleType = StyleRule::Viewport;
     parser.consumeDeclarationValue(CSSParserTokenRange(parser.m_tokens), propertyID, important, ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
@@ -80,16 +80,16 @@ PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseInlineStyl
     CSSParserMode mode = element->isHTMLElement() && !document.inQuirksMode() ? HTMLStandardMode : HTMLQuirksMode;
     context.setMode(mode);
     CSSParserImpl parser(context, string);
-    parser.consumeDeclarationList(CSSParserTokenRange(parser.m_tokens), CSSRuleSourceData::STYLE_RULE);
+    parser.consumeDeclarationList(CSSParserTokenRange(parser.m_tokens), StyleRule::Style);
     return createStylePropertySet(parser.m_parsedProperties, mode);
 }
 
 bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const String& string, const CSSParserContext& context)
 {
     CSSParserImpl parser(context, string);
-    CSSRuleSourceData::Type ruleType = CSSRuleSourceData::STYLE_RULE;
+    StyleRule::Type ruleType = StyleRule::Style;
     if (declaration->cssParserMode() == CSSViewportRuleMode)
-        ruleType = CSSRuleSourceData::VIEWPORT_RULE;
+        ruleType = StyleRule::Viewport;
     parser.consumeDeclarationList(CSSParserTokenRange(parser.m_tokens), ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
@@ -135,7 +135,7 @@ PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& key
 bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range)
 {
     ASSERT(m_parsedProperties.isEmpty());
-    consumeDeclaration(range, CSSRuleSourceData::STYLE_RULE);
+    consumeDeclaration(range, StyleRule::Style);
     bool result = !m_parsedProperties.isEmpty();
     m_parsedProperties.clear();
     return result;
@@ -345,7 +345,7 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
     prelude.consumeWhitespaceAndComments();
     if (!prelude.atEnd())
         return nullptr; // Parser error; @viewport prelude should be empty
-    consumeDeclarationList(block, CSSRuleSourceData::VIEWPORT_RULE);
+    consumeDeclarationList(block, StyleRule::Viewport);
     RefPtrWillBeRawPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
     rule->setProperties(createStylePropertySet(m_parsedProperties, CSSViewportRuleMode));
     m_parsedProperties.clear();
@@ -357,7 +357,7 @@ PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSS
     prelude.consumeWhitespaceAndComments();
     if (!prelude.atEnd())
         return nullptr; // Parse error; @font-face prelude should be empty
-    consumeDeclarationList(block, CSSRuleSourceData::FONT_FACE_RULE);
+    consumeDeclarationList(block, StyleRule::FontFace);
 
     // FIXME: This logic should be in CSSPropertyParser
     // FIXME: Shouldn't we fail if font-family or src aren't specified?
@@ -448,7 +448,7 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
     selectorVector.append(selector.release());
     pageRule->parserAdoptSelectorVector(selectorVector);
 
-    consumeDeclarationList(block, CSSRuleSourceData::STYLE_RULE);
+    consumeDeclarationList(block, StyleRule::Style);
     pageRule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
     m_parsedProperties.clear();
 
@@ -460,7 +460,7 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRul
     OwnPtr<Vector<double>> keyList = consumeKeyframeKeyList(prelude);
     if (!keyList)
         return nullptr;
-    consumeDeclarationList(block, CSSRuleSourceData::KEYFRAMES_RULE);
+    consumeDeclarationList(block, StyleRule::Keyframes);
     RefPtrWillBeRawPtr<StyleRuleKeyframe> rule = StyleRuleKeyframe::create();
     rule->setKeys(keyList.release());
     rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
@@ -474,7 +474,7 @@ PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserToken
     CSSSelectorParser::parseSelector(prelude, m_context, m_defaultNamespace, m_styleSheet, selectorList);
     if (!selectorList.isValid())
         return nullptr; // Parse error, invalid selector list
-    consumeDeclarationList(block, CSSRuleSourceData::STYLE_RULE);
+    consumeDeclarationList(block, StyleRule::Style);
 
     RefPtrWillBeRawPtr<StyleRule> rule = StyleRule::create();
     rule->wrapperAdoptSelectorList(selectorList);
@@ -483,7 +483,7 @@ PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserToken
     return rule.release();
 }
 
-void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, CSSRuleSourceData::Type ruleType)
+void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule::Type ruleType)
 {
     ASSERT(m_parsedProperties.isEmpty());
 
@@ -510,7 +510,7 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, CSSRuleSou
     }
 }
 
-void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, CSSRuleSourceData::Type ruleType)
+void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Type ruleType)
 {
     ASSERT(range.peek().type() == IdentToken);
     CSSPropertyID id = range.consumeIncludingWhitespaceAndComments().parseAsCSSPropertyID();
@@ -535,12 +535,12 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, CSSRuleSourceD
     consumeDeclarationValue(range.makeSubRange(&range.peek(), range.end()), id, false, ruleType);
 }
 
-void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID propertyID, bool important, CSSRuleSourceData::Type ruleType)
+void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID propertyID, bool important, StyleRule::Type ruleType)
 {
     CSSParserValueList valueList(range);
     if (!valueList.size())
         return; // Parser error
-    bool inViewport = ruleType == CSSRuleSourceData::VIEWPORT_RULE;
+    bool inViewport = ruleType == StyleRule::Viewport;
     CSSPropertyParser::parseValue(propertyID, important, &valueList, m_context, inViewport, m_parsedProperties, ruleType);
 }
 

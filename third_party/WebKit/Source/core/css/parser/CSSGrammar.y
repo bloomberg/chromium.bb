@@ -552,7 +552,7 @@ block_rule:
 
 before_import_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::IMPORT_RULE);
+        parser->startRuleHeader(StyleRule::Import);
     }
     ;
 
@@ -718,7 +718,7 @@ at_rule_body_start:
 
 before_media_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::MEDIA_RULE);
+        parser->startRuleHeader(StyleRule::Media);
     }
     ;
 
@@ -749,7 +749,7 @@ supports:
 
 before_supports_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::SUPPORTS_RULE);
+        parser->startRuleHeader(StyleRule::Supports);
         parser->markSupportsRuleHeaderStart();
     }
     ;
@@ -826,7 +826,7 @@ supports_declaration_condition:
 
 before_keyframes_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::KEYFRAMES_RULE);
+        parser->startRuleHeader(StyleRule::Keyframes);
     }
     ;
 
@@ -918,7 +918,7 @@ keyframes_error_recovery:
 
 before_page_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::PAGE_RULE);
+        parser->startRuleHeader(StyleRule::Page);
     }
     ;
 
@@ -1022,7 +1022,7 @@ margin_sym :
 
 before_font_face_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::FONT_FACE_RULE);
+        parser->startRuleHeader(StyleRule::FontFace);
     }
     ;
 
@@ -1036,7 +1036,7 @@ font_face:
 before_viewport_rule:
     /* empty */ {
         parser->markViewportRuleBodyStart();
-        parser->startRuleHeader(CSSRuleSourceData::VIEWPORT_RULE);
+        parser->startRuleHeader(StyleRule::Viewport);
     }
     ;
 
@@ -1078,7 +1078,7 @@ maybe_space_before_declaration:
 
 before_selector_list:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::STYLE_RULE);
+        parser->startRuleHeader(StyleRule::Style);
         parser->startSelector();
     }
   ;

@@ -72,7 +72,7 @@ public:
 
     static bool parseValue(CSSPropertyID, bool important,
         CSSParserValueList*, const CSSParserContext&, bool inViewport,
-        WillBeHeapVector<CSSProperty, 256>&, CSSRuleSourceData::Type);
+        WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
     // FIXME: This should probably move to CSSParserFastPaths
     template<typename StringType>
@@ -82,7 +82,7 @@ public:
 
 private:
     CSSPropertyParser(CSSParserValueList*, const CSSParserContext&, bool inViewport,
-        WillBeHeapVector<CSSProperty, 256>&, CSSRuleSourceData::Type);
+        WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
     bool parseValue(CSSPropertyID, bool important);
 
@@ -367,7 +367,7 @@ private:
 
     // Outputs:
     WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;
-    CSSRuleSourceData::Type m_ruleType;
+    StyleRule::Type m_ruleType;
 
     // Locals during parsing:
     int m_inParseShorthand;

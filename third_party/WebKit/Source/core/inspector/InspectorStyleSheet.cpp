@@ -85,7 +85,7 @@ public:
     }
 
 private:
-    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned) override;
+    virtual void startRuleHeader(StyleRule::Type, unsigned) override;
     virtual void endRuleHeader(unsigned) override;
     virtual void startSelector(unsigned) override;
     virtual void endSelector(unsigned) override;
@@ -119,7 +119,7 @@ private:
     unsigned m_mediaQueryExpValueRangeStart;
 };
 
-void StyleSheetHandler::startRuleHeader(CSSRuleSourceData::Type type, unsigned offset)
+void StyleSheetHandler::startRuleHeader(StyleRule::Type type, unsigned offset)
 {
     // Pop off data for a previous invalid rule.
     if (m_currentRuleData)
@@ -431,20 +431,20 @@ void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
 
         // The m_sourceData->append()'ed types should be exactly the same as in collectFlatRules().
         switch (data->type) {
-        case CSSRuleSourceData::STYLE_RULE:
-        case CSSRuleSourceData::IMPORT_RULE:
-        case CSSRuleSourceData::CHARSET_RULE:
-        case CSSRuleSourceData::PAGE_RULE:
-        case CSSRuleSourceData::FONT_FACE_RULE:
-        case CSSRuleSourceData::VIEWPORT_RULE:
-        case CSSRuleSourceData::KEYFRAMES_RULE:
+        case StyleRule::Style:
+        case StyleRule::Import:
+        case StyleRule::Page:
+        case StyleRule::FontFace:
+        case StyleRule::Viewport:
+        case StyleRule::Keyframes:
             m_sourceData->append(data);
             break;
-        case CSSRuleSourceData::MEDIA_RULE:
-        case CSSRuleSourceData::SUPPORTS_RULE:
+        case StyleRule::Media:
+        case StyleRule::Supports:
             m_sourceData->append(data);
             flattenSourceData(&data->childRules);
             break;
+        case StyleRule::Unknown:
         default:
             break;
         }
@@ -1236,7 +1236,7 @@ bool InspectorStyleSheet::verifySelectorText(const String& selectorText)
 
     // Exactly one rule should be parsed.
     unsigned ruleCount = sourceData.size();
-    if (ruleCount != 1 || sourceData.at(0)->type != CSSRuleSourceData::STYLE_RULE)
+    if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Style)
         return false;
 
     // Exactly one property should be in style rule.
@@ -1263,7 +1263,7 @@ bool InspectorStyleSheet::verifyMediaText(const String& mediaText)
 
     // Exactly one media rule should be parsed.
     unsigned ruleCount = sourceData.size();
-    if (ruleCount != 1 || sourceData.at(0)->type != CSSRuleSourceData::MEDIA_RULE)
+    if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Media)
         return false;
 
     // Media rule should have exactly one style rule child.
@@ -1945,7 +1945,7 @@ bool InspectorStyleSheetForInlineStyle::ensureParsedDataReady()
 
     bool success = !!m_ruleSourceData;
     if (!success) {
-        m_ruleSourceData = CSSRuleSourceData::create(CSSRuleSourceData::STYLE_RULE);
+        m_ruleSourceData = CSSRuleSourceData::create(StyleRule::Style);
         return false;
     }
 
@@ -1974,7 +1974,7 @@ PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::get
         return nullptr;
 
     if (m_styleText.isEmpty()) {
-        RefPtrWillBeRawPtr<CSSRuleSourceData> result = CSSRuleSourceData::create(CSSRuleSourceData::STYLE_RULE);
+        RefPtrWillBeRawPtr<CSSRuleSourceData> result = CSSRuleSourceData::create(StyleRule::Style);
         result->ruleBodyRange.start = 0;
         result->ruleBodyRange.end = 0;
         return result.release();

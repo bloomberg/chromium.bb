@@ -38,6 +38,7 @@ class StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRule
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     enum Type {
+        Unknown,
         Style,
         Import,
         Media,

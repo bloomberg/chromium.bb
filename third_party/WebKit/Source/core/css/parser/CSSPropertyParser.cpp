@@ -86,7 +86,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRe
 CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
     const CSSParserContext& context, bool inViewport,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties,
-    CSSRuleSourceData::Type ruleType)
+    StyleRule::Type ruleType)
     : m_valueList(valueList)
     , m_context(context)
     , m_inViewport(inViewport)
@@ -100,7 +100,7 @@ CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
 
 bool CSSPropertyParser::parseValue(CSSPropertyID property, bool important,
     CSSParserValueList* valueList, const CSSParserContext& context, bool inViewport,
-    WillBeHeapVector<CSSProperty, 256>& parsedProperties, CSSRuleSourceData::Type ruleType)
+    WillBeHeapVector<CSSProperty, 256>& parsedProperties, StyleRule::Type ruleType)
 {
     int parsedPropertiesSize = parsedProperties.size();
 
@@ -4751,7 +4751,7 @@ bool CSSPropertyParser::parseFontVariant(bool important)
     }
 
     if (values && values->length()) {
-        if (m_ruleType != CSSRuleSourceData::FONT_FACE_RULE)
+        if (m_ruleType != StyleRule::FontFace)
             return false;
         addProperty(CSSPropertyFontVariant, values.release(), important);
         return true;

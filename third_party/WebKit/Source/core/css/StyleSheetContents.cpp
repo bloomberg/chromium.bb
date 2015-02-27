@@ -463,6 +463,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<Re
             break;
         case StyleRuleBase::Import:
         case StyleRuleBase::Namespace:
+        case StyleRuleBase::Unknown:
             ASSERT_NOT_REACHED();
         case StyleRuleBase::Page:
         case StyleRuleBase::Keyframes:

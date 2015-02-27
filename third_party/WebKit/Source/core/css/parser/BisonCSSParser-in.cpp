@@ -114,7 +114,7 @@ BisonCSSParser::BisonCSSParser(const CSSParserContext& context)
     , m_defaultNamespace(starAtom)
     , m_observer(0)
     , m_source(0)
-    , m_ruleHeaderType(CSSRuleSourceData::UNKNOWN_RULE)
+    , m_ruleHeaderType(StyleRule::Unknown)
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
     , m_inViewport(false)
@@ -271,7 +271,7 @@ bool BisonCSSParser::parseDeclaration(MutableStylePropertySet* declaration, cons
 
     setupParser("@-internal-decls ", string, "");
     if (m_observer) {
-        m_observer->startRuleHeader(CSSRuleSourceData::STYLE_RULE, 0);
+        m_observer->startRuleHeader(StyleRule::Style, 0);
         m_observer->endRuleHeader(1);
         m_observer->startRuleBody(0);
     }
@@ -596,7 +596,7 @@ void BisonCSSParser::markSupportsRuleHeaderStart()
     if (!m_supportsRuleDataStack)
         m_supportsRuleDataStack = adoptPtrWillBeNoop(new RuleSourceDataList());
 
-    RefPtrWillBeRawPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(CSSRuleSourceData::SUPPORTS_RULE);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(StyleRule::Supports);
     data->ruleHeaderRange.start = m_tokenizer.tokenStartOffset();
     m_supportsRuleDataStack->append(data);
 }
@@ -671,7 +671,7 @@ void BisonCSSParser::tokenToLowerCase(CSSParserString& token)
 
 void BisonCSSParser::endInvalidRuleHeader()
 {
-    if (m_ruleHeaderType == CSSRuleSourceData::UNKNOWN_RULE)
+    if (m_ruleHeaderType == StyleRule::Unknown)
         return;
 
     CSSParserLocation location;
@@ -682,7 +682,7 @@ void BisonCSSParser::endInvalidRuleHeader()
     else
         location.token.init(m_tokenizer.m_dataStart16.get() + m_ruleHeaderStartOffset, 0);
 
-    reportError(location, m_ruleHeaderType == CSSRuleSourceData::STYLE_RULE ? InvalidSelectorCSSError : InvalidRuleCSSError);
+    reportError(location, m_ruleHeaderType == StyleRule::Style ? InvalidSelectorCSSError : InvalidRuleCSSError);
 
     endRuleHeader();
 }
@@ -991,7 +991,7 @@ void BisonCSSParser::endRule(bool valid)
     m_ruleHasHeader = true;
 }
 
-void BisonCSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
+void BisonCSSParser::startRuleHeader(StyleRule::Type ruleType)
 {
     resumeErrorLogging();
     m_ruleHeaderType = ruleType;
@@ -1006,8 +1006,8 @@ void BisonCSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
 
 void BisonCSSParser::endRuleHeader()
 {
-    ASSERT(m_ruleHeaderType != CSSRuleSourceData::UNKNOWN_RULE);
-    m_ruleHeaderType = CSSRuleSourceData::UNKNOWN_RULE;
+    ASSERT(m_ruleHeaderType != StyleRule::Unknown);
+    m_ruleHeaderType = StyleRule::Unknown;
     if (m_observer) {
         ASSERT(m_ruleHasHeader);
         m_observer->endRuleHeader(m_tokenizer.safeUserStringTokenOffset());

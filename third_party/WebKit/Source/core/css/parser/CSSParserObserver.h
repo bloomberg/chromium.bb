@@ -51,7 +51,7 @@ enum CSSParserError {
 class CSSParserObserver {
     STACK_ALLOCATED();
 public:
-    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned offset) = 0;
+    virtual void startRuleHeader(StyleRule::Type, unsigned offset) = 0;
     virtual void endRuleHeader(unsigned offset) = 0;
     virtual void startSelector(unsigned offset) = 0;
     virtual void endSelector(unsigned offset) = 0;
