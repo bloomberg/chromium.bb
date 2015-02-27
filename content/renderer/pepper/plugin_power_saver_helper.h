@@ -69,7 +69,8 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   };
 
   // RenderFrameObserver implementation.
-  void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_page_navigation) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnUpdatePluginContentOriginWhitelist(

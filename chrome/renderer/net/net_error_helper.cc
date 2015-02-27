@@ -109,7 +109,8 @@ void NetErrorHelper::DidStartProvisionalLoad() {
   core_->OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
 }
 
-void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
+void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,
+                                              bool is_same_page_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_->OnCommitLoad(GetFrameType(frame), frame->document().url());
 }

@@ -183,7 +183,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation) {
+void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
+                                             bool is_same_page_navigation) {
   form_cache_.Reset();
 }
 

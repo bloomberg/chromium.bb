@@ -160,7 +160,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void DidFinishLoad() override;
   void FrameDetached() override;
   void FrameWillClose() override;
-  void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_page_navigation) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
 

@@ -97,7 +97,8 @@ class ContentSettingsObserver
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_page_navigation) override;
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);

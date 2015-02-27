@@ -46,7 +46,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WasShown() {}
 
   // These match the Blink API notifications
-  virtual void DidCommitProvisionalLoad(bool is_new_navigation) {}
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation,
+                                        bool is_same_page_navigation) {}
   virtual void DidStartProvisionalLoad() {}
   virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
   virtual void DidFinishLoad() {}

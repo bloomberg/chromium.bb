@@ -8,8 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -67,16 +65,15 @@ PluginPowerSaverHelper::PluginPowerSaverHelper(RenderFrame* render_frame)
 PluginPowerSaverHelper::~PluginPowerSaverHelper() {
 }
 
-void PluginPowerSaverHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
+void PluginPowerSaverHelper::DidCommitProvisionalLoad(
+    bool is_new_navigation,
+    bool is_same_page_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->parent())
+  // Only apply to top-level and new page navigation.
+  if (frame->parent() || is_same_page_navigation)
     return;  // Not a top-level navigation.
 
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  NavigationState* navigation_state = document_state->navigation_state();
-  if (!navigation_state->was_within_same_page())
-    origin_whitelist_.clear();
+  origin_whitelist_.clear();
 }
 
 bool PluginPowerSaverHelper::OnMessageReceived(const IPC::Message& message) {

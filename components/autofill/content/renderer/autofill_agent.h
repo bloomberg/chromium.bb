@@ -108,7 +108,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // content::RenderFrameObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_page_navigation) override;
   void DidFinishDocumentLoad() override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidChangeScrollOffset() override;

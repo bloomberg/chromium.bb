@@ -2536,7 +2536,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
                     DidCommitProvisionalLoad(frame, is_new_navigation));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidCommitProvisionalLoad(is_new_navigation));
+                    DidCommitProvisionalLoad(
+                        is_new_navigation,
+                        navigation_state->was_within_same_page()));
 
   if (!frame->parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();

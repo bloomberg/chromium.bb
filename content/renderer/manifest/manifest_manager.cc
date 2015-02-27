@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/manifest_manager_messages.h"
-#include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/manifest/manifest_parser.h"
@@ -103,10 +101,10 @@ void ManifestManager::DidChangeManifest() {
   manifest_dirty_ = true;
 }
 
-void ManifestManager::DidCommitProvisionalLoad(bool is_new_navigation) {
-  NavigationState* navigation_state = DocumentState::FromDataSource(
-        render_frame()->GetWebFrame()->dataSource())->navigation_state();
-  if (navigation_state->was_within_same_page())
+void ManifestManager::DidCommitProvisionalLoad(
+    bool is_new_navigation,
+    bool is_same_page_navigation) {
+  if (is_same_page_navigation)
     return;
 
   may_have_manifest_ = false;

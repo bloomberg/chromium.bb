@@ -50,7 +50,8 @@ class NetErrorHelper
 
   // RenderFrameObserver implementation.
   void DidStartProvisionalLoad() override;
-  void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_page_navigation) override;
   void DidFinishLoad() override;
   void OnStop() override;
   void WasShown() override;
