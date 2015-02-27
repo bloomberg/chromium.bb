@@ -87,6 +87,12 @@ class AppBannerManager : public content::WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
+  friend class AppBannerManagerTest;
+
+  // Returns whether the given Manifest is following the requirements to show
+  // a web app banner.
+  static bool IsManifestValid(const content::Manifest& manifest);
+
   // Called when the manifest has been retrieved, or if there is no manifest to
   // retrieve.
   void OnDidGetManifest(const content::Manifest& manifest);

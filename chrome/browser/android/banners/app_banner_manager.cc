@@ -54,7 +54,7 @@ const int kIconMinimumSize = 144;
 // The requirement for now is an image/png that is at least 144x144.
 bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
   for (const auto& icon : manifest.icons) {
-    if (EqualsASCII(icon.type.string(), "image/png"))
+    if (!EqualsASCII(icon.type.string(), "image/png"))
       continue;
 
     for (const auto& size : icon.sizes) {
@@ -166,14 +166,25 @@ void AppBannerManager::DidFinishLoad(
                                          weak_factory_.GetWeakPtr()));
 }
 
+// static
+bool AppBannerManager::IsManifestValid(const content::Manifest& manifest) {
+  if (manifest.IsEmpty())
+    return false;
+  if (!manifest.start_url.is_valid())
+    return false;
+  if (manifest.name.is_null() && manifest.short_name.is_null())
+    return false;
+  if (!DoesManifestContainRequiredIcon(manifest))
+    return false;
+
+  return true;
+}
+
 void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
   if (web_contents()->IsBeingDestroyed())
     return;
 
-  if (manifest.IsEmpty()
-      || !manifest.start_url.is_valid()
-      || (manifest.name.is_null() && manifest.short_name.is_null())
-      || !DoesManifestContainRequiredIcon(manifest)) {
+  if (!IsManifestValid(manifest)) {
     // No usable manifest, see if there is a play store meta tag.
     if (!IsEnabledForNativeApps())
       return;

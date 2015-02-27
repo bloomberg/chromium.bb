@@ -14,6 +14,7 @@
       '../tools/metrics/histograms/histograms.xml',
       # All unittests in browser, common, renderer and service.
       'browser/about_flags_unittest.cc',
+      'browser/android/banners/app_banner_manager_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
       'browser/android/manifest_icon_selector_unittest.cc',
       # TODO(newt): move this to test_support_unit?
