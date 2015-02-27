@@ -295,12 +295,23 @@ config("compiler") {
             "-mips32r2",
             "-Wa,-mips32r2",
           ]
+          if (mips_fpu_mode != "") {
+            cflags += [ "-m$mips_fpu_mode" ]
+          }
         } else if (mips_arch_variant == "r1") {
           cflags += [
             "-mips32",
             "-Wa,-mips32",
           ]
         }
+
+        if (mips_dsp_rev == 1) {
+          cflags += [ "-mdsp" ]
+        } else if (mips_dsp_rev == 2) {
+          cflags += [ "-mdspr2" ]
+        }
+
+        cflags += [ "-m${mips_float_abi}-float" ]
       }
     } else if (current_cpu == "mips64el") {
       # Don't set the compiler flags for the WebView build. These will come

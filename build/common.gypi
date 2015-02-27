@@ -184,6 +184,12 @@
         # below for MIPS targets.
         'mips_arch_variant%': '',
 
+        # MIPS DSP ASE revision. Possible values are:
+        #   0: unavailable
+        #   1: revision 1
+        #   2: revision 2
+        'mips_dsp_rev%': 0,
+
         'conditions': [
           # Ash needs Aura.
           ['use_aura==0', {
@@ -276,6 +282,7 @@
       'target_arch%': '<(target_arch)',
       'target_subarch%': '<(target_subarch)',
       'mips_arch_variant%': '<(mips_arch_variant)',
+      'mips_dsp_rev%': '<(mips_dsp_rev)',
       'toolkit_views%': '<(toolkit_views)',
       'desktop_linux%': '<(desktop_linux)',
       'use_aura%': '<(use_aura)',
@@ -1067,6 +1074,7 @@
     'target_arch%': '<(target_arch)',
     'target_subarch%': '<(target_subarch)',
     'mips_arch_variant%': '<(mips_arch_variant)',
+    'mips_dsp_rev%': '<(mips_dsp_rev)',
     'host_arch%': '<(host_arch)',
     'toolkit_views%': '<(toolkit_views)',
     'ui_compositor_image_transport%': '<(ui_compositor_image_transport)',
@@ -2294,6 +2302,9 @@
       ['target_arch=="mipsel" and mips_arch_variant=="r2" and android_webview_build==0', {
         'mips_fpu_mode%': 'fp32',
       }],
+      ['target_arch=="mipsel" and android_webview_build==0', {
+        'mips_float_abi%': 'hard',
+      }],
 
       ['android_webview_build==1', {
         # The WebView build gets its cpu-specific flags from the Android build system.
@@ -2303,6 +2314,7 @@
         'arm_float_abi%': '',
         'arm_thumb%': 0,
         'mips_fpu_mode%': '',
+        'mips_float_abi%': '',
       }],
 
       # Enable brlapi by default for chromeos.
@@ -4052,19 +4064,37 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'conditions': [
-                  ['android_webview_build==0 and mips_arch_variant=="r6"', {
-                    'cflags': ['-mips32r6', '-Wa,-mips32r6'],
+                  ['android_webview_build==0', {
                     'conditions': [
-                      ['OS=="android"', {
-                        'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
+                      ['mips_arch_variant=="r6"', {
+                        'cflags': ['-mips32r6', '-Wa,-mips32r6'],
+                        'conditions': [
+                          ['OS=="android"', {
+                            'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
+                          }],
+                        ],
+                      }],
+                      ['mips_arch_variant=="r2"', {
+                        'cflags': ['-mips32r2', '-Wa,-mips32r2'],
+                        'conditions': [
+                          ['mips_fpu_mode!=""', {
+                            'cflags': ['-m<(mips_fpu_mode)'],
+                          }],
+                        ],
+                      }],
+                      ['mips_arch_variant=="r1"', {
+                        'cflags': ['-mips32', '-Wa,-mips32'],
+                      }],
+                      ['mips_dsp_rev==1', {
+                        'cflags': ['-mdsp'],
+                      }],
+                      ['mips_dsp_rev==2', {
+                        'cflags': ['-mdspr2'],
                       }],
                     ],
-                  }],
-                  ['android_webview_build==0 and mips_arch_variant=="r2"', {
-                    'cflags': ['-mips32r2', '-Wa,-mips32r2'],
-                  }],
-                  ['android_webview_build==0 and mips_arch_variant=="r1"', {
-                    'cflags': ['-mips32', '-Wa,-mips32'],
+                    'cflags': [
+                      '-m<(mips_float_abi)-float'
+                    ],
                   }],
                 ],
                 'ldflags': [
@@ -4080,13 +4110,17 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'conditions': [
-                  ['android_webview_build==0 and mips_arch_variant=="r6"', {
-                    'cflags': ['-mips64r6', '-Wa,-mips64r6'],
-                    'ldflags': [ '-mips64r6' ],
-                  }],
-                  ['android_webview_build==0 and mips_arch_variant=="r2"', {
-                    'cflags': ['-mips64r2', '-Wa,-mips64r2'],
-                    'ldflags': [ '-mips64r2' ],
+                  ['android_webview_build==0', {
+                    'conditions': [
+                      ['mips_arch_variant=="r6"', {
+                        'cflags': ['-mips64r6', '-Wa,-mips64r6'],
+                        'ldflags': ['-mips64r6'],
+                      }],
+                      ['mips_arch_variant=="r2"', {
+                        'cflags': ['-mips64r2', '-Wa,-mips64r2'],
+                        'ldflags': ['-mips64r2'],
+                      }],
+                    ],
                   }],
                 ],
                 'cflags_cc': [
