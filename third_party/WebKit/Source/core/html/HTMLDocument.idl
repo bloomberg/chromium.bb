@@ -18,32 +18,37 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// FIXME: "For historical reasons, Window objects must also have a
+// writable, configurable, non-enumerable property named HTMLDocument
+// whose value is the Document interface object."
+// https://html.spec.whatwg.org/#the-window-object
+
 interface HTMLDocument : Document {
+    // FIXME: This shadows the compatMode on the Document interface.
+    readonly attribute DOMString compatMode;
+
+    // https://html.spec.whatwg.org/#the-document-object
+
+    // dynamic markup insertion
+    // FIXME: There are two open() methods in the spec.
     [Custom, CustomElementCallbacks] void open();
     [RaisesException] void close();
-
-    // We support multiple DOMString arguments to match FF / IE, e.g.:
-    // document.write("a", "b", "c") --> document.write("abc")
-    // document.write() --> document.write("")
     [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void write(DOMString... text);
     [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
-    // Extensions
+    // https://html.spec.whatwg.org/#Document-partial
 
-    [Replaceable, ImplementedAs=allForBinding] readonly attribute HTMLAllCollection all;
+    // FIXME: *Color should have [TreatNullAs=EmptyString].
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString fgColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString linkColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString vlinkColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString alinkColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString bgColor;
 
     [MeasureAs=DocumentClear] void clear();
-
     [MeasureAs=DocumentCaptureEvents] void captureEvents();
     [MeasureAs=DocumentReleaseEvents] void releaseEvents();
 
-    readonly attribute DOMString compatMode;
-
-    // Deprecated attributes
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString bgColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString fgColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString alinkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString linkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString vlinkColor;
+    // FIXME: all should not be [Replaceable].
+    [Replaceable, ImplementedAs=allForBinding] readonly attribute HTMLAllCollection all;
 };
-
