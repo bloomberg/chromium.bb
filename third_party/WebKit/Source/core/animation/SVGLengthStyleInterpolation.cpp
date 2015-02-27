@@ -55,13 +55,19 @@ PassRefPtrWillBeRawPtr<SVGLengthStyleInterpolation> SVGLengthStyleInterpolation:
     const CSSPrimitiveValue& primitiveStart = toCSSPrimitiveValue(start);
     const CSSPrimitiveValue& primitiveEnd = toCSSPrimitiveValue(end);
 
-    CSSPrimitiveValue::UnitType type = primitiveStart.primitiveType();
-    if (primitiveStart.getDoubleValue() == 0)
-        type = primitiveEnd.primitiveType();
-    else if (primitiveEnd.getDoubleValue() != 0 && primitiveEnd.primitiveType() != type)
+    CSSPrimitiveValue::UnitType type = commonUnitType(primitiveStart, primitiveEnd);
+    if (type == CSSPrimitiveValue::CSS_UNKNOWN)
         return nullptr;
-
     return adoptRefWillBeNoop(new SVGLengthStyleInterpolation(primitiveStart, primitiveEnd, id, type, range));
+}
+
+CSSPrimitiveValue::UnitType SVGLengthStyleInterpolation::commonUnitType(const CSSPrimitiveValue& start, const CSSPrimitiveValue& end)
+{
+    if (start.getDoubleValue() == 0 || start.primitiveType() == end.primitiveType())
+        return end.primitiveType();
+    if (end.getDoubleValue() == 0)
+        return start.primitiveType();
+    return CSSPrimitiveValue::CSS_UNKNOWN;
 }
 
 SVGLengthStyleInterpolation::SVGLengthStyleInterpolation(const CSSPrimitiveValue& start, const CSSPrimitiveValue& end, CSSPropertyID id, CSSPrimitiveValue::UnitType type, InterpolationRange range)

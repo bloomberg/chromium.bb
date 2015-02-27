@@ -44,6 +44,7 @@ private:
     friend class AnimationDoubleStyleInterpolationTest;
     friend class AnimationVisibilityStyleInterpolationTest;
     friend class AnimationColorStyleInterpolationTest;
+    friend class AnimationSVGStrokeDasharrayStyleInterpolationTest;
 };
 
 } // namespace blink

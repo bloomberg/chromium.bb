@@ -17,6 +17,7 @@
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/SVGLengthStyleInterpolation.h"
+#include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/ShadowStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -341,7 +342,13 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
         break;
     }
+    case CSSPropertyStrokeDasharray: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = SVGStrokeDasharrayStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property);
+        if (interpolation)
+            return interpolation.release();
 
+        break;
+    }
     default:
         // Fall back to LegacyStyleInterpolation.
         fallBackToLegacy = true;

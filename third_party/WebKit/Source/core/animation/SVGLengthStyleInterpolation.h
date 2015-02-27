@@ -26,6 +26,7 @@ private:
     SVGLengthStyleInterpolation(const CSSPrimitiveValue& start, const CSSPrimitiveValue& end, CSSPropertyID, CSSPrimitiveValue::UnitType, InterpolationRange);
 
     static bool canCreateFrom(const CSSValue&);
+    static CSSPrimitiveValue::UnitType commonUnitType(const CSSPrimitiveValue& start, const CSSPrimitiveValue& end);
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSPrimitiveValue&);
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToLength(const InterpolableValue&, CSSPrimitiveValue::UnitType, InterpolationRange);
 
@@ -33,6 +34,7 @@ private:
     InterpolationRange m_range;
 
     friend class AnimationSVGLengthStyleInterpolationTest;
+    friend class SVGStrokeDasharrayStyleInterpolation;
 };
 
 }

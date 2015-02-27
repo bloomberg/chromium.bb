@@ -58,13 +58,18 @@ PassRefPtrWillBeRawPtr<SVGLengthList> AnimatableStrokeDasharrayList::toSVGLength
 
 bool AnimatableStrokeDasharrayList::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
-    return false;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> from = m_values;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
+    return !from.isEmpty() && !to.isEmpty() && AnimatableRepeatable::usesDefaultInterpolationWith(value);
 }
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > from = m_values;
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > to = toAnimatableStrokeDasharrayList(value)->m_values;
+    if (usesDefaultInterpolationWith(value))
+        return defaultInterpolateTo(this, value, fraction);
+
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> from = m_values;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
 
     // The spec states that if the sum of all values is zero, this should be
     // treated like a value of 'none', which means that a solid line is drawn.
