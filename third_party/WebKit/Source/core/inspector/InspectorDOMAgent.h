@@ -194,6 +194,7 @@ public:
     Node* nodeForId(int nodeId);
     int boundNodeId(Node*);
     void setDOMListener(DOMListener*);
+    void inspect(Node*);
 
     static String documentURLString(Document*);
 
@@ -236,8 +237,6 @@ private:
     Node* assertEditableNode(ErrorString*, int nodeId);
     Node* assertEditableChildNode(ErrorString*, Element* parentElement, int nodeId);
     Element* assertEditableElement(ErrorString*, int nodeId);
-
-    void inspect(Node*);
 
     int pushNodePathToFrontend(Node*, NodeToIdMap* nodeMap);
     int pushNodePathToFrontend(Node*);
@@ -285,6 +284,7 @@ private:
     OwnPtrWillBeMember<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;
     RawPtrWillBeMember<Listener> m_listener;
+    int m_backendNodeIdToInspect;
 };
 
 

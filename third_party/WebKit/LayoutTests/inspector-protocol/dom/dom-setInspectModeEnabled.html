@@ -34,7 +34,12 @@ function test()
 
     function inspectNodeRequested(message)
     {
-        InspectorTest.log("DOM.inspectNodeRequested: " + nodeInfo[message.params.nodeId].localName);
+        InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", { "backendNodeIds": [ message.params.backendNodeId ] }, onNodeResolved);
+    }
+
+    function onNodeResolved(message)
+    {
+        InspectorTest.log("DOM.inspectNodeRequested: " + nodeInfo[message.result.nodeIds[0]].localName);
         InspectorTest.completeTest();
     }
 }

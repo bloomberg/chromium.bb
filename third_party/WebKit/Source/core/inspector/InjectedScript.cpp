@@ -336,15 +336,6 @@ ScriptValue InjectedScript::findObjectById(const String& objectId) const
     return resultValue;
 }
 
-void InjectedScript::inspectNode(Node* node)
-{
-    ASSERT(!isEmpty());
-    ScriptFunctionCall function(injectedScriptObject(), "inspectNode");
-    function.appendArgument(nodeAsScriptValue(node));
-    RefPtr<JSONValue> result;
-    makeCall(function, &result);
-}
-
 void InjectedScript::releaseObjectGroup(const String& objectGroup)
 {
     ASSERT(!isEmpty());

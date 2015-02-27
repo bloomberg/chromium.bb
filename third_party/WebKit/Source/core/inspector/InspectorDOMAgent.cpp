@@ -319,6 +319,7 @@ InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScri
     , m_searchingForNode(NotSearching)
     , m_suppressAttributeModifiedEvent(false)
     , m_listener(nullptr)
+    , m_backendNodeIdToInspect(0)
 {
 }
 
@@ -586,10 +587,12 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
 void InspectorDOMAgent::innerEnable()
 {
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
-    m_document = nullptr;
-    setDocument(m_pageAgent->inspectedFrame()->document());
+    m_document = m_pageAgent->inspectedFrame()->document();
     if (m_listener)
         m_listener->domAgentWasEnabled();
+    if (m_backendNodeIdToInspect)
+        m_frontend->inspectNodeRequested(m_backendNodeIdToInspect);
+    m_backendNodeIdToInspect = 0;
 }
 
 void InspectorDOMAgent::enable(ErrorString*)
@@ -1326,19 +1329,22 @@ bool InspectorDOMAgent::handleTouchEvent(LocalFrame* frame, const PlatformTouchE
 
 void InspectorDOMAgent::inspect(Node* inspectedNode)
 {
-    if (!m_frontend || !inspectedNode)
+    if (!inspectedNode)
         return;
 
     Node* node = inspectedNode;
     while (node && !node->isElementNode() && !node->isDocumentNode() && !node->isDocumentFragment())
         node = node->parentOrShadowHostNode();
-
     if (!node)
         return;
 
-    int nodeId = pushNodePathToFrontend(node);
-    if (nodeId)
-        m_frontend->inspectNodeRequested(nodeId);
+    int backendNodeId = InspectorNodeIds::idForNode(node);
+    if (!m_frontend || !enabled()) {
+        m_backendNodeIdToInspect = backendNodeId;
+        return;
+    }
+
+    m_frontend->inspectNodeRequested(backendNodeId);
 }
 
 bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEvent& event)

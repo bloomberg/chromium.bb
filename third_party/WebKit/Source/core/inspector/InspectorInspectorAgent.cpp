@@ -98,9 +98,6 @@ void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
 
-    if (m_pendingInspectData.first)
-        inspect(m_pendingInspectData.first, m_pendingInspectData.second);
-
     for (Vector<pair<long, String> >::iterator it = m_pendingEvaluateTestCommands.begin(); m_frontend && it != m_pendingEvaluateTestCommands.end(); ++it)
         m_frontend->evaluateForTestInFrontend(static_cast<int>((*it).first), (*it).second);
     m_pendingEvaluateTestCommands.clear();
@@ -136,14 +133,8 @@ void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const Strin
 
 void InspectorInspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
 {
-    if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled) && m_frontend) {
+    if (m_frontend && m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled))
         m_frontend->inspect(objectToInspect, hints);
-        m_pendingInspectData.first = nullptr;
-        m_pendingInspectData.second = nullptr;
-        return;
-    }
-    m_pendingInspectData.first = objectToInspect;
-    m_pendingInspectData.second = hints;
 }
 
 } // namespace blink

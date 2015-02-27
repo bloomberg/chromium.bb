@@ -314,14 +314,6 @@ InjectedScript.prototype = {
 
     /**
      * @param {*} object
-     */
-    inspectNode: function(object)
-    {
-        this._inspect(object);
-    },
-
-    /**
-     * @param {*} object
      * @return {*}
      */
     _inspect: function(object)

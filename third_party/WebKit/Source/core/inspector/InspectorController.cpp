@@ -320,22 +320,7 @@ void InspectorController::drawHighlight(GraphicsContext& context) const
 
 void InspectorController::inspect(Node* node)
 {
-    if (!node)
-        return;
-    Document* document = node->ownerDocument();
-    if (!document)
-        return;
-    LocalFrame* frame = document->frame();
-    if (!frame)
-        return;
-
-    if (!node->isElementNode() && !node->isDocumentNode())
-        node = node->parentNode();
-
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(ScriptState::forMainWorld(frame));
-    if (injectedScript.isEmpty())
-        return;
-    injectedScript.inspectNode(node);
+    m_domAgent->inspect(node);
 }
 
 void InspectorController::dispatchMessageFromFrontend(const String& message)

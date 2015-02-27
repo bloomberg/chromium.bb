@@ -81,7 +81,6 @@ private:
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
 
     Vector<pair<long, String> > m_pendingEvaluateTestCommands;
-    pair<RefPtr<TypeBuilder::Runtime::RemoteObject>, RefPtr<JSONObject> > m_pendingInspectData;
 };
 
 } // namespace blink
