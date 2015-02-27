@@ -24,22 +24,32 @@ PROJECT_ARGS = {
   'redirect_uri': 'http://localhost:8000'
 }
 
-# Globals.
-PORT = 8000
+# Persists across all utility methods for authentication.
 g_auth_code = None
 g_oauth_token = None
 
-APP_ID = 'kgejglhpjiefppelpmljglcjbhoiplfn'
+# The app id to use for all utility methods.
+g_app_id = ''
+
+# Constants.
+PORT = 8000
 OAUTH_DOMAIN = 'accounts.google.com'
 OAUTH_AUTH_COMMAND = '/o/oauth2/auth'
 OAUTH_TOKEN_COMMAND = '/o/oauth2/token'
 WEBSTORE_API_SCOPE = 'https://www.googleapis.com/auth/chromewebstore'
-
 API_ENDPOINT_DOMAIN = 'www.googleapis.com'
-COMMAND_GET_UPLOAD_STATUS = (
-    '/chromewebstore/v1.1/items/%s?projection=draft' % APP_ID)
-COMMAND_POST_PUBLISH = '/chromewebstore/v1.1/items/%s/publish' % APP_ID
-COMMAND_POST_UPLOAD = '/upload/chromewebstore/v1.1/items/%s' % APP_ID
+
+def GetUploadStatusCommand():
+  global g_app_id
+  return '/chromewebstore/v1.1/items/%s?projection=draft' % g_app_id
+
+def GetPublishCommand():
+  global g_app_id
+  return '/chromewebstore/v1.1/items/%s/publish' % g_app_id
+
+def GetUploadCommand():
+  global g_app_id
+  return '/upload/chromewebstore/v1.1/items/%s' % g_app_id
 
 class CodeRequestHandler(SocketServer.StreamRequestHandler):
   def handle(self):
@@ -118,7 +128,7 @@ def GetUploadStatus(client_secret):
   Args:
     client_secret ChromeVox's client secret creds.
   '''
-  return SendGetCommand(COMMAND_GET_UPLOAD_STATUS, client_secret)
+  return SendGetCommand(GetUploadStatusCommand(), client_secret)
 
 # httplib fails to persist the connection during upload; use curl instead.
 def PostUpload(file, client_secret):
@@ -135,7 +145,7 @@ def PostUpload(file, client_secret):
                            '-T %s' % file,
                            '-v',
                            'https://%s%s' % (API_ENDPOINT_DOMAIN,
-                                             COMMAND_POST_UPLOAD)])
+                                             GetUploadCommand())])
 
   print 'Running %s' % curl_command
   if os.system(curl_command) != 0:
@@ -146,7 +156,7 @@ def PostPublishTrustedTesters(client_secret):
   Args:
     client_secret ChromeVox's client secret creds.
   '''
-  return SendPostCommand(COMMAND_POST_PUBLISH,
+  return SendPostCommand(GetPublishCommand(),
                          client_secret,
                          { 'publishTarget': 'trustedTesters'})
 
@@ -155,4 +165,4 @@ def PostPublish(client_secret):
   Args:
     client_secret ChromeVox's client secret creds.
   '''
-  return SendPostCommand(COMMAND_POST_PUBLISH, client_secret)
+  return SendPostCommand(GetPublishCommand(), client_secret)
