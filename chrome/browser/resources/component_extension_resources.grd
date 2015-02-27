@@ -130,7 +130,13 @@
       <if expr="chromeos">
         <include name="IDR_WALLPAPER_MANAGER_CONSTANTS_JS" file="chromeos/wallpaper_manager/js/constants.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_EVENT_JS" file="chromeos/wallpaper_manager/js/event_page.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_WALLPAPER_MANAGER_ICON_16" file="chromeos/wallpaper_manager/images/icon16.png" type="BINDATA" />
+        <include name="IDR_WALLPAPER_MANAGER_ICON_32" file="chromeos/wallpaper_manager/images/icon32.png" type="BINDATA" />
+        <include name="IDR_WALLPAPER_MANAGER_ICON_48" file="chromeos/wallpaper_manager/images/icon48.png" type="BINDATA" />
+        <include name="IDR_WALLPAPER_MANAGER_ICON_64" file="chromeos/wallpaper_manager/images/icon64.png" type="BINDATA" />
+        <include name="IDR_WALLPAPER_MANAGER_ICON_96" file="chromeos/wallpaper_manager/images/icon96.png" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_ICON_128" file="chromeos/wallpaper_manager/images/icon128.png" type="BINDATA" />
+        <include name="IDR_WALLPAPER_MANAGER_ICON_256" file="chromeos/wallpaper_manager/images/icon256.png" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_MAIN_JS" file="chromeos/wallpaper_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_UTIL_JS" file="chromeos/wallpaper_manager/js/util.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FIRST_RUN_DIALOG_BACKGROUND_JS" file="chromeos/first_run/app/background.js" flattenhtml="true" type="BINDATA" />
