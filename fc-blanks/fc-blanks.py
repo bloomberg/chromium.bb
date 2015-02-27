@@ -44,13 +44,20 @@ for i in p:
         fescape = True
     elif i.lower() == 'u' and fescape == True:
         funicode = True
+        fescape = False
     elif i >= '0' and i <= '9' or i.lower() >= 'a' and i.lower() <= 'f':
+        if fescape == True:
+            raise RuntimeError, "Unexpected escape code"
         if funicode == True:
             v <<= 4
             v += int(i, 16)
         else:
             raise RuntimeError, "Unable to parse Unicode"
     elif i == ' ':
+        if fescape == True:
+            funicode = True
+            fescape = False
+            v = 0x20
         if frange == True and funicode == True:
             vend = v
             insert(l, vbegin, vend)
@@ -60,13 +67,13 @@ for i in p:
             vend = v
             insert(l, vbegin, vend)
             fprocess = True
-        fescape = False
         funicode = False
         frange = False
     elif i == '-':
+        if fescape == True:
+            raise RuntimeError, "Unexpected escape code"
         vbegin = v
         v = 0
-        fescape = False
         funicode = False
         frange = True
     else:
@@ -88,8 +95,6 @@ elif funicode == True:
     vbegin = vend = v
     insert(l, vbegin, vend)
 
-# somewhat missing 0x0020 in the list of code from Unicode Utilities
-insert(l, 0x0020, 0x0020)
 ncode = 0
 for i in l:
     ncode += (i[1] - i[0] + 1)
@@ -98,6 +103,8 @@ a = int(x[0].split(' ')[0].replace(',', ''))
 if a != ncode:
     sys.stderr.write("Unexpected the amount of code points: %d (expected %d)\n" % (ncode, a))
     sys.exit(1)
+
+# exception; BRAILLE PATTERN BLANK
 insert(l, 0x2800, 0x2800)
 
 while True:
