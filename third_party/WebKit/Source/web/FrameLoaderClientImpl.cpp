@@ -414,7 +414,7 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(IconType type)
         m_webFrame->client()->didChangeIcon(m_webFrame, static_cast<WebIconURL::Type>(type));
 }
 
-void FrameLoaderClientImpl::dispatchDidCommitLoad(LocalFrame* frame, HistoryItem* item, HistoryCommitType commitType)
+void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryCommitType commitType)
 {
     m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
     if (m_webFrame->client())

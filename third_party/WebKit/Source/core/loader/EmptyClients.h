@@ -189,7 +189,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation, double triggeringEventTime) override { }
     virtual void dispatchDidReceiveTitle(const String&) override { }
     virtual void dispatchDidChangeIcons(IconType) override { }
-    virtual void dispatchDidCommitLoad(LocalFrame*, HistoryItem*, HistoryCommitType) override { }
+    virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override { }
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&) override { }
     virtual void dispatchDidFailLoad(const ResourceError&) override { }
     virtual void dispatchDidFinishDocumentLoad() override { }

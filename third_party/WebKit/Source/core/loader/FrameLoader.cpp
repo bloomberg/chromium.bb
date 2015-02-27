@@ -349,7 +349,7 @@ void FrameLoader::receivedFirstData()
     if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
 
-    client()->dispatchDidCommitLoad(m_frame, m_currentItem.get(), historyCommitType);
+    client()->dispatchDidCommitLoad(m_currentItem.get(), historyCommitType);
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CommitLoad", "data", InspectorCommitLoadEvent::data(m_frame));
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());

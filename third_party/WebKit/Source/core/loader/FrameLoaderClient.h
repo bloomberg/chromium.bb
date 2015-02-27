@@ -91,7 +91,7 @@ namespace blink {
         virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation, double triggeringEventTime) = 0;
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
-        virtual void dispatchDidCommitLoad(LocalFrame*, HistoryItem*, HistoryCommitType) = 0;
+        virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;
