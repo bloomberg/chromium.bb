@@ -362,6 +362,13 @@ class AutofillMetrics {
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
+  // Should be called when credit card scan is finished. |duration| should be
+  // the time elapsed between launching the credit card scanner and getting back
+  // the result. |completed| should be true if a credit card was scanned, false
+  // if the scan was cancelled.
+  static void LogScanCreditCardCompleted(const base::TimeDelta& duration,
+                                         bool completed);
+
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
   static void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,

@@ -275,6 +275,16 @@ void AutofillMetrics::LogScanCreditCardPromptMetric(
 }
 
 // static
+void AutofillMetrics::LogScanCreditCardCompleted(
+    const base::TimeDelta& duration,
+    bool completed) {
+  std::string suffix = completed ? "Completed" : "Cancelled";
+  LogUMAHistogramLongTimes("Autofill.ScanCreditCard.Duration_" + suffix,
+                           duration);
+  UMA_HISTOGRAM_BOOLEAN("Autofill.ScanCreditCard.Completed", completed);
+}
+
+// static
 void AutofillMetrics::LogDialogDismissalState(DialogDismissalState state) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.DismissalState",
                             state, NUM_DIALOG_DISMISSAL_STATES);

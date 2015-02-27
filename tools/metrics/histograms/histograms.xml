@@ -1980,6 +1980,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>TBD.</summary>
 </histogram>
 
+<histogram name="Autofill.ScanCreditCard.Completed" units="BooleanCompleted">
+  <owner>rouslan@chromium.org</owner>
+  <summary>Whether a credit card scan was completed or cancelled.</summary>
+</histogram>
+
+<histogram name="Autofill.ScanCreditCard.Duration" units="ms">
+  <owner>rouslan@chromium.org</owner>
+  <summary>How long a credit card took to scan.</summary>
+</histogram>
+
 <histogram name="Autofill.ScanCreditCardPrompt"
     enum="AutofillScanCreditCardPrompt">
   <owner>estade@chromium.org</owner>
@@ -30333,7 +30343,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="RequestAutocomplete.UiDuration" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>estade@chromium.org</owner>
   <summary>
     Measures the duration for which an requestAutocomplete() dialog was shown.
   </summary>
@@ -61359,6 +61369,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CreditCardScanSuccess">
+  <suffix name="Completed" label="Credit card scan completed."/>
+  <suffix name="Cancelled" label="Credit card scan was cancelled."/>
+  <affected-histogram name="Autofill.ScanCreditCard.Duration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CrosFirstRunStep" separator="">

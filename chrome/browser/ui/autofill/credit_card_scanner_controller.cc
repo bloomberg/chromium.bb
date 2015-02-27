@@ -10,8 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 
 namespace autofill {
 
@@ -31,6 +33,7 @@ class Controller : public CreditCardScannerViewDelegate,
 
   // Shows the UI to scan the credit card.
   void Show() {
+    show_time_ = base::TimeTicks::Now();
     view_->Show();
   }
 
@@ -39,6 +42,8 @@ class Controller : public CreditCardScannerViewDelegate,
 
   // CreditCardScannerViewDelegate implementation.
   void ScanCancelled() override {
+    AutofillMetrics::LogScanCreditCardCompleted(
+        base::TimeTicks::Now() - show_time_, false);
     delete this;
   }
 
@@ -46,6 +51,8 @@ class Controller : public CreditCardScannerViewDelegate,
   void ScanCompleted(const base::string16& card_number,
                      int expiration_month,
                      int expiration_year) override {
+    AutofillMetrics::LogScanCreditCardCompleted(
+        base::TimeTicks::Now() - show_time_, true);
     callback_.Run(card_number, expiration_month, expiration_year);
     delete this;
   }
@@ -55,6 +62,9 @@ class Controller : public CreditCardScannerViewDelegate,
 
   // The callback to be invoked when scanning completes successfully.
   AutofillClient::CreditCardScanCallback callback_;
+
+  // The time when the UI was shown.
+  base::TimeTicks show_time_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
