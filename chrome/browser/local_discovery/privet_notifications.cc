@@ -122,7 +122,8 @@ void PrivetNotificationsListener::CreateInfoOperation(
 
   std::string name = http_client->GetName();
   DeviceContextMap::iterator device_iter = devices_seen_.find(name);
-  DCHECK(device_iter != devices_seen_.end());
+  if (device_iter == devices_seen_.end())
+    return;
   DeviceContext* device = device_iter->second.get();
   device->privet_http.swap(http_client);
   device->info_operation = device->privet_http->CreateInfoOperation(
@@ -150,9 +151,9 @@ void PrivetNotificationsListener::OnPrivetInfoDone(
 }
 
 void PrivetNotificationsListener::DeviceRemoved(const std::string& name) {
-  DCHECK_EQ(1u, devices_seen_.count(name));
   DeviceContextMap::iterator device_iter = devices_seen_.find(name);
-  DCHECK(device_iter != devices_seen_.end());
+  if (device_iter == devices_seen_.end())
+    return;
   DeviceContext* device = device_iter->second.get();
 
   device->info_operation.reset();

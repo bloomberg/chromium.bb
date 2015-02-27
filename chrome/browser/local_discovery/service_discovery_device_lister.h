@@ -22,6 +22,7 @@ class ServiceDiscoveryDeviceLister {
     virtual void OnDeviceChanged(
         bool added,
         const ServiceDescription& service_description) = 0;
+    // Not guaranteed to be called after OnDeviceChanged.
     virtual void OnDeviceRemoved(const std::string& service_name) = 0;
     virtual void OnDeviceCacheFlushed() = 0;
   };
