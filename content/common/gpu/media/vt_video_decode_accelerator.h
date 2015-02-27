@@ -59,6 +59,19 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
       CVImageBufferRef image_buffer);
 
  private:
+  // Logged to UMA, so never reuse values. Make sure to update
+  // VTVDASessionFailureType in histograms.xml to match.
+  enum VTVDASessionFailureType {
+    SFT_SUCCESSFULLY_INITIALIZED = 0,
+    SFT_PLATFORM_ERROR = 1,
+    SFT_INVALID_STREAM = 2,
+    SFT_UNSUPPORTED_STREAM_PARAMETERS = 3,
+    SFT_DECODE_ERROR = 4,
+    SFT_UNSUPPORTED_STREAM = 5,
+    // Must always be equal to largest entry logged.
+    SFT_MAX = SFT_UNSUPPORTED_STREAM
+  };
+
   enum State {
     STATE_DECODING,
     STATE_ERROR,
@@ -128,7 +141,9 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   //
   // Methods for interacting with |client_|. Run on |gpu_task_runner_|.
   //
-  void NotifyError(Error error);
+  void NotifyError(
+      Error vda_error_type,
+      VTVDASessionFailureType session_failure_type);
 
   // |type| is the type of task that the flush will complete, one of TASK_FLUSH,
   // TASK_RESET, or TASK_DESTROY.
