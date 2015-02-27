@@ -98,7 +98,7 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
       cached_extensions_->Remove(id, NULL);
       extensions_->Remove(id, NULL);
 
-      local_cache_.RemoveExtension(id);
+      local_cache_.RemoveExtension(id, std::string());
       UpdateExtensionLoader();
 
       // Don't try to DownloadMissingExtensions() from here,
@@ -116,7 +116,7 @@ void ExternalCache::RemoveExtensions(const std::vector<std::string>& ids) {
   for (size_t i = 0; i < ids.size(); ++i) {
     cached_extensions_->Remove(ids[i], NULL);
     extensions_->Remove(ids[i], NULL);
-    local_cache_.RemoveExtension(ids[i]);
+    local_cache_.RemoveExtension(ids[i], std::string());
   }
   UpdateExtensionLoader();
 }
@@ -124,7 +124,7 @@ void ExternalCache::RemoveExtensions(const std::vector<std::string>& ids) {
 bool ExternalCache::GetExtension(const std::string& id,
                                  base::FilePath* file_path,
                                  std::string* version) {
-  return local_cache_.GetExtension(id, file_path, version);
+  return local_cache_.GetExtension(id, std::string(), file_path, version);
 }
 
 void ExternalCache::PutExternalExtension(
@@ -132,13 +132,10 @@ void ExternalCache::PutExternalExtension(
     const base::FilePath& crx_file_path,
     const std::string& version,
     const PutExternalExtensionCallback& callback) {
-  local_cache_.PutExtension(id,
-                            crx_file_path,
-                            version,
-                            base::Bind(&ExternalCache::OnPutExternalExtension,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       id,
-                                       callback));
+  local_cache_.PutExtension(
+      id, std::string(), crx_file_path, version,
+      base::Bind(&ExternalCache::OnPutExternalExtension,
+                 weak_ptr_factory_.GetWeakPtr(), id, callback));
 }
 
 void ExternalCache::Observe(int type,
@@ -184,12 +181,15 @@ void ExternalCache::OnExtensionDownloadFinished(
     const GURL& download_url,
     const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
-    const std::set<int>& request_ids) {
+    const std::set<int>& request_ids,
+    const InstallCallback& callback) {
   DCHECK(file_ownership_passed);
   local_cache_.PutExtension(
-      file.extension_id, file.path, version,
+      file.extension_id, file.expected_hash, file.path, version,
       base::Bind(&ExternalCache::OnPutExtension, weak_ptr_factory_.GetWeakPtr(),
                  file.extension_id));
+  if (!callback.is_null())
+    callback.Run(true);
 }
 
 bool ExternalCache::IsExtensionPending(const std::string& id) {
@@ -255,7 +255,8 @@ void ExternalCache::CheckCache() {
 
     base::FilePath file_path;
     std::string version;
-    if (local_cache_.GetExtension(it.key(), &file_path, &version)) {
+    std::string hash;
+    if (local_cache_.GetExtension(it.key(), hash, &file_path, &version)) {
       // Copy entry to don't modify it inside extensions_.
       base::DictionaryValue* entry_copy = entry->DeepCopy();
 
@@ -312,7 +313,8 @@ void ExternalCache::OnPutExtension(const std::string& id,
   entry = entry->DeepCopy();
 
   std::string version;
-  if (!local_cache_.GetExtension(id, NULL, &version)) {
+  std::string hash;
+  if (!local_cache_.GetExtension(id, hash, NULL, &version)) {
     // Copy entry to don't modify it inside extensions_.
     LOG(ERROR) << "Can't find installed extension in cache " << id;
     return;

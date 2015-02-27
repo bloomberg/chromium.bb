@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/browser/install/crx_installer_error.h"
+#include "extensions/browser/install/crx_install_error.h"
 
 namespace extensions {
 namespace {
@@ -91,35 +91,32 @@ void ExtensionCacheImpl::Shutdown(const base::Closure& callback) {
 }
 
 void ExtensionCacheImpl::AllowCaching(const std::string& id) {
-  // Temporary workaround for M41, this extension should not be cached.
-  // TODO(ginkage): Implement id/hash-based map instead of id/version.
-  if (id == extension_misc::kHotwordSharedModuleId)
-    return;
   allowed_extensions_.insert(id);
 }
 
 bool ExtensionCacheImpl::GetExtension(const std::string& id,
+                                      const std::string& expected_hash,
                                       base::FilePath* file_path,
                                       std::string* version) {
   if (cache_ && CachingAllowed(id))
-    return cache_->GetExtension(id, file_path, version);
+    return cache_->GetExtension(id, expected_hash, file_path, version);
   else
     return false;
 }
 
 void ExtensionCacheImpl::PutExtension(const std::string& id,
+                                      const std::string& expected_hash,
                                       const base::FilePath& file_path,
                                       const std::string& version,
                                       const PutExtensionCallback& callback) {
   if (cache_ && CachingAllowed(id))
-    cache_->PutExtension(id, file_path, version, callback);
+    cache_->PutExtension(id, expected_hash, file_path, version, callback);
   else
     callback.Run(file_path, true);
 }
 
 bool ExtensionCacheImpl::CachingAllowed(const std::string& id) {
-  return ContainsKey(allowed_extensions_, id) &&
-      id != extension_misc::kHotwordSharedModuleId;
+  return ContainsKey(allowed_extensions_, id);
 }
 
 void ExtensionCacheImpl::OnCacheInitialized() {
@@ -149,12 +146,25 @@ void ExtensionCacheImpl::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       extensions::CrxInstaller* installer =
           content::Source<extensions::CrxInstaller>(source).ptr();
-      const extensions::CrxInstallerError* error =
-          content::Details<const extensions::CrxInstallerError>(details).ptr();
-      if (error->type() == extensions::CrxInstallerError::ERROR_DECLINED) {
-        DVLOG(2) << "Extension install was declined, file kept";
-      } else {
-        cache_->RemoveExtension(installer->expected_id());
+      const std::string& id = installer->expected_id();
+      const std::string& hash = installer->expected_hash();
+      const extensions::CrxInstallError* error =
+          content::Details<const extensions::CrxInstallError>(details).ptr();
+      switch (error->type()) {
+        case extensions::CrxInstallError::ERROR_DECLINED:
+          DVLOG(2) << "Extension install was declined, file kept";
+          break;
+        case extensions::CrxInstallError::ERROR_HASH_MISMATCH: {
+          if (cache_->ShouldRetryDownload(id, hash)) {
+            cache_->RemoveExtension(id, hash);
+            installer->set_hash_check_failed(true);
+          }
+          // We deliberately keep the file with incorrect hash sum, so that it
+          // will not be re-downloaded each time.
+        } break;
+        default:
+          cache_->RemoveExtension(id, hash);
+          break;
       }
       break;
     }

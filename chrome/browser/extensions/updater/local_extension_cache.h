@@ -52,30 +52,48 @@ class LocalExtensionCache {
   // down completely and there are no more pending file I/O operations.
   void Shutdown(const base::Closure& callback);
 
-  // If extension with |id| exists in the cache, returns |true|, |file_path| and
-  // |version| for the extension. Extension will be marked as used with current
-  // timestamp.
+  // If extension with |id| and |expected_hash| exists in the cache (or there
+  // is an extension with the same |id|, but without expected hash sum),
+  // returns |true|, |file_path| and |version| for the found extension.
+  // If |file_path| was requested, then extension will be marked as used with
+  // current timestamp.
   bool GetExtension(const std::string& id,
+                    const std::string& expected_hash,
                     base::FilePath* file_path,
                     std::string* version);
 
-  // Put extension with |id| and |version| into local cache. Older version in
-  // the cache will be on next run so it can be safely used. Extension will be
-  // marked as used with current timestamp. The file will be available via
-  // GetExtension when |callback| is called. PutExtension may get ownership
-  // of |file_path| or return it back via |callback|.
+  // Returns |true| if there is a file with |id| and |expected_hash| in the
+  // cache, and its hash sum is actually empty. After removing it from cache and
+  // re-downloading, the new entry will have some non-empty hash sum.
+  bool ShouldRetryDownload(const std::string& id,
+                           const std::string& expected_hash);
+
+  // Put extension with |id|, |version| and |expected_hash| into local cache.
+  // Older version in the cache will be deleted on next run so it can be safely
+  // used. Extension will be marked as used with current timestamp. The file
+  // will be available via GetExtension when |callback| is called. PutExtension
+  // may get ownership of |file_path| or return it back via |callback|.
   void PutExtension(const std::string& id,
+                    const std::string& expected_hash,
                     const base::FilePath& file_path,
                     const std::string& version,
                     const PutExtensionCallback& callback);
 
-  // Remove extension with |id| from local cache, corresponding crx file will be
-  // removed from disk too.
-  bool RemoveExtension(const std::string& id);
+  // Remove extension with |id| and |expected_hash| from local cache,
+  // corresponding crx file will be removed from disk too. If |expected_hash| is
+  // empty, all files corresponding to that |id| will be removed.
+  bool RemoveExtension(const std::string& id, const std::string& expected_hash);
 
   // Return cache statistics. Returns |false| if cache is not ready.
   bool GetStatistics(uint64* cache_size,
                      size_t* extensions_count);
+
+  // Outputs properly formatted extension file name, as it will be stored in
+  // cache. If |expected_hash| is empty, it will be <id>-<version>.crx,
+  // otherwise the name format is <id>-<version>-<hash>.crx.
+  static std::string ExtensionFileName(const std::string& id,
+                                       const std::string& version,
+                                       const std::string& expected_hash);
 
   bool is_ready() const { return state_ == kReady; }
   bool is_uninitialized() const { return state_ == kUninitialized; }
@@ -87,16 +105,20 @@ class LocalExtensionCache {
  private:
   struct CacheItemInfo {
     std::string version;
+    std::string expected_hash;
     base::Time last_used;
     uint64 size;
     base::FilePath file_path;
 
     CacheItemInfo(const std::string& version,
+                  const std::string& expected_hash,
                   const base::Time& last_used,
                   uint64 size,
                   const base::FilePath& file_path);
+    ~CacheItemInfo();
   };
-  typedef std::map<std::string, CacheItemInfo> CacheMap;
+  typedef std::multimap<std::string, CacheItemInfo> CacheMap;
+  typedef std::pair<CacheMap::iterator, CacheMap::iterator> CacheHit;
 
   enum State {
     kUninitialized,
@@ -104,6 +126,49 @@ class LocalExtensionCache {
     kReady,
     kShutdown
   };
+
+  // Helper function that searches the cache map for an extension with the
+  // specified |id| and |expected_hash|. If there is an extension with empty
+  // hash in the map, it will be returned. If |expected_hash| is empty, returns
+  // the first extension with the same |id|.
+  static CacheMap::iterator FindExtension(CacheMap& cache,
+                                          const std::string& id,
+                                          const std::string& expected_hash);
+
+  // Helper function that compares a cache entry (typically returned from
+  // FindExtension) with an incoming |version| and |expected_hash|. Comparison
+  // is based on the version number (newer is better) and hash sum (it is
+  // better to have a file with an expected hash sum than without it).
+  // Return value of this function is |true| if we already have a 'better'
+  // entry in cache (considering both version number and hash sum), and the
+  // value of |compare| is set to the version number comparison result (as
+  // returned by Version::CompareTo).
+  static bool NewerOrSame(const CacheMap::iterator& entry,
+                          const std::string& version,
+                          const std::string& expected_hash,
+                          int* compare);
+
+  // Helper function that checks if there is already a newer version of the
+  // extension we want to add to the cache, or if there is already a file with a
+  // hash sum (and we are trying to add one without it), or vice versa. Keeps
+  // the invariant of having only one version of each extension, and either only
+  // unhashed (single) or only hashed (multiple) variants of that version.
+  // |delete_files| specifies if this function is called on startup (in which
+  // case we will clean up files we don't need), or on extension install.
+  // Returns cache.end() if the extension is already cached, or an iterator to
+  // the inserted cache entry otherwise.
+  static CacheMap::iterator InsertCacheEntry(CacheMap& cache,
+                                             const std::string& id,
+                                             const CacheItemInfo& info,
+                                             const bool delete_files);
+
+  // Remove extension at a specified iterator. This is necessary because
+  // removing an extension by |id| and |expected_hash| taken by reference from
+  // an iterator leads to use-after-free. On the other hand, when passing the
+  // iterator itself we avoid lookup as such, at all.
+  // For external calls from RemoveExtension without expected hash we will
+  // ignore the hash in iterator by setting |match_hash| to false.
+  bool RemoveExtensionAt(const CacheMap::iterator& it, bool match_hash);
 
   // Sends BackendCheckCacheStatus task on backend thread.
   void CheckCacheStatus(const base::Closure& callback);
@@ -154,6 +219,7 @@ class LocalExtensionCache {
       base::WeakPtr<LocalExtensionCache> local_cache,
       const base::FilePath& cache_dir,
       const std::string& id,
+      const std::string& expected_hash,
       const base::FilePath& file_path,
       const std::string& version,
       const PutExtensionCallback& callback);
@@ -167,6 +233,7 @@ class LocalExtensionCache {
   // Remove cached crx files(all versions) under |cached_dir| for extension with
   // |id|. This method is invoked via the |backend_task_runner_|.
   static void BackendRemoveCacheEntry(const base::FilePath& cache_dir,
+                                      const std::string& expected_hash,
                                       const std::string& id);
 
   // Compare two cache items returns true if first item is older.

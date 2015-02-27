@@ -147,13 +147,14 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
                                                Error,
                                                const PingResult&,
                                                const std::set<int>&));
-  MOCK_METHOD6(OnExtensionDownloadFinished,
+  MOCK_METHOD7(OnExtensionDownloadFinished,
                void(const extensions::CRXFileInfo&,
                     bool,
                     const GURL&,
                     const std::string&,
                     const PingResult&,
-                    const std::set<int>&));
+                    const std::set<int>&,
+                    const InstallCallback&));
   MOCK_METHOD2(GetPingDataForExtension,
                bool(const std::string&, ManifestFetchData::PingData*));
   MOCK_METHOD1(GetUpdateUrlData, std::string(const std::string&));
@@ -177,7 +178,7 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
     ON_CALL(*this, OnExtensionDownloadFailed(_, _, _, _))
         .WillByDefault(Invoke(delegate,
             &ExtensionDownloaderDelegate::OnExtensionDownloadFailed));
-    ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _))
+    ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _, _))
         .WillByDefault(
             Invoke(delegate,
                    &ExtensionDownloaderDelegate::OnExtensionDownloadFinished));
@@ -1225,7 +1226,7 @@ class ExtensionUpdaterTest : public testing::Test {
       fetcher->SetResponseFilePath(extension_file_path);
       EXPECT_CALL(delegate, OnExtensionDownloadFinished(
                                 CRXFileInfo(id, extension_file_path, hash), _,
-                                _, version.GetString(), _, requests));
+                                _, version.GetString(), _, requests, _));
     }
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 

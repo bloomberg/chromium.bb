@@ -298,7 +298,7 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}
-  void OnInstallFailure(const extensions::CrxInstallerError& error) override {}
+  void OnInstallFailure(const extensions::CrxInstallError& error) override {}
 };
 
 // Mock that simulates a permissions dialog where the user allows
@@ -317,7 +317,7 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}
-  void OnInstallFailure(const extensions::CrxInstallerError& error) override {}
+  void OnInstallFailure(const extensions::CrxInstallError& error) override {}
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {

@@ -26,12 +26,14 @@ void NullExtensionCache::AllowCaching(const std::string& id) {
 }
 
 bool NullExtensionCache::GetExtension(const std::string& id,
+                                      const std::string& expected_hash,
                                       base::FilePath* file_path,
                                       std::string* version) {
   return false;
 }
 
 void NullExtensionCache::PutExtension(const std::string& id,
+                                      const std::string& expected_hash,
                                       const base::FilePath& file_path,
                                       const std::string& version,
                                       const PutExtensionCallback& callback) {

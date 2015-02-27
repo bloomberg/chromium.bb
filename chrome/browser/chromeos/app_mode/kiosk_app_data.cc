@@ -129,7 +129,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     icon_ = install_icon;
     NotifyFinishedOnBlockingPool();
   }
-  void OnUnpackFailure(const base::string16& error) override {
+  void OnUnpackFailure(const extensions::CrxInstallError& error) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     success_ = false;

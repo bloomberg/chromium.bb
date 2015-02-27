@@ -48,8 +48,8 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
     quit_closure_.Run();
   }
 
-  void OnUnpackFailure(const base::string16& error) override {
-    error_ = error;
+  void OnUnpackFailure(const CrxInstallError& error) override {
+    error_ = error.message();
     quit_closure_.Run();
   }
 

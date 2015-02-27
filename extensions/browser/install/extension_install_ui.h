@@ -13,7 +13,7 @@
 class SkBitmap;
 
 namespace extensions {
-class CrxInstallerError;
+class CrxInstallError;
 class Extension;
 
 // Interface that should be implemented for each platform to display all the UI
@@ -28,7 +28,7 @@ class ExtensionInstallUI {
                                 const SkBitmap* icon) = 0;
 
   // Called when an extension failed to install.
-  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) = 0;
+  virtual void OnInstallFailure(const extensions::CrxInstallError& error) = 0;
 
   // TODO(asargent) Normally we navigate to the new tab page when an app is
   // installed, but we're experimenting with instead showing a bubble when

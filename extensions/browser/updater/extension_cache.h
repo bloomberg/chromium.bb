@@ -40,6 +40,7 @@ class ExtensionCache {
   // |version| for the extension. Extension will be marked as used with current
   // timestamp.
   virtual bool GetExtension(const std::string& id,
+                            const std::string& expected_hash,
                             base::FilePath* file_path,
                             std::string* version) = 0;
 
@@ -50,6 +51,7 @@ class ExtensionCache {
   // deleted from the disk. There is no guarantee that |callback| will be
   // called.
   virtual void PutExtension(const std::string& id,
+                            const std::string& expected_hash,
                             const base::FilePath& file_path,
                             const std::string& version,
                             const PutExtensionCallback& callback) = 0;

@@ -33,7 +33,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/install/crx_installer_error.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
@@ -118,7 +118,7 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
     proxy_->set_extension_id(extension->id());
     base::MessageLoopForUI::current()->Quit();
   }
-  void OnInstallFailure(const CrxInstallerError& error) override {
+  void OnInstallFailure(const CrxInstallError& error) override {
     proxy_->set_error(error.message());
     base::MessageLoopForUI::current()->Quit();
   }

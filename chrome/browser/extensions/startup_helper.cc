@@ -156,10 +156,10 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                                        this));
   }
 
-  void OnUnpackFailure(const base::string16& error) override {
+  void OnUnpackFailure(const CrxInstallError& error) override {
     finished_ = true;
     success_ = false;
-    error_ = error;
+    error_ = error.message();
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&ValidateCrxHelper::FinishOnUIThread,

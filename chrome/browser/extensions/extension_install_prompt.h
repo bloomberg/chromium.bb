@@ -36,7 +36,7 @@ class WebContents;
 
 namespace extensions {
 class BundleInstaller;
-class CrxInstallerError;
+class CrxInstallError;
 class Extension;
 class ExtensionInstallUI;
 class ExtensionWebstorePrivateApiTest;
@@ -393,7 +393,7 @@ class ExtensionInstallPrompt
                                 SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
-  virtual void OnInstallFailure(const extensions::CrxInstallerError& error);
+  virtual void OnInstallFailure(const extensions::CrxInstallError& error);
 
   void set_callback_for_test(const ShowDialogCallback& show_dialog_callback) {
     show_dialog_callback_ = show_dialog_callback;

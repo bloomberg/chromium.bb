@@ -827,7 +827,7 @@ void ExtensionInstallPrompt::OnInstallSuccess(const Extension* extension,
 }
 
 void ExtensionInstallPrompt::OnInstallFailure(
-    const extensions::CrxInstallerError& error) {
+    const extensions::CrxInstallError& error) {
   install_ui_->OnInstallFailure(error);
 }
 

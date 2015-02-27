@@ -23,7 +23,7 @@ class ExtensionInstallUIDefault : public extensions::ExtensionInstallUI {
   // ExtensionInstallUI:
   void OnInstallSuccess(const extensions::Extension* extension,
                         const SkBitmap* icon) override;
-  void OnInstallFailure(const extensions::CrxInstallerError& error) override;
+  void OnInstallFailure(const extensions::CrxInstallError& error) override;
   void SetUseAppInstalledBubble(bool use_bubble) override;
   void OpenAppInstalledUI(const std::string& app_id) override;
   void SetSkipPostInstallUI(bool skip_ui) override;

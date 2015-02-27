@@ -40,9 +40,9 @@ void KioskExternalUpdateValidator::Start() {
 }
 
 void KioskExternalUpdateValidator::OnUnpackFailure(
-    const base::string16& error_message) {
+    const extensions::CrxInstallError& error) {
   LOG(ERROR) << "Failed to unpack external kiosk crx file: "
-             << crx_file_.extension_id << " " << error_message;
+             << crx_file_.extension_id << " " << error.message();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(

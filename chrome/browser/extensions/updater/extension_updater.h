@@ -141,12 +141,15 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     FetchedCRXFile();
     FetchedCRXFile(const CRXFileInfo& file,
                    bool file_ownership_passed,
-                   const std::set<int>& request_ids);
+                   const std::set<int>& request_ids,
+                   const InstallCallback& callback);
     ~FetchedCRXFile();
 
     CRXFileInfo info;
+    GURL download_url;
     bool file_ownership_passed;
     std::set<int> request_ids;
+    InstallCallback callback;
   };
 
   struct InProgressCheck {
@@ -201,7 +204,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                                    const GURL& download_url,
                                    const std::string& version,
                                    const PingResult& ping,
-                                   const std::set<int>& request_id) override;
+                                   const std::set<int>& request_id,
+                                   const InstallCallback& callback) override;
   bool GetPingDataForExtension(const std::string& id,
                                ManifestFetchData::PingData* ping_data) override;
   std::string GetUpdateUrlData(const std::string& id) override;

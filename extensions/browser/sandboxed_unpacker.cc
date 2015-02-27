@@ -220,7 +220,7 @@ SandboxedUnpacker::SandboxedUnpacker(
     const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
     : crx_path_(file.path),
-      package_hash_(file.expected_hash),
+      package_hash_(base::StringToLowerASCII(file.expected_hash)),
       check_crx_hash_(false),
       client_(client),
       extensions_dir_(extensions_dir),
@@ -428,13 +428,14 @@ bool SandboxedUnpacker::FinalizeHash(scoped_ptr<crypto::SecureHash>& hash) {
   if (hash) {
     uint8 output[crypto::kSHA256Length];
     hash->Finish(output, sizeof(output));
-    bool result = (base::StringToLowerASCII(base::HexEncode(
-                       output, sizeof(output))) == package_hash_);
+    std::string real_hash =
+        base::StringToLowerASCII(base::HexEncode(output, sizeof(output)));
+    bool result = (real_hash == package_hash_);
     UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", result);
     if (!result && check_crx_hash_) {
       // Package hash verification failed
-      std::string name = crx_path_.BaseName().AsUTF8Unsafe();
-      LOG(ERROR) << "Hash check failed for extension: " << name;
+      LOG(ERROR) << "Hash check failed for extension: " << extension_id_
+                 << ", expected " << package_hash_ << ", got " << real_hash;
       ReportFailure(CRX_HASH_VERIFICATION_FAILED,
                     l10n_util::GetStringFUTF16(
                         IDS_EXTENSION_PACKAGE_ERROR_CODE,
@@ -593,17 +594,13 @@ bool SandboxedUnpacker::ValidateSignature() {
     return false;
   }
 
-  if (!FinalizeHash(hash)) {
-    return false;
-  }
-
   std::string public_key =
       std::string(reinterpret_cast<char*>(&key.front()), key.size());
   base::Base64Encode(public_key, &public_key_);
 
   extension_id_ = crx_file::id_util::GenerateId(public_key);
 
-  return true;
+  return FinalizeHash(hash);
 }
 
 void SandboxedUnpacker::ReportFailure(FailureReason reason,
@@ -613,7 +610,13 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
                       base::TimeTicks::Now() - unpack_start_time_);
   Cleanup();
-  client_->OnUnpackFailure(error);
+
+  CrxInstallError error_info(reason == CRX_HASH_VERIFICATION_FAILED
+                                 ? CrxInstallError::ERROR_HASH_MISMATCH
+                                 : CrxInstallError::ERROR_OTHER,
+                             error);
+
+  client_->OnUnpackFailure(error_info);
 }
 
 void SandboxedUnpacker::ReportSuccess(

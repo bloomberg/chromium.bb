@@ -96,7 +96,8 @@ class ExternalCache : public content::NotificationObserver,
                                    const GURL& download_url,
                                    const std::string& version,
                                    const PingResult& ping_result,
-                                   const std::set<int>& request_ids) override;
+                                   const std::set<int>& request_ids,
+                                   const InstallCallback& callback) override;
 
   bool IsExtensionPending(const std::string& id) override;
 

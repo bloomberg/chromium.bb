@@ -365,7 +365,7 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 
   void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}
 
-  void OnInstallFailure(const extensions::CrxInstallerError& error) override {}
+  void OnInstallFailure(const extensions::CrxInstallError& error) override {}
 };
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {

@@ -35,6 +35,7 @@ void ExtensionCacheFake::AllowCaching(const std::string& id) {
 }
 
 bool ExtensionCacheFake::GetExtension(const std::string& id,
+                                      const std::string& expected_hash,
                                       base::FilePath* file_path,
                                       std::string* version) {
   Map::iterator it = cache_.find(id);
@@ -50,6 +51,7 @@ bool ExtensionCacheFake::GetExtension(const std::string& id,
 }
 
 void ExtensionCacheFake::PutExtension(const std::string& id,
+                                      const std::string& expected_hash,
                                       const base::FilePath& file_path,
                                       const std::string& version,
                                       const PutExtensionCallback& callback) {

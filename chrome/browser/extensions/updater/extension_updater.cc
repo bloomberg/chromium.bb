@@ -191,10 +191,12 @@ ExtensionUpdater::CheckParams::~CheckParams() {}
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
     const CRXFileInfo& file,
     bool file_ownership_passed,
-    const std::set<int>& request_ids)
+    const std::set<int>& request_ids,
+    const InstallCallback& callback)
     : info(file),
       file_ownership_passed(file_ownership_passed),
-      request_ids(request_ids) {
+      request_ids(request_ids),
+      callback(callback) {
 }
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
@@ -596,13 +598,14 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
     const GURL& download_url,
     const std::string& version,
     const PingResult& ping,
-    const std::set<int>& request_ids) {
+    const std::set<int>& request_ids,
+    const InstallCallback& callback) {
   DCHECK(alive_);
   UpdatePingData(file.extension_id, ping);
 
   VLOG(2) << download_url << " written to " << file.path.value();
 
-  FetchedCRXFile fetched(file, file_ownership_passed, request_ids);
+  FetchedCRXFile fetched(file, file_ownership_passed, request_ids, callback);
   fetched_crx_files_.push(fetched);
 
   // MaybeInstallCRXFile() removes extensions from |in_progress_ids_| after
@@ -733,12 +736,29 @@ void ExtensionUpdater::Observe(int type,
   registrar_.Remove(this, extensions::NOTIFICATION_CRX_INSTALLER_DONE, source);
   crx_install_is_running_ = false;
 
+  // If installing this file didn't succeed, we may need to re-download it.
+  const Extension* extension = content::Details<const Extension>(details).ptr();
+  extensions::CrxInstaller* installer =
+      content::Source<extensions::CrxInstaller>(source).ptr();
   const FetchedCRXFile& crx_file = current_crx_file_;
-  for (std::set<int>::const_iterator it = crx_file.request_ids.begin();
-      it != crx_file.request_ids.end(); ++it) {
-    InProgressCheck& request = requests_in_progress_[*it];
-    request.in_progress_ids_.remove(crx_file.info.extension_id);
-    NotifyIfFinished(*it);
+  if (!extension && installer->hash_check_failed() &&
+      !crx_file.callback.is_null()) {
+    // If extension downloader asked us to notify it about failed installations,
+    // it will resume a pending download from the manifest data it has already
+    // fetched and call us again with the same request_id's (with either
+    // OnExtensionDownloadFailed or OnExtensionDownloadFinished). For that
+    // reason we don't notify finished requests yet.
+    crx_file.callback.Run(true);
+  } else {
+    for (std::set<int>::const_iterator it = crx_file.request_ids.begin();
+         it != crx_file.request_ids.end(); ++it) {
+      InProgressCheck& request = requests_in_progress_[*it];
+      request.in_progress_ids_.remove(crx_file.info.extension_id);
+      NotifyIfFinished(*it);
+    }
+    if (!crx_file.callback.is_null()) {
+      crx_file.callback.Run(false);
+    }
   }
 
   // If any files are available to update, start one.

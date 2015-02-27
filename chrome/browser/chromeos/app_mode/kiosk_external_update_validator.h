@@ -50,7 +50,7 @@ class KioskExternalUpdateValidator
   ~KioskExternalUpdateValidator() override;
 
   // SandboxedUnpackerClient overrides.
-  void OnUnpackFailure(const base::string16& error_message) override;
+  void OnUnpackFailure(const extensions::CrxInstallError& error) override;
   void OnUnpackSuccess(const base::FilePath& temp_dir,
                        const base::FilePath& extension_dir,
                        const base::DictionaryValue* original_manifest,

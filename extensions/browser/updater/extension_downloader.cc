@@ -714,12 +714,14 @@ void ExtensionDownloader::FetchUpdatedExtension(
   } else {
     std::string version;
     if (extension_cache_ &&
-        extension_cache_->GetExtension(fetch_data->id, NULL, &version) &&
+        extension_cache_->GetExtension(fetch_data->id, fetch_data->package_hash,
+                                       NULL, &version) &&
         version == fetch_data->version) {
       base::FilePath crx_path;
       // Now get .crx file path and mark extension as used.
-      extension_cache_->GetExtension(fetch_data->id, &crx_path, &version);
-      NotifyDelegateDownloadFinished(fetch_data.Pass(), crx_path, false);
+      extension_cache_->GetExtension(fetch_data->id, fetch_data->package_hash,
+                                     &crx_path, &version);
+      NotifyDelegateDownloadFinished(fetch_data.Pass(), true, crx_path, false);
     } else {
       extensions_queue_.ScheduleRequest(fetch_data.Pass());
     }
@@ -728,13 +730,34 @@ void ExtensionDownloader::FetchUpdatedExtension(
 
 void ExtensionDownloader::NotifyDelegateDownloadFinished(
     scoped_ptr<ExtensionFetch> fetch_data,
+    bool from_cache,
     const base::FilePath& crx_path,
     bool file_ownership_passed) {
+  // Dereference required params before passing a scoped_ptr.
+  const std::string& id = fetch_data->id;
+  const std::string& package_hash = fetch_data->package_hash;
+  const GURL& url = fetch_data->url;
+  const std::string& version = fetch_data->version;
+  const std::set<int>& request_ids = fetch_data->request_ids;
   delegate_->OnExtensionDownloadFinished(
-      CRXFileInfo(fetch_data->id, crx_path, fetch_data->package_hash),
-      file_ownership_passed, fetch_data->url, fetch_data->version,
-      ping_results_[fetch_data->id], fetch_data->request_ids);
+      CRXFileInfo(id, crx_path, package_hash), file_ownership_passed, url,
+      version, ping_results_[id], request_ids,
+      from_cache ? base::Bind(&ExtensionDownloader::CacheInstallDone,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(&fetch_data))
+                 : ExtensionDownloaderDelegate::InstallCallback());
+  if (!from_cache)
+    ping_results_.erase(id);
+}
+
+void ExtensionDownloader::CacheInstallDone(
+    scoped_ptr<ExtensionFetch> fetch_data,
+    bool should_download) {
   ping_results_.erase(fetch_data->id);
+  if (should_download) {
+    // Resume download from cached manifest data.
+    extensions_queue_.ScheduleRequest(fetch_data.Pass());
+  }
 }
 
 void ExtensionDownloader::CreateExtensionFetcher() {
@@ -802,15 +825,14 @@ void ExtensionDownloader::OnCRXFetchComplete(
         extensions_queue_.reset_active_request();
     if (extension_cache_) {
       const std::string& version = fetch_data->version;
+      const std::string& expected_hash = fetch_data->package_hash;
       extension_cache_->PutExtension(
-          id,
-          crx_path,
-          version,
+          id, expected_hash, crx_path, version,
           base::Bind(&ExtensionDownloader::NotifyDelegateDownloadFinished,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&fetch_data)));
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&fetch_data),
+                     false));
     } else {
-      NotifyDelegateDownloadFinished(fetch_data.Pass(), crx_path, true);
+      NotifyDelegateDownloadFinished(fetch_data.Pass(), false, crx_path, true);
     }
   } else if (IterateFetchCredentialsAfterFailure(
                  &active_request, status, response_code)) {

@@ -58,11 +58,14 @@ void UpdateService::OnExtensionDownloadFinished(
     const GURL& download_url,
     const std::string& version,
     const PingResult& ping,
-    const std::set<int>& request_id) {
+    const std::set<int>& request_id,
+    const InstallCallback& install_callback) {
   // TODO(rockot): Actually unpack and install the CRX.
   auto callback = download_callback_;
   download_callback_.Reset();
   callback.Run(true);
+  if (!install_callback.is_null())
+    install_callback.Run(true);
 }
 
 bool UpdateService::IsExtensionPending(const std::string& id) {

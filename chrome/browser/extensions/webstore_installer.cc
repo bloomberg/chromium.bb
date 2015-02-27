@@ -49,7 +49,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/install/crx_installer_error.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
@@ -364,8 +364,8 @@ void WebstoreInstaller::Observe(int type,
 
       // TODO(rdevlin.cronin): Continue removing std::string errors and
       // replacing with base::string16. See crbug.com/71980.
-      const extensions::CrxInstallerError* error =
-          content::Details<const extensions::CrxInstallerError>(details).ptr();
+      const extensions::CrxInstallError* error =
+          content::Details<const extensions::CrxInstallError>(details).ptr();
       const std::string utf8_error = base::UTF16ToUTF8(error->message());
       crx_installer_ = NULL;
       // ReportFailure releases a reference to this object so it must be the

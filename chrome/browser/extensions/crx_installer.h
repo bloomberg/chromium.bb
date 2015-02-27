@@ -34,7 +34,7 @@ class SequencedTaskRunner;
 }
 
 namespace extensions {
-class CrxInstallerError;
+class CrxInstallError;
 class ExtensionUpdaterTest;
 class RequirementsChecker;
 
@@ -125,6 +125,13 @@ class CrxInstaller
 
   const std::string& expected_id() const { return expected_id_; }
   void set_expected_id(const std::string& val) { expected_id_ = val; }
+
+  // Expected SHA256 hash sum for the package.
+  const std::string& expected_hash() const { return expected_hash_; }
+  void set_expected_hash(const std::string& val) { expected_hash_ = val; }
+
+  bool hash_check_failed() const { return hash_check_failed_; }
+  void set_hash_check_failed(bool val) { hash_check_failed_ = val; }
 
   void set_expected_version(const Version& val) {
     expected_version_.reset(new Version(val));
@@ -219,10 +226,10 @@ class CrxInstaller
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
-  CrxInstallerError AllowInstall(const Extension* extension);
+  CrxInstallError AllowInstall(const Extension* extension);
 
   // SandboxedUnpackerClient
-  void OnUnpackFailure(const base::string16& error_message) override;
+  void OnUnpackFailure(const CrxInstallError& error) override;
   void OnUnpackSuccess(const base::FilePath& temp_dir,
                        const base::FilePath& extension_dir,
                        const base::DictionaryValue* original_manifest,
@@ -252,8 +259,8 @@ class CrxInstaller
   void ReloadExtensionAfterInstall(const base::FilePath& version_dir);
 
   // Result reporting.
-  void ReportFailureFromFileThread(const CrxInstallerError& error);
-  void ReportFailureFromUIThread(const CrxInstallerError& error);
+  void ReportFailureFromFileThread(const CrxInstallError& error);
+  void ReportFailureFromUIThread(const CrxInstallError& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
   void NotifyCrxInstallBegin();
@@ -299,6 +306,12 @@ class CrxInstaller
   // For updates, external and webstore installs we have an ID we're expecting
   // the extension to contain.
   std::string expected_id_;
+
+  // An expected hash sum for the .crx file.
+  std::string expected_hash_;
+
+  // True if installation failed due to a hash sum mismatch.
+  bool hash_check_failed_;
 
   // A parsed copy of the expected manifest, before any transformations like
   // localization have taken place. If |approved_| is true, then the

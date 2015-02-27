@@ -20,9 +20,11 @@ class NullExtensionCache : public ExtensionCache {
   void Shutdown(const base::Closure& callback) override;
   void AllowCaching(const std::string& id) override;
   bool GetExtension(const std::string& id,
+                    const std::string& expected_hash,
                     base::FilePath* file_path,
                     std::string* version) override;
   void PutExtension(const std::string& id,
+                    const std::string& expected_hash,
                     const base::FilePath& file_path,
                     const std::string& version,
                     const PutExtensionCallback& callback) override;

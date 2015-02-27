@@ -512,6 +512,7 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::Create(this, scoped_ptr<ExtensionInstallPrompt>()));
   installer->set_expected_id(id);
+  installer->set_expected_hash(file.expected_hash);
   int creation_flags = Extension::NO_FLAGS;
   if (pending_extension_info) {
     installer->set_install_source(pending_extension_info->install_source());

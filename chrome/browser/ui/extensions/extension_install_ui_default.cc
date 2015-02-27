@@ -34,7 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/install/crx_installer_error.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,10 +76,10 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates an error infobar and delegate and adds the infobar to
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
-                     const extensions::CrxInstallerError& error);
+                     const extensions::CrxInstallError& error);
 
  private:
-  explicit ErrorInfoBarDelegate(const extensions::CrxInstallerError& error);
+  explicit ErrorInfoBarDelegate(const extensions::CrxInstallError& error);
   ~ErrorInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
@@ -88,22 +88,21 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetLinkText() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
-  extensions::CrxInstallerError error_;
+  extensions::CrxInstallError error_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorInfoBarDelegate);
 };
 
 // static
 void ErrorInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                  const extensions::CrxInstallerError& error) {
+                                  const extensions::CrxInstallError& error) {
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new ErrorInfoBarDelegate(error))));
 }
 
 ErrorInfoBarDelegate::ErrorInfoBarDelegate(
-    const extensions::CrxInstallerError& error)
-    : ConfirmInfoBarDelegate(),
-      error_(error) {
+    const extensions::CrxInstallError& error)
+    : ConfirmInfoBarDelegate(), error_(error) {
 }
 
 ErrorInfoBarDelegate::~ErrorInfoBarDelegate() {
@@ -118,8 +117,9 @@ int ErrorInfoBarDelegate::GetButtons() const {
 }
 
 base::string16 ErrorInfoBarDelegate::GetLinkText() const {
-  return (error_.type() == extensions::CrxInstallerError::ERROR_OFF_STORE) ?
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE) : base::string16();
+  return (error_.type() == extensions::CrxInstallError::ERROR_OFF_STORE)
+             ? l10n_util::GetStringUTF16(IDS_LEARN_MORE)
+             : base::string16();
 }
 
 bool ErrorInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
@@ -203,7 +203,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 }
 
 void ExtensionInstallUIDefault::OnInstallFailure(
-    const extensions::CrxInstallerError& error) {
+    const extensions::CrxInstallError& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (disable_failure_ui_for_tests() || skip_post_install_ui_)
     return;

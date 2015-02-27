@@ -62,6 +62,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
+#include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -117,7 +118,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/install/crx_installer_error.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
@@ -369,8 +370,9 @@ bool DoesInstallSuccessReferToId(const std::string& id,
 bool DoesInstallFailureReferToId(const std::string& id,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  return content::Details<const extensions::CrxInstallerError>(details)->
-      message().find(base::UTF8ToUTF16(id)) != base::string16::npos;
+  return content::Details<const extensions::CrxInstallError>(details)
+             ->message()
+             .find(base::UTF8ToUTF16(id)) != base::string16::npos;
 }
 
 scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
@@ -634,20 +636,18 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         base::HexEncode(account_id.c_str(), account_id.size()));
   }
 
-  base::FilePath GetCacheCRXFilePath(const std::string& account_id,
-                                     const std::string& id,
+  base::FilePath GetCacheCRXFilePath(const std::string& id,
                                      const std::string& version,
                                      const base::FilePath& path) {
     return path.Append(
-        base::StringPrintf("%s-%s.crx", id.c_str(), version.c_str()));
+        extensions::LocalExtensionCache::ExtensionFileName(id, version, ""));
   }
 
   base::FilePath GetCacheCRXFile(const std::string& account_id,
                                  const std::string& id,
                                  const std::string& version) {
     return GetCacheCRXFilePath(
-        account_id, id, version,
-        GetExtensionCacheDirectoryForAccountID(account_id));
+        id, version, GetExtensionCacheDirectoryForAccountID(account_id));
   }
 
   // Returns a profile which can be used for testing.
@@ -1219,20 +1219,22 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionCacheImplTest) {
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath temp_path = temp_dir.path();
   EXPECT_TRUE(base::CreateDirectory(temp_path));
-  const base::FilePath temp_file = GetCacheCRXFilePath(
-      kAccountId1, kGoodExtensionID, kGoodExtensionVersion, temp_path);
+  const base::FilePath temp_file =
+      GetCacheCRXFilePath(kGoodExtensionID, kGoodExtensionVersion, temp_path);
   base::FilePath test_dir;
+  std::string hash;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath), temp_file));
   cache_impl.AllowCaching(kGoodExtensionID);
   run_loop.reset(new base::RunLoop);
-  cache_impl.PutExtension(kGoodExtensionID, temp_file, kGoodExtensionVersion,
+  cache_impl.PutExtension(kGoodExtensionID, hash, temp_file,
+                          kGoodExtensionVersion,
                           base::Bind(&OnPutExtension, &run_loop));
   run_loop->Run();
 
   // Verify that the extension file was added to the local cache.
-  const base::FilePath local_file = GetCacheCRXFilePath(
-      kAccountId1, kGoodExtensionID, kGoodExtensionVersion, impl_path);
+  const base::FilePath local_file =
+      GetCacheCRXFilePath(kGoodExtensionID, kGoodExtensionVersion, impl_path);
   EXPECT_TRUE(PathExists(local_file));
 
   // Specify policy to force-install the hosted app and the extension.
@@ -1269,7 +1271,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionCacheImplTest) {
   extension_observer.Wait();
 
   // Verify that the extension was kept in the local cache.
-  EXPECT_TRUE(cache_impl.GetExtension(kGoodExtensionID, NULL, NULL));
+  EXPECT_TRUE(cache_impl.GetExtension(kGoodExtensionID, hash, NULL, NULL));
 
   // Verify that the extension file was kept in the local cache.
   EXPECT_TRUE(PathExists(local_file));

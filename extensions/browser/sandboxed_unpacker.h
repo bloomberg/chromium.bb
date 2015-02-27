@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "extensions/browser/crx_file_info.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/manifest.h"
 
 class SkBitmap;
@@ -49,7 +50,7 @@ class SandboxedUnpackerClient
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
                                const SkBitmap& install_icon) = 0;
-  virtual void OnUnpackFailure(const base::string16& error) = 0;
+  virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SandboxedUnpackerClient>;
@@ -215,7 +216,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // The path to the CRX to unpack.
   base::FilePath crx_path_;
 
-  // The package hash that was reported from the Web Store.
+  // The package SHA256 hash sum that was reported from the Web Store.
   std::string package_hash_;
 
   // Whether we need to check the .crx hash sum.

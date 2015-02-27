@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
@@ -59,6 +60,10 @@ class ExtensionDownloaderDelegate {
     base::Time day_start;
   };
 
+  // A callback that is called to indicate if ExtensionDownloader should ignore
+  // the cached entry and download a new .crx file.
+  typedef base::Callback<void(bool should_download)> InstallCallback;
+
   // One of the following 3 methods is always invoked for a given extension
   // id, if AddExtension() or AddPendingExtension() returned true when that
   // extension was added to the ExtensionDownloader.
@@ -81,14 +86,25 @@ class ExtensionDownloaderDelegate {
 
   // Invoked if the extension had an update available and its crx was
   // successfully downloaded to |path|. |ownership_passed| is true if delegate
-  // should get ownership of the file.
-  virtual void OnExtensionDownloadFinished(
-      const CRXFileInfo& file,
-      bool file_ownership_passed,
-      const GURL& download_url,
-      const std::string& version,
-      const PingResult& ping_result,
-      const std::set<int>& request_ids) = 0;
+  // should get ownership of the file. The downloader may be able to get the
+  // .crx file both from a locally cached version or by issuing a network
+  // request. If the install attempt by the delegate fails and the source was
+  // the cache, the cached version may be corrupt (or simply not the desired
+  // one), and we'd like to try downloading the .crx from the network and have
+  // the delegate attempt install again. So if the |callback| parameter is
+  // non-null (if the file was taken from the cache), on install failure the
+  // downloader should be notified to try download from network by calling the
+  // callback with true; on successful install it should be called with false so
+  // that downloader could release all downloaded metadata. After downloading
+  // the delegate will be once again called with OnExtensionDownloadFinished (or
+  // OnExtensionDownloadFailed) called again with the same |request_ids|.
+  virtual void OnExtensionDownloadFinished(const CRXFileInfo& file,
+                                           bool file_ownership_passed,
+                                           const GURL& download_url,
+                                           const std::string& version,
+                                           const PingResult& ping_result,
+                                           const std::set<int>& request_ids,
+                                           const InstallCallback& callback) = 0;
 
   // The remaining methods are used by the ExtensionDownloader to retrieve
   // information about extensions from the delegate.
