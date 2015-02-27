@@ -1014,4 +1014,19 @@ void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     suppressInvalidations(false);
 }
 
+void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState)
+{
+    if (!m_page)
+        return;
+
+    // FIXME: This is not correct, since Show and Hide messages for a frame's Widget do not necessarily
+    // correspond to Page visibility, but is necessary until we properly sort out OOPIF visibility.
+    m_page->setVisibilityState(static_cast<PageVisibilityState>(visibilityState), isInitialState);
+
+    if (m_layerTreeView) {
+        bool visible = visibilityState == WebPageVisibilityStateVisible;
+        m_layerTreeView->setVisible(visible);
+    }
+}
+
 } // namespace blink

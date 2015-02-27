@@ -134,6 +134,8 @@ public:
     void suppressInvalidations(bool enable);
     void setRootGraphicsLayer(GraphicsLayer*);
 
+    void setVisibilityState(WebPageVisibilityState, bool) override;
+
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();
 

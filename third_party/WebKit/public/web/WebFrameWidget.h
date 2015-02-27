@@ -32,6 +32,7 @@
 #define WebFrameWidget_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebPageVisibilityState.h"
 #include "public/web/WebWidget.h"
 
 namespace blink {
@@ -42,6 +43,11 @@ class WebWidgetClient;
 class WebFrameWidget : public WebWidget {
 public:
     BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebLocalFrame*);
+
+    // We still track page-level visibility, but additionally we need to notify a WebFrameWidget
+    // when its owning RenderWidget receives a Show or Hide directive, so that it knows whether
+    // it needs to draw or not.
+    virtual void setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState) { }
 };
 
 } // namespace blink
