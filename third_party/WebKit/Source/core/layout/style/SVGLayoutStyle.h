@@ -41,7 +41,7 @@ public:
 
     bool inheritedNotEqual(const SVGLayoutStyle*) const;
     void inheritFrom(const SVGLayoutStyle*);
-    void copyNonInheritedFrom(const SVGLayoutStyle*);
+    void copyNonInheritedFromCached(const SVGLayoutStyle*);
 
     StyleDifference diff(const SVGLayoutStyle*) const;
 

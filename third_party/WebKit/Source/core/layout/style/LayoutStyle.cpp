@@ -188,13 +188,14 @@ StyleRecalcChange LayoutStyle::stylePropagationDiff(const LayoutStyle* oldStyle,
         || oldStyle->alignItems() != newStyle->alignItems())
         return Reattach;
 
-    if (oldStyle->inheritedNotEqual(*newStyle)
-        || oldStyle->hasExplicitlyInheritedProperties()
-        || newStyle->hasExplicitlyInheritedProperties())
+    if (oldStyle->inheritedNotEqual(*newStyle))
         return Inherit;
 
     if (*oldStyle == *newStyle)
         return diffPseudoStyles(*oldStyle, *newStyle);
+
+    if (oldStyle->hasExplicitlyInheritedProperties())
+        return Inherit;
 
     return NoInherit;
 }
@@ -230,14 +231,16 @@ void LayoutStyle::inheritFrom(const LayoutStyle& inheritParent, IsAtShadowBounda
         m_svgStyle.access()->inheritFrom(inheritParent.m_svgStyle.get());
 }
 
-void LayoutStyle::copyNonInheritedFrom(const LayoutStyle& other)
+void LayoutStyle::copyNonInheritedFromCached(const LayoutStyle& other)
 {
     m_box = other.m_box;
     visual = other.visual;
     m_background = other.m_background;
     surround = other.surround;
     rareNonInheritedData = other.rareNonInheritedData;
+
     // The flags are copied one-by-one because noninherited_flags contains a bunch of stuff other than real style data.
+    // See comments for each skipped flag below.
     noninherited_flags.effectiveDisplay = other.noninherited_flags.effectiveDisplay;
     noninherited_flags.originalDisplay = other.noninherited_flags.originalDisplay;
     noninherited_flags.overflowX = other.noninherited_flags.overflowX;
@@ -248,13 +251,42 @@ void LayoutStyle::copyNonInheritedFrom(const LayoutStyle& other)
     noninherited_flags.floating = other.noninherited_flags.floating;
     noninherited_flags.tableLayout = other.noninherited_flags.tableLayout;
     noninherited_flags.unicodeBidi = other.noninherited_flags.unicodeBidi;
+    noninherited_flags.hasViewportUnits = other.noninherited_flags.hasViewportUnits;
     noninherited_flags.pageBreakBefore = other.noninherited_flags.pageBreakBefore;
     noninherited_flags.pageBreakAfter = other.noninherited_flags.pageBreakAfter;
     noninherited_flags.pageBreakInside = other.noninherited_flags.pageBreakInside;
-    noninherited_flags.explicitInheritance = other.noninherited_flags.explicitInheritance;
-    noninherited_flags.hasViewportUnits = other.noninherited_flags.hasViewportUnits;
+
+    // Correctly set during selector matching:
+    // noninherited_flags.styleType
+    // noninherited_flags.pseudoBits
+
+    // Set correctly while computing style for children:
+    // noninherited_flags.explicitInheritance
+
+    // unique() styles are not cacheable.
+    ASSERT(!other.noninherited_flags.unique);
+
+    // The following flags are set during matching before we decide that we get a
+    // match in the MatchedPropertiesCache which in turn calls this method. The
+    // reason why we don't copy these flags is that they're already correctly set
+    // and that they may differ between elements which have the same set of matched
+    // properties. For instance, given the rule:
+    //
+    // :-webkit-any(:hover, :focus) { background-color: green }"
+    //
+    // A hovered element, and a focused element may use the same cached matched
+    // properties here, but the affectedBy flags will be set differently based on
+    // the matching order of the :-webkit-any components.
+    //
+    // noninherited_flags.emptyState
+    // noninherited_flags.affectedByFocus
+    // noninherited_flags.affectedByHover
+    // noninherited_flags.affectedByActive
+    // noninherited_flags.affectedByDrag
+    // noninherited_flags.isLink
+
     if (m_svgStyle != other.m_svgStyle)
-        m_svgStyle.access()->copyNonInheritedFrom(other.m_svgStyle.get());
+        m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
     ASSERT(zoom() == initialZoom());
 }
 

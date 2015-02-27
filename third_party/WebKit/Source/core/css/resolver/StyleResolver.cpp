@@ -1338,7 +1338,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
-        state.style()->copyNonInheritedFrom(*cachedMatchedProperties->layoutStyle);
+        state.style()->copyNonInheritedFromCached(*cachedMatchedProperties->layoutStyle);
         if (state.parentStyle()->inheritedDataShared(*cachedMatchedProperties->parentLayoutStyle) && !isAtShadowBoundary(element)
             && (!state.distributedToInsertionPoint() || state.style()->userModify() == READ_ONLY)) {
             INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheInheritedHit);

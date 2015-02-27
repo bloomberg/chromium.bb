@@ -206,6 +206,7 @@ protected:
 
 // don't inherit
     struct NonInheritedFlags {
+        // Compare computed styles, differences in other flags should not cause an inequality.
         bool operator==(const NonInheritedFlags& other) const
         {
             return effectiveDisplay == other.effectiveDisplay
@@ -217,20 +218,21 @@ protected:
                 && position == other.position
                 && floating == other.floating
                 && tableLayout == other.tableLayout
+                && unicodeBidi == other.unicodeBidi
+                // hasViewportUnits
                 && pageBreakBefore == other.pageBreakBefore
                 && pageBreakAfter == other.pageBreakAfter
-                && pageBreakInside == other.pageBreakInside
-                && styleType == other.styleType
-                && affectedByFocus == other.affectedByFocus
-                && affectedByHover == other.affectedByHover
-                && affectedByActive == other.affectedByActive
-                && affectedByDrag == other.affectedByDrag
-                && pseudoBits == other.pseudoBits
-                && unicodeBidi == other.unicodeBidi
-                && explicitInheritance == other.explicitInheritance
-                && unique == other.unique
-                && emptyState == other.emptyState
-                && isLink == other.isLink;
+                && pageBreakInside == other.pageBreakInside;
+                // styleType
+                // pseudoBits
+                // explicitInheritance
+                // unique
+                // emptyState
+                // affectedByFocus
+                // affectedByHover
+                // affectedByActive
+                // affectedByDrag
+                // isLink
         }
 
         bool operator!=(const NonInheritedFlags& other) const { return !(*this == other); }
@@ -269,7 +271,7 @@ protected:
         unsigned affectedByDrag : 1;
 
         unsigned isLink : 1;
-        // If you add more style bits here, you will also need to update LayoutStyle::copyNonInheritedFrom()
+        // If you add more style bits here, you will also need to update LayoutStyle::copyNonInheritedFromCached()
         // 62 bits
     } noninherited_flags;
 
@@ -351,7 +353,7 @@ public:
     };
 
     void inheritFrom(const LayoutStyle& inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
-    void copyNonInheritedFrom(const LayoutStyle&);
+    void copyNonInheritedFromCached(const LayoutStyle&);
 
     PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags.styleType); }
     void setStyleType(PseudoId styleType) { noninherited_flags.styleType = styleType; }

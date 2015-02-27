@@ -111,7 +111,7 @@ void SVGLayoutStyle::inheritFrom(const SVGLayoutStyle* svgInheritParent)
     svg_inherited_flags = svgInheritParent->svg_inherited_flags;
 }
 
-void SVGLayoutStyle::copyNonInheritedFrom(const SVGLayoutStyle* other)
+void SVGLayoutStyle::copyNonInheritedFromCached(const SVGLayoutStyle* other)
 {
     svg_noninherited_flags = other->svg_noninherited_flags;
     stops = other->stops;
