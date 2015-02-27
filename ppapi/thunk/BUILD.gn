@@ -35,7 +35,6 @@ source_set("thunk") {
     "ppb_file_io_api.h",
     "ppb_file_io_private_thunk.cc",
     "ppb_file_io_thunk.cc",
-    "ppb_file_mapping_thunk.cc",
     "ppb_file_ref_api.h",
     "ppb_file_ref_thunk.cc",
     "ppb_file_system_api.h",

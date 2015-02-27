@@ -27,7 +27,6 @@
         'ppb_console.h',
         'ppb_core.h',
         'ppb_file_io.h',
-        'ppb_file_mapping.h',
         'ppb_file_ref.h',
         'ppb_file_system.h',
         'ppb_fullscreen.h',

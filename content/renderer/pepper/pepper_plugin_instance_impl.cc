@@ -2596,7 +2596,6 @@ ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
   switch (id) {
     case ppapi::BROKER_SINGLETON_ID:
     case ppapi::BROWSER_FONT_SINGLETON_ID:
-    case ppapi::FILE_MAPPING_SINGLETON_ID:
     case ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
     case ppapi::FLASH_FILE_SINGLETON_ID:
     case ppapi::FLASH_FULLSCREEN_SINGLETON_ID:

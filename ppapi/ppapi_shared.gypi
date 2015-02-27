@@ -177,7 +177,6 @@
           'thunk/ppb_file_io_api.h',
           'thunk/ppb_file_io_private_thunk.cc',
           'thunk/ppb_file_io_thunk.cc',
-          'thunk/ppb_file_mapping_thunk.cc',
           'thunk/ppb_file_ref_api.h',
           'thunk/ppb_file_ref_thunk.cc',
           'thunk/ppb_file_system_api.h',

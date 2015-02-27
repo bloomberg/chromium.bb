@@ -692,16 +692,6 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTransitionalNonSfiTest,
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
-// PPB_FileMapping is only implemented on POSIX currently.
-// http://crbug.com/83774
-#if defined(OS_WIN)
-#define MAYBE_FileMapping DISABLED_FileMapping
-#else
-#define MAYBE_FileMapping FileMapping
-#endif
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileMapping)
-TEST_PPAPI_NACL(MAYBE_FileMapping)
-
 // FileRef tests.
 #define RUN_FILEREF_SUBTESTS_1 \
   RunTestViaHTTP( \

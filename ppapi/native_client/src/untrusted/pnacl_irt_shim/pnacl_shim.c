@@ -23,7 +23,6 @@
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
-#include "ppapi/c/ppb_file_mapping.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_graphics_2d.h"
@@ -103,7 +102,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Core_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileMapping_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_2;
@@ -517,25 +515,6 @@ static int32_t Pnacl_M25_PPB_FileIO_ReadToArray(PP_Resource file_io, int64_t off
 }
 
 /* End wrapper methods for PPB_FileIO_1_1 */
-
-/* Begin wrapper methods for PPB_FileMapping_0_1 */
-
-static int32_t Pnacl_M34_PPB_FileMapping_Map(PP_Instance instance, PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
-  return iface->Map(instance, file_io, length, map_protection, map_flags, offset, address, *callback);
-}
-
-static int32_t Pnacl_M34_PPB_FileMapping_Unmap(PP_Instance instance, const void* address, int64_t length, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
-  return iface->Unmap(instance, address, length, *callback);
-}
-
-static int64_t Pnacl_M34_PPB_FileMapping_GetMapPageSize(PP_Instance instance) {
-  const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
-  return iface->GetMapPageSize(instance);
-}
-
-/* End wrapper methods for PPB_FileMapping_0_1 */
 
 /* Begin wrapper methods for PPB_FileRef_1_0 */
 
@@ -4608,12 +4587,6 @@ static const struct PPB_FileIO_1_1 Pnacl_Wrappers_PPB_FileIO_1_1 = {
     .ReadToArray = (int32_t (*)(PP_Resource file_io, int64_t offset, int32_t max_read_length, struct PP_ArrayOutput* output, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_ReadToArray
 };
 
-static const struct PPB_FileMapping_0_1 Pnacl_Wrappers_PPB_FileMapping_0_1 = {
-    .Map = (int32_t (*)(PP_Instance instance, PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Map,
-    .Unmap = (int32_t (*)(PP_Instance instance, const void* address, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Unmap,
-    .GetMapPageSize = (int64_t (*)(PP_Instance instance))&Pnacl_M34_PPB_FileMapping_GetMapPageSize
-};
-
 static const struct PPB_FileRef_1_0 Pnacl_Wrappers_PPB_FileRef_1_0 = {
     .Create = (PP_Resource (*)(PP_Resource file_system, const char* path))&Pnacl_M14_PPB_FileRef_Create,
     .IsFileRef = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_FileRef_IsFileRef,
@@ -5782,12 +5755,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileMapping_0_1 = {
-  .iface_macro = PPB_FILEMAPPING_INTERFACE_0_1,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_FileMapping_0_1,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0 = {
   .iface_macro = PPB_FILEREF_INTERFACE_1_0,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_FileRef_1_0,
@@ -6420,7 +6387,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Core_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_1,
-  &Pnacl_WrapperInfo_PPB_FileMapping_0_1,
   &Pnacl_WrapperInfo_PPB_FileRef_1_0,
   &Pnacl_WrapperInfo_PPB_FileRef_1_1,
   &Pnacl_WrapperInfo_PPB_FileRef_1_2,

@@ -37,7 +37,6 @@
   F(PPB_Ext_CrxFileSystem_Private_API)  \
   F(PPB_FileChooser_API)                \
   F(PPB_FileIO_API)                     \
-  F(PPB_FileMapping_API)                \
   F(PPB_FileRef_API)                    \
   F(PPB_FileSystem_API)                 \
   F(PPB_Find_API)                       \
