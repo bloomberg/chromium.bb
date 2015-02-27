@@ -57,21 +57,16 @@ std::string JsonToString(const base::DictionaryValue* dict) {
   return json;
 }
 
-class MockOnDemandUpdater : public OnDemandUpdater {
- public:
-  MOCK_METHOD1(OnDemandUpdate,
-               ComponentUpdateService::Status(const std::string&));
-};
-
-class MockComponentUpdateService : public ComponentUpdateService {
+class MockComponentUpdateService : public ComponentUpdateService,
+                                   public OnDemandUpdater {
  public:
   MockComponentUpdateService(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-      : task_runner_(task_runner) {}
+      : task_runner_(task_runner), on_demand_update_called_(false) {}
 
   ~MockComponentUpdateService() override {}
 
-  MockOnDemandUpdater& on_demand_updater() { return on_demand_updater_; }
+  bool on_demand_update_called() const { return on_demand_update_called_; }
 
   const CrxComponent* registered_component() { return component_.get(); }
 
@@ -123,7 +118,7 @@ class MockComponentUpdateService : public ComponentUpdateService {
     return kOk;
   }
 
-  OnDemandUpdater& GetOnDemandUpdater() override { return on_demand_updater_; }
+  OnDemandUpdater& GetOnDemandUpdater() override { return *this; }
 
   void MaybeThrottle(const std::string& kCrxId,
                      const base::Closure& callback) override {
@@ -140,11 +135,24 @@ class MockComponentUpdateService : public ComponentUpdateService {
     return false;
   }
 
+  // OnDemandUpdater implementation:
+  Status OnDemandUpdate(const std::string& crx_id) override {
+    on_demand_update_called_ = true;
+
+    if (!component_) {
+      ADD_FAILURE() << "Trying to update unregistered component " << crx_id;
+      return kError;
+    }
+
+    EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
+    return kOk;
+  }
+
  private:
-  testing::StrictMock<MockOnDemandUpdater> on_demand_updater_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<CrxComponent> component_;
   base::Closure registration_callback_;
+  bool on_demand_update_called_;
 };
 
 class WhitelistLoadObserver {
@@ -272,10 +280,6 @@ TEST_F(SupervisedUserWhitelistInstallerTest, GetHashFromCrxId) {
 }
 
 TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
-  EXPECT_CALL(component_update_service_.on_demand_updater(),
-              OnDemandUpdate(kCrxId))
-      .WillOnce(testing::Return(ComponentUpdateService::kOk));
-
   base::RunLoop registration_run_loop;
   component_update_service_.set_registration_callback(
       registration_run_loop.QuitClosure());
@@ -285,6 +289,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   registration_run_loop.Run();
 
   ASSERT_NO_FATAL_FAILURE(CheckRegisteredComponent("0.0.0.0"));
+  EXPECT_TRUE(component_update_service_.on_demand_update_called());
 
   // Registering the same whitelist for another client should not do anything.
   installer_->RegisterWhitelist(kOtherClientId, kCrxId, kName);
@@ -330,6 +335,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
   RegisterExistingComponents();
 
   ASSERT_NO_FATAL_FAILURE(CheckRegisteredComponent(kVersion));
+  EXPECT_FALSE(component_update_service_.on_demand_update_called());
 
   // Check that unregistered whitelists have been removed:
   // The registered whitelist directory should still exist.
