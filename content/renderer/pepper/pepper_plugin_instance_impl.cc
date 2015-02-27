@@ -838,8 +838,15 @@ bool PepperPluginInstanceImpl::Initialize(
   argv_ = arg_values;
   scoped_ptr<const char * []> argn_array(StringVectorToArgArray(argn_));
   scoped_ptr<const char * []> argv_array(StringVectorToArgArray(argv_));
+  auto weak_this = weak_factory_.GetWeakPtr();
   bool success = PP_ToBool(instance_interface_->DidCreate(
       pp_instance(), argn_.size(), argn_array.get(), argv_array.get()));
+  if (!weak_this) {
+    // The plugin may do synchronous scripting during "DidCreate", so |this|
+    // may be deleted. In that case, return failure and don't touch any
+    // member variables.
+    return false;
+  }
   // If this is a plugin that hosts external plugins, we should delay messages
   // so that the child plugin that's created later will receive all the
   // messages. (E.g., NaCl trusted plugin starting a child NaCl app.)
