@@ -99,6 +99,36 @@ function getListTest() {
   });
 }
 
+function initDictionaryNotLoadedTest() {
+  // This test must come first because the dictionary is only lazy loaded after
+  // this call is made.
+  chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
+    chrome.test.assertTrue(words === undefined);
+    chrome.test.assertTrue(!!chrome.runtime.lastError);
+    chrome.test.succeed();
+  });
+}
+
+function initDictionaryTests() {
+  chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
+    chrome.test.assertTrue(words !== undefined);
+    chrome.test.assertTrue(words.length === 0);
+    chrome.test.succeed();
+  });
+}
+
+function addWordToDictionaryTest() {
+  chrome.inputMethodPrivate.addWordToDictionary('helloworld', function() {
+    chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
+      chrome.test.assertTrue(words.length === 1);
+      chrome.test.assertEq(words[0], 'helloworld');
+      chrome.test.succeed();
+    });
+  });
+}
+
 chrome.test.sendMessage('ready');
 chrome.test.runTests(
-    [initTests, setTest, getTest, observeTest, setInvalidTest, getListTest]);
+    [initTests, setTest, getTest, observeTest, setInvalidTest, getListTest,
+     initDictionaryNotLoadedTest, initDictionaryTests,
+     addWordToDictionaryTest]);

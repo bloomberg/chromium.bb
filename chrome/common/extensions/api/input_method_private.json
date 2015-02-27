@@ -93,7 +93,48 @@
             "name": "callback",
             "type": "function",
             "optional": true,
-            "description": "Callback which is called once the current input method is set or error occurs.",
+            "description": "Callback which is called once the current input method is set. If unsuccessful $(ref:runtime.lastError) is set.",
+            "parameters": []
+          }
+        ]
+      }, {
+        "name": "fetchAllDictionaryWords",
+        "type": "function",
+        "description": "Fetches a list of all the words currently in the dictionary.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "description": "Callback which is called once the list of dictionary words are ready.",
+            "parameters": [
+              {
+                "name": "words",
+                "type": "array",
+                "description": "List of dictionary words.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        ]
+      }, {
+        "name": "addWordToDictionary",
+        "type": "function",
+        "description": "Adds a single word to be stored in the dictionary.",
+        "parameters": [
+          {
+            "name": "word",
+            "type": "string",
+            "optional": false,
+            "description": "A new word to add to the dictionary."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Callback which is called once the word is added. If unsuccessful $(ref:runtime.lastError) is set.",
             "parameters": []
           }
         ]

@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chromeos/chromeos_switches.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -103,6 +105,57 @@ ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
 #endif
 }
 
+ExtensionFunction::ResponseAction FetchAllDictionaryWordsFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
+      context_);
+  if (!spellcheck) {
+    return RespondNow(Error("Spellcheck service not available."));
+  }
+  SpellcheckCustomDictionary* dictionary = spellcheck->GetCustomDictionary();
+  if (!dictionary->IsLoaded()) {
+    return RespondNow(Error("Custom dictionary not loaded yet."));
+  }
+
+  const chrome::spellcheck_common::WordSet& words = dictionary->GetWords();
+  base::ListValue* output = new base::ListValue();
+  for (auto it = words.begin(); it != words.end(); ++it) {
+    output->AppendString(*it);
+  }
+  return RespondNow(OneArgument(output));
+#endif
+}
+
+ExtensionFunction::ResponseAction AddWordToDictionaryFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  std::string word;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &word));
+  SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
+      context_);
+  if (!spellcheck) {
+    return RespondNow(Error("Spellcheck service not available."));
+  }
+  SpellcheckCustomDictionary* dictionary = spellcheck->GetCustomDictionary();
+  if (!dictionary->IsLoaded()) {
+    return RespondNow(Error("Custom dictionary not loaded yet."));
+  }
+
+  if (dictionary->AddWord(word))
+    return RespondNow(NoArguments());
+  // Invalid words:
+  // - Already in the dictionary.
+  // - Not a UTF8 string.
+  // - Longer than 99 bytes (MAX_CUSTOM_DICTIONARY_WORD_BYTES).
+  // - Leading/trailing whitespace.
+  // - Empty.
+  return RespondNow(Error("Unable to add invalid word to dictionary."));
+#endif
+}
+
 // static
 const char InputMethodAPI::kOnInputMethodChanged[] =
     "inputMethodPrivate.onChanged";
@@ -116,6 +169,8 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
   registry->RegisterFunction<GetCurrentInputMethodFunction>();
   registry->RegisterFunction<SetCurrentInputMethodFunction>();
   registry->RegisterFunction<GetInputMethodsFunction>();
+  registry->RegisterFunction<FetchAllDictionaryWordsFunction>();
+  registry->RegisterFunction<AddWordToDictionaryFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {
