@@ -19,7 +19,7 @@ remoting.xhr = remoting.xhr || {};
 /**
  * Takes an associative array of parameters and urlencodes it.
  *
- * @param {Object.<string,string>} paramHash The parameter key/value pairs.
+ * @param {Object<string,string>} paramHash The parameter key/value pairs.
  * @return {string} URLEncoded version of paramHash.
  */
 remoting.xhr.urlencodeParamHash = function(paramHash) {

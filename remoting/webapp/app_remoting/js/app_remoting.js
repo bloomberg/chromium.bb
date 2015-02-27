@@ -186,9 +186,12 @@ remoting.AppRemoting.prototype.init = function(connector) {
 
   /** @param {string} token */
   var getAppHost = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.post(
-        that.runApplicationUrl(), parseAppHostResponse, '', headers);
+    remoting.xhr.start({
+      method: 'POST',
+      url: that.runApplicationUrl(),
+      onDone: parseAppHostResponse,
+      oauthToken: token,
+    });
   };
 
   /** @param {remoting.Error} error */
@@ -198,7 +201,8 @@ remoting.AppRemoting.prototype.init = function(connector) {
 
   remoting.LoadingWindow.show();
 
-  remoting.identity.callWithToken(getAppHost, onError);
+  remoting.identity.getToken().then(getAppHost).
+      catch(remoting.Error.handler(onError));
 }
 
 /**

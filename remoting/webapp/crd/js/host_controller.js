@@ -278,9 +278,6 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
        publicKey: publicKey
     } };
 
-    var registerHostUrl =
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts';
-
     remoting.xhr.start({
       method: 'POST',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
