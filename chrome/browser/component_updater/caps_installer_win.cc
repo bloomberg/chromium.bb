@@ -115,7 +115,7 @@ void RegisterCAPSComponent(ComponentUpdateService* cus) {
       new CAPSInstallerTraits());
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(traits.Pass());
-  installer->Register(cus);
+  installer->Register(cus, base::Closure());
 }
 
 }  // namespace component_updater

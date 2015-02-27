@@ -186,7 +186,7 @@ void RegisterEVWhitelistComponent(ComponentUpdateService* cus,
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(traits.Pass());
-  installer->Register(cus);
+  installer->Register(cus, base::Closure());
 
   if (!content::BrowserThread::PostBlockingPoolTask(
           FROM_HERE,
