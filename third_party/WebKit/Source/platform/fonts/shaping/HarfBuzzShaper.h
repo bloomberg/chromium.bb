@@ -32,6 +32,7 @@
 #define HarfBuzzShaper_h
 
 #include "hb.h"
+#include "platform/fonts/shaping/Shaper.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
@@ -49,13 +50,8 @@ class Font;
 class GlyphBuffer;
 class SimpleFontData;
 
-class HarfBuzzShaper final {
+class HarfBuzzShaper final : public Shaper {
 public:
-    enum ForTextEmphasisOrNot {
-        NotForTextEmphasis,
-        ForTextEmphasis
-    };
-
     HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* = 0);
 
     void setDrawRange(int from, int to);
@@ -133,17 +129,12 @@ private:
     float adjustSpacing(HarfBuzzRun*, size_t glyphIndex, unsigned currentCharacterIndex, HarfBuzzRun* previousRun, float& offsetX, float& totalAdvance);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
-    const Font* m_font;
     OwnPtr<UChar[]> m_normalizedBuffer;
     unsigned m_normalizedBufferLength;
-    const TextRun& m_run;
 
     float m_wordSpacingAdjustment; // Delta adjustment (pixels) for each word break.
-    float m_expansion; // Pixels to be distributed over the line at word breaks.
     float m_letterSpacing; // Pixels to be added after each glyph.
-    float m_expansionPerOpportunity; // Pixels to be added to each expansion opportunity.
     unsigned m_expansionOpportunityCount;
-    bool m_isAfterExpansion;
 
     Vector<hb_feature_t, 4> m_features;
     Vector<OwnPtr<HarfBuzzRun>, 16> m_harfBuzzRuns;
@@ -151,11 +142,7 @@ private:
     int m_fromIndex;
     int m_toIndex;
 
-    ForTextEmphasisOrNot m_forTextEmphasis;
-
     float m_totalWidth;
-    FloatRect* m_glyphBoundingBox;
-    HashSet<const SimpleFontData*>* m_fallbackFonts;
 
     friend struct CachedShapingResults;
 };

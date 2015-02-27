@@ -377,20 +377,13 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
 }
 
 HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
-    : m_font(font)
+    : Shaper(font, run, forTextEmphasis, fallbackFonts, bounds)
     , m_normalizedBufferLength(0)
-    , m_run(run)
     , m_wordSpacingAdjustment(font->fontDescription().wordSpacing())
-    , m_expansion(0)
     , m_letterSpacing(font->fontDescription().letterSpacing())
-    , m_expansionPerOpportunity(0)
     , m_expansionOpportunityCount(0)
-    , m_isAfterExpansion(!run.allowsLeadingExpansion())
     , m_fromIndex(0)
     , m_toIndex(m_run.length())
-    , m_forTextEmphasis(forTextEmphasis)
-    , m_glyphBoundingBox(bounds)
-    , m_fallbackFonts(fallbackFonts)
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_run.length() + 1]);
     normalizeCharacters(m_run, m_run.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);

@@ -39,14 +39,9 @@ namespace blink {
 
 SimpleShaper::SimpleShaper(const Font* font, const TextRun& run,
     HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds, bool forTextEmphasis)
-    : m_font(font)
-    , m_run(run)
+    : Shaper(font, run, forTextEmphasis ? ForTextEmphasis : NotForTextEmphasis, fallbackFonts, bounds)
     , m_currentCharacter(0)
     , m_runWidthSoFar(0)
-    , m_isAfterExpansion(!run.allowsLeadingExpansion())
-    , m_fallbackFonts(fallbackFonts)
-    , m_glyphBoundingBox(bounds)
-    , m_forTextEmphasis(forTextEmphasis)
 {
     // If the padding is non-zero, count the number of spaces in the run
     // and divide that by the padding for per space addition.

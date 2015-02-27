@@ -24,6 +24,7 @@
 #define SimpleShaper_h
 
 #include "platform/PlatformExport.h"
+#include "platform/fonts/shaping/Shaper.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
@@ -38,7 +39,7 @@ class SimpleFontData;
 class TextRun;
 struct GlyphData;
 
-struct PLATFORM_EXPORT SimpleShaper {
+struct PLATFORM_EXPORT SimpleShaper : public Shaper {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* = 0, bool forTextEmphasis = false);
@@ -51,13 +52,8 @@ public:
     unsigned currentOffset() { return m_currentCharacter; }
 
 private:
-    const Font* m_font;
-    const TextRun& m_run;
     unsigned m_currentCharacter;
     float m_runWidthSoFar;
-    float m_expansion;
-    float m_expansionPerOpportunity;
-    bool m_isAfterExpansion;
 
     struct CharacterData {
         UChar32 character;
@@ -72,10 +68,6 @@ private:
 
     template <typename TextIterator>
     unsigned advanceInternal(TextIterator&, GlyphBuffer*);
-
-    HashSet<const SimpleFontData*>* m_fallbackFonts;
-    FloatRect* m_glyphBoundingBox;
-    bool m_forTextEmphasis : 1;
 };
 
 } // namespace blink

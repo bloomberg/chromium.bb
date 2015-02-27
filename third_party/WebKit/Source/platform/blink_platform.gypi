@@ -401,6 +401,8 @@
       'fonts/shaping/HarfBuzzFace.h',
       'fonts/shaping/HarfBuzzShaper.cpp',
       'fonts/shaping/HarfBuzzShaper.h',
+      'fonts/shaping/Shaper.cpp',
+      'fonts/shaping/Shaper.h',
       'fonts/shaping/SimpleShaper.cpp',
       'fonts/shaping/SimpleShaper.h',
       'fonts/skia/FontCacheSkia.cpp',
