@@ -291,7 +291,9 @@ void BrowserProcessImpl::StartTearDown() {
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // The policy providers managed by |browser_policy_connector_| need to shut
-  // down while the IO and FILE threads are still alive.
+  // down while the IO and FILE threads are still alive. The monitoring
+  // framework owned by |browser_policy_connector_| relies on |gcm_driver_|, so
+  // this must be shutdown before |gcm_driver_| below.
   if (browser_policy_connector_)
     browser_policy_connector_->Shutdown();
 #endif

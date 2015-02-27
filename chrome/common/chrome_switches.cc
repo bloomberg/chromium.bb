@@ -780,6 +780,10 @@ const char kMessageLoopHistogrammer[]       = "message-loop-histogrammer";
 // performance tests.
 const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
+// Allows setting a different destination ID for connection-monitoring GCM
+// messages. Useful when running against a non-prod management server.
+const char kMonitoringDestinationID[]       = "monitoring-destination-id";
+
 // Sets the base logging level for the net log. Log 0 logs the most data.
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";

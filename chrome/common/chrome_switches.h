@@ -222,6 +222,7 @@ extern const char kMarkNonSecureAsNonSecure[];
 extern const char kMediaCacheSize[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
+extern const char kMonitoringDestinationID[];
 extern const char kNetLogLevel[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoDisplayingInsecureContent[];

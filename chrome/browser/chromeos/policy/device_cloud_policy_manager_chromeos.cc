@@ -14,12 +14,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/common/pref_names.h"
@@ -186,6 +188,7 @@ bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
 
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   status_uploader_.reset();
+  heartbeat_scheduler_.reset();
   state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
 }
@@ -240,11 +243,19 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   attestation_policy_observer_.reset(
       new chromeos::attestation::AttestationPolicyObserver(client()));
 
-  // Enable device reporting for enterprise enrolled devices. We want to do this
-  // even if management is currently inactive, in case management is turned
-  // back on in a future policy fetch.
-  if (install_attributes->IsEnterpriseDevice())
+  // Enable device reporting and status monitoring for enterprise enrolled
+  // devices. We want to create these objects for enrolled devices, even if
+  // monitoring is currently inactive, in case monitoring is turned back on in
+  // a future policy fetch - the classes themselves track the current state of
+  // the monitoring settings and only perform monitoring if it is active.
+  if (install_attributes->IsEnterpriseDevice()) {
     CreateStatusUploader();
+    heartbeat_scheduler_.reset(
+        new HeartbeatScheduler(g_browser_process->gcm_driver(),
+                               install_attributes->GetDomain(),
+                               install_attributes->GetDeviceId(),
+                               task_runner_));
+  }
 
   NotifyConnected();
 }
@@ -263,6 +274,7 @@ void DeviceCloudPolicyManagerChromeOS::Unregister(
 
 void DeviceCloudPolicyManagerChromeOS::Disconnect() {
   status_uploader_.reset();
+  heartbeat_scheduler_.reset();
   core()->Disconnect();
 
   NotifyDisconnected();

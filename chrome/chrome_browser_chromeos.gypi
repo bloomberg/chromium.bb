@@ -806,6 +806,8 @@
         'browser/chromeos/policy/enrollment_status_chromeos.h',
         'browser/chromeos/policy/enterprise_install_attributes.cc',
         'browser/chromeos/policy/enterprise_install_attributes.h',
+        'browser/chromeos/policy/heartbeat_scheduler.cc',
+        'browser/chromeos/policy/heartbeat_scheduler.h',
         'browser/chromeos/policy/login_profile_policy_provider.cc',
         'browser/chromeos/policy/login_profile_policy_provider.h',
         'browser/chromeos/policy/network_configuration_updater.cc',

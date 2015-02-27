@@ -88,6 +88,33 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
+  // Helper routine to enable/disable all reporting settings in policy.
+  void SetHeartbeatSettings(bool enable_heartbeat, int frequency) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::DeviceHeartbeatSettingsProto* proto =
+        device_policy_.payload().mutable_device_heartbeat_settings();
+    proto->set_heartbeat_enabled(enable_heartbeat);
+    proto->set_heartbeat_frequency(frequency);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Helper routine to ensure all heartbeat policies have been correctly
+  // decoded.
+  void VerifyHeartbeatSettings(bool expected_enable_state,
+                               int expected_frequency) {
+
+    const base::FundamentalValue expected_enabled_value(expected_enable_state);
+    EXPECT_TRUE(base::Value::Equals(provider_->Get(kHeartbeatEnabled),
+                                    &expected_enabled_value));
+
+    const base::FundamentalValue expected_frequency_value(expected_frequency);
+    EXPECT_TRUE(base::Value::Equals(provider_->Get(kHeartbeatFrequency),
+                                    &expected_frequency_value));
+  }
+
   // Helper routine to ensure all reporting policies have been correctly
   // decoded.
   void VerifyReportingSettings(bool expected_enable_state,
@@ -403,6 +430,19 @@ TEST_F(DeviceSettingsProviderTest, DecodeReportingSettings) {
   // correctly.
   SetReportingSettings(false, status_frequency);
   VerifyReportingSettings(false, status_frequency);
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodeHeartbeatSettings) {
+  // Turn on heartbeats and verify that the heartbeat settings have been
+  // decoded correctly.
+  const int heartbeat_frequency = 50000;
+  SetHeartbeatSettings(true, heartbeat_frequency);
+  VerifyHeartbeatSettings(true, heartbeat_frequency);
+
+  // Turn off all reporting and verify that the settings are decoded
+  // correctly.
+  SetHeartbeatSettings(false, heartbeat_frequency);
+  VerifyHeartbeatSettings(false, heartbeat_frequency);
 }
 
 } // namespace chromeos

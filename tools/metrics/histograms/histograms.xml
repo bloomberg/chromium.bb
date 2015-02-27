@@ -47246,6 +47246,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="291"
       label="Report session statistics such as which app was run."/>
   <int value="292" label="How often the device status reports are uploaded."/>
+  <int value="293"
+      label="Send monitoring heartbeats to the management server."/>
+  <int value="294" label="How often the monitoring heartbeats are sent."/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

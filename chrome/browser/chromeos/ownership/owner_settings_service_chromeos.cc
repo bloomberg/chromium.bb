@@ -643,6 +643,8 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kAccountsPrefTransferSAMLCookies
     //   kDeviceAttestationEnabled
     //   kDeviceOwner
+    //   kHeartbeatEnabled
+    //   kHeartbeatFrequency
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode

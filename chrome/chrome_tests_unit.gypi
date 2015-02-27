@@ -1265,6 +1265,7 @@
       'browser/chromeos/policy/enterprise_install_attributes_unittest.cc',
       'browser/chromeos/policy/fake_affiliated_invalidation_service_provider.cc',
       'browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h',
+      'browser/chromeos/policy/heartbeat_scheduler_unittest.cc',
       'browser/chromeos/policy/network_configuration_updater_unittest.cc',
       'browser/chromeos/policy/recommendation_restorer_unittest.cc',
       'browser/chromeos/policy/server_backed_state_keys_broker_unittest.cc',

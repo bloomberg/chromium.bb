@@ -413,6 +413,27 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+
+  if (policy.has_device_heartbeat_settings()) {
+    const em::DeviceHeartbeatSettingsProto& container(
+        policy.device_heartbeat_settings());
+    if (container.has_heartbeat_enabled()) {
+      policies->Set(key::kHeartbeatEnabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    new base::FundamentalValue(
+                        container.heartbeat_enabled()),
+                    NULL);
+    }
+    if (container.has_heartbeat_frequency()) {
+      policies->Set(key::kHeartbeatFrequency,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    DecodeIntegerValue(
+                        container.heartbeat_frequency()).release(),
+                    NULL);
+    }
+  }
 }
 
 void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,

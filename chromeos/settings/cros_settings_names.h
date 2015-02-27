@@ -60,6 +60,9 @@ CHROMEOS_EXPORT extern const char kReportDeviceHardwareStatus[];
 CHROMEOS_EXPORT extern const char kReportDeviceSessionStatus[];
 CHROMEOS_EXPORT extern const char kReportUploadFrequency[];
 
+CHROMEOS_EXPORT extern const char kHeartbeatEnabled[];
+CHROMEOS_EXPORT extern const char kHeartbeatFrequency[];
+
 CHROMEOS_EXPORT extern const char kPolicyMissingMitigationMode[];
 
 CHROMEOS_EXPORT extern const char kAllowRedeemChromeOsRegistrationOffers[];

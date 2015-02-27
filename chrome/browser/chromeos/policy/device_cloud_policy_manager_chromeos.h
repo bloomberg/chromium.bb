@@ -35,6 +35,7 @@ namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
 class EnterpriseInstallAttributes;
+class HeartbeatScheduler;
 class StatusUploader;
 
 // CloudPolicyManager specialization for device policy on Chrome OS.
@@ -50,7 +51,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   using UnregisterCallback = base::Callback<void(bool)>;
 
-  // |task_runner| is the runner for policy refresh tasks.
+  // |task_runner| is the runner for policy refresh, heartbeat, and status
+  // upload tasks.
   DeviceCloudPolicyManagerChromeOS(
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -126,6 +128,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Helper object that handles updating the server with our current device
   // state.
   scoped_ptr<StatusUploader> status_uploader_;
+
+  // Helper object that handles sending heartbeats over the GCM channel to
+  // the server, to monitor connectivity.
+  scoped_ptr<HeartbeatScheduler> heartbeat_scheduler_;
 
   // The TaskRunner used to do device status uploads.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

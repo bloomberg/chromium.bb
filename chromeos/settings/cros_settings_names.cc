@@ -109,6 +109,13 @@ const char kReportDeviceSessionStatus[] =
 const char kReportUploadFrequency[] =
     "cros.device_status.report_upload_frequency";
 
+// Determines whether heartbeats should be sent to the policy service via
+// the GCM channel.
+const char kHeartbeatEnabled[] = "cros.device_status.heartbeat_enabled";
+
+// How frequently heartbeats are sent up, in milliseconds.
+const char kHeartbeatFrequency[] = "cros.device_status.heartbeat_frequency";
+
 // This policy should not appear in the protobuf ever but is used internally to
 // signal that we are running in a "safe-mode" for policy recovery.
 const char kPolicyMissingMitigationMode[] =
