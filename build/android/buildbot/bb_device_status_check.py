@@ -340,9 +340,12 @@ def main():
   if os.path.exists('/home/chrome-bot'):
     with open('/home/chrome-bot/.adb_device_info', 'w') as f:
       for device in json_data:
-        f.write('%s %s %s %.1fC %s%%\n' % (device['serial'], device['type'],
-            device['build'], float(device['battery']['temperature']) / 10,
-            device['battery']['level']))
+        try:
+          f.write('%s %s %s %.1fC %s%%\n' % (device['serial'], device['type'],
+              device['build'], float(device['battery']['temperature']) / 10,
+              device['battery']['level']))
+        except Exception:
+          pass
 
   err_msg = CheckForMissingDevices(options, devices) or []
 
