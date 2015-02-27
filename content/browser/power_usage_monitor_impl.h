@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
-#define CHROME_CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
+#ifndef CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
+#define CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -130,4 +130,4 @@ class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
 
 }  // namespace content
 
-#endif  // CHROME_CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
+#endif  // CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_

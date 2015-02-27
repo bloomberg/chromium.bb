@@ -65,4 +65,4 @@ class FontLoader {
                                   CGFontRef* out);
 };
 
-#endif // CONTENT_COMMON_MAC_FONT_LOADER_H_
+#endif  // CONTENT_COMMON_MAC_FONT_LOADER_H_

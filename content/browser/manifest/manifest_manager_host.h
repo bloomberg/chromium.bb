@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MANIFEST_MANIFEST_MANAGER_HOST_H_
-#define CONTENT_RENDERER_MANIFEST_MANIFEST_MANAGER_HOST_H_
+#ifndef CONTENT_BROWSER_MANIFEST_MANIFEST_MANAGER_HOST_H_
+#define CONTENT_BROWSER_MANIFEST_MANIFEST_MANAGER_HOST_H_
 
 #include "base/callback_forward.h"
 #include "base/id_map.h"
@@ -51,4 +51,4 @@ class ManifestManagerHost : public WebContentsObserver {
 
 } // namespace content
 
-#endif // CONTENT_RENDERER_MANIFEST_MANIFEST_MANAGER_HOST_H_
+#endif  // CONTENT_BROWSER_MANIFEST_MANIFEST_MANAGER_HOST_H_

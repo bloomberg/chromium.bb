@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_GC_CONTROLLER_H_
-#define CONTENT_SHELL_RENDERER_GC_CONTROLLER_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_GC_CONTROLLER_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_GC_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "gin/wrappable.h"
@@ -40,4 +40,4 @@ class GCController : public gin::Wrappable<GCController> {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_GC_CONTROLLER_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_GC_CONTROLLER_H_

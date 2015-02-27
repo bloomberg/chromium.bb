@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_X_UTIL_H_
-#define CHROME_GPU_X_UTIL_H_
+#ifndef CONTENT_COMMON_GPU_X_UTIL_H_
+#define CONTENT_COMMON_GPU_X_UTIL_H_
 
 // Some X-Windows specific stuff. This can be included on any platform, and will
 // be a NOP on non-Linux ones.
@@ -47,4 +47,4 @@ class ScopedPtrXFree {
 
 #endif  // USE_X11
 
-#endif  // CHROME_GPU_X_UTIL_H_
+#endif  // CONTENT_COMMON_GPU_X_UTIL_H_

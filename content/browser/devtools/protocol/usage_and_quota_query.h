@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_QUOTA_AND_USAGE_QUERY_H_
-#define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_QUOTA_AND_USAGE_QUERY_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_USAGE_AND_QUOTA_QUERY_H_
+#define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_USAGE_AND_QUOTA_QUERY_H_
 
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -60,4 +60,4 @@ class UsageAndQuotaQuery : public base::RefCounted<UsageAndQuotaQuery> {
 }  // namespace devtools
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_QUOTA_AND_USAGE_QUERY_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_USAGE_AND_QUOTA_QUERY_H_

@@ -45,4 +45,4 @@ class ExecuteJavascriptPopupWindowTargetPluginTest : public PluginTest {
 
 }  // namespace NPAPIClient
 
-#endif // CONTENT_TEST_PLUGIN_PLUGIN_JAVASCRIPT_OPEN_POPUP_H_
+#endif  // CONTENT_TEST_PLUGIN_PLUGIN_JAVASCRIPT_OPEN_POPUP_H_

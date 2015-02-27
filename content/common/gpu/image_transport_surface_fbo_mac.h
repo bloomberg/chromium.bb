@@ -136,4 +136,4 @@ class ImageTransportSurfaceFBO
 
 }  // namespace content
 
-#endif  //  CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_MAC_H_
+#endif  // CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_FBO_MAC_H_

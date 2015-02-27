@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
-#define CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
+#ifndef CONTENT_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
+#define CONTENT_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
 
 #include "build/build_config.h"
 
@@ -50,4 +50,4 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
 
 }  // namespace content
 
-#endif  // CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
+#endif  // CONTENT_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_

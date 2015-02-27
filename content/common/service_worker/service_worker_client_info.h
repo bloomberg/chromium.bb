@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_INFO_CLIENT_H_
-#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_INFO_CLIENT_H_
+#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_CLIENT_INFO_H_
+#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_CLIENT_INFO_H_
 
 #include "content/public/common/request_context_frame_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -39,4 +39,4 @@ struct ServiceWorkerClientInfo {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_INFO_CLIENT_H_
+#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_CLIENT_INFO_H_

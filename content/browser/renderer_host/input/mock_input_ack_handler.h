@@ -83,4 +83,4 @@ class MockInputAckHandler : public InputAckHandler {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_

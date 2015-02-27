@@ -75,4 +75,4 @@ class SkiaBenchmarking : public gin::Wrappable<SkiaBenchmarking> {
 
 }  // namespace content
 
-#endif // CONTENT_RENDERER_SKIA_BENCHMARKING_EXTENSION_H_
+#endif  // CONTENT_RENDERER_SKIA_BENCHMARKING_EXTENSION_H_

@@ -48,4 +48,4 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
+#endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_

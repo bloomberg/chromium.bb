@@ -54,4 +54,4 @@ class MockScreenOrientationClient : public blink::WebScreenOrientationClient {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CONTROLLER_H_
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CLIENT_H_

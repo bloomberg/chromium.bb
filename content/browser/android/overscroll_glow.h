@@ -102,4 +102,4 @@ class OverscrollGlow {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_SCROLL_GLOW_H_
+#endif  // CONTENT_BROWSER_ANDROID_OVERSCROLL_GLOW_H_

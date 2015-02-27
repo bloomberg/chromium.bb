@@ -44,4 +44,4 @@ class CONTENT_EXPORT PowerMonitorBroadcastSource :
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_POWER_MONITOR_MESSAGE_FILTER_H_
+#endif  // CONTENT_CHILD_POWER_MONITOR_BROADCAST_SOURCE_H_

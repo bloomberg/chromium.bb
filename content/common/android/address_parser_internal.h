@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ADDRESS_PARSER_INTERNAL_H_
-#define CONTENT_COMMON_ADDRESS_PARSER_INTERNAL_H_
+#ifndef CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
+#define CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
 
 #include <vector>
 
@@ -83,4 +83,4 @@ CONTENT_EXPORT bool IsZipValidForState(const Word& word, size_t state_index);
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_ADDRESS_PARSER_INTERNAL_H_
+#endif  // CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_

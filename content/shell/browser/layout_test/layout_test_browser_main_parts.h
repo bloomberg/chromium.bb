@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
-#define CONTENT_SHELL_BROWSER_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
+#ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
+#define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -45,4 +45,4 @@ class LayoutTestBrowserMainParts : public ShellBrowserMainParts {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
+#endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_

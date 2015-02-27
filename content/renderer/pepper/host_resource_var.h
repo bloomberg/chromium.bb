@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_
-#define PPAPI_CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_
+#ifndef CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_
+#define CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_message.h"
@@ -63,4 +63,4 @@ class HostResourceVar : public ppapi::ResourceVar {
 
 }  // namespace content
 
-#endif
+#endif  // CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_

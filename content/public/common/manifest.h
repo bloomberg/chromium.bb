@@ -100,4 +100,4 @@ struct CONTENT_EXPORT Manifest {
 
 } // namespace content
 
-#endif // CONTENT_PUBLIC_COMMON_MANIFEST_H_
+#endif  // CONTENT_PUBLIC_COMMON_MANIFEST_H_

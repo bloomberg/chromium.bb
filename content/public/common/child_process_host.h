@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PULIC_COMMON_CHILD_PROCESS_HOST_H_
-#define CONTENT_PULIC_COMMON_CHILD_PROCESS_HOST_H_
+#ifndef CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_
+#define CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_
 
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
@@ -105,4 +105,4 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
 };  // namespace content
 
-#endif  // CONTENT_PULIC_COMMON_CHILD_PROCESS_HOST_H_
+#endif  // CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_

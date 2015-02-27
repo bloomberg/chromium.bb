@@ -29,4 +29,4 @@ struct CONTENT_EXPORT SyntheticTapGestureParams
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_INPUT_SYNTHETIC_PINCH_GESTURE_PARAMS_H_
+#endif  // CONTENT_COMMON_INPUT_SYNTHETIC_TAP_GESTURE_PARAMS_H_

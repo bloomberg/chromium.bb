@@ -29,4 +29,4 @@ struct ParamTraits<blink::WebGamepad> {
 
 } // namespace IPC
 
-#endif
+#endif  // CONTENT_COMMON_GAMEPAD_PARAM_TRAITS_H_

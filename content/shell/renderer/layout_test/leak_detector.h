@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LEAK_DETECTOR_H_
-#define CONTENT_SHELL_RENDERER_LEAK_DETECTOR_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LEAK_DETECTOR_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LEAK_DETECTOR_H_
 
 #include "base/basictypes.h"
 #include "content/shell/common/leak_detection_result.h"
@@ -43,4 +43,4 @@ class LeakDetector : public blink::WebLeakDetectorClient {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LEAK_DETECTOR_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LEAK_DETECTOR_H_

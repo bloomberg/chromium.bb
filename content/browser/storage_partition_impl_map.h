@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_STORAGE_PARTITION_MAP_H_
-#define CONTENT_BROWSER_STORAGE_PARTITION_MAP_H_
+#ifndef CONTENT_BROWSER_STORAGE_PARTITION_IMPL_MAP_H_
+#define CONTENT_BROWSER_STORAGE_PARTITION_IMPL_MAP_H_
 
 #include <map>
 #include <string>
@@ -131,4 +131,4 @@ class CONTENT_EXPORT StoragePartitionImplMap
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_STORAGE_PARTITION_MAP_H_
+#endif  // CONTENT_BROWSER_STORAGE_PARTITION_IMPL_MAP_H_

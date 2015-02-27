@@ -61,4 +61,4 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
 
 }  // namespace content
 
-#endif // CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
+#endif  // CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_

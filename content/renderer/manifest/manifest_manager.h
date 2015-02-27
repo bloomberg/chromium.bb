@@ -83,4 +83,4 @@ class ManifestManager : public RenderFrameObserver {
 
 } // namespace content
 
-#endif // CONTENT_RENDERER_MANIFEST_MANIFEST_MANAGER_H_
+#endif  // CONTENT_RENDERER_MANIFEST_MANIFEST_MANAGER_H_

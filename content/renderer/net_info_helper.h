@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_NET_INFO_HELPER_H_
-#define CONTENT_PUBLIC_RENDERER_NET_INFO_HELPER_H_
+#ifndef CONTENT_RENDERER_NET_INFO_HELPER_H_
+#define CONTENT_RENDERER_NET_INFO_HELPER_H_
 
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
@@ -15,4 +15,4 @@ blink::WebConnectionType NetConnectionTypeToWebConnectionType(
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_NET_INFO_HELPER_H_
+#endif  // CONTENT_RENDERER_NET_INFO_HELPER_H_

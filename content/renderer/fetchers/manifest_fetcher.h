@@ -54,4 +54,4 @@ class CONTENT_EXPORT ManifestFetcher {
 
 } // namespace content
 
-#endif // CONTENT_RENDERER_FETCHERS_MANIFEST_FETCHER_H_
+#endif  // CONTENT_RENDERER_FETCHERS_MANIFEST_FETCHER_H_

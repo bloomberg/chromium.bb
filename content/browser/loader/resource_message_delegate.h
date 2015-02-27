@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_
-#define CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_
+#ifndef CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_H_
+#define CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
@@ -42,4 +42,4 @@ class CONTENT_EXPORT ResourceMessageDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_
+#endif  // CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_H_

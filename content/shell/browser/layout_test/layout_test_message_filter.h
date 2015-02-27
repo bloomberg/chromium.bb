@@ -70,4 +70,4 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
 
 }  // namespace content
 
-#endif // CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_MESSAGE_FILTER_H_
+#endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_MESSAGE_FILTER_H_

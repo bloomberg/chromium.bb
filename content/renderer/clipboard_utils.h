@@ -24,4 +24,4 @@ CONTENT_EXPORT std::string URLToImageMarkup(const blink::WebURL& url,
 
 }  // namespace content
 
-#endif  //  CONTENT_RENDERER_CLIPBOARD_UTILS_H_
+#endif  // CONTENT_RENDERER_CLIPBOARD_UTILS_H_

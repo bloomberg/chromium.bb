@@ -26,4 +26,4 @@ class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
+#endif  // CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_

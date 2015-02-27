@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H
-#define CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H
+#ifndef CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H_
+#define CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H_
 
 // This interface is used by consumers of the ContentViewRenderView to
 // attach/detach layers.
@@ -25,4 +25,4 @@ class ContentViewLayerRenderer {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H
+#endif  // CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H_

@@ -74,4 +74,4 @@ class CONTENT_EXPORT MessagePortMessageFilter
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WORKER_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_MESSAGE_PORT_MESSAGE_FILTER_H_

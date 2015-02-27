@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_PLUGIN_PLUGIN_GET_JAVASCRIPT_URL2_H_
-#define CONTENT_TEST_PLUGIN_PLUGIN_GET_JAVASCRIPT_URL2_H_
+#ifndef CONTENT_TEST_PLUGIN_PLUGIN_GET_JAVASCRIPT_URL2_TEST_H_
+#define CONTENT_TEST_PLUGIN_PLUGIN_GET_JAVASCRIPT_URL2_TEST_H_
 
 #include "base/compiler_specific.h"
 #include "content/test/plugin/plugin_test.h"
@@ -37,4 +37,4 @@ class ExecuteGetJavascriptUrl2Test : public PluginTest {
 
 }  // namespace NPAPIClient
 
-#endif  // CONTENT_TEST_PLUGIN_PLUGIN_GET_JAVASCRIPT_URL2_H_
+#endif  // CONTENT_TEST_PLUGIN_PLUGIN_GET_JAVASCRIPT_URL2_TEST_H_

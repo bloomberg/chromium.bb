@@ -41,4 +41,4 @@ struct GPUMemoryUmaStats {
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
+#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_

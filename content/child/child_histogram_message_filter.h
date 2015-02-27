@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
-#define CONTENT_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
+#ifndef CONTENT_CHILD_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
+#define CONTENT_CHILD_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
 
 #include <string>
 #include <vector>
@@ -54,4 +54,4 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_HISTOGRAM_MESSAGE_FILTER_H_
+#endif  // CONTENT_CHILD_CHILD_HISTOGRAM_MESSAGE_FILTER_H_

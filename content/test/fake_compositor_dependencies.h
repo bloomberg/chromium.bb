@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H__
-#define CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H__
+#ifndef CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_
+#define CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_
 
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -55,4 +55,4 @@ class FakeCompositorDependencies : public CompositorDependencies {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H__
+#endif  // CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_

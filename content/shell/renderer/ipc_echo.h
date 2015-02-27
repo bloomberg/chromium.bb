@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_IPC_ECHO_H_
-#define CONTENT_SHELL_IPC_ECHO_H_
+#ifndef CONTENT_SHELL_RENDERER_IPC_ECHO_H_
+#define CONTENT_SHELL_RENDERER_IPC_ECHO_H_
 
 #include <utility>
 #include <vector>
@@ -53,4 +53,4 @@ class IPCEcho : public base::SupportsWeakPtr<IPCEcho> {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_IPC_ECHO_DISPATCHER_H_
+#endif  // CONTENT_SHELL_RENDERER_IPC_ECHO_H_

@@ -77,4 +77,4 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
 
 } // namespace content
 
-#endif // CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_

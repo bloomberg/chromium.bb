@@ -64,4 +64,4 @@ class AppCacheEntry {
 
 }  // namespace content
 
-#endif  // WEBKIT_APPCACHE_APPCACHE_RESOURCE_H_
+#endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_ENTRY_H_

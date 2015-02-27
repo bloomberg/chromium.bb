@@ -28,4 +28,4 @@ class IPCEchoMessageFilter : public BrowserMessageFilter {
 
 }  // namespace content
 
-#endif // CONTENT_SHELL_BROWSER_IPC_ECHO_MESSAGE_FILTER_H_
+#endif  // CONTENT_SHELL_BROWSER_IPC_ECHO_MESSAGE_FILTER_H_

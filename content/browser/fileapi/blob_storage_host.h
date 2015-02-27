@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FILEAPI_STORAGE_HOST_H_
-#define CONTENT_BROWSER_FILEAPI_STORAGE_HOST_H_
+#ifndef CONTENT_BROWSER_FILEAPI_BLOB_STORAGE_HOST_H_
+#define CONTENT_BROWSER_FILEAPI_BLOB_STORAGE_HOST_H_
 
 #include <map>
 #include <set>
@@ -71,4 +71,4 @@ class CONTENT_EXPORT BlobStorageHost {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FILEAPI_STORAGE_HOST_H_
+#endif  // CONTENT_BROWSER_FILEAPI_BLOB_STORAGE_HOST_H_

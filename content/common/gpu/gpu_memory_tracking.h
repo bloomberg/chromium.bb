@@ -54,4 +54,4 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_
+#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_

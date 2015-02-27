@@ -69,4 +69,4 @@ class CONTENT_EXPORT WorkerTaskRunner {
 
 }  // namespace content
 
-#endif // CONTENT_CHILD_WORKER_TASK_RUNNER_H_
+#endif  // CONTENT_CHILD_WORKER_TASK_RUNNER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
-#define CONTENT_SHELL_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
 
 #include "content/public/renderer/render_frame_observer.h"
 
@@ -25,4 +25,4 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_

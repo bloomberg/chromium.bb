@@ -32,4 +32,4 @@ class RendererGamepadProvider
 
 } // namespace content
 
-#endif
+#endif  // CONTENT_PUBLIC_RENDERER_RENDERER_GAMEPAD_PROVIDER_H_

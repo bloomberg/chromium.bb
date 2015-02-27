@@ -4,8 +4,8 @@
 
 // http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
+#define CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
 
 #include <vector>
 
@@ -77,4 +77,4 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_TEXT_SELECTOR_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_TEXT_SELECTOR_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_STYLUS_TEXT_SELECTOR_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_STYLUS_TEXT_SELECTOR_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -75,4 +75,4 @@ class CONTENT_EXPORT StylusTextSelector : public ui::SimpleGestureListener {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_TEXT_SELECTOR_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_STYLUS_TEXT_SELECTOR_H_

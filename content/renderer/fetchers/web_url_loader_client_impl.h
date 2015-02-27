@@ -79,4 +79,4 @@ class WebURLLoaderClientImpl : public blink::WebURLLoaderClient {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_FETCHERS_URL_LOADER_CLIENT_H_
+#endif  // CONTENT_RENDERER_FETCHERS_WEB_URL_LOADER_CLIENT_IMPL_H_

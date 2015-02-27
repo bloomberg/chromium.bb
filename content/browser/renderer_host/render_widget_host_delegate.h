@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
-#define CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
@@ -85,4 +85,4 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_

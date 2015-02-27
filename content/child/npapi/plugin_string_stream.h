@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_PLUGIN_STRING_STREAM_H_
-#define CONTENT_CHILD_PLUGIN_STRING_STREAM_H_
+#ifndef CONTENT_CHILD_NPAPI_PLUGIN_STRING_STREAM_H_
+#define CONTENT_CHILD_NPAPI_PLUGIN_STRING_STREAM_H_
 
 #include "content/child/npapi/plugin_stream.h"
 
@@ -37,4 +37,4 @@ class PluginStringStream : public PluginStream {
 
 }  // namespace content
 
-#endif // CONTENT_CHILD_PLUGIN_STRING_STREAM_H_
+#endif  // CONTENT_CHILD_NPAPI_PLUGIN_STRING_STREAM_H_

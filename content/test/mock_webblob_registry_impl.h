@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_MOCK_WEB_BLOB_REGISTRY_IMPL_H
-#define CONTENT_TEST_MOCK_WEB_BLOB_REGISTRY_IMPL_H
+#ifndef CONTENT_TEST_MOCK_WEBBLOB_REGISTRY_IMPL_H_
+#define CONTENT_TEST_MOCK_WEBBLOB_REGISTRY_IMPL_H_
 
 #include <map>
 
@@ -54,4 +54,4 @@ class MockWebBlobRegistryImpl : public blink::WebBlobRegistry {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_MOCK_WEB_BLOB_REGISTRY_IMPL_H
+#endif  // CONTENT_TEST_MOCK_WEBBLOB_REGISTRY_IMPL_H_

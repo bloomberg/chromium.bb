@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
-#define CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_WEBKIT_TEST_RUNNER_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_WEBKIT_TEST_RUNNER_H_
 
 #include <vector>
 
@@ -163,4 +163,4 @@ class WebKitTestRunner : public RenderViewObserver,
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_WEBKIT_TEST_RUNNER_H_

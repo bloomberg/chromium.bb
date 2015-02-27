@@ -37,4 +37,4 @@ void SetUpRegularFileSystemTestCases(const base::FilePath& root_path);
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_FILEAPI_FILE_SET_H_
+#endif  // CONTENT_TEST_FILEAPI_TEST_FILE_SET_H_

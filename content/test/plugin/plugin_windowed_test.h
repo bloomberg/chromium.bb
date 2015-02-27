@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_PLUGIN_PLUGIN_WINDOWED_TEST_H
-#define CONTENT_TEST_PLUGIN_PLUGIN_WINDOWED_TEST_H
+#ifndef CONTENT_TEST_PLUGIN_PLUGIN_WINDOWED_TEST_H_
+#define CONTENT_TEST_PLUGIN_PLUGIN_WINDOWED_TEST_H_
 
 #include "content/test/plugin/plugin_test.h"
 
@@ -30,4 +30,4 @@ class WindowedPluginTest : public PluginTest {
 
 }  // namespace NPAPIClient
 
-#endif  // CONTENT_TEST_PLUGIN_PLUGIN_WINDOWED_TEST_H
+#endif  // CONTENT_TEST_PLUGIN_PLUGIN_WINDOWED_TEST_H_

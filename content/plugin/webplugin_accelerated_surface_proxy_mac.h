@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
-#define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
+#ifndef CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_MAC_H_
+#define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_MAC_H_
 
 #include "base/compiler_specific.h"
 #include "content/child/npapi/webplugin_accelerated_surface_mac.h"
@@ -45,4 +45,4 @@ class WebPluginAcceleratedSurfaceProxy : public WebPluginAcceleratedSurface {
 
 }  // namespace content
 
-#endif  // CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
+#endif  // CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_MAC_H_

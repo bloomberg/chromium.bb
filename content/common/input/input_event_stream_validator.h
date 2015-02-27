@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INPUT_EVENT_STREAM_VALIDATOR
-#define CONTENT_COMMON_INPUT_EVENT_STREAM_VALIDATOR
+#ifndef CONTENT_COMMON_INPUT_INPUT_EVENT_STREAM_VALIDATOR_H_
+#define CONTENT_COMMON_INPUT_INPUT_EVENT_STREAM_VALIDATOR_H_
 
 #include <string>
 
@@ -38,4 +38,4 @@ class InputEventStreamValidator {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_INPUT_EVENT_STREAM_VALIDATOR
+#endif  // CONTENT_COMMON_INPUT_INPUT_EVENT_STREAM_VALIDATOR_H_

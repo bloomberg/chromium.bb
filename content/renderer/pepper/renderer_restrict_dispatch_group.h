@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_RESTRICT_DISPATCH_GROUP_H_
-#define CONTENT_RENDERER_PEPPER_RESTRICT_DISPATCH_GROUP_H_
+#ifndef CONTENT_RENDERER_PEPPER_RENDERER_RESTRICT_DISPATCH_GROUP_H_
+#define CONTENT_RENDERER_PEPPER_RENDERER_RESTRICT_DISPATCH_GROUP_H_
 
 #include "ipc/ipc_sync_channel.h"
 
@@ -21,4 +21,4 @@ enum RendererRestrictDispatchGroup {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_RESTRICT_DISPATCH_GROUP_H_
+#endif  // CONTENT_RENDERER_PEPPER_RENDERER_RESTRICT_DISPATCH_GROUP_H_

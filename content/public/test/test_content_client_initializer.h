@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
-#define CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
+#ifndef CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_H_
+#define CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -41,4 +41,4 @@ class TestContentClientInitializer {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
+#endif  // CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_H_

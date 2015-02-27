@@ -64,4 +64,4 @@ struct CONTENT_EXPORT Geoposition {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GEOPOSITION_H_
+#endif  // CONTENT_PUBLIC_COMMON_GEOPOSITION_H_

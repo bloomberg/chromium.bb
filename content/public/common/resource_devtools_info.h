@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RESOURCE_DEVTOOLS_INFO_H_
-#define CONTENT_COMMON_RESOURCE_DEVTOOLS_INFO_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_DEVTOOLS_INFO_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_DEVTOOLS_INFO_H_
 
 #include <string>
 #include <vector>
@@ -38,4 +38,4 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESOURCE_DEVTOOLS_INFO_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_DEVTOOLS_INFO_H_

@@ -67,4 +67,4 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
+#endif  // CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_

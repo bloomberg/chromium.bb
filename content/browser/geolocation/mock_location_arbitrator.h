@@ -34,4 +34,4 @@ class MockLocationArbitrator : public LocationArbitrator {
 
 }  // namespace content
 
-#endif  //  CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_ARBITRATOR_H_
+#endif  // CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_ARBITRATOR_H_

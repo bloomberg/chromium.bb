@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_PLUGIN_PLUGIN_TEST_FACTROY_H__
-#define CONTENT_TEST_PLUGIN_PLUGIN_TEST_FACTROY_H__
+#ifndef CONTENT_TEST_PLUGIN_PLUGIN_TEST_FACTORY_H_
+#define CONTENT_TEST_PLUGIN_PLUGIN_TEST_FACTORY_H_
 
 #include <string>
 
@@ -19,4 +19,4 @@ extern PluginTest* CreatePluginTest(const std::string& test_name,
 
 }  // namespace NPAPIClient
 
-#endif  // CONTENT_TEST_PLUGIN_PLUGIN_TEST_FACTROY_H__
+#endif  // CONTENT_TEST_PLUGIN_PLUGIN_TEST_FACTORY_H_

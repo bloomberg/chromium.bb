@@ -183,4 +183,4 @@ class CONTENT_EXPORT GpuMemoryManager :
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
+#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_

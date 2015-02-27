@@ -40,5 +40,5 @@ class CONTENT_EXPORT ScreenOrientationDelegate {
 
 } // namespace content
 
-#endif // CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_DELEGATE_H_
 

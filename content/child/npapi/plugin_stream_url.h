@@ -90,4 +90,4 @@ class PluginStreamUrl : public PluginStream,
 
 }  // namespace content
 
-#endif // CONTENT_CHILD_NPAPI_PLUGIN_STREAM_URL_H_
+#endif  // CONTENT_CHILD_NPAPI_PLUGIN_STREAM_URL_H_

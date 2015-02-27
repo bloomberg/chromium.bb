@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
-#define CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
+#ifndef CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_IMPL_H_
+#define CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_IMPL_H_
 
 #include <string>
 
@@ -77,4 +77,4 @@ class ResourceFetcherImpl : public ResourceFetcher,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
+#endif  // CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_IMPL_H_

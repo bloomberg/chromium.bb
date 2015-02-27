@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_PROCESSOR_H_
-#define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_PROCESSOR_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_IMAGE_PROCESSOR_H_
+#define CONTENT_COMMON_GPU_MEDIA_V4L2_IMAGE_PROCESSOR_H_
 
 #include <queue>
 #include <vector>
@@ -178,4 +178,4 @@ class CONTENT_EXPORT V4L2ImageProcessor {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_PROCESSOR_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_V4L2_IMAGE_PROCESSOR_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_CAPTURE_DEVICES_H
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_CAPTURE_DEVICES_H
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_CAPTURE_DEVICES_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_CAPTURE_DEVICES_IMPL_H_
 
 #include "base/memory/singleton.h"
 #include "content/public/browser/media_capture_devices.h"
@@ -46,4 +46,4 @@ class MediaCaptureDevicesImpl : public MediaCaptureDevices {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_CAPTURE_DEVICES_H
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_CAPTURE_DEVICES_IMPL_H_

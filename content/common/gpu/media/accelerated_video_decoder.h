@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_
-#define CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_
+#ifndef CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_H_
+#define CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_H_
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
@@ -60,4 +60,4 @@ class CONTENT_EXPORT AcceleratedVideoDecoder {
 
 }  //  namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_
+#endif  // CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_H_

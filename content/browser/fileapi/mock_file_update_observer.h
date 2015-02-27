@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
-#define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
+#ifndef CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
+#define CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
 
 #include <map>
 
@@ -47,4 +47,4 @@ class MockFileUpdateObserver : public FileUpdateObserver {
 
 }  // namespace storage
 
-#endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
+#endif  // CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_

@@ -64,4 +64,4 @@ class InputRouter : public IPC::Listener {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_

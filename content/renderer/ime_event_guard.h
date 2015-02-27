@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IME_EVENT_GUARD_H_
-#define IME_EVENT_GUARD_H_
+#ifndef CONTENT_RENDERER_IME_EVENT_GUARD_H_
+#define CONTENT_RENDERER_IME_EVENT_GUARD_H_
 
 namespace content {
 class RenderWidget;
@@ -19,5 +19,5 @@ class ImeEventGuard {
 };
 }
 
-#endif
+#endif  // CONTENT_RENDERER_IME_EVENT_GUARD_H_
 

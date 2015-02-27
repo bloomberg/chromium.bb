@@ -31,4 +31,4 @@ class GenericHandler : public WebUIMessageHandler {
 
 }  // namespace content
 
-#endif  // namespace content
+#endif  // CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_

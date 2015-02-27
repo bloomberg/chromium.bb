@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_FILE_IO_HOST_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_FILE_IO_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_IO_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_IO_HOST_H_
 
 #include <string>
 
@@ -139,4 +139,4 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_FILE_IO_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_IO_HOST_H_

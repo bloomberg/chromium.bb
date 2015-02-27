@@ -35,4 +35,4 @@ CONTENT_EXPORT bool URLRequestRequiresUniversalAccess(
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PPB_URL_REQUEST_INFO_UTIL_H_
+#endif  // CONTENT_RENDERER_PEPPER_URL_REQUEST_INFO_UTIL_H_

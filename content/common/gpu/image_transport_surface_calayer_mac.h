@@ -99,4 +99,4 @@ class CALayerStorageProvider
 
 }  // namespace content
 
-#endif  //  CONTENT_COMMON_GPU_IMAGE_TRANSPORT_CALAYER_MAC_H_
+#endif  // CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_CALAYER_MAC_H_

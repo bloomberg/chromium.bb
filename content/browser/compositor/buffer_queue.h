@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_BUFFERED_OUTPUT_SURFACE_H_
-#define CONTENT_BROWSER_COMPOSITOR_BUFFERED_OUTPUT_SURFACE_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_
+#define CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_
 
 #include <queue>
 #include <vector>
@@ -93,4 +93,4 @@ class CONTENT_EXPORT BufferQueue {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_BUFFERED_OUTPUT_SURFACE_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_

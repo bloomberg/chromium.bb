@@ -65,4 +65,4 @@ struct CONTENT_EXPORT FrameReplicationState {
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_FRAME_REPLICATION_STATE_H_
+#endif  // CONTENT_COMMON_FRAME_REPLICATION_STATE_H_

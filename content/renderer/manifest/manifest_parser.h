@@ -148,4 +148,4 @@ class CONTENT_EXPORT ManifestParser {
 
 } // namespace content
 
-#endif // CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
+#endif  // CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_

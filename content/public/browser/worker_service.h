@@ -46,4 +46,4 @@ class WorkerService {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_PLUGIN_SERVICE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_H_

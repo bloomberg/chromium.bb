@@ -71,4 +71,4 @@ class CONTENT_EXPORT BrowserPluginManager : public RenderProcessObserver {
 
 }  // namespace content
 
-#endif //  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_H_
+#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_H_

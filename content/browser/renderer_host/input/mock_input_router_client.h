@@ -67,4 +67,4 @@ class MockInputRouterClient : public InputRouterClient {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ROUTER_CLIENT_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ROUTER_CLIENT_H_

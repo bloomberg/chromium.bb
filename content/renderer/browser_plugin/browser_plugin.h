@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
-#define  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
 
 #include "third_party/WebKit/public/web/WebPlugin.h"
 

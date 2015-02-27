@@ -58,4 +58,4 @@ class CONTENT_EXPORT InputHandlerManagerClient {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_INPUT_HANDLER_MANAGER_CLIENT_H_
+#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_CLIENT_H_

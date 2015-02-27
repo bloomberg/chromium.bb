@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H
-#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H
+#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
+#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
 
 #include <set>
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_CONSTRAINT_H_
-#define CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_CONSTRAINT_H_
+#ifndef CONTENT_RENDERER_MEDIA_MOCK_MEDIA_CONSTRAINT_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_MOCK_MEDIA_CONSTRAINT_FACTORY_H_
 
 #include <string>
 #include <vector>
@@ -35,4 +35,4 @@ class MockMediaConstraintFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_CONSTRAINT_H_
+#endif  // CONTENT_RENDERER_MEDIA_MOCK_MEDIA_CONSTRAINT_FACTORY_H_

@@ -108,4 +108,4 @@ class CONTENT_EXPORT V4L2Device
 
 }  //  namespace content
 
-#endif  //  CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_

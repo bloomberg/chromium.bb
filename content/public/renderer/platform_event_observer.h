@@ -133,4 +133,4 @@ class PlatformEventObserver : public PlatformEventObserverBase,
 
 } // namespace content
 
-#endif // CONTENT_PUBLIC_RENDERER_PLATFORM_EVENT_OBSERVER_H_
+#endif  // CONTENT_PUBLIC_RENDERER_PLATFORM_EVENT_OBSERVER_H_

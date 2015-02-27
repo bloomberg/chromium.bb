@@ -44,4 +44,4 @@ class ShadowLayerDelegate : public ui::LayerDelegate {
 
 }  // namespace content
 
-#endif  //  CONTENT_BROWSER_WEB_CONTENTS_AURA_SHADOW_LAYER_DELEGATE_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_AURA_SHADOW_LAYER_DELEGATE_H_

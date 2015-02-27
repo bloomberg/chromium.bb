@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBRTCDTMFSENDERHANDLER_H_
-#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBRTCDTMFSENDERHANDLER_H_
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_WEBRTC_DTMF_SENDER_HANDLER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_WEBRTC_DTMF_SENDER_HANDLER_H_
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/web_task.h"
@@ -47,4 +47,4 @@ class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBRTCDTMFSENDERHANDLER_H_
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_WEBRTC_DTMF_SENDER_HANDLER_H_

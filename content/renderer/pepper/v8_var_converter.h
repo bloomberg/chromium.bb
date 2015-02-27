@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H
-#define CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H
+#ifndef CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H_
+#define CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -91,4 +91,4 @@ class CONTENT_EXPORT V8VarConverter {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H
+#endif  // CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H_

@@ -34,4 +34,4 @@ class ManifestUmaUtil {
 
 } // namespace content
 
-#endif // CONTENT_RENDERER_MANIFEST_MANIFEST_UMA_UTIL_H_
+#endif  // CONTENT_RENDERER_MANIFEST_MANIFEST_UMA_UTIL_H_

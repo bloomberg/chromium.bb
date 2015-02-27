@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INJECTION_TEST_WIN_H_
-#define CONTENT_COMMON_INJECTION_TEST_WIN_H_
+#ifndef CONTENT_PUBLIC_COMMON_INJECTION_TEST_WIN_H_
+#define CONTENT_PUBLIC_COMMON_INJECTION_TEST_WIN_H_
 
 // This file defines the entry points for any DLL that can be loaded into the
 // renderer or plugin process for the purposes of testing. The DLL code must
@@ -23,4 +23,4 @@ typedef BOOL (__cdecl *RunPluginTests)(int* test_count);
 #endif
 }
 
-#endif  // CONTENT_COMMON_INJECTION_TEST_WIN_H_
+#endif  // CONTENT_PUBLIC_COMMON_INJECTION_TEST_WIN_H_

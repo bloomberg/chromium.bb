@@ -54,4 +54,4 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
 }  // namespace content
 
-#endif
+#endif  // CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_VIDEO_SINK_H_

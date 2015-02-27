@@ -57,4 +57,4 @@ class NavigationResourceHandler : public ResourceHandler {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_CERTIFICATE_RESOURCE_HANDLER_H_
+#endif  // CONTENT_BROWSER_LOADER_NAVIGATION_RESOURCE_HANDLER_H_

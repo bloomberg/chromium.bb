@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCONSTRAINTS_H_
-#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCONSTRAINTS_H_
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_CONSTRAINTS_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_CONSTRAINTS_H_
 
 namespace blink {
 class WebMediaConstraints;
@@ -20,4 +20,4 @@ class MockConstraints {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCONSTRAINTS_H_
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_CONSTRAINTS_H_

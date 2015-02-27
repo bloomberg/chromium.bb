@@ -14,4 +14,4 @@ CONTENT_EXPORT void InitializeMojo();
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_MOJO_MOJO_INIT_H_
+#endif  // CONTENT_APP_MOJO_MOJO_INIT_H_

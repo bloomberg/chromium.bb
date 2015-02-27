@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H
-#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H
+#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H_
+#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H_
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
@@ -26,4 +26,4 @@ class CONTENT_EXPORT GamepadConsumer {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H
+#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H_

@@ -15,4 +15,4 @@ WebContentsViewDelegate* CreateShellWebContentsViewDelegate(
 
 }  // namespace content
 
-#endif //CONTENT_SHELL_BROWSER_SHELL_WEB_CONTENTS_VIEW_DELEGATE_CREATOR_H_
+#endif  // CONTENT_SHELL_BROWSER_SHELL_WEB_CONTENTS_VIEW_DELEGATE_CREATOR_H_
