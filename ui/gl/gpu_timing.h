@@ -52,6 +52,7 @@ class GPUTiming {
   };
 
   TimerType GetTimerType() const { return timer_type_; }
+  uint32_t GetDisjointCount();
 
  private:
   friend struct base::DefaultDeleter<GPUTiming>;
@@ -62,6 +63,7 @@ class GPUTiming {
   scoped_refptr<GPUTimingClient> CreateGPUTimingClient();
 
   TimerType timer_type_ = kTimerTypeInvalid;
+  uint32_t disjoint_counter_ = 0;
   DISALLOW_COPY_AND_ASSIGN(GPUTiming);
 };
 
@@ -125,6 +127,7 @@ class GL_EXPORT GPUTimingClient
   GPUTiming* gpu_timing_;
   GPUTiming::TimerType timer_type_ = GPUTiming::kTimerTypeInvalid;
   int64 offset_ = 0;  // offset cache when timer_type_ == kTimerTypeARB
+  uint32_t disjoint_counter_ = 0;
   bool offset_valid_ = false;
   base::Callback<int64(void)> cpu_time_for_testing_;
 

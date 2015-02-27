@@ -30,6 +30,17 @@ scoped_refptr<GPUTimingClient> GPUTiming::CreateGPUTimingClient() {
   return new GPUTimingClient(this);
 }
 
+uint32_t GPUTiming::GetDisjointCount() {
+  if (timer_type_ == kTimerTypeDisjoint) {
+    GLint disjoint_value = 0;
+    glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint_value);
+    if (disjoint_value) {
+      disjoint_counter_++;
+    }
+  }
+  return disjoint_counter_;
+}
+
 GPUTimer::~GPUTimer() {
   glDeleteQueriesARB(2, queries_);
 }
@@ -87,6 +98,7 @@ GPUTimingClient::GPUTimingClient(GPUTiming* gpu_timing)
     : gpu_timing_(gpu_timing) {
   if (gpu_timing) {
     timer_type_ = gpu_timing->GetTimerType();
+    disjoint_counter_ = gpu_timing_->GetDisjointCount();
   }
 }
 
@@ -111,12 +123,13 @@ const char* GPUTimingClient::GetTimerTypeName() const {
 
 bool GPUTimingClient::CheckAndResetTimerErrors() {
   if (timer_type_ == GPUTiming::kTimerTypeDisjoint) {
-    GLint disjoint_value = 0;
-    glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint_value);
-    return disjoint_value != 0;
-  } else {
-    return false;
+    DCHECK(gpu_timing_ != nullptr);
+    const uint32_t total_disjoint_count = gpu_timing_->GetDisjointCount();
+    const bool disjoint_triggered = total_disjoint_count != disjoint_counter_;
+    disjoint_counter_ = total_disjoint_count;
+    return disjoint_triggered;
   }
+  return false;
 }
 
 int64 GPUTimingClient::CalculateTimerOffset() {

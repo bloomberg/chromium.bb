@@ -193,6 +193,7 @@ class TextureUploadPerfTest : public testing::Test {
     glDeleteTextures(1, &color_texture_);
     CheckNoGlError();
 
+    gpu_timing_client_ = nullptr;
     gl_context_ = nullptr;
     surface_ = nullptr;
   }
