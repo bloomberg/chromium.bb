@@ -2184,6 +2184,11 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
               "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes2"));
       upload_progress = request->GetUploadProgress();
     }
+
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes4"));
+
     LoadInfo load_info;
     load_info.url = request->url();
     {
@@ -2197,8 +2202,17 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
     load_info.upload_size = upload_progress.size();
     load_info.upload_position = upload_progress.position();
 
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes5"));
+
     GlobalRoutingID id(loader.second->GetRequestInfo()->GetGlobalRoutingID());
     LoadInfoMap::iterator existing = info_map->find(id);
+
+    tracked_objects::ScopedTracker tracking_profile6(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes6"));
+
     if (existing == info_map->end() ||
         LoadInfoIsMoreInteresting(load_info, existing->second)) {
       (*info_map)[id] = load_info;
