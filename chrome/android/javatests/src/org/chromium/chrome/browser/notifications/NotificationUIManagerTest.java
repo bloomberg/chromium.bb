@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;

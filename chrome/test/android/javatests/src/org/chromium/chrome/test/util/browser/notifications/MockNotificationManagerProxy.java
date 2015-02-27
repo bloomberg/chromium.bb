@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.notifications;
+package org.chromium.chrome.test.util.browser.notifications;
 
 import android.app.Notification;
 import android.util.SparseArray;
+
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
 import java.util.HashMap;
 import java.util.Map;
