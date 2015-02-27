@@ -82,6 +82,11 @@ void KeyboardEvdev::OnKeyChange(unsigned int key,
   DispatchKey(key, down, false /* repeat */, timestamp);
 }
 
+void KeyboardEvdev::Reset() {
+  for (int key = 0; key < KEY_CNT; ++key)
+    OnKeyChange(key, false /* down */, ui::EventTimeForNow());
+}
+
 void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
   modifiers_->SetModifierLock(EVDEV_MODIFIER_CAPS_LOCK, enabled);
 }
