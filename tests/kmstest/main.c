@@ -56,7 +56,7 @@ int test_bo(struct kms_driver *kms)
 	return 0;
 }
 
-char *drivers[] = {
+static const char *drivers[] = {
 	"i915",
 	"radeon",
 	"nouveau",
