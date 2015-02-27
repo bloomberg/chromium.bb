@@ -286,6 +286,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                const base::Callback<void(content::WebContents*)>& callback)
       override;
 
+  void RecordURLMetric(const std::string& metric, const GURL& url) override;
+
  private:
   friend class DisableWebRtcEncryptionFlagTest;
 

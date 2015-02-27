@@ -6,9 +6,22 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
+
+namespace {
+
+void RecordURLMetricOnUI(const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetContentClient()->browser()->RecordURLMetric(
+      "ServiceWorker.ControlledPageUrl", url);
+}
+
+}  // namespace
 
 // static
 void ServiceWorkerMetrics::CountInitDiskCacheResult(bool result) {
@@ -51,8 +64,10 @@ void ServiceWorkerMetrics::CountWriteDatabaseResult(
 }
 
 // static
-void ServiceWorkerMetrics::CountControlledPageLoad() {
+void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
   RecordAction(base::UserMetricsAction("ServiceWorker.ControlledPageLoad"));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&RecordURLMetricOnUI, url));
 }
 
 }  // namespace content

@@ -12,6 +12,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
+#include "url/gurl.h"
 
 namespace net {
 class NetworkDelegate;
@@ -82,6 +83,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   RequestContextFrameType frame_type_;
   scoped_refptr<ResourceRequestBody> body_;
   ResourceContext* resource_context_;
+  GURL stripped_url_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);

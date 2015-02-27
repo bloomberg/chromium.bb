@@ -40,6 +40,7 @@
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_permission_context_factory.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
+#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -2550,6 +2551,12 @@ void ChromeContentBrowserClient::OpenURL(
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+void ChromeContentBrowserClient::RecordURLMetric(const std::string& metric,
+                                                 const GURL& url) {
+  if (url.is_valid())
+    rappor::SampleDomainAndRegistryFromGURL(metric, url);
 }
 
 content::DevToolsManagerDelegate*

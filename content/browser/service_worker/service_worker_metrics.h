@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_database.h"
 
+class GURL;
+
 namespace content {
 
 class ServiceWorkerMetrics {
@@ -37,7 +39,7 @@ class ServiceWorkerMetrics {
   static void CountWriteDatabaseResult(ServiceWorkerDatabase::Status status);
 
   // Counts the number of page loads controlled by a Service Worker.
-  static void CountControlledPageLoad();
+  static void CountControlledPageLoad(const GURL& url);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

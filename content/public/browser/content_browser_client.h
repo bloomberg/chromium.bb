@@ -626,6 +626,9 @@ class CONTENT_EXPORT ContentBrowserClient {
                        const OpenURLParams& params,
                        const base::Callback<void(WebContents*)>& callback);
 
+  // Allows the embedder to record |metric| for a specific |url|.
+  virtual void RecordURLMetric(const std::string& metric, const GURL& url) {}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
