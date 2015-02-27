@@ -17,8 +17,6 @@
 #include "sql/meta_table.h"
 #include "url/gurl.h"
 
-namespace history {
-
 // This class manages the shortcut provider table within the SQLite database
 // passed to the constructor. It expects the following schema:
 //
@@ -133,7 +131,5 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutsDatabase);
 };
-
-}  // namespace history
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_DATABASE_H_

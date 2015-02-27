@@ -179,7 +179,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
 }
 
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
-    const history::ShortcutsDatabase::Shortcut& shortcut,
+    const ShortcutsDatabase::Shortcut& shortcut,
     int relevance,
     const AutocompleteInput& input,
     const base::string16& fixed_up_input_text) {
@@ -373,7 +373,7 @@ ShortcutsBackend::ShortcutMap::const_iterator
 
 int ShortcutsProvider::CalculateScore(
     const base::string16& terms,
-    const history::ShortcutsDatabase::Shortcut& shortcut,
+    const ShortcutsDatabase::Shortcut& shortcut,
     int max_relevance) {
   DCHECK(!terms.empty());
   DCHECK_LE(terms.length(), shortcut.text.length());

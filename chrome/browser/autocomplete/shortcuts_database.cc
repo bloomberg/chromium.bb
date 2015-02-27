@@ -27,9 +27,8 @@ namespace {
 const int kCurrentVersionNumber = 1;
 const int kCompatibleVersionNumber = 1;
 
-void BindShortcutToStatement(
-    const history::ShortcutsDatabase::Shortcut& shortcut,
-    sql::Statement* s) {
+void BindShortcutToStatement(const ShortcutsDatabase::Shortcut& shortcut,
+                             sql::Statement* s) {
   DCHECK(base::IsValidGUID(shortcut.id));
   s->BindString(0, shortcut.id);
   s->BindString16(1, shortcut.text);
@@ -57,9 +56,6 @@ bool DeleteShortcut(const char* field_name,
 }
 
 }  // namespace
-
-
-namespace history {
 
 // ShortcutsDatabase::Shortcut::MatchCore -------------------------------------
 
@@ -277,5 +273,3 @@ bool ShortcutsDatabase::EnsureTable() {
   }
   return true;
 }
-
-}  // namespace history

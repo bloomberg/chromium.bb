@@ -280,7 +280,7 @@ class ShortcutsProviderTest : public testing::Test {
 
   // Passthrough to the private function in provider_.
   int CalculateScore(const std::string& terms,
-                     const history::ShortcutsDatabase::Shortcut& shortcut,
+                     const ShortcutsDatabase::Shortcut& shortcut,
                      int max_relevance);
 
   base::MessageLoopForUI message_loop_;
@@ -323,9 +323,9 @@ void ShortcutsProviderTest::FillData(TestShortcutInfo* db, size_t db_size) {
   size_t expected_size = backend_->shortcuts_map().size() + db_size;
   for (size_t i = 0; i < db_size; ++i) {
     const TestShortcutInfo& cur = db[i];
-    history::ShortcutsDatabase::Shortcut shortcut(
+    ShortcutsDatabase::Shortcut shortcut(
         cur.guid, ASCIIToUTF16(cur.text),
-        history::ShortcutsDatabase::Shortcut::MatchCore(
+        ShortcutsDatabase::Shortcut::MatchCore(
             ASCIIToUTF16(cur.fill_into_edit), GURL(cur.destination_url),
             ASCIIToUTF16(cur.contents), cur.contents_class,
             ASCIIToUTF16(cur.description), cur.description_class,
@@ -392,7 +392,7 @@ void ShortcutsProviderTest::RunTest(
 
 int ShortcutsProviderTest::CalculateScore(
     const std::string& terms,
-    const history::ShortcutsDatabase::Shortcut& shortcut,
+    const ShortcutsDatabase::Shortcut& shortcut,
     int max_relevance) {
   return provider_->CalculateScore(ASCIIToUTF16(terms), shortcut,
                                    max_relevance);
@@ -712,9 +712,9 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
 }
 
 TEST_F(ShortcutsProviderTest, CalculateScore) {
-  history::ShortcutsDatabase::Shortcut shortcut(
+  ShortcutsDatabase::Shortcut shortcut(
       std::string(), ASCIIToUTF16("test"),
-      history::ShortcutsDatabase::Shortcut::MatchCore(
+      ShortcutsDatabase::Shortcut::MatchCore(
           ASCIIToUTF16("www.test.com"), GURL("http://www.test.com"),
           ASCIIToUTF16("www.test.com"), "0,1,4,3,8,1",
           ASCIIToUTF16("A test"), "0,0,2,2", ui::PAGE_TRANSITION_TYPED,

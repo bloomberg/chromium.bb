@@ -38,8 +38,8 @@ class ShortcutsBackend : public RefcountedKeyedService,
                          public content::NotificationObserver,
                          public history::HistoryServiceObserver {
  public:
-  typedef std::multimap<base::string16,
-                        const history::ShortcutsDatabase::Shortcut> ShortcutMap;
+  typedef std::multimap<base::string16, const ShortcutsDatabase::Shortcut>
+      ShortcutMap;
 
   // |profile| is necessary for profile notifications only and can be NULL in
   // unit-tests. For unit testing, set |suppress_db| to true to prevent creation
@@ -96,8 +96,9 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   ~ShortcutsBackend() override;
 
-  static history::ShortcutsDatabase::Shortcut::MatchCore MatchToMatchCore(
-      const AutocompleteMatch& match, Profile* profile);
+  static ShortcutsDatabase::Shortcut::MatchCore MatchToMatchCore(
+      const AutocompleteMatch& match,
+      Profile* profile);
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
@@ -122,14 +123,14 @@ class ShortcutsBackend : public RefcountedKeyedService,
   void InitCompleted();
 
   // Adds the Shortcut to the database.
-  bool AddShortcut(const history::ShortcutsDatabase::Shortcut& shortcut);
+  bool AddShortcut(const ShortcutsDatabase::Shortcut& shortcut);
 
   // Updates timing and selection count for the Shortcut.
-  bool UpdateShortcut(const history::ShortcutsDatabase::Shortcut& shortcut);
+  bool UpdateShortcut(const ShortcutsDatabase::Shortcut& shortcut);
 
   // Deletes the Shortcuts with these IDs.
   bool DeleteShortcutsWithIDs(
-      const history::ShortcutsDatabase::ShortcutIDs& shortcut_ids);
+      const ShortcutsDatabase::ShortcutIDs& shortcut_ids);
 
   // Deletes all shortcuts whose URLs begin with |url|.  If |exact_match| is
   // true, only shortcuts from exactly |url| are deleted.
@@ -141,7 +142,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
   Profile* profile_;
   CurrentState current_state_;
   ObserverList<ShortcutsBackendObserver> observer_list_;
-  scoped_refptr<history::ShortcutsDatabase> db_;
+  scoped_refptr<ShortcutsDatabase> db_;
 
   // The |temp_shortcuts_map_| and |temp_guid_map_| used for temporary storage
   // between InitInternal() and InitComplete() to avoid doing a potentially huge

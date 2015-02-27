@@ -72,9 +72,6 @@ void CheckV2ColumnExistence(const base::FilePath& db_path, bool is_v2) {
 
 }  // namespace
 
-namespace history {
-
-
 // ShortcutsDatabaseTest ------------------------------------------------------
 
 class ShortcutsDatabaseTest : public testing::Test {
@@ -300,5 +297,3 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateV0ToV1) {
   EXPECT_TRUE(temp_dir.Delete());
 #endif
 }
-
-}  // namespace history
