@@ -43,6 +43,8 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
  private:
   ~NavigatorConnectContextImpl() override;
 
+  void AddFactoryOnIOThread(scoped_ptr<NavigatorConnectServiceFactory> factory);
+
   // Callback called by service factories when a connection succeeded or failed.
   void OnConnectResult(const NavigatorConnectClient& client,
                        int client_message_port_id,

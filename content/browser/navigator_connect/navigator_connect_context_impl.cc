@@ -19,6 +19,16 @@ NavigatorConnectContextImpl::~NavigatorConnectContextImpl() {
 
 void NavigatorConnectContextImpl::AddFactory(
     scoped_ptr<NavigatorConnectServiceFactory> factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&NavigatorConnectContextImpl::AddFactoryOnIOThread, this,
+                 base::Passed(&factory)));
+}
+
+void NavigatorConnectContextImpl::AddFactoryOnIOThread(
+    scoped_ptr<NavigatorConnectServiceFactory> factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_factories_.push_back(factory.release());
 }
 
@@ -26,6 +36,7 @@ void NavigatorConnectContextImpl::Connect(
     NavigatorConnectClient client,
     MessagePortMessageFilter* message_port_message_filter,
     const ConnectCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Create a new message channel. Client port is setup to talk to client
   // process, service port is initially setup without a delegate.
   MessagePortService* message_port_service = MessagePortService::GetInstance();
@@ -76,6 +87,7 @@ void NavigatorConnectContextImpl::OnConnectResult(
     int client_port_route_id,
     const ConnectCallback& callback,
     MessagePortDelegate* delegate) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (delegate) {
     // Update service side port with delegate.
     MessagePortService::GetInstance()->UpdateMessagePort(
