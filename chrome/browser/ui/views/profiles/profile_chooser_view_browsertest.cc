@@ -137,6 +137,8 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
 
   void WaitForUserManager() {
     // If the User Manager hasn't shown yet, wait for it to show up.
+    // TODO(mlerman): As per crbug.com/450221, we should somehow observe when
+    // the UserManager is created and wait for that event.
     if (!UserManager::IsShowing())
       base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(UserManager::IsShowing());
@@ -165,7 +167,10 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ViewProfileUMA) {
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
+// Flaky: http://crbug.com/450221
+// WaitForUserManager()'s RunUntilIdle isn't always sufficient for the
+// UserManager to be showing.
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
   SetupProfilesForLock(browser()->profile());
@@ -186,8 +191,11 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
   UserManager::Hide();
 }
 
+// Flaky: http://crbug.com/450221
+// WaitForUserManager()'s RunUntilIdle isn't always sufficient for the
+// UserManager to be showing.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       LockProfileBlockExtensions) {
+                       DISABLED_LockProfileBlockExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
   extensions::ExtensionRegistry* registry =
@@ -206,8 +214,11 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   UserManager::Hide();
 }
 
+// Flaky: http://crbug.com/450221
+// WaitForUserManager()'s RunUntilIdle isn't always sufficient for the
+// UserManager to be showing.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       LockProfileNoBlockOtherProfileExtensions) {
+                       DISABLED_LockProfileNoBlockOtherProfileExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
   extensions::ExtensionRegistry* registry =
