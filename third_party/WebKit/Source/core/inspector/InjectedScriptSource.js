@@ -388,16 +388,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} objectId
-     */
-    setLastEvaluationResult: function(objectId)
-    {
-        var parsedObjectId = this._parseObjectId(objectId);
-        var object = this._objectForId(parsedObjectId);
-        this._lastResult = object;
-    },
-
-    /**
      * @param {string} methodName
      * @param {string} args
      * @return {*}

@@ -56,8 +56,6 @@ public:
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();
 
-    virtual void setLastEvaluationResult(ErrorString*, const String& objectId) override;
-
 protected:
     void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);
     virtual ConsoleMessageStorage* messageStorage() = 0;

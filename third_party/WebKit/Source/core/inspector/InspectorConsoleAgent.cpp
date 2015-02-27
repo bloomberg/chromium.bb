@@ -238,14 +238,4 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     m_frontend->flush();
 }
 
-void InspectorConsoleAgent::setLastEvaluationResult(ErrorString* errorString, const String& objectId)
-{
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    if (injectedScript.isEmpty()) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-    injectedScript.setLastEvaluationResult(objectId);
-}
-
 } // namespace blink

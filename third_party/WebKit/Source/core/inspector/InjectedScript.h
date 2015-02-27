@@ -102,7 +102,6 @@ public:
     void inspectNode(Node*);
     void releaseObjectGroup(const String&);
 
-    void setLastEvaluationResult(const String& objectId);
     void setCustomObjectFormatterEnabled(bool);
 
 private:
