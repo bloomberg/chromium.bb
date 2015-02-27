@@ -1073,6 +1073,7 @@
       'browser/printing/print_preview_dialog_controller_unittest.cc',
       'browser/printing/print_preview_test.cc',
       'browser/printing/print_preview_test.h',
+      'browser/ui/webui/print_preview/extension_printer_handler_unittest.cc',
       'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
       'common/service_process_util_unittest.cc',
       'service/cloud_print/cloud_print_service_helpers_unittest.cc',

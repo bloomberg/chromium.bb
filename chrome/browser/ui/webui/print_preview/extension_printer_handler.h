@@ -17,6 +17,7 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class RefCountedMemory;
+class TaskRunner;
 }
 
 namespace content {
@@ -42,7 +43,9 @@ class ExtensionPrinterHandler : public PrinterHandler {
   using RefCountedMemoryCallback =
       base::Callback<void(const scoped_refptr<base::RefCountedMemory>&)>;
 
-  explicit ExtensionPrinterHandler(content::BrowserContext* browser_context);
+  ExtensionPrinterHandler(
+      content::BrowserContext* browser_context,
+      const scoped_refptr<base::TaskRunner>& slow_task_runner);
 
   ~ExtensionPrinterHandler() override;
 
@@ -62,13 +65,18 @@ class ExtensionPrinterHandler : public PrinterHandler {
                   const PrinterHandler::PrintCallback& callback) override;
 
  private:
+  friend class ExtensionPrinterHandlerTest;
+
+  void SetPwgRasterConverterForTesting(
+      scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter);
+
   // Converts |data| to PWG raster format (from PDF) for a printer described
   // by |printer_description|.
   // |callback| is called with the converted data.
   void ConvertToPWGRaster(
       const scoped_refptr<base::RefCountedMemory>& data,
       const cloud_devices::CloudDeviceDescription& printer_description,
-      const std::string& ticket,
+      const cloud_devices::CloudDeviceDescription& ticket,
       const gfx::Size& page_size,
       const RefCountedMemoryCallback& callback);
 
@@ -96,6 +104,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
   content::BrowserContext* browser_context_;
 
   scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter_;
+
+  scoped_refptr<base::TaskRunner> slow_task_runner_;
 
   base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_;
 

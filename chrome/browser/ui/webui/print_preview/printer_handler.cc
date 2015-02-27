@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 
 // static
 scoped_ptr<PrinterHandler> PrinterHandler::CreateForExtensionPrinters(
     content::BrowserContext* browser_context) {
-  return scoped_ptr<ExtensionPrinterHandler>(
-      new ExtensionPrinterHandler(browser_context));
+  return scoped_ptr<ExtensionPrinterHandler>(new ExtensionPrinterHandler(
+      browser_context, base::WorkerPool::GetTaskRunner(true)));
 }
