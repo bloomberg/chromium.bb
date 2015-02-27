@@ -208,8 +208,8 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
             WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
-            WebCryptoAlgorithmParamsTypeNone, // WrapKey
-            WebCryptoAlgorithmParamsTypeNone // UnwrapKey
+            WebCryptoAlgorithmInfo::Undefined, // WrapKey
+            WebCryptoAlgorithmInfo::Undefined // UnwrapKey
         }
     }, { // Index 12
         "ECDSA", {
@@ -222,8 +222,8 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeEcKeyImportParams, // ImportKey
             WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmInfo::Undefined, // DeriveBits
-            WebCryptoAlgorithmParamsTypeNone, // WrapKey
-            WebCryptoAlgorithmParamsTypeNone // UnwrapKey
+            WebCryptoAlgorithmInfo::Undefined, // WrapKey
+            WebCryptoAlgorithmInfo::Undefined // UnwrapKey
         }
     }, { // Index 13
         "ECDH", {
@@ -236,8 +236,8 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeEcKeyImportParams, // ImportKey
             WebCryptoAlgorithmInfo::Undefined, // GetKeyLength
             WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams, // DeriveBits
-            WebCryptoAlgorithmParamsTypeNone, // WrapKey
-            WebCryptoAlgorithmParamsTypeNone // UnwrapKey
+            WebCryptoAlgorithmInfo::Undefined, // WrapKey
+            WebCryptoAlgorithmInfo::Undefined // UnwrapKey
         }
     }, { // Index 14
         "HKDF", {
