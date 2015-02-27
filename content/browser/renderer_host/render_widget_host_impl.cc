@@ -873,10 +873,6 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   RendererIsResponsive();
 }
 
-void RenderWidgetHostImpl::DisableElasticOverscroll() {
-  // TODO(dgozman): Send an IPC handled by InputHandlerProxy.
-}
-
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   ForwardMouseEventWithLatencyInfo(mouse_event, ui::LatencyInfo());
 }

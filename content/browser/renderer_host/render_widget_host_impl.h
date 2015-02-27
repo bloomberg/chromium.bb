@@ -276,9 +276,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // responsive.
   void StopHangMonitorTimeout();
 
-  // Disables elastic overscroll effect if enabled.
-  void DisableElasticOverscroll();
-
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
   void ForwardGestureEventWithLatencyInfo(
