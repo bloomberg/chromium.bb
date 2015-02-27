@@ -1062,7 +1062,9 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
 
     static PeekOutType peek(const blink::WeakMember<T>& value) { return value; }
     static PassOutType passOut(const blink::WeakMember<T>& value) { return value; }
-    static bool traceInCollection(blink::Visitor* visitor, blink::WeakMember<T>& weakMember, ShouldWeakPointersBeMarkedStrongly strongify)
+
+    template<typename VisitorDispatcher>
+    static bool traceInCollection(VisitorDispatcher visitor, blink::WeakMember<T>& weakMember, ShouldWeakPointersBeMarkedStrongly strongify)
     {
         if (strongify == WeakPointersActStrong) {
             visitor->trace(weakMember.get()); // Strongified visit.

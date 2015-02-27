@@ -35,35 +35,6 @@
 
 namespace blink {
 
-#if ENABLE(OILPAN)
-bool CachedMatchedPropertiesHashTraits::traceInCollection(Visitor* visitor, Member<CachedMatchedProperties>& cachedProperties, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
-{
-    // Only honor the cache's weakness semantics if the collection is traced
-    // with WeakPointersActWeak. Otherwise just trace the cachedProperties
-    // strongly, ie. call trace on it.
-    if (cachedProperties && strongify == WTF::WeakPointersActWeak) {
-        // A given cache entry is only kept alive if none of the MatchedProperties
-        // in the CachedMatchedProperties value contain a dead "properties" field.
-        // If there is a dead field the entire cache entry is removed.
-        for (const auto& matchedProperties : cachedProperties->matchedProperties) {
-            if (!visitor->isAlive(matchedProperties.properties)) {
-                // For now report the cache entry as dead. This might not
-                // be the final result if in a subsequent call for this entry,
-                // the "properties" field has been marked via another path.
-                return true;
-            }
-        }
-    }
-    // At this point none of the entries in the matchedProperties vector
-    // had a dead "properties" field so trace CachedMatchedProperties strongly.
-    // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
-    // Avoid calling trace in that case by only calling trace when cachedProperties is not yet marked.
-    if (!visitor->isAlive(cachedProperties))
-        visitor->trace(cachedProperties);
-    return false;
-}
-#endif
-
 void CachedMatchedProperties::set(const LayoutStyle& style, const LayoutStyle& parentStyle, const MatchResult& matchResult)
 {
     matchedProperties.appendVector(matchResult.matchedProperties);

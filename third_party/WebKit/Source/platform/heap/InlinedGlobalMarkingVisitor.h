@@ -44,6 +44,9 @@ public:
         Impl::mark(objectPointer, callback);
     }
 
+    using Impl::registerDelayedMarkNoTracing;
+    using Impl::registerWeakTable;
+
     using Helper::registerWeakMembers;
     inline void registerWeakMembers(const void* closure, const void* objectPointer, WeakPointerCallback callback)
     {
