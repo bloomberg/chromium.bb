@@ -686,9 +686,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsRepair",
       base::Bind(&ExtensionSettingsHandler::HandleRepairMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsEnableIncognito",
-      base::Bind(&ExtensionSettingsHandler::HandleEnableIncognitoMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnableErrorCollection",
       base::Bind(&ExtensionSettingsHandler::HandleEnableErrorCollectionMessage,
                  AsWeakPtr()));
@@ -1015,35 +1012,6 @@ void ExtensionSettingsHandler::HandleRepairMessage(
       base::Bind(&ExtensionSettingsHandler::OnReinstallComplete,
                  AsWeakPtr())));
   reinstaller->BeginReinstall();
-}
-
-void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
-  std::string extension_id, enable_str;
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &enable_str));
-  const Extension* extension =
-      extension_service_->GetInstalledExtension(extension_id);
-  if (!extension)
-    return;
-
-  // Flipping the incognito bit will generate unload/load notifications for the
-  // extension, but we don't want to reload the page, because a) we've already
-  // updated the UI to reflect the change, and b) we want the yellow warning
-  // text to stay until the user has left the page.
-  //
-  // TODO(aa): This creates crappiness in some cases. For example, in a main
-  // window, when toggling this, the browser action will flicker because it gets
-  // unloaded, then reloaded. It would be better to have a dedicated
-  // notification for this case.
-  //
-  // Bug: http://crbug.com/41384
-  base::AutoReset<bool> auto_reset_ignore_notifications(
-      &ignore_notifications_, true);
-  util::SetIsIncognitoEnabled(extension->id(),
-                              extension_service_->profile(),
-                              enable_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleEnableErrorCollectionMessage(

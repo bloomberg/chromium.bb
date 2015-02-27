@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_TEST_EXTENSION_REGISTRY_OBSERVER_H_
 #define EXTENSIONS_BROWSER_TEST_EXTENSION_REGISTRY_OBSERVER_H_
 
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -14,14 +17,19 @@ class ExtensionRegistry;
 // A helper class that listen for ExtensionRegistry notifications.
 class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
  public:
-  explicit TestExtensionRegistryObserver(ExtensionRegistry* registry,
-                                         const std::string& extension_id);
+  // If |extension_id| is provided, listens only to events relating to that
+  // extension. Otherwise, listens to all events.
+  explicit TestExtensionRegistryObserver(ExtensionRegistry* registry);
+  TestExtensionRegistryObserver(ExtensionRegistry* registry,
+                                const std::string& extension_id);
+
   ~TestExtensionRegistryObserver() override;
 
-  void WaitForExtensionWillBeInstalled();
-  void WaitForExtensionUninstalled();
-  void WaitForExtensionLoaded();
-  void WaitForExtensionUnloaded();
+  // Waits for the notification, and returns the extension that caused it.
+  const Extension* WaitForExtensionWillBeInstalled();
+  const Extension* WaitForExtensionUninstalled();
+  const Extension* WaitForExtensionLoaded();
+  const Extension* WaitForExtensionUnloaded();
 
  private:
   class Waiter;
@@ -40,6 +48,8 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
+
+  const Extension* Wait(scoped_ptr<Waiter>* waiter);
 
   scoped_ptr<Waiter> will_be_installed_waiter_;
   scoped_ptr<Waiter> uninstalled_waiter_;

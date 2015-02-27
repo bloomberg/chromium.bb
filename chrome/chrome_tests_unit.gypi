@@ -672,6 +672,7 @@
       'browser/extensions/api/declarative_content/content_condition_unittest.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',
+      'browser/extensions/api/developer_private/developer_private_api_unittest.cc',
       'browser/extensions/api/device_permissions_manager_unittest.cc',
       'browser/extensions/api/dial/dial_device_data_unittest.cc',
       'browser/extensions/api/dial/dial_registry_unittest.cc',

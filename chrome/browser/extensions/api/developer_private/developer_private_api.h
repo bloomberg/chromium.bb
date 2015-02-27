@@ -241,7 +241,7 @@ class DeveloperPrivateAllowFileAccessFunction
 };
 
 class DeveloperPrivateAllowIncognitoFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.allowIncognito",
                              DEVELOPERPRIVATE_ALLOWINCOGNITO);
@@ -249,8 +249,8 @@ class DeveloperPrivateAllowIncognitoFunction
  protected:
   ~DeveloperPrivateAllowIncognitoFunction() override;
 
-  // ExtensionFunction:
-  bool RunSync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 };
 
 class DeveloperPrivateReloadFunction : public ChromeSyncExtensionFunction {

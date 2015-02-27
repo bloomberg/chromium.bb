@@ -357,10 +357,10 @@ cr.define('extensions', function() {
         if (!this.butterbarShown_) {
           butterBar.hidden = !checked || extension.is_hosted_app;
           this.butterbarShown_ = !butterBar.hidden;
-        } else
+        } else {
           butterBar.hidden = true;
-        chrome.send('extensionSettingsEnableIncognito',
-                    [extension.id, String(checked)]);
+        }
+        chrome.developerPrivate.allowIncognito(extension.id, checked);
       }.bind(this));
 
       // The 'collect errors' checkbox. This should only be visible if the

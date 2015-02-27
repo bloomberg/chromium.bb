@@ -89,6 +89,8 @@ namespace developer_private = api::developer_private;
 
 namespace {
 
+const char kNoSuchExtensionError[] = "No such extension.";
+
 const char kUnpackedAppsFolder[] = "apps_target";
 
 ExtensionService* GetExtensionService(Profile* profile) {
@@ -701,23 +703,25 @@ bool DeveloperPrivateAllowFileAccessFunction::RunSync() {
 DeveloperPrivateAllowFileAccessFunction::
     ~DeveloperPrivateAllowFileAccessFunction() {}
 
-bool DeveloperPrivateAllowIncognitoFunction::RunSync() {
+ExtensionFunction::ResponseAction
+DeveloperPrivateAllowIncognitoFunction::Run() {
   scoped_ptr<AllowIncognito::Params> params(
       AllowIncognito::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   const Extension* extension =
-      ExtensionRegistry::Get(GetProfile())
+      ExtensionRegistry::Get(browser_context())
           ->GetExtensionById(params->extension_id,
                              ExtensionRegistry::EVERYTHING);
-  bool result = true;
 
   if (!extension)
-    result = false;
-  else
-    util::SetIsIncognitoEnabled(extension->id(), GetProfile(), params->allow);
+    return RespondNow(Error(kNoSuchExtensionError));
 
-  return result;
+  // Should this take into account policy settings?
+  util::SetIsIncognitoEnabled(
+      extension->id(), browser_context(), params->allow);
+
+  return RespondNow(NoArguments());
 }
 
 DeveloperPrivateAllowIncognitoFunction::
