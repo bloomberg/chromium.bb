@@ -36,14 +36,7 @@ class CrashHandler {
   // Returns whether or not the user has allowed for uploading crash dumps.
   bool CanUploadCrashDump();
 
-  // Callback with which to create a breakpad::ExceptionHandler that will
-  // attempt synchronously uploading crash dumps and logs at crash time.
-  void AttemptUploadCrashDump();
-
-  // Callback for breakpad::ExceptionHandler to delete crash dumps created by
-  // the Chrome crash component. Chrome's crash component does not query
-  // for user consent after initializing breakpad.
-  void RemoveCrashDumps();
+  void UploadCrashDumps();
 
  private:
   CrashHandler(const base::FilePath& log_file_path);
@@ -51,9 +44,8 @@ class CrashHandler {
 
   void Initialize(const std::string& process_type);
 
-  // Starts a background thread to look for any past crash dumps and upload them
-  // to the crash server.
-  void UploadCrashDumpsAsync();
+  // Starts a thread to periodically check for uploads
+  void InitializeUploader();
 
   // Path to the current process's log file.
   base::FilePath log_file_path_;

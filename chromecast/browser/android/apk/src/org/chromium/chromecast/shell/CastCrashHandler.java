@@ -12,21 +12,23 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("chromecast")
 public final class CastCrashHandler {
+    private static CastCrashUploader sCrashUploader;
 
     @CalledByNative
-    public static void removeCrashDumpsSync(String crashDumpPath, boolean uploadCrashToStaging) {
-        new CastCrashUploader(crashDumpPath, uploadCrashToStaging).removeCrashDumpsSync();
+    public static void initializeUploader(String crashDumpPath, boolean uploadCrashToStaging) {
+        if (sCrashUploader == null) {
+            sCrashUploader = new CastCrashUploader(crashDumpPath, uploadCrashToStaging);
+            sCrashUploader.startPeriodicUpload();
+        }
     }
 
     @CalledByNative
-    public static void uploadCurrentProcessDumpSync(String crashDumpPath, String logFilePath,
-            boolean uploadCrashToStaging) {
-        new CastCrashUploader(crashDumpPath, uploadCrashToStaging)
-                .uploadCurrentProcessDumpSync(logFilePath);
+    public static void removeCrashDumps() {
+        sCrashUploader.removeCrashDumps();
     }
 
     @CalledByNative
-    public static void uploadCrashDumpsAsync(String crashDumpPath, boolean uploadCrashToStaging) {
-        new CastCrashUploader(crashDumpPath, uploadCrashToStaging).uploadRecentCrashesAsync();
+    public static void uploadCrashDumps(String logFilePath) {
+        sCrashUploader.uploadCrashDumps(logFilePath);
     }
 }

@@ -21,8 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
-import java.util.concurrent.ExecutorService;
+import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,8 +40,11 @@ public final class CastCrashUploader {
     private static final String TAG = "CastCrashUploader";
     private static final String CRASH_REPORT_HOST = "clients2.google.com";
     private static final String CAST_SHELL_USER_AGENT = android.os.Build.MODEL + "/CastShell";
+    // Multipart dump filename has format "[random string].dmp[pid]", e.g.
+    // 20597a65-b822-008e-31f8fc8e-02bb45c0.dmp18169
+    private static final String DUMP_FILE_REGEX = ".*\\.dmp\\d*";
 
-    private final ExecutorService mExecutorService;
+    private final ScheduledExecutorService mExecutorService;
     private final String mCrashDumpPath;
     private final String mCrashReportUploadUrl;
 
@@ -47,109 +53,112 @@ public final class CastCrashUploader {
         mCrashReportUploadUrl = uploadCrashToStaging
                 ? "http://clients2.google.com/cr/staging_report"
                 : "http://clients2.google.com/cr/report";
-        mExecutorService = Executors.newFixedThreadPool(1);
+        mExecutorService = Executors.newScheduledThreadPool(1);
     }
 
-    public void removeCrashDumpsSync() {
-        mExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                File crashDumpDirectory = new File(mCrashDumpPath);
-                for (File potentialDump : crashDumpDirectory.listFiles()) {
-                    if (potentialDump.getName().matches(".*\\.dmp\\d*")) {
-                        potentialDump.delete();
+    /**
+     * Sets up a periodic uploader, that checks for new dumps to upload every 20 minutes
+     */
+    public void startPeriodicUpload() {
+        mExecutorService.scheduleWithFixedDelay(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        queueAllCrashDumpUploads(false /* synchronous */, null);
                     }
-                }
-            }
-        });
-        waitForTasksToFinish();
+                },
+                0,  // Do first run immediately
+                20, // Run once every 20 minutes
+                TimeUnit.MINUTES);
     }
 
-    /**
-     * Synchronously uploads the crash dump from the current process, along with an attached
-     * log file.
-     * @param logFilePath Full path to the log file for the current process.
-     */
-    public void uploadCurrentProcessDumpSync(String logFilePath) {
-        int pid = android.os.Process.myPid();
-        Log.d(TAG, "Immediately attempting a crash upload with logs, looking for: .dmp" + pid);
-
-        queueAllCrashDumpUpload(".*\\.dmp" + pid, new File(logFilePath));
-        waitForTasksToFinish();
+    public void uploadCrashDumps(final String logFilePath) {
+        queueAllCrashDumpUploads(true /* synchronous */, logFilePath);
     }
 
-    private void waitForTasksToFinish() {
-        try {
-            mExecutorService.shutdown();
-            boolean finished = mExecutorService.awaitTermination(60, TimeUnit.SECONDS);
-            if (!finished) {
-                Log.d(TAG, "Crash dump handling did not finish executing in time. Exiting.");
+    public void removeCrashDumps() {
+        File crashDumpDirectory = new File(mCrashDumpPath);
+        for (File potentialDump : crashDumpDirectory.listFiles()) {
+            if (potentialDump.getName().matches(DUMP_FILE_REGEX)) {
+                potentialDump.delete();
             }
-        } catch (InterruptedException e) {
-            Log.e(TAG, "Interrupted waiting for asynchronous execution", e);
         }
-    }
-
-    /**
-     * Scans the given location for crash dump files and queues background
-     * uploads of each file.
-     */
-    public void uploadRecentCrashesAsync() {
-        mExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                // Multipart dump filename has format "[random string].dmp[pid]", e.g.
-                // 20597a65-b822-008e-31f8fc8e-02bb45c0.dmp18169
-                queueAllCrashDumpUpload(".*\\.dmp\\d*", null);
-            }
-        });
     }
 
     /**
      * Searches for files matching the given regex in the crash dump folder, queueing each
      * one for upload.
-     * @param dumpFileRegex Regex to test against the name of each file in the crash dump folder.
-     * @param logFile Log file to include, if any.
+     * @param synchronous Whether or not this function should block on queued uploads
+     * @param logFile Log file to include, if any
      */
-    private void queueAllCrashDumpUpload(String dumpFileRegex, File logFile) {
+    private void queueAllCrashDumpUploads(boolean synchronous, String logFile) {
         if (mCrashDumpPath == null) return;
+        Log.d(TAG, "Checking for crash dumps");
+
+        LinkedList<Future> tasks = new LinkedList<Future>();
         final AndroidHttpClient httpClient = AndroidHttpClient.newInstance(CAST_SHELL_USER_AGENT);
         File crashDumpDirectory = new File(mCrashDumpPath);
         for (File potentialDump : crashDumpDirectory.listFiles()) {
-            if (potentialDump.getName().matches(dumpFileRegex)) {
-                queueCrashDumpUpload(httpClient, potentialDump, logFile);
+            String dumpName = potentialDump.getName();
+            if (dumpName.matches(DUMP_FILE_REGEX)) {
+                int dumpPid;
+                try {
+                    dumpPid = Integer.parseInt(
+                        dumpName.substring(dumpName.lastIndexOf(".dmp") + 4));
+                } catch (NumberFormatException e) {
+                    // Likely resulting from failing to parse an empty string, set value to 0
+                    dumpPid = 0;
+                }
+                // Check if the dump we found has pid matching this process, and if so include
+                // this process's log.
+                // TODO(kjoswiak): Currently, logs are lost if dump cannot be uploaded right away.
+                if (dumpPid == android.os.Process.myPid()) {
+                    tasks.add(queueCrashDumpUpload(httpClient, potentialDump, new File(logFile)));
+                } else {
+                    tasks.add(queueCrashDumpUpload(httpClient, potentialDump, null));
+                }
             }
         }
 
         // When finished uploading all of the queued dumps, release httpClient
-        mExecutorService.submit(new Runnable() {
+        tasks.add(mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 httpClient.close();
             }
-        });
+        }));
+
+        // Wait on tasks, if necessary.
+        if (synchronous) {
+            for (Future task : tasks) {
+                // Wait on task. If thread received interrupt and should stop waiting, return.
+                if (!waitOnTask(task)) {
+                    return;
+                }
+            }
+        }
     }
 
     /**
      * Enqueues a background task to upload a single crash dump file.
      */
-    private void queueCrashDumpUpload(final AndroidHttpClient httpClient, final File dumpFile,
+    private Future queueCrashDumpUpload(final AndroidHttpClient httpClient, final File dumpFile,
             final File logFile) {
-        mExecutorService.submit(new Runnable() {
+        return mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 Log.d(TAG, "Uploading dump crash log: " + dumpFile.getName());
 
                 try {
+                    InputStream uploadCrashDumpStream = new FileInputStream(dumpFile);
+                    InputStream logFileStream = null;
+
                     // Dump file is already in multipart MIME format and has a boundary throughout.
                     // Scrape the first line, remove two dashes, call that the "boundary" and add it
                     // to the content-type.
                     FileInputStream dumpFileStream = new FileInputStream(dumpFile);
                     String dumpFirstLine = getFirstLine(dumpFileStream);
                     String mimeBoundary = dumpFirstLine.substring(2);
-
-                    InputStream uploadCrashDumpStream = new FileInputStream(dumpFile);
-                    InputStream logFileStream = null;
 
                     if (logFile != null) {
                         Log.d(TAG, "Including log file: " + logFile.getName());
@@ -181,22 +190,28 @@ public final class CastCrashUploader {
                     String responseLine = getFirstLine(response.getEntity().getContent());
 
                     int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode != HttpStatus.SC_OK) {
+                    if (statusCode == HttpStatus.SC_OK) {
+                        Log.d(TAG, "Successfully uploaded as report ID: " + responseLine);
+                    } else {
                         Log.e(TAG, "Failed response (" + statusCode + "): " + responseLine);
 
-                        // 400 Bad Request is returned if the dump file is malformed. Delete file
-                        // to prevent re-attempting later.
-                        if (statusCode == HttpStatus.SC_BAD_REQUEST) {
-                            dumpFile.delete();
+                        // 400 Bad Request is returned if the dump file is malformed. If requeset
+                        // is not malformed, shortcircuit before clean up to avoid deletion and
+                        // retry later, otherwise pass through and delete malformed file
+                        if (statusCode != HttpStatus.SC_BAD_REQUEST) {
+                            return;
                         }
-                        return;
                     }
 
-                    Log.d(TAG, "Successfully uploaded as report ID: " + responseLine);
-
                     // Delete the file so we don't re-upload it next time.
+                    uploadCrashDumpStream.close();
                     dumpFileStream.close();
                     dumpFile.delete();
+
+                    if (logFile != null && logFile.exists()) {
+                        logFileStream.close();
+                        logFile.delete();
+                    }
                 } catch (IOException e) {
                     Log.e(TAG, "File I/O error trying to upload crash dump", e);
                 }
@@ -224,6 +239,24 @@ public final class CastCrashUploader {
             if (streamReader != null) {
                 streamReader.close();
             }
+        }
+    }
+
+    /**
+     * Waits until Future is propagated
+     * @return Whether thread should continue waiting
+     */
+    private boolean waitOnTask(Future task) {
+        try {
+            task.get();
+            return true;
+        } catch (InterruptedException e) {
+            // Was interrupted while waiting, tell caller to cancel waiting
+            return false;
+        } catch (ExecutionException e) {
+            // Task execution may have failed, but this is fine as long as it finished
+            // executing
+            return true;
         }
     }
 }
