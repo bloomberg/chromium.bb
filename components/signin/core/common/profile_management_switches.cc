@@ -85,7 +85,7 @@ State GetProcessState() {
   }
 
   // Set the default state
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   State state = STATE_ACCOUNT_CONSISTENCY;
 #else
   State state = STATE_OLD_AVATAR_MENU;
