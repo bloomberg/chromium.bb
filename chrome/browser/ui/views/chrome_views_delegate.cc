@@ -25,6 +25,7 @@
 #if defined(OS_WIN)
 #include <dwmapi.h>
 #include <shellapi.h>
+#include "base/profiler/scoped_tracker.h"
 #include "base/task_runner_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
@@ -85,6 +86,12 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 #if defined(OS_WIN)
 bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
   APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge };
+
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/462368 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462368 MonitorHasTopmostAutohideTaskbarForEdge"));
+
   // MSDN documents an ABM_GETAUTOHIDEBAREX, which supposedly takes a monitor
   // rect and returns autohide bars on that monitor.  This sounds like a good
   // idea for multi-monitor systems.  Unfortunately, it appears to not work at
