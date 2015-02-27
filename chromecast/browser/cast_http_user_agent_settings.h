@@ -22,6 +22,7 @@ class CastHttpUserAgentSettings : public net::HttpUserAgentSettings {
   std::string GetUserAgent() const override;
 
  private:
+  mutable std::string last_locale_;
   mutable std::string accept_language_;
 
   DISALLOW_COPY_AND_ASSIGN(CastHttpUserAgentSettings);

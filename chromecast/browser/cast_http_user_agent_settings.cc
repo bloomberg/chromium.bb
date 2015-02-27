@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chromecast/common/cast_content_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,14 +29,24 @@ CastHttpUserAgentSettings::~CastHttpUserAgentSettings() {
 
 std::string CastHttpUserAgentSettings::GetAcceptLanguage() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (accept_language_.empty()) {
+  std::string new_locale(
+#if defined(OS_ANDROID)
+      // TODO(byungchul): Use transient locale set when new app starts.
+      base::android::GetDefaultLocale()
+#else
+      base::i18n::GetConfiguredLocale()
+#endif
+      );
+  if (new_locale != last_locale_ || accept_language_.empty()) {
+    last_locale_ = new_locale;
     accept_language_ = net::HttpUtil::GenerateAcceptLanguageHeader(
 #if defined(OS_ANDROID)
-        base::android::GetDefaultLocale()
+        last_locale_
 #else
         l10n_util::GetStringUTF8(IDS_CHROMECAST_SETTINGS_ACCEPT_LANGUAGES)
-#endif  // defined(OS_ANDROID)
+#endif
         );
+    LOG(INFO) << "Locale changed: accept_language=" << accept_language_;
   }
   return accept_language_;
 }
