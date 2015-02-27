@@ -138,7 +138,6 @@ void MidiManagerMac::InitializeCoreMIDI() {
   DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   // CoreMIDI registration.
-  // TODO(toyoshim): Set MIDINotifyProc to receive CoreMIDI event notifications.
   midi_client_ = 0;
   OSStatus result =
       MIDIClientCreate(CFSTR("Chrome"), ReceiveMidiNotifyDispatch, this,
