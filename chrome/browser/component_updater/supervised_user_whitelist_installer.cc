@@ -168,9 +168,7 @@ class SupervisedUserWhitelistInstallerImpl
   ~SupervisedUserWhitelistInstallerImpl() override {}
 
  private:
-  void RegisterComponent(const std::string& crx_id,
-                         const std::string& name,
-                         const base::Closure& callback);
+  void RegisterComponent(const std::string& crx_id, const std::string& name);
   void RegisterNewComponent(const std::string& crx_id, const std::string& name);
   bool UnregisterWhitelistInternal(base::DictionaryValue* pref_dict,
                                    const std::string& client_id,
@@ -220,8 +218,7 @@ SupervisedUserWhitelistInstallerImpl::SupervisedUserWhitelistInstallerImpl(
 
 void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
     const std::string& crx_id,
-    const std::string& name,
-    const base::Closure& callback) {
+    const std::string& name) {
   scoped_ptr<ComponentInstallerTraits> traits(
       new SupervisedUserWhitelistComponentInstallerTraits(
           crx_id, name,
@@ -229,16 +226,14 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
                      weak_ptr_factory_.GetWeakPtr(), crx_id)));
   scoped_refptr<DefaultComponentInstaller> installer(
       new DefaultComponentInstaller(traits.Pass()));
-  installer->Register(cus_, callback);
+  installer->Register(cus_);
 }
 
 void SupervisedUserWhitelistInstallerImpl::RegisterNewComponent(
     const std::string& crx_id,
     const std::string& name) {
-  RegisterComponent(
-      crx_id, name,
-      base::Bind(&SupervisedUserWhitelistInstallerImpl::TriggerComponentUpdate,
-                 &cus_->GetOnDemandUpdater(), crx_id));
+  RegisterComponent(crx_id, name);
+  TriggerComponentUpdate(&cus_->GetOnDemandUpdater(), crx_id);
 }
 
 bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
@@ -284,7 +279,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
     bool result = dict->GetString(kName, &name);
     DCHECK(result);
     const std::string& id = it.key();
-    RegisterComponent(id, name, base::Closure());
+    RegisterComponent(id, name);
 
     registered_whitelists.insert(id);
   }
@@ -432,8 +427,7 @@ std::vector<uint8_t> SupervisedUserWhitelistInstaller::GetHashFromCrxId(
 void SupervisedUserWhitelistInstaller::TriggerComponentUpdate(
     OnDemandUpdater* updater,
     const std::string& crx_id) {
-  ComponentUpdateService::Status status = updater->OnDemandUpdate(crx_id);
-  DCHECK_EQ(ComponentUpdateService::kOk, status);
+  updater->OnDemandUpdate(crx_id);
 }
 
 }  // namespace component_updater

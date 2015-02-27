@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -91,9 +90,7 @@ class DefaultComponentInstaller : public update_client::ComponentInstaller {
       scoped_ptr<ComponentInstallerTraits> installer_traits);
 
   // Registers the component for update checks and installs.
-  // The passed |callback| will be called once the initial check for installed
-  // versions is done and the component has been registered.
-  void Register(ComponentUpdateService* cus, const base::Closure& callback);
+  void Register(ComponentUpdateService* cus);
 
   // Overridden from ComponentInstaller:
   void OnUpdateError(int error) override;
@@ -111,8 +108,7 @@ class DefaultComponentInstaller : public update_client::ComponentInstaller {
                      const base::FilePath& unpack_path,
                      const base::FilePath& install_path);
   void StartRegistration(ComponentUpdateService* cus);
-  void FinishRegistration(ComponentUpdateService* cus,
-                          const base::Closure& callback);
+  void FinishRegistration(ComponentUpdateService* cus);
   void ComponentReady(scoped_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 

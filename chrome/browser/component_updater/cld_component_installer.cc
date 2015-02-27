@@ -124,7 +124,7 @@ void RegisterCldComponent(ComponentUpdateService* cus) {
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(traits.Pass());
-  installer->Register(cus, base::Closure());
+  installer->Register(cus);
 }
 
 void CldComponentInstallerTraits::SetLatestCldDataFile(

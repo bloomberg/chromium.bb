@@ -44,9 +44,7 @@ DefaultComponentInstaller::DefaultComponentInstaller(
 DefaultComponentInstaller::~DefaultComponentInstaller() {
 }
 
-void DefaultComponentInstaller::Register(
-    ComponentUpdateService* cus,
-    const base::Closure& callback) {
+void DefaultComponentInstaller::Register(ComponentUpdateService* cus) {
   DCHECK(thread_checker_.CalledOnValidThread());
   task_runner_ = cus->GetSequencedTaskRunner();
 
@@ -55,12 +53,10 @@ void DefaultComponentInstaller::Register(
                  << "has no installer traits.";
     return;
   }
-  task_runner_->PostTaskAndReply(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::StartRegistration,
-                 this, cus),
-      base::Bind(&DefaultComponentInstaller::FinishRegistration,
-                 this, cus, callback));
+                 this, cus));
 }
 
 void DefaultComponentInstaller::OnUpdateError(int error) {
@@ -203,6 +199,11 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   // browser startup.
   for (const auto& older_path : older_paths)
     base::DeleteFile(older_path, true);
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DefaultComponentInstaller::FinishRegistration,
+                 this, cus));
 }
 
 void DefaultComponentInstaller::UninstallOnTaskRunner() {
@@ -238,8 +239,7 @@ base::FilePath DefaultComponentInstaller::GetInstallDirectory() {
 }
 
 void DefaultComponentInstaller::FinishRegistration(
-    ComponentUpdateService* cus,
-    const base::Closure& callback) {
+    ComponentUpdateService* cus) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (installer_traits_->CanAutoUpdate()) {
     CrxComponent crx;
@@ -255,9 +255,6 @@ void DefaultComponentInstaller::FinishRegistration(
                    << installer_traits_->GetName();
       return;
     }
-
-    if (!callback.is_null())
-      callback.Run();
   }
 
   if (!current_manifest_)
