@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -647,11 +648,25 @@ void Scheduler::OnBeginImplFrameDeadline() {
   //     order to wait for more user-input before starting the next commit.
   // * Creating a new OuputSurface will not occur during the deadline in
   //     order to allow the state machine to "settle" first.
+
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461509 Scheduler::OnBeginImplFrameDeadline1"));
   state_machine_.OnBeginImplFrameDeadline();
   ProcessScheduledActions();
+
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461509 Scheduler::OnBeginImplFrameDeadline2"));
   state_machine_.OnBeginImplFrameIdle();
   ProcessScheduledActions();
 
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461509 Scheduler::OnBeginImplFrameDeadline3"));
   client_->DidBeginImplFrameDeadline();
 }
 
@@ -692,6 +707,10 @@ void Scheduler::ProcessScheduledActions() {
 
   SchedulerStateMachine::Action action;
   do {
+    // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461509 Scheduler::ProcessScheduledActions1"));
     action = state_machine_.NextAction();
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "SchedulerStateMachine",
@@ -706,40 +725,96 @@ void Scheduler::ProcessScheduledActions() {
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;
-      case SchedulerStateMachine::ACTION_ANIMATE:
+      case SchedulerStateMachine::ACTION_ANIMATE: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile2(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions2"));
         client_->ScheduledActionAnimate();
         break;
-      case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
+      }
+      case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile3(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions3"));
         client_->ScheduledActionSendBeginMainFrame();
         break;
-      case SchedulerStateMachine::ACTION_COMMIT:
+      }
+      case SchedulerStateMachine::ACTION_COMMIT: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile4(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions4"));
         client_->ScheduledActionCommit();
         break;
-      case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
+      }
+      case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile5(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions5"));
         client_->ScheduledActionActivateSyncTree();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
+      }
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile6(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions6"));
         DrawAndSwapIfPossible();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
+      }
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile7(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions7"));
         client_->ScheduledActionDrawAndSwapForced();
         break;
+      }
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
         // No action is actually performed, but this allows the state machine to
         // advance out of its waiting to draw state without actually drawing.
         break;
-      case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
+      case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile8(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions8"));
         client_->ScheduledActionBeginOutputSurfaceCreation();
         break;
-      case SchedulerStateMachine::ACTION_PREPARE_TILES:
+      }
+      case SchedulerStateMachine::ACTION_PREPARE_TILES: {
+        // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
+        // fixed.
+        tracked_objects::ScopedTracker tracking_profile9(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "461509 Scheduler::ProcessScheduledActions9"));
         client_->ScheduledActionPrepareTiles();
         break;
+      }
     }
   } while (action != SchedulerStateMachine::ACTION_NONE);
 
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
+  tracked_objects::ScopedTracker tracking_profile10(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461509 Scheduler::ProcessScheduledActions10"));
   SetupNextBeginFrameIfNeeded();
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
 
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
+  tracked_objects::ScopedTracker tracking_profile11(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461509 Scheduler::ProcessScheduledActions11"));
   RescheduleBeginImplFrameDeadlineIfNeeded();
 }
 
