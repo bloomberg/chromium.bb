@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/renderer/aw_permission_client.h"
+#include "android_webview/renderer/aw_content_settings_client.h"
 
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -24,22 +24,23 @@ bool AllowMixedContent(const blink::WebURL& url) {
 
 }
 
-AwPermissionClient::AwPermissionClient(content::RenderFrame* render_frame)
+AwContentSettingsClient::AwContentSettingsClient(
+    content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
-  render_frame->GetWebFrame()->setPermissionClient(this);
+  render_frame->GetWebFrame()->setContentSettingsClient(this);
 }
 
-AwPermissionClient::~AwPermissionClient() {
+AwContentSettingsClient::~AwContentSettingsClient() {
 }
 
-bool AwPermissionClient::allowDisplayingInsecureContent(
+bool AwContentSettingsClient::allowDisplayingInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& url) {
   return enabled_per_settings ? true : AllowMixedContent(url);
 }
 
-bool AwPermissionClient::allowRunningInsecureContent(
+bool AwContentSettingsClient::allowRunningInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& url) {

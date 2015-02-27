@@ -13,7 +13,7 @@
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
-#include "content/shell/renderer/test_runner/web_permissions.h"
+#include "content/shell/renderer/test_runner/web_content_settings.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
@@ -1575,7 +1575,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       delegate_(nullptr),
       web_view_(nullptr),
       page_overlay_(nullptr),
-      web_permissions_(new WebPermissions()),
+      web_content_settings_(new WebContentSettings()),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -1586,7 +1586,7 @@ void TestRunner::Install(WebFrame* frame) {
 
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
-  web_permissions_->SetDelegate(delegate);
+  web_content_settings_->SetDelegate(delegate);
 }
 
 void TestRunner::SetWebView(WebView* webView, WebTestProxyBase* proxy) {
@@ -1686,7 +1686,7 @@ void TestRunner::Reset() {
   web_history_item_count_ = 0;
   intercept_post_message_ = false;
 
-  web_permissions_->Reset();
+  web_content_settings_->Reset();
 
   use_mock_theme_ = true;
   pointer_locked_ = false;
@@ -1824,8 +1824,8 @@ bool TestRunner::shouldDumpResourceResponseMIMETypes() const {
   return test_is_running_ && dump_resource_reqponse_mime_types_;
 }
 
-WebPermissionClient* TestRunner::GetWebPermissions() const {
-  return web_permissions_.get();
+WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
+  return web_content_settings_.get();
 }
 
 bool TestRunner::shouldDumpStatusCallbacks() const {
@@ -2654,35 +2654,35 @@ void TestRunner::DumpResourceResponseMIMETypes() {
 }
 
 void TestRunner::SetImagesAllowed(bool allowed) {
-  web_permissions_->SetImagesAllowed(allowed);
+  web_content_settings_->SetImagesAllowed(allowed);
 }
 
 void TestRunner::SetMediaAllowed(bool allowed) {
-  web_permissions_->SetMediaAllowed(allowed);
+  web_content_settings_->SetMediaAllowed(allowed);
 }
 
 void TestRunner::SetScriptsAllowed(bool allowed) {
-  web_permissions_->SetScriptsAllowed(allowed);
+  web_content_settings_->SetScriptsAllowed(allowed);
 }
 
 void TestRunner::SetStorageAllowed(bool allowed) {
-  web_permissions_->SetStorageAllowed(allowed);
+  web_content_settings_->SetStorageAllowed(allowed);
 }
 
 void TestRunner::SetPluginsAllowed(bool allowed) {
-  web_permissions_->SetPluginsAllowed(allowed);
+  web_content_settings_->SetPluginsAllowed(allowed);
 }
 
 void TestRunner::SetAllowDisplayOfInsecureContent(bool allowed) {
-  web_permissions_->SetDisplayingInsecureContentAllowed(allowed);
+  web_content_settings_->SetDisplayingInsecureContentAllowed(allowed);
 }
 
 void TestRunner::SetAllowRunningOfInsecureContent(bool allowed) {
-  web_permissions_->SetRunningInsecureContentAllowed(allowed);
+  web_content_settings_->SetRunningInsecureContentAllowed(allowed);
 }
 
 void TestRunner::DumpPermissionClientCallbacks() {
-  web_permissions_->SetDumpCallbacks(true);
+  web_content_settings_->SetDumpCallbacks(true);
 }
 
 void TestRunner::DumpWindowStatusChanges() {

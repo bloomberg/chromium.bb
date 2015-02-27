@@ -17,11 +17,11 @@ namespace content {
 LayoutTestRenderFrameObserver::LayoutTestRenderFrameObserver(
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
-  render_frame->GetWebFrame()->setPermissionClient(
+  render_frame->GetWebFrame()->setContentSettingsClient(
       LayoutTestRenderProcessObserver::GetInstance()
           ->test_interfaces()
           ->TestRunner()
-          ->GetWebPermissions());
+          ->GetWebContentSettings());
 }
 
 }  // namespace content

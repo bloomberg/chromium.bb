@@ -6,18 +6,18 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_PERMISSIONS_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/web/WebPermissionClient.h"
+#include "third_party/WebKit/public/web/WebContentSettingsClient.h"
 
 namespace content {
 
 class WebTestDelegate;
 
-class WebPermissions : public blink::WebPermissionClient {
+class WebContentSettings : public blink::WebContentSettingsClient {
  public:
-  WebPermissions();
-  virtual ~WebPermissions();
+  WebContentSettings();
+  virtual ~WebContentSettings();
 
-  // blink::WebPermissionClient:
+  // blink::WebContentSettingsClient:
   virtual bool allowImage(bool enabledPerSettings,
                           const blink::WebURL& imageURL);
   virtual bool allowMedia(const blink::WebURL& mediaURL);
@@ -59,7 +59,7 @@ class WebPermissions : public blink::WebPermissionClient {
   bool displaying_insecure_content_allowed_;
   bool running_insecure_content_allowed_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPermissions);
+  DISALLOW_COPY_AND_ASSIGN(WebContentSettings);
 };
 
 }  // namespace content

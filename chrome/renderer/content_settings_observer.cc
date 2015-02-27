@@ -168,7 +168,7 @@ ContentSettingsObserver::ContentSettingsObserver(
       current_request_id_(0),
       should_whitelist_(should_whitelist) {
   ClearBlockedContentSettings();
-  render_frame->GetWebFrame()->setPermissionClient(this);
+  render_frame->GetWebFrame()->setContentSettingsClient(this);
 
   if (render_frame->GetRenderView()->GetMainRenderFrame() != render_frame) {
     // Copy all the settings from the main render frame to avoid race conditions

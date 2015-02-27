@@ -19,8 +19,8 @@ class GURL;
 class SkBitmap;
 
 namespace blink {
+class WebContentSettingsClient;
 class WebFrame;
-class WebPermissionClient;
 class WebString;
 class WebView;
 class WebURLResponse;
@@ -36,7 +36,7 @@ namespace content {
 class InvokeCallbackTask;
 class TestInterfaces;
 class TestPageOverlay;
-class WebPermissions;
+class WebContentSettings;
 class WebTestDelegate;
 class WebTestProxyBase;
 
@@ -67,7 +67,7 @@ class TestRunner : public WebTestRunner,
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   bool ShouldDumpBackForwardList() const override;
-  blink::WebPermissionClient* GetWebPermissions() const override;
+  blink::WebContentSettingsClient* GetWebContentSettings() const override;
 
   // Methods used by WebTestProxyBase.
   bool shouldDumpSelectionRect() const;
@@ -417,7 +417,7 @@ class TestRunner : public WebTestRunner,
   // that may be present.
   void DumpResourceResponseMIMETypes();
 
-  // WebPermissionClient related.
+  // WebContentSettingsClient related.
   void SetImagesAllowed(bool allowed);
   void SetMediaAllowed(bool allowed);
   void SetScriptsAllowed(bool allowed);
@@ -787,8 +787,8 @@ class TestRunner : public WebTestRunner,
   // This is non-0 IFF a load is in progress.
   blink::WebFrame* top_loading_frame_;
 
-  // WebPermissionClient mock object.
-  scoped_ptr<WebPermissions> web_permissions_;
+  // WebContentSettingsClient mock object.
+  scoped_ptr<WebContentSettings> web_content_settings_;
 
   bool pointer_locked_;
   enum {

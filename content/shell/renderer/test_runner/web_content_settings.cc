@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/test_runner/web_permissions.h"
+#include "content/shell/renderer/test_runner/web_content_settings.h"
 
 #include "content/shell/renderer/test_runner/test_common.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
@@ -11,13 +11,13 @@
 
 namespace content {
 
-WebPermissions::WebPermissions() : delegate_(0) {
+WebContentSettings::WebContentSettings() : delegate_(0) {
   Reset();
 }
 
-WebPermissions::~WebPermissions() {}
+WebContentSettings::~WebContentSettings() {}
 
-bool WebPermissions::allowImage(bool enabled_per_settings,
+bool WebContentSettings::allowImage(bool enabled_per_settings,
                                 const blink::WebURL& image_url) {
   bool allowed = enabled_per_settings && images_allowed_;
   if (dump_callbacks_ && delegate_) {
@@ -28,7 +28,7 @@ bool WebPermissions::allowImage(bool enabled_per_settings,
   return allowed;
 }
 
-bool WebPermissions::allowMedia(const blink::WebURL& image_url) {
+bool WebContentSettings::allowMedia(const blink::WebURL& image_url) {
   bool allowed = media_allowed_;
   if (dump_callbacks_ && delegate_)
     delegate_->PrintMessage(std::string("PERMISSION CLIENT: allowMedia(") +
@@ -37,7 +37,7 @@ bool WebPermissions::allowMedia(const blink::WebURL& image_url) {
   return allowed;
 }
 
-bool WebPermissions::allowScriptFromSource(bool enabled_per_settings,
+bool WebContentSettings::allowScriptFromSource(bool enabled_per_settings,
                                            const blink::WebURL& scriptURL) {
   bool allowed = enabled_per_settings && scripts_allowed_;
   if (dump_callbacks_ && delegate_) {
@@ -49,65 +49,65 @@ bool WebPermissions::allowScriptFromSource(bool enabled_per_settings,
   return allowed;
 }
 
-bool WebPermissions::allowStorage(bool) {
+bool WebContentSettings::allowStorage(bool) {
   return storage_allowed_;
 }
 
-bool WebPermissions::allowPlugins(bool enabled_per_settings) {
+bool WebContentSettings::allowPlugins(bool enabled_per_settings) {
   return enabled_per_settings && plugins_allowed_;
 }
 
-bool WebPermissions::allowDisplayingInsecureContent(
+bool WebContentSettings::allowDisplayingInsecureContent(
     bool enabled_per_settings,
     const blink::WebSecurityOrigin&,
     const blink::WebURL&) {
   return enabled_per_settings || displaying_insecure_content_allowed_;
 }
 
-bool WebPermissions::allowRunningInsecureContent(
+bool WebContentSettings::allowRunningInsecureContent(
     bool enabled_per_settings,
     const blink::WebSecurityOrigin&,
     const blink::WebURL&) {
   return enabled_per_settings || running_insecure_content_allowed_;
 }
 
-void WebPermissions::SetImagesAllowed(bool images_allowed) {
+void WebContentSettings::SetImagesAllowed(bool images_allowed) {
   images_allowed_ = images_allowed;
 }
 
-void WebPermissions::SetMediaAllowed(bool media_allowed) {
+void WebContentSettings::SetMediaAllowed(bool media_allowed) {
   media_allowed_ = media_allowed;
 }
 
-void WebPermissions::SetScriptsAllowed(bool scripts_allowed) {
+void WebContentSettings::SetScriptsAllowed(bool scripts_allowed) {
   scripts_allowed_ = scripts_allowed;
 }
 
-void WebPermissions::SetStorageAllowed(bool storage_allowed) {
+void WebContentSettings::SetStorageAllowed(bool storage_allowed) {
   storage_allowed_ = storage_allowed;
 }
 
-void WebPermissions::SetPluginsAllowed(bool plugins_allowed) {
+void WebContentSettings::SetPluginsAllowed(bool plugins_allowed) {
   plugins_allowed_ = plugins_allowed;
 }
 
-void WebPermissions::SetDisplayingInsecureContentAllowed(bool allowed) {
+void WebContentSettings::SetDisplayingInsecureContentAllowed(bool allowed) {
   displaying_insecure_content_allowed_ = allowed;
 }
 
-void WebPermissions::SetRunningInsecureContentAllowed(bool allowed) {
+void WebContentSettings::SetRunningInsecureContentAllowed(bool allowed) {
   running_insecure_content_allowed_ = allowed;
 }
 
-void WebPermissions::SetDelegate(WebTestDelegate* delegate) {
+void WebContentSettings::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
 }
 
-void WebPermissions::SetDumpCallbacks(bool dump_callbacks) {
+void WebContentSettings::SetDumpCallbacks(bool dump_callbacks) {
   dump_callbacks_ = dump_callbacks;
 }
 
-void WebPermissions::Reset() {
+void WebContentSettings::Reset() {
   dump_callbacks_ = false;
   images_allowed_ = true;
   media_allowed_ = true;

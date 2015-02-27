@@ -7,9 +7,9 @@
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
+#include "android_webview/renderer/aw_content_settings_client.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_message_port_client.h"
-#include "android_webview/renderer/aw_permission_client.h"
 #include "android_webview/renderer/aw_print_web_view_helper_delegate.h"
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
@@ -121,7 +121,7 @@ bool AwContentRendererClient::HandleNavigation(
 
 void AwContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
-  new AwPermissionClient(render_frame);
+  new AwContentSettingsClient(render_frame);
   new PrintRenderFrameObserver(render_frame);
   new AwRenderFrameExt(render_frame);
   new AwMessagePortClient(render_frame);

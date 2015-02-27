@@ -8,16 +8,16 @@
 #include <vector>
 
 namespace blink {
-class WebPermissionClient;
+class WebContentSettingsClient;
 }
 
 namespace content {
 
 class WebTestRunner {
  public:
-  // Returns a mock WebPermissionClient that is used for layout tests. An
+  // Returns a mock WebContentSettings that is used for layout tests. An
   // embedder should use this for all WebViews it creates.
-  virtual blink::WebPermissionClient* GetWebPermissions() const = 0;
+  virtual blink::WebContentSettingsClient* GetWebContentSettings() const = 0;
 
   // After WebTestDelegate::TestFinished was invoked, the following methods
   // can be used to determine what kind of dump the main WebTestProxy can
