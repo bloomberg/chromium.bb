@@ -100,6 +100,7 @@ static void getvm(int fd)
 	case DRM_SHM:            typename = "SHM"; break;
 	case DRM_AGP:            typename = "AGP"; break;
 	case DRM_SCATTER_GATHER: typename = "SG";  break;
+	case DRM_CONSISTENT:     typename = "CON"; break;
 	default:                 typename = "???"; break;
 	}
 
