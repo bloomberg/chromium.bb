@@ -265,10 +265,8 @@ class ProfileManager : public base::NonThreadSafe,
   // creation and adds it to the set managed by this ProfileManager.
   Profile* CreateAndInitializeProfile(const base::FilePath& profile_dir);
 
-  // Schedules the profile at the given path to be deleted on shutdown,
-  // and marks the new profile as active.
-  void FinishDeletingProfile(const base::FilePath& profile_dir,
-                             const base::FilePath& new_active_profile_dir);
+  // Schedules the profile at the given path to be deleted on shutdown.
+  void FinishDeletingProfile(const base::FilePath& profile_dir);
 
   // Registers profile with given info. Returns pointer to created ProfileInfo
   // entry.
@@ -319,6 +317,7 @@ class ProfileManager : public base::NonThreadSafe,
   };
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if defined(OS_MACOSX)
   // If the |loaded_profile| has been loaded successfully (according to
   // |status|) and isn't already scheduled for deletion, then finishes adding
   // |profile_to_delete_dir| to the queue of profiles to be deleted, and updates
@@ -330,6 +329,7 @@ class ProfileManager : public base::NonThreadSafe,
       const CreateCallback& original_callback,
       Profile* loaded_profile,
       Profile::CreateStatus status);
+#endif
 
   content::NotificationRegistrar registrar_;
 
