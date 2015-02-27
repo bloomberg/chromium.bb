@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-17,0) size 7x18: bullet
           RenderInline {<pseudo:before>} at (0,0) size 32x18
-            RenderTextFragment at (0,0) size 32x18
+            LayoutTextFragment at (0,0) size 32x18
               text run at (0,0) width 32: "hello"
           RenderText {#text} at (31,0) size 24x18
             text run at (31,0) width 24: "test"

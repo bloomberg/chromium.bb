@@ -58,19 +58,19 @@ layer at (24,385) size 752x42
           text run at (0,4) width 62: "38FGKX"
 layer at (24,119) size 752x1
   RenderBlock (positioned) zI: 1 {<pseudo:before>} at (0,20) size 752x1 [bgcolor=#FF0000]
-    RenderTextFragment zI: 1 at (0,0) size 0x0
+    LayoutTextFragment zI: 1 at (0,0) size 0x0
 layer at (24,177) size 752x1
   RenderBlock (positioned) zI: 1 {<pseudo:before>} at (0,19.50) size 752x1 [bgcolor=#FF0000]
-    RenderTextFragment zI: 1 at (0,0) size 0x0
+    LayoutTextFragment zI: 1 at (0,0) size 0x0
 layer at (24,234) size 752x1
   RenderBlock (positioned) zI: 1 {<pseudo:before>} at (0,19.50) size 752x1 [bgcolor=#FF0000]
-    RenderTextFragment zI: 1 at (0,0) size 0x0
+    LayoutTextFragment zI: 1 at (0,0) size 0x0
 layer at (24,291) size 752x1
   RenderBlock (positioned) zI: 1 {<pseudo:before>} at (0,19.50) size 752x1 [bgcolor=#FF0000]
-    RenderTextFragment zI: 1 at (0,0) size 0x0
+    LayoutTextFragment zI: 1 at (0,0) size 0x0
 layer at (24,348) size 752x1
   RenderBlock (positioned) zI: 1 {<pseudo:before>} at (0,19.50) size 752x1 [bgcolor=#FF0000]
-    RenderTextFragment zI: 1 at (0,0) size 0x0
+    LayoutTextFragment zI: 1 at (0,0) size 0x0
 layer at (24,405) size 752x1
   RenderBlock (positioned) zI: 1 {<pseudo:before>} at (0,20) size 752x1 [bgcolor=#FF0000]
-    RenderTextFragment zI: 1 at (0,0) size 0x0
+    LayoutTextFragment zI: 1 at (0,0) size 0x0

@@ -65,7 +65,7 @@ public:
     virtual void transformText() override;
 
     // FIXME: Rename to LayoutTextFragment
-    virtual const char* renderName() const override final { return "RenderTextFragment"; }
+    virtual const char* renderName() const override final { return "LayoutTextFragment"; }
 
     void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
     FirstLetterPseudoElement* firstLetterPseudoElement() const { return m_firstLetterPseudoElement; }

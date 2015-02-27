@@ -20,25 +20,25 @@ layer at (8,7) size 69x286 clip at (9,8) size 56x284 scrollHeight 283
           text run at (2,0) width 45: "Enabled"
       RenderBlock {OPTION} at (0,14.19) size 56.16x14.19 [color=#0000FF]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 23x13
           text run at (15,0) width 23: "One"
       RenderBlock {OPTION} at (0,28.38) size 56.16x14.19 [color=#0000FF]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 24x13
           text run at (15,0) width 24: "Two"
       RenderBlock {OPTION} at (0,42.56) size 56.16x14.19 [color=#0000FF]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 32x13
           text run at (15,0) width 32: "Three"
       RenderBlock {OPTION} at (0,56.75) size 56.16x14.19 [color=#0000FF]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 25x13
           text run at (15,0) width 25: "Four"
@@ -48,25 +48,25 @@ layer at (8,7) size 69x286 clip at (9,8) size 56x284 scrollHeight 283
           text run at (2,0) width 50: "Disabled"
       RenderBlock {OPTION} at (0,14.19) size 56.16x14.19 [color=#FF0000]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 23x13
           text run at (15,0) width 23: "One"
       RenderBlock {OPTION} at (0,28.38) size 56.16x14.19 [color=#FF0000]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 24x13
           text run at (15,0) width 24: "Two"
       RenderBlock {OPTION} at (0,42.56) size 56.16x14.19 [color=#FF0000]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 32x13
           text run at (15,0) width 32: "Three"
       RenderBlock {OPTION} at (0,56.75) size 56.16x14.19 [color=#FF0000]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 25x13
           text run at (15,0) width 25: "Four"
@@ -76,25 +76,25 @@ layer at (8,7) size 69x286 clip at (9,8) size 56x284 scrollHeight 283
           text run at (2,0) width 53: "Enabled2"
       RenderBlock {OPTION} at (0,14.19) size 56.16x14.19 [color=#0000FF]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 23x13
           text run at (15,0) width 23: "One"
       RenderBlock {OPTION} at (0,28.38) size 56.16x14.19 [color=#FF0000]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 24x13
           text run at (15,0) width 24: "Two"
       RenderBlock {OPTION} at (0,42.56) size 56.16x14.19 [color=#000000] [bgcolor=#D4D4D4]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 32x13
           text run at (15,0) width 32: "Three"
       RenderBlock {OPTION} at (0,56.75) size 56.16x14.19 [color=#0000FF]
         RenderInline {<pseudo:before>} at (0,0) size 14x13
-          RenderTextFragment at (2,0) size 14x13
+          LayoutTextFragment at (2,0) size 14x13
             text run at (2,0) width 14: "    "
         RenderText {#text} at (15,0) size 25x13
           text run at (15,0) width 25: "Four"

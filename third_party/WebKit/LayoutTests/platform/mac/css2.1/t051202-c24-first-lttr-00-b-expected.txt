@@ -5,9 +5,9 @@ layer at (0,0) size 800x255
     RenderBody {BODY} at (8,16) size 784x223 [color=#0000FF]
       RenderBlock {P} at (0,0) size 784x36
         RenderInline {<pseudo:first-letter>} at (0,0) size 10x18 [color=#008000]
-          RenderTextFragment at (0,0) size 10x18
+          LayoutTextFragment at (0,0) size 10x18
             text run at (0,0) width 10: "T"
-        RenderTextFragment {#text} at (9,0) size 20x18
+        LayoutTextFragment {#text} at (9,0) size 20x18
           text run at (9,0) width 20: "he "
         RenderInline {STRONG} at (0,0) size 70x18
           RenderText {#text} at (28,0) size 70x18
@@ -24,9 +24,9 @@ layer at (0,0) size 800x255
           text run at (0,18) width 189: "user agent has failed this test."
       RenderBlock {P} at (0,52) size 784x55
         RenderInline {<pseudo:first-letter>} at (0,0) size 20x37 [color=#008000]
-          RenderTextFragment at (0,0) size 20x37
+          LayoutTextFragment at (0,0) size 20x37
             text run at (0,0) width 20: "T"
-        RenderTextFragment {#text} at (19,15) size 20x18
+        LayoutTextFragment {#text} at (19,15) size 20x18
           text run at (19,15) width 20: "he "
         RenderInline {STRONG} at (0,0) size 70x18
           RenderText {#text} at (38,15) size 70x18
@@ -48,9 +48,9 @@ layer at (0,0) size 800x255
           text run at (185,37) width 244: "then the user agent has failed this test."
       RenderBlock {P} at (0,123) size 784x100
         RenderInline {<pseudo:first-letter>} at (0,0) size 58x64 [color=#008000]
-          RenderTextFragment at (0,0) size 58x64
+          LayoutTextFragment at (0,0) size 58x64
             text run at (0,0) width 58: "\"T"
-        RenderTextFragment {#text} at (57,36) size 20x18
+        LayoutTextFragment {#text} at (57,36) size 20x18
           text run at (57,36) width 20: "he "
         RenderInline {STRONG} at (0,0) size 134x18
           RenderText {#text} at (76,36) size 134x18

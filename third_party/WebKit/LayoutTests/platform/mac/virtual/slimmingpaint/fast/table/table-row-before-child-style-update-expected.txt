@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           LayoutTableSection (anonymous) at (0,0) size 512x128
             LayoutTableRow (anonymous) {<pseudo:before>} at (0,0) size 512x128 [color=#0000FF]
               LayoutTableCell (anonymous) at (0,0) size 512x128 [r=0 c=0 rs=1 cs=1]
-                RenderTextFragment at (0,0) size 512x128
+                LayoutTextFragment at (0,0) size 512x128
                   text run at (0,0) width 512: "ABCD"
         RenderBlock (anonymous) at (0,128) size 784x128
           RenderText {#text} at (0,0) size 384x128
