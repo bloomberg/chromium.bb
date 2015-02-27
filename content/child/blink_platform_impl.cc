@@ -1038,20 +1038,6 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
              is_main_thread).release();
 }
 
-void BlinkPlatformImpl::didStartWorkerRunLoop(
-    const blink::WebWorkerRunLoop& runLoop) {
-  // TODO(sad): Remove once this is removed from the blink::Platform interface.
-  // http://crbug.com/461664
-  didStartWorkerRunLoop();
-}
-
-void BlinkPlatformImpl::didStopWorkerRunLoop(
-    const blink::WebWorkerRunLoop& runLoop) {
-  // TODO(sad): Remove once this is removed from the blink::Platform interface.
-  // http://crbug.com/461664
-  didStopWorkerRunLoop();
-}
-
 void BlinkPlatformImpl::didStartWorkerRunLoop() {
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStarted();
