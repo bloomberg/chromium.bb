@@ -250,10 +250,17 @@ public abstract class SwipableOverlayView extends ScrollView {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (!mDoStayInvisible) {
-            ObjectAnimator.ofFloat(this, "alpha", 0.f, 1.f).setDuration(REATTACH_FADE_IN_MS)
+            ObjectAnimator.ofFloat(this, View.ALPHA, 0.f, 1.f).setDuration(REATTACH_FADE_IN_MS)
                     .start();
             setVisibility(VISIBLE);
         }
+        if (!isAllowedToAutoHide()) setTranslationY(0.0f);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (!isAllowedToAutoHide()) setTranslationY(0.0f);
     }
 
     /**
@@ -406,7 +413,7 @@ public abstract class SwipableOverlayView extends ScrollView {
         return new GestureStateListener() {
             @Override
             public void onFlingStartGesture(int vx, int vy, int scrollOffsetY, int scrollExtentY) {
-                if (!cancelCurrentAnimation()) return;
+                if (!isAllowedToAutoHide() || !cancelCurrentAnimation()) return;
                 beginGesture(scrollOffsetY, scrollExtentY);
                 mGestureState = GESTURE_FLINGING;
             }
@@ -442,7 +449,7 @@ public abstract class SwipableOverlayView extends ScrollView {
 
             @Override
             public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-                if (!cancelCurrentAnimation()) return;
+                if (!isAllowedToAutoHide() || !cancelCurrentAnimation()) return;
                 beginGesture(scrollOffsetY, scrollExtentY);
                 mGestureState = GESTURE_SCROLLING;
             }
@@ -690,6 +697,13 @@ public abstract class SwipableOverlayView extends ScrollView {
      */
     private boolean mayCancelCurrentAnimation() {
         return !mIsBeingDisplayedForFirstTime && !mIsDismissed;
+    }
+
+    /**
+     * @return Whether the SwipableOverlayView is allowed to hide itself on scroll.
+     */
+    protected boolean isAllowedToAutoHide() {
+        return true;
     }
 
     /**

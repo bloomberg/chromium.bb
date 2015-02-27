@@ -40,6 +40,9 @@ public class InfoBarContainer extends SwipableOverlayView {
     private static final int TAB_STRIP_AND_TOOLBAR_HEIGHT_PHONE_DP = 56;
     private static final int TAB_STRIP_AND_TOOLBAR_HEIGHT_TABLET_DP = 96;
 
+    /** WHether or not the InfoBarContainer is allowed to hide when the user scrolls. */
+    private static boolean sIsAllowedToAutoHide;
+
     /**
      * A listener for the InfoBar animation.
      */
@@ -518,6 +521,20 @@ public class InfoBarContainer extends SwipableOverlayView {
 
     public long getNative() {
         return mNativeInfoBarContainer;
+    }
+
+    /**
+     * Sets whether the InfoBarContainer is allowed to auto-hide when the user scrolls the page.
+     * Expected to be called when Touch Exploration is enabled.
+     * @param isAllowed Whether auto-hiding is allowed.
+     */
+    public static void setIsAllowedToAutoHide(boolean isAllowed) {
+        sIsAllowedToAutoHide = isAllowed;
+    }
+
+    @Override
+    protected boolean isAllowedToAutoHide() {
+        return sIsAllowedToAutoHide;
     }
 
     @Override
