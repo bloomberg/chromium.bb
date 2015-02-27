@@ -441,7 +441,7 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
     if (m_context && m_context->is2d()) {
         CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
         if (context2d->isContextLost()) {
-            context2d->restoreContext();
+            context2d->didSetSurfaceSize();
         }
     }
 }
@@ -625,7 +625,7 @@ void HTMLCanvasElement::createImageBuffer()
 {
     createImageBufferInternal(nullptr);
     if (m_didFailToCreateImageBuffer && m_context->is2d())
-        toCanvasRenderingContext2D(m_context.get())->loseContext();
+        toCanvasRenderingContext2D(m_context.get())->loseContext(CanvasRenderingContext2D::SyntheticLostContext);
 }
 
 void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface)
@@ -690,7 +690,7 @@ void HTMLCanvasElement::notifySurfaceInvalid()
 {
     if (m_context && m_context->is2d()) {
         CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
-        context2d->loseContext();
+        context2d->loseContext(CanvasRenderingContext2D::RealLostContext);
     }
 }
 
@@ -836,6 +836,8 @@ void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
 void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
 {
     setObservedDocument(document());
+    if (m_context)
+        m_context->didMoveToNewDocument(&document());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 

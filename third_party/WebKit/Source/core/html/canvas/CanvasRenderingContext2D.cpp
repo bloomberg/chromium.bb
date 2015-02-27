@@ -121,7 +121,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
     , m_usesCSSCompatibilityParseMode(document.inQuirksMode())
     , m_clipAntialiasing(NotAntiAliased)
     , m_hasAlpha(attrs.alpha())
-    , m_isContextLost(false)
+    , m_contextLostMode(NotLostContext)
     , m_contextRestorable(true)
     , m_tryRestoreContextAttemptCount(0)
     , m_dispatchContextLostEventTimer(this, &CanvasRenderingContext2D::dispatchContextLostEvent)
@@ -151,7 +151,7 @@ void CanvasRenderingContext2D::validateStateStack()
 {
 #if ENABLE(ASSERT)
     SkCanvas* skCanvas = canvas()->existingDrawingCanvas();
-    if (skCanvas && !m_isContextLost) {
+    if (skCanvas && m_contextLostMode == NotLostContext) {
         ASSERT(static_cast<size_t>(skCanvas->getSaveCount() - 1) == m_stateStack.size());
     }
 #endif
@@ -164,26 +164,37 @@ bool CanvasRenderingContext2D::isAccelerated() const
     return canvas()->buffer()->isAccelerated();
 }
 
-bool CanvasRenderingContext2D::isContextLost() const
+void CanvasRenderingContext2D::stop()
 {
-    return m_isContextLost;
+    if (!isContextLost()) {
+        // Never attempt to restore the context because the page is being torn down.
+        loseContext(SyntheticLostContext);
+    }
 }
 
-void CanvasRenderingContext2D::loseContext()
+bool CanvasRenderingContext2D::isContextLost() const
 {
-    if (m_isContextLost)
+    return m_contextLostMode != NotLostContext;
+}
+
+void CanvasRenderingContext2D::loseContext(LostContextMode lostMode)
+{
+    if (m_contextLostMode != NotLostContext)
         return;
-    m_isContextLost = true;
+    m_contextLostMode = lostMode;
+    if (m_contextLostMode == SyntheticLostContext) {
+        canvas()->discardImageBuffer();
+    }
     m_dispatchContextLostEventTimer.startOneShot(0, FROM_HERE);
 }
 
-void CanvasRenderingContext2D::restoreContext()
+void CanvasRenderingContext2D::didSetSurfaceSize()
 {
     if (!m_contextRestorable)
         return;
     // This code path is for restoring from an eviction
     // Restoring from surface failure is handled internally
-    ASSERT(m_isContextLost && !canvas()->hasImageBuffer());
+    ASSERT(m_contextLostMode != NotLostContext && !canvas()->hasImageBuffer());
 
     if (canvas()->buffer()) {
         if (contextLostRestoredEventsEnabled()) {
@@ -191,7 +202,7 @@ void CanvasRenderingContext2D::restoreContext()
         } else {
             // legacy synchronous context restoration.
             reset();
-            m_isContextLost = false;
+            m_contextLostMode = NotLostContext;
         }
     }
 }
@@ -216,9 +227,9 @@ void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingCon
         }
     }
 
-    // If an image buffer is present, it means the context was not lost due to
-    // an eviction, but rather due to a surface failure (gpu context lost?)
-    if (m_contextRestorable && canvas()->hasImageBuffer()) {
+    // If RealLostContext, it means the context was not lost due to surface failure
+    // but rather due to a an eviction, which means image buffer exists.
+    if (m_contextRestorable && m_contextLostMode == RealLostContext) {
         m_tryRestoreContextAttemptCount = 0;
         m_tryRestoreContextEventTimer.startRepeating(TryRestoreContextInterval, FROM_HERE);
     }
@@ -226,22 +237,22 @@ void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingCon
 
 void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingContext2D>* timer)
 {
-    if (!m_isContextLost) {
+    if (m_contextLostMode == NotLostContext) {
         // Canvas was already restored (possibly thanks to a resize), so stop trying.
         m_tryRestoreContextEventTimer.stop();
         return;
     }
+
+    ASSERT(m_contextLostMode == RealLostContext);
     if (canvas()->hasImageBuffer() && canvas()->buffer()->restoreSurface()) {
         m_tryRestoreContextEventTimer.stop();
         dispatchContextRestoredEvent(nullptr);
     }
 
-    if (++m_tryRestoreContextAttemptCount > MaxTryRestoreContextAttempts)
-        canvas()->discardImageBuffer();
-
-    if (!canvas()->hasImageBuffer()) {
+    if (++m_tryRestoreContextAttemptCount > MaxTryRestoreContextAttempts) {
         // final attempt: allocate a brand new image buffer instead of restoring
-        timer->stop();
+        canvas()->discardImageBuffer();
+        m_tryRestoreContextEventTimer.stop();
         if (canvas()->buffer())
             dispatchContextRestoredEvent(nullptr);
     }
@@ -249,10 +260,10 @@ void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingConte
 
 void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*)
 {
-    if (!m_isContextLost)
+    if (m_contextLostMode == NotLostContext)
         return;
     reset();
-    m_isContextLost = false;
+    m_contextLostMode = NotLostContext;
     if (contextLostRestoredEventsEnabled()) {
         RefPtrWillBeRawPtr<Event> event(Event::create(EventTypeNames::contextrestored));
         canvas()->dispatchEvent(event);

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var barrier = 2;
+function frameLoaded()
+{
+    barrier--;
+    if (barrier == 0)
+        runTest();
+}
+
+function runTest()
+{
+    debug("check if re-parenting canvas keeps its context.")
+    canvasTest(document.getElementById("frame1"), true);
+    debug("check if detaching canvas loses its context.")
+    canvasTest(document.getElementById("frame2"), false);
+
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+var data;
+function canvasTest(frame, adoptCanvas)
+{
+    var parent = document.getElementById("parent");
+    var canvas = frame.contentDocument.getElementById('mycanvas');
+    var ctx = canvas.getContext('2d');
+
+    var imageData;
+    imageData = ctx.getImageData(100, 100, 1, 1);
+    data = imageData.data;
+    shouldBe('data[0]', '255');
+    shouldBe('data[1]', '0');
+    shouldBe('data[2]', '0');
+
+    if (adoptCanvas)
+        parent.appendChild(canvas);
+    parent.removeChild(frame);
+
+    imageData = ctx.getImageData(100, 100, 1, 1);
+    data = imageData.data;
+    if (adoptCanvas) {
+        shouldBe('data[0]', '255');
+    } else {
+        // GC causes active DOM stop and canvas loses its context.
+        shouldBe('data[0]', '0');
+    }
+    shouldBe('data[1]', '0');
+    shouldBe('data[2]', '0');
+}
+</script>
+<div id="parent">
+    <iframe id="frame1" src="resources/canvas-fill-for-iframe.html" onload="frameLoaded()"></iframe>
+    <iframe id="frame2" src="resources/canvas-fill-for-iframe.html" onload="frameLoaded()"></iframe>
+</div>
+</body>
+</html>

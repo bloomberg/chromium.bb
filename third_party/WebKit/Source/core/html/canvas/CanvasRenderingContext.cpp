@@ -32,9 +32,10 @@
 namespace blink {
 
 CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
-    : m_canvas(canvas)
+    : ActiveDOMObject(&canvas->document())
+    , m_canvas(canvas)
 {
-
+    suspendIfNeeded();
 }
 
 bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
@@ -58,6 +59,22 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
             m_cleanURLs.add(sourceURL.string());
     }
     return taintOrigin;
+}
+
+void CanvasRenderingContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_canvas);
+    ActiveDOMObject::trace(visitor);
+}
+
+bool CanvasRenderingContext::hasPendingActivity() const
+{
+    return false;
+}
+
+void CanvasRenderingContext::didMoveToNewDocument(Document* document)
+{
+    ActiveDOMObject::didMoveToNewExecutionContext(document);
 }
 
 } // namespace blink

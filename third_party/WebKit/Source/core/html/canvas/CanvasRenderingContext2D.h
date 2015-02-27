@@ -70,7 +70,7 @@ typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap Canva
 
 typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
-class CanvasRenderingContext2D final: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
+class CanvasRenderingContext2D final : public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
@@ -212,12 +212,19 @@ public:
     HitRegion* hitRegionAtPoint(const LayoutPoint&);
     unsigned hitRegionsCount() const;
 
-    void loseContext();
-    void restoreContext();
+    enum LostContextMode {
+        NotLostContext,
+
+        // Lost context occurred at the graphics system level.
+        RealLostContext,
+
+        // Lost context occurred due to internal implementation reasons.
+        SyntheticLostContext,
+    };
+    void loseContext(LostContextMode);
+    void didSetSurfaceSize();
 
     void restoreCanvasMatrixClipStack();
-
-    DECLARE_VIRTUAL_TRACE();
 
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
@@ -356,6 +363,8 @@ private:
     virtual bool isAccelerated() const override;
     virtual bool hasAlpha() const override { return m_hasAlpha; }
     virtual void setIsHidden(bool) override;
+    void stop() override final;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool isTransformInvertible() const override { return state().m_invertibleCTM; }
 
@@ -367,7 +376,7 @@ private:
     bool m_usesCSSCompatibilityParseMode;
     AntiAliasingMode m_clipAntialiasing;
     bool m_hasAlpha;
-    bool m_isContextLost;
+    LostContextMode m_contextLostMode;
     bool m_contextRestorable;
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fetchedFontsLRUList;

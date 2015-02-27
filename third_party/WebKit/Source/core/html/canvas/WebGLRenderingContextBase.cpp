@@ -611,7 +611,6 @@ void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
-    , ActiveDOMObject(&passedCanvas->document())
     , m_contextLostMode(NotLostContext)
     , m_autoRecoveryMethod(Manual)
     , m_dispatchContextLostEventTimer(this, &WebGLRenderingContextBase::dispatchContextLostEvent)
@@ -4532,11 +4531,6 @@ void WebGLRenderingContextBase::detachAndRemoveAllObjects()
     }
 }
 
-bool WebGLRenderingContextBase::hasPendingActivity() const
-{
-    return false;
-}
-
 void WebGLRenderingContextBase::stop()
 {
     if (!isContextLost()) {
@@ -5965,7 +5959,6 @@ DEFINE_TRACE(WebGLRenderingContextBase)
     visitor->trace(m_requestedAttributes);
     visitor->trace(m_extensions);
     CanvasRenderingContext::trace(visitor);
-    ActiveDOMObject::trace(visitor);
 }
 
 int WebGLRenderingContextBase::externallyAllocatedBytesPerPixel()

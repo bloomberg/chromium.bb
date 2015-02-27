@@ -1,0 +1,10 @@
+PASS data[0] is 255
+PASS data[1] is 0
+PASS data[2] is 0
+PASS data[0] is 255
+PASS data[1] is 0
+PASS data[2] is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
