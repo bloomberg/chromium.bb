@@ -14,8 +14,8 @@
 # We use the C++ compiler for everything and then use the -Wl,-as-needed flag
 # in the linker to drop libc++ unless it's actually needed.
 #
-HOST_CC ?= cl.exe /nologo
-HOST_CXX ?= cl.exe /nologo /EHsc
+HOST_CC ?= python $(NACL_SDK_ROOT)/tools/cl_wrapper.py /nologo
+HOST_CXX ?= python $(NACL_SDK_ROOT)/tools/cl_wrapper.py /nologo /EHsc
 HOST_LINK ?= link.exe /nologo
 HOST_LIB ?= lib.exe /nologo
 

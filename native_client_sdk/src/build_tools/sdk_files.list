@@ -513,6 +513,7 @@ toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/lib32/libnosys.a
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/lib32/libppapi.a
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/lib32/libppapi_stub.a
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/lib32/libpthread.a
+tools/cl_wrapper.py
 tools/common.mk
 tools/compiler-wrapper.py
 tools/create_html.py
