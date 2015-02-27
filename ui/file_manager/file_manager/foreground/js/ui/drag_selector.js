@@ -123,10 +123,6 @@ DragSelector.prototype.startDragSelection = function(list, event) {
   this.border_.style.height = '0';
   list.appendChild(this.border_);
 
-  // If no modifier key is pressed, clear the original selection.
-  if (!event.shiftKey && !event.ctrlKey)
-    this.target_.selectionModel_.unselectAll();
-
   // Register event handlers.
   // The handlers are bounded at the constructor.
   this.target_.ownerDocument.addEventListener(
