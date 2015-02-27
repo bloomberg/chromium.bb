@@ -607,7 +607,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     Node* prev = oldChild.previousSibling();
     Node* next = oldChild.nextSibling();
 
-    oldChild.updateAncestorConnectedSubframeCountForRemoval();
+    if (oldChild.connectedSubframeCount())
+        ChildFrameDisconnector(oldChild).disconnect();
 
     ChildListMutationScope(*this).willRemoveChild(oldChild);
     oldChild.notifyMutationObserversNodeWillDetach();

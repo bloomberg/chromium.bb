@@ -2278,17 +2278,6 @@ void Node::decrementConnectedSubframeCount(unsigned amount)
     rareData()->decrementConnectedSubframeCount(amount);
 }
 
-void Node::updateAncestorConnectedSubframeCountForRemoval() const
-{
-    unsigned count = connectedSubframeCount();
-
-    if (!count)
-        return;
-
-    for (Node* node = parentOrShadowHostNode(); node; node = node->parentOrShadowHostNode())
-        node->decrementConnectedSubframeCount(count);
-}
-
 void Node::updateAncestorConnectedSubframeCountForInsertion() const
 {
     unsigned count = connectedSubframeCount();
