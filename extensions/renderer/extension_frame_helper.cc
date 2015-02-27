@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_frame_helper.h"
+#include "extensions/renderer/extension_frame_helper.h"
 
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"

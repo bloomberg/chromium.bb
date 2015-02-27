@@ -846,6 +846,8 @@
       'renderer/dom_activity_logger.h',
       'renderer/event_bindings.cc',
       'renderer/event_bindings.h',
+      'renderer/extension_frame_helper.cc',
+      'renderer/extension_frame_helper.h',
       'renderer/extension_groups.h',
       'renderer/extension_helper.cc',
       'renderer/extension_helper.h',

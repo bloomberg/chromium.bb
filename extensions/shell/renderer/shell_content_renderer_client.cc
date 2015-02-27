@@ -12,6 +12,7 @@
 #include "extensions/common/extensions_client.h"
 #include "extensions/renderer/default_dispatcher_delegate.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/guest_view_container.h"
@@ -32,44 +33,6 @@ using blink::WebString;
 using content::RenderThread;
 
 namespace extensions {
-
-namespace {
-
-// TODO: promote ExtensionFrameHelper to a common place and share with this.
-class ShellFrameHelper
-    : public content::RenderFrameObserver,
-      public content::RenderFrameObserverTracker<ShellFrameHelper> {
- public:
-  ShellFrameHelper(content::RenderFrame* render_frame,
-                   Dispatcher* extension_dispatcher);
-  ~ShellFrameHelper() override;
-
-  // RenderFrameObserver implementation.
-  void WillReleaseScriptContext(v8::Handle<v8::Context>, int world_id) override;
-
- private:
-  Dispatcher* extension_dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellFrameHelper);
-};
-
-ShellFrameHelper::ShellFrameHelper(content::RenderFrame* render_frame,
-                                   Dispatcher* extension_dispatcher)
-    : content::RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<ShellFrameHelper>(render_frame),
-      extension_dispatcher_(extension_dispatcher) {
-}
-
-ShellFrameHelper::~ShellFrameHelper() {
-}
-
-void ShellFrameHelper::WillReleaseScriptContext(v8::Handle<v8::Context> context,
-                                                int world_id) {
-  extension_dispatcher_->WillReleaseScriptContext(
-      render_frame()->GetWebFrame(), context, world_id);
-}
-
-}  // namespace
 
 ShellContentRendererClient::ShellContentRendererClient() {
 }
@@ -99,8 +62,8 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
 void ShellContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
-  // ShellFrameHelper destroys itself when the RenderFrame is destroyed.
-  new ShellFrameHelper(render_frame, extension_dispatcher_.get());
+  // ExtensionFrameHelper destroys itself when the RenderFrame is destroyed.
+  new ExtensionFrameHelper(render_frame, extension_dispatcher_.get());
 
   // TODO(jamescook): Do we need to add a new PepperHelper(render_frame) here?
   // It doesn't seem necessary for either Pepper or NaCl.

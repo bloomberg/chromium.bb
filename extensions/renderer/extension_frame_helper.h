@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_FRAME_HELPER_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_FRAME_HELPER_H_
+#ifndef EXTENSIONS_RENDERER_EXTENSION_FRAME_HELPER_H_
+#define EXTENSIONS_RENDERER_EXTENSION_FRAME_HELPER_H_
 
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -52,4 +52,4 @@ class ExtensionFrameHelper
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_FRAME_HELPER_H_
+#endif  // EXTENSIONS_RENDERER_EXTENSION_FRAME_HELPER_H_
