@@ -154,8 +154,7 @@ bool TestMockTimeTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
     TimeDelta delay) {
-  NOTREACHED();
-  return false;
+  return PostDelayedTask(from_here, task, delay);
 }
 
 void TestMockTimeTaskRunner::OnBeforeSelectingTask() {
