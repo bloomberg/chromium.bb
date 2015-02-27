@@ -238,8 +238,15 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadAsync) {
 // Navigate to a page with an infinite beforeunload handler.
 // Then two two sync crosssite requests to ensure
 // we correctly nav to each one.
-// If this flakes, see bug http://crbug.com/86469.
-IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadSync) {
+// Flaky on Win and Linux; http://crbug.com/462671.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_CrossSiteInfiniteBeforeUnloadSync \
+    DISABLED_CrossSiteInfiniteBeforeUnloadSync
+#else
+#define MAYBE_CrossSiteInfiniteBeforeUnloadSync \
+    CrossSiteInfiniteBeforeUnloadSync
+#endif
+IN_PROC_BROWSER_TEST_F(UnloadTest, MAYBE_CrossSiteInfiniteBeforeUnloadSync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
