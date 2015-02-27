@@ -94,7 +94,7 @@ int PrintMicrodumpProcess(const char* microdump_file,
     if (machine_readable) {
       PrintProcessStateMachineReadable(process_state);
     } else {
-      PrintProcessState(process_state);
+      PrintProcessState(process_state, false, &resolver);
     }
     return 0;
   }

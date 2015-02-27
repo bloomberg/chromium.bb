@@ -37,9 +37,12 @@
 namespace google_breakpad {
 
 class ProcessState;
+class SourceLineResolverInterface;
 
 void PrintProcessStateMachineReadable(const ProcessState& process_state);
-void PrintProcessState(const ProcessState& process_state);
+void PrintProcessState(const ProcessState& process_state,
+                       bool output_stack_contents,
+                       SourceLineResolverInterface* resolver);
 
 }  // namespace google_breakpad
 

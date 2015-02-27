@@ -47,6 +47,7 @@
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/code_modules.h"
 #include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/source_line_resolver_interface.h"
 #include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/logging.h"
 #include "processor/pathname_stripper.h"
@@ -110,6 +111,134 @@ static string StripSeparator(const string &original) {
   return result;
 }
 
+// PrintStackContents prints the stack contents of the current frame to stdout.
+static void PrintStackContents(const std::string &indent,
+                               const StackFrame *frame,
+                               const StackFrame *prev_frame,
+                               const std::string &cpu,
+                               const MemoryRegion *memory,
+                               const CodeModules* modules,
+                               SourceLineResolverInterface *resolver) {
+  // Find stack range.
+  int word_length = 0;
+  uint64_t stack_begin = 0, stack_end = 0;
+  if (cpu == "x86") {
+    word_length = 4;
+    const StackFrameX86 *frame_x86 = static_cast<const StackFrameX86*>(frame);
+    const StackFrameX86 *prev_frame_x86 =
+        static_cast<const StackFrameX86*>(prev_frame);
+    if ((frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESP) &&
+        (prev_frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESP)) {
+      stack_begin = frame_x86->context.esp;
+      stack_end = prev_frame_x86->context.esp;
+    }
+  } else if (cpu == "amd64") {
+    word_length = 8;
+    const StackFrameAMD64 *frame_amd64 =
+        static_cast<const StackFrameAMD64*>(frame);
+    const StackFrameAMD64 *prev_frame_amd64 =
+        static_cast<const StackFrameAMD64*>(prev_frame);
+    if ((frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSP) &&
+        (prev_frame_amd64->context_validity &
+         StackFrameAMD64::CONTEXT_VALID_RSP)) {
+      stack_begin = frame_amd64->context.rsp;
+      stack_end = prev_frame_amd64->context.rsp;
+    }
+  } else if (cpu == "arm") {
+    word_length = 4;
+    const StackFrameARM *frame_arm = static_cast<const StackFrameARM*>(frame);
+    const StackFrameARM *prev_frame_arm =
+        static_cast<const StackFrameARM*>(prev_frame);
+    if ((frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP) &&
+        (prev_frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP)) {
+      stack_begin = frame_arm->context.iregs[13];
+      stack_end = prev_frame_arm->context.iregs[13];
+    }
+  } else if (cpu == "arm64") {
+    word_length = 8;
+    const StackFrameARM64 *frame_arm64 =
+        static_cast<const StackFrameARM64*>(frame);
+    const StackFrameARM64 *prev_frame_arm64 =
+        static_cast<const StackFrameARM64*>(prev_frame);
+    if ((frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_SP) &&
+        (prev_frame_arm64->context_validity &
+         StackFrameARM64::CONTEXT_VALID_SP)) {
+      stack_begin = frame_arm64->context.iregs[31];
+      stack_end = prev_frame_arm64->context.iregs[31];
+    }
+  }
+  if (!word_length || !stack_begin || !stack_end)
+    return;
+
+  // Print stack contents.
+  printf("\n%sStack contents:", indent.c_str());
+  for(uint64_t address = stack_begin; address < stack_end; ) {
+    // Print the start address of this row.
+    if (word_length == 4)
+      printf("\n%s %08x", indent.c_str(), static_cast<uint32_t>(address));
+    else
+      printf("\n%s %016" PRIx64, indent.c_str(), address);
+
+    // Print data in hex.
+    const int kBytesPerRow = 16;
+    std::string data_as_string;
+    for (int i = 0; i < kBytesPerRow; ++i, ++address) {
+      uint8_t value = 0;
+      if (address < stack_end &&
+          memory->GetMemoryAtAddress(address, &value)) {
+        printf(" %02x", value);
+        data_as_string.push_back(isprint(value) ? value : '.');
+      } else {
+        printf("   ");
+        data_as_string.push_back(' ');
+      }
+    }
+    // Print data as string.
+    printf("  %s", data_as_string.c_str());
+  }
+
+  // Try to find instruction pointers from stack.
+  printf("\n%sPossible instruction pointers:", indent.c_str());
+  for (uint64_t address = stack_begin; address < stack_end;
+       address += word_length) {
+    StackFrame pointee_frame;
+
+    // Read a word (possible instruction pointer) from stack.
+    if (word_length == 4) {
+      uint32_t data32 = 0;
+      memory->GetMemoryAtAddress(address, &data32);
+      pointee_frame.instruction = data32;
+    } else {
+      uint64_t data64 = 0;
+      memory->GetMemoryAtAddress(address, &data64);
+      pointee_frame.instruction = data64;
+    }
+    pointee_frame.module =
+        modules->GetModuleForAddress(pointee_frame.instruction);
+
+    // Try to look up the function name.
+    if (pointee_frame.module)
+      resolver->FillSourceLineInfo(&pointee_frame);
+
+    // Print function name.
+    if (!pointee_frame.function_name.empty()) {
+      if (word_length == 4) {
+        printf("\n%s *(0x%08x) = 0x%08x", indent.c_str(),
+               static_cast<uint32_t>(address),
+               static_cast<uint32_t>(pointee_frame.instruction));
+      } else {
+        printf("\n%s *(0x%016" PRIx64 ") = 0x%016" PRIx64,
+               indent.c_str(), address, pointee_frame.instruction);
+      }
+      printf(" <%s> [%s : %d + 0x%" PRIx64 "]",
+             pointee_frame.function_name.c_str(),
+             PathnameStripper::File(pointee_frame.source_file_name).c_str(),
+             pointee_frame.source_line,
+             pointee_frame.instruction - pointee_frame.source_line_base);
+    }
+  }
+}
+
 // PrintStack prints the call stack in |stack| to stdout, in a reasonably
 // useful form.  Module, function, and source file names are displayed if
 // they are available.  The code offset to the base code address of the
@@ -119,7 +248,12 @@ static string StripSeparator(const string &original) {
 //
 // If |cpu| is a recognized CPU name, relevant register state for each stack
 // frame printed is also output, if available.
-static void PrintStack(const CallStack *stack, const string &cpu) {
+static void PrintStack(const CallStack *stack,
+                       const string &cpu,
+                       bool output_stack_contents,
+                       const MemoryRegion* memory,
+                       const CodeModules* modules,
+                       SourceLineResolverInterface* resolver) {
   int frame_count = stack->frames()->size();
   if (frame_count == 0) {
     printf(" <no frames>\n");
@@ -469,6 +603,13 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
                      sequence);
     }
     printf("\n    Found by: %s\n", frame->trust_description().c_str());
+
+    // Print stack contents.
+    if (output_stack_contents && frame_index + 1 < frame_count) {
+      const std::string indent("    ");
+      PrintStackContents(indent, frame, stack->frames()->at(frame_index + 1),
+                         cpu, memory, modules, resolver);
+    }
   }
 }
 
@@ -642,7 +783,9 @@ static void PrintModulesMachineReadable(const CodeModules *modules) {
 
 }  // namespace
 
-void PrintProcessState(const ProcessState& process_state) {
+void PrintProcessState(const ProcessState& process_state,
+                       bool output_stack_contents,
+                       SourceLineResolverInterface* resolver) {
   // Print OS and CPU information.
   string cpu = process_state.system_info()->cpu;
   string cpu_info = process_state.system_info()->cpu_info;
@@ -692,7 +835,10 @@ void PrintProcessState(const ProcessState& process_state) {
           requesting_thread,
           process_state.crashed() ? "crashed" :
                                     "requested dump, did not crash");
-    PrintStack(process_state.threads()->at(requesting_thread), cpu);
+    PrintStack(process_state.threads()->at(requesting_thread), cpu,
+               output_stack_contents,
+               process_state.thread_memory_regions()->at(requesting_thread),
+               process_state.modules(), resolver);
   }
 
   // Print all of the threads in the dump.
@@ -702,7 +848,10 @@ void PrintProcessState(const ProcessState& process_state) {
       // Don't print the crash thread again, it was already printed.
       printf("\n");
       printf("Thread %d\n", thread_index);
-      PrintStack(process_state.threads()->at(thread_index), cpu);
+      PrintStack(process_state.threads()->at(thread_index), cpu,
+                 output_stack_contents,
+                 process_state.thread_memory_regions()->at(thread_index),
+                 process_state.modules(), resolver);
     }
   }
 

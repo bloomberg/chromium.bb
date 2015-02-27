@@ -41,6 +41,7 @@
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/minidump.h"
 #include "google_breakpad/processor/minidump_processor.h"
 #include "google_breakpad/processor/process_state.h"
 #include "processor/logging.h"
@@ -51,6 +52,7 @@
 namespace {
 
 using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::Minidump;
 using google_breakpad::MinidumpProcessor;
 using google_breakpad::ProcessState;
 using google_breakpad::SimpleSymbolSupplier;
@@ -68,7 +70,8 @@ using google_breakpad::scoped_ptr;
 // is printed to stdout.
 bool PrintMinidumpProcess(const string &minidump_file,
                           const std::vector<string> &symbol_paths,
-                          bool machine_readable) {
+                          bool machine_readable,
+                          bool output_stack_contents) {
   scoped_ptr<SimpleSymbolSupplier> symbol_supplier;
   if (!symbol_paths.empty()) {
     // TODO(mmentovai): check existence of symbol_path if specified?
@@ -79,8 +82,13 @@ bool PrintMinidumpProcess(const string &minidump_file,
   MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
 
   // Process the minidump.
+  Minidump dump(minidump_file);
+  if (!dump.Read()) {
+     BPLOG(ERROR) << "Minidump " << dump.path() << " could not be read";
+     return false;
+  }
   ProcessState process_state;
-  if (minidump_processor.Process(minidump_file, &process_state) !=
+  if (minidump_processor.Process(&dump, &process_state) !=
       google_breakpad::PROCESS_OK) {
     BPLOG(ERROR) << "MinidumpProcessor::Process failed";
     return false;
@@ -89,15 +97,16 @@ bool PrintMinidumpProcess(const string &minidump_file,
   if (machine_readable) {
     PrintProcessStateMachineReadable(process_state);
   } else {
-    PrintProcessState(process_state);
+    PrintProcessState(process_state, output_stack_contents, &resolver);
   }
 
   return true;
 }
 
 void usage(const char *program_name) {
-  fprintf(stderr, "usage: %s [-m] <minidump-file> [symbol-path ...]\n"
-          "    -m : Output in machine-readable format\n",
+  fprintf(stderr, "usage: %s [-m|-s] <minidump-file> [symbol-path ...]\n"
+          "    -m : Output in machine-readable format\n"
+          "    -s : Output stack contents\n",
           program_name);
 }
 
@@ -112,7 +121,8 @@ int main(int argc, char **argv) {
   }
 
   const char *minidump_file;
-  bool machine_readable;
+  bool machine_readable = false;
+  bool output_stack_contents = false;
   int symbol_path_arg;
 
   if (strcmp(argv[1], "-m") == 0) {
@@ -124,8 +134,16 @@ int main(int argc, char **argv) {
     machine_readable = true;
     minidump_file = argv[2];
     symbol_path_arg = 3;
+  } else if (strcmp(argv[1], "-s") == 0) {
+    if (argc < 3) {
+      usage(argv[0]);
+      return 1;
+    }
+
+    output_stack_contents = true;
+    minidump_file = argv[2];
+    symbol_path_arg = 3;
   } else {
-    machine_readable = false;
     minidump_file = argv[1];
     symbol_path_arg = 2;
   }
@@ -139,5 +157,6 @@ int main(int argc, char **argv) {
 
   return PrintMinidumpProcess(minidump_file,
                               symbol_paths,
-                              machine_readable) ? 0 : 1;
+                              machine_readable,
+                              output_stack_contents) ? 0 : 1;
 }
