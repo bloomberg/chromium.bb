@@ -283,21 +283,4 @@ public class AndroidSyncSettings {
             observer.androidSyncSettingsChanged();
         }
     }
-
-    @Deprecated
-    @VisibleForTesting
-    public static void overrideAndroidSyncSettingsForTests(Context context,
-            SyncContentResolverDelegate contentResolver) {
-        overrideForTests(context, contentResolver);
-    }
-
-    @Deprecated
-    public boolean isChromeSyncEnabled(Account account) {
-        return isChromeSyncEnabled();
-    }
-
-    @Deprecated
-    public boolean isSyncEnabled(Account account) {
-        return isSyncEnabled();
-    }
 }
