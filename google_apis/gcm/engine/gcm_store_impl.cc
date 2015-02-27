@@ -159,7 +159,7 @@ class GCMStoreImpl::Backend
                             uint64 device_security_token,
                             const UpdateCallback& callback);
   void AddRegistration(const std::string& app_id,
-                       const linked_ptr<RegistrationInfo>& registration,
+                       const std::string& serialized_registration,
                        const UpdateCallback& callback);
   void RemoveRegistration(const std::string& app_id,
                           const UpdateCallback& callback);
@@ -369,7 +369,7 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
 
 void GCMStoreImpl::Backend::AddRegistration(
     const std::string& app_id,
-    const linked_ptr<RegistrationInfo>& registration,
+    const std::string& serialized_registration,
     const UpdateCallback& callback) {
   DVLOG(1) << "Saving registration info for app: " << app_id;
   if (!db_.get()) {
@@ -381,10 +381,9 @@ void GCMStoreImpl::Backend::AddRegistration(
   write_options.sync = true;
 
   std::string key = MakeRegistrationKey(app_id);
-  std::string value = registration->SerializeAsString();
   const leveldb::Status status = db_->Put(write_options,
                                           MakeSlice(key),
-                                          MakeSlice(value));
+                                          MakeSlice(serialized_registration));
   if (status.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
     return;
@@ -980,12 +979,13 @@ void GCMStoreImpl::AddRegistration(
     const std::string& app_id,
     const linked_ptr<RegistrationInfo>& registration,
     const UpdateCallback& callback) {
+  std::string serialized_registration = registration->SerializeAsString();
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMStoreImpl::Backend::AddRegistration,
                  backend_,
                  app_id,
-                 registration,
+                 serialized_registration,
                  callback));
 }
 
