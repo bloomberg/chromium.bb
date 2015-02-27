@@ -360,7 +360,7 @@ static int g2d_copy_with_scale_test(struct exynos_device *dev,
 {
 	struct g2d_context *ctx;
 	struct g2d_image src_img, dst_img;
-	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
+	unsigned int src_x, src_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
 
@@ -374,8 +374,6 @@ static int g2d_copy_with_scale_test(struct exynos_device *dev,
 
 	src_x = 0;
 	src_y = 0;
-	dst_x = 0;
-	dst_y = 0;
 	img_w = screen_width;
 	img_h = screen_height;
 

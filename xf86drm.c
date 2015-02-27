@@ -313,10 +313,13 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
     char            buf[64];
     int             fd;
     mode_t          devmode = DRM_DEV_MODE, serv_mode;
+    gid_t           serv_group;
+#if !defined(UDEV)
     int             isroot  = !geteuid();
     uid_t           user    = DRM_DEV_UID;
-    gid_t           group   = DRM_DEV_GID, serv_group;
-    
+    gid_t           group   = DRM_DEV_GID;
+#endif
+
     switch (type) {
     case DRM_NODE_PRIMARY:
 	    dev_name = DRM_DEV_NAME;
@@ -338,7 +341,6 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
 	drm_server_info->get_perms(&serv_group, &serv_mode);
 	devmode  = serv_mode ? serv_mode : DRM_DEV_MODE;
 	devmode &= ~(S_IXUSR|S_IXGRP|S_IXOTH);
-	group = (serv_group >= 0) ? serv_group : DRM_DEV_GID;
     }
 
 #if !defined(UDEV)
@@ -359,6 +361,7 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
     }
 
     if (drm_server_info) {
+	group = (serv_group >= 0) ? serv_group : DRM_DEV_GID;
 	chown_check_return(buf, user, group);
 	chmod(buf, devmode);
     }
