@@ -20,6 +20,7 @@ public:
         return adoptPtrWillBeNoop(new SampledEffect(animation, interpolations));
     }
 
+    bool canChange() const;
     void clear();
 
     const WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& interpolations() const { return *m_interpolations; }
@@ -35,13 +36,17 @@ public:
     unsigned sequenceNumber() const { return m_sequenceNumber; }
     Animation::Priority priority() const { return m_priority; }
 
+    void removeReplacedInterpolationsIfNeeded(const BitArray<numCSSProperties>&);
+
     DECLARE_TRACE();
 
 private:
     SampledEffect(Animation*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > >);
 
     RawPtrWillBeWeakMember<Animation> m_animation;
-    RefPtrWillBeMember<AnimationPlayer> m_player;
+#if !ENABLE(OILPAN)
+    RefPtr<AnimationPlayer> m_player;
+#endif
     OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> m_interpolations;
     const unsigned m_sequenceNumber;
     Animation::Priority m_priority;
