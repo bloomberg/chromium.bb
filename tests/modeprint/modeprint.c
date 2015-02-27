@@ -53,7 +53,7 @@ int crtcs;
 int fbs;
 char *module_name;
 
-const char* getConnectionText(drmModeConnection conn)
+static const char* getConnectionText(drmModeConnection conn)
 {
 	switch (conn) {
 	case DRM_MODE_CONNECTED:
@@ -66,7 +66,7 @@ const char* getConnectionText(drmModeConnection conn)
 
 }
 
-int printMode(struct drm_mode_modeinfo *mode)
+static int printMode(struct drm_mode_modeinfo *mode)
 {
 	if (full_modes) {
 		printf("Mode: %s\n", mode->name);
@@ -90,7 +90,7 @@ int printMode(struct drm_mode_modeinfo *mode)
 	return 0;
 }
 
-int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t value)
+static int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t value)
 {
 	const char *name = NULL;
 	int j;
@@ -161,7 +161,7 @@ static const char * const output_names[] = { "None",
 					     "DSI",
 };
 
-int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uint32_t id)
+static int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uint32_t id)
 {
 	int i = 0;
 	struct drm_mode_modeinfo *mode = NULL;
@@ -214,7 +214,7 @@ int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uin
 	return 0;
 }
 
-int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t id)
+static int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t id)
 {
 	printf("Encoder\n");
 	printf("\tid     :%i\n", id);
@@ -225,7 +225,7 @@ int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t 
 	return 0;
 }
 
-int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
+static int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
 {
 	printf("Crtc\n");
 	printf("\tid             : %i\n", id);
@@ -239,7 +239,7 @@ int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
 	return 0;
 }
 
-int printFrameBuffer(int fd, drmModeResPtr res, drmModeFBPtr fb)
+static int printFrameBuffer(int fd, drmModeResPtr res, drmModeFBPtr fb)
 {
 	printf("Framebuffer\n");
 	printf("\thandle    : %i\n", fb->handle);
@@ -253,7 +253,7 @@ int printFrameBuffer(int fd, drmModeResPtr res, drmModeFBPtr fb)
 	return 0;
 }
 
-int printRes(int fd, drmModeResPtr res)
+static int printRes(int fd, drmModeResPtr res)
 {
 	int i;
 	drmModeFBPtr fb;
@@ -329,7 +329,7 @@ int printRes(int fd, drmModeResPtr res)
 	return 0;
 }
 
-void args(int argc, char **argv)
+static void args(int argc, char **argv)
 {
 	int i;
 

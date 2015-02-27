@@ -37,7 +37,7 @@
 		return ret; \
 	}
 
-int test_bo(struct kms_driver *kms)
+static int test_bo(struct kms_driver *kms)
 {
 	struct kms_bo *bo;
 	int ret;

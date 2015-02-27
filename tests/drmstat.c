@@ -87,7 +87,7 @@ void handler(int fd, void *oldctx, void *newctx)
     printf("Got fd %d\n", fd);
 }
 
-void process_sigio(char *device)
+static void process_sigio(char *device)
 {
     int              fd;
 

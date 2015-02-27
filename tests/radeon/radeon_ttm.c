@@ -32,7 +32,7 @@
 /* allocate as many single page bo to try to starve the kernel
  * memory zone (below highmem)
  */
-void ttm_starve_kernel_private_memory(int fd)
+static void ttm_starve_kernel_private_memory(int fd)
 {
     struct list_head list;
     struct rbo *bo, *tmp;
@@ -55,7 +55,7 @@ void ttm_starve_kernel_private_memory(int fd)
     }
 }
 
-int radeon_open_fd(void)
+static int radeon_open_fd(void)
 {
     return drmOpen("radeon", NULL);
 }

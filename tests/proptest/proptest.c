@@ -44,7 +44,7 @@ static inline int64_t U642I64(uint64_t val)
 int fd;
 drmModeResPtr res = NULL;
 
-const char *connector_type_str(uint32_t type)
+static const char *connector_type_str(uint32_t type)
 {
 	switch (type) {
 	case DRM_MODE_CONNECTOR_Unknown:
