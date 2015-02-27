@@ -198,7 +198,7 @@ $methodNamesEnumContent
 
 private:
     static const char commandNames[];
-    static const size_t commandNamesIndex[];
+    static const unsigned short commandNamesIndex[];
 };
 
 } // namespace blink
@@ -225,7 +225,7 @@ const char InspectorBackendDispatcher::commandNames[] = {
 $methodNameDeclarations
 };
 
-const size_t InspectorBackendDispatcher::commandNamesIndex[] = {
+const unsigned short InspectorBackendDispatcher::commandNamesIndex[] = {
 $methodNameDeclarationsIndex
 };
 

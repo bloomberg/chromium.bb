@@ -1882,6 +1882,7 @@ class Generator:
             commandNameIndex=cmd_enum_name))
         declaration_command_name = "%s.%s\\0" % (domain_name, json_command_name)
         Generator.backend_method_name_declaration_list.append("    \"%s\"" % declaration_command_name)
+        assert Generator.backend_method_name_declaration_current_index < 2 ** 16, "Number too large for unsigned short."
         Generator.backend_method_name_declaration_index_list.append("    %d," % Generator.backend_method_name_declaration_current_index)
         Generator.backend_method_name_declaration_current_index += len(declaration_command_name) - 1
 
