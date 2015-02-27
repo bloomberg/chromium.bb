@@ -6,17 +6,17 @@
 #define WebPresentationClient_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebString.h"
 
 namespace blink {
 
 class WebPresentationController;
+class WebPresentationSessionClient;
 struct WebPresentationError;
 
-// If session was created, callback's onSuccess() is invoked with the per-frame unique id of the
-// presentation session interface implementation by the embedder. Otherwise, onError() is invoked
-// with the error code and message.
-using WebPresentationSessionClientCallbacks = WebCallbacks<WebString, WebPresentationError>;
+// If session was created, callback's onSuccess() is invoked with the information about the
+// presentation session created by the embedder. Otherwise, onError() is invoked with the error code
+// and message.
+using WebPresentationSessionClientCallbacks = WebCallbacks<WebPresentationSessionClient, WebPresentationError>;
 
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationClient {
