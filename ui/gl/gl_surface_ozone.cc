@@ -164,8 +164,8 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
 
   bool Flush() {
     glFlush();
-    // TODO: the following should be replaced by a per surface flush as it gets
-    // implemented in GL drivers.
+    // TODO: crbug.com/462360 the following should be replaced by a per surface
+    // flush as it gets implemented in GL drivers.
     if (has_implicit_external_sync_) {
       const EGLint attrib_list[] = {
           EGL_SYNC_CONDITION_KHR,
@@ -182,6 +182,8 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
       } else {
         return false;
       }
+    } else if (ozone_surface_->IsUniversalDisplayLinkDevice()) {
+      glFinish();
     }
     return true;
   }

@@ -81,7 +81,7 @@ void GbmSurfaceBuffer::Destroy(gbm_bo* buffer, void* data) {
 
 GbmSurface::GbmSurface(DriWindowDelegate* window_delegate,
                        const scoped_refptr<GbmWrapper>& gbm)
-    : GbmSurfaceless(window_delegate),
+    : GbmSurfaceless(window_delegate, NULL),
       gbm_(gbm),
       native_surface_(NULL),
       current_buffer_(NULL),

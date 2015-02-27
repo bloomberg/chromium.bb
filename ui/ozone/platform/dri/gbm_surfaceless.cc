@@ -6,13 +6,17 @@
 
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace ui {
 
-GbmSurfaceless::GbmSurfaceless(DriWindowDelegate* window_delegate)
-    : window_delegate_(window_delegate) {
+GbmSurfaceless::GbmSurfaceless(DriWindowDelegate* window_delegate,
+                               DrmDeviceManager* drm_device_manager)
+    : window_delegate_(window_delegate),
+      drm_device_manager_(drm_device_manager) {
 }
 
 GbmSurfaceless::~GbmSurfaceless() {}
@@ -44,6 +48,22 @@ bool GbmSurfaceless::OnSwapBuffersAsync(
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
   return make_scoped_ptr(new DriVSyncProvider(window_delegate_));
+}
+
+bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {
+  if (!drm_device_manager_)
+    return false;
+  scoped_refptr<DriWrapper> drm_primary =
+      drm_device_manager_->GetDrmDevice(gfx::kNullAcceleratedWidget);
+  DCHECK(drm_primary);
+
+  HardwareDisplayController* controller = window_delegate_->GetController();
+  if (!controller)
+    return false;
+  scoped_refptr<DriWrapper> drm = controller->GetAllocationDriWrapper();
+  DCHECK(drm);
+
+  return drm_primary != drm;
 }
 
 }  // namespace ui

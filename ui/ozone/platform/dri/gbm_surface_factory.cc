@@ -138,8 +138,8 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
   if (!allow_surfaceless_)
     return nullptr;
 
-  return make_scoped_ptr(
-      new GbmSurfaceless(window_manager_->GetWindowDelegate(widget)));
+  return make_scoped_ptr(new GbmSurfaceless(
+      window_manager_->GetWindowDelegate(widget), drm_device_manager_));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(

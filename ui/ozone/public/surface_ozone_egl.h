@@ -52,6 +52,9 @@ class OZONE_BASE_EXPORT SurfaceOzoneEGL {
   // outside of the sandbox, they must have been completed in
   // InitializeHardware. Returns an empty scoped_ptr on error.
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() = 0;
+
+  // Returns true if the surface is created on a UDL device.
+  virtual bool IsUniversalDisplayLinkDevice();
 };
 
 }  // namespace ui
