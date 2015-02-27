@@ -102,8 +102,8 @@ void ChromeWhispernetClient::Initialize(
     const SuccessCallback& init_callback) {
   DVLOG(3) << "Initializing whispernet proxy client.";
 
+  DCHECK(!init_callback.is_null());
   init_callback_ = init_callback;
-  DCHECK(!init_callback_.is_null());
 
   extensions::ComponentLoader* loader =
       extensions::ExtensionSystem::Get(browser_context_)
@@ -114,9 +114,6 @@ void ChromeWhispernetClient::Initialize(
     DVLOG(3) << "Loading Whispernet proxy.";
     loader->Add(IDR_WHISPERNET_PROXY_MANIFEST,
                 base::FilePath(FILE_PATH_LITERAL("whispernet_proxy")));
-  } else {
-    init_callback_.Run(true);
-    extension_loaded_ = true;
   }
 
   client_id_ = RegisterWhispernetClient(this);
@@ -192,6 +189,7 @@ void ChromeWhispernetClient::AudioConfiguration(const AudioParamData& params) {
   audio_params.param_data.resize(params_size);
   memcpy(vector_as_array(&audio_params.param_data), &params, params_size);
 
+  DVLOG(3) << "Configuring audio for client " << client_id_;
   SendEventIfLoaded(make_scoped_ptr(new Event(
       OnConfigAudio::kEventName,
       OnConfigAudio::Create(client_id_, audio_params),
@@ -206,7 +204,8 @@ void ChromeWhispernetClient::SendEventIfLoaded(
     event_router_->DispatchEventToExtension(kWhispernetProxyExtensionId,
                                             event.Pass());
   } else {
-    DVLOG(2) << "Queueing event: " << event->event_name;
+    DVLOG(2) << "Queueing event " << event->event_name
+             << " for client " << client_id_;
     queued_events_.push_back(event.release());
   }
 }
@@ -216,7 +215,8 @@ void ChromeWhispernetClient::OnExtensionLoaded(bool success) {
   init_callback_.Run(success);
 
   DVLOG(3) << "Sending " << queued_events_.size()
-           << " queued requests to whispernet";
+           << " queued requests to whispernet from client "
+           << client_id_;
 
   // In this loop, ownership of each Event is passed to a scoped_ptr instead.
   // Thus we can just discard the pointers at the end.

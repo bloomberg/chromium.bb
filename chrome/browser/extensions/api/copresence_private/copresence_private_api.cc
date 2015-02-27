@@ -13,19 +13,34 @@
 #include "base/stl_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/common/extensions/api/copresence_private.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/base/audio_bus.h"
 
 using audio_modem::WhispernetClient;
+using content::BrowserThread;
 
 namespace {
 
+// TODO(ckehoe): Move these globals into a proper CopresencePrivateService.
+
 base::LazyInstance<std::map<std::string, WhispernetClient*>>
 g_whispernet_clients = LAZY_INSTANCE_INITIALIZER;
+
+// To avoid concurrency issues, only use this on the UI thread.
+static bool g_initialized = false;
 
 WhispernetClient* GetWhispernetClient(const std::string& id) {
   WhispernetClient* client = g_whispernet_clients.Get()[id];
   DCHECK(client);
   return client;
+}
+
+void RunInitCallback(WhispernetClient* client, bool status) {
+  DCHECK(client);
+  audio_modem::SuccessCallback init_callback =
+      client->GetInitializedCallback();
+  if (!init_callback.is_null())
+    init_callback.Run(status);
 }
 
 }  // namespace
@@ -39,8 +54,13 @@ namespace SendInitialized = api::copresence_private::SendInitialized;
 namespace copresence_private {
 
 const std::string RegisterWhispernetClient(WhispernetClient* client) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (g_initialized)
+    RunInitCallback(client, true);
+
   std::string id = base::GenerateGUID();
   g_whispernet_clients.Get()[id] = client;
+
   return id;
 }
 
@@ -95,14 +115,14 @@ CopresencePrivateSendInitializedFunction::Run() {
       SendInitialized::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  DVLOG(2) << "Forwarding init callback to "
-           << g_whispernet_clients.Get().size() << " clients";
-  for (auto client_entry : g_whispernet_clients.Get()) {
-    audio_modem::SuccessCallback init_callback =
-        client_entry.second->GetInitializedCallback();
-    if (!init_callback.is_null())
-      init_callback.Run(params->success);
-  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (params->success)
+    g_initialized = true;
+
+  DVLOG(2) << "Notifying " << g_whispernet_clients.Get().size()
+           << " clients that initialization is complete.";
+  for (auto client_entry : g_whispernet_clients.Get())
+    RunInitCallback(client_entry.second, params->success);
 
   return RespondNow(NoArguments());
 }
