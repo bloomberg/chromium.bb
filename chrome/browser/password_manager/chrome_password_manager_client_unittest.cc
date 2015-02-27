@@ -223,19 +223,6 @@ TEST_F(ChromePasswordManagerClientTest, LogToAReceiver) {
   EXPECT_FALSE(client->IsLoggingActive());
 }
 
-TEST_F(ChromePasswordManagerClientTest,
-       ShouldAskUserToSubmitURLDefaultBehaviour) {
-  ChromePasswordManagerClient* client = GetClient();
-  // TODO(melandory) Since "Ask user to submit URL" functionality is currently
-  // in development, so the user should not be asked to submit a URL.
-  EXPECT_FALSE(client->ShouldAskUserToSubmitURL(GURL("https://hostname.com/")));
-}
-
-TEST_F(ChromePasswordManagerClientTest, ShouldAskUserToSubmitURLEmptyURL) {
-  ChromePasswordManagerClient* client = GetClient();
-  EXPECT_FALSE(client->ShouldAskUserToSubmitURL(GURL::EmptyGURL()));
-}
-
 TEST_F(ChromePasswordManagerClientTest, ShouldFilterAutofillResult_Reauth) {
   // Make client disallow only reauth requests.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

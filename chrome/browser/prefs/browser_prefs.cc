@@ -88,7 +88,6 @@
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -409,7 +408,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MediaStreamDevicesController::RegisterProfilePrefs(registry);
   NetPrefObserver::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
-  password_manager::urls_collection_experiment::RegisterPrefs(registry);
   password_bubble_experiment::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry);

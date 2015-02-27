@@ -43,12 +43,10 @@ class ChromePasswordManagerClient
   // PasswordManagerClient implementation.
   bool IsAutomaticPasswordSavingEnabled() const override;
   bool IsPasswordManagerEnabledForCurrentPage() const override;
-  bool ShouldAskUserToSubmitURL(const GURL& url) override;
   bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   std::string GetSyncUsername() const override;
   bool IsSyncAccountCredential(const std::string& username,
                                const std::string& origin) const override;
-  void AskUserAndMaybeReportURL(const GURL& url) const override;
   void AutofillResultsComputed() override;
   bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,

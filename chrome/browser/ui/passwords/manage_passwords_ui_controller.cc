@@ -110,14 +110,6 @@ base::TimeDelta ManagePasswordsUIController::Elapsed() const {
   return timer_ ? timer_->Elapsed() : base::TimeDelta::Max();
 }
 
-void ManagePasswordsUIController::OnAskToReportURL(const GURL& url) {
-  origin_ = url;
-  SetState(password_manager::ui::
-           ASK_USER_REPORT_URL_BUBBLE_SHOWN_BEFORE_TRANSITION_STATE);
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
-  UpdateBubbleAndIconVisibility();
-}
-
 void ManagePasswordsUIController::OnPasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
   form_manager_ = form_manager.Pass();
@@ -326,16 +318,6 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
   // interact with the password bubble.
   if (Elapsed() < base::TimeDelta::FromSeconds(1))
     return;
-
-  // This allows "Allow to collect URL?" bubble to outlive the coming
-  // navigation.
-  if (state_ == password_manager::ui::
-                    ASK_USER_REPORT_URL_BUBBLE_SHOWN_BEFORE_TRANSITION_STATE) {
-    // TODO(melandory): Substitute this with a proper solution using
-    // provisional_save_manager.
-    SetState(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE);
-    return;
-  }
 
   // Otherwise, reset the password manager and the timer.
   SetState(password_manager::ui::INACTIVE_STATE);

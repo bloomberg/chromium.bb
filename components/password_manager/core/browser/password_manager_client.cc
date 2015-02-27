@@ -20,9 +20,6 @@ PasswordManagerClient::GetProbabilityForExperiment(
   return 0;
 }
 
-void PasswordManagerClient::AskUserAndMaybeReportURL(const GURL& url) const {
-}
-
 void PasswordManagerClient::AutofillResultsComputed() {
 }
 
@@ -48,10 +45,6 @@ void PasswordManagerClient::LogSavePasswordProgress(
 }
 
 bool PasswordManagerClient::IsLoggingActive() const {
-  return false;
-}
-
-bool PasswordManagerClient::ShouldAskUserToSubmitURL(const GURL& url) {
   return false;
 }
 

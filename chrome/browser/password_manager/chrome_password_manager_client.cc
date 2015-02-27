@@ -37,7 +37,6 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -133,13 +132,6 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
   return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
 }
 
-bool ChromePasswordManagerClient::ShouldAskUserToSubmitURL(const GURL& url) {
-  return url.is_valid() && !url.is_empty() && url.has_host() &&
-         password_manager_.IsSavingEnabledForCurrentPage() &&
-         password_manager::urls_collection_experiment::ShouldShowBubble(
-             GetPrefs());
-}
-
 bool ChromePasswordManagerClient::ShouldFilterAutofillResult(
     const autofill::PasswordForm& form) {
   if (!IsSyncAccountCredential(base::UTF16ToUTF8(form.username_value),
@@ -168,13 +160,6 @@ bool ChromePasswordManagerClient::IsSyncAccountCredential(
     const std::string& username, const std::string& origin) const {
   return password_manager_sync_metrics::IsSyncAccountCredential(
       profile_, username, origin);
-}
-
-void ChromePasswordManagerClient::AskUserAndMaybeReportURL(
-    const GURL& url) const {
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->OnAskToReportURL(url);
 }
 
 void ChromePasswordManagerClient::AutofillResultsComputed() {

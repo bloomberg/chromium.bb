@@ -50,7 +50,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   }
 
  private:
-  class AskUserToSubmitURLView;
   class AccountChooserView;
   class AutoSigninView;
   class BlacklistedView;

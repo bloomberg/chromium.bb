@@ -14,7 +14,6 @@
 #include "components/feedback/feedback_data.h"
 #include "components/feedback/feedback_util.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
-#include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/browser_thread.h"
@@ -99,14 +98,6 @@ void URLCollectionFeedbackSender::SendFeedback() {
   feedback_util::SendReport(feedback_data);
 }
 
-void RecordURLsCollectionExperimentStatistics(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  Profile* profile = GetProfileFromWebContents(web_contents);
-  password_manager::urls_collection_experiment::RecordBubbleOpened(
-      profile->GetPrefs());
-}
-
 }  // namespace
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
@@ -144,9 +135,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     // There is no title.
-  } else if (password_manager::ui::IsAskSubmitURLState(state_)) {
-    title_ =
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_ASK_TO_SUBMIT_URL_TITLE);
   } else {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
@@ -190,8 +178,6 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
       display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
     }
   }
-  if (password_manager::ui::IsAskSubmitURLState(state_))
-    RecordURLsCollectionExperimentStatistics(web_contents());
   metrics_util::LogUIDisplayDisposition(display_disposition_);
 
   // Default to a dismissal reason of "no interaction". If the user interacts
@@ -223,39 +209,11 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
-  if (password_manager::ui::IsAskSubmitURLState(state_)) {
-    state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
-    metrics_util::LogAllowToCollectURLBubbleUIDismissalReason(
-        dismissal_reason_);
-    // Return since we do not want to include "Allow to collect URL?" bubble
-    // data in other PasswordManager metrics.
-    return;
-  }
-
   metrics_util::LogUIDismissalReason(dismissal_reason_);
   // Other use cases have been reported in the callbacks like OnSaveClicked().
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE &&
       dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)
     RecordExperimentStatistics(web_contents(), dismissal_reason_);
-}
-
-void ManagePasswordsBubbleModel::OnCollectURLClicked(const std::string& url) {
-  dismissal_reason_ = metrics_util::CLICKED_COLLECT_URL;
-  // User interaction with bubble has happened, do not need to show bubble
-  // in case it was before transition to another page.
-  state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
-#if !defined(OS_ANDROID)
-  URLCollectionFeedbackSender feedback_sender(
-      web_contents()->GetBrowserContext(), url);
-  feedback_sender.SendFeedback();
-#endif
-}
-
-void ManagePasswordsBubbleModel::OnDoNotCollectURLClicked() {
-  dismissal_reason_ = metrics_util::CLICKED_DO_NOT_COLLECT_URL;
-  // User interaction with bubble has happened, do not need to show bubble
-  // in case it was before transition to another page.
-  state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnNopeClicked() {

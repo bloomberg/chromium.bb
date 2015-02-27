@@ -350,10 +350,6 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
         failure,
         MAX_FAILURE_VALUE);
   }
-  if (failure == NO_MATCHING_FORM &&
-      client_->ShouldAskUserToSubmitURL(form_origin)) {
-    client_->AskUserAndMaybeReportURL(form_origin);
-  }
 
   if (logger) {
     switch (failure) {
