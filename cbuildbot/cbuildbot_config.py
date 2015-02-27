@@ -2104,6 +2104,7 @@ pre_cq = paladin.derive(
               'if supported.',
   doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ',
   health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
+  health_threshold=3,
 )
 
 # Pre-CQ targets that only check compilation and unit tests.
