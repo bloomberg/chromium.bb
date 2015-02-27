@@ -4,7 +4,9 @@
 
 // FIXME: Add the spec URL.
 
-dictionary CircularGeofencingRegionInit {
+[
+    TypeChecking=Unrestricted,
+] dictionary CircularGeofencingRegionInit {
     DOMString? id = null;
     double latitude;
     double longitude;
