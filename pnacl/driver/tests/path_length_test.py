@@ -27,11 +27,20 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
     driver_test_utils.ApplyTestEnvOverrides(env)
     self.backup_exit = sys.exit
     sys.exit = driver_test_utils.FakeExit
-    cwd_len = len(os.getcwd())
+    self.cwd_backup = os.getcwd()
+    cwd_len = len(self.cwd_backup)
+    # Create a directory whose path will be exactly 235 chars long
+    assert(cwd_len < 235)
+    shorter_dir_len = 235 - cwd_len - 1
+    self.ShorterTempDir = os.path.join(self.cwd_backup, 'a' * shorter_dir_len)
+    assert(235 == len(self.ShorterTempDir),
+           "ShorterTempDir isn't 235 chars: %d" % len(self.ShorterTempDir))
+    os.mkdir(self.ShorterTempDir)
     # Create a directory whose path will be exactly 240 chars long
     dir_len = 240 - cwd_len - 1
-    self.cwd_backup = os.getcwd()
     self.LongTempDir = os.path.join(self.cwd_backup, 'a' * dir_len)
+    assert(240 == len(self.LongTempDir),
+           "LongTempDir isn't 240 chars: %d" % len(self.LongTempDir))
     os.mkdir(self.LongTempDir)
 
   def tearDown(self):
@@ -39,6 +48,7 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
     os.chdir(self.cwd_backup)
     sys.exit = self.backup_exit
     shutil.rmtree(self.LongTempDir)
+    shutil.rmtree(self.ShorterTempDir)
 
   def WriteCFile(self, filename):
     with open(filename, 'w') as f:
@@ -56,7 +66,7 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
     if not driver_test_utils.CanRunHost():
       return
 
-    name = os.path.join(self.LongTempDir, 'a file')
+    name = os.path.join(self.ShorterTempDir, 'a file')
     self.WriteCFile(name + '.c')
     driver_tools.RunDriver('pnacl-clang',
                            [name + '.c', '-c', '-o', name + '.o'])

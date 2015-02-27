@@ -110,6 +110,8 @@ pr23135.c
 builtin-nan-1.c
 # __builtin_apply and friends not supported by clang
 pr47237.c
+# This test has an integer overflow / undefined behavior:
+20031003-1.c
 # ======================================================================
 # wont fixes - nested functions
 # ======================================================================

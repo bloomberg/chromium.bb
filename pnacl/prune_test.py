@@ -140,7 +140,8 @@ class TestTranslatorPruned(unittest.TestCase):
         'MCAsmLexer', '::AsmLexer',
         # Gigantic Asm MatchTable (globbed for all targets),
         'MatchTable',
-        'PBQP',
+        # Pruned out PBQP mostly, except the getCustomPBQPConstraints virtual.
+        'RegAllocPBQP', 'PBQP::RegAlloc',
         # Can only check *InstPrinter::print*, not *::getRegisterName():
         # https://code.google.com/p/nativeclient/issues/detail?id=3326
         'ARMInstPrinter::print', 'X86.*InstPrinter::print',

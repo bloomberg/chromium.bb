@@ -37,7 +37,7 @@ EXTRA_ENV = {
   'OPT_LEVEL': '',  # Default opt is 0, but we need to know if it's explicitly
                     # requested or not, since we don't want to propagate
                     # the value to TRANSLATE_FLAGS if it wasn't explicitly set.
-  'OPT_LTO_FLAGS': '-std-link-opts -disable-internalize',
+  'OPT_LTO_FLAGS': '-std-link-opts',
   'OPT_FLAGS': '${#OPT_LEVEL && !OPT_LEVEL == 0 ? ${OPT_LTO_FLAGS}} ' +
                '-inline-threshold=${OPT_INLINE_THRESHOLD} ',
 
