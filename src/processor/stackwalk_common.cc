@@ -198,7 +198,7 @@ static void PrintStackContents(const std::string &indent,
   }
 
   // Try to find instruction pointers from stack.
-  printf("\n%sPossible instruction pointers:", indent.c_str());
+  printf("\n%sPossible instruction pointers:\n", indent.c_str());
   for (uint64_t address = stack_begin; address < stack_end;
        address += word_length) {
     StackFrame pointee_frame;
@@ -223,20 +223,21 @@ static void PrintStackContents(const std::string &indent,
     // Print function name.
     if (!pointee_frame.function_name.empty()) {
       if (word_length == 4) {
-        printf("\n%s *(0x%08x) = 0x%08x", indent.c_str(),
+        printf("%s *(0x%08x) = 0x%08x", indent.c_str(),
                static_cast<uint32_t>(address),
                static_cast<uint32_t>(pointee_frame.instruction));
       } else {
-        printf("\n%s *(0x%016" PRIx64 ") = 0x%016" PRIx64,
+        printf("%s *(0x%016" PRIx64 ") = 0x%016" PRIx64,
                indent.c_str(), address, pointee_frame.instruction);
       }
-      printf(" <%s> [%s : %d + 0x%" PRIx64 "]",
+      printf(" <%s> [%s : %d + 0x%" PRIx64 "]\n",
              pointee_frame.function_name.c_str(),
              PathnameStripper::File(pointee_frame.source_file_name).c_str(),
              pointee_frame.source_line,
              pointee_frame.instruction - pointee_frame.source_line_base);
     }
   }
+  printf("\n");
 }
 
 // PrintStack prints the call stack in |stack| to stdout, in a reasonably
