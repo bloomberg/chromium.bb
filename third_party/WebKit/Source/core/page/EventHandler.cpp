@@ -606,9 +606,6 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
 
     m_mouseDown = event.event();
 
-    if (event.isOverWidget() && passWidgetMouseDownEventToWidget(event))
-        return true;
-
     if (m_frame->document()->isSVGDocument() && m_frame->document()->accessSVGExtensions().zoomAndPanEnabled()) {
         if (event.event().shiftKey() && singleClick) {
             m_svgPan = true;
@@ -3898,14 +3895,6 @@ bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, 
         return false;
 
     return toFrameView(&widget)->frame().eventHandler().handleWheelEvent(wheelEvent);
-}
-
-bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)
-{
-    // Figure out which view to send the event to.
-    if (!event.innerNode() || !event.innerNode()->renderer() || !event.innerNode()->renderer()->isLayoutPart())
-        return false;
-    return false;
 }
 
 PassRefPtrWillBeRawPtr<DataTransfer> EventHandler::createDraggingDataTransfer() const

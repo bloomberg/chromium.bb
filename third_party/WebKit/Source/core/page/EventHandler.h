@@ -287,8 +287,6 @@ private:
 
     bool passMousePressEventToScrollbar(MouseEventWithHitTestResults&);
 
-    bool passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults&);
-
     bool passWheelEventToWidget(const PlatformWheelEvent&, Widget&);
     void defaultSpaceEventHandler(KeyboardEvent*);
     void defaultBackspaceEventHandler(KeyboardEvent*);
