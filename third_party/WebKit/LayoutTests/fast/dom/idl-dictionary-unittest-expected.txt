@@ -11,6 +11,7 @@ PASS dict.longOrNullMember is undefined.
 PASS dict.longOrNullMemberWithDefault is null
 PASS dict.booleanMember is undefined.
 PASS dict.doubleMember is undefined.
+PASS dict.unrestrictedDoubleMember is undefined.
 PASS dict.stringMember is undefined.
 PASS dict.stringMemberWithDefault is "defaultStringValue"
 PASS dict.byteStringMember is undefined.
@@ -34,6 +35,7 @@ PASS dict.longOrNullMember is undefined.
 PASS dict.longOrNullMemberWithDefault is null
 PASS dict.booleanMember is undefined.
 PASS dict.doubleMember is undefined.
+PASS dict.unrestrictedDoubleMember is undefined.
 PASS dict.stringMember is undefined.
 PASS dict.byteStringMember is undefined.
 PASS dict.usvStringMember is undefined.
@@ -57,6 +59,7 @@ PASS dict.byteStringMember is "\u0000\u0001þÿ"
 PASS dict.usvStringMember is "!@#123ABCabc 𐀀"
 PASS dict.booleanMember is true
 PASS dict.doubleMember is 3.14
+PASS dict.unrestrictedDoubleMember is NaN
 PASS dict.stringSequenceMember is ["foo", "bar", "baz"]
 PASS dict.stringSequenceOrNullMember is []
 PASS dict.elementMember is element1
@@ -84,6 +87,12 @@ PASS dict.longOrNullMemberWithDefault is null
 
 Test for setting invalid member
 PASS dict.invalidMember is undefined.
+
+Test for setting invalid double value
+PASS dictionaryTest.set({doubleMember: NaN}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided double value is non-finite..
+PASS dictionaryTest.set({doubleMember: Infinity}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided double value is non-finite..
+PASS dictionaryTest.set({doubleMember: -Infinity}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided double value is non-finite..
+PASS dictionaryTest.set({doubleMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided double value is non-finite..
 
 Test for setting invalid ByteString value
 PASS dictionaryTest.set({byteStringMember: 'Ā'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': Value is not a valid ByteString..

@@ -4,7 +4,9 @@
 
 enum InternalEnum { "foo", "bar", "baz" };
 
-dictionary InternalDictionary {
+[
+    TypeChecking=Unrestricted,
+] dictionary InternalDictionary {
     long longMember;
     [Clamp] long longMemberWithClamp;
     [EnforceRange] long longMemberWithEnforceRange;
@@ -15,6 +17,7 @@ dictionary InternalDictionary {
     long? longOrNullMemberWithDefault = null;
     boolean booleanMember;
     double doubleMember;
+    unrestricted double unrestrictedDoubleMember;
     DOMString stringMember;
     DOMString stringMemberWithDefault = "defaultStringValue";
     ByteString byteStringMember;

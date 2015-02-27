@@ -55,6 +55,7 @@ private:
     Nullable<int> m_longOrNullMemberWithDefault;
     Nullable<bool> m_booleanMember;
     Nullable<double> m_doubleMember;
+    Nullable<double> m_unrestrictedDoubleMember;
     String m_stringMember;
     String m_stringMemberWithDefault;
     String m_byteStringMember;

@@ -18,6 +18,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeNull('dict.longOrNullMemberWithDefault');
     shouldBeUndefined('dict.booleanMember');
     shouldBeUndefined('dict.doubleMember');
+    shouldBeUndefined('dict.unrestrictedDoubleMember');
     shouldBeUndefined('dict.stringMember');
     shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('dict.byteStringMember');
@@ -44,6 +45,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeNull('dict.longOrNullMemberWithDefault');
     shouldBeUndefined('dict.booleanMember');
     shouldBeUndefined('dict.doubleMember');
+    shouldBeUndefined('dict.unrestrictedDoubleMember');
     shouldBeUndefined('dict.stringMember');
     shouldBeUndefined('dict.byteStringMember');
     shouldBeUndefined('dict.usvStringMember');
@@ -71,6 +73,7 @@ if (window.internals && internals.dictionaryTest) {
         usvStringMember: '!@#123ABCabc\xA0\uD800\uDC00',
         booleanMember: true,
         doubleMember: 3.14,
+        unrestrictedDoubleMember: NaN,
         stringSequenceMember: ['foo', 'bar', 'baz'],
         stringSequenceOrNullMember: [],
         elementMember: element1,
@@ -94,6 +97,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeEqualToString('dict.usvStringMember', '!@#123ABCabc\xA0\uD800\uDC00');
     shouldBeTrue('dict.booleanMember');
     shouldBe('dict.doubleMember', '3.14');
+    shouldBe('dict.unrestrictedDoubleMember', 'NaN');
     shouldBe('dict.stringSequenceMember', '["foo", "bar", "baz"]');
     shouldBe('dict.stringSequenceOrNullMember', '[]');
     shouldBe('dict.elementMember', 'element1');
@@ -158,6 +162,13 @@ if (window.internals && internals.dictionaryTest) {
     dictionaryTest.set({invalidMember: 'shouldNotBeSet'});
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.invalidMember');
+    debug('');
+
+    debug('Test for setting invalid double value');
+    shouldThrow("dictionaryTest.set({doubleMember: NaN})");
+    shouldThrow("dictionaryTest.set({doubleMember: Infinity})");
+    shouldThrow("dictionaryTest.set({doubleMember: -Infinity})");
+    shouldThrow("dictionaryTest.set({doubleMember: 'invalid'})");
     debug('');
 
     debug('Test for setting invalid ByteString value');

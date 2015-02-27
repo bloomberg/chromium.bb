@@ -38,6 +38,8 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
         m_booleanMember = testingDictionary.booleanMember();
     if (testingDictionary.hasDoubleMember())
         m_doubleMember = testingDictionary.doubleMember();
+    if (testingDictionary.hasUnrestrictedDoubleMember())
+        m_unrestrictedDoubleMember = testingDictionary.unrestrictedDoubleMember();
     m_stringMember = testingDictionary.stringMember();
     m_stringMemberWithDefault = testingDictionary.stringMemberWithDefault();
     m_byteStringMember = testingDictionary.byteStringMember();
@@ -77,6 +79,8 @@ void DictionaryTest::get(InternalDictionary& result)
         result.setBooleanMember(m_booleanMember.get());
     if (m_doubleMember)
         result.setDoubleMember(m_doubleMember.get());
+    if (m_unrestrictedDoubleMember)
+        result.setUnrestrictedDoubleMember(m_unrestrictedDoubleMember.get());
     result.setStringMember(m_stringMember);
     result.setStringMemberWithDefault(m_stringMemberWithDefault);
     result.setByteStringMember(m_byteStringMember);
@@ -124,6 +128,7 @@ void DictionaryTest::reset()
     m_longOrNullMemberWithDefault = nullptr;
     m_booleanMember = nullptr;
     m_doubleMember = nullptr;
+    m_unrestrictedDoubleMember = nullptr;
     m_stringMember = String();
     m_stringMemberWithDefault = String("Should not be returned");
     m_stringSequenceMember = nullptr;
