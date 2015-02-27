@@ -5,14 +5,17 @@
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -35,11 +38,14 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
  public:
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller)
       : controller_(controller),
+        controls_container_(nullptr),
         cvc_input_(nullptr),
         month_input_(nullptr),
         year_input_(nullptr),
-        message_label_(nullptr),
-        storage_checkbox_(nullptr) {}
+        error_label_(nullptr),
+        storage_checkbox_(nullptr),
+        progress_overlay_(nullptr),
+        progress_label_(nullptr) {}
 
   ~CardUnmaskPromptViews() override {
     if (controller_)
@@ -59,23 +65,27 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   void DisableAndWaitForVerification() override {
     SetInputsEnabled(false);
-    message_label_->SetText(base::ASCIIToUTF16("Verifying..."));
-    message_label_->SetVisible(true);
+    progress_overlay_->SetVisible(true);
     GetDialogClientView()->UpdateDialogButtons();
     Layout();
   }
 
   void GotVerificationResult(bool success) override {
     if (success) {
-      message_label_->SetText(base::ASCIIToUTF16("Success!"));
+      progress_label_->SetText(base::ASCIIToUTF16("Success!"));
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
                                 base::Unretained(this)),
           base::TimeDelta::FromSeconds(1));
     } else {
       SetInputsEnabled(true);
-      cvc_input_->SetInvalid(true);
-      message_label_->SetText(base::ASCIIToUTF16("Verification error."));
+      SetInputsInvalid(true);
+      // TODO(estade): it's somewhat jarring when the error comes back too
+      // quickly.
+      progress_overlay_->SetVisible(false);
+      // TODO(estade): When do we hide |error_label_|?
+      error_label_->SetText(
+          base::ASCIIToUTF16("Verification error. Please try again."));
       GetDialogClientView()->UpdateDialogButtons();
     }
     Layout();
@@ -88,6 +98,15 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
       month_input_->SetEnabled(enabled);
     if (year_input_)
       year_input_->SetEnabled(enabled);
+  }
+
+  void SetInputsInvalid(bool invalid) {
+    cvc_input_->SetInvalid(invalid);
+
+    if (month_input_)
+      month_input_->SetInvalid(invalid);
+    if (year_input_)
+      year_input_->SetInvalid(invalid);
   }
 
   // views::DialogDelegateView
@@ -103,6 +122,28 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     // more width than we ask for, e.g. if the title is super long.
     const int kWidth = 250;
     return gfx::Size(kWidth, GetHeightForWidth(kWidth));
+  }
+
+  void Layout() override {
+    for (int i = 0; i < child_count(); ++i) {
+      child_at(i)->SetBoundsRect(GetContentsBounds());
+    }
+  }
+
+  int GetHeightForWidth(int width) const override {
+    if (!has_children())
+      return 0;
+    const gfx::Insets insets = GetInsets();
+    return controls_container_->GetHeightForWidth(width - insets.width()) +
+        insets.height();
+  }
+
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    SkColor bg_color =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+    bg_color = SkColorSetA(bg_color, 0xDD);
+    progress_overlay_->set_background(
+        views::Background::CreateSolidBackground(bg_color));
   }
 
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
@@ -168,11 +209,17 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override {
+    // Sets all inputs back to valid since we don't know which one was
+    // actually invalid to begin with.
+    SetInputsInvalid(false);
     GetDialogClientView()->UpdateDialogButtons();
   }
 
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override {
+    // Sets all inputs back to valid since we don't know which one was
+    // actually invalid to begin with.
+    SetInputsInvalid(false);
     GetDialogClientView()->UpdateDialogButtons();
   }
 
@@ -181,19 +228,22 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     if (has_children())
       return;
 
-    SetLayoutManager(
+    controls_container_ = new views::View();
+    controls_container_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 19, 0, 5));
+    AddChildView(controls_container_);
+
     views::Label* instructions =
         new views::Label(controller_->GetInstructionsMessage());
 
     instructions->SetMultiLine(true);
     instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(instructions);
+    controls_container_->AddChildView(instructions);
 
     views::View* input_row = new views::View();
     input_row->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
-    AddChildView(input_row);
+    controls_container_->AddChildView(input_row);
 
     if (controller_->ShouldRequestExpirationDate()) {
       month_input_ = new views::Combobox(&month_combobox_model_);
@@ -218,19 +268,38 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
     input_row->AddChildView(cvc_image);
 
-    message_label_ = new views::Label();
-    input_row->AddChildView(message_label_);
-    message_label_->SetVisible(false);
+    // Reserve vertical space.
+    error_label_ = new views::Label(base::ASCIIToUTF16(" "));
+    error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    error_label_->SetEnabledColor(kWarningColor);
+    controls_container_->AddChildView(error_label_);
 
     storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
     storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
-    AddChildView(storage_checkbox_);
+    controls_container_->AddChildView(storage_checkbox_);
+
+    progress_overlay_ = new views::View();
+    views::BoxLayout* progress_layout =
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+    progress_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+    progress_layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+    progress_overlay_->SetLayoutManager(progress_layout);
+
+    progress_overlay_->SetVisible(false);
+    AddChildView(progress_overlay_);
+
+    progress_label_ = new views::Label(base::ASCIIToUTF16("Verifying..."));
+    progress_overlay_->AddChildView(progress_label_);
   }
 
   void ClosePrompt() { GetWidget()->Close(); }
 
   CardUnmaskPromptController* controller_;
+
+  views::View* controls_container_;
 
   DecoratedTextfield* cvc_input_;
 
@@ -241,11 +310,12 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
 
-  // TODO(estade): this is a temporary standin in place of some spinner UI
-  // as well as a better error message.
-  views::Label* message_label_;
+  views::Label* error_label_;
 
   views::Checkbox* storage_checkbox_;
+
+  views::View* progress_overlay_;
+  views::Label* progress_label_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViews);
 };
