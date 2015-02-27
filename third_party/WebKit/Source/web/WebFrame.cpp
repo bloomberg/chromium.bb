@@ -89,10 +89,14 @@ bool WebFrame::swap(WebFrame* frame)
     if (frame->isWebLocalFrame()) {
         LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
         ASSERT(owner == localFrame.owner());
-        if (owner && owner->isLocal()) {
-            HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
-            ownerElement->setContentFrame(localFrame);
-            ownerElement->setWidget(localFrame.view());
+        if (owner) {
+            if (owner->isLocal()) {
+                HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
+                ownerElement->setContentFrame(localFrame);
+                ownerElement->setWidget(localFrame.view());
+            } else {
+                toRemoteBridgeFrameOwner(owner)->setContentFrame(toWebLocalFrameImpl(frame));
+            }
         } else {
             localFrame.page()->setMainFrame(&localFrame);
         }

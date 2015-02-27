@@ -38,6 +38,11 @@ public:
         m_sandboxFlags = flags;
     }
 
+    void setContentFrame(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame)
+    {
+        m_frame = frame;
+    }
+
     virtual void dispatchLoad() override;
 
     DECLARE_VIRTUAL_TRACE();
