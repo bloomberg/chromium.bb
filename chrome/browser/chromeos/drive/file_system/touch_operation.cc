@@ -27,12 +27,10 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
                            const base::FilePath& file_path,
                            const base::Time& last_access_time,
                            const base::Time& last_modified_time,
-                           ResourceEntry* entry,
-                           std::string* local_id) {
+                           ResourceEntry* entry) {
   FileError error = metadata->GetResourceEntryByPath(file_path, entry);
   if (error != FILE_ERROR_OK)
     return error;
-  *local_id = entry->local_id();
 
   PlatformFileInfoProto* file_info = entry->mutable_file_info();
   if (!last_access_time.is_null())
@@ -65,31 +63,20 @@ void TouchOperation::TouchFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::string* local_id = new std::string;
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&UpdateLocalState,
-                 metadata_,
-                 file_path,
-                 last_access_time,
-                 last_modified_time,
-                 entry,
-                 local_id),
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&UpdateLocalState, metadata_, file_path, last_access_time,
+                 last_modified_time, entry),
       base::Bind(&TouchOperation::TouchFileAfterUpdateLocalState,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback,
-                 base::Owned(entry),
-                 base::Owned(local_id)));
+                 weak_ptr_factory_.GetWeakPtr(), file_path, callback,
+                 base::Owned(entry)));
 }
 
 void TouchOperation::TouchFileAfterUpdateLocalState(
     const base::FilePath& file_path,
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
-    const std::string* local_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -104,7 +91,7 @@ void TouchOperation::TouchFileAfterUpdateLocalState(
   if (error == FILE_ERROR_OK) {
     delegate_->OnFileChangedByOperation(changed_files);
     delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED),
-                                         *local_id);
+                                         entry->local_id());
   }
   callback.Run(error);
 }
