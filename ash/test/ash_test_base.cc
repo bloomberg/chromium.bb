@@ -288,34 +288,33 @@ TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {
-  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
-      SetActiveUserSessionStarted(session_started);
+  AshTestHelper::GetTestSessionStateDelegate()->SetActiveUserSessionStarted(
+      session_started);
 }
 
 void AshTestBase::SetSessionStarting() {
-  ash_test_helper_->test_shell_delegate()
-      ->test_session_state_delegate()
-      ->set_session_state(SessionStateDelegate::SESSION_STATE_ACTIVE);
+  AshTestHelper::GetTestSessionStateDelegate()->set_session_state(
+      SessionStateDelegate::SESSION_STATE_ACTIVE);
 }
 
 void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
-  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
-      SetHasActiveUser(user_logged_in);
+  AshTestHelper::GetTestSessionStateDelegate()->SetHasActiveUser(
+      user_logged_in);
 }
 
 void AshTestBase::SetCanLockScreen(bool can_lock_screen) {
-  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
-      SetCanLockScreen(can_lock_screen);
+  AshTestHelper::GetTestSessionStateDelegate()->SetCanLockScreen(
+      can_lock_screen);
 }
 
 void AshTestBase::SetShouldLockScreenBeforeSuspending(bool should_lock) {
-  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
-      SetShouldLockScreenBeforeSuspending(should_lock);
+  AshTestHelper::GetTestSessionStateDelegate()
+      ->SetShouldLockScreenBeforeSuspending(should_lock);
 }
 
 void AshTestBase::SetUserAddingScreenRunning(bool user_adding_screen_running) {
-  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
-      SetUserAddingScreenRunning(user_adding_screen_running);
+  AshTestHelper::GetTestSessionStateDelegate()->SetUserAddingScreenRunning(
+      user_adding_screen_running);
 }
 
 void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {

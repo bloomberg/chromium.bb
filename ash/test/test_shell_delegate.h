@@ -9,6 +9,7 @@
 
 #include "ash/media_delegate.h"
 #include "ash/shell_delegate.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -19,8 +20,6 @@ class KeyboardControllerProxy;
 
 namespace ash {
 namespace test {
-
-class TestSessionStateDelegate;
 
 class TestShellDelegate : public ShellDelegate {
  public:
@@ -51,7 +50,7 @@ class TestShellDelegate : public ShellDelegate {
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
-  SessionStateDelegate* CreateSessionStateDelegate() override;
+  TestSessionStateDelegate* CreateSessionStateDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
@@ -62,10 +61,6 @@ class TestShellDelegate : public ShellDelegate {
   base::string16 GetProductName() const override;
 
   int num_exit_requests() const { return num_exit_requests_; }
-
-  TestSessionStateDelegate* test_session_state_delegate() {
-    return test_session_state_delegate_;
-  }
 
   void SetMediaCaptureState(MediaCaptureState state);
 

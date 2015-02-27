@@ -162,10 +162,8 @@ UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {
   return new TestUserWallpaperDelegate();
 }
 
-SessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
-  DCHECK(!test_session_state_delegate_);
-  test_session_state_delegate_ = new TestSessionStateDelegate();
-  return test_session_state_delegate_;
+TestSessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
+  return new TestSessionStateDelegate();
 }
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {

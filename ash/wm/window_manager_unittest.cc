@@ -255,6 +255,10 @@ TEST_F(WindowManagerTest, Focus) {
   keyev = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, ui::EF_NONE);
   details = dispatcher->OnEventFromSource(&keyev);
   EXPECT_FALSE(keyev.handled() || details.dispatcher_destroyed);
+
+  // Must set to NULL since the activation delegate will be destroyed before
+  // the windows.
+  aura::client::SetActivationDelegate(w1.get(), NULL);
 }
 
 // Various assertion testing for activating windows.

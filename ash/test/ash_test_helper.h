@@ -29,6 +29,7 @@ namespace test {
 
 class TestScreenshotDelegate;
 class TestShellDelegate;
+class TestSessionStateDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
 // root window and an ash::Shell instance with a test delegate.
@@ -51,6 +52,8 @@ class AshTestHelper {
   aura::Window* CurrentContext();
 
   void RunAllPendingInMessageLoop();
+
+  static TestSessionStateDelegate* GetTestSessionStateDelegate();
 
   base::MessageLoopForUI* message_loop() { return message_loop_; }
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }

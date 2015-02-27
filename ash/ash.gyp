@@ -822,6 +822,7 @@
       'wm/always_on_top_controller_unittest.cc',
       'wm/app_list_controller_unittest.cc',
       'wm/ash_native_cursor_manager_unittest.cc',
+      'wm/ash_focus_rules_unittest.cc',
       'wm/dock/docked_window_layout_manager_unittest.cc',
       'wm/dock/docked_window_resizer_unittest.cc',
       'wm/drag_window_resizer_unittest.cc',

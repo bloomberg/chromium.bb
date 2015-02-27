@@ -6,6 +6,7 @@
 #define ASH_WM_ASH_FOCUS_RULES_H_
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -13,7 +14,8 @@
 namespace ash {
 namespace wm {
 
-class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
+class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules,
+                                 public ash::ShellObserver {
  public:
   AshFocusRules();
   ~AshFocusRules() override;
@@ -23,12 +25,15 @@ class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
   bool IsWindowConsideredActivatable(aura::Window* window) const;
 
  private:
-  // Overridden from ::wm::BaseFocusRules:
+  // ::wm::BaseFocusRules:
   bool SupportsChildActivation(aura::Window* window) const override;
   bool IsWindowConsideredVisibleForActivation(
       aura::Window* window) const override;
   bool CanActivateWindow(aura::Window* window) const override;
   aura::Window* GetNextActivatableWindow(aura::Window* ignore) const override;
+
+  // ash::ShellObserver:
+  void OnAppTerminating() override;
 
   aura::Window* GetTopmostWindowToActivateForContainerIndex(
       int index,
@@ -36,6 +41,8 @@ class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
   aura::Window* GetTopmostWindowToActivateInContainer(
       aura::Window* container,
       aura::Window* ignore) const;
+
+  bool is_shutting_down_;
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusRules);
 };
