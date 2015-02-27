@@ -2,16 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("plugin") {
-  gypi_values = exec_script("//build/gypi_to_gn.py",
-                            [ rebase_path("../../remoting_srcs.gypi") ],
-                            "scope",
-                            [ "../../remoting_srcs.gypi" ])
+import("//remoting/remoting_srcs.gni")
 
+source_set("plugin") {
   sources =
-      rebase_path(gypi_values.remoting_client_plugin_sources, ".", "//remoting")
+      rebase_path(remoting_srcs_gypi_values.remoting_client_plugin_sources,
+                  ".",
+                  "//remoting")
 
-  # TODO(brettw) when a nacl version of this target is made, these files
+  if (!is_chromeos) {
+    sources -= [
+      "normalizing_input_filter_cros.cc",
+      "normalizing_input_filter_cros.h",
+    ]
+  }
+
+  # TODO(GYP) when a nacl version of this target is made, these files
   # won't be part of it.
   sources += [
     "pepper_entrypoints.cc",
@@ -28,6 +34,7 @@ static_library("plugin") {
     "//ppapi/cpp/private:internal_module",
     "//remoting/base",
     "//remoting/client",
+    "//remoting/codec",
     "//remoting/protocol",
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/events:dom4_keycode_converter",

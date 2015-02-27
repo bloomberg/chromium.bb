@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//ppapi/ppapi_sources.gni")
+import("//testing/test.gni")
+
 shared_library("ppapi_tests") {
   sources = ppapi_sources.test_common_source_files +
             ppapi_sources.test_trusted_source_files
@@ -15,4 +17,76 @@ shared_library("ppapi_tests") {
     "//ppapi/shared_impl",
   ]
 }
-# TODO(GYP) other targets from ppapi_tests.gyp
+
+test("ppapi_unittests") {
+  sources = [
+    "host/resource_message_filter_unittest.cc",
+    "proxy/device_enumeration_resource_helper_unittest.cc",
+    "proxy/file_chooser_resource_unittest.cc",
+    "proxy/file_system_resource_unittest.cc",
+    "proxy/flash_resource_unittest.cc",
+    "proxy/interface_list_unittest.cc",
+    "proxy/mock_resource.cc",
+    "proxy/mock_resource.h",
+    "proxy/nacl_message_scanner_unittest.cc",
+    "proxy/pdf_resource_unittest.cc",
+    "proxy/plugin_dispatcher_unittest.cc",
+    "proxy/plugin_resource_tracker_unittest.cc",
+    "proxy/plugin_var_tracker_unittest.cc",
+    "proxy/ppb_var_unittest.cc",
+    "proxy/ppp_instance_private_proxy_unittest.cc",
+    "proxy/ppp_instance_proxy_unittest.cc",
+    "proxy/ppp_messaging_proxy_unittest.cc",
+    "proxy/printing_resource_unittest.cc",
+    "proxy/raw_var_data_unittest.cc",
+    "proxy/serialized_var_unittest.cc",
+    "proxy/talk_resource_unittest.cc",
+    "proxy/video_decoder_resource_unittest.cc",
+    "proxy/video_encoder_resource_unittest.cc",
+    "proxy/websocket_resource_unittest.cc",
+    "shared_impl/media_stream_audio_track_shared_unittest.cc",
+    "shared_impl/media_stream_buffer_manager_unittest.cc",
+    "shared_impl/media_stream_video_track_shared_unittest.cc",
+    "shared_impl/proxy_lock_unittest.cc",
+    "shared_impl/resource_tracker_unittest.cc",
+    "shared_impl/thread_aware_callback_unittest.cc",
+    "shared_impl/time_conversion_unittest.cc",
+    "shared_impl/tracked_callback_unittest.cc",
+    "shared_impl/var_tracker_unittest.cc",
+  ]
+
+  deps = [
+    "//base/allocator",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//gpu/ipc",
+    "//ipc",
+    "//ipc:test_support",
+    "//media:shared_memory_support",
+    "//ppapi/host",
+    "//ppapi/proxy",
+    "//ppapi/proxy:test_support",
+    "//ppapi/shared_impl",
+    "//ppapi/shared_impl:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/surface",
+  ]
+}
+
+test("ppapi_perftests") {
+  sources = [
+    "proxy/ppapi_perftests.cc",
+    "proxy/ppp_messaging_proxy_perftest.cc",
+  ]
+
+  deps = [
+    "//base/allocator",
+    "//base/test:test_support",
+    "//ppapi/proxy",
+    "//ppapi/proxy:test_support",
+    "//ppapi/shared_impl",
+    "//ppapi/shared_impl:test_support",
+    "//testing/gtest",
+  ]
+}

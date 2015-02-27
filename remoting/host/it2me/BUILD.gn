@@ -3,20 +3,18 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/ui.gni")
-import("//remoting/remoting_version.gni")
+import("//remoting/remoting_srcs.gni")
 
-static_library("common") {
-  gypi_values = exec_script("//build/gypi_to_gn.py",
-                            [ rebase_path("../../remoting_host_srcs.gypi") ],
-                            "scope",
-                            [ "../../remoting_host_srcs.gypi" ])
+source_set("common") {
+  sources = rebase_path(
+          remoting_host_srcs_gypi_values.remoting_it2me_host_static_sources,
+          ".",
+          "//remoting")
 
-  sources = rebase_path(gypi_values.remoting_it2me_host_static_sources,
-                        ".",
-                        "//remoting")
-
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//remoting:version",
+  ]
 
   deps = [
     "//base:i18n",
@@ -26,6 +24,4 @@ static_library("common") {
     "//remoting/protocol",
     "//remoting/resources",
   ]
-
-  defines = [ "VERSION=$version_full" ]
 }

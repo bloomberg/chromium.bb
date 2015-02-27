@@ -82,8 +82,10 @@ group("gn_all") {
 
     # "//mojo/services/html_viewer:tests",  # TODO(GYP): Do we need this?
     "//net:net_unittests",
+    "//ppapi:ppapi_unittests",
     "//ppapi/examples",  # TODO(GYP): What's the GYP equivalent?
     "//printing:printing_unittests",
+    "//remoting:remoting_unittests",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
     "//sync:sync_unit_tests",
@@ -312,8 +314,6 @@ if (is_linux) {
       # components_browsertests  TODO(GYP)
       # device_unittests  TODO(GYP)
       # nacl_loader_unittests  TODO(GYP)
-      # ppapi_unittests  TODO(GYP)
-      # remoting_unittests  TODO(GYP)
 
       "//base:base_unittests",  # PASSES (*) 2/25/2015
       "//cc:cc_unittests",  # PASSES 2/25/2015
@@ -340,7 +340,9 @@ if (is_linux) {
       "//media:media_unittests",  # TODO(GYP) MidiManagerTest fails.
       "//mojo/common:mojo_common_unittests",  # PASSES 2/25/2015
       "//net:net_unittests",  # PASSES 2/25/2015
+      "//ppapi:ppapi_unittests",  # PASSES 2/26/2015
       "//printing:printing_unittests",  # PASSES 2/25/2015
+      "//remoting:remoting_unittests",  # Some crashes.
       "//sandbox/linux:sandbox_linux_unittests",  # PASSES 2/25/2015
       "//skia:skia_unittests",  # PASSES 2/25/2015
       "//sql:sql_unittests",  # PASSES 2/25/2015
