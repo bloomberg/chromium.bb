@@ -1952,16 +1952,6 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
         frame()->localDOMWindow()->sendOrientationChangeEvent();
 }
 
-v8::Local<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValueForTests(const WebScriptSource& source)
-{
-    // FIXME: This fake UserGestureIndicator is required for a bunch of browser
-    // tests to pass. We should update the tests to simulate input and get rid
-    // of this.
-    // http://code.google.com/p/chromium/issues/detail?id=86397
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    return executeScriptAndReturnValue(source);
-}
-
 void WebLocalFrameImpl::willDetachParent()
 {
     // Do not expect string scoping results from any frames that got detached

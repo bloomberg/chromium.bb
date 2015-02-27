@@ -97,10 +97,6 @@ public:
         int worldID, const WebScriptSource* sourceIn, unsigned numSources,
         int extensionGroup, bool userGesture, WebScriptExecutionCallback*) = 0;
 
-    // ONLY FOR TESTS: Forwards to executeScriptAndReturnValue, but sets a fake
-    // UserGestureIndicator before execution.
-    virtual v8::Local<v8::Value> executeScriptAndReturnValueForTests(const WebScriptSource&) = 0;
-
     // Associates an isolated world with human-readable name which is useful for
     // extension debugging.
     virtual void setIsolatedWorldHumanReadableName(int worldID, const WebString&) = 0;

@@ -236,8 +236,6 @@ public:
     virtual void addStyleSheetByURL(const WebString& url) override;
     virtual void navigateToSandboxedMarkup(const WebData& markup) override;
     virtual void sendOrientationChangeEvent() override;
-    virtual v8::Local<v8::Value> executeScriptAndReturnValueForTests(
-        const WebScriptSource&) override;
 
     void willDetachParent();
 
