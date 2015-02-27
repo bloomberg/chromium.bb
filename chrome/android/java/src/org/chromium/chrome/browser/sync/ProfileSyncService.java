@@ -16,8 +16,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
-import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
@@ -137,15 +135,6 @@ public class ProfileSyncService {
         // Notify listeners right away that the sync state has changed (native side does not do
         // this)
         syncStateChanged();
-    }
-
-    // TODO(maxbogue): Remove once downstream use is removed. See http://crbug.com/259559.
-    // Callers should use InvalidationService.requestSyncFromNativeChromeForAllTypes() instead.
-    @Deprecated
-    public void requestSyncFromNativeChromeForAllTypes() {
-        ThreadUtils.assertOnUiThread();
-        InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
-                .requestSyncFromNativeChromeForAllTypes();
     }
 
     public String querySyncStatus() {
