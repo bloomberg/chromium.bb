@@ -82,11 +82,11 @@ void MessagePortProvider::CreateMessageChannel(MessagePortDelegate* delegate,
 // static
 void MessagePortProvider::PostMessageToPort(
     int sender_port_id,
-    const base::string16& data,
+    const MessagePortMessage& message,
     const std::vector<int>& sent_ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MessagePortService* msp = MessagePortService::GetInstance();
-  msp->PostMessage(sender_port_id, data, sent_ports);
+  msp->PostMessage(sender_port_id, message, sent_ports);
 }
 
 // static

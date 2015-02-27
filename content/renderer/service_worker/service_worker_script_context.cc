@@ -46,8 +46,10 @@ void SendCrossOriginMessageToClientOnMainThread(
     const base::string16& message,
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new MessagePortHostMsg_PostMessage(
-      message_port_id, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
+      message_port_id,
+      MessagePortMessage(message),
+                         WebMessagePortChannelImpl::ExtractMessagePortIDs(
+                             channels.release())));
 }
 
 blink::WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(

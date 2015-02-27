@@ -40,7 +40,7 @@ class CONTENT_EXPORT MessagePortMessageFilter
 
   // MessagePortDelegate implementation.
   void SendMessage(int route_id,
-                   const base::string16& message,
+                   const MessagePortMessage& message,
                    const std::vector<int>& sent_message_port_ids) override;
   void SendMessagesAreQueued(int route_id) override;
 

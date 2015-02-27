@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/message_port_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -21,13 +22,18 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MessagePortMsgStart
 
-// Singly-included section, not converted.
+// Singly-included section for typedefs.
 #ifndef CONTENT_COMMON_MESSAGE_PORT_MESSAGES_H_
 #define CONTENT_COMMON_MESSAGE_PORT_MESSAGES_H_
 
-typedef std::pair<base::string16, std::vector<int> > QueuedMessage;
+typedef std::pair<content::MessagePortMessage, std::vector<int>> QueuedMessage;
 
 #endif  // CONTENT_COMMON_MESSAGE_PORT_MESSAGES_H_
+
+IPC_STRUCT_TRAITS_BEGIN(content::MessagePortMessage)
+  IPC_STRUCT_TRAITS_MEMBER(message_as_string)
+  IPC_STRUCT_TRAITS_MEMBER(message_as_value)
+IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
 // MessagePort messages
@@ -35,7 +41,7 @@ typedef std::pair<base::string16, std::vector<int> > QueuedMessage;
 
 // Sends a message to a message port.
 IPC_MESSAGE_ROUTED3(MessagePortMsg_Message,
-                    base::string16 /* message */,
+                    content::MessagePortMessage /* message */,
                     std::vector<int> /* sent_message_port_ids */,
                     std::vector<int> /* new_routing_ids */)
 
@@ -62,7 +68,7 @@ IPC_MESSAGE_CONTROL1(MessagePortHostMsg_DestroyMessagePort,
 // as well if sent_message_port_id != MSG_ROUTING_NONE.
 IPC_MESSAGE_CONTROL3(MessagePortHostMsg_PostMessage,
                      int /* sender_message_port_id */,
-                     base::string16 /* message */,
+                     content::MessagePortMessage /* message */,
                      std::vector<int> /* sent_message_port_ids */)
 
 // Causes messages sent to the remote port to be delivered to this local port.

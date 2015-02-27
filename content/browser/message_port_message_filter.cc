@@ -62,7 +62,7 @@ int MessagePortMessageFilter::GetNextRoutingID() {
 
 void MessagePortMessageFilter::SendMessage(
     int route_id,
-    const base::string16& message,
+    const MessagePortMessage& message,
     const std::vector<int>& sent_message_port_ids) {
   // Generate new routing ids for all ports that were sent around. This avoids
   // waiting for the created ports to send a sync message back to get routing

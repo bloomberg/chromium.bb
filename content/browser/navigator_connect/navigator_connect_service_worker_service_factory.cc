@@ -31,7 +31,7 @@ class NavigatorConnectServiceWorkerService : public MessagePortDelegate {
 
   // MessagePortDelegate implementation.
   void SendMessage(int route_id,
-                   const base::string16& message,
+                   const MessagePortMessage& message,
                    const std::vector<int>& sent_message_port_ids) override;
   void SendMessagesAreQueued(int route_id) override;
 
@@ -69,9 +69,10 @@ NavigatorConnectServiceWorkerService::~NavigatorConnectServiceWorkerService() {
 
 void NavigatorConnectServiceWorkerService::SendMessage(
     int route_id,
-    const base::string16& message,
+    const MessagePortMessage& message,
     const std::vector<int>& sent_message_port_ids) {
   DCHECK(route_id == client_.message_port_id);
+  DCHECK(message.message_as_value.empty());
 
   // Hold messages on transferred message ports. Actual delivery of the message
   // by the service can be asynchronous. When a message is delivered,
@@ -83,7 +84,8 @@ void NavigatorConnectServiceWorkerService::SendMessage(
   service_worker_context_->context()->storage()->FindRegistrationForId(
       service_worker_registration_id_, service_worker_registration_origin_,
       base::Bind(&NavigatorConnectServiceWorkerService::DeliverMessage,
-                 weak_factory_.GetWeakPtr(), message, sent_message_port_ids));
+                 weak_factory_.GetWeakPtr(), message.message_as_string,
+                 sent_message_port_ids));
 }
 
 void NavigatorConnectServiceWorkerService::SendMessagesAreQueued(int route_id) {

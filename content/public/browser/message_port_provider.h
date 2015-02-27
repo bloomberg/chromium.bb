@@ -15,6 +15,7 @@
 namespace content {
 
 class MessagePortDelegate;
+struct MessagePortMessage;
 class WebContents;
 
 // An interface consisting of methods that can be called to use Message ports.
@@ -44,7 +45,7 @@ class CONTENT_EXPORT MessagePortProvider {
 
   // Posts a MessageEvent to a message port associated with a message channel.
   static void PostMessageToPort(int sender_port_id,
-                                const base::string16& data,
+                                const MessagePortMessage& message,
                                 const std::vector<int>& sent_ports);
 
   // Close the message port. Should be called on IO thread.

@@ -87,8 +87,9 @@ void NavigatorConnectProvider::OnConnectResult(int thread_id,
   DCHECK(callbacks);
 
   if (allow_connect) {
-    callbacks->onSuccess(new WebMessagePortChannelImpl(
-        message_port_route_id, message_port_id, main_loop_));
+    WebMessagePortChannelImpl* channel = new WebMessagePortChannelImpl(
+        message_port_route_id, message_port_id, main_loop_);
+    callbacks->onSuccess(channel);
   } else {
     callbacks->onError();
   }

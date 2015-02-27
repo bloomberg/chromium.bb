@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/common/aw_message_port_messages.h"
 #include "content/public/browser/message_port_provider.h"
+#include "content/public/common/message_port_types.h"
 
 using content::BrowserThread;
 using content::MessagePortProvider;
@@ -46,7 +47,10 @@ void AwMessagePortMessageFilter::OnConvertedAppToWebMessage(
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
 
-  MessagePortProvider::PostMessageToPort(msg_port_id, message,
+  // TODO(mek): Bypass the extra roundtrip and just send the unconverted message
+  // to the renderer directly.
+  MessagePortProvider::PostMessageToPort(msg_port_id,
+      content::MessagePortMessage(message),
       sent_message_port_ids);
 }
 
@@ -76,12 +80,13 @@ void AwMessagePortMessageFilter::SendClosePortMessage(int message_port_id) {
 
 void AwMessagePortMessageFilter::SendMessage(
     int msg_port_route_id,
-    const base::string16& message,
+    const content::MessagePortMessage& message,
     const std::vector<int>& sent_message_port_ids) {
+  DCHECK(message.is_string());
   Send(new AwMessagePortMsg_WebToAppMessage(
       route_id_,
       msg_port_route_id, // same as the port id
-      message, sent_message_port_ids));
+      message.message_as_string, sent_message_port_ids));
 }
 
 void AwMessagePortMessageFilter::SendMessagesAreQueued(int route_id) {
