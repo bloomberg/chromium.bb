@@ -553,10 +553,6 @@ crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-0
 crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
 
-crbug.com/456028 compositing/squashing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
-crbug.com/456028 fast/forms/select-item-background-clip.html [ NeedsRebaseline ]
-crbug.com/456028 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
 
 # Switching to content shell failures
