@@ -207,7 +207,7 @@ def ProvisionDevice(device, options):
           device, device_settings.NETWORK_DISABLED_SETTINGS)
     if options.min_battery_level is not None:
       try:
-        device.SetUsbCharging(True)
+        device.SetCharging(True)
         ChargeDeviceToLevel(device, options.min_battery_level)
       except device_errors.CommandFailedError as e:
         logging.exception('Unable to charge device to specified level.')

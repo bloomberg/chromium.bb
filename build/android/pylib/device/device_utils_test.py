@@ -1411,51 +1411,61 @@ class DeviceUtilsGetBatteryInfoTest(DeviceUtilsTest):
       self.assertEquals({}, self.device.GetBatteryInfo())
 
 
-class DeviceUtilsGetUsbChargingTest(DeviceUtilsTest):
-  def testGetUsbCharging_true(self):
+class DeviceUtilsGetChargingTest(DeviceUtilsTest):
+  def testGetCharging_usb(self):
     with self.assertCall(
         self.call.device.GetBatteryInfo(), {'USB powered': 'true'}):
-      self.assertTrue(self.device.GetUsbCharging())
+      self.assertTrue(self.device.GetCharging())
 
-  def testGetUsbCharging_false(self):
+  def testGetCharging_usbFalse(self):
     with self.assertCall(
         self.call.device.GetBatteryInfo(), {'USB powered': 'false'}):
-      self.assertFalse(self.device.GetUsbCharging())
+      self.assertFalse(self.device.GetCharging())
 
-  def testGetUsbCharging_unknown(self):
+  def testGetCharging_ac(self):
     with self.assertCall(
         self.call.device.GetBatteryInfo(), {'AC powered': 'true'}):
-      self.assertFalse(self.device.GetUsbCharging())
+      self.assertTrue(self.device.GetCharging())
+
+  def testGetCharging_wireless(self):
+    with self.assertCall(
+        self.call.device.GetBatteryInfo(), {'Wireless powered': 'true'}):
+      self.assertTrue(self.device.GetCharging())
+
+  def testGetCharging_unknown(self):
+    with self.assertCall(
+        self.call.device.GetBatteryInfo(), {'level': '42'}):
+      self.assertFalse(self.device.GetCharging())
 
 
-class DeviceUtilsSetUsbChargingTest(DeviceUtilsTest):
-
-  @mock.patch('time.sleep', mock.Mock())
-  def testSetUsbCharging_enabled(self):
-    with self.assertCalls(
-        (self.call.device.FileExists(mock.ANY), True),
-        (self.call.device.RunShellCommand(mock.ANY), []),
-        (self.call.device.GetUsbCharging(), False),
-        (self.call.device.RunShellCommand(mock.ANY), []),
-        (self.call.device.GetUsbCharging(), True)):
-      self.device.SetUsbCharging(True)
-
-  def testSetUsbCharging_alreadyEnabled(self):
-    with self.assertCalls(
-        (self.call.device.FileExists(mock.ANY), True),
-        (self.call.device.RunShellCommand(mock.ANY), []),
-        (self.call.device.GetUsbCharging(), True)):
-      self.device.SetUsbCharging(True)
+class DeviceUtilsSetChargingTest(DeviceUtilsTest):
 
   @mock.patch('time.sleep', mock.Mock())
-  def testSetUsbCharging_disabled(self):
+  def testSetCharging_enabled(self):
     with self.assertCalls(
         (self.call.device.FileExists(mock.ANY), True),
-        (self.call.device.RunShellCommand(mock.ANY), []),
-        (self.call.device.GetUsbCharging(), True),
-        (self.call.device.RunShellCommand(mock.ANY), []),
-        (self.call.device.GetUsbCharging(), False)):
-      self.device.SetUsbCharging(False)
+        (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
+        (self.call.device.GetCharging(), False),
+        (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
+        (self.call.device.GetCharging(), True)):
+      self.device.SetCharging(True)
+
+  def testSetCharging_alreadyEnabled(self):
+    with self.assertCalls(
+        (self.call.device.FileExists(mock.ANY), True),
+        (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
+        (self.call.device.GetCharging(), True)):
+      self.device.SetCharging(True)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testSetCharging_disabled(self):
+    with self.assertCalls(
+        (self.call.device.FileExists(mock.ANY), True),
+        (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
+        (self.call.device.GetCharging(), True),
+        (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
+        (self.call.device.GetCharging(), False)):
+      self.device.SetCharging(False)
 
 
 

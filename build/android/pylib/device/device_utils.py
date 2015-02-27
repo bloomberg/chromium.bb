@@ -45,7 +45,7 @@ _DEFAULT_RETRIES = 3
 # the timeout_retry decorators.
 DEFAULT = object()
 
-_CONTROL_USB_CHARGING_COMMANDS = [
+_CONTROL_CHARGING_COMMANDS = [
   {
     # Nexus 4
     'witness_file': '/sys/module/pm8921_charger/parameters/disabled',
@@ -1419,47 +1419,51 @@ class DeviceUtils(object):
     return result
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def GetUsbCharging(self, timeout=None, retries=None):
-    """Gets the USB charging state of the device.
+  def GetCharging(self, timeout=None, retries=None):
+    """Gets the charging state of the device.
 
     Args:
       timeout: timeout in seconds
       retries: number of retries
     Returns:
-      True if the device is charging via USB, false otherwise.
+      True if the device is charging, false otherwise.
     """
-    return (self.GetBatteryInfo().get('USB powered', '').lower()
-            in ('true', '1', 'yes'))
+    battery_info = self.GetBatteryInfo()
+    for k in ('AC powered', 'USB powered', 'Wireless powered'):
+      if (k in battery_info and
+          battery_info[k].lower() in ('true', '1', 'yes')):
+        return True
+    return False
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def SetUsbCharging(self, enabled, timeout=None, retries=None):
-    """Enables or disables USB charging on the device.
+  def SetCharging(self, enabled, timeout=None, retries=None):
+    """Enables or disables charging on the device.
 
     Args:
-      enabled: A boolean indicating whether USB charging should be enabled or
+      enabled: A boolean indicating whether charging should be enabled or
         disabled.
       timeout: timeout in seconds
       retries: number of retries
     """
-    if 'usb_charging_config' not in self._cache:
-      for c in _CONTROL_USB_CHARGING_COMMANDS:
+    if 'charging_config' not in self._cache:
+      for c in _CONTROL_CHARGING_COMMANDS:
         if self.FileExists(c['witness_file']):
-          self._cache['usb_charging_config'] = c
+          self._cache['charging_config'] = c
           break
       else:
         raise device_errors.CommandFailedError(
             'Unable to find charging commands.')
 
     if enabled:
-      command = self._cache['usb_charging_config']['enable_command']
+      command = self._cache['charging_config']['enable_command']
     else:
-      command = self._cache['usb_charging_config']['disable_command']
+      command = self._cache['charging_config']['disable_command']
 
-    def set_and_verify_usb_charging():
-      self.RunShellCommand(command)
-      return self.GetUsbCharging() == enabled
+    def set_and_verify_charging():
+      self.RunShellCommand(command, check_return=True)
+      return self.GetCharging() == enabled
 
-    timeout_retry.WaitFor(set_and_verify_usb_charging, wait_period=1)
+    timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetDevicePieWrapper(self, timeout=None, retries=None):
