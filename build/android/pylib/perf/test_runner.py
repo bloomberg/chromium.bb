@@ -250,9 +250,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
 
-    timeout = 5400
+    timeout = self._tests['steps'][test_name].get('timeout', 5400)
     if self._options.no_timeout:
       timeout = None
+    logging.info('Timeout for %s test: %s', test_name, timeout)
     full_cmd = cmd
     if self._options.dry_run:
       full_cmd = 'echo %s' % cmd
