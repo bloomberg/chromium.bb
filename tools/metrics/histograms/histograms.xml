@@ -41075,6 +41075,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time spent generating deferred code stubs.</summary>
 </histogram>
 
+<histogram name="V8.DetachedContextAgeInGC">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    Number of garbage collections that a detached global context survives,
+    recorded after each major garbage collection.
+    Values greater than 7 indicate a memory leak.
+  </summary>
+</histogram>
+
 <histogram name="V8.ExecutableMemoryMax" units="bytes">
   <obsolete>
     This histogram is no longer present in V8
