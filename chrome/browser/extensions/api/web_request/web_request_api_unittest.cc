@@ -344,9 +344,9 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   }
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension1_id, kEventName + "/1");
+      &profile_, extension1_id, kEventName + "/1", 0, 0);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension2_id, kEventName + "/2");
+      &profile_, extension2_id, kEventName + "/2", 0, 0);
 }
 
 // Test that a request is canceled if this is requested by any extension
@@ -408,9 +408,9 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension1_id, kEventName + "/1");
+      &profile_, extension1_id, kEventName + "/1", 0, 0);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension2_id, kEventName + "/2");
+      &profile_, extension2_id, kEventName + "/2", 0, 0);
 }
 
 TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
@@ -470,9 +470,9 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1");
+      &profile_, extension_id, kEventName + "/1", 0, 0);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName2 + "/1");
+      &profile_, extension_id, kEventName2 + "/1", 0, 0);
 }
 
 namespace {
@@ -633,7 +633,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   base::MessageLoop::current()->RunUntilIdle();
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1");
+      &profile_, extension_id, kEventName + "/1", 0, 0);
 
   // Part 2.
   // Now subscribe to OnBeforeRequest *without* the requestBody requirement.
@@ -646,7 +646,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1");
+      &profile_, extension_id, kEventName + "/1", 0, 0);
 
   // Subscribe to OnBeforeRequest with requestBody requirement.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
@@ -665,7 +665,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
 
   // Clean-up.
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1");
+      &profile_, extension_id, kEventName + "/1", 0, 0);
 
   IPC::Message* message = NULL;
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
@@ -726,7 +726,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   base::MessageLoop::current()->RunUntilIdle();
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1");
+      &profile_, extension_id, kEventName + "/1", 0, 0);
 
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
   for (size_t test = 0; test < arraysize(kMethods); ++test, ++i) {
@@ -955,11 +955,12 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   }
   EXPECT_EQ(1, num_headers_observed);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension1_id, kEventName + "/1");
+      &profile_, extension1_id, kEventName + "/1", 0, 0);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension2_id, kEventName + "/2");
+      &profile_, extension2_id, kEventName + "/2", 0, 0);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension3_id, std::string(keys::kOnSendHeadersEvent) + "/3");
+      &profile_, extension3_id,
+      std::string(keys::kOnSendHeadersEvent) + "/3", 0, 0);
 };
 
 namespace {
