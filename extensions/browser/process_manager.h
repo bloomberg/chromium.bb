@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/view_type.h"
 
 class GURL;
@@ -42,7 +43,8 @@ class ProcessManagerObserver;
 // of this class per Profile. OTR Profiles have a separate instance that keeps
 // track of split-mode extensions only.
 class ProcessManager : public KeyedService,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public ExtensionRegistryObserver {
  public:
   typedef std::set<extensions::ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
@@ -200,6 +202,13 @@ class ProcessManager : public KeyedService,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   content::NotificationRegistrar registrar_;
 
