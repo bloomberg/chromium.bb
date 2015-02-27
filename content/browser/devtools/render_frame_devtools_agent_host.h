@@ -82,7 +82,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
                                   RenderFrameHost* new_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
-  void RenderFrameDeleted(RenderFrameHost* rvh) override;
+  void FrameDeleted(RenderFrameHost* rfh) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;

@@ -411,6 +411,9 @@ WebContentsImpl::~WebContentsImpl() {
     root->pending_frame_host()->SetRenderFrameCreated(false);
   root->current_frame_host()->SetRenderFrameCreated(false);
 
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    FrameDeleted(root->current_frame_host()));
+
   if (root->pending_render_view_host()) {
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,

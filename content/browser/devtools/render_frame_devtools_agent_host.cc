@@ -311,7 +311,7 @@ RenderFrameDevToolsAgentHost::ReattachToRenderFrameHost(RenderFrameHost* rfh) {
   reattaching_ = false;
 }
 
-void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
+void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
   if (rfh != render_frame_host_)
     return;
 
