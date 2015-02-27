@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -80,6 +81,8 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
 
   // content::WebContentsObserver implementation:
   void RenderProcessGone(base::TerminationStatus status) override;
+  void DidStartLoading(content::RenderViewHost* render_view_host) override;
+  void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
   // content::NotificationObserver
   void Observe(int type,
@@ -91,8 +94,12 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   BackgroundContents();
 
  private:
-  // DeferredStartRenderHost implementation:
+  // extensions::DeferredStartRenderHost implementation:
   void CreateRenderViewNow() override;
+  void AddDeferredStartRenderHostObserver(
+      extensions::DeferredStartRenderHostObserver* observer) override;
+  void RemoveDeferredStartRenderHostObserver(
+      extensions::DeferredStartRenderHostObserver* observer) override;
 
   // The delegate for this BackgroundContents.
   Delegate* delegate_;
@@ -103,6 +110,8 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   Profile* profile_;
   scoped_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
+  ObserverList<extensions::DeferredStartRenderHostObserver>
+      deferred_start_render_host_observer_list_;
 
   // The initial URL to load.
   GURL initial_url_;

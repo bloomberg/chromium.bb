@@ -77,6 +77,7 @@ class MessageSender : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
+    DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
     EventRouter* event_router =
         EventRouter::Get(content::Source<Profile>(source).ptr());
 

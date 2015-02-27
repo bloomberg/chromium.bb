@@ -13,9 +13,24 @@
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/load_monitoring_extension_host_queue.h"
 #include "extensions/browser/serial_extension_host_queue.h"
 
 namespace extensions {
+
+namespace {
+
+// Singleton for GetExtensionHostQueue().
+struct QueueWrapper {
+  QueueWrapper() {
+    queue.reset(new LoadMonitoringExtensionHostQueue(
+        scoped_ptr<ExtensionHostQueue>(new SerialExtensionHostQueue())));
+  }
+  scoped_ptr<ExtensionHostQueue> queue;
+};
+base::LazyInstance<QueueWrapper> g_queue = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 ChromeExtensionHostDelegate::ChromeExtensionHostDelegate() {}
 
@@ -68,11 +83,8 @@ bool ChromeExtensionHostDelegate::CheckMediaAccessPermission(
           web_contents, security_origin, type, extension);
 }
 
-static base::LazyInstance<SerialExtensionHostQueue> g_queue =
-    LAZY_INSTANCE_INITIALIZER;
-
 ExtensionHostQueue* ChromeExtensionHostDelegate::GetExtensionHostQueue() const {
-  return g_queue.Pointer();
+  return g_queue.Get().queue.get();
 }
 
 }  // namespace extensions

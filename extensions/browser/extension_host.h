@@ -105,6 +105,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DocumentAvailableInMainFrame() override;
+  void DidStartLoading(content::RenderViewHost* render_view_host) override;
   void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
   // content::WebContentsDelegate:
@@ -147,6 +148,10 @@ class ExtensionHost : public DeferredStartRenderHost,
  private:
   // DeferredStartRenderHost:
   void CreateRenderViewNow() override;
+  void AddDeferredStartRenderHostObserver(
+      DeferredStartRenderHostObserver* observer) override;
+  void RemoveDeferredStartRenderHostObserver(
+      DeferredStartRenderHostObserver* observer) override;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
@@ -197,6 +202,8 @@ class ExtensionHost : public DeferredStartRenderHost,
   scoped_ptr<base::ElapsedTimer> load_start_;
 
   ObserverList<ExtensionHostObserver> observer_list_;
+  ObserverList<DeferredStartRenderHostObserver>
+      deferred_start_render_host_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

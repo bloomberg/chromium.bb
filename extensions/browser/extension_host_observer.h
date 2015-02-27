@@ -14,6 +14,10 @@ class ExtensionHostObserver {
  public:
   virtual ~ExtensionHostObserver() {}
 
+  // TODO(kalman): Why do these all return const ExtensionHosts? It seems
+  // perfectly reasonable for an Observer implementation to mutate any
+  // ExtensionHost it's given.
+
   // Called when an ExtensionHost is destroyed.
   virtual void OnExtensionHostDestroyed(const ExtensionHost* host) {}
 

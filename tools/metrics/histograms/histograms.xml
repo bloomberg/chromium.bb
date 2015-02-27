@@ -8641,6 +8641,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExtensionHostMonitoring.MaxActiveLoading">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The maximum number of ExtensionHosts (primarily background/event pages) that
+    were actively loading at any one time, within the first minute of Chrome
+    startup. Emitted exactly one minute after startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionHostMonitoring.MaxInQueue">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The maximum number of ExtensionHosts (primarily background/event pages) in
+    the queue awaiting being loaded (via an ExtensionHostQueue), within the
+    first minute of Chrome startup. Emitted exactly one minute after startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionHostMonitoring.NumLoaded">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The total number of ExtensionHosts that completed loading in the first
+    minute of Chrome startup. Emitted exactly one minute after startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionHostMonitoring.NumQueued">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The total number of ExtensionHosts (primarily background/event pages) that
+    were added to a queue to start loading, within the first minute of Chrome
+    startup. These may or may not end up starting, let alone finishing,
+    depending on the queue behavior. Emitted exactly one minute after startup.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionInstalled">
   <owner>kalman@chromium.org</owner>
   <summary>An extension has been installed.</summary>

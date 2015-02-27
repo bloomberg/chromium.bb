@@ -88,6 +88,7 @@
       'browser/image_loader_unittest.cc',
       'browser/info_map_unittest.cc',
       'browser/lazy_background_task_queue_unittest.cc',
+      'browser/load_monitoring_extension_host_queue_unittest.cc',
       'browser/management_policy_unittest.cc',
       'browser/mojo/keep_alive_impl_unittest.cc',
       'browser/mojo/stash_backend_unittest.cc',

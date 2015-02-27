@@ -16,6 +16,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/deferred_start_render_host_observer.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -88,6 +89,9 @@ BackgroundContents::~BackgroundContents() {
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile_),
       content::Details<BackgroundContents>(this));
+  FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
+                    deferred_start_render_host_observer_list_,
+                    OnDeferredStartRenderHostDestroyed(this));
 
   extension_host_delegate_->GetExtensionHostQueue()->Remove(this);
 }
@@ -157,6 +161,20 @@ void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
   delete this;
 }
 
+void BackgroundContents::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
+                    deferred_start_render_host_observer_list_,
+                    OnDeferredStartRenderHostDidStartLoading(this));
+}
+
+void BackgroundContents::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
+                    deferred_start_render_host_observer_list_,
+                    OnDeferredStartRenderHostDidStopLoading(this));
+}
+
 void BackgroundContents::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
@@ -178,4 +196,14 @@ void BackgroundContents::CreateRenderViewNow() {
   web_contents()->GetController().LoadURL(initial_url_, content::Referrer(),
                                           ui::PAGE_TRANSITION_LINK,
                                           std::string());
+}
+
+void BackgroundContents::AddDeferredStartRenderHostObserver(
+    extensions::DeferredStartRenderHostObserver* observer) {
+  deferred_start_render_host_observer_list_.AddObserver(observer);
+}
+
+void BackgroundContents::RemoveDeferredStartRenderHostObserver(
+    extensions::DeferredStartRenderHostObserver* observer) {
+  deferred_start_render_host_observer_list_.RemoveObserver(observer);
 }

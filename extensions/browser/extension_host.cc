@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/load_monitoring_extension_host_queue.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/runtime_data.h"
@@ -97,6 +98,9 @@ ExtensionHost::~ExtensionHost() {
       content::Details<ExtensionHost>(this));
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
                     OnExtensionHostDestroyed(this));
+  FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
+                    deferred_start_render_host_observer_list_,
+                    OnDeferredStartRenderHostDestroyed(this));
   delegate_->GetExtensionHostQueue()->Remove(this);
   // Immediately stop observing |host_contents_| because its destruction events
   // (like DidStopLoading, it turns out) can call back into ExtensionHost
@@ -146,6 +150,16 @@ void ExtensionHost::CreateRenderViewNow() {
     // Connect orphaned dev-tools instances.
     delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
+}
+
+void ExtensionHost::AddDeferredStartRenderHostObserver(
+    DeferredStartRenderHostObserver* observer) {
+  deferred_start_render_host_observer_list_.AddObserver(observer);
+}
+
+void ExtensionHost::RemoveDeferredStartRenderHostObserver(
+    DeferredStartRenderHostObserver* observer) {
+  deferred_start_render_host_observer_list_.RemoveObserver(observer);
 }
 
 void ExtensionHost::Close() {
@@ -242,6 +256,12 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
       content::Details<ExtensionHost>(this));
 }
 
+void ExtensionHost::DidStartLoading(content::RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
+                    deferred_start_render_host_observer_list_,
+                    OnDeferredStartRenderHostDidStartLoading(this));
+}
+
 void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   bool notify = !did_stop_loading_;
   did_stop_loading_ = true;
@@ -260,12 +280,13 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
       UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
                                  load_start_->Elapsed());
     }
-    // Send the notification last, because it might result in this being
-    // deleted.
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
         content::Source<BrowserContext>(browser_context_),
         content::Details<ExtensionHost>(this));
+    FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
+                      deferred_start_render_host_observer_list_,
+                      OnDeferredStartRenderHostDidStopLoading(this));
   }
 }
 
