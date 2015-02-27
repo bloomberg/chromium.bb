@@ -161,7 +161,9 @@ TEST_F('CvoxBrailleIntegrationUnitTest', 'WriteWithSpans', function() {
   assertEqualsJSON(expected, this.displayManager.content);
 });
 
-TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandNoContent', function() {
+// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
+TEST_F('CvoxBrailleIntegrationUnitTest', 'DISABLED_CommandNoContent',
+       function() {
   // Commands are only delivered to the content script if the window has focus.
   window.focus();
   this.sendCommand(this.command1, null);
@@ -169,7 +171,9 @@ TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandNoContent', function() {
   assertEquals(null, this.lastCommandContent);
 });
 
-TEST_F('CvoxBrailleIntegrationUnitTest', 'InterleavedWritesAndCommands',
+// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
+TEST_F('CvoxBrailleIntegrationUnitTest',
+       'DISABLED_InterleavedWritesAndCommands',
        function() {
   window.focus();
   this.braille.write(this.content1);
@@ -189,7 +193,8 @@ TEST_F('CvoxBrailleIntegrationUnitTest', 'InterleavedWritesAndCommands',
 
 });
 
-TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandAfterBackgroundWrite',
+// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
+TEST_F('CvoxBrailleIntegrationUnitTest', 'DISABLED_CommandAfterBackgroundWrite',
        function() {
   window.focus();
   this.braille.write(this.content1);
@@ -204,7 +209,8 @@ TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandAfterBackgroundWrite',
   assertEquals(null, this.lastCommandContent);
 });
 
-TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandAfterOtherTabWrite',
+// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
+TEST_F('CvoxBrailleIntegrationUnitTest', 'DISABLED_CommandAfterOtherTabWrite',
        function() {
   window.focus();
   // Ignore the listener of the braille from the second 'tab'.
