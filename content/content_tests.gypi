@@ -254,6 +254,7 @@
       'renderer/render_view_browsertest.cc',
       'renderer/render_view_browsertest_mac.mm',
       'renderer/render_widget_browsertest.cc',
+      'renderer/visual_state_browsertest.cc',
       'test/accessibility_browser_test_utils.cc',
       'test/accessibility_browser_test_utils.h',
       'test/browser_test_utils_browsertest.cc',
@@ -1594,7 +1595,7 @@
                   '../testing/android/native_test.gyp:native_test_native_code',
                   '../gpu/gpu.gyp:gpu_unittest_utils',
                 ],
-              }, { # OS!="android"
+              }, {  # OS!="android"
                 'sources/': [
                   ['exclude', '^common/gpu/media/android_video_decode_accelerator_unittest.cc'],
                 ],
@@ -1625,8 +1626,8 @@
               }],
               ['use_ozone==1 and chromeos==1', {
                 'dependencies': [
-                  '../ui/display/display.gyp:display', # Used by rendering_helper.cc
-                  '../ui/ozone/ozone.gyp:ozone',       # Used by rendering_helper.cc
+                  '../ui/display/display.gyp:display',  # Used by rendering_helper.cc
+                  '../ui/ozone/ozone.gyp:ozone',  # Used by rendering_helper.cc
                 ],
               }],
             ],
@@ -1997,7 +1998,7 @@
             'apk_name': 'ContentShellTest',
             'java_in_dir': 'shell/android/javatests',
             'resource_dir': 'shell/android/shell_apk/res',
-            'additional_src_dirs': ['public/android/javatests/',],
+            'additional_src_dirs': ['public/android/javatests/', ],
             'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
