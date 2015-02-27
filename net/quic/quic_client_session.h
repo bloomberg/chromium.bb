@@ -97,6 +97,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
                     scoped_ptr<QuicServerInfo> server_info,
                     const QuicConfig& config,
                     const char* const connection_description,
+                    base::TimeTicks dns_resolution_end_time,
                     base::TaskRunner* task_runner,
                     NetLog* net_log);
   ~QuicClientSession() override;
@@ -239,6 +240,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   size_t num_total_streams_;
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
+  base::TimeTicks dns_resolution_end_time_;
   base::TimeTicks handshake_start_;  // Time the handshake was started.
   QuicConnectionLogger* logger_;  // Owned by |connection_|.
   // Number of packets read in the current read loop.

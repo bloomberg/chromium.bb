@@ -50,6 +50,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
                  make_scoped_ptr((QuicServerInfo*)nullptr),
                  DefaultQuicConfig(),
                  "CONNECTION_UNKNOWN",
+                 base::TimeTicks::Now(),
                  base::MessageLoop::current()->message_loop_proxy().get(),
                  &net_log_) {
     session_.InitializeSession(QuicServerId(kServerHostname, kServerPort,

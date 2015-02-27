@@ -200,8 +200,8 @@ class QuicStreamFactory::Job {
   QuicClientSession* session_;
   CompletionCallback callback_;
   AddressList address_list_;
-  base::TimeTicks disk_cache_load_start_time_;
   base::TimeTicks dns_resolution_start_time_;
+  base::TimeTicks dns_resolution_end_time_;
   base::WeakPtrFactory<Job> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -361,8 +361,9 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 QuicStreamFactory::Job::DoResolveHostComplete"));
 
+  dns_resolution_end_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("Net.QuicSession.HostResolutionTime",
-                      base::TimeTicks::Now() - dns_resolution_start_time_);
+                      dns_resolution_end_time_ - dns_resolution_start_time_);
   if (rv != OK)
     return rv;
 
@@ -409,7 +410,6 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
         base::TimeDelta::FromMilliseconds(load_server_info_timeout_ms));
   }
 
-  disk_cache_load_start_time_ = base::TimeTicks::Now();
   int rv = server_info_->WaitForDataReady(
       base::Bind(&QuicStreamFactory::Job::OnIOComplete, GetWeakPtr()));
   if (rv == ERR_IO_PENDING && factory_->enable_connection_racing()) {
@@ -428,7 +428,7 @@ int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
           "422516 QuicStreamFactory::Job::DoLoadServerInfoComplete"));
 
   UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheWaitForDataReadyTime",
-                      base::TimeTicks::Now() - disk_cache_load_start_time_);
+                      base::TimeTicks::Now() - dns_resolution_end_time_);
 
   if (rv != OK)
     server_info_.reset();
@@ -455,8 +455,9 @@ int QuicStreamFactory::Job::DoConnect() {
 
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  int rv = factory_->CreateSession(server_id_, server_info_.Pass(),
-                                   address_list_, net_log_, &session_);
+  int rv =
+      factory_->CreateSession(server_id_, server_info_.Pass(), address_list_,
+                              dns_resolution_end_time_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -978,12 +979,12 @@ bool QuicStreamFactory::HasActiveJob(const QuicServerId& key) const {
   return ContainsKey(active_jobs_, key);
 }
 
-int QuicStreamFactory::CreateSession(
-    const QuicServerId& server_id,
-    scoped_ptr<QuicServerInfo> server_info,
-    const AddressList& address_list,
-    const BoundNetLog& net_log,
-    QuicClientSession** session) {
+int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
+                                     scoped_ptr<QuicServerInfo> server_info,
+                                     const AddressList& address_list,
+                                     base::TimeTicks dns_resolution_end_time,
+                                     const BoundNetLog& net_log,
+                                     QuicClientSession** session) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -1168,6 +1169,7 @@ int QuicStreamFactory::CreateSession(
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
       server_info.Pass(), config, network_connection_.GetDescription(),
+      dns_resolution_end_time,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
 

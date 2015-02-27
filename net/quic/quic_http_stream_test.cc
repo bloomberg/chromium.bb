@@ -209,7 +209,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_.reset(new QuicClientSession(
         connection_, scoped_ptr<DatagramClientSocket>(socket), nullptr,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
-        DefaultQuicConfig(), "CONNECTION_UNKNOWN",
+        DefaultQuicConfig(), "CONNECTION_UNKNOWN", base::TimeTicks::Now(),
         base::MessageLoop::current()->message_loop_proxy().get(), nullptr));
     session_->InitializeSession(QuicServerId(kServerHostname, kServerPort,
                                              /*is_secure=*/false,

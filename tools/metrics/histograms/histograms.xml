@@ -19080,6 +19080,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.HostResolution.HandshakeConfirmedTime"
+    units="Milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The elapsed time between the end of resolving the DNS name of the server for
+    a QUIC connection, and receiving crypto handshake confirmation from the
+    server. Logged after crypto handshake is confirmed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.HostResolutionTime" units="milliseconds">
   <owner>rch@chromium.org</owner>
   <summary>

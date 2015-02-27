@@ -237,6 +237,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int CreateSession(const QuicServerId& server_id,
                     scoped_ptr<QuicServerInfo> quic_server_info,
                     const AddressList& address_list,
+                    base::TimeTicks dns_resolution_end_time,
                     const BoundNetLog& net_log,
                     QuicClientSession** session);
   void ActivateSession(const QuicServerId& key,

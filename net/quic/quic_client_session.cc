@@ -160,6 +160,7 @@ QuicClientSession::QuicClientSession(
     scoped_ptr<QuicServerInfo> server_info,
     const QuicConfig& config,
     const char* const connection_description,
+    base::TimeTicks dns_resolution_end_time,
     base::TaskRunner* task_runner,
     NetLog* net_log)
     : QuicClientSessionBase(connection, config),
@@ -173,6 +174,7 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
+      dns_resolution_end_time_(dns_resolution_end_time),
       logger_(new QuicConnectionLogger(this, connection_description, net_log_)),
       num_packets_read_(0),
       going_away_(false),
@@ -616,6 +618,7 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.HandshakeConfirmedTime",
                         base::TimeTicks::Now() - handshake_start_);
     if (server_info_) {
+      // TODO(rtenneti): Should we delete this histogram?
       // Track how long it has taken to finish handshake once we start waiting
       // for reading of QUIC server information from disk cache. We could use
       // this data to compare total time taken if we were to cancel the disk
@@ -627,6 +630,13 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
             "Net.QuicServerInfo.WaitForDataReady.HandshakeConfirmedTime",
             base::TimeTicks::Now() - wait_for_data_start_time);
       }
+    }
+    // Track how long it has taken to finish handshake after we have finished
+    // DNS host resolution.
+    if (!dns_resolution_end_time_.is_null()) {
+      UMA_HISTOGRAM_TIMES(
+          "Net.QuicSession.HostResolution.HandshakeConfirmedTime",
+          base::TimeTicks::Now() - dns_resolution_end_time_);
     }
 
     ObserverSet::iterator it = observers_.begin();
