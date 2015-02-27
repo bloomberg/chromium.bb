@@ -24,6 +24,7 @@
 #include "net/filter/filter.h"
 
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "net/base/filename_util_unsafe.h"
 #include "net/base/io_buffer.h"
@@ -203,6 +204,32 @@ Filter::FilterType Filter::ConvertEncodingToType(
   return type_id;
 }
 
+namespace {
+
+// Result of running FixupEncodingTypes with a Content-Encoding of gzip. This
+// enum is used for UMA and is available in histograms.xml as
+// GzipEncodingFixupResult.
+enum GzipEncodingFixupResult {
+  GZIP_ENCODING_LEFT_AS_IS = 0,
+
+  // Cleared because a resource with a GZIP MIME type was being transferred with
+  // a Content-Encoding of gzip.
+  GZIP_ENCODING_CLEARED_DUE_TO_GZIP_MIME_TYPE = 1,
+
+  // Cleared because the resource is known to be a download and the resulting
+  // file had a filename that indicating that the contents are GZIP.
+  GZIP_ENCODING_CLEARED_DUE_TO_DOWNLOAD_OF_GZIP_FILE = 2,
+
+  // Cleared because the resource is not a handled MIME type (and hence will be
+  // downloaded), and the predicted filename is one that indicates the contents
+  // to be GZIP.
+  GZIP_ENCODING_CLEARED_DUE_TO_UNHANDLED_GZIP_NAME = 3,
+
+  GZIP_ENCODING_FIXUP_RESULT_MAX_ENTRIES
+};
+
+}  // namespace
+
 // static
 void Filter::FixupEncodingTypes(
     const FilterContext& filter_context,
@@ -213,14 +240,17 @@ void Filter::FixupEncodingTypes(
 
   if ((1 == encoding_types->size()) &&
       (FILTER_TYPE_GZIP == encoding_types->front())) {
+    GzipEncodingFixupResult fixup_result = GZIP_ENCODING_LEFT_AS_IS;
     if (LowerCaseEqualsASCII(mime_type, kApplicationXGzip) ||
         LowerCaseEqualsASCII(mime_type, kApplicationGzip) ||
-        LowerCaseEqualsASCII(mime_type, kApplicationXGunzip))
+        LowerCaseEqualsASCII(mime_type, kApplicationXGunzip)) {
       // The server has told us that it sent us gziped content with a gzip
       // content encoding. Sadly, Apache mistakenly sets these headers for all
       // .gz files. We match Firefox's nsHttpChannel::ProcessNormal and ignore
       // the Content-Encoding here.
       encoding_types->clear();
+      fixup_result = GZIP_ENCODING_CLEARED_DUE_TO_GZIP_MIME_TYPE;
+    }
 
     GURL url;
     std::string disposition;
@@ -241,8 +271,10 @@ void Filter::FixupEncodingTypes(
       // See Firefox's nonDecodableExtensions in nsExternalHelperAppService.cpp
       if (EndsWith(extension, FILE_PATH_LITERAL(".gz"), false) ||
           LowerCaseEqualsASCII(extension, ".tgz") ||
-          LowerCaseEqualsASCII(extension, ".svgz"))
+          LowerCaseEqualsASCII(extension, ".svgz")) {
         encoding_types->clear();
+        fixup_result = GZIP_ENCODING_CLEARED_DUE_TO_DOWNLOAD_OF_GZIP_FILE;
+      }
     } else {
       // When the user does not explicitly ask to download a file, if we get a
       // supported mime type, then we attempt to decompress in order to view it.
@@ -250,9 +282,14 @@ void Filter::FixupEncodingTypes(
       // download it, and in that case, don't decompress .gz/.tgz files.
       if ((EndsWith(extension, FILE_PATH_LITERAL(".gz"), false) ||
            LowerCaseEqualsASCII(extension, ".tgz")) &&
-          !IsSupportedMimeType(mime_type))
+          !IsSupportedMimeType(mime_type)) {
         encoding_types->clear();
+        fixup_result = GZIP_ENCODING_CLEARED_DUE_TO_UNHANDLED_GZIP_NAME;
+      }
     }
+
+    UMA_HISTOGRAM_ENUMERATION("Net.GzipEncodingFixupResult", fixup_result,
+                              GZIP_ENCODING_FIXUP_RESULT_MAX_ENTRIES);
   }
 
   // If the request was for SDCH content, then we might need additional fixups.

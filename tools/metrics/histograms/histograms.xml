@@ -17579,6 +17579,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.GzipEncodingFixupResult" enum="GzipEncodingFixupResult">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Resources are sometimes transferred with an incorrect encoding type of gzip.
+    net::Filter::FixupEncodingTypes() attempts to correct for these situations
+    by applying a set of heuristics. This histogram counts the frequency of
+    usage of these heuristics in the wild.
+  </summary>
+</histogram>
+
 <histogram name="Net.HadConnectionType" enum="ConnectionType">
   <obsolete>
     The count was inaccurate (it counted transactions rather than connections).
@@ -50385,6 +50395,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="UPGRADE_SUCCESSFUL"/>
   <int value="4" label="UPGRADE_ALREADY_UP_TO_DATE"/>
   <int value="5" label="UPGRADE_ERROR"/>
+</enum>
+
+<enum name="GzipEncodingFixupResult" type="int">
+  <int value="0" label="Gzip encoding left as-is"/>
+  <int value="1" label="MIME type indicated GZIP content"/>
+  <int value="2" label="Explicit download with GZIP filename extension"/>
+  <int value="3" label="Unhandled MIME type with a GZIP filename extension"/>
 </enum>
 
 <enum name="HIDContinueScenarioType" type="int">
