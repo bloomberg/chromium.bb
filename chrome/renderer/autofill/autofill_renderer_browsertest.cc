@@ -250,7 +250,7 @@ TEST_F(AutofillRendererTest, DontCrashWhileAssociatingForms) {
   // Shouldn't crash.
 }
 
-TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
+TEST_F(AutofillRendererTest, DISABLED_DynamicallyAddedUnownedFormElements) {
   std::string html_data;
   base::FilePath test_path = ui_test_utils::GetTestFilePath(
       base::FilePath(FILE_PATH_LITERAL("autofill")),

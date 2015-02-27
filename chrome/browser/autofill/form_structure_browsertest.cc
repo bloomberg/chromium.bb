@@ -46,6 +46,16 @@ const base::FilePath& GetTestDataDir() {
 }
 
 const std::vector<base::FilePath> GetTestFiles() {
+  static const base::FilePath::CharType* const kFilesToSkip[] = {
+    FILE_PATH_LITERAL("bug_459132.html"),
+    FILE_PATH_LITERAL("bug_454366b.html"),
+    FILE_PATH_LITERAL("bug_454366.html"),
+    FILE_PATH_LITERAL("25_checkout_m_llbean.com.html"),
+  };
+  std::set<base::FilePath> set_of_files_to_skip;
+  for (size_t i = 0; i < arraysize(kFilesToSkip); ++i)
+    set_of_files_to_skip.insert(base::FilePath(kFilesToSkip[i]));
+
   base::FilePath dir;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
   dir = dir.AppendASCII("chrome/test/data/autofill")
@@ -55,7 +65,8 @@ const std::vector<base::FilePath> GetTestFiles() {
   std::vector<base::FilePath> files;
   for (base::FilePath input_file = input_files.Next(); !input_file.empty();
        input_file = input_files.Next()) {
-    files.push_back(input_file);
+    if (!ContainsKey(set_of_files_to_skip, input_file.BaseName()))
+      files.push_back(input_file);
   }
   std::sort(files.begin(), files.end());
 

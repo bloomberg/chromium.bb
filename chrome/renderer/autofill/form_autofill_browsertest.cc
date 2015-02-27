@@ -2393,7 +2393,7 @@ TEST_F(FormAutofillTest, FindFormForInputElement) {
       false);
 }
 
-TEST_F(FormAutofillTest, FindFormForInputElementForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FindFormForInputElementForUnownedForm) {
     TestFindFormForInputElement(
         "<INPUT type='text' id='firstname' value='John'/>"
         "<INPUT type='text' id='lastname' value='Smith'/>"
@@ -2420,7 +2420,7 @@ TEST_F(FormAutofillTest, FindFormForTextAreaElement) {
       false);
 }
 
-TEST_F(FormAutofillTest, FindFormForTextAreaElementForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FindFormForTextAreaElementForUnownedForm) {
   TestFindFormForTextAreaElement(
       "<INPUT type='text' id='firstname' value='John'/>"
       "<INPUT type='text' id='lastname' value='Smith'/>"
@@ -2439,7 +2439,7 @@ TEST_F(FormAutofillTest, FillForm) {
   TestFillForm(kFormHtml, false);
 }
 
-TEST_F(FormAutofillTest, FillFormForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FillFormForUnownedForm) {
   TestFillForm(kUnownedFormHtml, true);
 }
 
@@ -2531,7 +2531,7 @@ TEST_F(FormAutofillTest, PreviewForm) {
   TestPreviewForm(kFormHtml, false);
 }
 
-TEST_F(FormAutofillTest, PreviewFormForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_PreviewFormForUnownedForm) {
   TestPreviewForm(kUnownedFormHtml, true);
 }
 
@@ -3406,7 +3406,7 @@ TEST_F(FormAutofillTest, FillFormMaxLength) {
       false);
 }
 
-TEST_F(FormAutofillTest, FillFormMaxLengthForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FillFormMaxLengthForUnownedForm) {
   TestFillFormMaxLength(
       "<INPUT type='text' id='firstname' maxlength='5'/>"
       "<INPUT type='text' id='lastname' maxlength='7'/>"
@@ -3429,7 +3429,7 @@ TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
       false);
 }
 
-TEST_F(FormAutofillTest, FillFormNegativeMaxLengthForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FillFormNegativeMaxLengthForUnownedForm) {
   TestFillFormNegativeMaxLength(
       "<INPUT type='text' id='firstname' maxlength='-1'/>"
       "<INPUT type='text' id='lastname' maxlength='-10'/>"
@@ -3449,7 +3449,7 @@ TEST_F(FormAutofillTest, FillFormEmptyName) {
       false);
 }
 
-TEST_F(FormAutofillTest, FillFormEmptyNameForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FillFormEmptyNameForUnownedForm) {
   TestFillFormEmptyName(
       "<INPUT type='text' id='firstname'/>"
       "<INPUT type='text' id='lastname'/>"
@@ -3475,7 +3475,7 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
       false);
 }
 
-TEST_F(FormAutofillTest, FillFormEmptyFormNamesForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FillFormEmptyFormNamesForUnownedForm) {
   TestFillFormEmptyFormNames(
       "<INPUT type='text' id='firstname'/>"
       "<INPUT type='text' id='middlename'/>"
@@ -3631,7 +3631,7 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
       false);
 }
 
-TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_FillFormNonEmptyFieldForUnownedForm) {
   TestFillFormNonEmptyField("<INPUT type='text' id='firstname'/>"
                             "<INPUT type='text' id='lastname'/>"
                             "<INPUT type='text' id='email'/>"
@@ -3659,7 +3659,7 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
       false);
 }
 
-TEST_F(FormAutofillTest, ClearFormWithNodeForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_ClearFormWithNodeForUnownedForm) {
   TestClearFormWithNode(
       "  <!-- Indented on purpose //-->"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
@@ -3694,7 +3694,8 @@ TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
       false);
 }
 
-TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOneForUnownedForm) {
+TEST_F(FormAutofillTest,
+       DISABLED_ClearFormWithNodeContainingSelectOneForUnownedForm) {
   TestClearFormWithNodeContainingSelectOne(
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname' value='Earp'/>"
@@ -3720,7 +3721,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithElement) {
       "</FORM>");
 }
 
-TEST_F(FormAutofillTest, ClearPreviewedFormWithElementForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_ClearPreviewedFormWithElementForUnownedForm) {
   TestClearPreviewedFormWithElement(
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname'/>"
@@ -3743,7 +3744,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
 }
 
 TEST_F(FormAutofillTest,
-       ClearPreviewedFormWithNonEmptyInitiatingNodeForUnownedForm) {
+       DISABLED_ClearPreviewedFormWithNonEmptyInitiatingNodeForUnownedForm) {
   TestClearPreviewedFormWithNonEmptyInitiatingNode(
       "<INPUT type='text' id='firstname' value='W'/>"
       "<INPUT type='text' id='lastname'/>"
@@ -3766,7 +3767,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
 }
 
 TEST_F(FormAutofillTest,
-       ClearPreviewedFormWithAutofilledInitiatingNodeForUnownedForm) {
+       DISABLED_ClearPreviewedFormWithAutofilledInitiatingNodeForUnownedForm) {
   TestClearPreviewedFormWithAutofilledInitiatingNode(
       "<INPUT type='text' id='firstname' value='W'/>"
       "<INPUT type='text' id='lastname'/>"
@@ -3788,7 +3789,7 @@ TEST_F(FormAutofillTest, ClearOnlyAutofilledFields) {
       "</FORM>");
 }
 
-TEST_F(FormAutofillTest, ClearOnlyAutofilledFieldsForUnownedForm) {
+TEST_F(FormAutofillTest, DISABLED_ClearOnlyAutofilledFieldsForUnownedForm) {
   TestClearOnlyAutofilledFields(
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname' value='Earp'/>"
@@ -3947,7 +3948,7 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
 }
 
 TEST_F(FormAutofillTest,
-       UnownedFormElementsAndFieldSetsToFormDataFieldsets) {
+       DISABLED_UnownedFormElementsAndFieldSetsToFormDataFieldsets) {
   std::vector<WebElement> fieldsets;
   std::vector<WebFormControlElement> control_elements;
 
@@ -4009,7 +4010,7 @@ TEST_F(FormAutofillTest,
 }
 
 TEST_F(FormAutofillTest,
-       UnownedFormElementsAndFieldSetsToFormDataControlOutsideOfFieldset) {
+       DISABLED_UnownedFormElementsAndFieldSetsToFormDataControlOutsideOfFieldset) {
   std::vector<WebElement> fieldsets;
   std::vector<WebFormControlElement> control_elements;
 
@@ -4068,7 +4069,8 @@ TEST_F(FormAutofillTest,
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 }
 
-TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
+TEST_F(FormAutofillTest,
+       DISABLED_UnownedFormElementsAndFieldSetsToFormDataWithForm) {
   std::vector<WebElement> fieldsets;
   std::vector<WebFormControlElement> control_elements;
 
