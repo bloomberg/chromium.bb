@@ -33,8 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebDocument.h"
-#include "public/web/WebPermissionClient.h"
 #include "web/WebLocalFrameImpl.h"
 
 namespace blink {
@@ -143,14 +143,14 @@ void ContextFeaturesClientImpl::urlDidChange(Document* document)
 bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
 {
     WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(document->frame());
-    if (!frame || !frame->permissionClient())
+    if (!frame || !frame->contentSettingsClient())
         return defaultValue;
 
     switch (type) {
     case ContextFeatures::MutationEvents:
-        return frame->permissionClient()->allowMutationEvents(defaultValue);
+        return frame->contentSettingsClient()->allowMutationEvents(defaultValue);
     case ContextFeatures::PushState:
-        return frame->permissionClient()->allowPushState();
+        return frame->contentSettingsClient()->allowPushState();
     default:
         return defaultValue;
     }

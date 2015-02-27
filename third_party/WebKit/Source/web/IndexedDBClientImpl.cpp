@@ -33,8 +33,8 @@
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebKit.h"
-#include "public/web/WebPermissionClient.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerPermissionClient.h"
@@ -54,8 +54,8 @@ bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String
         WebSecurityOrigin origin(context->securityOrigin());
         Document* document = toDocument(context);
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-        // FIXME: webFrame->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
-        return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(name, origin);
+        // FIXME: webFrame->contentSettingsClient() returns 0 in test_shell and content_shell http://crbug.com/137269
+        return !webFrame->contentSettingsClient() || webFrame->contentSettingsClient()->allowIndexedDB(name, origin);
     }
 
     WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);

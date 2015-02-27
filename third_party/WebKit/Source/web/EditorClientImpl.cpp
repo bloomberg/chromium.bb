@@ -28,8 +28,8 @@
 #include "web/EditorClientImpl.h"
 
 #include "core/editing/SelectionType.h"
+#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebPermissionClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -61,17 +61,17 @@ void EditorClientImpl::respondToChangedContents()
 bool EditorClientImpl::canCopyCut(LocalFrame* frame, bool defaultValue) const
 {
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    if (!webFrame->permissionClient())
+    if (!webFrame->contentSettingsClient())
         return defaultValue;
-    return webFrame->permissionClient()->allowWriteToClipboard(defaultValue);
+    return webFrame->contentSettingsClient()->allowWriteToClipboard(defaultValue);
 }
 
 bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
 {
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    if (!webFrame->permissionClient())
+    if (!webFrame->contentSettingsClient())
         return defaultValue;
-    return webFrame->permissionClient()->allowReadFromClipboard(defaultValue);
+    return webFrame->contentSettingsClient()->allowReadFromClipboard(defaultValue);
 }
 
 bool EditorClientImpl::handleKeyboardEvent()

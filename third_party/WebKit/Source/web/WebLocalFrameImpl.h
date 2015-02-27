@@ -82,6 +82,7 @@ public:
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const override;
     virtual void setRemoteWebLayer(WebLayer*) override;
     virtual void setPermissionClient(WebPermissionClient*) override;
+    virtual void setContentSettingsClient(WebContentSettingsClient*) override;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) override;
     virtual WebSize scrollOffset() const override;
     virtual void setScrollOffset(const WebSize&) override;
@@ -301,7 +302,7 @@ public:
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
-    WebPermissionClient* permissionClient() { return m_permissionClient; }
+    WebContentSettingsClient* contentSettingsClient() { return m_contentSettingsClient; }
     SharedWorkerRepositoryClientImpl* sharedWorkerRepositoryClient() const { return m_sharedWorkerRepositoryClient.get(); }
 
     void setInputEventsTransformForEmulation(const IntSize&, float);
@@ -356,7 +357,7 @@ private:
 
     WebFrameClient* m_client;
     WebAutofillClient* m_autofillClient;
-    WebPermissionClient* m_permissionClient;
+    WebContentSettingsClient* m_contentSettingsClient;
     OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 
     // Will be initialized after first call to find() or scopeStringMatches().

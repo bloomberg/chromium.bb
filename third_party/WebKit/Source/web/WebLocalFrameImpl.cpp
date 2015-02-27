@@ -190,6 +190,7 @@
 #include "public/web/WebInputElement.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPerformance.h"
+#include "public/web/WebPermissionClient.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebPrintPresetOptions.h"
@@ -584,7 +585,12 @@ void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 
 void WebLocalFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)
 {
-    m_permissionClient = permissionClient;
+    setContentSettingsClient(permissionClient);
+}
+
+void WebLocalFrameImpl::setContentSettingsClient(WebContentSettingsClient* contentSettingsClient)
+{
+    m_contentSettingsClient = contentSettingsClient;
 }
 
 void WebLocalFrameImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient* client)
@@ -1552,7 +1558,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     , m_frameWidget(0)
     , m_client(client)
     , m_autofillClient(0)
-    , m_permissionClient(0)
+    , m_contentSettingsClient(0)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_userMediaClientImpl(this)
     , m_geolocationClientProxy(GeolocationClientProxy::create(client ? client->geolocationClient() : 0))

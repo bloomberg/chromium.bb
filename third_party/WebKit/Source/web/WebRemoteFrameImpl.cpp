@@ -115,7 +115,7 @@ void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
     frame()->setRemotePlatformLayer(webLayer);
 }
 
-void WebRemoteFrameImpl::setPermissionClient(WebPermissionClient*)
+void WebRemoteFrameImpl::setContentSettingsClient(WebContentSettingsClient*)
 {
     ASSERT_NOT_REACHED();
 }

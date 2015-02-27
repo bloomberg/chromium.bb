@@ -74,11 +74,11 @@ void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* conte
 
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-    if (!webFrame->permissionClient()) {
+    if (!webFrame->contentSettingsClient()) {
         callbacks->onAllowed();
         return;
     }
-    webFrame->permissionClient()->requestFileSystemAccessAsync(callbacks);
+    webFrame->contentSettingsClient()->requestFileSystemAccessAsync(callbacks);
 }
 
 LocalFileSystemClient::LocalFileSystemClient()

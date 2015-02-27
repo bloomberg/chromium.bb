@@ -28,7 +28,7 @@
 
 #include "core/storage/StorageNamespace.h"
 #include "public/platform/WebStorageNamespace.h"
-#include "public/web/WebPermissionClient.h"
+#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -48,7 +48,7 @@ PassOwnPtr<StorageNamespace> StorageClientImpl::createSessionStorageNamespace()
 bool StorageClientImpl::canAccessStorage(LocalFrame* frame, StorageType type) const
 {
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    return !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(type == LocalStorage);
+    return !webFrame->contentSettingsClient() || webFrame->contentSettingsClient()->allowStorage(type == LocalStorage);
 }
 
 } // namespace blink

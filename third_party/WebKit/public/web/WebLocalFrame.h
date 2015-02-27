@@ -12,6 +12,7 @@ namespace blink {
 enum class WebSandboxFlags;
 class WebAutofillClient;
 class WebFrameClient;
+class WebPermissionClient;
 class WebScriptExecutionCallback;
 struct WebPrintPresetOptions;
 
@@ -111,6 +112,11 @@ public:
     // selection to collapse. If the new extent is set to the same position as
     // the current base, this function will do nothing.
     virtual void moveRangeSelectionExtent(const WebPoint&, TextGranularity = CharacterGranularity) = 0;
+
+    // FIXME: This is a temporary code needed for the move from
+    // WebPermissionClient to WebContentSettingsClient. The embedder needs to
+    // update its code before this can get removed.
+    virtual void setPermissionClient(WebPermissionClient*) = 0;
 };
 
 } // namespace blink
