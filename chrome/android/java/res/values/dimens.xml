@@ -56,7 +56,6 @@
     <dimen name="password_generation_text_vertical_margin">12dp</dimen>
 
     <!--  Preferences dimensions -->
-    <dimen name="pref_homepage_layout_margin">10dp</dimen>
     <dimen name="pref_autofill_field_horizontal_padding">3dp</dimen>
     <dimen name="pref_autofill_field_top_padding">10dp</dimen>
 

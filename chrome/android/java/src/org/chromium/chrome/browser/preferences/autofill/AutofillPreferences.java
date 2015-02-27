@@ -61,6 +61,7 @@ public class AutofillPreferences extends PreferenceFragment
                 (ChromeBasePreference) findPreference(PREF_AUTOFILL_WALLET);
         if (!PersonalDataManager.isWalletImportFeatureAvailable()) {
             getPreferenceScreen().removePreference(walletPref);
+            autofillSwitch.setDrawDivider(true);
         } else {
             walletPref.setSummary(getResources().getString(
                     PersonalDataManager.isWalletImportEnabled() ? R.string.text_on

@@ -205,6 +205,7 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
         reduceDataUsageSwitch.setKey(PREF_REDUCE_DATA_USAGE_SWITCH);
         reduceDataUsageSwitch.setSummaryOn(R.string.text_on);
         reduceDataUsageSwitch.setSummaryOff(R.string.text_off);
+        reduceDataUsageSwitch.setDrawDivider(true);
         reduceDataUsageSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {

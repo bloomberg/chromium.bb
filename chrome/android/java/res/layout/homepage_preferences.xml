@@ -6,30 +6,29 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    style="@style/PreferenceScreenLayout" >
+    android:fillViewport="true" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusableInTouchMode="true"
-        android:orientation="vertical"
-        android:paddingStart="@dimen/pref_homepage_layout_margin"
-        android:paddingEnd="@dimen/pref_homepage_layout_margin" >
+        android:orientation="vertical" >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            style="@style/PreferenceLayout" >
 
             <TextView
                 android:id="@+id/homepage_switch_label"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:textAppearance="@style/PreferenceTextAppearanceMedium" />
+                android:layout_weight="1"
+                style="@style/PreferenceTitle" />
 
             <org.chromium.chrome.browser.widget.ChromeSwitchCompat
                 android:id="@+id/homepage_switch"
@@ -40,12 +39,19 @@
 
         </LinearLayout>
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="?android:attr/listDivider"
+            android:scaleType="fitXY" />
+
         <EditText
             android:id="@+id/custom_uri"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:hint="@string/options_startup_pages_placeholder"
             android:inputType="textUri"
             android:nextFocusLeft="@id/custom_uri"
@@ -57,8 +63,10 @@
             android:id="@+id/default_checkbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:text="@string/homepage_default_title" />
     </LinearLayout>
 

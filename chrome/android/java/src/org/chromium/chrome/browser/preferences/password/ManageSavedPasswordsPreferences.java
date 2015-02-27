@@ -65,6 +65,7 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
     private boolean mNoPasswords;
     private boolean mNoPasswordExceptions;
     private Preference mLinkPref;
+    private ChromeSwitchPreference mSavePasswordsSwitch;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -243,34 +244,31 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
     }
 
     private void createSavePasswordsSwitch(boolean isEnabled) {
-        ChromeSwitchPreference savePasswordsSwitch =
-                new ChromeSwitchPreference(getActivity(), null);
-        savePasswordsSwitch.setKey(PREF_SAVE_PASSWORDS_SWITCH);
-        savePasswordsSwitch.setOrder(ORDER_SWITCH);
-        savePasswordsSwitch.setSummaryOn(R.string.text_on);
-        savePasswordsSwitch.setSummaryOff(R.string.text_off);
-        savePasswordsSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+        mSavePasswordsSwitch = new ChromeSwitchPreference(getActivity(), null);
+        mSavePasswordsSwitch.setKey(PREF_SAVE_PASSWORDS_SWITCH);
+        mSavePasswordsSwitch.setOrder(ORDER_SWITCH);
+        mSavePasswordsSwitch.setSummaryOn(R.string.text_on);
+        mSavePasswordsSwitch.setSummaryOff(R.string.text_off);
+        mSavePasswordsSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PrefServiceBridge.getInstance().setRememberPasswordsEnabled((boolean) newValue);
                 return true;
             }
         });
-
-        savePasswordsSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        mSavePasswordsSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PrefServiceBridge.getInstance().isRememberPasswordsManaged();
             }
         });
-
-        getPreferenceScreen().addPreference(savePasswordsSwitch);
+        getPreferenceScreen().addPreference(mSavePasswordsSwitch);
 
         // Note: setting the switch state before the preference is added to the screen results in
         // some odd behavior where the switch state doesn't always match the internal enabled state
         // (e.g. the switch will say "On" when save passwords is really turned off), so
         // .setChecked() should be called after .addPreference()
-        savePasswordsSwitch.setChecked(isEnabled);
+        mSavePasswordsSwitch.setChecked(isEnabled);
     }
 
     private void displayManageAccountLink() {
@@ -289,6 +287,10 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
                 mLinkPref.setOrder(ORDER_MANAGE_ACCOUNT_LINK);
             }
             getPreferenceScreen().addPreference(mLinkPref);
+        } else {
+            // Draw a divider only if the preference after mSavePasswordsSwitch is not selectable,
+            // in which case the ListView itself doesn't draw a divider.
+            mSavePasswordsSwitch.setDrawDivider(true);
         }
     }
 }

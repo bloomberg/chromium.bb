@@ -3,15 +3,16 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:title="@string/all_sites">
     <!-- A global toggle, only shown for specific categories that allow turning default values
          for that category on/off.-->
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="read_write_toggle"
-        android:defaultValue="true" />
-    <Preference
-        android:layout="@layout/divider_preference" />
+        android:defaultValue="true"
+        chrome:drawDivider="true" />
     <!-- A toggle for allowing third-party cookies, only shown for the Cookies category. -->
     <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
         android:key="third_party_cookies"
