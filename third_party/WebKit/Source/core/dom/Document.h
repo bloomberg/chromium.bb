@@ -1153,6 +1153,7 @@ private:
     void processHttpEquivSetCookie(const AtomicString& content);
     void processHttpEquivXFrameOptions(const AtomicString& content);
     void processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content);
+    void processHttpEquivAcceptCH(const AtomicString& content);
 
     bool haveStylesheetsLoaded() const;
 

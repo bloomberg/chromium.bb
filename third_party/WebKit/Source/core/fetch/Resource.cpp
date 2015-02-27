@@ -25,6 +25,7 @@
 #include "core/fetch/Resource.h"
 
 #include "core/FetchInitiatorTypeNames.h"
+#include "core/fetch/AcceptClientHints.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/MemoryCache.h"
@@ -433,14 +434,8 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
         ResourceFetcher* fetcher = ResourceFetcher::toResourceFetcher(m_loader->host());
         if (fetcher && fetcher->frame()) {
             LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), fetcher->frame()->document());
-            if (RuntimeEnabledFeatures::clientHintsEnabled() && type() == Resource::MainResource) {
-                CommaDelimitedHeaderSet acceptCH;
-                parseCommaDelimitedHeader(response.httpHeaderField("accept-ch"), acceptCH);
-                if (acceptCH.contains("dpr"))
-                    fetcher->frame()->setShouldSendDPRHint();
-                if (acceptCH.contains("rw"))
-                    fetcher->frame()->setShouldSendRWHint();
-            }
+            if (type() == Resource::MainResource)
+                handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), fetcher->frame());
         }
     }
 

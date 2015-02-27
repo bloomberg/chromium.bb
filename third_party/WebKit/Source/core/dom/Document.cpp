@@ -113,6 +113,7 @@
 #include "core/events/HashChangeEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/fetch/AcceptClientHints.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -2900,6 +2901,8 @@ void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& c
         parseDNSPrefetchControlHeader(content);
     } else if (equalIgnoringCase(equiv, "x-frame-options")) {
         processHttpEquivXFrameOptions(content);
+    } else if (equalIgnoringCase(equiv, "accept-ch")) {
+        processHttpEquivAcceptCH(content);
     } else if (equalIgnoringCase(equiv, "content-security-policy") || equalIgnoringCase(equiv, "content-security-policy-report-only")) {
         if (inDocumentHeadElement)
             processHttpEquivContentSecurityPolicy(equiv, content);
@@ -2918,6 +2921,12 @@ void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, 
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceMeta);
     else
         ASSERT_NOT_REACHED();
+}
+
+void Document::processHttpEquivAcceptCH(const AtomicString& content)
+{
+    if (frame())
+        handleAcceptClientHintsHeader(content, frame());
 }
 
 void Document::processHttpEquivDefaultStyle(const AtomicString& content)

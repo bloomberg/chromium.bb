@@ -1392,6 +1392,8 @@
             'editing/htmlediting.cpp',
             'editing/markup.cpp',
             'fetch/AccessControlStatus.h',
+            'fetch/AcceptClientHints.cpp',
+            'fetch/AcceptClientHints.h',
             'fetch/CSSStyleSheetResource.cpp',
             'fetch/CSSStyleSheetResource.h',
             'fetch/CachedMetadata.h',
