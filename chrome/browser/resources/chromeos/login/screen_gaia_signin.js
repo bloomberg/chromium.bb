@@ -294,6 +294,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     loadAuthExtension: function(data) {
       this.isLocal = data.isLocal;
       this.email = '';
+      this.isMinuteMaid = data.useMinuteMaid;
 
       // Reset SAML
       this.classList.toggle('full-width', false);
@@ -311,8 +312,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.localizedStrings)
         params.localizedStrings = data.localizedStrings;
 
-      if (data.useMinuteMaid) {
-        this.isMinuteMaid = true;
+      if (this.isMinuteMaid) {
         $('inner-container').classList.add('minute-maid');
         $('progress-dots').hidden = true;
         if (data.enterpriseDomain)
