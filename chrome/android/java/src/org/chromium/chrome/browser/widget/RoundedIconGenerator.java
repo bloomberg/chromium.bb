@@ -13,18 +13,25 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.RectF;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
 
+import java.net.URI;
 import java.util.Locale;
+
+import javax.annotation.Nullable;
 
 /**
  * Generator for transparent icons containing a rounded rectangle with a given background color,
  * having a centered character drawn on top of it.
  */
 public class RoundedIconGenerator {
+    private static final String TAG = RoundedIconGenerator.class.getSimpleName();
+
     private final int mIconWidthPx;
     private final int mIconHeightPx;
     private final int mCornerRadiusPx;
@@ -119,20 +126,14 @@ public class RoundedIconGenerator {
      * @param includePrivateRegistries Should private registries be considered as TLDs?
      * @return The generated icon, or NULL if |url| is empty or the domain cannot be resolved.
      */
+    @Nullable
     public Bitmap generateIconForUrl(String url, boolean includePrivateRegistries) {
         if (TextUtils.isEmpty(url)) return null;
 
-        String domain = UrlUtilities.getDomainAndRegistry(url, includePrivateRegistries);
-        if (TextUtils.isEmpty(domain)) {
-            if (url.startsWith(UrlConstants.CHROME_SCHEME)
-                    || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) {
-                domain = "chrome";
-            } else {
-                return null;
-            }
-        }
+        String text = getIconTextForUrl(url, includePrivateRegistries);
+        if (TextUtils.isEmpty(text)) return null;
 
-        return generateIconForText(domain);
+        return generateIconForText(text);
     }
 
     /**
@@ -146,7 +147,41 @@ public class RoundedIconGenerator {
      * @param url URL for which the icon should be generated.
      * @return The generated icon, or NULL if |url| is empty or the domain cannot be resolved.
      */
+    @Nullable
     public Bitmap generateIconForUrl(String url) {
         return generateIconForUrl(url, false);
+    }
+
+    /**
+     * Returns the text which should be used for generating a rounded icon based on |url|.
+     *
+     * @param url URL to consider when getting the icon's text.
+     * @param includePrivateRegistries Should private registries be considered as TLDs?
+     * @return The text to use on the rounded icon, or NULL if |url| is empty or the domain cannot
+     *         be resolved.
+     */
+    @Nullable
+    @VisibleForTesting
+    public static String getIconTextForUrl(String url, boolean includePrivateRegistries) {
+        String domain = UrlUtilities.getDomainAndRegistry(url, includePrivateRegistries);
+        if (!TextUtils.isEmpty(domain)) return domain;
+
+        // Special-case chrome:// and chrome-native:// URLs.
+        if (url.startsWith(UrlConstants.CHROME_SCHEME)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) {
+            return "chrome";
+        }
+
+        // Use the host component of |url| when it can be parsed as a URI.
+        try {
+            URI uri = new URI(url);
+            if (!TextUtils.isEmpty(uri.getHost())) {
+                return uri.getHost();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Unable to parse the URL for generating an icon: " + url);
+        }
+
+        return null;
     }
 }

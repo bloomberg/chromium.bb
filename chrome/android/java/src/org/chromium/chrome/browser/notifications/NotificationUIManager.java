@@ -280,23 +280,35 @@ public class NotificationUIManager {
      */
     private RoundedIconGenerator getIconGenerator() {
         if (mIconGenerator == null) {
-            Resources res = mAppContext.getResources();
-            float density = res.getDisplayMetrics().density;
-
-            int widthPx = res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-            int heightPx =
-                    res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
-
-            mIconGenerator = new RoundedIconGenerator(
-                    mAppContext,
-                    (int) (widthPx / density),
-                    (int) (heightPx / density),
-                    (int) (Math.min(widthPx, heightPx) / density / 2),
-                    NOTIFICATION_ICON_BG_COLOR,
-                    NOTIFICATION_TEXT_SIZE_DP);
+            mIconGenerator = createRoundedIconGenerator(mAppContext);
         }
 
         return mIconGenerator;
+    }
+
+    /**
+     * Creates the rounded icon generator to use for notifications based on the dimensions
+     * and resolution of the device we're running on.
+     *
+     * @param appContext The application context to retrieve resources from.
+     * @return The newly created rounded icon generator.
+     */
+    @VisibleForTesting
+    public static RoundedIconGenerator createRoundedIconGenerator(Context appContext) {
+        Resources res = appContext.getResources();
+        float density = res.getDisplayMetrics().density;
+
+        int widthPx = res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        int heightPx =
+                res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+
+        return new RoundedIconGenerator(
+                appContext,
+                (int) (widthPx / density),
+                (int) (heightPx / density),
+                (int) (Math.min(widthPx, heightPx) / density / 2),
+                NOTIFICATION_ICON_BG_COLOR,
+                NOTIFICATION_TEXT_SIZE_DP);
     }
 
     /**

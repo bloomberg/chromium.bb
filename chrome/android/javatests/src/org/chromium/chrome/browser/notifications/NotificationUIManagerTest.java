@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.SparseArray;
@@ -14,6 +15,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
@@ -36,10 +38,17 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     private MockNotificationManagerProxy mMockNotificationManager;
 
     /**
+     * Returns the origin of the HTTP server the test is being ran on.
+     */
+    private static String getOrigin() {
+        return TestHttpServerClient.getUrl("");
+    }
+
+    /**
      * Sets the permission to use Web Notifications for the test HTTP server's origin to |setting|.
      */
     private void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting) {
-        final String origin = TestHttpServerClient.getUrl("");
+        final String origin = getOrigin();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -125,15 +134,13 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
         assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
 
-        String origin = TestHttpServerClient.getUrl("");
-
         Notification notification = showAndGetNotification("MyNotification", "{ body: 'Hello' }");
         assertNotNull(notification);
 
         // Validate the contents of the notification.
         assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals("Hello", notification.extras.getString(Notification.EXTRA_TEXT));
-        assertEquals(origin, notification.extras.getString(Notification.EXTRA_SUB_TEXT));
+        assertEquals(getOrigin(), notification.extras.getString(Notification.EXTRA_SUB_TEXT));
 
         // Validate the appearance style of the notification. The EXTRA_TEMPLATE was inroduced
         // in Android Lollipop, we cannot verify this in earlier versions.
@@ -141,6 +148,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
             assertEquals("android.app.Notification$BigTextStyle",
                     notification.extras.getString(Notification.EXTRA_TEMPLATE));
         }
+
+        assertNotNull(notification.largeIcon);
 
         // Validate the notification's behavior.
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
@@ -166,5 +175,35 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         // These are the dimensions of //chrome/test/data/notifications/icon.png at 1x scale.
         assertEquals(100, notification.largeIcon.getWidth());
         assertEquals(100, notification.largeIcon.getHeight());
+    }
+
+    /**
+     * Verifies that notifications which don't specify an icon will get an automatically generated
+     * icon based on their origin. The size of these icons are dependent on the resolution of the
+     * device the test is being ran on, so we create it again in order to compare.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testShowNotificationWithoutIcon() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
+
+        Notification notification = showAndGetNotification("NoIconNotification", "{}");
+        assertNotNull(notification);
+
+        assertEquals("NoIconNotification", notification.extras.getString(Notification.EXTRA_TITLE));
+        assertNotNull(notification.largeIcon);
+
+        // Create a second rounded icon for the test's origin, and compare its dimensions against
+        // those of the icon associated to the notification itself.
+        RoundedIconGenerator generator = NotificationUIManager.createRoundedIconGenerator(
+                getActivity().getApplicationContext());
+        assertNotNull(generator);
+
+        Bitmap generatedIcon = generator.generateIconForUrl(getOrigin());
+        assertNotNull(generatedIcon);
+
+        assertEquals(generatedIcon.getWidth(), notification.largeIcon.getWidth());
+        assertEquals(generatedIcon.getHeight(), notification.largeIcon.getHeight());
     }
 }
