@@ -210,6 +210,10 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_DisplaySetOverscan']);
       }).bind(this);
+
+      $('display-options-done').onclick = function() {
+        PageManager.closeOverlay();
+      };
     },
 
     /** @override */
