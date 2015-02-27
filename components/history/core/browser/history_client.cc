@@ -26,4 +26,16 @@ bool HistoryClient::ShouldReportDatabaseError() {
   return false;
 }
 
+void HistoryClient::OnHistoryBackendInitialized(
+    HistoryBackend* history_backend,
+    HistoryDatabase* history_database,
+    ThumbnailDatabase* thumbnail_database,
+    const base::FilePath& history_dir) {
+}
+
+void HistoryClient::OnHistoryBackendDestroyed(
+    HistoryBackend* history_backend,
+    const base::FilePath& history_dir) {
+}
+
 }  // namespace history

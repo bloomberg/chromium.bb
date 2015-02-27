@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
+#include "base/supports_user_data.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/expire_history_backend.h"
@@ -39,10 +40,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace history {
-#if defined(OS_ANDROID)
-class AndroidProviderBackend;
-#endif
-
 class CommitLaterTask;
 struct DownloadRow;
 class HistoryBackendObserver;
@@ -54,6 +51,7 @@ class HistoryDBTask;
 class InMemoryHistoryBackend;
 class TypedUrlSyncableService;
 class VisitFilter;
+class HistoryBackendHelper;
 
 // The maximum number of icons URLs per page which can be stored in the
 // thumbnail database.
@@ -327,15 +325,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void AddObserver(HistoryBackendObserver* observer);
   void RemoveObserver(HistoryBackendObserver* observer);
 
-#if defined(OS_ANDROID)
-  // Android Provider ---------------------------------------------------------
-
-  // Returns the android provider backend associated with the HistoryBackend.
-  AndroidProviderBackend* android_provider_backend() {
-    return android_provider_backend_.get();
-  }
-#endif
-
   // Generic operations --------------------------------------------------------
 
   void ProcessDBTask(
@@ -418,6 +407,15 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // HistoryBackend as there are no provisions for accessing the other databases
   // managed by HistoryBackend when the history database cannot be accessed.
   void KillHistoryDatabase();
+
+  // SupportsUserData ----------------------------------------------------------
+
+  // The user data allows the clients to associate data with this object.
+  // Multiple user data values can be stored under different keys.
+  // This object will TAKE OWNERSHIP of the given data pointer, and will
+  // delete the object if it is changed or the object is destroyed.
+  base::SupportsUserData::Data* GetUserData(const void* key) const;
+  void SetUserData(const void* key, base::SupportsUserData::Data* data);
 
   // Testing -------------------------------------------------------------------
 
@@ -518,11 +516,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Returns the name of the Favicons database. This is the new name
   // of the Thumbnails database.
   base::FilePath GetFaviconsFileName() const;
-
-#if defined(OS_ANDROID)
-  // Returns the name of android cache database.
-  base::FilePath GetAndroidCacheFileName() const;
-#endif
 
   class URLQuerier;
   friend class URLQuerier;
@@ -815,10 +808,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // loaded before returning.
   HistoryClient* history_client_;
 
-#if defined(OS_ANDROID)
-  // Used to provide the Android ContentProvider APIs.
-  scoped_ptr<AndroidProviderBackend> android_provider_backend_;
-#endif
+  // Used to allow embedder code to stash random data by key. Those object will
+  // be deleted before closing the databases (hence the member variable instead
+  // of inheritance from base::SupportsUserData).
+  scoped_ptr<HistoryBackendHelper> supports_user_data_helper_;
 
   // Used to manage syncing of the typed urls datatype. This will be null before
   // Init is called.

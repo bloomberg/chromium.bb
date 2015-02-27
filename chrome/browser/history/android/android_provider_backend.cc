@@ -27,6 +27,8 @@ namespace history {
 
 namespace {
 
+const char kAndroidProviderBackendUserDataKey[] = "AndroidProviderBackendKey";
+
 const char kVirtualHistoryAndBookmarkTable[] =
     "SELECT android_urls.id AS _id, "
         "android_cache_db.bookmark_cache.created_time AS created, "
@@ -212,6 +214,19 @@ AndroidProviderBackend::AndroidProviderBackend(
 }
 
 AndroidProviderBackend::~AndroidProviderBackend() {
+}
+
+// static
+const void* AndroidProviderBackend::GetUserDataKey() {
+  return kAndroidProviderBackendUserDataKey;
+}
+
+// static
+AndroidProviderBackend* AndroidProviderBackend::FromHistoryBackend(
+    HistoryBackend* history_backend) {
+  DCHECK(history_backend);
+  return static_cast<AndroidProviderBackend*>(
+      history_backend->GetUserData(GetUserDataKey()));
 }
 
 AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(

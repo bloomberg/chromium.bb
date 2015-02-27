@@ -10,9 +10,6 @@
 namespace history {
 
 // filenames
-#if defined(OS_ANDROID)
-extern const base::FilePath::CharType kAndroidCacheFilename[];
-#endif
 extern const base::FilePath::CharType kArchivedHistoryFilename[];
 extern const base::FilePath::CharType kFaviconsFilename[];
 extern const base::FilePath::CharType kHistoryFilename[];

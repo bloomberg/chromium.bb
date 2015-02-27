@@ -38,10 +38,12 @@ class AndroidProviderTask : public history::HistoryDBTask {
 
  private:
   // history::HistoryDBTask implementation.
-  bool RunOnDBThread(history::HistoryBackend* backend,
+  bool RunOnDBThread(history::HistoryBackend* history_backend,
                      history::HistoryDatabase* db) override {
-    if (backend->android_provider_backend())
-      result_ = request_cb_.Run(backend->android_provider_backend());
+    history::AndroidProviderBackend* android_provider_backend =
+      history::AndroidProviderBackend::FromHistoryBackend(history_backend);
+    if (android_provider_backend)
+      result_ = request_cb_.Run(android_provider_backend);
     return true;
   }
 

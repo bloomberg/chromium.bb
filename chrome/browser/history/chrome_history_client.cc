@@ -11,6 +11,25 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
+#if defined(OS_ANDROID)
+#include "base/files/file_path.h"
+#include "chrome/browser/history/android/android_provider_backend.h"
+#include "chrome/browser/history/history_backend.h"
+#endif
+
+#if defined(OS_ANDROID)
+namespace {
+
+const base::FilePath::CharType kAndroidCacheFilename[] =
+    FILE_PATH_LITERAL("AndroidCache");
+
+base::FilePath GetAndroidCacheFileName(const base::FilePath& history_dir) {
+  return history_dir.Append(kAndroidCacheFilename);
+}
+
+}  // namespace
+#endif
+
 ChromeHistoryClient::ChromeHistoryClient(
     bookmarks::BookmarkModel* bookmark_model)
     : bookmark_model_(bookmark_model) {
@@ -69,3 +88,26 @@ void ChromeHistoryClient::Shutdown() {
   // sees an incorrect view of bookmarks, but it's better than a deadlock.
   bookmark_model_->Shutdown();
 }
+
+#if defined(OS_ANDROID)
+void ChromeHistoryClient::OnHistoryBackendInitialized(
+    history::HistoryBackend* history_backend,
+    history::HistoryDatabase* history_database,
+    history::ThumbnailDatabase* thumbnail_database,
+    const base::FilePath& history_dir) {
+  if (thumbnail_database) {
+    DCHECK(history_backend);
+    history_backend->SetUserData(
+        history::AndroidProviderBackend::GetUserDataKey(),
+        new history::AndroidProviderBackend(
+            GetAndroidCacheFileName(history_dir), history_database,
+            thumbnail_database, this, history_backend));
+  }
+}
+
+void ChromeHistoryClient::OnHistoryBackendDestroyed(
+    history::HistoryBackend* history_backend,
+    const base::FilePath& history_dir) {
+  sql::Connection::Delete(GetAndroidCacheFileName(history_dir));
+}
+#endif

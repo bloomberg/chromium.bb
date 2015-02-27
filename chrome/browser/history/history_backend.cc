@@ -44,10 +44,6 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/history/android/android_provider_backend.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -183,6 +179,21 @@ void QueuedHistoryDBTask::DoneRun() {
                  is_canceled_));
 }
 
+// HistoryBackendHelper --------------------------------------------------------
+
+// Wrapper around base::SupportsUserData with a public destructor.
+class HistoryBackendHelper : public base::SupportsUserData {
+ public:
+  HistoryBackendHelper();
+  ~HistoryBackendHelper() override;
+};
+
+HistoryBackendHelper::HistoryBackendHelper() {
+}
+
+HistoryBackendHelper::~HistoryBackendHelper() {
+}
+
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(Delegate* delegate,
@@ -202,10 +213,8 @@ HistoryBackend::~HistoryBackend() {
                              queued_history_db_tasks_.end());
   queued_history_db_tasks_.clear();
 
-#if defined(OS_ANDROID)
-  // Release AndroidProviderBackend before other objects.
-  android_provider_backend_.reset();
-#endif
+  // Release stashed embedder object before cleaning up the databases.
+  supports_user_data_helper_.reset();
 
   // First close the databases before optionally running the "destroy" task.
   CloseAllDatabases();
@@ -216,15 +225,19 @@ HistoryBackend::~HistoryBackend() {
     backend_destroy_message_loop_->PostTask(FROM_HERE, backend_destroy_task_);
   }
 
-#if defined(OS_ANDROID)
-  sql::Connection::Delete(GetAndroidCacheFileName());
-#endif
+  if (history_client_ && !history_dir_.empty())
+    history_client_->OnHistoryBackendDestroyed(this, history_dir_);
 }
 
 void HistoryBackend::Init(
     const std::string& languages,
     bool force_fail,
     const HistoryDatabaseParams& history_database_params) {
+  // HistoryBackend is created on the UI thread by HistoryService, then the
+  // HistoryBackend::Init() method is called on the DB thread. Create the
+  // base::SupportsUserData on the DB thread since it is not thread-safe.
+  supports_user_data_helper_.reset(new HistoryBackendHelper);
+
   if (!force_fail)
     InitImpl(languages, history_database_params);
   delegate_->DBLoaded();
@@ -266,12 +279,6 @@ base::FilePath HistoryBackend::GetFaviconsFileName() const {
 base::FilePath HistoryBackend::GetArchivedFileName() const {
   return history_dir_.Append(history::kArchivedHistoryFilename);
 }
-
-#if defined(OS_ANDROID)
-base::FilePath HistoryBackend::GetAndroidCacheFileName() const {
-  return history_dir_.Append(history::kAndroidCacheFilename);
-}
-#endif
 
 SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
   // Set is used to detect referrer loops.  Should not happen, but can
@@ -676,16 +683,10 @@ void HistoryBackend::InitImpl(
   // Start expiring old stuff.
   expirer_.StartExpiringOldStuff(TimeDelta::FromDays(kExpireDaysThreshold));
 
-#if defined(OS_ANDROID)
-  if (thumbnail_db_) {
-    android_provider_backend_.reset(
-        new AndroidProviderBackend(GetAndroidCacheFileName(),
-                                   db_.get(),
-                                   thumbnail_db_.get(),
-                                   history_client_,
-                                   this));
+  if (history_client_) {
+    history_client_->OnHistoryBackendInitialized(
+        this, db_.get(), thumbnail_db_.get(), history_dir_);
   }
-#endif
 
   LOCAL_HISTOGRAM_TIMES("History.InitTime", TimeTicks::Now() - beginning_time);
 }
@@ -2432,10 +2433,8 @@ void HistoryBackend::KillHistoryDatabase() {
   bool success = db_->Raze();
   UMA_HISTOGRAM_BOOLEAN("History.KillHistoryDatabaseResult", success);
 
-#if defined(OS_ANDROID)
-  // Release AndroidProviderBackend before other objects.
-  android_provider_backend_.reset();
-#endif
+  // Release stashed embedder object before cleaning up the databases.
+  supports_user_data_helper_.reset();
 
   // The expirer keeps tabs on the active databases. Tell it about the
   // databases which will be closed.
@@ -2444,6 +2443,18 @@ void HistoryBackend::KillHistoryDatabase() {
   // Reopen a new transaction for |db_| for the sake of CloseAllDatabases().
   db_->BeginTransaction();
   CloseAllDatabases();
+}
+
+base::SupportsUserData::Data* HistoryBackend::GetUserData(
+    const void* key) const {
+  DCHECK(supports_user_data_helper_);
+  return supports_user_data_helper_->GetUserData(key);
+}
+
+void HistoryBackend::SetUserData(const void* key,
+                                 base::SupportsUserData::Data* data) {
+  DCHECK(supports_user_data_helper_);
+  supports_user_data_helper_->SetUserData(key, data);
 }
 
 void HistoryBackend::ProcessDBTask(

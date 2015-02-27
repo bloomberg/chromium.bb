@@ -28,6 +28,15 @@ class ChromeHistoryClient : public history::HistoryClient {
   void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
   bool ShouldReportDatabaseError() override;
+#if defined(OS_ANDROID)
+  void OnHistoryBackendInitialized(
+      history::HistoryBackend* history_backend,
+      history::HistoryDatabase* history_database,
+      history::ThumbnailDatabase* thumbnail_database,
+      const base::FilePath& history_dir) override;
+  void OnHistoryBackendDestroyed(history::HistoryBackend* history_backend,
+                                 const base::FilePath& history_dir) override;
+#endif
 
   // KeyedService:
   void Shutdown() override;

@@ -11,9 +11,6 @@
 namespace history {
 
 // filenames
-#if defined(OS_ANDROID)
-const base::FilePath::CharType kAndroidCacheFilename[] = FPL("AndroidCache");
-#endif
 const base::FilePath::CharType kArchivedHistoryFilename[] =
     FPL("Archived History");
 const base::FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
