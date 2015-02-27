@@ -21,22 +21,35 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import qemu
 from chromite.lib import retry_util
 
 GDB = '/usr/bin/gdb'
+
 
 class BoardSpecificGdb(object):
   """Framework for running gdb."""
 
   _BIND_MOUNT_PATHS = ('dev', 'dev/pts', 'proc', 'mnt/host/source', 'sys')
 
-  def __init__(self, board, argv):
+  def __init__(self, board, gdb_args, inf_cmd, inf_args):
     self.board = board
     self.sysroot = cros_build_lib.GetSysroot(board=self.board)
     self.prompt = '(%s-gdb) ' % self.board
     self.host = False
     self.run_as_root = False # May add an option to change this later.
-    self.args = argv
+    self.gdb_args = gdb_args
+    self.inf_cmd = inf_cmd
+    self.inf_args = inf_args
+    self.framework = 'auto'
+    self.qemu = None
+
+    qemu_arch = qemu.Qemu.DetectArch(GDB, self.sysroot)
+    if qemu_arch is None:
+      self.framework = 'ldso'
+    else:
+      self.framework = 'qemu'
+      self.qemu = qemu.Qemu(self.sysroot, arch=qemu_arch)
 
     if not os.path.isdir(self.sysroot):
       raise AssertionError('Sysroot does not exist: %s' % self.sysroot)
@@ -143,15 +156,20 @@ class BoardSpecificGdb(object):
     """Runs the debugger in a proper environment (e.g. qemu)."""
     self.SetupUser()
 
+    if self.framework == 'qemu':
+      self.qemu.Install(self.sysroot)
+      self.qemu.RegisterBinfmt()
+
     for mount in self._BIND_MOUNT_PATHS:
       path = os.path.join(self.sysroot, mount)
       osutils.SafeMakedirs(path)
       osutils.Mount('/' + mount, path, 'none', osutils.MS_BIND)
 
-    cmd = GDB
-    argv = self.args[:]
-    if argv:
-      argv[0] = self.removeSysrootPrefix(argv[0])
+    gdb_cmd = GDB
+    inferior_cmd = self.removeSysrootPrefix(self.inf_cmd)
+    gdb_argv = self.gdb_args[:]
+    if gdb_argv:
+      gdb_argv[0] = self.removeSysrootPrefix(gdb_argv[0])
 
     # Some programs expect to find data files via $CWD, so doing a chroot
     # and dropping them into / would make them fail.
@@ -159,8 +177,8 @@ class BoardSpecificGdb(object):
 
     print('chroot: %s' % self.sysroot)
     print('cwd: %s' % cwd)
-    if argv:
-      print('cmd: {%s} %s' % (cmd, ' '.join(map(repr, argv))))
+    if gdb_argv:
+      print('cmd: {%s} %s' % (gdb_cmd, ' '.join(map(repr, gdb_argv))))
     os.chroot(self.sysroot)
     os.chdir(cwd)
     # The TERM the user is leveraging might not exist in the sysroot.
@@ -174,19 +192,33 @@ class BoardSpecificGdb(object):
       os.setuid(uid)
       os.environ['HOME'] = home
 
-    gdb_commands = (
+    gdb_commands = [
         'set sysroot /',
         'set solib-absolute-prefix /',
         'set solib-search-path /',
         'set debug-file-directory /usr/lib/debug',
         'set prompt %s' % self.prompt
-    )
+    ]
 
-    args = [cmd] + ['--eval-command=%s' % x for x in gdb_commands] + self.args
-    sys.exit(os.execvp(cmd, args))
+    if self.inf_args:
+      arg_str = self.inf_args[0]
+      for arg in self.inf_args[1:]:
+        arg_str += ' %s' % arg
+      gdb_commands.append('set args %s' % arg_str)
+
+    print ("gdb_commands: %s" % repr(gdb_commands))
+
+    gdb_args = [gdb_cmd] + ['--eval-command=%s' % x for x in gdb_commands]
+    gdb_args += self.gdb_args
+
+    if inferior_cmd:
+      gdb_args.append(inferior_cmd)
+
+    print ("args: %s" % repr(gdb_args))
+    sys.exit(os.execvp(gdb_cmd, gdb_args))
 
 
-def _ReExecuteIfNeeded(argv):
+def _ReExecuteIfNeeded(argv, ns_net=False, ns_pid=False):
   """Re-execute gdb as root.
 
   We often need to do things as root, so make sure we're that.  Like chroot
@@ -200,7 +232,24 @@ def _ReExecuteIfNeeded(argv):
     cmd = ['sudo', '-E', '--'] + argv
     os.execvp(cmd[0], cmd)
   else:
-    namespaces.SimpleUnshare(net=True, pid=True)
+    namespaces.SimpleUnshare(net=ns_net, pid=ns_pid)
+
+
+def find_inferior(arg_list):
+  """Look for the name of the inferior (to be debugged) in arg list."""
+
+  program_name = ''
+  new_list = []
+  for item in arg_list:
+    if item[0] == '-':
+      new_list.append(item)
+    elif not program_name:
+      program_name = item
+    else:
+      raise RuntimeError('Found multiple program names: %s  %s'
+                         % (program_name, item))
+
+  return program_name, new_list
 
 
 def main(argv):
@@ -209,14 +258,38 @@ def main(argv):
 
   parser.add_argument('--board', required=True,
                       help='board to debug for')
-  parser.add_argument('gdb_args', nargs=argparse.REMAINDER)
+  parser.add_argument('--set_args', dest='set_args', default='',
+                      help='Arguments for gdb to pass through to the executable'
+                      ' file.')
+  parser.add_argument('gdb_args', nargs=argparse.REMAINDER,
+                      help='Arguments to gdb itself.  Must come at end of'
+                      ' command line.')
 
   options = parser.parse_args(argv)
   options.Freeze()
 
+  gdb_args = []
+  inf_args = []
+  inf_cmd = ''
+
+  if options.gdb_args:
+    inf_cmd, gdb_args = find_inferior(options.gdb_args)
+
+  if options.set_args:
+    inf_args = options.set_args.split()
+
+  if inf_cmd:
+    fname = os.path.join(cros_build_lib.GetSysroot(options.board),
+                         inf_cmd.lstrip('/'))
+    if not os.path.exists(fname):
+      cros_build_lib.Die('Cannot find program %s.' % fname)
+
+  if inf_args and not inf_cmd:
+    cros_build_lib.Die('Cannot specify arguments without a program.')
+
   # Once we've finished sanity checking args, make sure we're root.
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
 
-  gdb = BoardSpecificGdb(options.board, options.gdb_args)
+  gdb = BoardSpecificGdb(options.board, gdb_args, inf_cmd, inf_args)
 
   gdb.run()
