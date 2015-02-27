@@ -93,18 +93,13 @@ bool InProcessContextProvider::BindToCurrentThread() {
   if (!context_) {
     gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
     context_.reset(gpu::GLInProcessContext::Create(
-        nullptr, /* service */
-        nullptr, /* surface */
-        true, /* is_offscreen */
-        window_,
-        gfx::Size(1, 1),
-        nullptr, /* share_context */
-        true, /* share_resources */
-        attribs_,
-        gpu_preference,
-        gpu::GLInProcessContextSharedMemoryLimits(),
-        nullptr,
-        nullptr));
+        nullptr,                           /* service */
+        nullptr,                           /* surface */
+        !window_,                          /* is_offscreen */
+        window_, gfx::Size(1, 1), nullptr, /* share_context */
+        true,                              /* share_resources */
+        attribs_, gpu_preference, gpu::GLInProcessContextSharedMemoryLimits(),
+        nullptr, nullptr));
 
     if (!context_)
       return false;
