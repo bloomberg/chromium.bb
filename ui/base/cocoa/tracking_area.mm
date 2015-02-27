@@ -68,9 +68,9 @@
 @implementation CrTrackingArea
 
 - (id)initWithRect:(NSRect)rect
-                        options:(NSTrackingAreaOptions)options
-                          owner:(id)owner
-                       userInfo:(NSDictionary*)userInfo {
+           options:(NSTrackingAreaOptions)options
+             owner:(id)owner
+          userInfo:(NSDictionary*)userInfo{
   base::scoped_nsobject<CrTrackingAreaOwnerProxy> ownerProxy(
       [[CrTrackingAreaOwnerProxy alloc] initWithOwner:owner]);
   if ((self = [super initWithRect:rect

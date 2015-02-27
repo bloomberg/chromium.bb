@@ -8,18 +8,57 @@ NSString* kViewDidBecomeFirstResponder =
     @"Chromium.kViewDidBecomeFirstResponder";
 NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
 
-const int kTrackingOptions = NSTrackingMouseMoved |
-                             NSTrackingMouseEnteredAndExited |
-                             NSTrackingActiveAlways;
-
 @implementation BaseView
 
-- (void)dealloc {
-  if (trackingArea_.get())
-    [self removeTrackingArea:trackingArea_.get()];
-  trackingArea_.reset(nil);
+- (instancetype)initWithFrame:(NSRect)frame {
+  if ((self = [super initWithFrame:frame])) {
+    [self enableTracking];
+  }
+  return self;
+}
 
+- (instancetype)initWithCoder:(NSCoder*)decoder {
+  if ((self = [super initWithCoder:decoder])) {
+    [self enableTracking];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [self disableTracking];
   [super dealloc];
+}
+
+- (void)enableTracking {
+  if (trackingArea_.get())
+    return;
+
+  NSTrackingAreaOptions trackingOptions = NSTrackingMouseEnteredAndExited |
+                                          NSTrackingMouseMoved |
+                                          NSTrackingActiveAlways |
+                                          NSTrackingInVisibleRect;
+  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:NSZeroRect
+                                                   options:trackingOptions
+                                                     owner:self
+                                                  userInfo:nil]);
+  [self addTrackingArea:trackingArea_.get()];
+}
+
+- (void)disableTracking {
+  if (trackingArea_.get()) {
+    [self removeTrackingArea:trackingArea_.get()];
+    trackingArea_.reset();
+  }
+}
+
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+
+  // NSTrackingInVisibleRect doesn't work correctly with Lion's window resizing,
+  // http://crbug.com/176725 / http://openradar.appspot.com/radar?id=2773401 .
+  // Work around it by reinstalling the tracking area after window resize.
+  [self disableTracking];
+  [self enableTracking];
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
@@ -136,21 +175,6 @@ const int kTrackingOptions = NSTrackingMouseMoved |
   NSRect new_rect(NSRectFromCGRect(rect.ToCGRect()));
   new_rect.origin.y = NSHeight([self bounds]) - NSMaxY(new_rect);
   return new_rect;
-}
-
-- (void)updateTrackingAreas {
-  [super updateTrackingAreas];
-
-  // NSTrackingInVisibleRect doesn't work correctly with Lion's window resizing,
-  // http://crbug.com/176725 / http://openradar.appspot.com/radar?id=2773401 .
-  // Tear down old tracking area and create a new one as workaround.
-  if (trackingArea_.get())
-    [self removeTrackingArea:trackingArea_.get()];
-  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:[self bounds]
-                                                   options:kTrackingOptions
-                                                     owner:self
-                                                  userInfo:nil]);
-  [self addTrackingArea:trackingArea_.get()];
 }
 
 @end
