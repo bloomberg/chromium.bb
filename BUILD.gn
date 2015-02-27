@@ -322,7 +322,7 @@ if (is_linux) {
       "//chrome/test:sync_integration_tests",  # Crashes for brettw in GN and GYP.
       "//chrome/test:unit_tests",  # PASSES 2/25/2015
       "//chrome/test/chromedriver:chromedriver_unittests",  # PASSES 2/25/2015
-      "//components:components_unittests",  # TODO(GYP) multiple crashes.
+      "//components:components_unittests",  # PASSES 2/27/2015
       "//content/test:content_browsertests",
       "//content/test:content_unittests",  # PASSES 2/25/2015
       "//crypto:crypto_unittests",  # PASSES 2/25/2015

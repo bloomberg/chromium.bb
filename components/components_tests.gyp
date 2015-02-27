@@ -13,6 +13,7 @@
     ['android_webview_build == 0', {
       'targets': [
         {
+          # GN version: //components:components_tests_pak
           'target_name': 'components_tests_pak',
           'type': 'none',
           'dependencies': [

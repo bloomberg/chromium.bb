@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//tools/grit/repack.gni")
 
 # Collection of all components. You wouldn't link to this, but this is rather
 # to reference the files so they can be compiled by the build system.
@@ -264,6 +265,7 @@ if (!is_win || link_chrome_on_windows) {
       "//content/test:test_support",
       "//ui/base",
     ]
+    data_deps = [ ":components_tests_pak" ]
 
     if (is_android) {
       deps += [ "//components/data_reduction_proxy/content/browser:unit_tests" ]
@@ -282,5 +284,25 @@ if (!is_win || link_chrome_on_windows) {
     if (is_win) {
       deps += [ "//components/browser_watcher:unit_tests" ]
     }
+  }
+
+  repack("components_tests_pak") {
+    sources = [
+      "$root_gen_dir/components/components_resources.pak",
+      "$root_gen_dir/components/strings/components_strings_en-US.pak",
+      "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+      "$root_gen_dir/ui/resources/webui_resources.pak",
+      "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+      "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    ]
+
+    output = "$root_out_dir/components_tests_resources.pak"
+
+    deps = [
+      "//components/resources",
+      "//components/strings",
+      "//ui/resources",
+      "//ui/strings",
+    ]
   }
 }
