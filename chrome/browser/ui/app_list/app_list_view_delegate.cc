@@ -545,6 +545,7 @@ void AppListViewDelegate::ViewInitialized() {
       if (hotword_service)
         hotword_service->RequestHotwordSession(this);
     }
+    OnHotwordStateChanged(service->HotwordEnabled());
   }
 }
 
