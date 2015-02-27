@@ -24,6 +24,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.document.IncognitoNotificationManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelJniBridge;
@@ -835,6 +836,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     @Override
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
         for (int i = getCount() - 1; i >= 0; i--) closeTabAt(i);
+        if (isIncognito()) IncognitoNotificationManager.dismissIncognitoNotification();
     }
 
     @Override

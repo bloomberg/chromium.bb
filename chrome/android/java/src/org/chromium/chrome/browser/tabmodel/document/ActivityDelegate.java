@@ -99,21 +99,6 @@ public class ActivityDelegate {
     }
 
     /**
-     * Tells all IncognitoDocumentActivity instances to finish and remove themselves.
-     */
-    public void closeAllIncognitoTabs() {
-        Context context = ApplicationStatus.getApplicationContext();
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-
-        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
-            if (!isValidActivity(true, intent)) continue;
-            task.finishAndRemoveTask();
-        }
-    }
-
-    /**
      * Moves the given task to the front, if it exists.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param tabId ID of the tab to move to front.
