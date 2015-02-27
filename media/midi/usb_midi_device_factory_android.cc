@@ -30,7 +30,8 @@ UsbMidiDeviceFactoryAndroid::UsbMidiDeviceFactoryAndroid() : delegate_(NULL) {}
 UsbMidiDeviceFactoryAndroid::~UsbMidiDeviceFactoryAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!raw_factory_.is_null())
-    Java_UsbMidiDeviceFactoryAndroid_close(env, raw_factory_.obj());
+    Java_UsbMidiDeviceFactoryAndroid_close(
+        env, raw_factory_.obj(), base::android::GetApplicationContext());
 }
 
 void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
@@ -39,7 +40,8 @@ void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
   DCHECK(!delegate_);
   JNIEnv* env = base::android::AttachCurrentThread();
   uintptr_t pointer = reinterpret_cast<uintptr_t>(this);
-  raw_factory_.Reset(Java_UsbMidiDeviceFactoryAndroid_create(env, pointer));
+  raw_factory_.Reset(Java_UsbMidiDeviceFactoryAndroid_create(
+      env, base::android::GetApplicationContext(), pointer));
 
   delegate_ = delegate;
   callback_ = callback;
@@ -68,6 +70,17 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceRequestDone(
   }
 
   callback_.Run(true, &devices_to_pass);
+}
+
+// Called from the Java world.
+void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceAttached(
+    JNIEnv* env,
+    jobject caller,
+    jobject device) {
+  UsbMidiDeviceAndroid::ObjectRef raw_device(env, device);
+  delegate_->OnDeviceAttached(
+      scoped_ptr<UsbMidiDevice>(
+          new UsbMidiDeviceAndroid(raw_device, delegate_)));
 }
 
 bool UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory(JNIEnv* env) {

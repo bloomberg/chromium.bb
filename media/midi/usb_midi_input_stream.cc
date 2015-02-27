@@ -37,19 +37,19 @@ bool UsbMidiInputStream::JackUniqueKey::operator<(
   return cable_number < that.cable_number;
 }
 
-UsbMidiInputStream::UsbMidiInputStream(const std::vector<UsbMidiJack>& jacks,
-                                       Delegate* delegate)
-    : delegate_(delegate) {
-  for (size_t i = 0; i < jacks.size(); ++i) {
-    jack_dictionary_.insert(
-        std::make_pair(JackUniqueKey(jacks[i].device,
-                                     jacks[i].endpoint_number(),
-                                     jacks[i].cable_number),
-                       i));
-  }
-}
+UsbMidiInputStream::UsbMidiInputStream(Delegate* delegate)
+    : delegate_(delegate) {}
 
 UsbMidiInputStream::~UsbMidiInputStream() {}
+
+void UsbMidiInputStream::Add(const UsbMidiJack& jack) {
+  JackUniqueKey key(jack.device,
+                    jack.endpoint_number(),
+                    jack.cable_number);
+
+  DCHECK(jack_dictionary_.end() == jack_dictionary_.find(key));
+  jack_dictionary_.insert(std::make_pair(key, jack_dictionary_.size()));
+}
 
 void UsbMidiInputStream::OnReceivedData(UsbMidiDevice* device,
                                         int endpoint_number,

@@ -65,6 +65,11 @@ class UsbMidiDeviceAndroid {
     private long mNativePointer;
 
     /**
+     * The underlying USB device.
+     */
+    private UsbDevice mUsbDevice;
+
+    /**
      * Audio interface subclass code for MIDI.
      */
     static final int MIDI_SUBCLASS = 3;
@@ -79,6 +84,7 @@ class UsbMidiDeviceAndroid {
         mEndpointMap = new SparseArray<UsbEndpoint>();
         mRequestMap = new HashMap<UsbEndpoint, UsbRequest>();
         mHandler = new Handler();
+        mUsbDevice = device;
         mIsClosed = false;
         mHasInputThread = false;
         mNativePointer = 0;
@@ -175,6 +181,10 @@ class UsbMidiDeviceAndroid {
                     nativeOnData(mNativePointer, endpointNumber, bs);
                 }
             });
+    }
+
+    UsbDevice getUsbDevice() {
+        return mUsbDevice;
     }
 
     /**

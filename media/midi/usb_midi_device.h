@@ -15,6 +15,7 @@
 
 namespace media {
 
+class MidiManagerUsb;
 class UsbMidiDevice;
 
 // Delegate class for UsbMidiDevice.
@@ -29,6 +30,9 @@ class MEDIA_EXPORT UsbMidiDeviceDelegate {
                                   const uint8* data,
                                   size_t size,
                                   base::TimeTicks time) = 0;
+
+  // Called when a USB-MIDI device is attached.
+  virtual void OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) = 0;
 };
 
 // UsbMidiDevice represents a USB-MIDI device.
@@ -45,6 +49,7 @@ class MEDIA_EXPORT UsbMidiDevice {
    public:
     typedef base::Callback<void(bool result, Devices* devices)> Callback;
     virtual ~Factory() {}
+
     // Enumerates devices.
     // Devices that have no USB-MIDI interfaces can be omitted.
     // When the operation succeeds, |callback| will be called with |true| and

@@ -44,6 +44,7 @@ class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
                           const uint8* data,
                           size_t size,
                           base::TimeTicks time) override;
+  void OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) override;
 
   // UsbMidiInputStream::Delegate implementation.
   void OnReceivedData(size_t jack_index,
@@ -67,6 +68,7 @@ class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
 
  private:
   void OnEnumerateDevicesDone(bool result, UsbMidiDevice::Devices* devices);
+  bool AddPorts(UsbMidiDevice* device, int device_id);
 
   scoped_ptr<UsbMidiDevice::Factory> device_factory_;
   ScopedVector<UsbMidiDevice> devices_;

@@ -53,26 +53,24 @@ class MockDelegate : public UsbMidiInputStream::Delegate {
 class UsbMidiInputStreamTest : public ::testing::Test {
  protected:
   UsbMidiInputStreamTest() {
-    std::vector<UsbMidiJack> jacks;
+    stream_.reset(new UsbMidiInputStream(&delegate_));
 
-    jacks.push_back(UsbMidiJack(&device1_,
-                                84,  // jack_id
-                                4,  // cable_number
-                                135));  // endpoint_address
-    jacks.push_back(UsbMidiJack(&device2_,
-                                85,
-                                5,
-                                137));
-    jacks.push_back(UsbMidiJack(&device2_,
-                                84,
-                                4,
-                                135));
-    jacks.push_back(UsbMidiJack(&device1_,
-                                85,
-                                5,
-                                135));
-
-    stream_.reset(new UsbMidiInputStream(jacks, &delegate_));
+    stream_->Add(UsbMidiJack(&device1_,
+                             84,  // jack_id
+                             4,  // cable_number
+                             135));  // endpoint_address
+    stream_->Add(UsbMidiJack(&device2_,
+                             85,
+                             5,
+                             137));
+    stream_->Add(UsbMidiJack(&device2_,
+                             84,
+                             4,
+                             135));
+    stream_->Add(UsbMidiJack(&device1_,
+                             85,
+                             5,
+                             135));
   }
 
   TestUsbMidiDevice device1_;

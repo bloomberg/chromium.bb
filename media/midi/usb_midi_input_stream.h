@@ -45,9 +45,10 @@ class MEDIA_EXPORT UsbMidiInputStream {
     int cable_number;
   };
 
-  UsbMidiInputStream(const std::vector<UsbMidiJack>& jacks,
-                     Delegate* delegate);
+  explicit UsbMidiInputStream(Delegate* delegate);
   ~UsbMidiInputStream();
+
+  void Add(const UsbMidiJack& jack);
 
   // This function should be called when some data arrives to a USB-MIDI
   // endpoint. This function converts the data to MIDI data and call
