@@ -598,6 +598,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_truncated_connection_ids,
     bool enable_connection_racing,
     bool disable_disk_cache,
+    int socket_receive_buffer_size,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -621,6 +622,7 @@ QuicStreamFactory::QuicStreamFactory(
       enable_truncated_connection_ids_(enable_truncated_connection_ids),
       enable_connection_racing_(enable_connection_racing),
       disable_disk_cache_(disable_disk_cache),
+      socket_receive_buffer_size_(socket_receive_buffer_size),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
@@ -1037,13 +1039,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
     DCHECK_EQ(0u, port_suggester->call_count());
   }
 
-  // We should adaptively set this buffer size, but for now, we'll use a size
-  // that is more than large enough for a full receive window, and yet
-  // does not consume "too much" memory.  If we see bursty packet loss, we may
-  // revisit this setting and test for its impact.
-  const int32 kSocketBufferSize =
-      static_cast<int32>(kDefaultSocketReceiveBuffer);
-  rv = socket->SetReceiveBufferSize(kSocketBufferSize);
+  rv = socket->SetReceiveBufferSize(socket_receive_buffer_size_);
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);
     return rv;
@@ -1103,6 +1099,8 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
           "422516 QuicStreamFactory::CreateSession51"));
 
   QuicConfig config = config_;
+
+  config.SetSocketReceiveBufferToSend(socket_receive_buffer_size_);
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile52(

@@ -191,6 +191,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> quic_enable_truncated_connection_ids;
     Optional<bool> quic_enable_connection_racing;
     Optional<bool> quic_disable_disk_cache;
+    Optional<int> quic_socket_receive_buffer_size;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
@@ -387,6 +388,11 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC shouldn't load QUIC server information from the disk
   // cache.
   static bool ShouldQuicDisableDiskCache(
+      const VariationParameters& quic_trial_params);
+
+  // Returns the size of the QUIC receive buffer to use, or 0 if
+  // the default should be used.
+  static int GetQuicSocketReceiveBufferSize(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

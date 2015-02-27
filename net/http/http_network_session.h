@@ -122,6 +122,7 @@ class NET_EXPORT HttpNetworkSession
     bool quic_enable_truncated_connection_ids;
     bool quic_enable_connection_racing;
     bool quic_disable_disk_cache;
+    int quic_socket_receive_buffer_size;
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;

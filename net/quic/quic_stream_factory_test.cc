@@ -212,6 +212,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*enable_truncated_connection_ids=*/true,
                  /*enable_connection_racing=*/false,
                  /*disable_disk_cache=*/false,
+                 /*receive_buffer_size=*/0,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),

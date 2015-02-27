@@ -110,6 +110,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_truncated_connection_ids,
       bool enable_connection_racing,
       bool disable_disk_cache,
+      int socket_receive_buffer_size,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -333,12 +334,15 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if we do not want to load server config from the disk cache.
   bool disable_disk_cache_;
 
-  // Each profile will (probably) have a unique port_seed_ value.  This value is
-  // used to help seed a pseudo-random number generator (PortSuggester) so that
-  // we consistently (within this profile) suggest the same ephemeral port when
-  // we re-connect to any given server/port.  The differences between profiles
-  // (probablistically) prevent two profiles from colliding in their ephemeral
-  // port requests.
+  // Size of the UDP receive buffer.
+  int socket_receive_buffer_size_;
+
+  // Each profile will (probably) have a unique port_seed_ value.  This value
+  // is used to help seed a pseudo-random number generator (PortSuggester) so
+  // that we consistently (within this profile) suggest the same ephemeral
+  // port when we re-connect to any given server/port.  The differences between
+  // profiles (probablistically) prevent two profiles from colliding in their
+  // ephemeral port requests.
   uint64 port_seed_;
 
   // Local address of socket that was created in CreateSession.

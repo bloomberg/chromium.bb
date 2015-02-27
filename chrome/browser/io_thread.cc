@@ -1034,6 +1034,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_enable_connection_racing);
   globals.quic_disable_disk_cache.CopyToIfSet(
       &params->quic_disable_disk_cache);
+  globals.quic_socket_receive_buffer_size.CopyToIfSet(
+      &params->quic_socket_receive_buffer_size);
   globals.enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
@@ -1157,6 +1159,14 @@ void IOThread::ConfigureQuicGlobals(
     if (load_server_info_timeout_ms != 0) {
       globals->quic_load_server_info_timeout_ms.set(
           load_server_info_timeout_ms);
+    }
+    globals->quic_enable_truncated_connection_ids.set(
+        ShouldQuicEnableTruncatedConnectionIds(quic_trial_params));
+    globals->quic_enable_connection_racing.set(
+        ShouldQuicEnableConnectionRacing(quic_trial_params));
+    int receive_buffer_size = GetQuicSocketReceiveBufferSize(quic_trial_params);
+    if (receive_buffer_size != 0) {
+      globals->quic_socket_receive_buffer_size.set(receive_buffer_size);
     }
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
@@ -1379,6 +1389,18 @@ bool IOThread::ShouldQuicDisableDiskCache(
     const VariationParameters& quic_trial_params) {
   return LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
+}
+
+// static
+int IOThread::GetQuicSocketReceiveBufferSize(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(GetVariationParam(quic_trial_params,
+                                          "receive_buffer_size"),
+                        &value)) {
+    return value;
+  }
+  return 0;
 }
 
 // static
