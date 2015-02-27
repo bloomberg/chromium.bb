@@ -277,6 +277,7 @@ static int drmMatchBusID(const char *id1, const char *id2, int pci_domain_ok)
  * If any other failure happened then it will output error mesage using
  * drmMsg() call.
  */
+#if !defined(UDEV)
 static int chown_check_return(const char *path, uid_t owner, gid_t group)
 {
 	int rv;
@@ -292,6 +293,7 @@ static int chown_check_return(const char *path, uid_t owner, gid_t group)
 			path, errno, strerror(errno));
 	return -1;
 }
+#endif
 
 /**
  * Open the DRM device, creating it if necessary.

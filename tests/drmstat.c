@@ -81,11 +81,6 @@ static void getversion(int fd)
 	printf( "No driver available\n" );
     }
 }
-	
-void handler(int fd, void *oldctx, void *newctx)
-{
-    printf("Got fd %d\n", fd);
-}
 
 static void process_sigio(char *device)
 {
@@ -97,7 +92,6 @@ static void process_sigio(char *device)
     }
 
     sigio_fd = fd;
-    /*  drmInstallSIGIOHandler(fd, handler); */
     for (;;) sleep(60);
 }
 
@@ -425,13 +419,6 @@ int main(int argc, char **argv)
 	}
 
     return r; 
-}
-
-void DRM_PRINTFLIKE(4, 0)
-xf86VDrvMsgVerb(int scrnIndex, int type, int verb, const char *format,
-                va_list args)
-{
-	vfprintf(stderr, format, args);
 }
 
 int xf86ConfigDRI[10];
