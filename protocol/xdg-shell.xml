@@ -403,6 +403,7 @@
 	These errors can be emitted in response to xdg_popup requests.
       </description>
       <entry name="not_the_topmost_popup" value="0" summary="The client tried to map or destroy a non-topmost popup"/>
+      <entry name="invalid_parent" value="1" summary="The client specified an invalid parent surface"/>
     </enum>
 
     <request name="destroy" type="destructor">

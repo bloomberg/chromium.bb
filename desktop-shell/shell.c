@@ -4092,11 +4092,20 @@ create_xdg_popup(struct shell_client *owner, void *shell,
 		 uint32_t serial,
 		 int32_t x, int32_t y)
 {
-	struct shell_surface *shsurf;
+	struct shell_surface *shsurf, *parent_shsurf;
 
 	/* Verify that we are creating the top most popup when mapping,
 	 * as its not until then we know whether it was mapped as most
 	 * top level or not. */
+
+	parent_shsurf = get_shell_surface(parent);
+	if (!shell_surface_is_xdg_popup(parent_shsurf) &&
+	    !shell_surface_is_xdg_surface(parent_shsurf)) {
+		wl_resource_post_error(owner->resource,
+				       XDG_POPUP_ERROR_INVALID_PARENT,
+				       "xdg_popup parent was invalid");
+		return NULL;
+	}
 
 	shsurf = create_common_surface(owner, shell, surface, client);
 	if (!shsurf)
