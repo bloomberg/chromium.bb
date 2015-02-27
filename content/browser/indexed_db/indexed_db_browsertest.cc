@@ -405,14 +405,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
 }
 
-// Flaky on Android. https://crbug.com/460948
-#if defined(ANDROID)
-#define MAYBE_BlobDidAck DISABLED_BlobDidAck
-#else
-#define MAYBE_BlobDidAck BlobDidAck
-#endif
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, MAYBE_BlobDidAck) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAck) {
   SimpleTest(GetTestUrl("indexeddb", "blob_did_ack.html"));
+  // Wait for idle so that the blob ack has time to be received/processed by
+  // the browser process.
+  base::MessageLoop::current()->RunUntilIdle();
   content::ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(
           shell()->web_contents()->GetBrowserContext());
@@ -421,6 +418,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, MAYBE_BlobDidAck) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAckPrefetch) {
   SimpleTest(GetTestUrl("indexeddb", "blob_did_ack_prefetch.html"));
+  // Wait for idle so that the blob ack has time to be received/processed by
+  // the browser process.
+  base::MessageLoop::current()->RunUntilIdle();
   content::ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(
           shell()->web_contents()->GetBrowserContext());
