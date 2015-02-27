@@ -30,7 +30,7 @@ const char kLocalCacheDir[] = "/var/cache/external_cache";
 #endif// Directory where the extensions are cached.
 
 // Maximum size of local cache on disk.
-size_t kMaxCacheSize = 100 * 1024 * 1024;
+size_t kMaxCacheSize = 256 * 1024 * 1024;
 
 // Maximum age of unused extensions in cache.
 const int kMaxCacheAgeDays = 30;
