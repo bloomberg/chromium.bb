@@ -30,6 +30,8 @@ class FakeInputEvent : public blink::WebInputEvent {
 
 class RendererSchedulerImplTest : public testing::Test {
  public:
+  using Policy = RendererSchedulerImpl::Policy;
+
   RendererSchedulerImplTest()
       : clock_(cc::TestNowSource::Create(5000)),
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_, false)),
@@ -44,12 +46,16 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void RunUntilIdle() { mock_task_runner_->RunUntilIdle(); }
 
-  void EnableIdleTasks() {
+  void DoMainFrame() {
     scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
         base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
     scheduler_->DidCommitFrameToCompositor();
   }
+
+  void EnableIdleTasks() { DoMainFrame(); }
+
+  Policy CurrentPolicy() { return scheduler_->current_policy_; }
 
  protected:
   static base::TimeDelta priority_escalation_after_input_duration() {
@@ -348,7 +354,7 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
-  scheduler_->DidCommitFrameToCompositor();
+  DoMainFrame();
 
   // End the idle period early (after 500ms), and send a WillBeginFrame which
   // specifies that the next idle period should end 1000ms from now.
@@ -670,6 +676,7 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicyEnds) {
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+  DoMainFrame();
   RunUntilIdle();
   EXPECT_THAT(order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
@@ -727,24 +734,19 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
   order.clear();
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
 
+  // Don't post any compositor tasks to simulate a very long running event
+  // handler.
   default_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
   default_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
 
   // Touchstart policy mode should have ended now that the clock has advanced.
   RunUntilIdle();
   EXPECT_THAT(order, testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                          std::string("C1"), std::string("D2"),
-                                          std::string("C2")));
+                                          std::string("D2")));
 }
 
 TEST_F(RendererSchedulerImplTest,
@@ -770,6 +772,7 @@ TEST_F(RendererSchedulerImplTest,
   // Observation of touchstart should defer execution of idle and loading tasks.
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart));
+  DoMainFrame();
   RunUntilIdle();
   EXPECT_THAT(order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
@@ -779,6 +782,7 @@ TEST_F(RendererSchedulerImplTest,
   order.clear();
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchMove));
+  DoMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(order.empty());
 
@@ -867,6 +871,139 @@ TEST_F(RendererSchedulerImplTest, TestShouldYield) {
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   EXPECT_TRUE(scheduler_->ShouldYieldForHighPriorityWork());
   RunUntilIdle();
+}
+
+TEST_F(RendererSchedulerImplTest, SlowInputEvent) {
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+
+  // An input event should bump us into input priority.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // Simulate the input event being queued for a very long time. The compositor
+  // task we post here represents the enqueued input task.
+  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  compositor_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+  RunUntilIdle();
+
+  // Even though we exceeded the input priority escalation period, we should
+  // still be in compositor priority since the input remains queued.
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // Simulate the input event triggering a composition. This should start the
+  // countdown for going back into normal policy.
+  DoMainFrame();
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // After the escalation period ends we should go back into normal mode.
+  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  RunUntilIdle();
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+}
+
+TEST_F(RendererSchedulerImplTest, SlowNoOpInputEvent) {
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+
+  // An input event should bump us into input priority.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // Simulate the input event being queued for a very long time. The compositor
+  // task we post here represents the enqueued input task.
+  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  compositor_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+  RunUntilIdle();
+
+  // Even though we exceeded the input priority escalation period, we should
+  // still be in compositor priority since the input remains queued.
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // If we let the compositor queue drain, we should fall out of input
+  // priority.
+  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  RunUntilIdle();
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+}
+
+TEST_F(RendererSchedulerImplTest, NoOpInputEvent) {
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+
+  // An input event should bump us into input priority.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // If nothing else happens after this, we should drop out of compositor
+  // priority after the escalation period ends and stop polling.
+  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  RunUntilIdle();
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+  EXPECT_FALSE(mock_task_runner_->HasPendingTasks());
+}
+
+TEST_F(RendererSchedulerImplTest, NoOpInputEventExtendsEscalationPeriod) {
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+
+  // Simulate one handled input event.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollBegin));
+  RunUntilIdle();
+  DoMainFrame();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // Send a no-op input event in the middle of the escalation period.
+  clock_->AdvanceNow(priority_escalation_after_input_duration() / 2);
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate));
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // The escalation period should have been extended by the new input event.
+  clock_->AdvanceNow(3 * priority_escalation_after_input_duration() / 4);
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  clock_->AdvanceNow(priority_escalation_after_input_duration() / 2);
+  RunUntilIdle();
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+}
+
+TEST_F(RendererSchedulerImplTest, InputArrivesAfterBeginFrame) {
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+
+  cc::BeginFrameArgs args = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
+  clock_->AdvanceNow(priority_escalation_after_input_duration() / 2);
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollBegin));
+
+  // Simulate a BeginMainFrame task from the past.
+  clock_->AdvanceNow(2 * priority_escalation_after_input_duration());
+  scheduler_->WillBeginFrame(args);
+  scheduler_->DidCommitFrameToCompositor();
+
+  // This task represents the queued-up input event.
+  compositor_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+
+  // Should remain in input priority policy since the input event hasn't been
+  // processed yet.
+  clock_->AdvanceNow(2 * priority_escalation_after_input_duration());
+  RunUntilIdle();
+  EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
+
+  // Process the input event with a new BeginMainFrame.
+  DoMainFrame();
+  clock_->AdvanceNow(2 * priority_escalation_after_input_duration());
+  RunUntilIdle();
+  EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
 }
 
 }  // namespace content

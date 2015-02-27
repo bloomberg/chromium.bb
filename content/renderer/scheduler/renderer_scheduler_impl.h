@@ -127,8 +127,19 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   // Updates the scheduler policy. Must be called from the main thread.
   void UpdatePolicy();
 
+  // Helper for computing the new policy. |new_policy_duration| will be filled
+  // with the amount of time after which the policy should be updated again. If
+  // the duration is zero, a new policy update will not be scheduled. Must be
+  // called with |incoming_signals_lock_| held.
+  Policy ComputeNewPolicy(base::TimeDelta* new_policy_duration);
+
   // An input event of some sort happened, the policy may need updating.
   void UpdateForInputEvent(blink::WebInputEvent::Type type);
+
+  // Called when a previously queued input event was processed.
+  // |begin_frame_time|, if non-zero, identifies the frame time at which the
+  // input was processed.
+  void DidProcessInputEvent(base::TimeTicks begin_frame_time);
 
   // Start and end an idle period.
   void StartIdlePeriod();
@@ -157,7 +168,8 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   // The incoming_signals_lock_ mutex protects access to all variables in the
   // (contiguous) block below.
   base::Lock incoming_signals_lock_;
-  base::TimeTicks last_input_time_;
+  base::TimeTicks last_input_receipt_time_on_compositor_;
+  base::TimeTicks last_input_process_time_on_main_;
   blink::WebInputEvent::Type last_input_type_;
   InputStreamState input_stream_state_;
   PollableNeedsUpdateFlag policy_may_need_update_;

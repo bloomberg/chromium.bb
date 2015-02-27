@@ -117,6 +117,9 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
 
   EndIdlePeriod();
   estimated_next_frame_begin_ = args.frame_time + args.interval;
+  // TODO(skyostil): Wire up real notification of input events processing
+  // instead of this approximation.
+  DidProcessInputEvent(args.frame_time);
 }
 
 void RendererSchedulerImpl::DidCommitFrameToCompositor() {
@@ -139,6 +142,9 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::BeginFrameNotExpectedSoon");
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  // TODO(skyostil): Wire up real notification of input events processing
+  // instead of this approximation.
+  DidProcessInputEvent(base::TimeTicks());
   // TODO(rmcilroy): Implement long idle times.
 }
 
@@ -182,8 +188,27 @@ void RendererSchedulerImpl::UpdateForInputEvent(
     policy_may_need_update_.SetWhileLocked(true);
     PostUpdatePolicyOnControlRunner(base::TimeDelta());
   }
-  last_input_time_ = Now();
+  last_input_receipt_time_on_compositor_ = Now();
+  // Clear the last known input processing time so that we know an input event
+  // is still queued up. This timestamp will be updated the next time the
+  // compositor commits or becomes quiescent. Note that this function is always
+  // called before the input event is processed either on the compositor or
+  // main threads.
+  last_input_process_time_on_main_ = base::TimeTicks();
   last_input_type_ = type;
+}
+
+void RendererSchedulerImpl::DidProcessInputEvent(
+    base::TimeTicks begin_frame_time) {
+  base::AutoLock lock(incoming_signals_lock_);
+  if (input_stream_state_ == InputStreamState::INACTIVE)
+    return;
+  // Avoid marking input that arrived after the BeginFrame as processed.
+  if (!begin_frame_time.is_null() &&
+      begin_frame_time < last_input_receipt_time_on_compositor_)
+    return;
+  last_input_process_time_on_main_ = Now();
+  policy_may_need_update_.SetWhileLocked(true);
 }
 
 bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
@@ -258,26 +283,10 @@ void RendererSchedulerImpl::UpdatePolicy() {
   base::TimeTicks now;
   policy_may_need_update_.SetWhileLocked(false);
 
-  Policy new_policy = Policy::NORMAL;
-  if (input_stream_state_ != InputStreamState::INACTIVE) {
-    base::TimeDelta new_priority_duration =
-        base::TimeDelta::FromMilliseconds(kPriorityEscalationAfterInputMillis);
-    base::TimeTicks new_priority_end(last_input_time_ + new_priority_duration);
-    base::TimeDelta time_left_in_policy = new_priority_end - Now();
-    if (time_left_in_policy > base::TimeDelta()) {
-      PostUpdatePolicyOnControlRunner(time_left_in_policy);
-      new_policy =
-          input_stream_state_ ==
-                  InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
-              ? Policy::TOUCHSTART_PRIORITY
-              : Policy::COMPOSITOR_PRIORITY;
-    } else {
-      // Reset |input_stream_state_| to ensure
-      // DidReceiveInputEventOnCompositorThread will post an UpdatePolicy task
-      // when it's next called.
-      input_stream_state_ = InputStreamState::INACTIVE;
-    }
-  }
+  base::TimeDelta new_policy_duration;
+  Policy new_policy = ComputeNewPolicy(&new_policy_duration);
+  if (new_policy_duration > base::TimeDelta())
+    PostUpdatePolicyOnControlRunner(new_policy_duration);
 
   if (new_policy == current_policy_)
     return;
@@ -314,6 +323,52 @@ void RendererSchedulerImpl::UpdatePolicy() {
       this, AsValueLocked(now));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.policy", current_policy_);
+}
+
+RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
+    base::TimeDelta* new_policy_duration) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  incoming_signals_lock_.AssertAcquired();
+
+  Policy new_policy = Policy::NORMAL;
+  *new_policy_duration = base::TimeDelta();
+
+  if (input_stream_state_ == InputStreamState::INACTIVE)
+    return new_policy;
+
+  base::TimeDelta new_priority_duration =
+      base::TimeDelta::FromMilliseconds(kPriorityEscalationAfterInputMillis);
+  Policy input_priority_policy =
+      input_stream_state_ ==
+              InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
+          ? Policy::TOUCHSTART_PRIORITY
+          : Policy::COMPOSITOR_PRIORITY;
+
+  // If the input event is still pending, go into input prioritized policy
+  // and check again later.
+  if (last_input_process_time_on_main_.is_null() &&
+      !task_queue_manager_->IsQueueEmpty(COMPOSITOR_TASK_QUEUE)) {
+    new_policy = input_priority_policy;
+    *new_policy_duration = new_priority_duration;
+  } else {
+    // Otherwise make sure the input prioritization policy ends on time.
+    base::TimeTicks new_priority_end(
+        std::max(last_input_receipt_time_on_compositor_,
+                 last_input_process_time_on_main_) +
+        new_priority_duration);
+    base::TimeDelta time_left_in_policy = new_priority_end - Now();
+
+    if (time_left_in_policy > base::TimeDelta()) {
+      new_policy = input_priority_policy;
+      *new_policy_duration = time_left_in_policy;
+    } else {
+      // Reset |input_stream_state_| to ensure
+      // DidReceiveInputEventOnCompositorThread will post an UpdatePolicy task
+      // when it's next called.
+      input_stream_state_ = InputStreamState::INACTIVE;
+    }
+  }
+  return new_policy;
 }
 
 void RendererSchedulerImpl::StartIdlePeriod() {
@@ -443,8 +498,12 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetString("input_stream_state",
                    InputStreamStateToString(input_stream_state_));
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble("last_input_time",
-                   (last_input_time_ - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("last_input_receipt_time_on_compositor_",
+                   (last_input_receipt_time_on_compositor_ - base::TimeTicks())
+                       .InMillisecondsF());
+  state->SetDouble(
+      "last_input_process_time_on_main_",
+      (last_input_process_time_on_main_ - base::TimeTicks()).InMillisecondsF());
   state->SetDouble(
       "estimated_next_frame_begin",
       (estimated_next_frame_begin_ - base::TimeTicks()).InMillisecondsF());
