@@ -45,6 +45,7 @@ class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
                           size_t size,
                           base::TimeTicks time) override;
   void OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) override;
+  void OnDeviceDetached(size_t index) override;
 
   // UsbMidiInputStream::Delegate implementation.
   void OnReceivedData(size_t jack_index,

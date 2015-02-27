@@ -78,6 +78,9 @@ class UsbMidiDeviceFactoryAndroid {
                 if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
                     requestDevicePermissionIfNecessary(context, (UsbDevice) extra);
                 }
+                if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
+                    onUsbDeviceDetached((UsbDevice) extra);
+                }
                 if (ACTION_USB_PERMISSION.equals(intent.getAction())) {
                     onUsbDevicePermissionRequestDone(context, intent);
                 }
@@ -85,6 +88,7 @@ class UsbMidiDeviceFactoryAndroid {
         };
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         filter.addAction(ACTION_USB_PERMISSION);
         context.registerReceiver(mReceiver, filter);
         mRequestedDevices = new HashSet<UsbDevice>();
@@ -134,6 +138,13 @@ class UsbMidiDeviceFactoryAndroid {
      * @param device a USB device
      */
     private void requestDevicePermissionIfNecessary(Context context, UsbDevice device) {
+        for (UsbDevice d: mRequestedDevices) {
+            if (d.getDeviceId() == device.getDeviceId()) {
+                // It is already requested.
+                return;
+            }
+        }
+
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
             UsbInterface iface = device.getInterface(i);
             if (iface.getInterfaceClass() == UsbConstants.USB_CLASS_AUDIO
@@ -143,6 +154,41 @@ class UsbMidiDeviceFactoryAndroid {
                         context, 0, new Intent(ACTION_USB_PERMISSION), 0));
                 mRequestedDevices.add(device);
                 break;
+            }
+        }
+    }
+
+    /**
+     * Called when a USB device is detached.
+     *
+     * @param device a USB device
+     */
+    private void onUsbDeviceDetached(UsbDevice device) {
+        for (UsbDevice usbDevice: mRequestedDevices) {
+            if (usbDevice.getDeviceId() == device.getDeviceId()) {
+                mRequestedDevices.remove(usbDevice);
+                break;
+            }
+        }
+        for (int i = 0; i < mDevices.size(); ++i) {
+            UsbMidiDeviceAndroid midiDevice = mDevices.get(i);
+            if (midiDevice.isClosed()) {
+                // Once a device is disconnected, the system may reassign its device ID to
+                // another device. So we should ignore disconnected ones.
+                continue;
+            }
+            if (midiDevice.getUsbDevice().getDeviceId() == device.getDeviceId()) {
+                midiDevice.close();
+                if (mIsEnumeratingDevices) {
+                    // In this case, we don't have to keep mDevices sync with the devices list
+                    // in MidiManagerUsb.
+                    mDevices.remove(i);
+                    return;
+                }
+                if (mNativePointer != 0) {
+                    nativeOnUsbMidiDeviceDetached(mNativePointer, i);
+                }
+                return;
             }
         }
     }
@@ -165,6 +211,17 @@ class UsbMidiDeviceFactoryAndroid {
             }
         } else {
             device = null;
+        }
+
+        if (device != null) {
+            for (UsbMidiDeviceAndroid registered: mDevices) {
+                if (!registered.isClosed()
+                        && registered.getUsbDevice().getDeviceId() == device.getDeviceId()) {
+                    // The device is already registered.
+                    device = null;
+                    break;
+                }
+            }
         }
 
         if (device != null) {
@@ -202,4 +259,6 @@ class UsbMidiDeviceFactoryAndroid {
             long nativeUsbMidiDeviceFactoryAndroid, Object[] devices);
     private static native void nativeOnUsbMidiDeviceAttached(
             long nativeUsbMidiDeviceFactoryAndroid, Object device);
+    private static native void nativeOnUsbMidiDeviceDetached(
+            long nativeUsbMidiDeviceFactoryAndroid, int index);
 }

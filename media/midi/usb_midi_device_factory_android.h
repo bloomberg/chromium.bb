@@ -32,6 +32,7 @@ class MEDIA_EXPORT UsbMidiDeviceFactoryAndroid : public UsbMidiDevice::Factory {
                                   jobject caller,
                                   jobjectArray devices);
   void OnUsbMidiDeviceAttached(JNIEnv* env, jobject caller, jobject device);
+  void OnUsbMidiDeviceDetached(JNIEnv* env, jobject caller, jint index);
 
   static bool RegisterUsbMidiDeviceFactory(JNIEnv* env);
 

@@ -33,6 +33,8 @@ class MEDIA_EXPORT UsbMidiDeviceDelegate {
 
   // Called when a USB-MIDI device is attached.
   virtual void OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) = 0;
+  // Called when a USB-MIDI device is detached.
+  virtual void OnDeviceDetached(size_t index) = 0;
 };
 
 // UsbMidiDevice represents a USB-MIDI device.

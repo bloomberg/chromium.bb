@@ -187,6 +187,10 @@ class UsbMidiDeviceAndroid {
         return mUsbDevice;
     }
 
+    boolean isClosed() {
+        return mIsClosed;
+    }
+
     /**
      * Register the own native pointer.
      */

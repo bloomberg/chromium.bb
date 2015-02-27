@@ -83,6 +83,14 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceAttached(
           new UsbMidiDeviceAndroid(raw_device, delegate_)));
 }
 
+// Called from the Java world.
+void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceDetached(
+    JNIEnv* env,
+    jobject caller,
+    jint index) {
+  delegate_->OnDeviceDetached(index);
+}
+
 bool UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

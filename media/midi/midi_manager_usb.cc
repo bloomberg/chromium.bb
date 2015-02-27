@@ -74,6 +74,24 @@ void MidiManagerUsb::OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) {
   AddPorts(devices_.back(), device_id);
 }
 
+void MidiManagerUsb::OnDeviceDetached(size_t index) {
+  if (index >= devices_.size()) {
+    return;
+  }
+  UsbMidiDevice* device = devices_[index];
+  for (size_t i = 0; i < output_streams_.size(); ++i) {
+    if (output_streams_[i]->jack().device == device) {
+      SetOutputPortState(i, MIDI_PORT_DISCONNECTED);
+    }
+  }
+  const std::vector<UsbMidiJack>& input_jacks = input_stream_->jacks();
+  for (size_t i = 0; i < input_jacks.size(); ++i) {
+    if (input_jacks[i].device == device) {
+      SetInputPortState(i, MIDI_PORT_DISCONNECTED);
+    }
+  }
+}
+
 void MidiManagerUsb::OnReceivedData(size_t jack_index,
                                     const uint8* data,
                                     size_t size,

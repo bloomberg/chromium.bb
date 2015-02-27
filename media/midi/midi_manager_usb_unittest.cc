@@ -243,13 +243,12 @@ TEST_F(MidiManagerUsbTest, Initialize) {
   ASSERT_EQ(1u, input_ports().size());
   ASSERT_EQ(2u, output_ports().size());
   ASSERT_TRUE(manager_->input_stream());
-  std::vector<UsbMidiInputStream::JackUniqueKey> keys =
-      manager_->input_stream()->RegisteredJackKeysForTesting();
+  std::vector<UsbMidiJack> jacks = manager_->input_stream()->jacks();
   ASSERT_EQ(2u, manager_->output_streams().size());
   EXPECT_EQ(2u, manager_->output_streams()[0]->jack().jack_id);
   EXPECT_EQ(3u, manager_->output_streams()[1]->jack().jack_id);
-  ASSERT_EQ(1u, keys.size());
-  EXPECT_EQ(2, keys[0].endpoint_number);
+  ASSERT_EQ(1u, jacks.size());
+  EXPECT_EQ(2, jacks[0].endpoint_number());
 
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n", logger_.TakeLog());
 }
@@ -285,13 +284,12 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
   ASSERT_EQ(2u, input_ports().size());
   ASSERT_EQ(4u, output_ports().size());
   ASSERT_TRUE(manager_->input_stream());
-  std::vector<UsbMidiInputStream::JackUniqueKey> keys =
-      manager_->input_stream()->RegisteredJackKeysForTesting();
+  std::vector<UsbMidiJack> jacks = manager_->input_stream()->jacks();
   ASSERT_EQ(4u, manager_->output_streams().size());
   EXPECT_EQ(2u, manager_->output_streams()[0]->jack().jack_id);
   EXPECT_EQ(3u, manager_->output_streams()[1]->jack().jack_id);
-  ASSERT_EQ(2u, keys.size());
-  EXPECT_EQ(2, keys[0].endpoint_number);
+  ASSERT_EQ(2u, jacks.size());
+  EXPECT_EQ(2, jacks[0].endpoint_number());
 
   EXPECT_EQ(
       "UsbMidiDevice::GetDescriptor\n"
@@ -484,10 +482,9 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
   ASSERT_EQ(0u, input_ports().size());
   ASSERT_EQ(0u, output_ports().size());
   ASSERT_TRUE(manager_->input_stream());
-  std::vector<UsbMidiInputStream::JackUniqueKey> keys =
-      manager_->input_stream()->RegisteredJackKeysForTesting();
+  std::vector<UsbMidiJack> jacks = manager_->input_stream()->jacks();
   ASSERT_EQ(0u, manager_->output_streams().size());
-  ASSERT_EQ(0u, keys.size());
+  ASSERT_EQ(0u, jacks.size());
   EXPECT_EQ("", logger_.TakeLog());
 
   scoped_ptr<FakeUsbMidiDevice> new_device(new FakeUsbMidiDevice(&logger_));
@@ -497,12 +494,12 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
   ASSERT_EQ(1u, input_ports().size());
   ASSERT_EQ(2u, output_ports().size());
   ASSERT_TRUE(manager_->input_stream());
-  keys = manager_->input_stream()->RegisteredJackKeysForTesting();
+  jacks = manager_->input_stream()->jacks();
   ASSERT_EQ(2u, manager_->output_streams().size());
   EXPECT_EQ(2u, manager_->output_streams()[0]->jack().jack_id);
   EXPECT_EQ(3u, manager_->output_streams()[1]->jack().jack_id);
-  ASSERT_EQ(1u, keys.size());
-  EXPECT_EQ(2, keys[0].endpoint_number);
+  ASSERT_EQ(1u, jacks.size());
+  EXPECT_EQ(2, jacks[0].endpoint_number());
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n", logger_.TakeLog());
 }
 

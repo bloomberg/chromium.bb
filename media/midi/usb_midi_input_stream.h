@@ -60,7 +60,7 @@ class MEDIA_EXPORT UsbMidiInputStream {
                       size_t size,
                       base::TimeTicks time);
 
-  std::vector<JackUniqueKey> RegisteredJackKeysForTesting() const;
+  const std::vector<UsbMidiJack>& jacks() const { return jacks_; }
 
  private:
   static const size_t kPacketSize = 4;
@@ -71,6 +71,7 @@ class MEDIA_EXPORT UsbMidiInputStream {
                         const uint8* packet,
                         base::TimeTicks time);
 
+  std::vector<UsbMidiJack> jacks_;
   // A map from UsbMidiJack to its index in |jacks_|.
   std::map<JackUniqueKey, size_t> jack_dictionary_;
 
