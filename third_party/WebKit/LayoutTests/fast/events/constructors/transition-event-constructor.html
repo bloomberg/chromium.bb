@@ -47,9 +47,9 @@ shouldBe("new TransitionEvent('eventType', { elapsedTime: 0 }).elapsedTime", "0"
 shouldBe("new TransitionEvent('eventType', { elapsedTime: 123.45 }).elapsedTime", "123.45");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: -123.45 }).elapsedTime", "-123.45");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: 18446744073709551615 }).elapsedTime", "18446744073709551615");
-shouldBe("new TransitionEvent('eventType', { elapsedTime: NaN }).elapsedTime", "NaN");
-shouldBe("new TransitionEvent('eventType', { elapsedTime: Infinity }).elapsedTime", "Infinity");
-shouldBe("new TransitionEvent('eventType', { elapsedTime: -Infinity }).elapsedTime", "-Infinity");
+shouldThrow("new TransitionEvent('eventType', { elapsedTime: NaN })");
+shouldThrow("new TransitionEvent('eventType', { elapsedTime: Infinity })");
+shouldThrow("new TransitionEvent('eventType', { elapsedTime: -Infinity })");
 
 // pseudoElement is passed.
 // Strings.
@@ -62,11 +62,11 @@ shouldBe("new TransitionEvent('eventType', { elapsedTime: null }).elapsedTime", 
 shouldBe("new TransitionEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: true }).elapsedTime", "1");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: '' }).elapsedTime", "0");
-shouldBe("new TransitionEvent('eventType', { elapsedTime: 'doremi' }).elapsedTime", "NaN");
+shouldThrow("new TransitionEvent('eventType', { elapsedTime: 'doremi' })");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: [] }).elapsedTime", "0");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: [123.45] }).elapsedTime", "123.45");
-shouldBe("new TransitionEvent('eventType', { elapsedTime: [123.45, 678.90] }).elapsedTime", "NaN");
-shouldBe("new TransitionEvent('eventType', { elapsedTime: {doremi: 123.45} }).elapsedTime", "NaN");
+shouldThrow("new TransitionEvent('eventType', { elapsedTime: [123.45, 678.90] })");
+shouldThrow("new TransitionEvent('eventType', { elapsedTime: {doremi: 123.45} })");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: {valueOf: function () { return 123.45 } } }).elapsedTime", "123.45");
 
 // All initializers are passed.

@@ -4,7 +4,9 @@
 
 // http://dev.w3.org/csswg/css-transitions/#Events-TransitionEvent
 
-dictionary TransitionEventInit : EventInit {
+[
+    TypeChecking=Unrestricted,
+] dictionary TransitionEventInit : EventInit {
     DOMString propertyName = "";
     double elapsedTime = 0.0;
     DOMString pseudoElement = "";

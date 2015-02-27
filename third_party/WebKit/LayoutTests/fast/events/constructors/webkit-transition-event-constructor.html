@@ -47,9 +47,9 @@ shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: 0 }).elapsedTime
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: 123.45 }).elapsedTime", "123.45");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: -123.45 }).elapsedTime", "-123.45");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: 18446744073709551615 }).elapsedTime", "18446744073709551615");
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: NaN }).elapsedTime", "NaN");
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: Infinity }).elapsedTime", "Infinity");
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: -Infinity }).elapsedTime", "-Infinity");
+shouldThrow("new WebKitTransitionEvent('eventType', { elapsedTime: NaN })");
+shouldThrow("new WebKitTransitionEvent('eventType', { elapsedTime: Infinity })");
+shouldThrow("new WebKitTransitionEvent('eventType', { elapsedTime: -Infinity })");
 
 // pseudoElement is passed.
 // Strings.
@@ -62,11 +62,11 @@ shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: null }).elapsedT
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: true }).elapsedTime", "1");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: '' }).elapsedTime", "0");
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: 'doremi' }).elapsedTime", "NaN");
+shouldThrow("new WebKitTransitionEvent('eventType', { elapsedTime: 'doremi' })");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: [] }).elapsedTime", "0");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: [123.45] }).elapsedTime", "123.45");
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: [123.45, 678.90] }).elapsedTime", "NaN");
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: {doremi: 123.45} }).elapsedTime", "NaN");
+shouldThrow("new WebKitTransitionEvent('eventType', { elapsedTime: [123.45, 678.90] })");
+shouldThrow("new WebKitTransitionEvent('eventType', { elapsedTime: {doremi: 123.45} })");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: {valueOf: function () { return 123.45 } } }).elapsedTime", "123.45");
 
 // All initializers are passed.
