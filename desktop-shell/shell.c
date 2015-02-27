@@ -3370,12 +3370,40 @@ touch_popup_grab_end(struct weston_touch *touch)
 	}
 }
 
-static void
+static struct shell_surface *
+get_top_popup(struct shell_seat *shseat)
+{
+	struct shell_surface *shsurf;
+
+	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
+		return NULL;
+	} else {
+		shsurf = container_of(shseat->popup_grab.surfaces_list.next,
+				      struct shell_surface,
+				      popup.grab_link);
+		return shsurf;
+	}
+}
+
+static int
 add_popup_grab(struct shell_surface *shsurf,
 	       struct shell_seat *shseat,
 	       int32_t type)
 {
 	struct weston_seat *seat = shseat->seat;
+	struct shell_surface *parent, *top_surface;
+
+	parent = get_shell_surface(shsurf->parent);
+	top_surface = get_top_popup(shseat);
+	if (shell_surface_is_xdg_popup(shsurf) &&
+	    ((top_surface == NULL && !shell_surface_is_xdg_surface(parent)) ||
+	     (top_surface != NULL && parent != top_surface))) {
+		wl_resource_post_error(shsurf->owner->resource,
+				       XDG_POPUP_ERROR_NOT_THE_TOPMOST_POPUP,
+				       "xdg_popup was not created on the "
+				       "topmost popup");
+		return -1;
+	}
 
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
 		shseat->popup_grab.type = type;
@@ -3410,12 +3438,23 @@ add_popup_grab(struct shell_surface *shsurf,
 		wl_list_insert(&shseat->popup_grab.surfaces_list,
 			       &shsurf->popup.grab_link);
 	}
+
+	return 0;
 }
 
 static void
 remove_popup_grab(struct shell_surface *shsurf)
 {
 	struct shell_seat *shseat = shsurf->popup.shseat;
+
+	if (shell_surface_is_xdg_popup(shsurf) &&
+	    get_top_popup(shseat) != shsurf) {
+		wl_resource_post_error(shsurf->resource,
+				       XDG_POPUP_ERROR_NOT_THE_TOPMOST_POPUP,
+				       "xdg_popup was destroyed while it was "
+				       "not the topmost popup.");
+		return;
+	}
 
 	wl_list_remove(&shsurf->popup.grab_link);
 	wl_list_init(&shsurf->popup.grab_link);
@@ -3430,7 +3469,7 @@ remove_popup_grab(struct shell_surface *shsurf)
 	}
 }
 
-static void
+static int
 shell_map_popup(struct shell_surface *shsurf)
 {
 	struct shell_seat *shseat = shsurf->popup.shseat;
@@ -3445,14 +3484,18 @@ shell_map_popup(struct shell_surface *shsurf)
 
 	if (shseat->seat->pointer &&
 	    shseat->seat->pointer->grab_serial == shsurf->popup.serial) {
-		add_popup_grab(shsurf, shseat, POINTER);
+		if (add_popup_grab(shsurf, shseat, POINTER) != 0)
+			return -1;
 	} else if (shseat->seat->touch &&
 	           shseat->seat->touch->grab_serial == shsurf->popup.serial) {
-		add_popup_grab(shsurf, shseat, TOUCH);
+		if (add_popup_grab(shsurf, shseat, TOUCH) != 0)
+			return -1;
 	} else {
 		shell_surface_send_popup_done(shsurf);
 		shseat->popup_grab.client = NULL;
 	}
+
+	return 0;
 }
 
 static const struct wl_shell_surface_interface shell_surface_implementation = {
@@ -4050,6 +4093,10 @@ create_xdg_popup(struct shell_client *owner, void *shell,
 		 int32_t x, int32_t y)
 {
 	struct shell_surface *shsurf;
+
+	/* Verify that we are creating the top most popup when mapping,
+	 * as its not until then we know whether it was mapped as most
+	 * top level or not. */
 
 	shsurf = create_common_surface(owner, shell, surface, client);
 	if (!shsurf)
@@ -5451,7 +5498,8 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		}
 		break;
 	case SHELL_SURFACE_POPUP:
-		shell_map_popup(shsurf);
+		if (shell_map_popup(shsurf) != 0)
+			return;
 		break;
 	case SHELL_SURFACE_NONE:
 		weston_view_set_position(shsurf->view,

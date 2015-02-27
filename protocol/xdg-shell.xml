@@ -398,6 +398,13 @@
       xdg_popup surfaces are always transient for another surface.
     </description>
 
+    <enum name="error">
+      <description summary="xdg_popup error values">
+	These errors can be emitted in response to xdg_popup requests.
+      </description>
+      <entry name="not_the_topmost_popup" value="0" summary="The client tried to map or destroy a non-topmost popup"/>
+    </enum>
+
     <request name="destroy" type="destructor">
       <description summary="remove xdg_surface interface">
 	The xdg_surface interface is removed from the wl_surface object
