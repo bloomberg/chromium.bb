@@ -90,7 +90,8 @@ InMemoryURLIndex::InMemoryURLIndex(HistoryService* history_service,
       save_cache_observer_(NULL),
       shutdown_(false),
       restored_(false),
-      needs_to_be_cached_(false) {
+      needs_to_be_cached_(false),
+      listen_to_history_service_loaded_(false) {
   InitializeSchemeWhitelist(&scheme_whitelist_);
   // TODO(mrossetti): Register for language change notifications.
   if (history_service_)
@@ -211,7 +212,9 @@ void InMemoryURLIndex::OnURLsDeleted(HistoryService* history_service,
 }
 
 void InMemoryURLIndex::OnHistoryServiceLoaded(HistoryService* history_service) {
-  ScheduleRebuildFromHistory();
+  if (listen_to_history_service_loaded_)
+    ScheduleRebuildFromHistory();
+  listen_to_history_service_loaded_ = false;
 }
 
 // Restoring from Cache --------------------------------------------------------
@@ -254,6 +257,8 @@ void InMemoryURLIndex::OnCacheLoadDone(
         FROM_HERE, base::Bind(DeleteCacheFile, path));
     if (history_service_->backend_loaded()) {
       ScheduleRebuildFromHistory();
+    } else {
+      listen_to_history_service_loaded_ = true;
     }
   }
 }

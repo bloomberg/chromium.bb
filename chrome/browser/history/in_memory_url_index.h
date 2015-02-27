@@ -294,6 +294,10 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // index has been destructed.
   bool needs_to_be_cached_;
 
+  // This flag is set to true,if we want to listen to the
+  // HistoryServiceLoaded Notification.
+  bool listen_to_history_service_loaded_;
+
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
 
