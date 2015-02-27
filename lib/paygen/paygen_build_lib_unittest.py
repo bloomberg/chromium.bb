@@ -31,11 +31,6 @@ from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import utils
 
 
-# pylint: disable=F0401
-from site_utils.autoupdate.lib import test_control
-# pylint: enable=F0401
-
-
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access
 
@@ -1195,6 +1190,8 @@ fsi_images: 2913.331.0,2465.105.0
 
   @unittest.skipIf(not paygen_build_lib.config,
                    'Internal crostools repository needed.')
+  @unittest.skipIf(not paygen_build_lib.test_control,
+                   'Autotest repository needed.')
   def testEmitControlFile(self):
     """Test that we emit control files correctly."""
     payload = gspaths.Payload(tgt_image=self.npo_image,
@@ -1233,8 +1230,10 @@ DOC = "Faux doc"
             'foo_board', '*', self.basic_image.version)).AndReturn(
                 ['gs://foo-archive/src-build'])
 
-    self.mox.StubOutWithMock(test_control, 'get_control_file_name')
-    test_control.get_control_file_name().AndReturn(control_file_name)
+    self.mox.StubOutWithMock(
+        paygen_build_lib.test_control, 'get_control_file_name')
+    paygen_build_lib.test_control.get_control_file_name().AndReturn(
+        control_file_name)
 
     self.mox.ReplayAll()
 
