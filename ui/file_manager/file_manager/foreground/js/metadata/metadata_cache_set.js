@@ -154,6 +154,8 @@ MetadataCacheSet.prototype.createSnapshot = function(entries) {
  * @return {boolean}
  */
 MetadataCacheSet.prototype.hasFreshCache = function(entries, names) {
+  if (!names.length)
+    return true;
   for (var i = 0; i < entries.length; i++) {
     var item = this.items_.peek(entries[i].toURL());
     if (!(item && item.hasFreshCache(names)))

@@ -123,6 +123,11 @@ function testMetadataCacheSetHasFreshCache() {
   assertTrue(set.hasFreshCache([entryA], ['property']));
 }
 
+function testMetadataCacheSetHasFreshCacheWithEmptyNames() {
+  var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
+  assertTrue(set.hasFreshCache([entryA, entryB], []));
+}
+
 function testMetadataCacheSetClear() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
   set.startRequests(1, set.createRequests([entryA], ['propertyA']));
