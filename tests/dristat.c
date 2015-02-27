@@ -189,9 +189,9 @@ static void printhuman(unsigned long value, const char *name, int mult)
 static void getstats(int fd, int i)
 {
     drmStatsT prev, curr;
-    int       j;
+    unsigned  j;
     double    rate;
-    
+
     printf("  System statistics:\n");
 
     if (drmGetStats(fd, &prev)) return;

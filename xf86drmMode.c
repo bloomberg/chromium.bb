@@ -76,7 +76,7 @@ static inline int DRM_IOCTL(int fd, unsigned long cmd, void *arg)
  * Util functions
  */
 
-void* drmAllocCpy(void *array, int count, int entry_size)
+static void* drmAllocCpy(char *array, int count, int entry_size)
 {
 	char *r;
 	int i;
