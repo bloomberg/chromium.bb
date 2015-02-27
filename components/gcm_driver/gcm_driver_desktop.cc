@@ -797,7 +797,9 @@ void GCMDriverDesktop::GCMClientReady(
   last_token_fetch_time_ = last_token_fetch_time;
 
   GCMDriver::AddAppHandler(kGCMAccountMapperAppId, account_mapper_.get());
-  account_mapper_->Initialize(account_mappings);
+  account_mapper_->Initialize(account_mappings,
+                              base::Bind(&GCMDriverDesktop::MessageReceived,
+                                         weak_ptr_factory_.GetWeakPtr()));
 
   delayed_task_controller_->SetReady();
 }

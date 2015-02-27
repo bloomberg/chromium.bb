@@ -29,6 +29,9 @@ const char kTokenMessageKey[] = "t";
 const char kAccountMessageKey[] = "a";
 const char kRemoveAccountKey[] = "r";
 const char kRemoveAccountValue[] = "1";
+// Use to handle send to Gaia ID scenario:
+const char kGCMSendToGaiaIdAppIdKey[] = "gcmb";
+
 
 std::string GenerateMessageID() {
   return base::GenerateGUID();
@@ -48,11 +51,12 @@ GCMAccountMapper::GCMAccountMapper(GCMDriver* gcm_driver)
 GCMAccountMapper::~GCMAccountMapper() {
 }
 
-void GCMAccountMapper::Initialize(
-    const std::vector<AccountMapping>& account_mappings) {
+void GCMAccountMapper::Initialize(const AccountMappings& account_mappings,
+                                  const DispatchMessageCallback& callback) {
   DCHECK(!initialized_);
   initialized_ = true;
   accounts_ = account_mappings;
+  dispatch_message_callback_ = callback;
   GetRegistration();
 }
 
@@ -141,11 +145,36 @@ void GCMAccountMapper::ShutdownHandler() {
   initialized_ = false;
   accounts_.clear();
   registration_id_.clear();
+  dispatch_message_callback_.Reset();
 }
 
 void GCMAccountMapper::OnMessage(const std::string& app_id,
                                  const GCMClient::IncomingMessage& message) {
-  // Account message does not expect messages right now.
+  DCHECK_EQ(app_id, kGCMAccountMapperAppId);
+  // TODO(fgorski): Report Send to Gaia ID failures using UMA.
+
+  if (dispatch_message_callback_.is_null()) {
+    DVLOG(1) << "dispatch_message_callback_ missing in GCMAccountMapper";
+    return;
+  }
+
+  GCMClient::MessageData::const_iterator it =
+      message.data.find(kGCMSendToGaiaIdAppIdKey);
+  if (it == message.data.end()) {
+    DVLOG(1) << "Send to Gaia ID failure: Embedded app ID missing.";
+    return;
+  }
+
+  std::string embedded_app_id = it->second;
+  if (embedded_app_id.empty()) {
+    DVLOG(1) << "Send to Gaia ID failure: Embedded app ID is empty.";
+    return;
+  }
+
+  // Ensuring the message does not carry the embedded app ID.
+  GCMClient::IncomingMessage new_message = message;
+  new_message.data.erase(new_message.data.find(kGCMSendToGaiaIdAppIdKey));
+  dispatch_message_callback_.Run(embedded_app_id, new_message);
 }
 
 void GCMAccountMapper::OnMessagesDeleted(const std::string& app_id) {

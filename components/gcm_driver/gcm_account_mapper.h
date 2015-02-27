@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -29,11 +30,15 @@ class GCMAccountMapper : public GCMAppHandler {
  public:
   // List of account mappings.
   typedef std::vector<AccountMapping> AccountMappings;
+  typedef base::Callback<void(const std::string& app_id,
+                              const GCMClient::IncomingMessage& message)>
+      DispatchMessageCallback;
 
   explicit GCMAccountMapper(GCMDriver* gcm_driver);
   ~GCMAccountMapper() override;
 
-  void Initialize(const AccountMappings& account_mappings);
+  void Initialize(const AccountMappings& account_mappings,
+                  const DispatchMessageCallback& callback);
 
   // Called by AccountTracker, when a new list of account tokens is available.
   // This will cause a refresh of account mappings and sending updates to GCM.
@@ -101,6 +106,9 @@ class GCMAccountMapper : public GCMAppHandler {
 
   // GCMDriver owns GCMAccountMapper.
   GCMDriver* gcm_driver_;
+
+  // Callback to GCMDriver to dispatch messages sent to Gaia ID.
+  DispatchMessageCallback dispatch_message_callback_;
 
   // Clock for timestamping status changes.
   scoped_ptr<base::Clock> clock_;
