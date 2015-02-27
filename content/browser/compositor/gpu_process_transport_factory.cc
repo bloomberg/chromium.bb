@@ -332,6 +332,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 
 bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
 
+uint32 GpuProcessTransportFactory::GetImageTextureTarget() {
+  return BrowserGpuChannelHostFactory::GetImageTextureTarget();
+}
+
 cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
   return HostSharedBitmapManager::current();
 }

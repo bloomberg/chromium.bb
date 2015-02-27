@@ -29,6 +29,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       gfx::GpuMemoryBuffer::Usage usage);
   static bool IsGpuMemoryBufferFactoryUsageEnabled(
       gfx::GpuMemoryBuffer::Usage usage);
+  static uint32 GetImageTextureTarget();
 
   // Overridden from GpuChannelHostFactory:
   bool IsMainThread() override;

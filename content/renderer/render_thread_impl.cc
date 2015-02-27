@@ -570,19 +570,11 @@ void RenderThreadImpl::Init() {
   is_elastic_overscroll_enabled_ = false;
 #endif
 
-  use_image_texture_target_ = GL_TEXTURE_2D;
-  if (command_line.HasSwitch(switches::kUseImageTextureTarget)) {
-    std::string target_string =
-        command_line.GetSwitchValueASCII(switches::kUseImageTextureTarget);
-    const unsigned targets[] = {
-      GL_TEXTURE_RECTANGLE_ARB,
-      GL_TEXTURE_EXTERNAL_OES
-    };
-    for (auto target : targets) {
-      if (target_string == gpu::gles2::GLES2Util::GetStringEnum(target))
-        use_image_texture_target_ = target;
-    }
-  }
+  std::string image_texture_target_string =
+      command_line.GetSwitchValueASCII(switches::kUseImageTextureTarget);
+  bool parsed_image_texture_target = base::StringToUint(
+      image_texture_target_string, &use_image_texture_target_);
+  DCHECK(parsed_image_texture_target);
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;

@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/message_filter.h"
@@ -245,6 +246,31 @@ void BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
 bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferFactoryUsageEnabled(
     gfx::GpuMemoryBuffer::Usage usage) {
   return g_enabled_gpu_memory_buffer_usages.Get().count(usage) != 0;
+}
+
+// static
+uint32 BrowserGpuChannelHostFactory::GetImageTextureTarget() {
+  if (!IsGpuMemoryBufferFactoryUsageEnabled(gfx::GpuMemoryBuffer::MAP))
+    return GL_TEXTURE_2D;
+
+  std::vector<gfx::GpuMemoryBufferType> supported_types;
+  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+
+  // The GPU service will always use the preferred type.
+  gfx::GpuMemoryBufferType type = supported_types[0];
+
+  switch (type) {
+    case gfx::SURFACE_TEXTURE_BUFFER:
+      // Surface texture backed GPU memory buffers require
+      // TEXTURE_EXTERNAL_OES.
+      return GL_TEXTURE_EXTERNAL_OES;
+    case gfx::IO_SURFACE_BUFFER:
+      // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
+      return GL_TEXTURE_RECTANGLE_ARB;
+    default:
+      return GL_TEXTURE_2D;
+  }
 }
 
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()

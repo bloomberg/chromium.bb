@@ -1108,33 +1108,10 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
-  if (BrowserGpuChannelHostFactory::IsGpuMemoryBufferFactoryUsageEnabled(
-          gfx::GpuMemoryBuffer::MAP)) {
-    std::vector<gfx::GpuMemoryBufferType> supported_types;
-    GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
-    DCHECK(!supported_types.empty());
-
-    // The GPU service will always use the preferred type.
-    gfx::GpuMemoryBufferType type = supported_types[0];
-
-    switch (type) {
-      case gfx::SURFACE_TEXTURE_BUFFER:
-        // Surface texture backed GPU memory buffers require
-        // TEXTURE_EXTERNAL_OES.
-        command_line->AppendSwitchASCII(
-            switches::kUseImageTextureTarget,
-            gpu::gles2::GLES2Util::GetStringEnum(GL_TEXTURE_EXTERNAL_OES));
-        break;
-      case gfx::IO_SURFACE_BUFFER:
-        // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
-        command_line->AppendSwitchASCII(
-            switches::kUseImageTextureTarget,
-            gpu::gles2::GLES2Util::GetStringEnum(GL_TEXTURE_RECTANGLE_ARB));
-        break;
-      default:
-        break;
-    }
-  }
+  command_line->AppendSwitchASCII(
+      switches::kUseImageTextureTarget,
+      base::UintToString(
+          BrowserGpuChannelHostFactory::GetImageTextureTarget()));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

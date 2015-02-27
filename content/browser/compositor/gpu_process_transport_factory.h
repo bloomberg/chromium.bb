@@ -50,6 +50,7 @@ class GpuProcessTransportFactory
   void RemoveCompositor(ui::Compositor* compositor) override;
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   bool DoesCreateTestContexts() override;
+  uint32 GetImageTextureTarget() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;

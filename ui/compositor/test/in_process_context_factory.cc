@@ -140,7 +140,7 @@ void InProcessContextFactory::CreateOutputSurface(
 }
 
 scoped_ptr<Reflector> InProcessContextFactory::CreateReflector(
-    Compositor* mirroed_compositor,
+    Compositor* mirrored_compositor,
     Layer* mirroring_layer) {
   return make_scoped_ptr(new FakeReflector);
 }
@@ -173,6 +173,10 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
 
 bool InProcessContextFactory::DoesCreateTestContexts() {
   return context_factory_for_test_;
+}
+
+uint32 InProcessContextFactory::GetImageTextureTarget() {
+  return GL_TEXTURE_2D;
 }
 
 cc::SharedBitmapManager* InProcessContextFactory::GetSharedBitmapManager() {

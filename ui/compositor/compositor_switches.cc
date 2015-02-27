@@ -41,4 +41,9 @@ bool IsUIZeroCopyEnabled() {
   return command_line.HasSwitch(switches::kUIEnableZeroCopy);
 }
 
+bool IsUIOneCopyEnabled() {
+  // One-copy is on by default unless zero copy is enabled.
+  return !IsUIZeroCopyEnabled();
+}
+
 }  // namespace ui

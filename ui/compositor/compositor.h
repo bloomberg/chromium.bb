@@ -89,6 +89,9 @@ class COMPOSITOR_EXPORT ContextFactory {
   // operations.
   virtual bool DoesCreateTestContexts() = 0;
 
+  // Returns the OpenGL target to use for image textures.
+  virtual uint32 GetImageTextureTarget() = 0;
+
   // Gets the shared bitmap manager for software mode.
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 

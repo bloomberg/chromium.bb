@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/resource_messages.h"
 #include "content/common/websocket_messages.h"
@@ -17,6 +18,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/test/mock_render_process.h"
 #include "content/test/render_thread_impl_browser_test_ipc_helper.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // IPC messages for testing ----------------------------------------------------
@@ -154,6 +156,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
     base::CommandLine::StringVector old_argv = cmd->argv();
 
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
+    cmd->AppendSwitchASCII(switches::kUseImageTextureTarget,
+                           base::UintToString(GL_TEXTURE_2D));
+
     thread_ = new RenderThreadImplForTest(test_helper_->GetChannelId(),
                                           test_task_counter_);
     cmd->InitFromArgv(old_argv);

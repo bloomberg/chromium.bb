@@ -227,7 +227,7 @@ CONTENT_EXPORT extern const char kUIPrioritizeInGpuProcess[];
 CONTENT_EXPORT extern const char kUseDiscardableMemory[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 CONTENT_EXPORT extern const char kEnableNativeGpuMemoryBuffers[];
-extern const char kUseImageTextureTarget[];
+CONTENT_EXPORT extern const char kUseImageTextureTarget[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 CONTENT_EXPORT extern const char kUseNormalPriorityForTileTaskWorkerThreads[];
 extern const char kUseSurfaces[];
