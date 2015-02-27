@@ -219,9 +219,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   WebRuntimeFeatures::enableRequestAutocomplete(true);
 #endif
 
-  if (command_line.HasSwitch(switches::kEnableShowModalDialog))
-    WebRuntimeFeatures::enableShowModalDialog(true);
-
   if (command_line.HasSwitch(switches::kDisableJavaScriptHarmonyShipping)) {
     std::string flag("--noharmony-shipping");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));

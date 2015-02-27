@@ -2025,28 +2025,6 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
   SetPendingWindowRect(initial_rect_);
 }
 
-void RenderViewImpl::runModal() {
-  DCHECK(did_show_) << "should already have shown the view";
-
-  // Don't allow further dialogs if we are waiting to swap out, since the
-  // PageGroupLoadDeferrer in our stack prevents it.
-  if (suppress_dialogs_until_swap_out_)
-    return;
-
-  // We must keep WebKit's shared timer running in this case in order to allow
-  // showModalDialog to function properly.
-  //
-  // TODO(darin): WebKit should really be smarter about suppressing events and
-  // timers so that we do not need to manage the shared timer in such a heavy
-  // handed manner.
-  //
-  if (RenderThreadImpl::current())  // Will be NULL during unit tests.
-    RenderThreadImpl::current()->DoNotSuspendWebKitSharedTimer();
-
-  SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(
-      routing_id_, opener_id_));
-}
-
 bool RenderViewImpl::requestPointerLock() {
   return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
 }

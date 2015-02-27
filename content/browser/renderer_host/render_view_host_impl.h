@@ -328,7 +328,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                   bool user_gesture);
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
-  void OnRunModal(int opener_id, IPC::Message* reply_msg);
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
   void OnUpdateState(int32 page_id, const PageState& state);
@@ -422,12 +421,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Routing ID for the main frame's RenderFrameHost.
   int main_frame_routing_id_;
-
-  // If we were asked to RunModal, then this will hold the reply_msg that we
-  // must return to the renderer to unblock it.
-  IPC::Message* run_modal_reply_msg_;
-  // This will hold the routing id of the RenderView that opened us.
-  int run_modal_opener_id_;
 
   // Set to true when waiting for a ViewHostMsg_ClosePageACK.
   // TODO(creis): Move to RenderFrameHost and RenderWidgetHost.

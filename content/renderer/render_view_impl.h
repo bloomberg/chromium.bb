@@ -333,7 +333,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didFocus();
   virtual void didBlur();
   virtual void show(blink::WebNavigationPolicy policy);
-  virtual void runModal();
   virtual bool requestPointerLock();
   virtual void requestPointerUnlock();
   virtual bool isPointerLocked();

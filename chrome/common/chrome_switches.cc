@@ -540,10 +540,6 @@ const char kEnableSdchOverHttps[] = "enable-sdch-over-https";
 // Enables using bubbles for session restore request instead of infobars.
 const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
 
-// Enables the deprecated window.showModalDialog API. This is slated for
-// removal.
-const char kEnableShowModalDialog[] = "enable-show-modal-dialog";
-
 // Enable or disable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";

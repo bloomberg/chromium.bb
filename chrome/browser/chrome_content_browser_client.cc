@@ -1472,7 +1472,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNewBookmarkApps,
       switches::kEnableOutOfProcessPdf,
       switches::kEnablePluginPlaceholderShadowDom,
-      switches::kEnableShowModalDialog,
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
       switches::kPlaybackMode,

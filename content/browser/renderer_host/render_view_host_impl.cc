@@ -193,8 +193,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_active_(!swapped_out),
       is_swapped_out_(swapped_out),
       main_frame_routing_id_(main_frame_routing_id),
-      run_modal_reply_msg_(NULL),
-      run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_close_ack_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       virtual_keyboard_requested_(false),
@@ -864,7 +862,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnRunModal)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
@@ -899,21 +896,6 @@ void RenderViewHostImpl::Init() {
 }
 
 void RenderViewHostImpl::Shutdown() {
-  // If we are being run modally (see RunModal), then we need to cleanup.
-  if (run_modal_reply_msg_) {
-    Send(run_modal_reply_msg_);
-    run_modal_reply_msg_ = NULL;
-    RenderViewHostImpl* opener =
-        RenderViewHostImpl::FromID(GetProcess()->GetID(), run_modal_opener_id_);
-    if (opener) {
-      opener->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(
-          hung_renderer_delay_ms_));
-      // Balance out the decrement when we got created.
-      opener->increment_in_flight_event_count();
-    }
-    run_modal_opener_id_ = MSG_ROUTING_NONE;
-  }
-
   // We can't release the SessionStorageNamespace until our peer
   // in the renderer has wound down.
   if (GetProcess()->HasConnection()) {
@@ -1000,26 +982,6 @@ void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
   if (is_active_)
     delegate_->ShowCreatedFullscreenWidget(route_id);
   Send(new ViewMsg_Move_ACK(route_id));
-}
-
-void RenderViewHostImpl::OnRunModal(int opener_id, IPC::Message* reply_msg) {
-  DCHECK(!run_modal_reply_msg_);
-  run_modal_reply_msg_ = reply_msg;
-  run_modal_opener_id_ = opener_id;
-
-  RecordAction(base::UserMetricsAction("ShowModalDialog"));
-
-  RenderViewHostImpl* opener =
-      RenderViewHostImpl::FromID(GetProcess()->GetID(), run_modal_opener_id_);
-  if (opener) {
-    opener->StopHangMonitorTimeout();
-    // The ack for the mouse down won't come until the dialog closes, so fake it
-    // so that we don't get a timeout.
-    opener->decrement_in_flight_event_count();
-  }
-
-  // TODO(darin): Bug 1107929: Need to inform our delegate to show this view in
-  // an app-modal fashion.
 }
 
 void RenderViewHostImpl::OnRenderViewReady() {

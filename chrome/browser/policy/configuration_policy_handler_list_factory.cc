@@ -516,11 +516,6 @@ void GetDeprecatedFeaturesMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
   // Maps feature tags as specified in policy to the corresponding switch to
   // re-enable them.
-  // TODO(atwilson): Remove after 2015-04-30 per http://crbug.com/374782.
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "ShowModalDialog_EffectiveUntil20150430",
-      scoped_ptr<base::Value>(new base::StringValue(
-          switches::kEnableShowModalDialog))));
 }
 #endif  // !defined(OS_IOS)
 
