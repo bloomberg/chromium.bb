@@ -1026,7 +1026,9 @@ cr.define('login', function() {
           loadTimeData.getStringF('ownerUserPattern', this.user_.displayName) :
           this.user_.displayName;
       this.actionBoxMenuTitleEmailElement.textContent = this.user_.emailAddress;
-      this.actionBoxMenuTitleEmailElement.hidden = this.user_.supervisedUser;
+
+      this.actionBoxMenuTitleEmailElement.hidden =
+          this.user_.legacySupervisedUser;
 
       this.actionBoxMenuCommandElement.textContent =
           loadTimeData.getString('removeUser');
@@ -1265,7 +1267,7 @@ cr.define('login', function() {
     },
 
     showSupervisedUserSigninWarning: function() {
-      // Supervised user token has been invalidated.
+      // Legacy supervised user token has been invalidated.
       // Make sure that pod is focused i.e. "Sign in" button is seen.
       this.parentNode.focusPod(this);
 
@@ -1299,7 +1301,7 @@ cr.define('login', function() {
      * Shows signin UI for this user.
      */
     showSigninUI: function() {
-      if (this.user.supervisedUser && !this.user.isDesktopUser) {
+      if (this.user.legacySupervisedUser && !this.user.isDesktopUser) {
         this.showSupervisedUserSigninWarning();
       } else {
         // Special case for multi-profiles sign in. We show users even if they
