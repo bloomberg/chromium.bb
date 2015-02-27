@@ -781,6 +781,7 @@ class ChromiumOSDevice(RemoteDevice):
 
   def __init__(self, *args, **kwargs):
     super(ChromiumOSDevice, self).__init__(*args, **kwargs)
+    self._alias = None
     self._path = None
     self._lsb_release = {}
 
@@ -827,6 +828,20 @@ class ChromiumOSDevice(RemoteDevice):
     """The SDK version of the device."""
     # TODO(garnold) Use the actual SDK version field, once known (brillo:280).
     return self.lsb_release.get('CHROMEOS_RELEASE_VERSION', '')
+
+  @property
+  def alias(self):
+    """The user-friendly alias name assigned to the device."""
+    if not self._alias:
+      # TODO(thieule): Get the alias name from the remote device.
+      self._alias = 'test_alias'
+
+    return self._alias
+
+  def SetAlias(self, alias_name):
+    """Assign to the device a user-friendly alias name."""
+    # TODO(thieule): Set the alias name to the remote device.
+    self._alias = alias_name
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
@@ -898,3 +913,9 @@ class ChromiumOSDevice(RemoteDevice):
     extra_env['PATH'] = path_env
     kwargs['extra_env'] = extra_env
     return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
+
+
+def GetUSBConnectedDevices():
+  """Returns a list of all USB-connected devices."""
+  # TODO(thieule): Implement this function.
+  return [ChromiumOSDevice('127.0.0.1', connect=False)]
