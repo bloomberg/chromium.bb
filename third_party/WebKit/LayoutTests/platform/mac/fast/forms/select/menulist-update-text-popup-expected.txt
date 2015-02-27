@@ -3,7 +3,7 @@ Needs run-layout-test.
 
 layer at (0,0) size 39x18 backgroundClip at (8,50) size 39x18 clip at (8,50) size 39x18 outlineClip at (8,50) size 39x18
   RenderBlock (positioned) {DIV} at (8,50) size 39x18
-    RenderMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
+    LayoutMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
       RenderBlock (anonymous) at (0,0) size 39x18
         RenderText at (8,2) size 8x13
           text run at (8,2) width 8: "C"

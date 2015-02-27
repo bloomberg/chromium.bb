@@ -793,7 +793,7 @@ int LayoutThemeDefault::menuListInternalPadding(const LayoutStyle& style, int pa
 
     // Reserve the space for right arrow here. The rest of the padding is
     // set by adjustMenuListStyle, since PopMenuWin.cpp uses the padding from
-    // RenderMenuList to lay out the individual items in the popup.
+    // LayoutMenuList to lay out the individual items in the popup.
     // If the MenuList actually has appearance "NoAppearance", then that means
     // we don't draw a button, so don't reserve space for it.
     const int barType = style.direction() == LTR ? RightPadding : LeftPadding;

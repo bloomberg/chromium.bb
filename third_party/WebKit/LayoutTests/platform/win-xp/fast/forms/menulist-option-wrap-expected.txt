@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
             text run at (33,3) width 64: "size=\"1\""
         RenderText {#text} at (97,0) size 7x19
           text run at (97,0) width 7: ": "
-        RenderMenuList {SELECT} at (104,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutMenuList {SELECT} at (104,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 98x18
             RenderText at (4,1) size 188x16
               text run at (4,1) width 188: "Very long option that does not fit"
@@ -36,7 +36,7 @@ layer at (0,0) size 800x600
             text run at (52,3) width 32: "size"
         RenderText {#text} at (84,0) size 7x19
           text run at (84,0) width 7: ": "
-        RenderMenuList {SELECT} at (91,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutMenuList {SELECT} at (91,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 98x18
             RenderText at (4,1) size 188x16
               text run at (4,1) width 188: "Very long option that does not fit"

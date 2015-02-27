@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderMenuList.h"
+#include "core/layout/LayoutMenuList.h"
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
@@ -51,7 +51,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderMenuList::RenderMenuList(Element* element)
+LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element)
     , m_buttonText(nullptr)
     , m_innerBlock(nullptr)
@@ -63,12 +63,12 @@ RenderMenuList::RenderMenuList(Element* element)
     ASSERT(isHTMLSelectElement(element));
 }
 
-RenderMenuList::~RenderMenuList()
+LayoutMenuList::~LayoutMenuList()
 {
     ASSERT(!m_popup);
 }
 
-void RenderMenuList::destroy()
+void LayoutMenuList::destroy()
 {
     if (m_popup)
         m_popup->disconnectClient();
@@ -78,12 +78,12 @@ void RenderMenuList::destroy()
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
 // to prevent children from rendering.
-bool RenderMenuList::isChildAllowed(LayoutObject* object, const LayoutStyle&) const
+bool LayoutMenuList::isChildAllowed(LayoutObject* object, const LayoutStyle&) const
 {
     return object->isAnonymous() && !object->isLayoutFullScreen();
 }
 
-void RenderMenuList::createInnerBlock()
+void LayoutMenuList::createInnerBlock()
 {
     if (m_innerBlock) {
         ASSERT(firstChild() == m_innerBlock);
@@ -98,7 +98,7 @@ void RenderMenuList::createInnerBlock()
     LayoutFlexibleBox::addChild(m_innerBlock);
 }
 
-void RenderMenuList::adjustInnerStyle()
+void LayoutMenuList::adjustInnerStyle()
 {
     LayoutStyle& innerStyle = m_innerBlock->mutableStyleRef();
     innerStyle.setFlexGrow(1);
@@ -126,12 +126,12 @@ void RenderMenuList::adjustInnerStyle()
     }
 }
 
-inline HTMLSelectElement* RenderMenuList::selectElement() const
+inline HTMLSelectElement* LayoutMenuList::selectElement() const
 {
     return toHTMLSelectElement(node());
 }
 
-void RenderMenuList::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
+void LayoutMenuList::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     createInnerBlock();
     m_innerBlock->addChild(newChild, beforeChild);
@@ -141,16 +141,17 @@ void RenderMenuList::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
         cache->childrenChanged(this);
 }
 
-void RenderMenuList::removeChild(LayoutObject* oldChild)
+void LayoutMenuList::removeChild(LayoutObject* oldChild)
 {
     if (oldChild == m_innerBlock || !m_innerBlock) {
         LayoutFlexibleBox::removeChild(oldChild);
         m_innerBlock = nullptr;
-    } else
+    } else {
         m_innerBlock->removeChild(oldChild);
+    }
 }
 
-void RenderMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
 
@@ -164,10 +165,10 @@ void RenderMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* old
         updateOptionsWidth();
 }
 
-void RenderMenuList::updateOptionsWidth()
+void LayoutMenuList::updateOptionsWidth()
 {
     float maxOptionWidth = 0;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     int size = listItems.size();
 
     for (int i = 0; i < size; ++i) {
@@ -199,7 +200,7 @@ void RenderMenuList::updateOptionsWidth()
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
-void RenderMenuList::updateFromElement()
+void LayoutMenuList::updateFromElement()
 {
     if (m_optionsChanged) {
         updateOptionsWidth();
@@ -215,10 +216,10 @@ void RenderMenuList::updateFromElement()
         setTextFromOption(selectElement()->selectedIndex());
 }
 
-void RenderMenuList::setTextFromOption(int optionIndex)
+void LayoutMenuList::setTextFromOption(int optionIndex)
 {
     HTMLSelectElement* select = selectElement();
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = select->listItems();
     const int size = listItems.size();
 
     String text = emptyString();
@@ -267,7 +268,7 @@ void RenderMenuList::setTextFromOption(int optionIndex)
     didUpdateActiveOption(optionIndex);
 }
 
-void RenderMenuList::setText(const String& s)
+void LayoutMenuList::setText(const String& s)
 {
     if (s.isEmpty()) {
         if (!m_buttonText || !m_buttonText->isBR()) {
@@ -281,9 +282,9 @@ void RenderMenuList::setText(const String& s)
             addChild(m_buttonText);
         }
     } else {
-        if (m_buttonText && !m_buttonText->isBR())
+        if (m_buttonText && !m_buttonText->isBR()) {
             m_buttonText->setText(s.impl(), true);
-        else {
+        } else {
             // FIXME: We should not modify the structure of the render tree
             // during layout. crbug.com/370462
             DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
@@ -301,12 +302,12 @@ void RenderMenuList::setText(const String& s)
     }
 }
 
-String RenderMenuList::text() const
+String LayoutMenuList::text() const
 {
     return m_buttonText ? m_buttonText->text() : String();
 }
 
-LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) const
+LayoutRect LayoutMenuList::controlClipRect(const LayoutPoint& additionalOffset) const
 {
     // Clip to the intersection of the content box and the content box for the inner box
     // This will leave room for the arrows which sit in the inner box padding,
@@ -321,14 +322,14 @@ LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) 
     return intersection(outerBox, innerBox);
 }
 
-void RenderMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }
 
-void RenderMenuList::showPopup()
+void LayoutMenuList::showPopup()
 {
     if (m_popupIsVisible)
         return;
@@ -350,13 +351,13 @@ void RenderMenuList::showPopup()
     m_popup->show(quad, size, select->optionToListIndex(select->selectedIndex()));
 }
 
-void RenderMenuList::hidePopup()
+void LayoutMenuList::hidePopup()
 {
     if (m_popup)
         m_popup->hide();
 }
 
-void RenderMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
+void LayoutMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
 {
     // Check to ensure a page navigation has not occurred while
     // the popup was up.
@@ -368,38 +369,38 @@ void RenderMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
     select->optionSelectedByUser(select->listToOptionIndex(listIndex), fireOnChange);
 }
 
-void RenderMenuList::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
+void LayoutMenuList::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
 {
     selectElement()->listBoxSelectItem(listIndex, allowMultiplySelections, shift, fireOnChangeNow);
 }
 
-bool RenderMenuList::multiple() const
+bool LayoutMenuList::multiple() const
 {
     return selectElement()->multiple();
 }
 
-IntRect RenderMenuList::elementRectRelativeToViewport() const
+IntRect LayoutMenuList::elementRectRelativeToViewport() const
 {
     return selectElement()->document().view()->contentsToWindow(absoluteBoundingBoxRect());
 }
 
-Element& RenderMenuList::ownerElement() const
+Element& LayoutMenuList::ownerElement() const
 {
     return *selectElement();
 }
 
-const LayoutStyle* RenderMenuList::layoutStyleForItem(Element& element) const
+const LayoutStyle* LayoutMenuList::layoutStyleForItem(Element& element) const
 {
     document().updateRenderTreeIfNeeded();
     return element.layoutStyle() ? element.layoutStyle() : element.computedStyle();
 }
 
-void RenderMenuList::didSetSelectedIndex(int listIndex)
+void LayoutMenuList::didSetSelectedIndex(int listIndex)
 {
     didUpdateActiveOption(selectElement()->listToOptionIndex(listIndex));
 }
 
-void RenderMenuList::didUpdateActiveOption(int optionIndex)
+void LayoutMenuList::didUpdateActiveOption(int optionIndex)
 {
     if (!document().existingAXObjectCache())
         return;
@@ -415,10 +416,10 @@ void RenderMenuList::didUpdateActiveOption(int optionIndex)
     document().existingAXObjectCache()->handleUpdateActiveMenuOption(this, optionIndex);
 }
 
-String RenderMenuList::itemText(unsigned listIndex) const
+String LayoutMenuList::itemText(unsigned listIndex) const
 {
     HTMLSelectElement* select = selectElement();
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = select->listItems();
     if (listIndex >= listItems.size())
         return String();
 
@@ -433,26 +434,26 @@ String RenderMenuList::itemText(unsigned listIndex) const
     return itemString;
 }
 
-String RenderMenuList::itemAccessibilityText(unsigned listIndex) const
+String LayoutMenuList::itemAccessibilityText(unsigned listIndex) const
 {
     // Allow the accessible name be changed if necessary.
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     if (listIndex >= listItems.size())
         return String();
     return listItems[listIndex]->fastGetAttribute(aria_labelAttr);
 }
 
-String RenderMenuList::itemToolTip(unsigned listIndex) const
+String LayoutMenuList::itemToolTip(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     if (listIndex >= listItems.size())
         return String();
     return listItems[listIndex]->title();
 }
 
-bool RenderMenuList::itemIsEnabled(unsigned listIndex) const
+bool LayoutMenuList::itemIsEnabled(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     if (listIndex >= listItems.size())
         return false;
     HTMLElement* element = listItems[listIndex];
@@ -470,9 +471,9 @@ bool RenderMenuList::itemIsEnabled(unsigned listIndex) const
     return !element->isDisabledFormControl();
 }
 
-PopupMenuStyle RenderMenuList::itemStyle(unsigned listIndex) const
+PopupMenuStyle LayoutMenuList::itemStyle(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     if (listIndex >= listItems.size()) {
         // If we are making an out of bounds access, then we want to use the style
         // of a different option element (index 0). However, if there isn't an option element
@@ -496,9 +497,9 @@ PopupMenuStyle RenderMenuList::itemStyle(unsigned listIndex) const
         itemHasCustomBackgroundColor ? PopupMenuStyle::CustomBackgroundColor : PopupMenuStyle::DefaultBackgroundColor) : menuStyle();
 }
 
-void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackgroundColor, bool& itemHasCustomBackgroundColor) const
+void LayoutMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackgroundColor, bool& itemHasCustomBackgroundColor) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     if (listIndex >= listItems.size()) {
         itemBackgroundColor = resolveColor(CSSPropertyBackgroundColor);
         itemHasCustomBackgroundColor = false;
@@ -527,7 +528,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
     itemBackgroundColor = Color(Color::white).blend(backgroundColor);
 }
 
-PopupMenuStyle RenderMenuList::menuStyle() const
+PopupMenuStyle LayoutMenuList::menuStyle() const
 {
     const LayoutObject* o = m_innerBlock ? m_innerBlock : this;
     const LayoutStyle& style = o->styleRef();
@@ -535,13 +536,13 @@ PopupMenuStyle RenderMenuList::menuStyle() const
         style.display() == NONE, style.textIndent(), style.direction(), isOverride(style.unicodeBidi()));
 }
 
-LayoutUnit RenderMenuList::clientPaddingLeft() const
+LayoutUnit LayoutMenuList::clientPaddingLeft() const
 {
     return paddingLeft() + m_innerBlock->paddingLeft();
 }
 
 const int endOfLinePadding = 2;
-LayoutUnit RenderMenuList::clientPaddingRight() const
+LayoutUnit LayoutMenuList::clientPaddingRight() const
 {
     if (style()->appearance() == MenulistPart || style()->appearance() == MenulistButtonPart) {
         // For these appearance values, the theme applies padding to leave room for the
@@ -556,44 +557,44 @@ LayoutUnit RenderMenuList::clientPaddingRight() const
     return paddingRight() + m_innerBlock->paddingRight();
 }
 
-int RenderMenuList::listSize() const
+int LayoutMenuList::listSize() const
 {
     return selectElement()->listItems().size();
 }
 
-int RenderMenuList::selectedIndex() const
+int LayoutMenuList::selectedIndex() const
 {
     HTMLSelectElement* select = selectElement();
     return select->optionToListIndex(select->selectedIndex());
 }
 
-void RenderMenuList::popupDidHide()
+void LayoutMenuList::popupDidHide()
 {
     m_popupIsVisible = false;
 }
 
-bool RenderMenuList::itemIsSeparator(unsigned listIndex) const
+bool LayoutMenuList::itemIsSeparator(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     return listIndex < listItems.size() && isHTMLHRElement(*listItems[listIndex]);
 }
 
-bool RenderMenuList::itemIsLabel(unsigned listIndex) const
+bool LayoutMenuList::itemIsLabel(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     return listIndex < listItems.size() && isHTMLOptGroupElement(*listItems[listIndex]);
 }
 
-bool RenderMenuList::itemIsSelected(unsigned listIndex) const
+bool LayoutMenuList::itemIsSelected(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
     if (listIndex >= listItems.size())
         return false;
     HTMLElement* element = listItems[listIndex];
     return isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected();
 }
 
-void RenderMenuList::setTextFromItem(unsigned listIndex)
+void LayoutMenuList::setTextFromItem(unsigned listIndex)
 {
     setTextFromOption(selectElement()->listToOptionIndex(listIndex));
 }

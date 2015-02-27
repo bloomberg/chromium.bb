@@ -33,8 +33,8 @@ typedef unsigned AXID;
 namespace blink {
 class AXObject;
 class FrameView;
+class LayoutMenuList;
 class Page;
-class RenderMenuList;
 class Widget;
 
 class AXObjectCache {
@@ -100,7 +100,7 @@ public:
     virtual void handleEditableTextContentChanged(Node*) = 0;
     virtual void handleTextFormControlChanged(Node*) = 0;
     virtual void handleValueChanged(Node*) = 0;
-    virtual void handleUpdateActiveMenuOption(RenderMenuList*, int optionIndex) = 0;
+    virtual void handleUpdateActiveMenuOption(LayoutMenuList*, int optionIndex) = 0;
     virtual void handleLoadComplete(Document*) = 0;
     virtual void handleLayoutComplete(Document*) = 0;
 

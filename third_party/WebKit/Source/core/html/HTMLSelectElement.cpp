@@ -52,13 +52,13 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutListBox.h"
+#include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/rendering/RenderMenuList.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/text/PlatformLocale.h"
 
@@ -358,7 +358,7 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == disabledAttr) {
         HTMLFormControlElementWithState::parseAttribute(name, value);
         if (renderer() && renderer()->isMenuList()) {
-            if (RenderMenuList* menuList = toRenderMenuList(renderer())) {
+            if (LayoutMenuList* menuList = toLayoutMenuList(renderer())) {
                 if (menuList->popupIsVisible())
                     menuList->hidePopup();
             }
@@ -381,7 +381,7 @@ bool HTMLSelectElement::canSelectAll() const
 LayoutObject* HTMLSelectElement::createRenderer(const LayoutStyle&)
 {
     if (usesMenuList())
-        return new RenderMenuList(this);
+        return new LayoutMenuList(this);
     return new LayoutListBox(this);
 }
 
@@ -737,7 +737,7 @@ void HTMLSelectElement::setOptionsChangedOnRenderer()
 {
     if (LayoutObject* renderer = this->renderer()) {
         if (usesMenuList())
-            toRenderMenuList(renderer)->setOptionsChanged(true);
+            toLayoutMenuList(renderer)->setOptionsChanged(true);
     }
 }
 
@@ -969,7 +969,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
             dispatchInputAndChangeEventForMenuList();
         if (LayoutObject* renderer = this->renderer()) {
             if (usesMenuList()) {
-                toRenderMenuList(renderer)->didSetSelectedIndex(listIndex);
+                toLayoutMenuList(renderer)->didSetSelectedIndex(listIndex);
             } else if (renderer->isListBox()) {
                 if (AXObjectCache* cache = document().existingAXObjectCache())
                     cache->selectedChildrenChanged(this);
@@ -1198,10 +1198,10 @@ void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
         return;
     // Save the selection so it can be compared to the new selection
     // when dispatching change events during selectOption, which
-    // gets called from RenderMenuList::valueChanged, which gets called
+    // gets called from LayoutMenuList::valueChanged, which gets called
     // after the user makes a selection from the menu.
     saveLastSelection();
-    if (RenderMenuList* menuList = toRenderMenuList(renderer()))
+    if (LayoutMenuList* menuList = toLayoutMenuList(renderer()))
         menuList->showPopup();
     event->setDefaultHandled();
     return;
@@ -1309,13 +1309,13 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         focus();
         if (renderer() && renderer()->isMenuList() && !isDisabledFormControl()) {
-            if (RenderMenuList* menuList = toRenderMenuList(renderer())) {
+            if (LayoutMenuList* menuList = toLayoutMenuList(renderer())) {
                 if (menuList->popupIsVisible())
                     menuList->hidePopup();
                 else {
                     // Save the selection so it can be compared to the new
                     // selection when we call onChange during selectOption,
-                    // which gets called from RenderMenuList::valueChanged,
+                    // which gets called from LayoutMenuList::valueChanged,
                     // which gets called after the user makes a selection from
                     // the menu.
                     saveLastSelection();
@@ -1327,7 +1327,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
     }
 
     if (event->type() == EventTypeNames::blur) {
-        if (RenderMenuList* menuList = toRenderMenuList(renderer())) {
+        if (LayoutMenuList* menuList = toLayoutMenuList(renderer())) {
             if (menuList->popupIsVisible())
                 menuList->hidePopup();
         }

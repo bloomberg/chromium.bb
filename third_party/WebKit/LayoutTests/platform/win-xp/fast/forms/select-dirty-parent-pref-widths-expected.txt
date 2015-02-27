@@ -7,7 +7,7 @@ layer at (0,0) size 800x90
         LayoutTableSection {TBODY} at (1,1) size 55x28
           LayoutTableRow {TR} at (0,2) size 55x24
             LayoutTableCell {TD} at (2,2) size 51x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderMenuList {SELECT} at (2,2) size 47x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+              LayoutMenuList {SELECT} at (2,2) size 47x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
                 RenderBlock (anonymous) at (1,1) size 45x18
                   RenderText at (4,1) size 22x16
                     text run at (4,1) width 22: "test"

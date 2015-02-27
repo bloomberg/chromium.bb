@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef RenderMenuList_h
-#define RenderMenuList_h
+#ifndef LayoutMenuList_h
+#define LayoutMenuList_h
 
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/layout/LayoutFlexibleBox.h"
@@ -34,11 +34,11 @@ namespace blink {
 class HTMLSelectElement;
 class LayoutText;
 
-class RenderMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
+class LayoutMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
 
 public:
-    explicit RenderMenuList(Element*);
-    virtual ~RenderMenuList();
+    explicit LayoutMenuList(Element*);
+    virtual ~LayoutMenuList();
     virtual void destroy() override;
 
     bool popupIsVisible() const { return m_popupIsVisible; }
@@ -70,7 +70,7 @@ private:
     virtual bool hasControlClip() const override { return true; }
     virtual bool canHaveGeneratedChildren() const override { return false; }
 
-    virtual const char* renderName() const override { return "RenderMenuList"; }
+    virtual const char* renderName() const override { return "LayoutMenuList"; }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
@@ -135,7 +135,7 @@ private:
     bool m_popupIsVisible;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMenuList, isMenuList());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, isMenuList());
 
 }
 

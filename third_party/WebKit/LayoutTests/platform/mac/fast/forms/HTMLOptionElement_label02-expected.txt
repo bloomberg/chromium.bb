@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,0) size 308x18
         text run at (0,0) width 308: "With the label empty, the enclosing text is used."
       LayoutBR {BR} at (307,14) size 1x0
-      RenderMenuList {SELECT} at (0,18) size 309x18 [bgcolor=#F8F8F8]
+      LayoutMenuList {SELECT} at (0,18) size 309x18 [bgcolor=#F8F8F8]
         RenderBlock (anonymous) at (0,0) size 309x18
           RenderText at (8,2) size 278x13
             text run at (8,2) width 278: "empty label should display empty string to match IE"

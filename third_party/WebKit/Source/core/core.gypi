@@ -640,6 +640,8 @@
             'layout/LayoutMedia.h',
             'layout/LayoutMediaControls.cpp',
             'layout/LayoutMediaControls.h',
+            'layout/LayoutMenuList.cpp',
+            'layout/LayoutMenuList.h',
             'layout/LayoutMeter.cpp',
             'layout/LayoutMeter.h',
             'layout/LayoutMultiColumnFlowThread.cpp',
@@ -854,8 +856,6 @@
             'layout/svg/line/SVGInlineTextBox.h',
             'layout/svg/line/SVGRootInlineBox.cpp',
             'layout/svg/line/SVGRootInlineBox.h',
-            'rendering/RenderMenuList.cpp',
-            'rendering/RenderMenuList.h',
             'rendering/RenderSelectionInfo.h',
         ],
         'webcore_non_rendering_files': [

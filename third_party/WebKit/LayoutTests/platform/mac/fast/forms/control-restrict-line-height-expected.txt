@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,0) size 533x18
         text run at (0,0) width 533: "This tests that we don't honor line-height for controls that have restricted font size. "
       LayoutBR {BR} at (0,0) size 0x0
-      RenderMenuList {SELECT} at (0,19) size 309x18 [bgcolor=#F8F8F8]
+      LayoutMenuList {SELECT} at (0,19) size 309x18 [bgcolor=#F8F8F8]
         RenderBlock (anonymous) at (0,0) size 309x18
           RenderText at (8,2) size 278x13
             text run at (8,2) width 278: "This text should be centered vertically in the button"

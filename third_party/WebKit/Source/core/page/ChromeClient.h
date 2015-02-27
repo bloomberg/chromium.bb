@@ -190,7 +190,7 @@ public:
 
     virtual void setTouchAction(TouchAction) = 0;
 
-    // Checks if there is an opened popup, called by RenderMenuList::showPopup().
+    // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
     virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
     virtual DOMWindow* pagePopupWindowForTesting() const = 0;

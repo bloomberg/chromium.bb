@@ -262,7 +262,7 @@ void PopupContainer::notifyPopupHidden()
     // torn down -- the connection to the FrameHost has been snipped &
     // there's no page. Hence the null check.
     //
-    // In a non-Oilpan setting, the RenderMenuList that controls/owns
+    // In a non-Oilpan setting, the LayoutMenuList that controls/owns
     // the PopupMenuChromium object and this PopupContainer is torn
     // down and destructed before the frame and frame owner, hence the
     // page will always be available in that setting and this will

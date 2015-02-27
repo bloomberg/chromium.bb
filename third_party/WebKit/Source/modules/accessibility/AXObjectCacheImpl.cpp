@@ -40,6 +40,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/layout/LayoutListBox.h"
+#include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTable.h"
@@ -51,7 +52,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderMenuList.h"
 #include "modules/accessibility/AXARIAGrid.h"
 #include "modules/accessibility/AXARIAGridCell.h"
 #include "modules/accessibility/AXARIAGridRow.h"
@@ -286,7 +286,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* rendere
         if (cssBox->isListBox())
             return AXListBox::create(toLayoutListBox(cssBox), this);
         if (cssBox->isMenuList())
-            return AXMenuList::create(toRenderMenuList(cssBox), this);
+            return AXMenuList::create(toLayoutMenuList(cssBox), this);
 
         // standard tables
         if (cssBox->isTable())
@@ -1037,7 +1037,7 @@ void AXObjectCacheImpl::handleValueChanged(Node* node)
     postNotification(node, AXObjectCache::AXValueChanged, true);
 }
 
-void AXObjectCacheImpl::handleUpdateActiveMenuOption(RenderMenuList* menuList, int optionIndex)
+void AXObjectCacheImpl::handleUpdateActiveMenuOption(LayoutMenuList* menuList, int optionIndex)
 {
     if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
         axMenuList->didUpdateActiveOption(optionIndex);

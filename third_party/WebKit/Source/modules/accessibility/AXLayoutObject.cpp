@@ -55,13 +55,13 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
+#include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderMenuList.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -935,7 +935,7 @@ String AXLayoutObject::stringValue() const
         return textUnderElement(TextUnderElementAll);
 
     if (cssBox && cssBox->isMenuList()) {
-        // RenderMenuList will go straight to the text() of its selected item.
+        // LayoutMenuList will go straight to the text() of its selected item.
         // This has to be overridden in the case where the selected item has an ARIA label.
         HTMLSelectElement* selectElement = toHTMLSelectElement(m_renderer->node());
         int selectedIndex = selectElement->selectedIndex();
@@ -945,7 +945,7 @@ String AXLayoutObject::stringValue() const
             if (!overriddenDescription.isNull())
                 return overriddenDescription;
         }
-        return toRenderMenuList(m_renderer)->text();
+        return toLayoutMenuList(m_renderer)->text();
     }
 
     if (m_renderer->isListMarker())

@@ -1128,7 +1128,7 @@ void LayoutThemeMac::adjustMenuListStyle(LayoutStyle& style, Element* e) const
 const int autofillPopupHorizontalPadding = 4;
 
 // These functions are called with MenuListPart or MenulistButtonPart appearance
-// by RenderMenuList, or with TextFieldPart appearance by
+// by LayoutMenuList, or with TextFieldPart appearance by
 // AutofillPopupMenuClient. We assume only AutofillPopupMenuClient gives
 // TexfieldPart appearance here. We want to change only Autofill padding.  In
 // the future, we have to separate Autofill popup window logic from WebKit to

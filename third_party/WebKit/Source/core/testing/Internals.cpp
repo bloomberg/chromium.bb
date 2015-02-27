@@ -103,6 +103,7 @@
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
@@ -119,7 +120,6 @@
 #include "core/page/PrintContext.h"
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
-#include "core/rendering/RenderMenuList.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
 #include "core/testing/InternalSettings.h"
@@ -2005,7 +2005,7 @@ bool Internals::isSelectPopupVisible(Node* node)
     if (!renderer || !renderer->isMenuList())
         return false;
 
-    RenderMenuList* menuList = toRenderMenuList(renderer);
+    LayoutMenuList* menuList = toLayoutMenuList(renderer);
     return menuList->popupIsVisible();
 }
 
@@ -2020,7 +2020,7 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
     if (!renderer || !renderer->isMenuList())
         return false;
 
-    RenderMenuList& menuList = toRenderMenuList(*renderer);
+    LayoutMenuList& menuList = toLayoutMenuList(*renderer);
     PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
     return itemStyle.textDirection() == RTL;
 }
@@ -2036,7 +2036,7 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
     if (!renderer || !renderer->isMenuList())
         return false;
 
-    RenderMenuList& menuList = toRenderMenuList(*renderer);
+    LayoutMenuList& menuList = toLayoutMenuList(*renderer);
     PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
     return itemStyle.font().fontMetrics().height();
 }

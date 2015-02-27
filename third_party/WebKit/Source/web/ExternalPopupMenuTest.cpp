@@ -10,8 +10,8 @@
 #include "core/frame/PinchViewport.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/PopupMenuClient.h"
+#include "core/layout/LayoutMenuList.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderMenuList.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/PopupMenu.h"
@@ -196,7 +196,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForPinchViewportOffset)
     webView()->layout();
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
     ASSERT_TRUE(menuList);
 
     PinchViewport& pinchViewport = webView()->page()->frameHost().pinchViewport();
@@ -219,7 +219,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex)
     loadFrame("select.html");
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
@@ -238,7 +238,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices)
     loadFrame("select.html");
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
@@ -259,7 +259,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect)
     loadFrame("select.html");
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();

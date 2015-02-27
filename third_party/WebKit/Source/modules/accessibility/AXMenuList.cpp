@@ -26,25 +26,25 @@
 #include "config.h"
 #include "modules/accessibility/AXMenuList.h"
 
-#include "core/rendering/RenderMenuList.h"
+#include "core/layout/LayoutMenuList.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
 
-AXMenuList::AXMenuList(RenderMenuList* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXMenuList::AXMenuList(LayoutMenuList* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXMenuList> AXMenuList::create(RenderMenuList* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXMenuList(renderer, axObjectCache));
+    return adoptRef(new AXMenuList(layoutObject, axObjectCache));
 }
 
 bool AXMenuList::press() const
 {
-    RenderMenuList* menuList = toRenderMenuList(m_renderer);
+    LayoutMenuList* menuList = toLayoutMenuList(m_renderer);
     if (menuList->popupIsVisible())
         menuList->hidePopup();
     else
@@ -84,7 +84,7 @@ void AXMenuList::childrenChanged()
 
 bool AXMenuList::isCollapsed() const
 {
-    return !toRenderMenuList(m_renderer)->popupIsVisible();
+    return !toLayoutMenuList(m_renderer)->popupIsVisible();
 }
 
 AccessibilityExpanded AXMenuList::isExpanded() const

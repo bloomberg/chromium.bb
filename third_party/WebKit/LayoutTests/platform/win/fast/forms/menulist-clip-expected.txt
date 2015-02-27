@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (220,18) size 5x17
           text run at (220,18) width 5: "."
       RenderBlock (anonymous) at (0,52) size 784x30
-        RenderMenuList {SELECT} at (0,0) size 57x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutMenuList {SELECT} at (0,0) size 57x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,3.50) size 55x23
             RenderText at (4,1) size 47x20
               text run at (4,1) width 47: "Apple"

@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,134) size 0x18
         RenderText {#text} at (0,152) size 306x18
           text run at (0,152) width 306: "Five Spaces (with leading/trailing whitespace): "
-        RenderMenuList {SELECT} at (305.25,153) size 92x18 [bgcolor=#F8F8F8]
+        LayoutMenuList {SELECT} at (305.25,153) size 92x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 92x18
             RenderText at (8,2) size 61x13
               text run at (8,2) width 61: "Five Spaces"
@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,171) size 0x18
         RenderText {#text} at (0,189) size 292x18
           text run at (0,189) width 292: "Five Tabs (with leading/trailing whitespace): "
-        RenderMenuList {SELECT} at (291.92,190) size 81x18 [bgcolor=#F8F8F8]
+        LayoutMenuList {SELECT} at (291.92,190) size 81x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 81x18
             RenderText at (8,2) size 50x13
               text run at (8,2) width 50: "Five Tabs"
@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,208) size 0x18
         RenderText {#text} at (0,226) size 129x18
           text run at (0,226) width 129: "Mixed Whitespace: "
-        RenderMenuList {SELECT} at (128.84,227) size 81x18 [bgcolor=#F8F8F8]
+        LayoutMenuList {SELECT} at (128.84,227) size 81x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 81x18
             RenderText at (8,2) size 50x13
               text run at (8,2) width 50: "Five Tabs"
