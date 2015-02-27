@@ -72,7 +72,7 @@ class _ContextLostValidator(page_test.PageTest):
         util.WaitFor(lambda: tab.EvaluateJavaScript(
             'window.domAutomationController._finished'), wait_timeout)
         return True
-      except util.TimeoutException:
+      except exceptions.TimeoutException:
         return False
 
     if page.kill_gpu_process:

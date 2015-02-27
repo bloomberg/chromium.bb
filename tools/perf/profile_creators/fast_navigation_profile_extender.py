@@ -7,7 +7,6 @@ from telemetry.core import browser_finder
 from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
 from telemetry.core import platform
-from telemetry.core import util
 from telemetry.core.backends.chrome_inspector import devtools_http
 
 
@@ -240,7 +239,7 @@ class FastNavigationProfileExtender(object):
 
       try:
         tab.WaitForDocumentReadyStateToBeComplete(seconds_to_wait)
-      except util.TimeoutException:
+      except exceptions.TimeoutException:
         # Ignore time outs.
         pass
       except (exceptions.DevtoolsTargetCrashException,

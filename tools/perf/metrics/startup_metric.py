@@ -7,7 +7,7 @@ import logging
 
 from metrics import Metric
 
-from telemetry.core import util
+from telemetry.core import exceptions
 from telemetry.value import histogram_util
 from telemetry.value import scalar
 
@@ -74,7 +74,7 @@ class StartupMetric(Metric):
             int(result['load_start_ms']),
             int(result['load_duration_ms']),
             int(perf_timing['requestStart'])))
-      except util.TimeoutException:
+      except exceptions.TimeoutException:
         # Low memory Android devices may not be able to load more than
         # one tab at a time, so may timeout when the test attempts to
         # access a background tab. Ignore these tabs.
