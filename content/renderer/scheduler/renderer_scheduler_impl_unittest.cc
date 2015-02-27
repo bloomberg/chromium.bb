@@ -26,6 +26,18 @@ class FakeInputEvent : public blink::WebInputEvent {
     modifiers = event_modifiers;
   }
 };
+
+void AppendToVectorTestTask(std::vector<std::string>* vector,
+                            std::string value) {
+  vector->push_back(value);
+}
+
+void AppendToVectorIdleTestTask(std::vector<std::string>* vector,
+                                std::string value,
+                                base::TimeTicks deadline) {
+  AppendToVectorTestTask(vector, value);
+}
+
 };  // namespace
 
 class RendererSchedulerImplTest : public testing::Test {
@@ -57,6 +69,43 @@ class RendererSchedulerImplTest : public testing::Test {
 
   Policy CurrentPolicy() { return scheduler_->current_policy_; }
 
+  // Helper for posting several tasks of specific types. |task_descriptor| is a
+  // string with space delimited task identifiers. The first letter of each
+  // task identifier specifies the task type:
+  // - 'D': Default task
+  // - 'C': Compositor task
+  // - 'L': Loading task
+  // - 'I': Idle task
+  void PostTestTasks(std::vector<std::string>* run_order,
+                     const std::string& task_descriptor) {
+    std::istringstream stream(task_descriptor);
+    while (!stream.eof()) {
+      std::string task;
+      stream >> task;
+      switch (task[0]) {
+        case 'D':
+          default_task_runner_->PostTask(
+              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+          break;
+        case 'C':
+          compositor_task_runner_->PostTask(
+              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+          break;
+        case 'L':
+          loading_task_runner_->PostTask(
+              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+          break;
+        case 'I':
+          idle_task_runner_->PostIdleTask(
+              FROM_HERE,
+              base::Bind(&AppendToVectorIdleTestTask, run_order, task));
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+  }
+
  protected:
   static base::TimeDelta priority_escalation_after_input_duration() {
     return base::TimeDelta::FromMilliseconds(
@@ -76,25 +125,6 @@ class RendererSchedulerImplTest : public testing::Test {
 };
 
 void NullTask() {
-}
-
-void OrderedTestTask(int value, int* result) {
-  *result = (*result << 4) | value;
-}
-
-void UnorderedTestTask(int value, int* result) {
-  *result += value;
-}
-
-void AppendToVectorTestTask(std::vector<std::string>* vector,
-                            std::string value) {
-  vector->push_back(value);
-}
-
-void AppendToVectorIdleTestTask(std::vector<std::string>* vector,
-                                std::string value,
-                                base::TimeTicks deadline) {
-  AppendToVectorTestTask(vector, value);
 }
 
 void AppendToVectorReentrantTask(
@@ -171,38 +201,32 @@ void AnticipationTestTask(RendererSchedulerImpl* scheduler,
 }
 
 TEST_F(RendererSchedulerImplTest, TestPostDefaultTask) {
-  int result = 0;
-  default_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(OrderedTestTask, 1, &result));
-  default_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(OrderedTestTask, 2, &result));
-  default_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(OrderedTestTask, 3, &result));
-  default_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(OrderedTestTask, 4, &result));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 D2 D3 D4");
+
   RunUntilIdle();
-  EXPECT_EQ(0x1234, result);
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D1"), std::string("D2"),
+                                   std::string("D3"), std::string("D4")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestPostDefaultAndCompositor) {
-  int result = 0;
-  default_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&UnorderedTestTask, 1, &result));
-  compositor_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&UnorderedTestTask, 2, &result));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 C1");
   RunUntilIdle();
-  EXPECT_EQ(3, result);
+  EXPECT_THAT(run_order, testing::Contains("D1"));
+  EXPECT_THAT(run_order, testing::Contains("C1"));
 }
 
 TEST_F(RendererSchedulerImplTest, TestRentrantTask) {
   int count = 0;
-  std::vector<int> order;
+  std::vector<int> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::Bind(AppendToVectorReentrantTask, default_task_runner_,
-                            &order, &count, 5));
+                            &run_order, &count, 5));
   RunUntilIdle();
 
-  EXPECT_THAT(order, testing::ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(run_order, testing::ElementsAre(0, 1, 2, 3, 4));
 }
 
 TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
@@ -381,417 +405,234 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
-  std::vector<std::string> order;
-
-  loading_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(
-      std::string("L1"), std::string("D1"), std::string("C1"),
-      std::string("D2"), std::string("C2"), std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestCompositorPolicy) {
-  std::vector<std::string> order;
-
-  loading_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   EnableIdleTasks();
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(
-      std::string("C1"), std::string("C2"), std::string("D1"),
-      std::string("D2"), std::string("L1"), std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("L1"), std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
-  std::vector<std::string> order;
-
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   scheduler_->DidAnimateForInputOnCompositorThread();
   EnableIdleTasks();
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                          std::string("D1"), std::string("D2"),
-                                          std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy) {
-  std::vector<std::string> order;
-
-  loading_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
   // Observation of touchstart should defer execution of idle and loading tasks.
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   RunUntilIdle();
-  EXPECT_THAT(order,
+  EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
                                    std::string("D1"), std::string("D2")));
 
   // Meta events like TapDown/FlingCancel shouldn't affect the priority.
-  order.clear();
+  run_order.clear();
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingCancel));
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureTapDown));
   RunUntilIdle();
-  EXPECT_TRUE(order.empty());
+  EXPECT_TRUE(run_order.empty());
 
   // Action events like ScrollBegin will kick us back into compositor priority,
   // allowing servie of the loading and idle queues.
-  order.clear();
+  run_order.clear();
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureScrollBegin));
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(std::string("L1")));
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
        DidReceiveInputEventOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
-  std::vector<std::string> order;
-
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::MouseMove));
   EnableIdleTasks();
   RunUntilIdle();
   // Note compositor tasks are not prioritized.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                          std::string("D2"), std::string("C2"),
-                                          std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D1"), std::string("C1"),
+                                   std::string("D2"), std::string("C2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
        DidReceiveInputEventOnCompositorThread_MouseMove_WhenMouseDown) {
-  std::vector<std::string> order;
-
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(FakeInputEvent(
       blink::WebInputEvent::MouseMove, blink::WebInputEvent::LeftButtonDown));
   EnableIdleTasks();
   RunUntilIdle();
   // Note compositor tasks are prioritized.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                          std::string("D1"), std::string("D2"),
-                                          std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
        DidReceiveInputEventOnCompositorThread_MouseWheel) {
-  std::vector<std::string> order;
-
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::MouseWheel));
   EnableIdleTasks();
   RunUntilIdle();
   // Note compositor tasks are prioritized.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                          std::string("D1"), std::string("D2"),
-                                          std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
        DidReceiveInputEventOnCompositorThread_IgnoresKeyboardEvents) {
-  std::vector<std::string> order;
-
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::KeyDown));
   EnableIdleTasks();
   RunUntilIdle();
   // Note compositor tasks are not prioritized.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                          std::string("D2"), std::string("C2"),
-                                          std::string("I1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D1"), std::string("C1"),
+                                   std::string("D2"), std::string("C2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
        TestCompositorPolicyDoesNotStarveDefaultTasks) {
-  std::vector<std::string> order;
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 C1");
 
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
   for (int i = 0; i < 20; i++) {
     compositor_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
   }
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  PostTestTasks(&run_order, "C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   RunUntilIdle();
   // Ensure that the default D1 task gets to run at some point before the final
   // C2 compositor task.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("D1"),
-                                          std::string("C2")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("D1"),
+                                   std::string("C2")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestCompositorPolicyEnds) {
-  std::vector<std::string> order;
-
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   DoMainFrame();
   RunUntilIdle();
-  EXPECT_THAT(order,
+  EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
                                    std::string("D1"), std::string("D2")));
 
-  order.clear();
+  run_order.clear();
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
-
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  PostTestTasks(&run_order, "D1 C1 D2 C2");
 
   // Compositor policy mode should have ended now that the clock has advanced.
   RunUntilIdle();
-  EXPECT_THAT(order,
+  EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("D1"), std::string("C1"),
                                    std::string("D2"), std::string("C2")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
-  std::vector<std::string> order;
-
-  loading_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   RunUntilIdle();
-  EXPECT_THAT(order,
+  EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
                                    std::string("D1"), std::string("D2")));
 
-  order.clear();
+  run_order.clear();
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
 
   // Don't post any compositor tasks to simulate a very long running event
   // handler.
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
+  PostTestTasks(&run_order, "D1 D2");
 
   // Touchstart policy mode should have ended now that the clock has advanced.
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                          std::string("D2")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("D2")));
 }
 
 TEST_F(RendererSchedulerImplTest,
        TestTouchstartPolicyEndsAfterConsecutiveTouchmoves) {
-  std::vector<std::string> order;
-
-  loading_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D1")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C1")));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("D2")));
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AppendToVectorTestTask, &order, std::string("C2")));
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
   // Observation of touchstart should defer execution of idle and loading tasks.
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   DoMainFrame();
   RunUntilIdle();
-  EXPECT_THAT(order,
+  EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
                                    std::string("D1"), std::string("D2")));
 
   // Receiving the first touchmove will not affect scheduler priority.
-  order.clear();
+  run_order.clear();
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchMove));
   DoMainFrame();
   RunUntilIdle();
-  EXPECT_TRUE(order.empty());
+  EXPECT_TRUE(run_order.empty());
 
   // Receiving the second touchmove will kick us back into compositor priority.
-  order.clear();
+  run_order.clear();
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchMove));
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(std::string("L1")));
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
