@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jhawkins): Use hidden instead of showInline* and display:none.
 // TODO(hcarmona): This file is big: it may be good to split it up.
 
 /**
@@ -31,24 +30,6 @@
  *            url: string}}
  */
 var DownloadItem;
-
-/**
- * Sets the display style of a node.
- * @param {!Element} node The target element to show or hide.
- * @param {boolean} isShow Should the target element be visible.
- */
-function showInline(node, isShow) {
-  node.style.display = isShow ? 'inline' : 'none';
-}
-
-/**
- * Sets the display style of a node.
- * @param {!Element} node The target element to show or hide.
- * @param {boolean} isShow Should the target element be visible.
- */
-function showInlineBlock(node, isShow) {
-  node.style.display = isShow ? 'inline-block' : 'none';
-}
 
 /**
  * Creates a link with a specified onclick handler and content.
@@ -120,25 +101,25 @@ DownloadFocusRow.prototype = {
 
   /** @override */
   getEquivalentElement: function(element) {
-    if (this.contains(element))
+    if (this.focusableElements.indexOf(element) > -1)
       return element;
 
     // All elements default to another element with the same type.
     var columnType = element.getAttribute('column-type');
     var equivalent = this.querySelector('[column-type=' + columnType + ']');
 
-    if (!equivalent) {
+    if (this.focusableElements.indexOf(equivalent) < 0) {
       var equivalentTypes =
           ['show', 'retry', 'pause', 'resume', 'remove', 'cancel'];
       if (equivalentTypes.indexOf(columnType) != -1) {
         var allTypes = equivalentTypes.map(function(type) {
-          return '[column-type=' + type + ']';
+          return '[column-type=' + type + ']:not([hidden])';
         }).join(', ');
         equivalent = this.querySelector(allTypes);
       }
     }
 
-    // Return the first focusable element if no equivalent type is found.
+    // Return the first focusable element if no equivalent element is found.
     return equivalent || this.focusableElements[0];
   },
 
@@ -248,9 +229,7 @@ Downloads.prototype.setSearchText = function(searchText) {
   this.searchText_ = searchText;
 };
 
-/**
- * Update the summary block above the results.
- */
+/** Update the summary block above the results. */
 Downloads.prototype.updateSummary = function() {
   if (this.searchText_) {
     this.summary_.textContent = loadTimeData.getStringF('searchresultsfor',
@@ -284,6 +263,7 @@ Downloads.prototype.updateResults = function() {
  * @private
  */
 Downloads.prototype.rebuildFocusGrid_ = function() {
+  var activeElement = document.activeElement;
   this.focusGrid_.destroy();
 
   var keys = Object.keys(this.downloads_);
@@ -296,7 +276,13 @@ Downloads.prototype.rebuildFocusGrid_ = function() {
   // to the FocusGrid in the order they will be in the UI.
   var downloads = document.querySelectorAll('.download');
   for (var i = 0; i < downloads.length; ++i) {
-    this.focusGrid_.addRow(downloads[i]);
+    var focusRow = downloads[i];
+    this.focusGrid_.addRow(focusRow);
+
+    // Focus the equivalent element in the focusRow because the active element
+    // may no longer be visible.
+    if (focusRow.contains(activeElement))
+      focusRow.getEquivalentElement(activeElement).focus();
   }
 };
 
@@ -340,9 +326,7 @@ Downloads.prototype.remove = function(id) {
   this.onDownloadListChanged_();
 };
 
-/**
- * Clear all downloads and reset us back to a null state.
- */
+/** Clear all downloads and reset us back to a null state. */
 Downloads.prototype.clear = function() {
   for (var id in this.downloads_) {
     this.downloads_[id].clear();
@@ -475,11 +459,9 @@ function Download(download) {
 
   this.nodeFileLink_ = createActionLink(this.openFile_.bind(this));
   this.nodeFileLink_.className = 'name';
-  this.nodeFileLink_.style.display = 'none';
   this.nodeTitleArea_.appendChild(this.nodeFileLink_);
 
   this.nodeFileName_ = createElementWithClassName('span', 'name');
-  this.nodeFileName_.style.display = 'none';
   this.nodeTitleArea_.appendChild(this.nodeFileName_);
 
   this.nodeStatus_ = createElementWithClassName('span', 'status');
@@ -610,9 +592,7 @@ function floatEq(a, b, opt_pct) {
   return Math.abs(a - b) < (Math.min(a, b) * (opt_pct || 1.0) / 100.0);
 }
 
-/**
- * Constants and "constants" for the progress meter.
- */
+/** Constants and "constants" for the progress meter. */
 Download.Progress = {
   START_ANGLE: -0.5 * Math.PI,
   SIDE: 48,
@@ -690,16 +670,10 @@ Download.prototype.update = function(download) {
       this.nodeFileName_.classList.remove('interrupted');
     }
 
-    showInlineBlock(this.nodeFileLink_,
-                    this.state_ == Download.States.COMPLETE &&
-                        !this.fileExternallyRemoved_);
-    // nodeFileName_ has to be inline-block to avoid the 'interaction' with
-    // nodeStatus_. If both are inline, it appears that their text contents
-    // are merged before the bidi algorithm is applied leading to an
-    // undesirable reordering. http://crbug.com/13216
-    showInlineBlock(this.nodeFileName_,
-                    this.state_ != Download.States.COMPLETE ||
-                        this.fileExternallyRemoved_);
+    var completelyOnDisk = this.state_ == Download.States.COMPLETE &&
+                           !this.fileExternallyRemoved_;
+    this.nodeFileName_.hidden = completelyOnDisk;
+    this.nodeFileLink_.hidden = !completelyOnDisk;
 
     if (this.state_ == Download.States.IN_PROGRESS) {
       this.nodeProgressForeground_.style.display = 'block';
@@ -742,20 +716,17 @@ Download.prototype.update = function(download) {
       this.nodeProgressBackground_.style.display = 'none';
     }
 
-    if (this.controlShow_) {
-      showInline(this.controlShow_,
-                 this.state_ == Download.States.COMPLETE &&
-                     !this.fileExternallyRemoved_);
-    }
-    showInline(this.controlRetry_, download.retry);
+    if (this.controlShow_)
+      this.controlShow_.hidden = !completelyOnDisk;
+    this.controlRetry_.hidden = !download.retry;
     this.controlRetry_.href = this.url_;
-    showInline(this.controlPause_, this.state_ == Download.States.IN_PROGRESS);
-    showInline(this.controlResume_, download.resume);
+    this.controlPause_.hidden = this.state_ != Download.States.IN_PROGRESS;
+    this.controlResume_.hidden = !download.resume;
     var showCancel = this.state_ == Download.States.IN_PROGRESS ||
                      this.state_ == Download.States.PAUSED;
-    showInline(this.controlCancel_, showCancel);
+    this.controlCancel_.hidden = !showCancel;
     if (this.controlRemove_)
-      showInline(this.controlRemove_, !showCancel);
+      this.controlRemove_.hidden = showCancel;
 
     if (this.byExtensionId_ && this.byExtensionName_) {
       // Format 'control_by_extension' with a link instead of plain text by
@@ -851,9 +822,7 @@ Download.prototype.updateDangerousFile = function() {
   this.safe_.style.display = 'none';
 };
 
-/**
- * Removes applicable bits from the DOM in preparation for deletion.
- */
+/** Removes applicable bits from the DOM in preparation for deletion. */
 Download.prototype.clear = function() {
   this.safe_.ondragstart = null;
   this.nodeFileLink_.onclick = null;

@@ -115,7 +115,7 @@ html[dir=rtl] .progress {
 
 .name {
   -webkit-padding-end: 16px;
-  display: none;
+  display: inline-block;
   max-width: 450px;
   word-break: break-all;
 }
@@ -144,6 +144,10 @@ html[dir=rtl] .progress {
 .controls a {
   -webkit-margin-end: 12px;
   color: #777;
+}
+
+.safe .controls a {
+  display: inline;
 }
 
 #downloads-pagination {
