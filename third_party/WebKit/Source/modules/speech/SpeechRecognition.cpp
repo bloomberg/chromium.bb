@@ -40,14 +40,19 @@ namespace blink {
 
 SpeechRecognition* SpeechRecognition::create(ExecutionContext* context)
 {
-    SpeechRecognition* speechRecognition = new SpeechRecognition(context);
+    ASSERT(context && context->isDocument());
+    Document* document = toDocument(context);
+    ASSERT(document);
+    SpeechRecognition* speechRecognition = new SpeechRecognition(document->page(), context);
     speechRecognition->suspendIfNeeded();
     return speechRecognition;
 }
 
 void SpeechRecognition::start(ExceptionState& exceptionState)
 {
-    ASSERT(m_controller);
+    if (!m_controller)
+        return;
+
     if (m_started) {
         exceptionState.throwDOMException(InvalidStateError, "recognition has already started.");
         return;
@@ -60,7 +65,9 @@ void SpeechRecognition::start(ExceptionState& exceptionState)
 
 void SpeechRecognition::stopFunction()
 {
-    ASSERT(m_controller);
+    if (!m_controller)
+        return;
+
     if (m_started && !m_stopping) {
         m_stopping = true;
         m_controller->stop(this);
@@ -69,7 +76,9 @@ void SpeechRecognition::stopFunction()
 
 void SpeechRecognition::abort()
 {
-    ASSERT(m_controller);
+    if (!m_controller)
+        return;
+
     if (m_started && !m_stopping) {
         m_stopping = true;
         m_controller->abort(this);
@@ -166,31 +175,30 @@ bool SpeechRecognition::hasPendingActivity() const
     return m_started;
 }
 
-SpeechRecognition::SpeechRecognition(ExecutionContext* context)
-    : ActiveDOMObject(context)
+SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
+    : PageLifecycleObserver(page)
+    , ActiveDOMObject(context)
     , m_grammars(SpeechGrammarList::create()) // FIXME: The spec is not clear on the default value for the grammars attribute.
     , m_audioTrack(nullptr)
     , m_continuous(false)
     , m_interimResults(false)
     , m_maxAlternatives(1)
-    , m_controller(nullptr)
+    , m_controller(SpeechRecognitionController::from(page))
     , m_stoppedByActiveDOMObject(false)
     , m_started(false)
     , m_stopping(false)
 {
-    Document* document = toDocument(executionContext());
-
-    Page* page = document->page();
-    ASSERT(page);
-
-    m_controller = SpeechRecognitionController::from(page);
-    ASSERT(m_controller);
-
     // FIXME: Need to hook up with Page to get notified when the visibility changes.
 }
 
 SpeechRecognition::~SpeechRecognition()
 {
+}
+
+void SpeechRecognition::contextDestroyed()
+{
+    m_controller = nullptr;
+    PageLifecycleObserver::contextDestroyed();
 }
 
 DEFINE_TRACE(SpeechRecognition)
@@ -202,6 +210,7 @@ DEFINE_TRACE(SpeechRecognition)
 #endif
     visitor->trace(m_finalResults);
     RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

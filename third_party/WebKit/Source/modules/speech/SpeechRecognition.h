@@ -27,10 +27,12 @@
 #define SpeechRecognition_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebPrivatePtr.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,7 +44,7 @@ class MediaStreamTrack;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class SpeechRecognition final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>, public ActiveDOMObject {
+class SpeechRecognition final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>, public PageLifecycleObserver, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechRecognition>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
     DEFINE_WRAPPERTYPEINFO();
@@ -105,8 +107,11 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    // PageLifecycleObserver
+    virtual void contextDestroyed() override;
+
 private:
-    explicit SpeechRecognition(ExecutionContext*);
+    SpeechRecognition(Page*, ExecutionContext*);
 
     Member<SpeechGrammarList> m_grammars;
     Member<MediaStreamTrack> m_audioTrack;
@@ -120,6 +125,18 @@ private:
     bool m_started;
     bool m_stopping;
     HeapVector<Member<SpeechRecognitionResult>> m_finalResults;
+};
+
+// FIXME: Oilpan: two GarbageCollectedLifetime-based subclasses introduces
+// ambiguity for WebPrivatePtr<T>'s LifeTimeOf<T> inference of lifetime.
+template<>
+class LifetimeOf<SpeechRecognition> {
+public:
+#if ENABLE(OILPAN)
+    static const LifetimeManagementType value = RefCountedGarbageCollectedLifetime;
+#else
+    static const LifetimeManagementType value = RefCountedLifetime;
+#endif
 };
 
 } // namespace blink
