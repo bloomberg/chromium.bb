@@ -4,6 +4,26 @@
 
 module presentation;
 
+import "presentation_session.mojom";
+
+struct PresentationSessionInfo {
+    PresentationSession session;
+    string url;
+    string id;
+};
+
+enum PresentationErrorType {
+    NO_AVAILABLE_SCREENS,
+    SESSION_REQUEST_CANCELLED,
+    NO_PRESENTATION_FOUND,
+    UNKNOWN,
+};
+
+struct PresentationError {
+    PresentationErrorType errorType;
+    string message;
+};
+
 interface PresentationService {
     // Returns the last screen availability state if it’s changed since the last
     // time the method was called. The client has to call this method again when
@@ -18,4 +38,24 @@ interface PresentationService {
     // Called when the frame no longer listens to the
     // |availablechange| event.
     OnScreenAvailabilityListenerRemoved();
+
+    // Called when startSession() is called by the frame. The result callback
+    // will return a non-null and valid PresentationSessionInfo if starting the
+    // session succeeded, or null with a PresentationError if starting the
+    // session failed.
+    // The presentation id is always returned along with the initialized
+    // session on success.
+    // If the UA identifies a matching session (same presentation url and id),
+    // the user may choose this existing session and the page will join it
+    // rather than get a new one. An empty presentation id means that the
+    // UA will generate the presentation id.
+    StartSession(string presentation_url, string? presentation_id)
+         => (PresentationSessionInfo? sessionInfo, PresentationError? error);
+
+    // Called when joinSession() is called by the frame. The result callback
+    // works the same as for the method above. JoinSession will join a known
+    // session (i.e. when the page navigates or the user opens another tab)
+    // silently and without user action.
+    JoinSession(string presentation_url, string? presentation_id)
+        => (PresentationSessionInfo? sessionInfo, PresentationError? error);
 };

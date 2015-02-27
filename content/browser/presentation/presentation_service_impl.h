@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
+#include "content/common/presentation/presentation_session.mojom.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/presentation_service_delegate.h"
@@ -49,7 +50,10 @@ class CONTENT_EXPORT PresentationServiceImpl
       mojo::InterfaceRequest<presentation::PresentationService> request);
 
  private:
-  typedef mojo::Callback<void(bool)> ScreenAvailabilityMojoCallback;
+  using ScreenAvailabilityMojoCallback = mojo::Callback<void(bool)>;
+  using NewSessionMojoCallback =
+      mojo::Callback<void(presentation::PresentationSessionInfoPtr,
+          presentation::PresentationErrorPtr)>;
 
   friend class PresentationServiceImplTest;
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, RemoveAllListeners);
@@ -76,6 +80,14 @@ class CONTENT_EXPORT PresentationServiceImpl
       const mojo::String& presentation_url,
       const ScreenAvailabilityMojoCallback& callback) override;
   void OnScreenAvailabilityListenerRemoved() override;
+  void StartSession(
+      const mojo::String& presentation_url,
+      const mojo::String& presentation_id,
+      const NewSessionMojoCallback& callback) override;
+  void JoinSession(
+      const mojo::String& presentation_url,
+      const mojo::String& presentation_id,
+      const NewSessionMojoCallback& callback) override;
 
   // mojo::InterfaceImpl override.
   // Note that this is called when the RenderFrameHost is deleted.

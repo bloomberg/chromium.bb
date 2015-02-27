@@ -99,6 +99,20 @@ void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved() {
   NOTIMPLEMENTED();
 }
 
+void PresentationServiceImpl::StartSession(
+    const mojo::String& presentation_url,
+    const mojo::String& presentation_id,
+    const NewSessionMojoCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void PresentationServiceImpl::JoinSession(
+    const mojo::String& presentation_url,
+    const mojo::String& presentation_id,
+    const NewSessionMojoCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void PresentationServiceImpl::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
