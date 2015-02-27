@@ -1114,7 +1114,10 @@ EVENT_TYPE(HTTP2_SESSION_INITIALIZED)
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
-//     "id": <The stream id>,
+//     "fin": <True if this is the final data set by the peer on this stream>,
+//     "unidirectional": <True if this stream is unidirectional>,
+//     "priority": <The priority value of the stream>,
+//     "stream_id": <The stream id>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_SYN_STREAM)
 
@@ -1125,7 +1128,10 @@ EVENT_TYPE(HTTP2_SESSION_SYN_STREAM)
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
-//     "id": <The stream id>,
+//     "fin": <True if this is the final data set by the peer on this stream>,
+//     "unidirectional": <True if this stream is unidirectional>,
+//     "priority": <The priority value of the stream>,
+//     "stream_id": <The stream id>,
 //     "associated_stream": <The stream id>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_PUSHED_SYN_STREAM)
@@ -1135,7 +1141,10 @@ EVENT_TYPE(HTTP2_SESSION_PUSHED_SYN_STREAM)
 //   {
 //     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
-//     "id": <The stream id>,
+//     "fin": <True if this is the final data set by the peer on this stream>,
+//     "unidirectional": <True if this stream is unidirectional>,
+//     "priority": <The priority value of the stream>,
+//     "stream_id": <The stream id>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_SEND_HEADERS)
 

@@ -81,7 +81,7 @@ base::Value* NetLogSpdySynStreamSentCallback(const SpdyHeaderBlock* headers,
             SpdyHeaderBlockToListValue(*headers, log_level).release());
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
-  dict->SetInteger("spdy_priority", static_cast<int>(spdy_priority));
+  dict->SetInteger("priority", static_cast<int>(spdy_priority));
   dict->SetInteger("stream_id", stream_id);
   return dict;
 }
@@ -99,7 +99,7 @@ base::Value* NetLogSpdySynStreamReceivedCallback(
             SpdyHeaderBlockToListValue(*headers, log_level).release());
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
-  dict->SetInteger("spdy_priority", static_cast<int>(spdy_priority));
+  dict->SetInteger("priority", static_cast<int>(spdy_priority));
   dict->SetInteger("stream_id", stream_id);
   dict->SetInteger("associated_stream", associated_stream);
   return dict;
