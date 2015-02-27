@@ -47,6 +47,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
       directory_(directory),
       mid_commit_observer_(NULL),
       throttling_(false),
+      partialThrottling_(false),
       fail_with_auth_invalid_(false),
       fail_non_periodic_get_updates_(false),
       next_position_in_parent_(2),
@@ -152,6 +153,18 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     if (throttling_) {
       response.set_error_code(SyncEnums::THROTTLED);
       throttling_ = false;
+    }
+
+    if (partialThrottling_) {
+      sync_pb::ClientToServerResponse_Error* response_error =
+          response.mutable_error();
+      response_error->set_error_type(SyncEnums::PARTIAL_FAILURE);
+      for (ModelTypeSet::Iterator it = throttled_type_.First(); it.Good();
+           it.Inc()) {
+        response_error->add_error_data_type_ids(
+            GetSpecificsFieldNumberFromModelType(it.Get()));
+      }
+      partialThrottling_ = false;
     }
 
     if (fail_with_auth_invalid_)

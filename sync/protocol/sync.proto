@@ -966,8 +966,11 @@ message ClientToServerResponse {
     optional string url                     = 3;
     optional SyncEnums.Action action        = 4 [default = UNKNOWN_ACTION];
 
-    // Currently only meaningful if |error_type| is throttled. If this field
-    // is absent then the whole client (all datatypes) is throttled.
+    // Currently meaningful if |error_type| is throttled or partial_failure.
+    // In the throttled case, if this field is absent then the whole client
+    // (all datatypes) is throttled.
+    // In the partial_failure case, this field denotes partial failures. The
+    // client should retry those datatypes with exponential backoff.
     repeated int32 error_data_type_ids = 5;
   }
   optional Error error = 13;

@@ -78,8 +78,9 @@ void PartitionUpdatesByType(const sync_pb::GetUpdatesResponse& gu_response,
 
     TypeSyncEntityMap::iterator it = updates_by_type->find(type);
     if (it == updates_by_type->end()) {
-      NOTREACHED() << "Received update for unexpected type "
-                   << ModelTypeToString(type);
+      DLOG(WARNING)
+          << "Received update for unexpected type or the type is throttled:"
+          << ModelTypeToString(type);
       continue;
     }
 
@@ -168,7 +169,7 @@ GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
 GetUpdatesProcessor::~GetUpdatesProcessor() {}
 
 SyncerError GetUpdatesProcessor::DownloadUpdates(
-    ModelTypeSet request_types,
+    ModelTypeSet* request_types,
     sessions::SyncSession* session,
     bool create_mobile_bookmarks_folder) {
   TRACE_EVENT0("sync", "DownloadUpdates");
@@ -177,7 +178,7 @@ SyncerError GetUpdatesProcessor::DownloadUpdates(
   InitDownloadUpdatesContext(session,
                              create_mobile_bookmarks_folder,
                              &message);
-  PrepareGetUpdates(request_types, &message);
+  PrepareGetUpdates(*request_types, &message);
 
   SyncerError result = ExecuteDownloadUpdates(request_types, session, &message);
   session->mutable_status_controller()->set_last_download_updates_result(
@@ -209,7 +210,7 @@ void GetUpdatesProcessor::PrepareGetUpdates(
 }
 
 SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
-    ModelTypeSet request_types,
+    ModelTypeSet* request_types,
     sessions::SyncSession* session,
     sync_pb::ClientToServerMessage* msg) {
   sync_pb::ClientToServerResponse update_response;
@@ -224,15 +225,17 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
   session->SendProtocolEvent(
       *(delegate_.GetNetworkRequestEvent(base::Time::Now(), *msg)));
 
+  ModelTypeSet partial_failure_data_types;
+
   SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
-      msg,
-      &update_response,
-      session);
+      msg, &update_response, session, &partial_failure_data_types);
 
   DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
 
-  if (result != SYNCER_OK) {
+  if (result == SERVER_RETURN_PARTIAL_FAILURE) {
+    request_types->RemoveAll(partial_failure_data_types);
+  } else if (result != SYNCER_OK) {
     GetUpdatesResponseEvent response_event(
         base::Time::Now(), update_response, result);
     session->SendProtocolEvent(response_event);
@@ -259,9 +262,8 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
         HandleGetEncryptionKeyResponse(update_response, dir));
   }
 
-  SyncerError process_result = ProcessResponse(update_response.get_updates(),
-                                              request_types,
-                                              status);
+  SyncerError process_result =
+      ProcessResponse(update_response.get_updates(), *request_types, status);
 
   GetUpdatesResponseEvent response_event(
       base::Time::Now(), update_response, process_result);

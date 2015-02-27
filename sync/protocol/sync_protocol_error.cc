@@ -24,6 +24,7 @@ const char* GetSyncErrorTypeString(SyncProtocolErrorType type) {
     ENUM_CASE(INVALID_CREDENTIAL);
     ENUM_CASE(DISABLED_BY_ADMIN);
     ENUM_CASE(USER_ROLLBACK);
+    ENUM_CASE(PARTIAL_FAILURE);
     ENUM_CASE(UNKNOWN_ERROR);
   }
   NOTREACHED();

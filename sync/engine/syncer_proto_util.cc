@@ -124,6 +124,8 @@ SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
       return DISABLED_BY_ADMIN;
     case sync_pb::SyncEnums::USER_ROLLBACK:
       return USER_ROLLBACK;
+    case sync_pb::SyncEnums::PARTIAL_FAILURE:
+      return PARTIAL_FAILURE;
     case sync_pb::SyncEnums::UNKNOWN:
       return UNKNOWN_ERROR;
     case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
@@ -184,8 +186,9 @@ SyncProtocolError ConvertErrorPBToLocalType(
       error.action());
 
   if (error.error_data_type_ids_size() > 0) {
-    // THROTTLED is currently the only error code that uses |error_data_types|.
-    DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
+    // THROTTLED and PARTIAL_FAILURE are currently the only error codes
+    // that uses |error_data_types|.
+    // In both cases, |error_data_types| are throttled.
     for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
       int field_number = error.error_data_type_ids(i);
       ModelType model_type =
@@ -345,7 +348,8 @@ SyncProtocolError ConvertLegacyErrorCodeToNewError(
 SyncerError SyncerProtoUtil::PostClientToServerMessage(
     ClientToServerMessage* msg,
     ClientToServerResponse* response,
-    SyncSession* session) {
+    SyncSession* session,
+    ModelTypeSet* partial_failure_data_types) {
   CHECK(response);
   DCHECK(!msg->get_updates().has_from_timestamp());  // Deprecated.
   DCHECK(!msg->get_updates().has_requested_types());  // Deprecated.
@@ -490,6 +494,17 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       return SERVER_RETURN_DISABLED_BY_ADMIN;
     case USER_ROLLBACK:
       return SERVER_RETURN_USER_ROLLBACK;
+    case PARTIAL_FAILURE:
+      // This only happens when partial throttling during GetUpdates.
+      if (!sync_protocol_error.error_data_types.Empty()) {
+        DLOG(WARNING) << "Some types throttled by syncer during GetUpdates.";
+        session->delegate()->OnTypesThrottled(
+            sync_protocol_error.error_data_types, GetThrottleDelay(*response));
+      }
+      if (partial_failure_data_types != NULL) {
+        *partial_failure_data_types = sync_protocol_error.error_data_types;
+      }
+      return SERVER_RETURN_PARTIAL_FAILURE;
     default:
       NOTREACHED();
       return UNSET;

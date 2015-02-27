@@ -66,7 +66,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
         session->context()->model_type_registry()->update_handler_map(),
         normal_delegate);
     if (!DownloadAndApplyUpdates(
-            request_types,
+            &request_types,
             session,
             &get_updates_processor,
             kCreateMobileBookmarksFolder)) {
@@ -95,7 +95,7 @@ bool Syncer::ConfigureSyncShare(
       session->context()->model_type_registry()->update_handler_map(),
       configure_delegate);
   DownloadAndApplyUpdates(
-      request_types,
+      &request_types,
       session,
       &get_updates_processor,
       kCreateMobileBookmarksFolder);
@@ -111,7 +111,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
       session->context()->model_type_registry()->update_handler_map(),
       poll_delegate);
   DownloadAndApplyUpdates(
-      request_types,
+      &request_types,
       session,
       &get_updates_processor,
       kCreateMobileBookmarksFolder);
@@ -119,7 +119,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
 }
 
 bool Syncer::DownloadAndApplyUpdates(
-    ModelTypeSet request_types,
+    ModelTypeSet* request_types,
     SyncSession* session,
     GetUpdatesProcessor* get_updates_processor,
     bool create_mobile_bookmarks_folder) {
@@ -146,7 +146,7 @@ bool Syncer::DownloadAndApplyUpdates(
     // Apply upates to the other types.  May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's
     // delegate.
-    get_updates_processor->ApplyUpdates(request_types,
+    get_updates_processor->ApplyUpdates(*request_types,
                                         session->mutable_status_controller());
 
     session->context()->set_hierarchy_conflict_detected(

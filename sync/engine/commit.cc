@@ -110,7 +110,7 @@ SyncerError Commit::PostAndProcessResponse(
 
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &message_, &response_, session);
+      &message_, &response_, session, NULL);
   TRACE_EVENT_END0("sync", "PostCommit");
 
   // TODO(rlarocque): Use result that includes errors captured later?

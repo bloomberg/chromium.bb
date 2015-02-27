@@ -70,7 +70,7 @@ class SYNC_EXPORT_PRIVATE Syncer {
 
  private:
   bool DownloadAndApplyUpdates(
-      ModelTypeSet request_types,
+      ModelTypeSet* request_types,
       sessions::SyncSession* session,
       GetUpdatesProcessor* get_updates_processor,
       bool create_mobile_bookmarks_folder);

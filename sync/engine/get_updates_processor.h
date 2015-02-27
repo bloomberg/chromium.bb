@@ -54,7 +54,7 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
   // download succeeded but there are still some updates left to fetch on the
   // server, or an appropriate error value in case of failure.
   SyncerError DownloadUpdates(
-      ModelTypeSet request_types,
+      ModelTypeSet* request_types,
       sessions::SyncSession* session,
       bool create_mobile_bookmarks_folder);
 
@@ -71,7 +71,7 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
 
   // Sends the specified message to the server and stores the response in a
   // member of the |session|'s StatusController.
-  SyncerError ExecuteDownloadUpdates(ModelTypeSet request_types,
+  SyncerError ExecuteDownloadUpdates(ModelTypeSet* request_types,
                                      sessions::SyncSession* session,
                                      sync_pb::ClientToServerMessage* msg);
 

@@ -45,6 +45,9 @@ enum SyncProtocolErrorType {
   // Client told to stop syncing this device and roll back local data.
   USER_ROLLBACK,
 
+  // Some of servers are busy. Try later with busy servers.
+  PARTIAL_FAILURE,
+
   // The default value.
   UNKNOWN_ERROR
 };

@@ -98,6 +98,8 @@ message SyncEnums {
                               // a server.
     DISABLED_BY_ADMIN = 10;   // An administrator disabled sync for this domain.
     USER_ROLLBACK     = 11;   // Client told to stop syncing and roll back.
+    PARTIAL_FAILURE   = 12;   // Return when client want to update several data
+                              // types, but some of them failed(e.g. throttled).
     UNKNOWN            = 100; // Unknown value. This should never be explicitly
                               // used; it is the default value when an
                               // out-of-date client parses a value it doesn't
