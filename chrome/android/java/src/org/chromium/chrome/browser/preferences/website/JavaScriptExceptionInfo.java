@@ -9,14 +9,14 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import java.io.Serializable;
 
 /**
- * Popup exception information for a given URL pattern.
+ * JavaScript exception information for a given URL pattern.
  */
-public class PopupExceptionInfo implements Serializable {
+public class JavaScriptExceptionInfo implements Serializable {
     private final String mPattern;
     private final String mSetting;
     private final String mSource;
 
-    public PopupExceptionInfo(String pattern, String setting, String source) {
+    public JavaScriptExceptionInfo(String pattern, String setting, String source) {
         mPattern = pattern;
         mSetting = setting;
         mSource = source;
@@ -52,10 +52,10 @@ public class PopupExceptionInfo implements Serializable {
      */
     public void setContentSetting(ContentSetting value) {
         if (value != null) {
-            PrefServiceBridge.getInstance().setPopupException(
+            PrefServiceBridge.getInstance().setJavaScriptAllowed(
                     mPattern, value == ContentSetting.ALLOW ? true : false);
         } else {
-            PrefServiceBridge.getInstance().removePopupException(mPattern);
+            PrefServiceBridge.getInstance().removeJavaScriptException(mPattern);
         }
     }
 }

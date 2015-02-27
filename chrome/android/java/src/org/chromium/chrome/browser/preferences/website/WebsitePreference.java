@@ -48,7 +48,9 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
     private static final int FAVICON_SIZE_DP = 16;
     private static final int FAVICON_TEXT_SIZE_SP = 10;
     private static final int FAVICON_BACKGROUND_COLOR = 0xff969696;
+    // The minimum width of the preference icon parent field.
     private static final int FAVICON_PARENT_MINWIDTH_DP = 55;
+    // The padding for the preference icon parent field.
     private static final int FAVICON_PARENT_PADDING_DP = 12;
 
     WebsitePreference(Context context, Website site, String categoryFilter) {
@@ -184,7 +186,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
         if (parent instanceof LinearLayout) {
             LinearLayout parentLayout = (LinearLayout) parent;
             int minWidth = Math.round(FAVICON_PARENT_MINWIDTH_DP * density);
-            int padding =  Math.round(FAVICON_PARENT_PADDING_DP * density);
+            int padding = Math.round(FAVICON_PARENT_PADDING_DP * density);
             parentLayout.setMinimumWidth(minWidth);
             parentLayout.setPadding(padding, 0, padding, 0);
         }

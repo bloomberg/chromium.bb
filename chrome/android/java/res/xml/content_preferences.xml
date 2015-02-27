@@ -27,12 +27,9 @@
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
         android:key="push_notifications" />
     <!-- JavaScript -->
-    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
-        android:key="enable_javascript"
-        android:title="@string/enable_javascript_title"
-        android:summary="@string/enable_javascript_summary"
-        android:defaultValue="true"
-        android:icon="@drawable/permission_javascript" />
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
+        android:key="javascript" />
     <!-- Popups -->
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"

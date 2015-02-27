@@ -52,6 +52,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_RESET_SITE = "reset_site_button";
     // Website permissions (if adding new, see hasPermissionsPreferences and resetSite below):
     public static final String PREF_COOKIES_PERMISSION = "cookies_permission_list";
+    public static final String PREF_JAVASCRIPT_PERMISSION = "javascript_permission_list";
     public static final String PREF_LOCATION_ACCESS = "location_access_list";
     public static final String PREF_MIDI_SYSEX_PERMISSION = "midi_sysex_permission_list";
     public static final String PREF_POPUP_PERMISSION = "popup_permission_list";
@@ -226,6 +227,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 preference.setOnPreferenceClickListener(this);
             } else if (PREF_COOKIES_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getCookiePermission());
+            } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
+                setUpListPreference(preference, mSite.getJavaScriptPermission());
             } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getGeolocationPermission());
             } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preference.getKey())) {
@@ -264,6 +267,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // category headings can be removed when no permissions are shown.
         PreferenceScreen screen = getPreferenceScreen();
         return screen.findPreference(PREF_COOKIES_PERMISSION) != null
+                || screen.findPreference(PREF_JAVASCRIPT_PERMISSION) != null
                 || screen.findPreference(PREF_LOCATION_ACCESS) != null
                 || screen.findPreference(PREF_MIDI_SYSEX_PERMISSION) != null
                 || screen.findPreference(PREF_POPUP_PERMISSION) != null
@@ -311,6 +315,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         if (PREF_COOKIES_PERMISSION.equals(preferenceKey)) {
             return Website.PermissionDataEntry.getPermissionDataEntry(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES);
+        } else if (PREF_JAVASCRIPT_PERMISSION.equals(preferenceKey)) {
+            return Website.PermissionDataEntry.getPermissionDataEntry(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT);
         } else if (PREF_LOCATION_ACCESS.equals(preferenceKey)) {
             return Website.PermissionDataEntry.getPermissionDataEntry(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION);
@@ -438,18 +445,20 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 ContentSetting.fromString((String) newValue);
         if (PREF_COOKIES_PERMISSION.equals(preference.getKey())) {
             mSite.setCookiePermission(permission);
-        } else if (PREF_POPUP_PERMISSION.equals(preference.getKey())) {
-            mSite.setPopupPermission(permission);
+        } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
+            mSite.setJavaScriptPermission(permission);
         } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
             mSite.setGeolocationPermission(permission);
-        } else if (PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION.equals(preference.getKey())) {
-            setVoiceAndVideoCaptureSetting(permission);
         } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preference.getKey())) {
             mSite.setMidiPermission(permission);
+        } else if (PREF_POPUP_PERMISSION.equals(preference.getKey())) {
+            mSite.setPopupPermission(permission);
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
             mSite.setProtectedMediaIdentifierPermission(permission);
         } else if (PREF_PUSH_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
             mSite.setPushNotificationPermission(permission);
+        } else if (PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION.equals(preference.getKey())) {
+            setVoiceAndVideoCaptureSetting(permission);
         } else {
             return true;
         }
@@ -478,13 +487,15 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     private void resetSite() {
         mSite.setCookiePermission(null);
+        mSite.setGeolocationPermission(null);
+        mSite.setJavaScriptPermission(null);
+        mSite.setMidiPermission(null);
+        mSite.setPopupPermission(null);
+        mSite.setProtectedMediaIdentifierPermission(null);
+        mSite.setPushNotificationPermission(null);
         mSite.setVideoCapturePermission(null);
         mSite.setVoiceCapturePermission(null);
-        mSite.setPopupPermission(null);
-        mSite.setGeolocationPermission(null);
-        mSite.setPushNotificationPermission(null);
-        mSite.setMidiPermission(null);
-        mSite.setProtectedMediaIdentifierPermission(null);
+
         if (mSite.getTotalUsage() > 0) {
             clearStoredData();
         } else {

@@ -340,6 +340,12 @@ static void SetCookieSettingForOrigin(JNIEnv* env, jclass clazz,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
+static jboolean IsContentSettingsPatternValid(JNIEnv* env, jclass clazz,
+    jstring pattern) {
+  return ContentSettingsPattern::FromString(
+      ConvertJavaStringToUTF8(env, pattern)).IsValid();
+}
+
 namespace {
 
 class SiteDataDeleteHelper :

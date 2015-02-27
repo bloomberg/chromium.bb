@@ -48,7 +48,8 @@ import java.util.Set;
  * allow the user to modify the settings.
  */
 public class WebsitePreferences extends PreferenceFragment
-        implements OnPreferenceChangeListener, OnPreferenceClickListener {
+        implements OnPreferenceChangeListener, OnPreferenceClickListener,
+                   AddExceptionPreference.SiteAddedCallback {
     // The key to use to pass which category this preference should display,
     // e.g. Location/Popups/All sites (if blank).
     public static final String EXTRA_CATEGORY = "category";
@@ -79,6 +80,7 @@ public class WebsitePreferences extends PreferenceFragment
     // Keys for individual preferences.
     public static final String READ_WRITE_TOGGLE_KEY = "read_write_toggle";
     public static final String THIRD_PARTY_COOKIES_TOGGLE_KEY = "third_party_cookies";
+    private static final String ADD_EXCEPTION_KEY = "add_exception";
     // Keys for Allowed/Blocked preference groups/headers.
     private static final String ALLOWED_GROUP = "allowed_group";
     private static final String BLOCKED_GROUP = "blocked_group";
@@ -204,6 +206,8 @@ public class WebsitePreferences extends PreferenceFragment
                     || website.site().getVideoCapturePermission() == ContentSetting.BLOCK;
         } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return website.site().getGeolocationPermission() == ContentSetting.BLOCK;
+        } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
+            return website.site().getJavaScriptPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showPopupSites(mCategoryFilter)) {
             return website.site().getPopupPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
@@ -344,6 +348,16 @@ public class WebsitePreferences extends PreferenceFragment
                 updateThirdPartyCookiesCheckBox();
             } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setCameraMicEnabled((boolean) newValue);
+            } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
+                PrefServiceBridge.getInstance().setJavaScriptEnabled((boolean) newValue);
+                if ((boolean) newValue) {
+                    Preference addException = getPreferenceScreen().findPreference(
+                            ADD_EXCEPTION_KEY);
+                    getPreferenceScreen().removePreference(addException);
+                } else {
+                    getPreferenceScreen().addPreference(
+                            new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY, this));
+                }
             } else if (mFilter.showPopupSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setAllowPopupsEnabled((boolean) newValue);
             } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
@@ -379,6 +393,11 @@ public class WebsitePreferences extends PreferenceFragment
         getInfoForOrigins();
     }
 
+    @Override
+    public void onSiteAdded() {
+        getInfoForOrigins();
+    }
+
     /*
      * Returns whether the current category is managed either by enterprise policy or by the
      * custodian of a supervised account.
@@ -390,6 +409,7 @@ public class WebsitePreferences extends PreferenceFragment
             return !prefs.isAllowLocationUserModifiable();
         }
         if (mFilter.showCameraMicSites(mCategoryFilter)) return !prefs.isCameraMicUserModifiable();
+        if (mFilter.showJavaScriptSites(mCategoryFilter)) return prefs.javaScriptManaged();
         if (mFilter.showPopupSites(mCategoryFilter)) return prefs.isPopupsManaged();
         return false;
     }
@@ -419,6 +439,12 @@ public class WebsitePreferences extends PreferenceFragment
         addPreferencesFromResource(R.xml.website_preferences);
 
         configureGlobalToggles();
+
+        if (mFilter.showJavaScriptSites(mCategoryFilter)
+                && !PrefServiceBridge.getInstance().javaScriptEnabled()) {
+            getPreferenceScreen().addPreference(
+                    new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY, this));
+        }
     }
 
     private void configureGlobalToggles() {
@@ -429,6 +455,7 @@ public class WebsitePreferences extends PreferenceFragment
         Preference thirdPartyCookies = getPreferenceScreen().findPreference(
                 THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
+        // Configure/hide the third-party cookie toggle, as needed.
         if (mFilter.showCookiesSites(mCategoryFilter)) {
             thirdPartyCookies.setOnPreferenceChangeListener(this);
             updateThirdPartyCookiesCheckBox();

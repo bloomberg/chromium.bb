@@ -36,7 +36,7 @@ public class Website implements Serializable {
 
         /**
          * The resource id of this permission entry's title (short version),
-         * shown on the Content Settings page and in the global toggle at the
+         * shown on the Site Settings page and in the global toggle at the
          * top of a Website Settings page.
          */
         public int titleResourceId = 0;
@@ -50,14 +50,14 @@ public class Website implements Serializable {
         /**
          * What ContentSetting the global default is set to when enabled.
          * Either Ask/Allow. Not required unless this entry describes a settings
-         * that appears on the content settings page and has a global toggle.
+         * that appears on the Site Settings page and has a global toggle.
          */
         public ContentSetting defaultEnabledValue = null;
 
         /**
          * The ContentSetting for this entry when enabled. Usually Block. Not
          * required unless this entry describes a settings that appears on the
-         * content settings page and has a global toggle.
+         * Site Settings page and has a global toggle.
          */
         public ContentSetting defaultDisabledValue = null;
 
@@ -177,9 +177,17 @@ public class Website implements Serializable {
                     entry.customEnabledSummary =
                             R.string.website_settings_category_ask_before_accessing_camera_mic;
                     return entry;
+                case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+                    entry = new PermissionDataEntry();
+                    entry.iconResourceId = R.drawable.permission_javascript;
+                    entry.titleResourceId = R.string.javascript_permission_title;
+                    entry.explanationResourceId = R.string.javascript_permission_title;
+                    entry.defaultEnabledValue = ContentSetting.ALLOW;
+                    entry.defaultDisabledValue = ContentSetting.BLOCK;
+                    return entry;
                 case ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
                     entry = new PermissionDataEntry();
-                    // Midi does not appear as a category on the Content Settings page and
+                    // Midi does not appear as a category on the Site Settings page and
                     // therefore does not need as detailed values.
                     entry.iconResourceId = R.drawable.permission_midi;
                     entry.explanationResourceId = R.string.midi_sysex_permission_title;
@@ -196,7 +204,7 @@ public class Website implements Serializable {
                     return entry;
                 case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
                     entry = new PermissionDataEntry();
-                    // Protected Content appears only as a category on the Content Settings page
+                    // Protected Content appears only as a category on the Site Settings page
                     // but does not have a site-list like the others, so it does not need as
                     // detailed values.
                     entry.iconResourceId = R.drawable.permission_protected_media;
@@ -216,6 +224,7 @@ public class Website implements Serializable {
     private CookieInfo mCookieInfo;
     private GeolocationInfo mGeolocationInfo;
     private MidiInfo mMidiInfo;
+    private JavaScriptExceptionInfo mJavaScriptExceptionInfo;
     private PopupExceptionInfo mPopupExceptionInfo;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
     private PushNotificationInfo mPushNotificationInfo;
@@ -345,6 +354,30 @@ public class Website implements Serializable {
         if (mMidiInfo != null) {
             mMidiInfo.setContentSetting(value);
         }
+    }
+
+    /**
+     * Returns what permission governs JavaScript access.
+     */
+    public ContentSetting getJavaScriptPermission() {
+        return mJavaScriptExceptionInfo != null
+                ? mJavaScriptExceptionInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure JavaScript permission access setting for this site.
+     */
+    public void setJavaScriptPermission(ContentSetting value) {
+        if (mJavaScriptExceptionInfo != null) {
+            mJavaScriptExceptionInfo.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Sets the JavaScript exception info for this Website.
+     */
+    public void setJavaScriptExceptionInfo(JavaScriptExceptionInfo info) {
+        mJavaScriptExceptionInfo = info;
     }
 
     /**

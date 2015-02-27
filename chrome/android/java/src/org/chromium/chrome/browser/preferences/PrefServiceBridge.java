@@ -12,6 +12,9 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.JavaScriptExceptionInfo;
+import org.chromium.chrome.browser.preferences.website.PopupExceptionInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.util.ArrayList;
@@ -90,33 +93,6 @@ public final class PrefServiceBridge {
          * Called with the profile path, once it's available.
          */
         void onGotProfilePath(String profilePath);
-    }
-
-    /**
-     * Website popup exception entry.
-     */
-    public static class PopupExceptionInfo {
-        private final String mPattern;
-        private final String mSetting;
-        private final String mSource;
-
-        private PopupExceptionInfo(String pattern, String setting, String source) {
-            mPattern = pattern;
-            mSetting = setting;
-            mSource = source;
-        }
-
-        public String getPattern() {
-            return mPattern;
-        }
-
-        public String getSetting() {
-            return mSetting;
-        }
-
-        public String getSource() {
-            return mSource;
-        }
     }
 
     @CalledByNative
@@ -275,7 +251,7 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether Javascript is managed by policy
+     * @return whether JavaScript is managed by policy
      */
     public boolean javaScriptManaged() {
         return nativeGetJavaScriptManaged();
@@ -652,13 +628,55 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * Sets whether JavaScript is allowed to run on the given website/domain.
+     *
+     * @param pattern A pattern that matches one or multiple domains. For
+     *        details see examples in content_settings_pattern.h.
+     * @param allow Whether to allow JavaScript on the given site/domain.
+     */
+    public void setJavaScriptAllowed(String pattern, boolean allow) {
+        nativeSetJavaScriptAllowed(
+                pattern, allow ? ContentSetting.ALLOW : ContentSetting.BLOCK);
+    }
+
+    /**
+     * Removes a JavaScript exception.
+     *
+     * @param pattern attribute for the popup exception pattern
+     */
+    public void removeJavaScriptException(String pattern) {
+        nativeSetJavaScriptAllowed(pattern, ContentSetting.DEFAULT);
+    }
+
+    /**
+     * get all the currently saved JavaScript exceptions.
+     *
+     * @return List of all the exceptions and their settings
+     */
+    public List<JavaScriptExceptionInfo> getJavaScriptExceptions() {
+        List<JavaScriptExceptionInfo> list = new ArrayList<JavaScriptExceptionInfo>();
+        nativeGetJavaScriptExceptions(list);
+        return list;
+    }
+
+    @CalledByNative
+    private static void addJavaScriptExceptionToList(
+            ArrayList<JavaScriptExceptionInfo> list,
+            String pattern,
+            String setting,
+            String source) {
+        JavaScriptExceptionInfo exception = new JavaScriptExceptionInfo(pattern, setting, source);
+        list.add(exception);
+    }
+
+    /**
      * Adds/Edit a popup exception
      *
      * @param pattern attribute for the popup exception pattern
      * @param allow attribute to specify whether to allow or block pattern
      */
     public void setPopupException(String pattern, boolean allow) {
-        nativeSetPopupException(pattern, allow);
+        nativeSetPopupException(pattern, allow ? ContentSetting.ALLOW : ContentSetting.BLOCK);
     }
 
     /**
@@ -667,7 +685,7 @@ public final class PrefServiceBridge {
      * @param pattern attribute for the popup exception pattern
      */
     public void removePopupException(String pattern) {
-        nativeRemovePopupException(pattern);
+        nativeSetPopupException(pattern, ContentSetting.DEFAULT);
     }
 
     /**
@@ -773,6 +791,8 @@ public final class PrefServiceBridge {
     private native boolean nativeGetJavaScriptEnabled();
     private native void nativeSetJavaScriptEnabled(boolean enabled);
     private native void nativeMigrateJavascriptPreference();
+    private native void nativeSetJavaScriptAllowed(String pattern, int setting);
+    private native void nativeGetJavaScriptExceptions(List<JavaScriptExceptionInfo> list);
     private native void nativeClearBrowsingData(boolean history, boolean cache,
             boolean cookiesAndSiteData, boolean passwords, boolean formData);
     private native void nativeSetAllowCookiesEnabled(boolean allow);
@@ -789,8 +809,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetAllowPopupsEnabled();
     private native boolean nativeGetAllowPopupsManaged();
     private native void nativeSetAllowPopupsEnabled(boolean allow);
-    private native void nativeSetPopupException(String pattern, boolean allow);
-    private native void nativeRemovePopupException(String pattern);
+    private native void nativeSetPopupException(String pattern, int setting);
     private native void nativeGetPopupExceptions(Object list);
     private native boolean nativeGetCameraMicEnabled();
     private native boolean nativeGetAutologinEnabled();

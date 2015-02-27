@@ -66,6 +66,8 @@ public class WebsitePermissionsFetcher {
         // Popup exceptions are host-based patterns (unless we start
         // synchronizing popup exceptions with desktop Chrome.)
         queue.add(new PopupExceptionInfoFetcher());
+        // JavaScript exceptions are host-based patterns.
+        queue.add(new JavaScriptExceptionInfoFetcher());
         // Protected media identifier permission is per-origin and per-embedder.
         queue.add(new ProtectedMediaIdentifierInfoFetcher());
         // Push notification permission is per-origin and per-embedder.
@@ -108,6 +110,9 @@ public class WebsitePermissionsFetcher {
             // Popup exceptions are host-based patterns (unless we start
             // synchronizing popup exceptions with desktop Chrome.)
             queue.add(new PopupExceptionInfoFetcher());
+        } else if (filterHelper.showJavaScriptSites(filter)) {
+            // JavaScript exceptions are host-based patterns.
+            queue.add(new JavaScriptExceptionInfoFetcher());
         } else if (filterHelper.showPushNotificationsSites(filter)) {
             // Push notification permission is per-origin and per-embedder.
             queue.add(new PushNotificationInfoFetcher());
@@ -199,6 +204,24 @@ public class WebsitePermissionsFetcher {
                 Set<Website> sites = findOrCreateSitesByHost(address);
                 for (Website site : sites) {
                     site.setPopupExceptionInfo(info);
+                }
+            }
+            queue.next();
+        }
+    }
+
+    private class JavaScriptExceptionInfoFetcher implements Task {
+        @Override
+        public void run(TaskQueue queue) {
+            for (JavaScriptExceptionInfo info
+                    : WebsitePreferenceBridge.getJavaScriptExceptionInfo()) {
+                // The pattern "*" represents the default setting, not a specific website.
+                if (info.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(info.getPattern());
+                if (address == null) continue;
+                Set<Website> sites = findOrCreateSitesByHost(address);
+                for (Website site : sites) {
+                    site.setJavaScriptExceptionInfo(info);
                 }
             }
             queue.next();

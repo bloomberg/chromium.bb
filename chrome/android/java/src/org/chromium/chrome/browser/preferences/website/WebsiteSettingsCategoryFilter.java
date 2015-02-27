@@ -14,6 +14,7 @@ public class WebsiteSettingsCategoryFilter {
     private static final String FILTER_ALL_SITES = "all_sites";
     private static final String FILTER_COOKIES = "cookies";
     private static final String FILTER_CAMERA_MIC = "use_camera_or_mic";
+    private static final String FILTER_JAVASCRIPT = "javascript";
     private static final String FILTER_DEVICE_LOCATION = "device_location";
     private static final String FILTER_USE_STORAGE = "use_storage";
     private static final String FILTER_POPUPS = "popups";
@@ -36,6 +37,8 @@ public class WebsiteSettingsCategoryFilter {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
         } else if (showPushNotificationsSites(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+        } else if (showJavaScriptSites(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         }
         return -1;
     }
@@ -62,6 +65,14 @@ public class WebsiteSettingsCategoryFilter {
      */
     public boolean showCameraMicSites(String filterValue) {
         return filterValue.equals(FILTER_CAMERA_MIC);
+    }
+
+    /**
+     * @param filterValue A category value.
+     * @return Whether the category passed is the javascript category.
+     */
+    public boolean showJavaScriptSites(String filterValue) {
+        return filterValue.equals(FILTER_JAVASCRIPT);
     }
 
     /**

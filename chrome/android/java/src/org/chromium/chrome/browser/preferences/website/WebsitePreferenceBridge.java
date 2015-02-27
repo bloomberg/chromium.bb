@@ -163,20 +163,36 @@ public abstract class WebsitePreferenceBridge {
         list.add(new VoiceAndVideoCaptureInfo(origin, embedder));
     }
 
-    public static List<PopupExceptionInfo> getPopupExceptionInfo() {
-        List<PrefServiceBridge.PopupExceptionInfo> origins =
-                PrefServiceBridge.getInstance().getPopupExceptions();
-        List<PopupExceptionInfo> infos = new ArrayList<PopupExceptionInfo>();
-        boolean managedOnly = PrefServiceBridge.getInstance().isPopupsManaged();
-        if (origins != null) {
-            for (PrefServiceBridge.PopupExceptionInfo exception : origins) {
-                if (!managedOnly || exception.getSource().equals("policy")) {
-                    infos.add(
-                            new PopupExceptionInfo(exception.getPattern(), exception.getSetting()));
-                }
+    public static List<JavaScriptExceptionInfo> getJavaScriptExceptionInfo() {
+        List<JavaScriptExceptionInfo> exceptions =
+                PrefServiceBridge.getInstance().getJavaScriptExceptions();
+        if (!PrefServiceBridge.getInstance().javaScriptManaged()) {
+            return exceptions;
+        }
+
+        List<JavaScriptExceptionInfo> managedExceptions = new ArrayList<JavaScriptExceptionInfo>();
+        for (JavaScriptExceptionInfo exception : exceptions) {
+            if (exception.getSource().equals("policy")) {
+                managedExceptions.add(exception);
             }
         }
-        return infos;
+        return managedExceptions;
+    }
+
+    public static List<PopupExceptionInfo> getPopupExceptionInfo() {
+        List<PopupExceptionInfo> exceptions =
+                PrefServiceBridge.getInstance().getPopupExceptions();
+        if (!PrefServiceBridge.getInstance().isPopupsManaged()) {
+            return exceptions;
+        }
+
+        List<PopupExceptionInfo> managedExceptions = new ArrayList<PopupExceptionInfo>();
+        for (PopupExceptionInfo exception : exceptions) {
+            if (exception.getSource().equals("policy")) {
+                managedExceptions.add(exception);
+            }
+        }
+        return managedExceptions;
     }
 
     public static void fetchLocalStorageInfo(LocalStorageInfoReadyCallback callback) {
@@ -220,4 +236,5 @@ public abstract class WebsitePreferenceBridge {
     static native void nativeClearStorageData(String origin, int type, Object callback);
     private static native void nativeFetchLocalStorageInfo(Object callback);
     private static native void nativeFetchStorageInfo(Object callback);
+    static native boolean nativeIsContentSettingsPatternValid(String pattern);
 }

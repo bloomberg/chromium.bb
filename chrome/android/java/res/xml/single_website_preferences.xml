@@ -29,6 +29,8 @@
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="popup_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="javascript_permission_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="location_access_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="push_notifications_list" />

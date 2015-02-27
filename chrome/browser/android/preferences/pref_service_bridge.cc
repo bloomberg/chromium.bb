@@ -494,19 +494,37 @@ static void SetAutologinEnabled(JNIEnv* env, jobject obj,
   GetPrefService()->SetBoolean(prefs::kAutologinEnabled, autologinEnabled);
 }
 
-static void SetPopupException(JNIEnv* env, jobject obj, jstring pattern,
-                              jboolean allow) {
+static void SetJavaScriptAllowed(JNIEnv* env, jobject obj, jstring pattern,
+                                 int setting) {
   HostContentSettingsMap* host_content_settings_map =
       GetOriginalProfile()->GetHostContentSettingsMap();
   host_content_settings_map->SetContentSetting(
       ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
       ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_POPUPS,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
       "",
-      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+      static_cast<ContentSetting>(setting));
 }
 
-static void RemovePopupException(JNIEnv* env, jobject obj, jstring pattern) {
+static void GetJavaScriptExceptions(JNIEnv* env, jobject obj, jobject list) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  ContentSettingsForOneType entries;
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, "", &entries);
+  for (size_t i = 0; i < entries.size(); ++i) {
+    Java_PrefServiceBridge_addJavaScriptExceptionToList(
+        env, list,
+        ConvertUTF8ToJavaString(
+            env, entries[i].primary_pattern.ToString()).obj(),
+        ConvertUTF8ToJavaString(
+            env, GetStringForContentSettingsType(entries[i].setting)).obj(),
+        ConvertUTF8ToJavaString(env, entries[i].source).obj());
+  }
+}
+
+static void SetPopupException(JNIEnv* env, jobject obj, jstring pattern,
+                              int setting) {
   HostContentSettingsMap* host_content_settings_map =
       GetOriginalProfile()->GetHostContentSettingsMap();
   host_content_settings_map->SetContentSetting(
@@ -514,7 +532,7 @@ static void RemovePopupException(JNIEnv* env, jobject obj, jstring pattern) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_POPUPS,
       "",
-      CONTENT_SETTING_DEFAULT);
+      static_cast<ContentSetting>(setting));
 }
 
 static void GetPopupExceptions(JNIEnv* env, jobject obj, jobject list) {
