@@ -632,6 +632,11 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
         return 0;
 
     if (direction == ForColumns) {
+        // If |child| has a percentage logical width, we shouldn't let it override its intrinsic width, which is
+        // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
+        if (child.style()->logicalWidth().isPercent())
+            child.setOverrideContainingBlockContentLogicalWidth(-1);
+
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
         return child.minPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(child);
@@ -648,6 +653,11 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
         return LayoutUnit();
 
     if (direction == ForColumns) {
+        // If |child| has a percentage logical width, we shouldn't let it override its intrinsic width, which is
+        // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
+        if (child.style()->logicalWidth().isPercent())
+            child.setOverrideContainingBlockContentLogicalWidth(-1);
+
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
         return child.maxPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(child);

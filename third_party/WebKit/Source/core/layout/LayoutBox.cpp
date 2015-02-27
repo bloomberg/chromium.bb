@@ -4195,37 +4195,33 @@ void LayoutBox::clearLayoutOverflow()
     m_overflow->setLayoutOverflow(noOverflowRect());
 }
 
-bool LayoutBox::logicalWidthIsResolvableFromBlock(const LayoutBlock* containingBlock)
+static bool logicalWidthIsResolvable(const LayoutBox& layoutBox)
 {
-    const LayoutBlock* cb = containingBlock;
-    while (!cb->isLayoutView() && !cb->isOutOfFlowPositioned() && (cb->style()->logicalWidth().isAuto() || cb->isAnonymousBlock()))
-        cb = cb->containingBlock();
+    const LayoutBox* box = &layoutBox;
+    while (!box->isLayoutView() && !box->isOutOfFlowPositioned()
+        && (box->style()->logicalWidth().isAuto() || box->isAnonymousBlock())
+        && !box->hasOverrideContainingBlockLogicalWidth())
+        box = box->containingBlock();
 
-    if (cb->style()->logicalWidth().isFixed())
+    if (box->style()->logicalWidth().isFixed())
         return true;
-    if (cb->isLayoutView())
+    if (box->isLayoutView())
         return true;
-    if (cb->isOutOfFlowPositioned())
+    // The size of the containing block of an absolutely positioned element is always definite with respect to that
+    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
+    if (box->isOutOfFlowPositioned())
         return true;
-    if (cb->style()->logicalWidth().isPercent())
-        return logicalWidthIsResolvableFromBlock(cb->containingBlock());
+    if (box->hasOverrideContainingBlockLogicalWidth())
+        return box->overrideContainingBlockContentLogicalWidth() != -1;
+    if (box->style()->logicalWidth().isPercent())
+        return logicalWidthIsResolvable(*box->containingBlock());
 
     return false;
 }
 
 bool LayoutBox::hasDefiniteLogicalWidth() const
 {
-    const Length& logicalWidth = style()->logicalWidth();
-    if (logicalWidth.isIntrinsic() || logicalWidth.isLegacyIntrinsic())
-        return false;
-    if (logicalWidth.isFixed())
-        return true;
-    // The size of the containing block of an absolutely positioned element is always definite with respect to that
-    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
-    if (isOutOfFlowPositioned())
-        return true;
-
-    return LayoutBox::logicalWidthIsResolvableFromBlock(containingBlock());
+    return logicalWidthIsResolvable(*this);
 }
 
 inline static bool percentageLogicalHeightIsResolvable(const LayoutBox* box)
@@ -4245,6 +4241,9 @@ bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* 
     while (!cb->isLayoutView() && !cb->isBody() && !cb->isTableCell() && !cb->isOutOfFlowPositioned() && cb->style()->logicalHeight().isAuto()) {
         if (!inQuirksMode && !cb->isAnonymousBlock())
             break;
+        if (cb->hasOverrideContainingBlockLogicalHeight())
+            return cb->overrideContainingBlockContentLogicalHeight() != -1;
+
         cb = cb->containingBlock();
     }
 
@@ -4288,6 +4287,8 @@ bool LayoutBox::hasDefiniteLogicalHeight() const
     // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
     if (isOutOfFlowPositioned())
         return true;
+    if (hasOverrideContainingBlockLogicalHeight())
+        return overrideContainingBlockContentLogicalHeight() != -1;
 
     return percentageLogicalHeightIsResolvable(this);
 }

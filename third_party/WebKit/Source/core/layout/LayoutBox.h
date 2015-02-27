@@ -461,7 +461,6 @@ public:
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const;
     virtual LayoutUnit computeReplacedLogicalHeight() const;
 
-    static bool logicalWidthIsResolvableFromBlock(const LayoutBlock* containingBlock);
     bool hasDefiniteLogicalWidth() const;
     static bool percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* containingBlock, bool outOfFlowPositioned);
     bool hasDefiniteLogicalHeight() const;
