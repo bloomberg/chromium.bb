@@ -716,7 +716,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
     updateChildClippingMaskLayerGeometry();
 
     if (m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->scrollsOverflow())
-        m_owningLayer.scrollableArea()->positionOverflowControls(IntSize());
+        m_owningLayer.scrollableArea()->positionOverflowControls();
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
         updateLayerBlendMode(renderer()->styleRef());
@@ -1330,13 +1330,13 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalSc
     return horizontalScrollbarLayerChanged || verticalScrollbarLayerChanged || scrollCornerLayerChanged;
 }
 
-void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offsetFromRoot)
+void CompositedLayerMapping::positionOverflowControlsLayers()
 {
     IntSize offsetFromRenderer = m_graphicsLayer->offsetFromRenderer() - roundedIntSize(m_owningLayer.subpixelAccumulation());
     if (GraphicsLayer* layer = layerForHorizontalScrollbar()) {
         Scrollbar* hBar = m_owningLayer.scrollableArea()->horizontalScrollbar();
         if (hBar) {
-            layer->setPosition(hBar->frameRect().location() - offsetFromRoot - offsetFromRenderer);
+            layer->setPosition(hBar->frameRect().location() - offsetFromRenderer);
             layer->setSize(hBar->frameRect().size());
             if (layer->hasContentsLayer())
                 layer->setContentsRect(IntRect(IntPoint(), hBar->frameRect().size()));
@@ -1347,7 +1347,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offse
     if (GraphicsLayer* layer = layerForVerticalScrollbar()) {
         Scrollbar* vBar = m_owningLayer.scrollableArea()->verticalScrollbar();
         if (vBar) {
-            layer->setPosition(vBar->frameRect().location() - offsetFromRoot - offsetFromRenderer);
+            layer->setPosition(vBar->frameRect().location() - offsetFromRenderer);
             layer->setSize(vBar->frameRect().size());
             if (layer->hasContentsLayer())
                 layer->setContentsRect(IntRect(IntPoint(), vBar->frameRect().size()));
@@ -2171,13 +2171,11 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
     if (!scrollbar)
         return;
 
-    context.save();
     const IntRect& scrollbarRect = scrollbar->frameRect();
-    context.translate(-scrollbarRect.x(), -scrollbarRect.y());
+    TransformRecorder transformRecorder(context, scrollbar->displayItemClient(), AffineTransform::translation(-scrollbarRect.x(), -scrollbarRect.y()));
     IntRect transformedClip = clip;
     transformedClip.moveBy(scrollbarRect.location());
     scrollbar->paint(&context, transformedClip);
-    context.restore();
 }
 
 // Up-call from compositing layer drawing callback.

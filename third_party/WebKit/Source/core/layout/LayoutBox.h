@@ -157,6 +157,12 @@ public:
 
     void setLocation(const LayoutPoint& location) { m_frameRect.setLocation(location); }
 
+    // FIXME: Currently scrollbars are using int geometry and positioned based on
+    // pixelSnappedBorderBoxRect whose size may change when location changes because of
+    // pixel snapping. This function is used to change location of the RenderBox outside
+    // of RenderBox::layout(). Will remove when we use LayoutUnits for scrollbars.
+    void setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint&);
+
     void setSize(const LayoutSize& size) { m_frameRect.setSize(size); }
     void move(LayoutUnit dx, LayoutUnit dy) { m_frameRect.move(dx, dy); }
 

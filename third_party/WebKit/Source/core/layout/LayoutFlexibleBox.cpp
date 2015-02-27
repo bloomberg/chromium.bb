@@ -584,9 +584,9 @@ LayoutPoint LayoutFlexibleBox::flowAwareLocationForChild(LayoutBox& child) const
 void LayoutFlexibleBox::setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint& location)
 {
     if (isHorizontalFlow())
-        child.setLocation(location);
+        child.setLocationAndUpdateOverflowControlsIfNeeded(location);
     else
-        child.setLocation(location.transposedPoint());
+        child.setLocationAndUpdateOverflowControlsIfNeeded(location.transposedPoint());
 }
 
 LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(LayoutBox& child) const

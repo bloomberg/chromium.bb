@@ -713,10 +713,8 @@ void LayerScrollableArea::updateAfterLayout()
     bool hasOverflow = hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow();
     updateScrollableAreaSet(hasOverflow);
 
-    if (hasOverflow) {
-        DisableCompositingQueryAsserts disabler;
-        positionOverflowControls(IntSize());
-    }
+    DisableCompositingQueryAsserts disabler;
+    positionOverflowControls();
 }
 
 bool LayerScrollableArea::hasHorizontalOverflow() const
@@ -1014,23 +1012,17 @@ int LayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy
     return m_hBar->height();
 }
 
-void LayerScrollableArea::positionOverflowControls(const IntSize& offsetFromRoot)
+void LayerScrollableArea::positionOverflowControls()
 {
     if (!hasScrollbar() && !box().canResize())
         return;
 
     const IntRect borderBox = box().pixelSnappedBorderBoxRect();
-    if (Scrollbar* verticalScrollbar = this->verticalScrollbar()) {
-        IntRect vBarRect = rectForVerticalScrollbar(borderBox);
-        vBarRect.move(offsetFromRoot);
-        verticalScrollbar->setFrameRect(vBarRect);
-    }
+    if (Scrollbar* verticalScrollbar = this->verticalScrollbar())
+        verticalScrollbar->setFrameRect(rectForVerticalScrollbar(borderBox));
 
-    if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
-        IntRect hBarRect = rectForHorizontalScrollbar(borderBox);
-        hBarRect.move(offsetFromRoot);
-        horizontalScrollbar->setFrameRect(hBarRect);
-    }
+    if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar())
+        horizontalScrollbar->setFrameRect(rectForHorizontalScrollbar(borderBox));
 
     const IntRect& scrollCorner = scrollCornerRect();
     if (m_scrollCorner)
@@ -1043,7 +1035,7 @@ void LayerScrollableArea::positionOverflowControls(const IntSize& offsetFromRoot
     // controls get correctly positioned on a compositor update. For now, conservatively
     // leaving this unchanged.
     if (layer()->hasCompositedLayerMapping())
-        layer()->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
+        layer()->compositedLayerMapping()->positionOverflowControlsLayers();
 }
 
 void LayerScrollableArea::updateScrollCornerStyle()

@@ -127,7 +127,7 @@ public:
     LayoutRect compositedBounds() const { return m_compositedBounds; }
     IntRect pixelSnappedCompositedBounds() const;
 
-    void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
+    void positionOverflowControlsLayers();
     bool hasUnpositionedOverflowControlsLayers() const;
 
     // Returns true if the assignment actually changed the assigned squashing layer.

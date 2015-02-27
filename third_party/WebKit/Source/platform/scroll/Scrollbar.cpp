@@ -105,6 +105,16 @@ Scrollbar::~Scrollbar()
 #endif
 }
 
+void Scrollbar::setFrameRect(const IntRect& frameRect)
+{
+    if (frameRect == this->frameRect())
+        return;
+
+    invalidate();
+    Widget::setFrameRect(frameRect);
+    invalidate();
+}
+
 ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const
 {
     return m_scrollableArea ? m_scrollableArea->scrollbarOverlayStyle() : ScrollbarOverlayStyleDefault;

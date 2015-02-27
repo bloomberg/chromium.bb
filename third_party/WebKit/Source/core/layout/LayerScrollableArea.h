@@ -171,7 +171,7 @@ public:
 
     DoubleSize adjustedScrollOffset() const { return DoubleSize(scrollXOffset(), scrollYOffset()); }
 
-    void positionOverflowControls(const IntSize& offsetFromRoot);
+    void positionOverflowControls();
 
     // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
     // area.
