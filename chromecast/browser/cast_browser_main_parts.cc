@@ -114,14 +114,16 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #if defined(DISABLE_DISPLAY)
   { switches::kDisableGpu, "" },
 #endif
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_LINUX)
+#if defined(ARCH_CPU_X86_FAMILY)
   // This is needed for now to enable the egltest Ozone platform to work with
   // current Linux/NVidia OpenGL drivers.
   { switches::kIgnoreGpuBlacklist, ""},
-  // TODO(gusfernandez): This is needed to fix a bug with
-  // glPostSubBufferCHROMIUM (crbug.com/429200)
-  { cc::switches::kUIDisablePartialSwap, ""},
+#elif defined(ARCH_CPU_ARM_FAMILY) && !defined(DISABLE_DISPLAY)
+  // On Linux arm, enable CMA pipeline by default.
+  { switches::kEnableCmaMediaPipeline, "" },
 #endif
+#endif  // defined(OS_LINUX)
   // Needed to fix a bug where the raster thread doesn't get scheduled for a
   // substantial time (~5 seconds).  See https://crbug.com/441895.
   { switches::kUseNormalPriorityForTileTaskWorkerThreads, "" },
