@@ -1360,7 +1360,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         updateFullscreenEnabledState();
         if (!isNativePage()) {
             RecordHistogram.recordBooleanHistogram(
-                    "Navigation.MobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
+                    "Navigation.IsMobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
         }
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
