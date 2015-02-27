@@ -20,6 +20,9 @@ shouldNotThrow("new OfflineAudioContext(2, 512, 44100)");
 shouldNotThrow("new OfflineAudioContext(2, 512, 48000)");
 shouldNotThrow("new OfflineAudioContext(2, 512, 88200)");
 shouldNotThrow("new OfflineAudioContext(2, 512, 96000)");
+// Make sure we throw exceptions for non-finite sample rates.
+shouldThrow("new OfflineAudioContext(1, 0, NaN)");
+shouldThrow("new OfflineAudioContext(1, 0, Infinite)");
 </script>
 </body>
 </html>

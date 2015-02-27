@@ -13,6 +13,8 @@ PASS new OfflineAudioContext(2, 512, 44100) did not throw exception.
 PASS new OfflineAudioContext(2, 512, 48000) did not throw exception.
 PASS new OfflineAudioContext(2, 512, 88200) did not throw exception.
 PASS new OfflineAudioContext(2, 512, 96000) did not throw exception.
+PASS new OfflineAudioContext(1, 0, NaN) threw exception TypeError: Failed to construct 'OfflineAudioContext': The provided float value is non-finite..
+PASS new OfflineAudioContext(1, 0, Infinite) threw exception ReferenceError: Infinite is not defined.
 PASS successfullyParsed is true
 
 TEST COMPLETE
