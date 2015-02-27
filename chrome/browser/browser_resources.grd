@@ -73,6 +73,7 @@
         <structure name="IDR_NEW_OOBE_JS" file="resources\chromeos\login\new\oobe.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_SECURITY_INTERSTITIAL_UI_HTML" file="resources\security_warnings\interstitial_ui.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SECURITY_INTERSTITIAL_HTML" file="resources\security_warnings\interstitial_v2.html" flattenhtml="true" type="chrome_html" />
     </structures>
     <includes>

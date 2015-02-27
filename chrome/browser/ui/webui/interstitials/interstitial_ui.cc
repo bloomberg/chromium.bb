@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -20,6 +22,7 @@
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -51,6 +54,7 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   GURL request_url("https://example.com");
   bool overridable = false;
   bool strict_enforcement = false;
+  base::Time time_triggered_ = base::Time::NowFromSystemTime();
   std::string url_param;
   if (net::GetValueForKeyInQuery(web_contents->GetURL(),
                                  "url",
@@ -70,6 +74,17 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
                                  &strict_enforcement_param)) {
     strict_enforcement = strict_enforcement_param == "1";
   }
+  std::string clock_manipulation_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "clock_manipulation",
+                                 &clock_manipulation_param) == 1) {
+    cert_error = net::ERR_CERT_DATE_INVALID;
+    int time_offset;
+    if (base::StringToInt(clock_manipulation_param, &time_offset)) {
+      time_triggered_ += base::TimeDelta::FromDays(365 * time_offset);
+    } else {
+      time_triggered_ += base::TimeDelta::FromDays(365 * 2);
+    }
+  }
   net::SSLInfo ssl_info;
   ssl_info.cert = new net::X509Certificate(
       request_url.host(), "CA", base::Time::Max(), base::Time::Max());
@@ -80,11 +95,12 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   if (strict_enforcement)
     options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
   return new SSLBlockingPage(web_contents,
-                             cert_error,
-                             ssl_info,
-                             request_url,
-                             options_mask,
-                             base::Callback<void(bool)>());
+                              cert_error,
+                              ssl_info,
+                              request_url,
+                              options_mask,
+                              time_triggered_,
+                              base::Callback<void(bool)>());
 }
 
 SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
@@ -185,22 +201,9 @@ void InterstitialHTMLSource::StartDataRequest(
   if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
-    html = "<html><head><title>Interstitials</title></head>"
-           "<body><h2>Choose an interstitial<h2>"
-           "<h3>SSL</h3>"
-           "<a href='ssl'>example.com</a><br>"
-           "<a href='ssl?url=https://google.com'>SSL (google.com)</a><br>"
-           "<a href='ssl?overridable=1&strict_enforcement=0'>"
-           "    example.com (Overridable)</a>"
-           "<br><br>"
-           "<h3>SafeBrowsing</h3>"
-           "<a href='safebrowsing?type=malware'>Malware</a><br>"
-           "<a href='safebrowsing?type=phishing'>Phishing</a><br>"
-           "<a href='safebrowsing?type=clientside_malware'>"
-           "    Client Side Malware</a><br>"
-           "<a href='safebrowsing?type=clientside_phishing'>"
-           "    Client Side Phishing</a><br>"
-           "</body></html>";
+    html = ResourceBundle::GetSharedInstance()
+                          .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_UI_HTML)
+                          .as_string();
   }
   scoped_refptr<base::RefCountedString> html_bytes = new base::RefCountedString;
   html_bytes->data().assign(html.begin(), html.end());

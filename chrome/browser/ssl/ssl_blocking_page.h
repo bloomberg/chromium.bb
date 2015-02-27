@@ -70,6 +70,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
                   const net::SSLInfo& ssl_info,
                   const GURL& request_url,
                   int options_mask,
+                  const base::Time& time_triggered,
                   const base::Callback<void(bool)>& callback);
 
   // SecurityInterstitialPage method:
@@ -118,6 +119,9 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   const bool expired_but_previously_allowed_;
   scoped_ptr<SSLErrorClassification> ssl_error_classification_;
   scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
+  // The time at which the interstitial was triggered. The interstitial
+  // calculates all times relative to this.
+  const base::Time time_triggered_;
 
   // Which type of interstitial this is.
   enum SSLInterstitialReason {

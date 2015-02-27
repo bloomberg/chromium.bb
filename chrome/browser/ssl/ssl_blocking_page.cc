@@ -222,6 +222,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
                                  const net::SSLInfo& ssl_info,
                                  const GURL& request_url,
                                  int options_mask,
+                                 const base::Time& time_triggered,
                                  const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
@@ -231,9 +232,10 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       danger_overridable_(true),
       strict_enforcement_((options_mask & STRICT_ENFORCEMENT) != 0),
       expired_but_previously_allowed_(
-          (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0) {
+          (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
+      time_triggered_(time_triggered) {
   interstitial_reason_ =
-      IsErrorDueToBadClock(base::Time::NowFromSystemTime(), cert_error_) ?
+      IsErrorDueToBadClock(time_triggered_, cert_error_) ?
       SSL_REASON_BAD_CLOCK : SSL_REASON_SSL;
 
   // We collapse the Rappor metric name to just "ssl" so we don't leak
@@ -252,7 +254,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
 
   ssl_error_classification_.reset(new SSLErrorClassification(
       web_contents,
-      base::Time::NowFromSystemTime(),
+      time_triggered_,
       request_url,
       cert_error_,
       *ssl_info_.cert.get()));
@@ -295,7 +297,6 @@ void SSLBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("type", "SSL");
 
   // Shared UI configuration for all SSL interstitials.
-  base::Time now = base::Time::NowFromSystemTime();
   load_time_data->SetString("errorCode", net::ErrorToString(cert_error_));
   load_time_data->SetString(
       "openDetails",
@@ -321,9 +322,10 @@ void SSLBlockingPage::PopulateInterstitialStrings(
     // case.
     danger_overridable_ = false;
 
-    int heading_string = SSLErrorClassification::IsUserClockInTheFuture(now) ?
-                              IDS_SSL_V2_CLOCK_AHEAD_HEADING :
-                              IDS_SSL_V2_CLOCK_BEHIND_HEADING;
+    int heading_string =
+        SSLErrorClassification::IsUserClockInTheFuture(time_triggered_) ?
+        IDS_SSL_V2_CLOCK_AHEAD_HEADING :
+        IDS_SSL_V2_CLOCK_BEHIND_HEADING;
 
     load_time_data->SetString(
         "tabTitle",
@@ -331,11 +333,12 @@ void SSLBlockingPage::PopulateInterstitialStrings(
     load_time_data->SetString(
         "heading",
         l10n_util::GetStringUTF16(heading_string));
-    load_time_data->SetString("primaryParagraph",
-                              l10n_util::GetStringFUTF16(
-                                  IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH ,
-                                  url,
-                                  base::TimeFormatFriendlyDateAndTime(now)));
+    load_time_data->SetString(
+        "primaryParagraph",
+        l10n_util::GetStringFUTF16(
+            IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH,
+            url,
+            base::TimeFormatFriendlyDateAndTime(time_triggered_)));
 
     load_time_data->SetString(
         "primaryButtonText",
@@ -426,10 +429,12 @@ void SSLBlockingPage::PopulateInterstitialStrings(
       "expirationDate",
       base::TimeFormatShortDate(ssl_info_.cert->valid_expiry()));
   load_time_data->SetString(
-      "currentDate", base::TimeFormatShortDate(now));
+      "currentDate", base::TimeFormatShortDate(time_triggered_));
   std::vector<std::string> encoded_chain;
-  ssl_info_.cert->GetPEMEncodedChain(&encoded_chain);
-  load_time_data->SetString("pem", JoinString(encoded_chain, std::string()));
+  ssl_info_.cert->GetPEMEncodedChain(
+      &encoded_chain);
+  load_time_data->SetString(
+      "pem", JoinString(encoded_chain, std::string()));
 }
 
 void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
