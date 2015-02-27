@@ -150,7 +150,7 @@ void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
 {
     SkPaint::FilterLevel filterLevel = computedStyle()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel;
     if (is3D()) {
-        toWebGLRenderingContext(m_context.get())->setFilterLevel(filterLevel);
+        toWebGLRenderingContextBase(m_context.get())->setFilterLevel(filterLevel);
         setNeedsCompositingUpdate();
     } else if (hasImageBuffer()) {
         m_imageBuffer->setFilterLevel(filterLevel);
@@ -252,7 +252,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
             }
             LayoutStyle* style = computedStyle();
             if (style && m_context)
-                toWebGLRenderingContext(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
+                toWebGLRenderingContextBase(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
             setNeedsCompositingUpdate();
             updateExternallyAllocatedMemory();
         } else if (!m_context->is3d()) {
@@ -373,7 +373,7 @@ void HTMLCanvasElement::reset()
     setSurfaceSize(newSize);
 
     if (m_context && m_context->is3d() && oldSize != size())
-        toWebGLRenderingContext(m_context.get())->reshape(width(), height());
+        toWebGLRenderingContextBase(m_context.get())->reshape(width(), height());
 
     if (LayoutObject* renderer = this->renderer()) {
         if (renderer->isCanvas()) {
@@ -424,7 +424,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
     }
 
     if (is3D() && paintsIntoCanvasBuffer())
-        toWebGLRenderingContext(m_context.get())->markLayerComposited();
+        toWebGLRenderingContextBase(m_context.get())->markLayerComposited();
 }
 
 bool HTMLCanvasElement::is3D() const
@@ -476,7 +476,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     if (m_context->is3d()) {
         // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
         RefPtrWillBeRawPtr<ImageData> imageData =
-            toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
+            toWebGLRenderingContextBase(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
         if (imageData)
             return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
@@ -723,7 +723,7 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
     // Four bytes per pixel per buffer.
     Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
     if (is3D())
-        checkedExternallyAllocatedMemory += toWebGLRenderingContext(m_context.get())->externallyAllocatedBytesPerPixel();
+        checkedExternallyAllocatedMemory += toWebGLRenderingContextBase(m_context.get())->externallyAllocatedBytesPerPixel();
 
     checkedExternallyAllocatedMemory *= width();
     checkedExternallyAllocatedMemory *= height();
