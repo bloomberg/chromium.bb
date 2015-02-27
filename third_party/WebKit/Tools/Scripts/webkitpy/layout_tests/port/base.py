@@ -1015,6 +1015,9 @@ class Port(object):
     def perf_results_directory(self):
         return self._build_path()
 
+    def inspector_build_directory(self):
+        return self._build_path('resources', 'inspector')
+
     def default_results_directory(self):
         """Absolute path to the default place to store the test results."""
         try:
