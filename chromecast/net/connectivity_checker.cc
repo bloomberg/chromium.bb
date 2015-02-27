@@ -60,10 +60,8 @@ void ConnectivityChecker::Initialize() {
   url_request_context_.reset(builder.Build());
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  if (!net::NetworkChangeNotifier::IsOffline()) {
-    loop_proxy_->PostTask(FROM_HERE,
-                          base::Bind(&ConnectivityChecker::Check, this));
-  }
+  loop_proxy_->PostTask(FROM_HERE,
+                        base::Bind(&ConnectivityChecker::Check, this));
 }
 
 ConnectivityChecker::~ConnectivityChecker() {
@@ -118,15 +116,11 @@ void ConnectivityChecker::Check() {
 
 void ConnectivityChecker::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  Cancel();
-
-  // If there is no connection, set connectivity to false. Otherwise retest
-  // connectivity
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
     SetConnectivity(false);
-  } else {
-    Check();
-  }
+
+  Cancel();
+  Check();
 }
 
 void ConnectivityChecker::OnResponseStarted(net::URLRequest* request) {
@@ -154,11 +148,9 @@ void ConnectivityChecker::OnResponseStarted(net::URLRequest* request) {
   }
 
   // Check again
-  if (!net::NetworkChangeNotifier::IsOffline()) {
-    loop_proxy_->PostDelayedTask(
-        FROM_HERE, base::Bind(&ConnectivityChecker::Check, this),
-        base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));
-  }
+  loop_proxy_->PostDelayedTask(
+      FROM_HERE, base::Bind(&ConnectivityChecker::Check, this),
+      base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));
 }
 
 void ConnectivityChecker::OnReadCompleted(net::URLRequest* request,
