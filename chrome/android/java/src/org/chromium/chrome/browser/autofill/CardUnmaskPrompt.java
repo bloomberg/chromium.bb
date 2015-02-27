@@ -122,7 +122,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
             public void onClick(View view) {
                 mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
                         mMonthInput.getText().toString(),
-                        mYearInput.getText().toString(),
+                        Integer.toString(getFourDigitYear()),
                         mStoreLocallyCheckbox.isChecked());
             }
         });
@@ -203,13 +203,12 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
             try {
                 int month = Integer.parseInt(mMonthInput.getText().toString());
                 if (month < 1 || month > 12) return false;
-
-                // TODO(estade): allow 4 digit year input?
-                int year = Integer.parseInt(mYearInput.getText().toString());
-                if (year < mThisYear % 100 || year > (mThisYear + 10) % 100) return false;
             } catch (NumberFormatException e) {
                 return false;
             }
+
+            int year = getFourDigitYear();
+            if (year < mThisYear || year > mThisYear + 10) return false;
         }
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
     }
@@ -267,5 +266,21 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
      */
     private void updateColorForInput(EditText input, ColorFilter filter) {
         input.getBackground().mutate().setColorFilter(filter);
+    }
+
+    /**
+     * Returns the expiration year the user entered.
+     * Two digit values (such as 17) will be converted to 4 digit years (such as 2017).
+     * Returns -1 if the input is empty or otherwise not a valid year.
+     */
+    private int getFourDigitYear() {
+        try {
+            int year = Integer.parseInt(mYearInput.getText().toString());
+            if (year < 0) return -1;
+            if (year < 100) year += mThisYear - mThisYear % 100;
+            return year;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }

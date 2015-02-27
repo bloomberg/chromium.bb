@@ -19,8 +19,14 @@ class CardUnmaskDelegate {
 
     // User input data.
     base::string16 cvc;
+
+    // Two digit month.
     base::string16 exp_month;
+
+    // Four digit year.
     base::string16 exp_year;
+
+    // State of "copy to this device" checkbox.
     bool should_store_pan;
 
     // Risk fingerprint.

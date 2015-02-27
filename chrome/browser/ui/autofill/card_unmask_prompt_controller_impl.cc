@@ -63,8 +63,10 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
 
   DCHECK(!cvc.empty());
   pending_response_.cvc = cvc;
-  pending_response_.exp_month = exp_month;
-  pending_response_.exp_year = exp_year;
+  if (ShouldRequestExpirationDate()) {
+    pending_response_.exp_month = exp_month;
+    pending_response_.exp_year = exp_year;
+  }
   pending_response_.should_store_pan = should_store_pan;
   // Remember the last choice the user made (on this device).
   user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())->SetBoolean(
