@@ -1880,15 +1880,6 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailur
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
-# Need rebaseline after r190960.
-crbug.com/462456 fast/dynamic/text-combine.html [ NeedsRebaseline ]
-crbug.com/462456 fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/462456 fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-crbug.com/462456 virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/462456 virtual/antialiasedtext/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-crbug.com/462456 virtual/slimmingpaint/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/462456 virtual/slimmingpaint/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
