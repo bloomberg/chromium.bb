@@ -133,6 +133,7 @@ ScopedDrmFramebufferPtr MockDriWrapper::GetFramebuffer(uint32_t framebuffer) {
 
 bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               uint32_t framebuffer,
+                              bool is_sync,
                               const PageFlipCallback& callback) {
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;

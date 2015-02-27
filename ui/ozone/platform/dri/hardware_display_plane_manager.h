@@ -88,7 +88,7 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
                                    CrtcController* crtc);
 
   // Commit the plane states in |plane_list|.
-  virtual bool Commit(HardwareDisplayPlaneList* plane_list) = 0;
+  virtual bool Commit(HardwareDisplayPlaneList* plane_list, bool is_sync) = 0;
 
   // Set all planes in |plane_list| owned by |crtc_id| to free.
   static void ResetPlanes(HardwareDisplayPlaneList* plane_list,

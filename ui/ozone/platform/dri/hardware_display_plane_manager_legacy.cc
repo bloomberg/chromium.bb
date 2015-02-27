@@ -18,7 +18,8 @@ HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 }
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
-    HardwareDisplayPlaneList* plane_list) {
+    HardwareDisplayPlaneList* plane_list,
+    bool is_sync) {
   if (plane_list->plane_list.empty())  // No assigned planes, nothing to do.
     return true;
   bool ret = true;
@@ -43,13 +44,14 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
         break;
       }
     }
-    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer,
+    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, is_sync,
                         base::Bind(&CrtcController::OnPageFlipEvent,
                                    flip.crtc->AsWeakPtr()))) {
       if (errno != EACCES) {
         LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
                    << " crtc=" << flip.crtc_id
-                   << " framebuffer=" << flip.framebuffer;
+                   << " framebuffer=" << flip.framebuffer
+                   << " is_sync=" << is_sync;
         LOG(ERROR) << "Failed to commit planes";
         ret = false;
       }

@@ -123,7 +123,7 @@ class OZONE_EXPORT HardwareDisplayController
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
-  bool SchedulePageFlip(const base::Closure& callback);
+  bool SchedulePageFlip(bool is_sync, const base::Closure& callback);
 
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
@@ -169,10 +169,12 @@ class OZONE_EXPORT HardwareDisplayController
 
   struct PageFlipRequest {
     PageFlipRequest(const OverlayPlaneList& planes,
+                    bool is_sync,
                     const base::Closure& callback);
     ~PageFlipRequest();
 
     OverlayPlaneList planes;
+    bool is_sync;
     base::Closure callback;
   };
 

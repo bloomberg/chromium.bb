@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
@@ -31,8 +33,12 @@ bool GbmSurfaceless::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurfaceless::OnSwapBuffers() {
-  NOTREACHED();
-  return false;
+  HardwareDisplayController* controller = window_delegate_->GetController();
+  if (!controller)
+    return true;
+
+  return controller->SchedulePageFlip(true /* is_sync */,
+                                      base::Bind(&base::DoNothing));
 }
 
 bool GbmSurfaceless::OnSwapBuffersAsync(
@@ -43,7 +49,7 @@ bool GbmSurfaceless::OnSwapBuffersAsync(
     return true;
   }
 
-  return controller->SchedulePageFlip(callback);
+  return controller->SchedulePageFlip(false /* is_sync */, callback);
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {

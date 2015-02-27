@@ -16,7 +16,8 @@ class OZONE_EXPORT HardwareDisplayPlaneManagerLegacy
   HardwareDisplayPlaneManagerLegacy();
   ~HardwareDisplayPlaneManagerLegacy() override;
 
-  bool Commit(HardwareDisplayPlaneList* plane_list) override;
+  // HardwareDisplayPlaneManager:
+  bool Commit(HardwareDisplayPlaneList* plane_list, bool is_sync) override;
 
  private:
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,

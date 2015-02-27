@@ -24,8 +24,9 @@ namespace ui {
 
 HardwareDisplayController::PageFlipRequest::PageFlipRequest(
     const OverlayPlaneList& planes,
+    bool is_sync,
     const base::Closure& callback)
-    : planes(planes), callback(callback) {
+    : planes(planes), is_sync(is_sync), callback(callback) {
 }
 
 HardwareDisplayController::PageFlipRequest::~PageFlipRequest() {
@@ -63,7 +64,7 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
   // callback. We use the modeset state since it is the only valid state.
   if (HasPendingPageFlips())
     requests_.push_back(
-        PageFlipRequest(current_planes_, base::Bind(&base::DoNothing)));
+        PageFlipRequest(current_planes_, false, base::Bind(&base::DoNothing)));
 
   return status;
 }
@@ -89,6 +90,7 @@ void HardwareDisplayController::QueueOverlayPlane(const OverlayPlane& plane) {
 }
 
 bool HardwareDisplayController::SchedulePageFlip(
+    bool is_sync,
     const base::Closure& callback) {
   TRACE_EVENT0("dri", "HDC::SchedulePageFlip");
 
@@ -98,7 +100,7 @@ bool HardwareDisplayController::SchedulePageFlip(
     return true;
   }
 
-  requests_.push_back(PageFlipRequest(pending_planes_, callback));
+  requests_.push_back(PageFlipRequest(pending_planes_, is_sync, callback));
   pending_planes_.clear();
 
   // A request is being serviced right now.
@@ -296,8 +298,9 @@ bool HardwareDisplayController::ActualSchedulePageFlip() {
         pending_planes);
   }
 
+  bool is_sync = requests_.front().is_sync;
   for (const auto& planes : owned_hardware_planes_) {
-    if (!planes.first->plane_manager()->Commit(planes.second)) {
+    if (!planes.first->plane_manager()->Commit(planes.second, is_sync)) {
       status = false;
     }
   }

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -104,30 +105,47 @@ class DriWrapper::IOWatcher
  public:
   IOWatcher(int fd,
             const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : io_task_runner_(io_task_runner) {
-    io_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&IOWatcher::RegisterOnIO, this, fd));
+      : io_task_runner_(io_task_runner), paused_(true), fd_(fd) {}
+
+  void SetPaused(bool paused) {
+    if (paused_ == paused)
+      return;
+
+    paused_ = paused;
+    base::WaitableEvent done(false, false);
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&IOWatcher::SetPausedOnIO, this, &done));
   }
 
   void Shutdown() {
-    io_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&IOWatcher::UnregisterOnIO, this));
+    if (!paused_)
+      io_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(&IOWatcher::UnregisterOnIO, this));
   }
 
  private:
   friend class base::RefCountedThreadSafe<IOWatcher>;
 
-  ~IOWatcher() override {}
+  ~IOWatcher() override { SetPaused(true); }
 
-  void RegisterOnIO(int fd) {
+  void RegisterOnIO() {
     DCHECK(base::MessageLoopForIO::IsCurrent());
     base::MessageLoopForIO::current()->WatchFileDescriptor(
-        fd, true, base::MessageLoopForIO::WATCH_READ, &controller_, this);
+        fd_, true, base::MessageLoopForIO::WATCH_READ, &controller_, this);
   }
 
   void UnregisterOnIO() {
     DCHECK(base::MessageLoopForIO::IsCurrent());
     controller_.StopWatchingFileDescriptor();
+  }
+
+  void SetPausedOnIO(base::WaitableEvent* done) {
+    DCHECK(base::MessageLoopForIO::IsCurrent());
+    if (paused_)
+      UnregisterOnIO();
+    else
+      RegisterOnIO();
+    done->Signal();
   }
 
   // base::MessagePumpLibevent::Watcher overrides:
@@ -148,6 +166,9 @@ class DriWrapper::IOWatcher
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+
+  bool paused_;
+  int fd_;
 
   DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
@@ -270,11 +291,15 @@ bool DriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
 
 bool DriWrapper::PageFlip(uint32_t crtc_id,
                           uint32_t framebuffer,
+                          bool is_sync,
                           const PageFlipCallback& callback) {
   DCHECK(file_.IsValid());
   TRACE_EVENT2("dri", "DriWrapper::PageFlip",
                "crtc", crtc_id,
                "framebuffer", framebuffer);
+
+  if (watcher_)
+    watcher_->SetPaused(is_sync);
 
   // NOTE: Calling drmModeSetCrtc will immediately update the state, though
   // callbacks to already scheduled page flips will be honored by the kernel.
@@ -285,9 +310,9 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
     // If successful the payload will be removed by a PageFlip event.
     ignore_result(payload.release());
 
-    // If a task runner isn't installed then fall back to synchronously handling
-    // the page flip events.
-    if (!task_runner_) {
+    // If the flip was requested synchronous or if no watcher has been installed
+    // yet, then synchronously handle the page flip events.
+    if (is_sync || !watcher_) {
       TRACE_EVENT1("dri", "OnDrmEvent", "socket", file_.GetPlatformFile());
 
       drmEventContext event;

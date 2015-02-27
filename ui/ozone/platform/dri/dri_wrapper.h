@@ -100,6 +100,7 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
   // queued on |fd_|.
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
+                        bool is_sync,
                         const PageFlipCallback& callback);
 
   // Schedule an overlay to be show during the page flip for CRTC |crtc_id|.

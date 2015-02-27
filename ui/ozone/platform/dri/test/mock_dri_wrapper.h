@@ -73,6 +73,7 @@ class MockDriWrapper : public ui::DriWrapper {
   ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer) override;
   bool PageFlip(uint32_t crtc_id,
                 uint32_t framebuffer,
+                bool is_sync,
                 const PageFlipCallback& callback) override;
   bool PageFlipOverlay(uint32_t crtc_id,
                        uint32_t framebuffer,
