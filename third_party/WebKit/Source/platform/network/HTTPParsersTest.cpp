@@ -223,5 +223,22 @@ TEST(HTTPParsersTest, parseHTTPHeaderTwoLines)
     EXPECT_EQ("fuga", value.string());
 }
 
+TEST(HTTPParsersTest, CommaDelimitedHeaderSet)
+{
+    CommaDelimitedHeaderSet set1;
+    CommaDelimitedHeaderSet set2;
+    parseCommaDelimitedHeader("dpr, rw, whatever", set1);
+    EXPECT_TRUE(set1.contains("dpr"));
+    EXPECT_TRUE(set1.contains("rw"));
+    EXPECT_TRUE(set1.contains("whatever"));
+    parseCommaDelimitedHeader("dprw\t     , fo\to", set2);
+    EXPECT_FALSE(set2.contains("dpr"));
+    EXPECT_FALSE(set2.contains("rw"));
+    EXPECT_FALSE(set2.contains("whatever"));
+    EXPECT_TRUE(set2.contains("dprw"));
+    EXPECT_FALSE(set2.contains("foo"));
+    EXPECT_TRUE(set2.contains("fo\to"));
+}
+
 } // namespace blink
 

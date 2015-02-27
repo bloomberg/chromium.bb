@@ -33,7 +33,9 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
+#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
 
 namespace blink {
 
@@ -67,6 +69,8 @@ enum ReflectedXSSDisposition {
     BlockReflectedXSS
 };
 
+using CommaDelimitedHeaderSet = HashSet<String, CaseFoldingHash>;
+
 struct CacheControlHeader {
     bool parsed : 1;
     bool containsNoCache : 1;
@@ -97,6 +101,7 @@ PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& h
 PLATFORM_EXPORT String extractReasonPhraseFromHTTPStatusLine(const String&);
 PLATFORM_EXPORT XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
 PLATFORM_EXPORT CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlHeader, const AtomicString& pragmaHeader);
+PLATFORM_EXPORT void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSet&);
 
 // -1 could be set to one of the return parameters to indicate the value is not specified.
 PLATFORM_EXPORT bool parseRange(const String&, long long& rangeOffset, long long& rangeEnd, long long& rangeSuffixLength);

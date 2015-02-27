@@ -44,6 +44,11 @@ using namespace WTF;
 
 namespace blink {
 
+static bool isWhitespace(UChar chr)
+{
+    return (chr == ' ') || (chr == '\t');
+}
+
 // true if there is more to parse, after incrementing pos past whitespace.
 // Note: Might return pos == str.length()
 static inline bool skipWhiteSpace(const String& str, unsigned& pos, bool fromHttpEquivMeta)
@@ -54,7 +59,7 @@ static inline bool skipWhiteSpace(const String& str, unsigned& pos, bool fromHtt
         while (pos < len && str[pos] <= ' ')
             ++pos;
     } else {
-        while (pos < len && (str[pos] == '\t' || str[pos] == ' '))
+        while (pos < len && isWhitespace(str[pos]))
             ++pos;
     }
 
@@ -849,6 +854,14 @@ CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlV
         cacheControlHeader.containsNoCache = pragmaValue.lower().contains(noCacheDirective);
     }
     return cacheControlHeader;
+}
+
+void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSet& headerSet)
+{
+    Vector<String> results;
+    headerValue.split(",", results);
+    for (auto& value : results)
+        headerSet.add(value.stripWhiteSpace(isWhitespace));
 }
 
 }
