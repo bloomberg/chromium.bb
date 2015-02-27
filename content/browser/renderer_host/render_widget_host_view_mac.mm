@@ -605,6 +605,8 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   if (browser_compositor_state_ == BrowserCompositorDestroyed) {
     browser_compositor_ = BrowserCompositorMac::Create();
     browser_compositor_->compositor()->SetRootLayer(root_layer_.get());
+    browser_compositor_->compositor()->SetHostHasTransparentBackground(
+        !GetBackgroundOpaque());
     browser_compositor_->accelerated_widget_mac()->SetNSView(this);
     browser_compositor_state_ = BrowserCompositorSuspended;
   }
@@ -1581,8 +1583,14 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
 
 void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
   RenderWidgetHostViewBase::SetBackgroundColor(color);
+  bool opaque = GetBackgroundOpaque();
+
   if (render_widget_host_)
-    render_widget_host_->SetBackgroundOpaque(GetBackgroundOpaque());
+    render_widget_host_->SetBackgroundOpaque(opaque);
+
+  [cocoa_view_ setOpaque:opaque];
+  if (browser_compositor_state_ != BrowserCompositorDestroyed)
+    browser_compositor_->compositor()->SetHostHasTransparentBackground(!opaque);
 
   if (background_layer_) {
     [background_layer_

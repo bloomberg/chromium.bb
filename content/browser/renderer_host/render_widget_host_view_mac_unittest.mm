@@ -801,4 +801,45 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   ASSERT_FALSE(guest_rwhv_weak.get());
 }
 
+// Tests setting background transparency. See also (disabled on Mac)
+// RenderWidgetHostTest.Background. This test has some additional checks for
+// Mac.
+TEST_F(RenderWidgetHostViewMacTest, Background) {
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  MockRenderWidgetHostDelegate delegate;
+  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+
+  EXPECT_TRUE(view->GetBackgroundOpaque());
+  EXPECT_TRUE([view->cocoa_view() isOpaque]);
+
+  view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  EXPECT_FALSE(view->GetBackgroundOpaque());
+  EXPECT_FALSE([view->cocoa_view() isOpaque]);
+
+  const IPC::Message* set_background;
+  set_background = process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_SetBackgroundOpaque::ID);
+  ASSERT_TRUE(set_background);
+  Tuple<bool> sent_background;
+  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  EXPECT_FALSE(get<0>(sent_background));
+
+  // Try setting it back.
+  process_host->sink().ClearMessages();
+  view->SetBackgroundColor(SK_ColorWHITE);
+  EXPECT_TRUE(view->GetBackgroundOpaque());
+  EXPECT_TRUE([view->cocoa_view() isOpaque]);
+  set_background = process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_SetBackgroundOpaque::ID);
+  ASSERT_TRUE(set_background);
+  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  EXPECT_TRUE(get<0>(sent_background));
+
+  host->Shutdown();
+}
+
 }  // namespace content
