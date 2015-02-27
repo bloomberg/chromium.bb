@@ -9,7 +9,8 @@ namespace networking.config {
   enum NetworkType { WiFi };
 
   // A dictionary identifying filtered networks. One of <code>GUID</code>,
-  // <code>SSID</code> or <code>HexSSID</code> must be set.
+  // <code>SSID</code> or <code>HexSSID</code> must be set. <code>BSSID</code>
+  // and <code>Security</code> are ignored when filtering networks.
   dictionary NetworkInfo {
     // Currently only WiFi supported.
     NetworkType Type;
@@ -23,6 +24,12 @@ namespace networking.config {
     // The decoded SSID of the network (default encoding is UTF-8). To filter
     // for non-UTF-8 SSIDs, use HexSSID instead.
     DOMString? SSID;
+
+    // The basic service set identification (BSSID) uniquely identifying the
+    // basic service set. <code>BSSID</code> is represented as a human readable,
+    // hex-encoded string with bytes separated by colons, e.g.
+    // 45:67:89:ab:cd:ef.
+    DOMString? BSSID;
 
     // Identifier indicating the security type of the network. Valid values are
     // <code>None</code>, <code>WEP-PSK</code>, <code>WPA-PSK</code> and

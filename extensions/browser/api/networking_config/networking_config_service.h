@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -92,10 +94,30 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   void SetAuthenticationResult(
       const AuthenticationResult& authentication_result);
 
-  bool DispatchPortalDetectedEvent(std::string extension_id, std::string guid);
+  void DispatchPortalDetectedEvent(const std::string& extension_id,
+                                   const std::string& guid);
 
  private:
-  content::BrowserContext* browser_context_;
+  void OnGotProperties(const std::string& extension_id,
+                       const std::string& guid,
+                       const std::string& service_path,
+                       const base::DictionaryValue& onc_network_config);
+
+  void OnGetPropertiesFailed(const std::string& extension_id,
+                             const std::string& guid,
+                             const std::string& error_name,
+                             scoped_ptr<base::DictionaryValue> error_data);
+
+  // Creates the captive portal event about the network with guid |guid| that is
+  // to be dispatched to the extension identified by |extension_id|. |bssid|
+  // contains a human readable, hex-encoded version of the BSSID with bytes
+  // separated by colons, e.g. 45:67:89:ab:cd:ef.
+  scoped_ptr<Event> CreatePortalDetectedEventAndDispatch(
+      const std::string& extension_id,
+      const std::string& guid,
+      const std::string* bssid);
+
+  content::BrowserContext* const browser_context_;
 
   AuthenticationResult authentication_result_;
 
@@ -106,6 +128,8 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
 
   // This map associates a given hex encoded SSID to an extension entry.
   std::map<std::string, std::string> hex_ssid_to_extension_id_;
+
+  base::WeakPtrFactory<NetworkingConfigService> weak_factory_;
 };
 
 }  // namespace extensions
