@@ -163,8 +163,10 @@ void Timer::PostNewScheduledTask(TimeDelta delay) {
   }
   // Remember the thread ID that posts the first task -- this will be verified
   // later when the task is abandoned to detect misuse from multiple threads.
-  if (!thread_id_)
+  if (!thread_id_) {
+    DCHECK(GetTaskRunner()->BelongsToCurrentThread());
     thread_id_ = static_cast<int>(PlatformThread::CurrentId());
+  }
 }
 
 scoped_refptr<SingleThreadTaskRunner> Timer::GetTaskRunner() {
