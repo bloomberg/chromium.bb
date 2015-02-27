@@ -45,8 +45,6 @@
 #include "public/web/WebLocalFrame.h"
 #include "web/WebEmbeddedWorkerImpl.h"
 
-#include <v8.h>
-
 namespace blink {
 
 namespace {

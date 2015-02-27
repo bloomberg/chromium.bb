@@ -8,7 +8,6 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include <v8.h>
 
 namespace blink {
 

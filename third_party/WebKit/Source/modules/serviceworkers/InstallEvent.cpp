@@ -33,7 +33,6 @@
 
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "wtf/RefPtr.h"
-#include <v8.h>
 
 namespace blink {
 
