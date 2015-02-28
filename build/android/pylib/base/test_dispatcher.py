@@ -116,7 +116,7 @@ def _RunTestsFromQueue(runner, collection, out_results, watcher,
         pass_results = base_test_result.TestRunResults()
         pass_results.AddResults(result.GetPass())
         out_results.append(pass_results)
-        logging.warning('Will retry test, try #%s.' % test.tries)
+        logging.warning('Will retry test %s, try #%s.', retry, test.tries)
         collection.add(_Test(test=retry, tries=test.tries))
       else:
         # All tests passed or retry limit reached. Either way, record results.
