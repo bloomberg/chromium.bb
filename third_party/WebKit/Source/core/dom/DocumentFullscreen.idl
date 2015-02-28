@@ -19,6 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://fullscreen.spec.whatwg.org/#api
+
 partial interface Document {
     [RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
     [RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
