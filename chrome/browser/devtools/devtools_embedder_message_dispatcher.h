@@ -57,6 +57,10 @@ class DevToolsEmbedderMessageDispatcher {
                            int index_request_id,
                            const std::string& file_system_path) = 0;
     virtual void StopIndexing(int request_id, int index_request_id) = 0;
+    virtual void LoadNetworkResource(int request_id,
+                                     const std::string& url,
+                                     const std::string& headers,
+                                     int stream_id) = 0;
     virtual void SearchInPath(int request_id,
                               int search_request_id,
                               const std::string& file_system_path,

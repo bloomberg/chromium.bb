@@ -149,6 +149,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
   d->RegisterHandler("upgradeDraggedFileSystemPermissions",
                      &Delegate::UpgradeDraggedFileSystemPermissions, delegate);
   d->RegisterHandler("indexPath", &Delegate::IndexPath, delegate);
+  d->RegisterHandler("loadNetworkResource",
+                     &Delegate::LoadNetworkResource, delegate);
   d->RegisterHandler("stopIndexing", &Delegate::StopIndexing, delegate);
   d->RegisterHandler("searchInPath", &Delegate::SearchInPath, delegate);
   d->RegisterHandler("setWhitelistedShortcuts",

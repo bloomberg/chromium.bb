@@ -47,6 +47,11 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
@@ -233,6 +238,57 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
   return InfoBarService::FromWebContents(web_contents_);
 }
 
+// ResponseWriter -------------------------------------------------------------
+
+class ResponseWriter : public net::URLFetcherResponseWriter {
+ public:
+  ResponseWriter(DevToolsUIBindings* bindings, int stream_id);
+  ~ResponseWriter() override;
+
+  // URLFetcherResponseWriter overrides:
+  int Initialize(const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buffer,
+            int num_bytes,
+            const net::CompletionCallback& callback) override;
+  int Finish(const net::CompletionCallback& callback) override;
+
+ private:
+  DevToolsUIBindings* bindings_;
+  int stream_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
+};
+
+ResponseWriter::ResponseWriter(DevToolsUIBindings* bindings,
+                               int stream_id)
+    : bindings_(bindings),
+      stream_id_(stream_id) {
+}
+
+ResponseWriter::~ResponseWriter() {
+}
+
+int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
+  return net::OK;
+}
+
+int ResponseWriter::Write(net::IOBuffer* buffer,
+                          int num_bytes,
+                          const net::CompletionCallback& callback) {
+  base::FundamentalValue id(stream_id_);
+  base::StringValue chunk(std::string(buffer->data(), num_bytes));
+  bindings_->CallClientFunction(
+      "DevToolsAPI.streamWrite", &id, &chunk, nullptr);
+  return num_bytes;
+}
+
+int ResponseWriter::Finish(const net::CompletionCallback& callback) {
+  base::FundamentalValue id(stream_id_);
+  bindings_->CallClientFunction(
+      "DevToolsAPI.streamFinish", &id, nullptr, nullptr);
+  return net::OK;
+}
+
 }  // namespace
 
 // DevToolsUIBindings::FrontendWebContentsObserver ----------------------------
@@ -383,6 +439,9 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
+  for (const auto& pair : pending_requests_)
+    delete pair.first;
+
   if (agent_host_.get())
     agent_host_->DetachClient();
 
@@ -466,10 +525,11 @@ void DevToolsUIBindings::AgentHostClosed(
   delegate_->InspectedContentsClosing();
 }
 
-void DevToolsUIBindings::SendMessageAck(int request_id) {
+void DevToolsUIBindings::SendMessageAck(int request_id,
+                                        const base::Value* arg) {
   base::FundamentalValue id_value(request_id);
   CallClientFunction("DevToolsAPI.embedderMessageAck",
-                     &id_value, nullptr, nullptr);
+                     &id_value, arg, nullptr);
 }
 
 // DevToolsEmbedderMessageDispatcher::Delegate implementation -----------------
@@ -492,7 +552,7 @@ void DevToolsUIBindings::SetInspectedPageBounds(int request_id,
 
 void DevToolsUIBindings::SetIsDocked(int request_id, bool dock_requested) {
   delegate_->SetIsDocked(dock_requested);
-  SendMessageAck(request_id);
+  SendMessageAck(request_id, nullptr);
 }
 
 void DevToolsUIBindings::InspectElementCompleted(int request_id) {
@@ -507,6 +567,28 @@ void DevToolsUIBindings::InspectedURLChanged(int request_id,
   entry->SetTitle(
       base::UTF8ToUTF16(base::StringPrintf(kTitleFormat, url.c_str())));
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
+}
+
+void DevToolsUIBindings::LoadNetworkResource(int request_id,
+                                             const std::string& url,
+                                             const std::string& headers,
+                                             int stream_id) {
+  GURL gurl(url);
+  if (!gurl.is_valid()) {
+    base::DictionaryValue response;
+    response.SetInteger("statusCode", 404);
+    SendMessageAck(request_id, &response);
+    return;
+  }
+
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(gurl, net::URLFetcher::GET, this);
+  pending_requests_[fetcher] = request_id;
+  fetcher->SetRequestContext(profile_->GetRequestContext());
+  fetcher->SetExtraRequestHeaders(headers);
+  fetcher->SaveResponseWithWriter(scoped_ptr<net::URLFetcherResponseWriter>(
+      new ResponseWriter(this, stream_id)));
+  fetcher->Start();
 }
 
 void DevToolsUIBindings::OpenInNewTab(int request_id, const std::string& url) {
@@ -702,6 +784,28 @@ void DevToolsUIBindings::RecordActionUMA(int request_id,
     UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsActionTakenBoundary);
   else if (name == kDevToolsPanelShownHistogram)
     UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsPanelShownBoundary);
+}
+
+void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(source);
+  PendingRequestsMap::iterator it = pending_requests_.find(source);
+  DCHECK(it != pending_requests_.end());
+
+  base::DictionaryValue response;
+  base::DictionaryValue* headers = new base::DictionaryValue();
+  net::HttpResponseHeaders* rh = source->GetResponseHeaders();
+  response.SetInteger("statusCode", rh ? rh->response_code() : 200);
+  response.Set("headers", headers);
+
+  void* iterator = NULL;
+  std::string name;
+  std::string value;
+  while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
+    headers->SetString(name, value);
+
+  SendMessageAck(it->second, &response);
+  pending_requests_.erase(it);
+  delete source;
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {

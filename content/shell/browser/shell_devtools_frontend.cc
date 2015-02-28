@@ -22,9 +22,75 @@
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
-#include "net/base/filename_util.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 
 namespace content {
+
+namespace {
+
+
+// ResponseWriter -------------------------------------------------------------
+
+class ResponseWriter : public net::URLFetcherResponseWriter {
+ public:
+  ResponseWriter(Shell* shell, int stream_id);
+  ~ResponseWriter() override;
+
+  // URLFetcherResponseWriter overrides:
+  int Initialize(const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buffer,
+            int num_bytes,
+            const net::CompletionCallback& callback) override;
+  int Finish(const net::CompletionCallback& callback) override;
+
+ private:
+  Shell* shell_;
+  int stream_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
+};
+
+ResponseWriter::ResponseWriter(Shell* shell,
+                               int stream_id)
+    : shell_(shell),
+      stream_id_(stream_id) {
+}
+
+ResponseWriter::~ResponseWriter() {
+}
+
+int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
+  return net::OK;
+}
+
+int ResponseWriter::Write(net::IOBuffer* buffer,
+                          int num_bytes,
+                          const net::CompletionCallback& callback) {
+  base::StringValue chunk(std::string(buffer->data(), num_bytes));
+  std::string encoded;
+  base::JSONWriter::Write(&chunk, &encoded);
+
+  std::string code = base::StringPrintf(
+      "DevToolsAPI.streamWrite(%d, %s)", stream_id_, encoded.c_str());
+  shell_->web_contents()->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16(code));
+
+  return num_bytes;
+}
+
+int ResponseWriter::Finish(const net::CompletionCallback& callback) {
+  std::string code = base::StringPrintf(
+      "DevToolsAPI.streamFinish(%d)", stream_id_);
+  shell_->web_contents()->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16(code));
+  return net::OK;
+}
+
+}  // namespace
 
 // This constant should be in sync with
 // the constant at devtools_ui_bindings.cc.
@@ -83,6 +149,8 @@ ShellDevToolsFrontend::ShellDevToolsFrontend(Shell* frontend_shell,
 }
 
 ShellDevToolsFrontend::~ShellDevToolsFrontend() {
+  for (const auto& pair : pending_requests_)
+    delete pair.first;
 }
 
 void ShellDevToolsFrontend::RenderViewCreated(
@@ -111,7 +179,6 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
   if (!agent_host_)
     return;
   std::string method;
-  int id = 0;
   base::ListValue* params = NULL;
   base::DictionaryValue* dict = NULL;
   scoped_ptr<base::Value> parsed_message(base::JSONReader::Read(message));
@@ -120,6 +187,8 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
       !dict->GetString("method", &method)) {
     return;
   }
+  int id = 0;
+  dict->GetInteger("id", &id);
   dict->GetList("params", &params);
 
   std::string browser_message;
@@ -129,11 +198,39 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScript(
         base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));
+  } else if (method == "loadNetworkResource" && params->GetSize() == 3) {
+    // TODO(pfeldman): handle some of the embedder messages in content.
+    std::string url;
+    std::string headers;
+    int stream_id;
+    if (!params->GetString(0, &url) ||
+        !params->GetString(1, &headers) ||
+        !params->GetInteger(2, &stream_id)) {
+      return;
+    }
+    GURL gurl(url);
+    if (!gurl.is_valid()) {
+      std::string code = base::StringPrintf(
+          "DevToolsAPI.embedderMessageAck(%d, { statusCode: 404 });", id);
+      web_contents()->GetMainFrame()->ExecuteJavaScript(
+          base::UTF8ToUTF16(code));
+      return;
+    }
+
+    net::URLFetcher* fetcher =
+        net::URLFetcher::Create(gurl, net::URLFetcher::GET, this);
+    pending_requests_[fetcher] = id;
+    fetcher->SetRequestContext(web_contents()->GetBrowserContext()->
+        GetRequestContext());
+    fetcher->SetExtraRequestHeaders(headers);
+    fetcher->SaveResponseWithWriter(scoped_ptr<net::URLFetcherResponseWriter>(
+        new ResponseWriter(frontend_shell(), stream_id)));
+    fetcher->Start();
+    return;
   } else {
     return;
   }
 
-  dict->GetInteger("id", &id);
   if (id) {
     std::string code = "DevToolsAPI.embedderMessageAck(" +
         base::IntToString(id) + ",\"\");";
@@ -167,6 +264,39 @@ void ShellDevToolsFrontend::DispatchProtocolMessage(
     base::string16 javascript = base::UTF8ToUTF16(code);
     web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
   }
+}
+
+void ShellDevToolsFrontend::OnURLFetchComplete(const net::URLFetcher* source) {
+  // TODO(pfeldman): this is a copy of chrome's devtools_ui_bindings.cc.
+  // We should handle some of the commands including this one in content.
+  DCHECK(source);
+  PendingRequestsMap::iterator it = pending_requests_.find(source);
+  DCHECK(it != pending_requests_.end());
+
+  base::DictionaryValue response;
+  base::DictionaryValue* headers = new base::DictionaryValue();
+  net::HttpResponseHeaders* rh = source->GetResponseHeaders();
+  response.SetInteger("statusCode", rh ? rh->response_code() : 200);
+  response.Set("headers", headers);
+
+  void* iterator = NULL;
+  std::string name;
+  std::string value;
+  while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
+    headers->SetString(name, value);
+
+  std::string json;
+  base::JSONWriter::Write(&response, &json);
+
+  std::string message = base::StringPrintf(
+      "DevToolsAPI.embedderMessageAck(%d, %s)",
+      it->second,
+      json.c_str());
+  web_contents()->GetMainFrame()->
+      ExecuteJavaScript(base::UTF8ToUTF16(message));
+
+  pending_requests_.erase(it);
+  delete source;
 }
 
 void ShellDevToolsFrontend::AttachTo(WebContents* inspected_contents) {

@@ -12,6 +12,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 namespace content {
 
@@ -21,7 +22,8 @@ class WebContents;
 
 class ShellDevToolsFrontend : public WebContentsObserver,
                               public DevToolsFrontendHost::Delegate,
-                              public DevToolsAgentHostClient {
+                              public DevToolsAgentHostClient,
+                              public net::URLFetcherDelegate {
  public:
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
 
@@ -57,9 +59,14 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   void HandleMessageFromDevToolsFrontendToBackend(
       const std::string& message) override;
 
+  // net::URLFetcherDelegate overrides.
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
   Shell* frontend_shell_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   scoped_ptr<DevToolsFrontendHost> frontend_host_;
+  using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
+  PendingRequestsMap pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsFrontend);
 };

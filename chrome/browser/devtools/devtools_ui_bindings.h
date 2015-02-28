@@ -21,6 +21,7 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/geometry/size.h"
 
 class InfoBarService;
@@ -36,7 +37,8 @@ class DevToolsUIBindings : public content::NotificationObserver,
                            public content::DevToolsFrontendHost::Delegate,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener,
-                           public content::DevToolsAgentHostClient {
+                           public content::DevToolsAgentHostClient,
+                           public net::URLFetcherDelegate {
  public:
   static DevToolsUIBindings* ForWebContents(
       content::WebContents* web_contents);
@@ -102,6 +104,10 @@ class DevToolsUIBindings : public content::NotificationObserver,
                               const gfx::Rect& rect) override;
   void InspectElementCompleted(int request_id) override;
   void InspectedURLChanged(int request_id, const std::string& url) override;
+  void LoadNetworkResource(int request_id,
+                           const std::string& url,
+                           const std::string& headers,
+                           int stream_id) override;
   void SetIsDocked(int request_id, bool is_docked) override;
   void OpenInNewTab(int request_id, const std::string& url) override;
   void SaveToFile(int request_id,
@@ -142,9 +148,13 @@ class DevToolsUIBindings : public content::NotificationObserver,
                        const std::string& name,
                        int action) override;
 
+  // net::URLFetcherDelegate overrides.
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
   void EnableRemoteDeviceCounter(bool enable);
 
-  void SendMessageAck(int request_id);
+  void SendMessageAck(int request_id,
+                      const base::Value* arg1);
 
   // DevToolsAndroidBridge::DeviceCountListener override:
   void DeviceCountChanged(int count) override;
@@ -206,6 +216,8 @@ class DevToolsUIBindings : public content::NotificationObserver,
   scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   GURL url_;
+  using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
+  PendingRequestsMap pending_requests_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);
