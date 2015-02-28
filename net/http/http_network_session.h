@@ -121,6 +121,7 @@ class NET_EXPORT HttpNetworkSession
     float quic_load_server_info_timeout_srtt_multiplier;
     bool quic_enable_truncated_connection_ids;
     bool quic_enable_connection_racing;
+    bool quic_enable_non_blocking_io;
     bool quic_disable_disk_cache;
     int quic_socket_receive_buffer_size;
     HostPortPair origin_to_force_quic_on;

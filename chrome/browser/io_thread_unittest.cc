@@ -139,6 +139,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(0.0f, params.quic_load_server_info_timeout_srtt_multiplier);
   EXPECT_FALSE(params.quic_enable_truncated_connection_ids);
   EXPECT_FALSE(params.quic_enable_connection_racing);
+  EXPECT_FALSE(params.quic_enable_non_blocking_io);
   EXPECT_FALSE(params.quic_disable_disk_cache);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
@@ -327,6 +328,15 @@ TEST_F(IOThreadTest, QuicEnableConnectionRacing) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_enable_connection_racing);
+}
+
+TEST_F(IOThreadTest, QuicEnableNonBlockingIO) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["enable_non_blocking_io"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_enable_non_blocking_io);
 }
 
 TEST_F(IOThreadTest, QuicDisableDiskCache) {
