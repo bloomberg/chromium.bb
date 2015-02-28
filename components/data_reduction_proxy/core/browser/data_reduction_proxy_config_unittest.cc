@@ -172,14 +172,14 @@ class DataReductionProxyConfigTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyConfigTest, TestGetDataReductionProxyOrigin) {
-  EXPECT_EQ(params()->DefaultOrigin(), config()->params()->origin().ToURI());
+  EXPECT_EQ(params()->DefaultOrigin(), config()->Origin().ToURI());
 }
 
 TEST_F(DataReductionProxyConfigTest, TestGetDataReductionProxyDevOrigin) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyDev, params()->DefaultDevOrigin());
   ResetSettings(true, true, false, true, false);
-  EXPECT_EQ(params()->DefaultDevOrigin(), config()->params()->origin().ToURI());
+  EXPECT_EQ(params()->DefaultDevOrigin(), config()->Origin().ToURI());
 }
 
 TEST_F(DataReductionProxyConfigTest, TestGetDataReductionProxies) {

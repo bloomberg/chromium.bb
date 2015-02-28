@@ -10,7 +10,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -186,13 +185,10 @@ TEST_F(DataReductionProxyConfiguratorTest, TestFallbackRestrictedQuic) {
 }
 
 TEST_F(DataReductionProxyConfiguratorTest, TestDisable) {
-  data_reduction_proxy::DataReductionProxyParams params(
-      data_reduction_proxy::DataReductionProxyParams::
-          kAllowAllProxyConfigurations);
   config_->Enable(false,
                   false,
-                  params.origin().ToURI(),
-                  params.fallback_origin().ToURI(),
+                  "https://www.foo.com:443/",
+                  "http://www.bar.com:80/",
                   "");
   config_->Disable();
   CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_NO_RULES, "", "", "");

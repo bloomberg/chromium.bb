@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
@@ -118,9 +119,6 @@ class DataReductionProxyParams {
 
   static std::string GetQuicFieldTrialName();
 
-  // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
-  void EnableQuic(bool enable);
-
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is
@@ -137,18 +135,6 @@ class DataReductionProxyParams {
 
   virtual ~DataReductionProxyParams();
 
-  // Returns true if a data reduction proxy was used for the given |request|.
-  // If true, |proxy_info.proxy_servers.first| will contain the name of the
-  // proxy that was used. |proxy_info.proxy_servers.second| will contain the
-  // name of the data reduction proxy server that would be used if
-  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
-  // |proxy_info| will note if the proxy used was a fallback, an alternative,
-  // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
-  // NULL if the caller isn't interested in its values.
-  virtual bool WasDataReductionProxyUsed(
-      const net::URLRequest* request,
-      DataReductionProxyTypeInfo* proxy_info) const;
-
   // Returns true if the specified |host_port_pair| matches a data reduction
   // proxy. If true, |proxy_info.proxy_servers.first| will contain the name of
   // the proxy that matches. |proxy_info.proxy_servers.second| will contain the
@@ -161,6 +147,7 @@ class DataReductionProxyParams {
       const net::HostPortPair& host_port_pair,
       DataReductionProxyTypeInfo* proxy_info) const;
 
+ protected:
   // Returns true if this request would be bypassed by the data request proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
   // request URL. Virutal for testing.
@@ -179,6 +166,33 @@ class DataReductionProxyParams {
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config,
       base::TimeDelta* min_retry_delay) const;
+
+ private:
+  // TODO(jeremyim) Remove these temporary friends.
+  friend class DataReductionProxyConfig;
+  friend class DataReductionProxyParamsTest;
+  friend class TestDataReductionProxyConfig;
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           TestGetDataReductionProxies);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyParamsTest,
+                           AreProxiesBypassed);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyParamsTest,
+                           AreProxiesBypassedRetryDelay);
+
+  // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
+  void EnableQuic(bool enable);
+
+  // Returns true if a data reduction proxy was used for the given |request|.
+  // If true, |proxy_info.proxy_servers.first| will contain the name of the
+  // proxy that was used. |proxy_info.proxy_servers.second| will contain the
+  // name of the data reduction proxy server that would be used if
+  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
+  // |proxy_info| will note if the proxy used was a fallback, an alternative,
+  // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
+  // NULL if the caller isn't interested in its values.
+  virtual bool WasDataReductionProxyUsed(
+      const net::URLRequest* request,
+      DataReductionProxyTypeInfo* proxy_info) const;
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction

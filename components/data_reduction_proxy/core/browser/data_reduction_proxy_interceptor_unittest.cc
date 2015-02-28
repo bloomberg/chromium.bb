@@ -82,10 +82,10 @@ class CountingURLRequestInterceptor : public net::URLRequestInterceptor {
 class TestURLRequestContextWithDataReductionProxy
     : public net::TestURLRequestContext {
  public:
-  TestURLRequestContextWithDataReductionProxy(DataReductionProxyParams* params,
+  TestURLRequestContextWithDataReductionProxy(DataReductionProxyConfig* config,
                                               net::NetworkDelegate* delegate)
       : net::TestURLRequestContext(true) {
-    std::string proxy = params->origin().ToURI();
+    std::string proxy = config->Origin().ToURI();
     context_storage_.set_proxy_service(net::ProxyService::CreateFixed(proxy));
     set_network_delegate(delegate);
   }
@@ -95,13 +95,17 @@ class TestURLRequestContextWithDataReductionProxy
 
 class DataReductionProxyInterceptorTest : public testing::Test {
  public:
-  DataReductionProxyInterceptorTest()
-      : params_(DataReductionProxyParams::kAllowed) {
+  DataReductionProxyInterceptorTest() {
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(DataReductionProxyParams::kAllowed)
+            .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
+            .Build();
     default_context_.reset(
         new TestURLRequestContextWithDataReductionProxy(
-            &params_, &default_network_delegate_));
+            test_context_->config(), &default_network_delegate_));
     default_context_->set_network_delegate(&default_network_delegate_);
-    default_context_->set_net_log(&net_log_);
+    default_context_->set_net_log(test_context_->net_log());
   }
 
   ~DataReductionProxyInterceptorTest() override {
@@ -115,12 +119,10 @@ class DataReductionProxyInterceptorTest : public testing::Test {
     default_context_->Init();
   }
 
-  DataReductionProxyParams params_;
-  net::CapturingNetLog net_log_;
+  scoped_ptr<DataReductionProxyTestContext> test_context_;
   net::TestNetworkDelegate default_network_delegate_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::TestURLRequestContext> default_context_;
-  base::MessageLoopForIO loop_;
 };
 
 TEST_F(DataReductionProxyInterceptorTest, TestJobFactoryChaining) {
@@ -196,7 +198,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     test_context_->config()->test_params()->set_origin(
         net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP));
     std::string proxy_name =
-        test_context_->config()->params()->origin().ToURI();
+        test_context_->config()->Origin().ToURI();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
             "PROXY " + proxy_name + "; DIRECT"));

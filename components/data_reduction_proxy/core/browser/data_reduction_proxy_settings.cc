@@ -82,10 +82,10 @@ void DataReductionProxySettings::InitPrefMembers() {
 
 void DataReductionProxySettings::UpdateConfigValues() {
   DCHECK(config_);
-  allowed_ = config_->params()->allowed();
-  alternative_allowed_ = config_->params()->alternative_allowed();
-  promo_allowed_ = config_->params()->promo_allowed();
-  primary_origin_ = config_->params()->origin().ToURI();
+  allowed_ = config_->allowed();
+  alternative_allowed_ = config_->alternative_allowed();
+  promo_allowed_ = config_->promo_allowed();
+  primary_origin_ = config_->Origin().ToURI();
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings(

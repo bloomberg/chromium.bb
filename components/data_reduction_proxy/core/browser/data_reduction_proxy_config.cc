@@ -53,7 +53,8 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     net::NetLog* net_log,
     scoped_ptr<DataReductionProxyParams> params,
     DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventStore* event_store)
+    DataReductionProxyEventStore* event_store,
+    bool enable_quic)
     : restricted_by_carrier_(false),
       disabled_on_vpn_(false),
       unreachable_(false),
@@ -69,6 +70,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
   DCHECK(ui_task_runner);
   DCHECK(configurator);
   DCHECK(event_store);
+  params_->EnableQuic(enable_quic);
   InitOnIOThread();
 }
 
@@ -152,6 +154,33 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
   return false;
 }
 
+bool DataReductionProxyConfig::UsingHTTPTunnel(
+    const net::HostPortPair& proxy_server) const {
+  return params_->ssl_origin().is_valid() &&
+         params_->ssl_origin().host_port_pair().Equals(proxy_server);
+}
+
+const net::ProxyServer& DataReductionProxyConfig::Origin() {
+  return params_->origin();
+}
+
+// Returns true if the Data Reduction Proxy configuration may be used.
+bool DataReductionProxyConfig::allowed() {
+  return params_->allowed();
+}
+
+// Returns true if the alternative Data Reduction Proxy configuration may be
+// used.
+bool DataReductionProxyConfig::alternative_allowed() {
+  return params_->alternative_allowed();
+}
+
+// Returns true if the Data Reduction Proxy promo may be shown. This is not
+// tied to whether the Data Reduction Proxy is enabled.
+bool DataReductionProxyConfig::promo_allowed() {
+  return params_->promo_allowed();
+}
+
 void DataReductionProxyConfig::SetProxyConfigOnIOThread(
     bool enabled, bool alternative_enabled, bool at_startup) {
   enabled_by_user_ = enabled;
@@ -161,7 +190,7 @@ void DataReductionProxyConfig::SetProxyConfigOnIOThread(
 
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled &&
-      !(alternative_enabled && !params()->alternative_fallback_allowed())) {
+      !(alternative_enabled && !params_->alternative_fallback_allowed())) {
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
                               base::Unretained(this)));
@@ -177,16 +206,16 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
-  if (enabled & !params()->holdback()) {
+  if (enabled & !params_->holdback()) {
     if (alternative_enabled) {
       configurator_->Enable(restricted,
-                            !params()->alternative_fallback_allowed(),
-                            params()->alt_origin().ToURI(), std::string(),
-                            params()->ssl_origin().ToURI());
+                            !params_->alternative_fallback_allowed(),
+                            params_->alt_origin().ToURI(), std::string(),
+                            params_->ssl_origin().ToURI());
     } else {
-      configurator_->Enable(restricted, !params()->fallback_allowed(),
-                            params()->origin().ToURI(),
-                            params()->fallback_origin().ToURI(), std::string());
+      configurator_->Enable(restricted, !params_->fallback_allowed(),
+                            params_->origin().ToURI(),
+                            params_->fallback_origin().ToURI(), std::string());
     }
   } else {
     configurator_->Disable();

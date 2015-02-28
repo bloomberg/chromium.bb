@@ -373,7 +373,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
           DataReductionProxyParams::GetQuicFieldTrialName(),
           "Disabled");
     }
-    test_context_->config()->params()->EnableQuic(enable_quic);
+    test_context_->config()->EnableQuic(enable_quic);
 
     settings_->SetOnDataReductionEnabledCallback(
         base::Bind(&DataReductionProxySettingsTestBase::
@@ -381,7 +381,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
                    base::Unretained(this)));
 
     EXPECT_EQ(enable_quic,
-              test_context_->config()->params()->origin().is_quic()) << i;
+              test_context_->config()->Origin().is_quic()) << i;
   }
 }
 

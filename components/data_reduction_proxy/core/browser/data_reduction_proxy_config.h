@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -77,13 +78,9 @@ class DataReductionProxyConfig
       net::NetLog* net_log,
       scoped_ptr<DataReductionProxyParams> params,
       DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventStore* event_store);
+      DataReductionProxyEventStore* event_store,
+      bool enable_quic);
   ~DataReductionProxyConfig() override;
-
-  // Returns the underlying |DataReductionProxyParams| instance.
-  DataReductionProxyParams* params() const {
-    return params_.get();
-  }
 
   void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
@@ -148,6 +145,23 @@ class DataReductionProxyConfig
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules);
 
+  // Returns true if the proxy was using the HTTP tunnel for a HTTPS origin.
+  bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const;
+
+  // Returns the Data Reduction Proxy primary origin.
+  const net::ProxyServer& Origin();
+
+  // Returns true if the Data Reduction Proxy configuration may be used.
+  bool allowed();
+
+  // Returns true if the alternative Data Reduction Proxy configuration may be
+  // used.
+  bool alternative_allowed();
+
+  // Returns true if the Data Reduction Proxy promo may be shown. This is not
+  // tied to whether the Data Reduction Proxy is enabled.
+  bool promo_allowed();
+
  protected:
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled| and |alternative_enabled|. Use the alternative
@@ -176,6 +190,8 @@ class DataReductionProxyConfig
   friend class DataReductionProxyConfigTest;
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           TestGetDataReductionProxies);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestOnIPAddressChanged);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,

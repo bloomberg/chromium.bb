@@ -26,7 +26,7 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
         make_scoped_ptr(
             new TestDataReductionProxyParams(params_flags, params_definitions))
             .Pass(),
-        configurator, event_store) {
+        configurator, event_store, false /* enable_quic */) {
   network_interfaces_.reset(new net::NetworkInterfaceList());
 }
 
@@ -40,6 +40,10 @@ void TestDataReductionProxyConfig::GetNetworkList(
     interfaces->push_back(network_interfaces_->at(i));
 }
 
+void TestDataReductionProxyConfig::EnableQuic(bool enable) {
+  params_->EnableQuic(enable);
+}
+
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
   params_ = make_scoped_ptr(
                 new TestDataReductionProxyParams(
@@ -48,11 +52,6 @@ void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
                         ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
                         ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
                 .Pass();
-}
-
-void TestDataReductionProxyConfig::ResetParamsForTest(
-    scoped_ptr<TestDataReductionProxyParams> params) {
-  params_ = params.Pass();
 }
 
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {

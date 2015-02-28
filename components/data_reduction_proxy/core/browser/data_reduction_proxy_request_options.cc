@@ -281,9 +281,8 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
     return;
   if (data_reduction_proxy_config_ &&
       data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
-      ((data_reduction_proxy_config_->params()->ssl_origin().is_valid() &&
-          data_reduction_proxy_config_->params()->ssl_origin().host_port_pair()
-              .Equals(proxy_server)) == expect_ssl))    {
+      data_reduction_proxy_config_->UsingHTTPTunnel(proxy_server) ==
+          expect_ssl) {
     SetHeader(request_headers);
   }
 }

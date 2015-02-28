@@ -44,11 +44,11 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void GetNetworkList(net::NetworkInterfaceList* interfaces,
                       int policy) override;
 
-  // Allows tests to reset the params being used for configuration.
-  void ResetParamFlagsForTest(int flags);
+  // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
+  void EnableQuic(bool enable);
 
   // Allows tests to reset the params being used for configuration.
-  void ResetParamsForTest(scoped_ptr<TestDataReductionProxyParams> params);
+  void ResetParamFlagsForTest(int flags);
 
   // Retrieves the test params being used for the configuration.
   TestDataReductionProxyParams* test_params();
@@ -87,6 +87,12 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                void(bool enabled, bool restricted, bool at_startup));
   MOCK_METHOD3(SetProxyPrefs,
                void(bool enabled, bool alternative_enabled, bool at_startup));
+  MOCK_CONST_METHOD2(IsDataReductionProxy,
+                     bool(const net::HostPortPair& host_port_pair,
+                          DataReductionProxyTypeInfo* proxy_info));
+  MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
+                     bool(const net::URLRequest*,
+                          DataReductionProxyTypeInfo* proxy_info));
   MOCK_METHOD1(ContainsDataReductionProxy,
                bool(const net::ProxyConfig::ProxyRules& proxy_rules));
 
