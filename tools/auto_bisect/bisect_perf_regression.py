@@ -1178,7 +1178,12 @@ class BisectPerformanceMetrics(object):
       build_success = self._DownloadAndUnzipBuild(
           revision, depot, build_type='Release', create_patch=create_patch)
     else:
-      # Build locally.
+      # Print the current environment set on the machine.
+      print 'Full Environment:'
+      for key, value in sorted(os.environ.items()):
+        print '%s: %s' % (key, value)
+      # Print the environment before proceeding with compile.
+      sys.stdout.flush()
       build_success = self.builder.Build(depot, self.opts)
     os.chdir(cwd)
     return build_success
@@ -2635,9 +2640,9 @@ class BisectOptions(object):
                        help='The target build architecture. Choices are "ia32" '
                             '(default), "x64" or "arm".')
     group.add_argument('--target_build_type', default='Release',
-                       choices=['Release', 'Debug'],
+                       choices=['Release', 'Debug', 'Release_x64'],
                        help='The target build type. Choices are "Release" '
-                            '(default), or "Debug".')
+                            '(default), Release_x64 or "Debug".')
     group.add_argument('--builder_type', default=fetch_build.PERF_BUILDER,
                        choices=[fetch_build.PERF_BUILDER,
                                 fetch_build.FULL_BUILDER, ''],
@@ -2731,6 +2736,8 @@ class BisectOptions(object):
         raise RuntimeError('Invalid metric specified: [%s]' % opts.metric)
       opts.metric = metric_values
 
+    if opts.target_arch == 'x64' and opts.target_build_type == 'Release':
+      opts.target_build_type = 'Release_x64'
     opts.repeat_test_count = min(max(opts.repeat_test_count, 1), 100)
     opts.max_time_minutes = min(max(opts.max_time_minutes, 1), 60)
     opts.truncate_percent = min(max(opts.truncate_percent, 0), 25)

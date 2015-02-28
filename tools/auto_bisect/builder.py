@@ -43,7 +43,7 @@ class Builder(object):
         if opts.goma_dir:
           opts.goma_dir = opts.goma_dir.encode('string_escape')
         SetBuildSystemDefault(opts.build_preference, opts.use_goma,
-                              opts.goma_dir)
+                              opts.goma_dir, opts.target_arch)
     else:
       if not opts.build_preference:
         if 'ninja' in os.getenv('GYP_GENERATORS', default=''):
@@ -191,13 +191,16 @@ class AndroidChromeBuilder(AndroidBuilder):
     return AndroidBuilder._GetTargets(self) + ['chrome_apk']
 
 
-def SetBuildSystemDefault(build_system, use_goma, goma_dir):
+def SetBuildSystemDefault(build_system, use_goma, goma_dir, target_arch='ia32'):
   """Sets up any environment variables needed to build with the specified build
   system.
 
   Args:
     build_system: A string specifying build system. Currently only 'ninja' or
         'make' are supported.
+    use_goma: Determines whether to GOMA for compile.
+    goma_dir: GOMA directory path.
+    target_arch: The target build architecture, ia32 or x64. Default is ia32.
   """
   if build_system == 'ninja':
     gyp_var = os.getenv('GYP_GENERATORS', default='')
@@ -224,6 +227,9 @@ def SetBuildSystemDefault(build_system, use_goma, goma_dir):
     if goma_dir:
       os.environ['GYP_DEFINES'] += ' gomadir=%s' % goma_dir
 
+  # Produce 64 bit chromium binaries when target architecure is set to x64.
+  if target_arch == 'x64':
+    os.environ['GYP_DEFINES'] += ' target_arch=%s' % target_arch
 
 def SetupPlatformBuildEnvironment(opts):
   """Performs any platform-specific setup.

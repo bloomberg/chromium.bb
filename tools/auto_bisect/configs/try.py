@@ -31,6 +31,7 @@ PLATFORM_BOT_MAP = {
     'linux': ['linux_perf_bisect'],
     'mac': ['mac_perf_bisect', 'mac_10_9_perf_bisect'],
     'win': ['win_perf_bisect', 'win_8_perf_bisect', 'win_xp_perf_bisect'],
+    'winx64': ['win_x64_perf_bisect'],
     'android': [
         'android_gn_perf_bisect',
         'android_nexus4_perf_bisect',
