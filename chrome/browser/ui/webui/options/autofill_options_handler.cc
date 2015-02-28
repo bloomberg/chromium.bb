@@ -18,6 +18,8 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -339,8 +341,13 @@ void AutofillOptionsHandler::GetLocalizedValues(
   SetAddressOverlayStrings(localized_strings);
   SetCreditCardOverlayStrings(localized_strings);
 
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          Profile::FromWebUI(web_ui()));
   localized_strings->SetBoolean(
-      "enableAutofillWalletIntegration", false);
+      "enableAutofillWalletIntegration",
+      service && service->IsSyncEnabledAndLoggedIn() &&
+          personal_data_->IsExperimentalWalletIntegrationEnabled());
   localized_strings->SetString(
       "manageWalletAddressesUrl",
       autofill::wallet::GetManageAddressesUrl(0).spec());
