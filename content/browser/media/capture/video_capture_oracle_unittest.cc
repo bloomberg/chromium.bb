@@ -88,7 +88,7 @@ TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
   const int redundant_capture_goal = 200;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 60;
 
-  SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
   base::TimeTicks t = InitialTestTimeTicks();
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
@@ -127,7 +127,7 @@ TEST(SmoothEventSamplerTest, Sample50HertzAt30Hertz) {
   const int redundant_capture_goal = 2;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 50;
 
-  SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
   base::TimeTicks t = InitialTestTimeTicks();
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
@@ -172,7 +172,7 @@ TEST(SmoothEventSamplerTest, Sample75HertzAt30Hertz) {
   const int redundant_capture_goal = 32;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 75;
 
-  SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
   base::TimeTicks t = InitialTestTimeTicks();
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
@@ -221,7 +221,7 @@ TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
   const int redundant_capture_goal = 1;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 30;
 
-  SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
   base::TimeTicks t = InitialTestTimeTicks();
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
@@ -256,7 +256,7 @@ TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {
   const int redundant_capture_goal = 333;
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 24;
 
-  SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
+  SmoothEventSampler sampler(capture_period, redundant_capture_goal);
   base::TimeTicks t = InitialTestTimeTicks();
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
@@ -289,7 +289,7 @@ TEST(SmoothEventSamplerTest, DoubleDrawAtOneTimeStillDirties) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
   const base::TimeDelta overdue_period = base::TimeDelta::FromSeconds(1);
 
-  SmoothEventSampler sampler(capture_period, true, 1);
+  SmoothEventSampler sampler(capture_period, 1);
   base::TimeTicks t = InitialTestTimeTicks();
 
   ASSERT_TRUE(AddEventAndConsiderSampling(&sampler, t));
@@ -307,61 +307,6 @@ TEST(SmoothEventSamplerTest, DoubleDrawAtOneTimeStillDirties) {
       << "Second event should dirty the capture state.";
   sampler.RecordSample();
   ASSERT_FALSE(sampler.IsOverdueForSamplingAt(t + overdue_period));
-}
-
-TEST(SmoothEventSamplerTest, FallbackToPollingIfUpdatesUnreliable) {
-  const base::TimeDelta timer_interval = base::TimeDelta::FromSeconds(1) / 30;
-
-  SmoothEventSampler should_not_poll(timer_interval, true, 1);
-  SmoothEventSampler should_poll(timer_interval, false, 1);
-  base::TimeTicks t = InitialTestTimeTicks();
-
-  // Do one round of the "happy case" where an event was received and
-  // RecordSample() was called by the client.
-  ASSERT_TRUE(AddEventAndConsiderSampling(&should_not_poll, t));
-  ASSERT_TRUE(AddEventAndConsiderSampling(&should_poll, t));
-  should_not_poll.RecordSample();
-  should_poll.RecordSample();
-
-  // For the following time period, before 250 ms has elapsed, neither sampler
-  // says we're overdue.
-  const int non_overdue_intervals = static_cast<int>(
-      base::TimeDelta::FromMilliseconds(250) / timer_interval);
-  for (int i = 0; i < non_overdue_intervals; i++) {
-    t += timer_interval;
-    ASSERT_FALSE(should_not_poll.IsOverdueForSamplingAt(t))
-        << "Sampled last event; should not be dirty.";
-    ASSERT_FALSE(should_poll.IsOverdueForSamplingAt(t))
-        << "Dirty interval has not elapsed yet.";
-  }
-
-  // Next time period ahead, both samplers say we're overdue.  The non-polling
-  // sampler is returning true here because it has been configured to allow one
-  // redundant capture.
-  t += timer_interval;  // Step past the 250 ms threshold.
-  ASSERT_TRUE(should_not_poll.IsOverdueForSamplingAt(t))
-      << "Sampled last event; is dirty one time only to meet redundancy goal.";
-  ASSERT_TRUE(should_poll.IsOverdueForSamplingAt(t))
-      << "If updates are unreliable, must fall back to polling when idle.";
-  should_not_poll.RecordSample();
-  should_poll.RecordSample();
-
-  // Forever more, the non-polling sampler returns false while the polling one
-  // returns true.
-  for (int i = 0; i < 100; ++i) {
-    t += timer_interval;
-    ASSERT_FALSE(should_not_poll.IsOverdueForSamplingAt(t))
-        << "Sampled last event; should not be dirty.";
-    ASSERT_TRUE(should_poll.IsOverdueForSamplingAt(t))
-        << "If updates are unreliable, must fall back to polling when idle.";
-    should_poll.RecordSample();
-  }
-  t += timer_interval / 3;
-  ASSERT_FALSE(should_not_poll.IsOverdueForSamplingAt(t))
-      << "Sampled last event; should not be dirty.";
-  ASSERT_TRUE(should_poll.IsOverdueForSamplingAt(t))
-      << "If updates are unreliable, must fall back to polling when idle.";
-  should_poll.RecordSample();
 }
 
 namespace {
@@ -412,7 +357,7 @@ TEST(SmoothEventSamplerTest, DrawingAt24FpsWith60HzVsyncSampledAt30Hertz) {
     { true, 83.601 }, { true, 16.72 }, { true, 33.44 }, { false, 0 }
   };
 
-  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, true, 3);
+  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, 3);
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 
@@ -448,7 +393,7 @@ TEST(SmoothEventSamplerTest, DrawingAt30FpsWith60HzVsyncSampledAt30Hertz) {
     { true, 16.72 }, { true, 33.441 }, { true, 33.44 }, { true, 33.44 }
   };
 
-  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, true, 3);
+  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, 3);
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 
@@ -490,7 +435,7 @@ TEST(SmoothEventSamplerTest, DrawingAt60FpsWith60HzVsyncSampledAt30Hertz) {
     { true, 33.441 }, { false, 16.72 }, { true, 16.72 }, { true, 50.16 }
   };
 
-  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, true, 3);
+  SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30, 3);
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 
@@ -1116,7 +1061,7 @@ TEST(VideoCaptureOracleTest, EnforcesEventTimeMonotonicity) {
   const gfx::Rect damage_rect(0, 0, 1280, 720);
   const base::TimeDelta event_increment = min_capture_period * 2;
 
-  VideoCaptureOracle oracle(min_capture_period, true);
+  VideoCaptureOracle oracle(min_capture_period);
 
   base::TimeTicks t = InitialTestTimeTicks();
   for (int i = 0; i < 10; ++i) {
@@ -1152,7 +1097,7 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
   const gfx::Rect damage_rect(0, 0, 1280, 720);
   const base::TimeDelta event_increment = min_capture_period * 2;
 
-  VideoCaptureOracle oracle(min_capture_period, true);
+  VideoCaptureOracle oracle(min_capture_period);
 
   // Most basic scenario: Frames delivered one at a time, with no additional
   // captures in-between deliveries.
@@ -1208,7 +1153,7 @@ TEST(VideoCaptureOracleTest, TransitionsSmoothlyBetweenSamplers) {
   const gfx::Rect animation_damage_rect(0, 0, 1280, 720);
   const base::TimeDelta event_increment = min_capture_period * 2;
 
-  VideoCaptureOracle oracle(min_capture_period, true);
+  VideoCaptureOracle oracle(min_capture_period);
 
   // Run sequences of animation events and non-animation events through the
   // oracle.  As the oracle transitions between each sampler, make sure the

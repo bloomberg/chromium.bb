@@ -32,14 +32,6 @@ IntType MakeEven(IntType x) {
   return x & static_cast<IntType>(-2);
 }
 
-// TODO(nick): Remove this once frame subscription is supported on Aura and
-// Linux.
-#if (defined(OS_WIN) || defined(OS_MACOSX)) || defined(USE_AURA)
-const bool kAcceleratedSubscriberIsSupported = true;
-#else
-const bool kAcceleratedSubscriberIsSupported = false;
-#endif
-
 class VideoCaptureMachine;
 
 // Thread-safe, refcounted proxy to the VideoCaptureOracle.  This proxy wraps
@@ -50,7 +42,6 @@ class ThreadSafeCaptureOracle
     : public base::RefCountedThreadSafe<ThreadSafeCaptureOracle> {
  public:
   ThreadSafeCaptureOracle(scoped_ptr<media::VideoCaptureDevice::Client> client,
-                          scoped_ptr<VideoCaptureOracle> oracle,
                           const media::VideoCaptureParams& params);
 
   // Called when a captured frame is available or an error has occurred.
@@ -68,7 +59,7 @@ class ThreadSafeCaptureOracle
                                     CaptureFrameCallback* callback);
 
   base::TimeDelta min_capture_period() const {
-    return oracle_->min_capture_period();
+    return oracle_.min_capture_period();
   }
 
   // Returns the current capture resolution.
@@ -103,7 +94,7 @@ class ThreadSafeCaptureOracle
   scoped_ptr<media::VideoCaptureDevice::Client> client_;
 
   // Makes the decision to capture a frame.
-  const scoped_ptr<VideoCaptureOracle> oracle_;
+  VideoCaptureOracle oracle_;
 
   // The video capture parameters used to construct the oracle proxy.
   media::VideoCaptureParams params_;

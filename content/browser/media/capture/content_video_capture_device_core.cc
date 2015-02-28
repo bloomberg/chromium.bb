@@ -43,10 +43,11 @@ void DeleteCaptureMachineOnUIThread(
 
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     scoped_ptr<media::VideoCaptureDevice::Client> client,
-    scoped_ptr<VideoCaptureOracle> oracle,
     const media::VideoCaptureParams& params)
     : client_(client.Pass()),
-      oracle_(oracle.Pass()),
+      oracle_(base::TimeDelta::FromMicroseconds(
+          static_cast<int64>(1000000.0 / params.requested_format.frame_rate +
+                             0.5 /* to round to nearest int */))),
       params_(params),
       capture_size_updated_(false) {
   switch (params_.requested_format.pixel_format) {
@@ -84,7 +85,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
       client_->ReserveOutputBuffer(video_frame_format_, coded_size);
   const bool should_capture =
-      oracle_->ObserveEventAndDecideCapture(event, damage_rect, event_time);
+      oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
   const bool content_is_dirty =
       (event == VideoCaptureOracle::kCompositorUpdate ||
        event == VideoCaptureOracle::kSoftwarePaint);
@@ -119,7 +120,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                          "trigger", event_name);
     return false;
   }
-  int frame_number = oracle_->RecordCapture();
+  int frame_number = oracle_.RecordCapture();
   TRACE_EVENT_ASYNC_BEGIN2("mirroring", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
@@ -200,7 +201,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     return;  // Capture is stopped.
 
   if (success) {
-    if (oracle_->CompleteCapture(frame_number, &timestamp)) {
+    if (oracle_.CompleteCapture(frame_number, &timestamp)) {
       media::VideoCaptureFormat format = params_.requested_format;
       // TODO(miu): Passing VideoCaptureFormat here introduces ambiguities.  The
       // following is a hack where frame_size takes on a different meaning than
@@ -255,14 +256,7 @@ void ContentVideoCaptureDeviceCore::AllocateAndStart(
       MakeEven(params.requested_format.frame_size.width()),
       MakeEven(params.requested_format.frame_size.height()));
 
-  base::TimeDelta capture_period = base::TimeDelta::FromMicroseconds(
-      1000000.0 / params.requested_format.frame_rate + 0.5);
-
-  scoped_ptr<VideoCaptureOracle> oracle(
-      new VideoCaptureOracle(capture_period,
-                             kAcceleratedSubscriberIsSupported));
-  oracle_proxy_ =
-      new ThreadSafeCaptureOracle(client.Pass(), oracle.Pass(), new_params);
+  oracle_proxy_ = new ThreadSafeCaptureOracle(client.Pass(), new_params);
 
   // Starts the capture machine asynchronously.
   BrowserThread::PostTaskAndReplyWithResult(

@@ -64,12 +64,10 @@ double FractionFromExpectedFrameRate(base::TimeDelta delta, int frame_rate) {
 
 }  // anonymous namespace
 
-VideoCaptureOracle::VideoCaptureOracle(base::TimeDelta min_capture_period,
-                                       bool events_are_reliable)
+VideoCaptureOracle::VideoCaptureOracle(base::TimeDelta min_capture_period)
     : frame_number_(0),
       last_delivered_frame_number_(-1),
       smoothing_sampler_(min_capture_period,
-                         events_are_reliable,
                          kNumRedundantCapturesOfStaticContent),
       content_sampler_(min_capture_period) {
 }
@@ -174,10 +172,8 @@ void VideoCaptureOracle::SetFrameTimestamp(int frame_number,
 }
 
 SmoothEventSampler::SmoothEventSampler(base::TimeDelta min_capture_period,
-                                       bool events_are_reliable,
                                        int redundant_capture_goal)
-    :  events_are_reliable_(events_are_reliable),
-       min_capture_period_(min_capture_period),
+    :  min_capture_period_(min_capture_period),
        redundant_capture_goal_(redundant_capture_goal),
        token_bucket_capacity_(min_capture_period + min_capture_period / 2),
        overdue_sample_count_(0),
@@ -231,14 +227,8 @@ bool SmoothEventSampler::IsOverdueForSamplingAt(base::TimeTicks event_time)
     const {
   DCHECK(!event_time.is_null());
 
-  // If we don't get events on compositor updates on this platform, then we
-  // don't reliably know whether we're dirty.
-  if (events_are_reliable_) {
-    if (!HasUnrecordedEvent() &&
-        overdue_sample_count_ >= redundant_capture_goal_) {
-      return false;  // Not dirty.
-    }
-  }
+  if (!HasUnrecordedEvent() && overdue_sample_count_ >= redundant_capture_goal_)
+    return false;  // Not dirty.
 
   if (last_sample_.is_null())
     return true;

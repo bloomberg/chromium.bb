@@ -340,7 +340,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
 
   // Subscribe to accelerated presents. These will be serviced directly by the
   // oracle.
-  if (view && kAcceleratedSubscriberIsSupported) {
+  if (view) {
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
         new FrameSubscriber(VideoCaptureOracle::kCompositorUpdate,
             oracle_proxy, &delivery_log_));
@@ -368,13 +368,11 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
     return;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (kAcceleratedSubscriberIsSupported) {
-    RenderWidgetHost* const source =
-        RenderWidgetHost::FromID(render_process_id_, render_widget_id_);
-    RenderWidgetHostView* const view = source ? source->GetView() : NULL;
-    if (view)
-      view->EndFrameSubscription();
-  }
+  RenderWidgetHost* const source =
+      RenderWidgetHost::FromID(render_process_id_, render_widget_id_);
+  RenderWidgetHostView* const view = source ? source->GetView() : NULL;
+  if (view)
+    view->EndFrameSubscription();
 }
 
 void ContentCaptureSubscription::Observe(
