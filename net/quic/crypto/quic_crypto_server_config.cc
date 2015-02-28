@@ -1334,9 +1334,8 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
         return nullptr;
     }
 
-    for (vector<KeyExchange*>::const_iterator j = config->key_exchanges.begin();
-         j != config->key_exchanges.end(); ++j) {
-      if ((*j)->tag() == tag) {
+    for (const KeyExchange* key_exchange : config->key_exchanges) {
+      if (key_exchange->tag() == tag) {
         LOG(WARNING) << "Duplicate key exchange in config: " << tag;
         return nullptr;
       }

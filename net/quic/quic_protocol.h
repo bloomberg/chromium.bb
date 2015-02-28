@@ -662,11 +662,6 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   bool fin;
   QuicStreamOffset offset;  // Location of this data in the stream.
   IOVector data;
-
-  // TODO(rjshade): Remove with FLAGS_quic_attach_ack_notifiers_to_packets.
-  // If this is set, then when this packet is ACKed the AckNotifier will be
-  // informed.
-  QuicAckNotifier* notifier;
 };
 
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
@@ -1022,13 +1017,13 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   TransmissionInfo(RetransmittableFrames* retransmittable_frames,
                    QuicSequenceNumberLength sequence_number_length,
                    TransmissionType transmission_type,
-                   QuicTime sent_time);
+                   QuicTime sent_time,
+                   QuicByteCount bytes_sent,
+                   bool is_fec_packet);
 
   RetransmittableFrames* retransmittable_frames;
   QuicSequenceNumberLength sequence_number_length;
-  // Zero when the packet is serialized, non-zero once it's sent.
   QuicTime sent_time;
-  // Zero when the packet is serialized, non-zero once it's sent.
   QuicByteCount bytes_sent;
   QuicPacketCount nack_count;
   // Reason why this packet was transmitted.

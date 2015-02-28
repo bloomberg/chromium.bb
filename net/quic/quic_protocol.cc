@@ -101,29 +101,22 @@ QuicPublicResetPacket::QuicPublicResetPacket(
       nonce_proof(0),
       rejected_sequence_number(0) {}
 
-QuicStreamFrame::QuicStreamFrame()
-    : stream_id(0),
-      fin(false),
-      offset(0),
-      notifier(nullptr) {}
+QuicStreamFrame::QuicStreamFrame() : stream_id(0), fin(false), offset(0) {
+}
 
 QuicStreamFrame::QuicStreamFrame(const QuicStreamFrame& frame)
     : stream_id(frame.stream_id),
       fin(frame.fin),
       offset(frame.offset),
-      data(frame.data),
-      notifier(frame.notifier) {
+      data(frame.data) {
 }
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
                                  IOVector data)
-    : stream_id(stream_id),
-      fin(fin),
-      offset(offset),
-      data(data),
-      notifier(nullptr) {}
+    : stream_id(stream_id), fin(fin), offset(offset), data(data) {
+}
 
 string* QuicStreamFrame::GetDataAsString() const {
   string* data_string = new string();
@@ -659,22 +652,26 @@ TransmissionInfo::TransmissionInfo()
       all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false),
-      is_fec_packet(false) {}
+      is_fec_packet(false) {
+}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
     QuicSequenceNumberLength sequence_number_length,
     TransmissionType transmission_type,
-    QuicTime sent_time)
+    QuicTime sent_time,
+    QuicByteCount bytes_sent,
+    bool is_fec_packet)
     : retransmittable_frames(retransmittable_frames),
       sequence_number_length(sequence_number_length),
       sent_time(sent_time),
-      bytes_sent(0),
+      bytes_sent(bytes_sent),
       nack_count(0),
       transmission_type(transmission_type),
       all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false),
-      is_fec_packet(false) {}
+      is_fec_packet(is_fec_packet) {
+}
 
 }  // namespace net

@@ -90,6 +90,8 @@ class QuicServer : public EpollCallbackInterface {
   }
   EpollServer* epoll_server() { return &epoll_server_; }
 
+  QuicDispatcher* dispatcher() { return dispatcher_.get(); }
+
  private:
   friend class net::tools::test::QuicServerPeer;
 

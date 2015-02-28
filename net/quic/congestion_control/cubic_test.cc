@@ -23,12 +23,10 @@ class CubicTest : public ::testing::Test {
   CubicTest()
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
         hundred_ms_(QuicTime::Delta::FromMilliseconds(100)),
-        cubic_(&clock_, &stats_) {
-  }
+        cubic_(&clock_) {}
   const QuicTime::Delta one_ms_;
   const QuicTime::Delta hundred_ms_;
   MockClock clock_;
-  QuicConnectionStats stats_;
   Cubic cubic_;
 };
 
@@ -89,14 +87,8 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
     // Advance current time so that cwnd update is allowed to happen by Cubic.
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
-    EXPECT_NEAR(expected_cwnd - 10, stats_.cwnd_increase_congestion_avoidance,
-                1);
-    EXPECT_NEAR(1u, stats_.cwnd_increase_cubic_mode, 1);
     expected_cwnd++;
   }
-  QuicPacketCount old_cwnd = current_cwnd;
-  stats_.cwnd_increase_cubic_mode = 0;
-  stats_.cwnd_increase_congestion_avoidance = 0;
 
   // Testing Cubic mode increase.
   for (int i = 0; i < 52; ++i) {
@@ -107,14 +99,6 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   }
-  // Total time elapsed so far; add min_rtt (0.1s) here as well.
-  float elapsed_time_s = 10.0f + 0.1f;
-  // |expected_cwnd| is initial value of cwnd + K * t^3, where K = 0.4.
-  expected_cwnd = 11 + (elapsed_time_s * elapsed_time_s * elapsed_time_s * 410)
-      / 1024;
-  EXPECT_EQ(expected_cwnd - old_cwnd, stats_.cwnd_increase_cubic_mode);
-  EXPECT_EQ(expected_cwnd - old_cwnd,
-            stats_.cwnd_increase_congestion_avoidance);
 }
 
 
@@ -149,19 +133,13 @@ TEST_F(CubicTest, BelowOrigin) {
   current_cwnd = expected_cwnd;
   // First update after loss to initialize the epoch.
   current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
-  QuicPacketCount old_cwnd = current_cwnd;
   // Cubic phase.
-  stats_.cwnd_increase_cubic_mode = 0;
-  stats_.cwnd_increase_congestion_avoidance = 0;
   for (int i = 0; i < 40 ; ++i) {
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   }
   expected_cwnd = 422;
   EXPECT_EQ(expected_cwnd, current_cwnd);
-  EXPECT_EQ(expected_cwnd - old_cwnd, stats_.cwnd_increase_cubic_mode);
-  EXPECT_EQ(expected_cwnd - old_cwnd,
-            stats_.cwnd_increase_congestion_avoidance);
 }
 
 }  // namespace test

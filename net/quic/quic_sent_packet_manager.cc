@@ -476,11 +476,8 @@ void QuicSentPacketManager::MarkPacketRevived(
 
   // The AckNotifierManager needs to be notified for revived packets,
   // since it indicates the packet arrived from the appliction's perspective.
-  if (FLAGS_quic_attach_ack_notifiers_to_packets ||
-      transmission_info.retransmittable_frames) {
-    ack_notifier_manager_.OnPacketAcked(newest_transmission,
-                                        delta_largest_observed);
-  }
+  ack_notifier_manager_.OnPacketAcked(newest_transmission,
+                                      delta_largest_observed);
 
   unacked_packets_.RemoveRetransmittability(sequence_number);
 }

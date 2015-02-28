@@ -25,13 +25,6 @@ bool FLAGS_quic_use_bbr_congestion_control = false;
 // connection options.
 bool FLAGS_quic_allow_bbr = false;
 
-// Do not flip this flag.  jokulik plans more testing and additional monitoring
-// before the flag can go the auto-flip process.
-//
-// If true, record the timestamp for the last sent new packet before the call to
-// WritePacket, rather than after in QUIC.
-bool FLAGS_quic_record_send_time_before_write = false;
-
 // If true, enables the QUIC bandwidth resumption experiment (triggered by
 // Chrome/Finch).
 bool FLAGS_quic_enable_bandwidth_resumption_experiment = true;
@@ -44,10 +37,6 @@ bool FLAGS_quic_enable_pacing = true;
 // If true, then the source address tokens generated for QUIC connects will
 // store multiple addresses.
 bool FLAGS_quic_use_multiple_address_in_source_tokens = false;
-
-// If true, attach QuicAckNotifiers to packets rather than individual stream
-// frames.
-bool FLAGS_quic_attach_ack_notifiers_to_packets = true;
 
 // Time period for which a given connection_id should live in the time-wait
 // state.

@@ -243,6 +243,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       resume_writes_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       ping_alarm_(helper->CreateAlarm(new PingAlarm(this))),
+      visitor_(nullptr),
+      debug_visitor_(nullptr),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
       fec_alarm_(helper->CreateAlarm(new FecAlarm(&packet_generator_))),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
@@ -374,7 +376,7 @@ void QuicConnection::OnPacket() {
 
 void QuicConnection::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPublicResetPacket(packet);
   }
   CloseConnection(QUIC_PUBLIC_RESET, true);
@@ -395,7 +397,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
   }
   DCHECK_NE(version(), received_version);
 
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnProtocolVersionMismatch(received_version);
   }
 
@@ -426,7 +428,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnSuccessfulVersionNegotiation(received_version);
   }
   DVLOG(1) << ENDPOINT << "version negotiated " << received_version;
@@ -449,7 +451,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     CloseConnection(QUIC_INTERNAL_ERROR, false);
     return;
   }
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnVersionNegotiationPacket(packet);
   }
 
@@ -505,7 +507,7 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPacketHeader(header);
   }
 
@@ -520,7 +522,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected ConnectionId: "
              << header.public_header.connection_id << " instead of "
              << connection_id_;
-    if (debug_visitor_.get() != nullptr) {
+    if (debug_visitor_ != nullptr) {
       debug_visitor_->OnIncorrectConnectionId(
           header.public_header.connection_id);
     }
@@ -542,7 +544,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
           header.packet_sequence_number)) {
     DVLOG(1) << ENDPOINT << "Packet " << header.packet_sequence_number
              << " no longer being waited for.  Discarding.";
-    if (debug_visitor_.get() != nullptr) {
+    if (debug_visitor_ != nullptr) {
       debug_visitor_->OnDuplicatePacket(header.packet_sequence_number);
     }
     return false;
@@ -562,7 +564,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
         DCHECK_EQ(header.public_header.versions[0], version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
         visitor_->OnSuccessfulVersionNegotiation(version());
-        if (debug_visitor_.get() != nullptr) {
+        if (debug_visitor_ != nullptr) {
           debug_visitor_->OnSuccessfulVersionNegotiation(version());
         }
       }
@@ -573,7 +575,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
       packet_generator_.StopSendingVersion();
       version_negotiation_state_ = NEGOTIATED_VERSION;
       visitor_->OnSuccessfulVersionNegotiation(version());
-      if (debug_visitor_.get() != nullptr) {
+      if (debug_visitor_ != nullptr) {
         debug_visitor_->OnSuccessfulVersionNegotiation(version());
       }
     }
@@ -599,7 +601,7 @@ void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
 
 bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnStreamFrame(frame);
   }
   if (frame.stream_id != kCryptoStreamId &&
@@ -615,7 +617,7 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
 
 bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnAckFrame(incoming_ack);
   }
   DVLOG(1) << ENDPOINT << "OnAckFrame: " << incoming_ack;
@@ -673,7 +675,7 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
     return false;
   }
 
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnStopWaitingFrame(frame);
   }
 
@@ -683,7 +685,7 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
 
 bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPingFrame(frame);
   }
   last_ping_frames_.push_back(frame);
@@ -782,7 +784,7 @@ void QuicConnection::OnFecData(const QuicFecData& fec) {
 
 bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnRstStreamFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Stream reset with error "
@@ -794,7 +796,7 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
 bool QuicConnection::OnConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Connection " << connection_id()
@@ -807,7 +809,7 @@ bool QuicConnection::OnConnectionCloseFrame(
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnGoAwayFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Go away received with error "
@@ -819,7 +821,7 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
 
 bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnWindowUpdateFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "WindowUpdate received for stream: "
@@ -830,7 +832,7 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
 
 bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnBlockedFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Blocked frame received for stream: "
@@ -1152,7 +1154,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   if (!connected_) {
     return;
   }
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPacketReceived(self_address, peer_address, packet);
   }
   last_size_ = packet.length();
@@ -1169,7 +1171,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
       if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
           undecryptable_packets_.size() < max_undecryptable_packets_) {
         QueueUndecryptablePacket(packet);
-      } else if (debug_visitor_.get() != nullptr) {
+      } else if (debug_visitor_ != nullptr) {
         debug_visitor_->OnUndecryptablePacket();
       }
     }
@@ -1442,13 +1444,10 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
            << QuicUtils::StringToHexASCIIDump(encrypted->AsStringPiece());
 
-  QuicTime packet_send_time = QuicTime::Zero();
-  if (FLAGS_quic_record_send_time_before_write) {
-    // Measure the RTT from before the write begins to avoid underestimating the
-    // min_rtt_, especially in cases where the thread blocks or gets swapped out
-    // during the WritePacket below.
-    packet_send_time = clock_->Now();
-  }
+  // Measure the RTT from before the write begins to avoid underestimating the
+  // min_rtt_, especially in cases where the thread blocks or gets swapped out
+  // during the WritePacket below.
+  QuicTime packet_send_time = clock_->Now();
   WriteResult result = writer_->WritePacket(encrypted->data(),
                                             encrypted->length(),
                                             self_address().address(),
@@ -1467,17 +1466,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
       return false;
     }
   }
-  if (!FLAGS_quic_record_send_time_before_write) {
-    packet_send_time = clock_->Now();
-  }
-  if (!packet_send_time.IsInitialized()) {
-    // TODO(jokulik): This is only needed because of the two code paths for
-    // initializing packet_send_time.  Once "quic_record_send_time_before_write"
-    // is deprecated, this check can be removed.
-    LOG(DFATAL) << "The packet send time should never be zero. "
-                << "This is a programming bug, please report it.";
-  }
-  if (result.status != WRITE_STATUS_ERROR && debug_visitor_.get() != nullptr) {
+  if (result.status != WRITE_STATUS_ERROR && debug_visitor_ != nullptr) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(packet->serialized_packet,
                                  packet->original_sequence_number,
@@ -1491,10 +1480,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   }
   SetPingAlarm();
   MaybeSetFecAlarm(sequence_number);
-  DVLOG(1) << ENDPOINT << "time "
-           << (FLAGS_quic_record_send_time_before_write ?
-               "we began writing " : "we finished writing ")
-           << "last sent packet: "
+  DVLOG(1) << ENDPOINT << "time we began writing last sent packet: "
            << packet_send_time.ToDebuggingValue();
 
   // TODO(ianswett): Change the sequence number length and other packet creator
@@ -1763,7 +1749,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
   // new keys installed and hence any undecryptable packets will
   // never be able to be decrypted.
   if (encryption_level_ == ENCRYPTION_FORWARD_SECURE) {
-    if (debug_visitor_.get() != nullptr) {
+    if (debug_visitor_ != nullptr) {
       // TODO(rtenneti): perhaps more efficient to pass the number of
       // undecryptable packets as the argument to OnUndecryptablePacket so that
       // we just need to call OnUndecryptablePacket once?
@@ -1799,7 +1785,7 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   delete group;
 
   last_packet_revived_ = true;
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnRevivedPacket(revived_header,
                                     StringPiece(revived_payload, len));
   }
@@ -1873,7 +1859,7 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
     return;
   }
   connected_ = false;
-  if (debug_visitor_.get() != nullptr) {
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionClosed(error, from_peer);
   }
   visitor_->OnConnectionClosed(error, from_peer);

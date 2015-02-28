@@ -184,7 +184,7 @@ QuicClientSession::QuicClientSession(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 QuicClientSession::QuicClientSession1"));
 
-  connection->set_debug_visitor(logger_);
+  connection->set_debug_visitor(logger_.get());
   IPEndPoint address;
   // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile2(

@@ -1761,6 +1761,8 @@
       'tools/quic/test_tools/quic_server_peer.h',
       'tools/quic/test_tools/quic_test_client.cc',
       'tools/quic/test_tools/quic_test_client.h',
+      'tools/quic/test_tools/quic_test_server.cc',
+      'tools/quic/test_tools/quic_test_server.h',
       'tools/quic/test_tools/quic_test_utils.cc',
       'tools/quic/test_tools/quic_test_utils.h',
       'tools/quic/test_tools/server_thread.cc',

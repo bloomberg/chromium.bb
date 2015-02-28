@@ -250,11 +250,6 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
   EXPECT_EQ(expected_send_window / 2 / kDefaultTCPMSS,
             sender_->slowstart_threshold());
-
-  // Now revert the RTO and ensure the CWND and slowstart threshold revert.
-  sender_->RevertRetransmissionTimeout();
-  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
-  EXPECT_EQ(140u, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
@@ -421,7 +416,7 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
   }
 }
 
-TEST_F(TcpCubicSenderTest, RTOCongestionWindowAndRevert) {
+TEST_F(TcpCubicSenderTest, RTOCongestionWindow) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   EXPECT_EQ(kMaxTcpCongestionWindow, sender_->slowstart_threshold());
 
@@ -430,11 +425,6 @@ TEST_F(TcpCubicSenderTest, RTOCongestionWindowAndRevert) {
   sender_->OnRetransmissionTimeout(true);
   EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
   EXPECT_EQ(5u, sender_->slowstart_threshold());
-
-  // Now repair the RTO and ensure the slowstart threshold reverts.
-  sender_->RevertRetransmissionTimeout();
-  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxTcpCongestionWindow, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
@@ -444,27 +434,6 @@ TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
   // packets are retransmitted.
   sender_->OnRetransmissionTimeout(false);
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-}
-
-TEST_F(TcpCubicSenderTest, RTOTwiceOnlyHalvesSsthresh) {
-  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-
-  sender_->OnRetransmissionTimeout(true);
-  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
-  EXPECT_EQ(5u, sender_->slowstart_threshold());
-
-  sender_->OnRetransmissionTimeout(true);
-  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
-  EXPECT_EQ(5u, sender_->slowstart_threshold());
-
-  AckNPackets(2);
-
-  EXPECT_EQ(4 * kDefaultTCPMSS, sender_->GetCongestionWindow());
-  EXPECT_EQ(5u, sender_->slowstart_threshold());
-
-  sender_->OnRetransmissionTimeout(true);
-  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
-  EXPECT_EQ(2u, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, RetransmissionDelay) {

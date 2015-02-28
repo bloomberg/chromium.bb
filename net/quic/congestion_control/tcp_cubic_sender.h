@@ -57,7 +57,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                     QuicByteCount bytes,
                     HasRetransmittableData is_retransmittable) override;
   void OnRetransmissionTimeout(bool packets_retransmitted) override;
-  void RevertRetransmissionTimeout() override;
   QuicTime::Delta TimeUntilSend(
       QuicTime now,
       QuicByteCount bytes_in_flight,
@@ -117,15 +116,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Congestion window in packets.
   QuicPacketCount congestion_window_;
 
-  // Congestion window before the last RTO.
-  // Must be 0 before or after RTO recovery.
-  QuicPacketCount previous_congestion_window_;
-
   // Slow start congestion window in packets, aka ssthresh.
   QuicPacketCount slowstart_threshold_;
-
-  // Slow start threshold before the last loss event or RTO.
-  QuicPacketCount previous_slowstart_threshold_;
 
   // Whether the last loss event caused us to exit slowstart.
   // Used for stats collection of slowstart_packets_lost

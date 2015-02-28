@@ -348,32 +348,6 @@ TEST_F(QuicUnackedPacketMapTest, RetransmitFourTimes) {
   VerifyRetransmittablePackets(retransmittable4, arraysize(retransmittable4));
 }
 
-TEST_F(QuicUnackedPacketMapTest, RestoreInflight) {
-  // Simulate a retransmittable packet being sent, retransmitted, and the first
-  // transmission being acked.
-  unacked_packets_.AddSentPacket(CreateRetransmittablePacket(1), 0,
-                                 NOT_RETRANSMISSION, now_, kDefaultLength,
-                                 true);
-  unacked_packets_.RemoveFromInFlight(1);
-  unacked_packets_.AddSentPacket(CreateNonRetransmittablePacket(2), 1,
-                                 RTO_RETRANSMISSION, now_, kDefaultLength,
-                                 true);
-
-  QuicPacketSequenceNumber unacked[] = { 1, 2 };
-  VerifyUnackedPackets(unacked, arraysize(unacked));
-  QuicPacketSequenceNumber retransmittable[] = { 2 };
-  VerifyInFlightPackets(retransmittable, arraysize(retransmittable));
-  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  EXPECT_EQ(kDefaultLength, unacked_packets_.bytes_in_flight());
-
-  // Simulate an F-RTO, and restore 1 to flight.
-  unacked_packets_.RestoreInFlight(1);
-  VerifyUnackedPackets(unacked, arraysize(unacked));
-  VerifyInFlightPackets(unacked, arraysize(unacked));
-  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  EXPECT_EQ(2 * kDefaultLength, unacked_packets_.bytes_in_flight());
-}
-
 TEST_F(QuicUnackedPacketMapTest, SendWithGap) {
   // Simulate a retransmittable packet being sent, retransmitted, and the first
   // transmission being acked.

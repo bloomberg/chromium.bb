@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
@@ -1579,44 +1580,9 @@ TEST_P(QuicConnectionTest, BasicSending) {
   EXPECT_EQ(7u, least_unacked());
 }
 
-// If FLAGS_quic_record_send_time_before_write is disabled, QuicConnection
-// should record the packet sen-tdime after the packet is sent.
-TEST_P(QuicConnectionTest, RecordSentTimeAfterPacketSent) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_record_send_time_before_write, false);
-  // We're using a MockClock for the tests, so we have complete control over the
-  // time.
-  // Our recorded timestamp for the last packet sent time will be passed in to
-  // the send_algorithm.  Make sure that it is set to the correct value.
-  QuicTime actual_recorded_send_time = QuicTime::Zero();
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&actual_recorded_send_time), Return(true)));
-
-  // First send without any pause and check the result.
-  QuicTime expected_recorded_send_time = clock_.Now();
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, nullptr);
-  EXPECT_EQ(expected_recorded_send_time, actual_recorded_send_time)
-      << "Expected time = " << expected_recorded_send_time.ToDebuggingValue()
-      << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
-
-  // Now pause during the write, and check the results.
-  actual_recorded_send_time = QuicTime::Zero();
-  const QuicTime::Delta kWritePauseTimeDelta =
-      QuicTime::Delta::FromMilliseconds(5000);
-  SetWritePauseTimeDelta(kWritePauseTimeDelta);
-  expected_recorded_send_time = clock_.Now().Add(kWritePauseTimeDelta);
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&actual_recorded_send_time), Return(true)));
-  connection_.SendStreamDataWithString(2, "baz", 0, !kFin, nullptr);
-  EXPECT_EQ(expected_recorded_send_time, actual_recorded_send_time)
-      << "Expected time = " << expected_recorded_send_time.ToDebuggingValue()
-      << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
-}
-
-// If FLAGS_quic_record_send_time_before_write is enabled, QuicConnection should
-// record the the packet sent-time prior to sending the packet.
+// QuicConnection should record the the packet sent-time prior to sending the
+// packet.
 TEST_P(QuicConnectionTest, RecordSentTimeBeforePacketSent) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_record_send_time_before_write, true);
   // We're using a MockClock for the tests, so we have complete control over the
   // time.
   // Our recorded timestamp for the last packet sent time will be passed in to
@@ -2530,9 +2496,9 @@ TEST_P(QuicConnectionTest, ReviveMissingPacketWithVaryingSeqNumLengths) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Set up a debug visitor to the connection.
-  FecQuicConnectionDebugVisitor* fec_visitor =
-      new FecQuicConnectionDebugVisitor();
-  connection_.set_debug_visitor(fec_visitor);
+  scoped_ptr<FecQuicConnectionDebugVisitor> fec_visitor(
+      new FecQuicConnectionDebugVisitor());
+  connection_.set_debug_visitor(fec_visitor.get());
 
   QuicPacketSequenceNumber fec_packet = 0;
   QuicSequenceNumberLength lengths[] = {PACKET_6BYTE_SEQUENCE_NUMBER,
@@ -2558,9 +2524,9 @@ TEST_P(QuicConnectionTest, ReviveMissingPacketWithVaryingConnectionIdLengths) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Set up a debug visitor to the connection.
-  FecQuicConnectionDebugVisitor* fec_visitor =
-      new FecQuicConnectionDebugVisitor();
-  connection_.set_debug_visitor(fec_visitor);
+  scoped_ptr<FecQuicConnectionDebugVisitor> fec_visitor(
+      new FecQuicConnectionDebugVisitor());
+  connection_.set_debug_visitor(fec_visitor.get());
 
   QuicPacketSequenceNumber fec_packet = 0;
   QuicConnectionIdLength lengths[] = {PACKET_8BYTE_CONNECTION_ID,
@@ -4368,9 +4334,9 @@ class MockQuicConnectionDebugVisitor
 TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
   QuicPacketHeader header;
 
-  MockQuicConnectionDebugVisitor* debug_visitor =
-      new MockQuicConnectionDebugVisitor();
-  connection_.set_debug_visitor(debug_visitor);
+  scoped_ptr<MockQuicConnectionDebugVisitor> debug_visitor(
+      new MockQuicConnectionDebugVisitor());
+  connection_.set_debug_visitor(debug_visitor.get());
   EXPECT_CALL(*debug_visitor, OnPacketHeader(Ref(header))).Times(1);
   connection_.OnPacketHeader(header);
 }

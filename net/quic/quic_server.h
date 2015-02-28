@@ -59,6 +59,8 @@ class QuicServer {
     crypto_config_.SetProofSource(source);
   }
 
+  QuicDispatcher* dispatcher() { return dispatcher_.get(); }
+
  private:
   friend class net::test::QuicServerPeer;
 

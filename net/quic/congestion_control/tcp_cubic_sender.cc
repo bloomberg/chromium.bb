@@ -34,7 +34,7 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock,
                                QuicPacketCount max_tcp_congestion_window,
                                QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
-      cubic_(clock, stats),
+      cubic_(clock),
       rtt_stats_(rtt_stats),
       stats_(stats),
       reno_(reno),
@@ -44,12 +44,11 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock,
       largest_acked_sequence_number_(0),
       largest_sent_at_last_cutback_(0),
       congestion_window_(initial_tcp_congestion_window),
-      previous_congestion_window_(0),
       slowstart_threshold_(max_tcp_congestion_window),
-      previous_slowstart_threshold_(0),
       last_cutback_exited_slowstart_(false),
       max_tcp_congestion_window_(max_tcp_congestion_window),
-      clock_(clock) {}
+      clock_(clock) {
+}
 
 TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
@@ -138,8 +137,6 @@ void TcpCubicSender::OnPacketAcked(
     QuicByteCount bytes_in_flight) {
   largest_acked_sequence_number_ = max(acked_sequence_number,
                                        largest_acked_sequence_number_);
-  // As soon as a packet is acked, ensure we're no longer in RTO mode.
-  previous_congestion_window_ = 0;
   if (InRecovery()) {
     // PRR is used when in recovery.
     prr_.OnPacketAcked(acked_bytes);
@@ -347,24 +344,8 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   }
   cubic_.Reset();
   hybrid_slow_start_.Restart();
-  // Only reduce ssthresh once over multiple retransmissions.
-  if (previous_congestion_window_ != 0) {
-    return;
-  }
-  previous_slowstart_threshold_ = slowstart_threshold_;
   slowstart_threshold_ = congestion_window_ / 2;
-  previous_congestion_window_ = congestion_window_;
   congestion_window_ = kMinimumCongestionWindow;
-}
-
-void TcpCubicSender::RevertRetransmissionTimeout() {
-  if (previous_congestion_window_ == 0) {
-    LOG(DFATAL) << "No previous congestion window to revert to.";
-    return;
-  }
-  congestion_window_ = previous_congestion_window_;
-  slowstart_threshold_ = previous_slowstart_threshold_;
-  previous_congestion_window_ = 0;
 }
 
 CongestionControlType TcpCubicSender::GetCongestionControlType() const {

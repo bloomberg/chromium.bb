@@ -1406,9 +1406,6 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   // socket,  an AckNotifierDelegate will get informed that the data it is
   // interested in has been ACKed. This tests end-to-end ACK notification, and
   // demonstrates that retransmissions do not break this functionality.
-  ValueRestore<bool> old_flag(&FLAGS_quic_attach_ack_notifiers_to_packets,
-                              true);
-
   SetPacketLossPercentage(5);
   ASSERT_TRUE(Initialize());
 
