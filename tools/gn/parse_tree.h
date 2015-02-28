@@ -32,23 +32,18 @@ class Comments {
   virtual ~Comments();
 
   const std::vector<Token>& before() const { return before_; }
-  void append_before(Token c) {
-    before_.push_back(c);
-  }
+  void append_before(Token c) { before_.push_back(c); }
+  void clear_before() { before_.clear(); }
 
   const std::vector<Token>& suffix() const { return suffix_; }
-  void append_suffix(Token c) {
-    suffix_.push_back(c);
-  }
+  void append_suffix(Token c) { suffix_.push_back(c); }
   // Reverse the order of the suffix comments. When walking the tree in
   // post-order we append suffix comments in reverse order, so this fixes them
   // up.
   void ReverseSuffix();
 
   const std::vector<Token>& after() const { return after_; }
-  void append_after(Token c) {
-    after_.push_back(c);
-  }
+  void append_after(Token c) { after_.push_back(c); }
 
  private:
   // Whole line comments before the expression.
@@ -159,6 +154,8 @@ class AccessorNode : public ParseNode {
   // null if the index is set.
   const IdentifierNode* member() const { return member_.get(); }
   void set_member(scoped_ptr<IdentifierNode> i) { member_ = i.Pass(); }
+
+  void SetNewLocation(int line_number);
 
  private:
   Value ExecuteArrayAccess(Scope* scope, Err* err) const;
@@ -348,6 +345,8 @@ class IdentifierNode : public ParseNode {
   const Token& value() const { return value_; }
   void set_value(const Token& t) { value_ = t; }
 
+  void SetNewLocation(int line_number);
+
  private:
   Token value_;
 
@@ -378,6 +377,8 @@ class ListNode : public ParseNode {
   }
   const std::vector<const ParseNode*>& contents() const { return contents_; }
 
+  void SortAsStringsList();
+
   // During formatting, do we want this list to always be multliline? This is
   // used to make assignments to deps, sources, etc. always be multiline lists,
   // rather than collapsed to a single line when they're one element.
@@ -385,6 +386,14 @@ class ListNode : public ParseNode {
   void set_prefer_multiline(bool prefer_multiline) {
     prefer_multiline_ = prefer_multiline;
   }
+
+  struct SortRange {
+    size_t begin;
+    size_t end;
+    SortRange(size_t begin, size_t end) : begin(begin), end(end) {}
+  };
+  // Only public for testing.
+  std::vector<SortRange> GetSortRanges() const;
 
  private:
   // Tokens corresponding to the [ and ]. The end token is stored in inside an
@@ -417,6 +426,8 @@ class LiteralNode : public ParseNode {
 
   const Token& value() const { return value_; }
   void set_value(const Token& t) { value_ = t; }
+
+  void SetNewLocation(int line_number);
 
  private:
   Token value_;

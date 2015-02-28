@@ -104,3 +104,106 @@ TEST(ParseTree, OriginForDereference) {
   EXPECT_EQ(2, err.location().line_number());
   EXPECT_EQ(20, err.location().char_offset());
 }
+
+TEST(ParseTree, SortRangeExtraction) {
+  TestWithScope setup;
+
+  // Ranges are [begin, end).
+
+  {
+    TestParseInput input(
+        "sources = [\n"
+        "  \"a\",\n"
+        "  \"b\",\n"
+        "  \n"
+        "  #\n"
+        "  # Block\n"
+        "  #\n"
+        "  \n"
+        "  \"c\","
+        "  \"d\","
+        "]\n");
+    EXPECT_FALSE(input.has_error());
+    ASSERT_TRUE(input.parsed()->AsBlock());
+    ASSERT_TRUE(input.parsed()->AsBlock()->statements()[0]->AsBinaryOp());
+    const BinaryOpNode* binop =
+        input.parsed()->AsBlock()->statements()[0]->AsBinaryOp();
+    ASSERT_TRUE(binop->right()->AsList());
+    const ListNode* list = binop->right()->AsList();
+    EXPECT_EQ(5u, list->contents().size());
+    auto ranges = list->GetSortRanges();
+    ASSERT_EQ(2u, ranges.size());
+    EXPECT_EQ(0u, ranges[0].begin);
+    EXPECT_EQ(2u, ranges[0].end);
+    EXPECT_EQ(3u, ranges[1].begin);
+    EXPECT_EQ(5u, ranges[1].end);
+  }
+
+  {
+    TestParseInput input(
+        "sources = [\n"
+        "  \"a\",\n"
+        "  \"b\",\n"
+        "  \n"
+        "  # Attached comment.\n"
+        "  \"c\","
+        "  \"d\","
+        "]\n");
+    EXPECT_FALSE(input.has_error());
+    ASSERT_TRUE(input.parsed()->AsBlock());
+    ASSERT_TRUE(input.parsed()->AsBlock()->statements()[0]->AsBinaryOp());
+    const BinaryOpNode* binop =
+        input.parsed()->AsBlock()->statements()[0]->AsBinaryOp();
+    ASSERT_TRUE(binop->right()->AsList());
+    const ListNode* list = binop->right()->AsList();
+    EXPECT_EQ(4u, list->contents().size());
+    auto ranges = list->GetSortRanges();
+    ASSERT_EQ(2u, ranges.size());
+    EXPECT_EQ(0u, ranges[0].begin);
+    EXPECT_EQ(2u, ranges[0].end);
+    EXPECT_EQ(2u, ranges[1].begin);
+    EXPECT_EQ(4u, ranges[1].end);
+  }
+
+  {
+    TestParseInput input(
+        "sources = [\n"
+        "  # At end of list.\n"
+        "  \"zzzzzzzzzzz.cc\","
+        "]\n");
+    EXPECT_FALSE(input.has_error());
+    ASSERT_TRUE(input.parsed()->AsBlock());
+    ASSERT_TRUE(input.parsed()->AsBlock()->statements()[0]->AsBinaryOp());
+    const BinaryOpNode* binop =
+        input.parsed()->AsBlock()->statements()[0]->AsBinaryOp();
+    ASSERT_TRUE(binop->right()->AsList());
+    const ListNode* list = binop->right()->AsList();
+    EXPECT_EQ(1u, list->contents().size());
+    auto ranges = list->GetSortRanges();
+    ASSERT_EQ(1u, ranges.size());
+    EXPECT_EQ(0u, ranges[0].begin);
+    EXPECT_EQ(1u, ranges[0].end);
+  }
+
+  {
+    TestParseInput input(
+        "sources = [\n"
+        "  # Block at start.\n"
+        "  \n"
+        "  \"z.cc\","
+        "  \"y.cc\","
+        "]\n");
+    EXPECT_FALSE(input.has_error());
+    ASSERT_TRUE(input.parsed()->AsBlock());
+    ASSERT_TRUE(input.parsed()->AsBlock()->statements()[0]->AsBinaryOp());
+    const BinaryOpNode* binop =
+        input.parsed()->AsBlock()->statements()[0]->AsBinaryOp();
+    ASSERT_TRUE(binop->right()->AsList());
+    const ListNode* list = binop->right()->AsList();
+    EXPECT_EQ(3u, list->contents().size());
+    auto ranges = list->GetSortRanges();
+    ASSERT_EQ(1u, ranges.size());
+    EXPECT_EQ(1u, ranges[0].begin);
+    EXPECT_EQ(3u, ranges[0].end);
+  }
+}

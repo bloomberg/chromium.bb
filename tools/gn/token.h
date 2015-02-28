@@ -62,6 +62,7 @@ class Token {
   Type type() const { return type_; }
   const base::StringPiece& value() const { return value_; }
   const Location& location() const { return location_; }
+  void set_location(Location location) { location_ = location; }
   LocationRange range() const {
     return LocationRange(
         location_,

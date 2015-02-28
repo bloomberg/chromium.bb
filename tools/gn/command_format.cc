@@ -129,6 +129,9 @@ class Printer {
   // Flag assignments to sources, deps, etc. to make their RHSs multiline.
   void AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop);
 
+  // Alphabetically a list on the RHS if the LHS is 'sources'.
+  void SortIfSources(const BinaryOpNode* binop);
+
   // Heuristics to decide if there should be a blank line added between two
   // items. For various "small" items, it doesn't look nice if there's too much
   // vertical whitespace added.
@@ -305,13 +308,29 @@ void Printer::AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop) {
   }
 }
 
+void Printer::SortIfSources(const BinaryOpNode* binop) {
+  const IdentifierNode* ident = binop->left()->AsIdentifier();
+  const ListNode* list = binop->right()->AsList();
+  // TODO(scottmg): Sort more than 'sources'?
+  if ((binop->op().value() == "=" || binop->op().value() == "+=" ||
+       binop->op().value() == "-=") &&
+      ident && list) {
+    const base::StringPiece lhs = ident->value().value();
+    if (lhs == "sources")
+      const_cast<ListNode*>(list)->SortAsStringsList();
+  }
+}
+
+
 bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
                                           const ParseNode* b) {
   LocationRange a_range = a->GetRange();
   LocationRange b_range = b->GetRange();
   // If they're already separated by 1 or more lines, then we want to keep a
   // blank line.
-  return b_range.begin().line_number() > a_range.end().line_number() + 1;
+  return (b_range.begin().line_number() > a_range.end().line_number() + 1) ||
+         // Always put a blank line before a block comment.
+         b->AsBlockComment();
 }
 
 int Printer::CurrentColumn() const {
@@ -440,6 +459,8 @@ int Printer::Expr(const ParseNode* root,
   } else if (const BinaryOpNode* binop = root->AsBinaryOp()) {
     CHECK(precedence_.find(binop->op().value()) != precedence_.end());
     AnnotatePreferredMultilineAssignment(binop);
+
+    SortIfSources(binop);
 
     Precedence prec = precedence_[binop->op().value()];
 
@@ -648,11 +669,9 @@ void Printer::Sequence(SequenceStyle style,
       Expr(x, kPrecedenceLowest, want_comma ? "," : std::string());
       CHECK(!x->comments() || x->comments()->after().empty());
       if (body_of_list) {
-        if (!want_comma) {
-          if (i < list.size() - 1 &&
-              ShouldAddBlankLineInBetween(list[i], list[i + 1]))
-            Newline();
-        }
+        if (i < list.size() - 1 &&
+            ShouldAddBlankLineInBetween(list[i], list[i + 1]))
+          Newline();
       }
       ++i;
     }

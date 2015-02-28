@@ -19,6 +19,27 @@ std::string IndentFor(int value) {
   return std::string(value, ' ');
 }
 
+bool IsSortRangeSeparator(const ParseNode* node, const ParseNode* prev) {
+  // If it's a block comment, or has an attached comment with a blank line
+  // before it, then we break the range at this point.
+  return node->AsBlockComment() != nullptr ||
+         (prev && node->comments() && !node->comments()->before().empty() &&
+          (node->GetRange().begin().line_number() >
+           prev->GetRange().end().line_number() +
+               static_cast<int>(node->comments()->before().size() + 1)));
+}
+
+base::StringPiece GetStringRepresentation(const ParseNode* node) {
+  DCHECK(node->AsLiteral() || node->AsIdentifier() || node->AsAccessor());
+  if (node->AsLiteral())
+    return node->AsLiteral()->value().value();
+  else if (node->AsIdentifier())
+    return node->AsIdentifier()->value().value();
+  else if (node->AsAccessor())
+    return node->AsAccessor()->base().value();
+  return base::StringPiece();
+}
+
 }  // namespace
 
 Comments::Comments() {
@@ -192,6 +213,12 @@ Value AccessorNode::ExecuteScopeAccess(Scope* scope, Err* err) const {
     return Value();
   }
   return *result;
+}
+
+void AccessorNode::SetNewLocation(int line_number) {
+  Location old = base_.location();
+  base_.set_location(
+      Location(old.file(), line_number, old.char_offset(), old.byte()));
 }
 
 // BinaryOpNode ---------------------------------------------------------------
@@ -436,6 +463,12 @@ void IdentifierNode::Print(std::ostream& out, int indent) const {
   PrintComments(out, indent);
 }
 
+void IdentifierNode::SetNewLocation(int line_number) {
+  Location old = value_.location();
+  value_.set_location(
+      Location(old.file(), line_number, old.char_offset(), old.byte()));
+}
+
 // ListNode -------------------------------------------------------------------
 
 ListNode::ListNode() : prefer_multiline_(false) {
@@ -490,6 +523,116 @@ void ListNode::Print(std::ostream& out, int indent) const {
     end_->Print(out, indent + 1);
 }
 
+void ListNode::SortAsStringsList() {
+  // Sorts alphabetically. Partitions first on BlockCommentNodes and sorts each
+  // partition separately.
+  for (auto sr : GetSortRanges()) {
+    // Save the original line number so that we can re-assign ranges. We assume
+    // they're contiguous lines because GetSortRanges() does so above. We need
+    // to re-assign these line numbers primiarily because `gn format` uses them
+    // to determine whether two nodes were initially separated by a blank line
+    // or not.
+    int start_line = contents_[sr.begin]->GetRange().begin().line_number();
+    const ParseNode* original_first = contents_[sr.begin];
+    std::sort(contents_.begin() + sr.begin, contents_.begin() + sr.end,
+              [](const ParseNode* a, const ParseNode* b) {
+                base::StringPiece astr = GetStringRepresentation(a);
+                base::StringPiece bstr = GetStringRepresentation(b);
+                return astr < bstr;
+              });
+    // If the beginning of the range had before comments, and the first node
+    // moved during the sort, then move its comments to the new head of the
+    // range.
+    if (original_first->comments() && contents_[sr.begin] != original_first) {
+      for (const auto& hc : original_first->comments()->before()) {
+        const_cast<ParseNode*>(contents_[sr.begin])
+            ->comments_mutable()
+            ->append_before(hc);
+      }
+      const_cast<ParseNode*>(original_first)
+          ->comments_mutable()
+          ->clear_before();
+    }
+    const ParseNode* prev = nullptr;
+    for (size_t i = sr.begin; i != sr.end; ++i) {
+      const ParseNode* node = contents_[i];
+      DCHECK(node->AsLiteral() || node->AsIdentifier() || node->AsAccessor());
+      int line_number =
+          prev ? prev->GetRange().end().line_number() + 1 : start_line;
+      if (node->AsLiteral()) {
+        const_cast<LiteralNode*>(node->AsLiteral())
+            ->SetNewLocation(line_number);
+      } else if (node->AsIdentifier()) {
+        const_cast<IdentifierNode*>(node->AsIdentifier())
+            ->SetNewLocation(line_number);
+      } else if (node->AsAccessor()) {
+        const_cast<AccessorNode*>(node->AsAccessor())
+            ->SetNewLocation(line_number);
+      }
+      prev = node;
+    }
+  }
+}
+
+// Breaks the ParseNodes of |contents| up by ranges that should be separately
+// sorted. In particular, we break at a block comment, or an item that has an
+// attached "before" comment and is separated by a blank line from the item
+// before it. The assumption is that both of these indicate a separate 'section'
+// of a sources block across which items should not be inter-sorted.
+std::vector<ListNode::SortRange> ListNode::GetSortRanges() const {
+  std::vector<SortRange> ranges;
+  const ParseNode* prev = nullptr;
+  size_t begin = 0;
+  for (size_t i = begin; i < contents_.size(); prev = contents_[i++]) {
+    if (IsSortRangeSeparator(contents_[i], prev)) {
+      if (i > begin) {
+        ranges.push_back(SortRange(begin, i));
+        // If |i| is an item with an attached comment, then we start the next
+        // range at that point, because we want to include it in the sort.
+        // Otherwise, it's a block comment which we skip over entirely because
+        // we don't want to move or include it in the sort. The two cases are:
+        //
+        // sources = [
+        //   "a",
+        //   "b",
+        //
+        //   #
+        //   # This is a block comment.
+        //   #
+        //
+        //   "c",
+        //   "d",
+        // ]
+        //
+        // which contains 5 elements, and for which the ranges would be { [0,
+        // 2), [3, 5) } (notably excluding 2, the block comment), and:
+        //
+        // sources = [
+        //   "a",
+        //   "b",
+        //
+        //   # This is a header comment.
+        //   "c",
+        //   "d",
+        // ]
+        //
+        // which contains 4 elements, index 2 containing an attached 'before'
+        // comments, and the ranges should be { [0, 2), [2, 4) }.
+        if (!contents_[i]->AsBlockComment())
+          begin = i;
+        else
+          begin = i + 1;
+      } else {
+        // If it was a one item range, just skip over it.
+        begin = i + 1;
+      }
+    }
+  }
+  if (begin != contents_.size())
+    ranges.push_back(SortRange(begin, contents_.size()));
+  return ranges;
+}
+
 // LiteralNode -----------------------------------------------------------------
 
 LiteralNode::LiteralNode() {
@@ -542,6 +685,12 @@ Err LiteralNode::MakeErrorDescribing(const std::string& msg,
 void LiteralNode::Print(std::ostream& out, int indent) const {
   out << IndentFor(indent) << "LITERAL(" << value_.value() << ")\n";
   PrintComments(out, indent);
+}
+
+void LiteralNode::SetNewLocation(int line_number) {
+  Location old = value_.location();
+  value_.set_location(
+      Location(old.file(), line_number, old.char_offset(), old.byte()));
 }
 
 // UnaryOpNode ----------------------------------------------------------------
@@ -607,7 +756,6 @@ void BlockCommentNode::Print(std::ostream& out, int indent) const {
   out << IndentFor(indent) << "BLOCK_COMMENT(" << comment_.value() << ")\n";
   PrintComments(out, indent);
 }
-
 
 // EndNode ---------------------------------------------------------------------
 
