@@ -56,6 +56,8 @@ crbug.com/443596 [ Win ] media/sources-fallback-codecs.html [ Failure Pass ]
 
 crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Pass Timeout ]
 
+crbug.com/454255 [ Win Mac ] fast/repaint/subtree-root-skipped.html [ NeedsRebaseline ]
+
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 

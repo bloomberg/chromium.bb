@@ -143,7 +143,7 @@ public:
     bool applyViewportStyleOverride(StyleResolver*);
     void applyEmulatedMedia(String*);
     void didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
-    void didLayout(LayoutObject*);
+    void didLayout();
     void didScroll();
     void didResizeMainFrame();
     void didRecalculateStyle(int);

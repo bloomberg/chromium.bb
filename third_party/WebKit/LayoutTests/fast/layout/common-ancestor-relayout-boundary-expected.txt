@@ -1,4 +1,4 @@
-PASS window.internals.needsLayoutCount() is 8
+PASS window.internals.needsLayoutCount() is 4
 PASS window.internals.needsLayoutCount() is 0
 PASS successfullyParsed is true
 

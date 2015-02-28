@@ -1197,7 +1197,7 @@ void InspectorPageAgent::didPaint(LayoutObject*, const GraphicsLayer*, GraphicsC
     m_overlay->drawOutline(context, inflatedRect, colors[colorSelector++ % WTF_ARRAY_LENGTH(colors)]);
 }
 
-void InspectorPageAgent::didLayout(LayoutObject*)
+void InspectorPageAgent::didLayout()
 {
     if (!m_enabled)
         return;

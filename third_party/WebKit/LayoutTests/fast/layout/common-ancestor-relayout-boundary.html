@@ -31,10 +31,14 @@ if (window.internals)
 
 dirtyLayout();
 
-// FIXME: In theory we can restrict the layoutRoot in FrameView to the common
-// ancestor container and this should only be 5 instead of 8.
+// The tree appears as following, with the starred nodes dirty:
+//       div [relayout-common-ancestor]
+//      /   \
+//   *div  *div
+//    /      /
+// *div   *div
 if (window.internals)
-    shouldBe("window.internals.needsLayoutCount()", "8");
+    shouldBe("window.internals.needsLayoutCount()", "4");
 
 document.documentElement.offsetTop;
 

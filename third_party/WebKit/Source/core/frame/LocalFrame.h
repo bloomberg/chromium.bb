@@ -131,8 +131,6 @@ namespace blink {
 
         bool inScope(TreeScope*) const;
 
-        void countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isPartial);
-
         // See GraphicsLayerClient.h for accepted flags.
         String layerTreeAsText(unsigned flags = 0) const;
 

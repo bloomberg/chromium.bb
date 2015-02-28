@@ -102,9 +102,11 @@ public:
     bool layoutPending() const;
     bool isInPerformLayout() const;
 
-    LayoutObject* layoutRoot(bool onlyDuringLayout = false) const;
-    void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = nullptr; }
+    bool isLayoutRoot(const LayoutObject&) const;
+    void clearLayoutSubtreeRoot(const LayoutObject&);
     int layoutCount() const { return m_layoutCount; }
+
+    void countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isPartial);
 
     bool needsLayout() const;
     void setNeedsLayout();
@@ -327,7 +329,7 @@ public:
     // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
     // passed around the FrameView layout methods can be true while this returns
     // false.
-    bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
+    bool isSubtreeLayout() const { return !m_layoutSubtreeRoots.isEmpty(); }
 
     // Sets the tickmarks for the FrameView, overriding the default behavior
     // which is to display the tickmarks corresponding to find results.
@@ -614,6 +616,8 @@ private:
     void reset();
     void init();
 
+    void clearLayoutSubtreeRootsAndMarkContainingBlocks();
+
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
     virtual void frameRectsChanged() override;
 
@@ -627,13 +631,11 @@ private:
     void updateCounters();
     void forceLayoutParentViewIfNeeded();
     void performPreLayoutTasks();
-    void performLayout(LayoutObject* rootForThisLayout, bool inSubtreeLayout);
+    void performLayout(bool inSubtreeLayout);
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
 
     void invalidateTreeIfNeeded();
-
-    void gatherDebugLayoutRects(LayoutObject* layoutRoot);
 
     DocumentLifecycle& lifecycle() const;
 
@@ -733,7 +735,7 @@ private:
     unsigned m_slowRepaintObjectCount;
 
     bool m_hasPendingLayout;
-    LayoutObject* m_layoutSubtreeRoot;
+    HashSet<LayoutObject*> m_layoutSubtreeRoots;
 
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;

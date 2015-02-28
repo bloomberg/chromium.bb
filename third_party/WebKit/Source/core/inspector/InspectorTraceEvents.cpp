@@ -270,7 +270,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::beginData
     unsigned needsLayoutObjects;
     unsigned totalObjects;
     LocalFrame& frame = frameView->frame();
-    frame.countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
+    frame.view()->countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
 
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("dirtyObjects", needsLayoutObjects);

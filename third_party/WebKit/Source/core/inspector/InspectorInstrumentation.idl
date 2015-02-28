@@ -207,7 +207,7 @@ interface InspectorInstrumentation {
     void didFireTimer(const InspectorInstrumentationCookie&);
 
     [Page, Inline=FastReturn]
-    void didLayout(LocalFrame*, LayoutObject* root);
+    void didLayout(LocalFrame*);
 
     [Page, Inline=FastReturn]
     void didScroll(LocalFrame*);

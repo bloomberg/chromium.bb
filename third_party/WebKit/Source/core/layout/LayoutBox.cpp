@@ -1963,7 +1963,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     }
 
     // If layout is limited to a subtree, the subtree root's logical width does not change.
-    if (node() && view()->frameView() && view()->frameView()->layoutRoot(true) == this)
+    if (node() && view()->frameView() && view()->frameView()->isLayoutRoot(*this))
         return;
 
     // The parent box is flexing us, so it has increased or decreased our

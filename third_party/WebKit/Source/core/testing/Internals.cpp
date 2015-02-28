@@ -305,7 +305,7 @@ unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const
     bool isPartial;
     unsigned needsLayoutObjects;
     unsigned totalObjects;
-    contextFrame->countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
+    contextFrame->view()->countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
     return needsLayoutObjects;
 }
 
