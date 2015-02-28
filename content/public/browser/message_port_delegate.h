@@ -17,6 +17,7 @@
 
 namespace content {
 struct MessagePortMessage;
+struct TransferredMessagePort;
 
 // Delegate used by MessagePortService to send messages to message ports to the
 // correct renderer. Delegates are responsible for managing their own lifetime,
@@ -26,9 +27,10 @@ class CONTENT_EXPORT MessagePortDelegate {
  public:
   // Sends a message to the given route. Implementations are responsible for
   // updating MessagePortService with new routes for the sent message ports.
-  virtual void SendMessage(int route_id,
-                           const MessagePortMessage& message,
-                           const std::vector<int>& sent_message_port_ids) = 0;
+  virtual void SendMessage(
+      int route_id,
+      const MessagePortMessage& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports) = 0;
 
   // Requests messages to the given route to be queued.
   virtual void SendMessagesAreQueued(int route_id) = 0;

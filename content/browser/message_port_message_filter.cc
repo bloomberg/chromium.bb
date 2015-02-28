@@ -63,13 +63,13 @@ int MessagePortMessageFilter::GetNextRoutingID() {
 void MessagePortMessageFilter::SendMessage(
     int route_id,
     const MessagePortMessage& message,
-    const std::vector<int>& sent_message_port_ids) {
+    const std::vector<TransferredMessagePort>& sent_message_ports) {
   // Generate new routing ids for all ports that were sent around. This avoids
   // waiting for the created ports to send a sync message back to get routing
   // ids.
   std::vector<int> new_routing_ids;
-  UpdateMessagePortsWithNewRoutes(sent_message_port_ids, &new_routing_ids);
-  Send(new MessagePortMsg_Message(route_id, message, sent_message_port_ids,
+  UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
+  Send(new MessagePortMsg_Message(route_id, message, sent_message_ports,
                                   new_routing_ids));
 }
 
@@ -78,16 +78,16 @@ void MessagePortMessageFilter::SendMessagesAreQueued(int route_id) {
 }
 
 void MessagePortMessageFilter::UpdateMessagePortsWithNewRoutes(
-    const std::vector<int>& message_port_ids,
+    const std::vector<TransferredMessagePort>& message_ports,
     std::vector<int>* new_routing_ids) {
   DCHECK(new_routing_ids);
   new_routing_ids->clear();
-  new_routing_ids->resize(message_port_ids.size());
+  new_routing_ids->resize(message_ports.size());
 
-  for (size_t i = 0; i < message_port_ids.size(); ++i) {
+  for (size_t i = 0; i < message_ports.size(); ++i) {
     (*new_routing_ids)[i] = GetNextRoutingID();
     MessagePortService::GetInstance()->UpdateMessagePort(
-        message_port_ids[i],
+        message_ports[i].id,
         this,
         (*new_routing_ids)[i]);
   }
@@ -97,7 +97,7 @@ void MessagePortMessageFilter::RouteMessageEventWithMessagePorts(
     int routing_id,
     const ViewMsg_PostMessage_Params& params) {
   ViewMsg_PostMessage_Params new_params(params);
-  UpdateMessagePortsWithNewRoutes(params.message_port_ids,
+  UpdateMessagePortsWithNewRoutes(params.message_ports,
                                   &new_params.new_routing_ids);
   Send(new ViewMsg_PostMessageEvent(routing_id, new_params));
 }

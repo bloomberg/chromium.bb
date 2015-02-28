@@ -31,6 +31,7 @@ class ServiceWorkerVersion;
 struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
+struct TransferredMessagePort;
 
 class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
@@ -113,16 +114,14 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnReportConsoleMessage(
       int embedded_worker_id,
       const EmbeddedWorkerHostMsg_ReportConsoleMessage_Params& params);
-  void OnPostMessage(int handle_id,
-                     const base::string16& message,
-                     const std::vector<int>& sent_message_port_ids);
   void OnIncrementServiceWorkerRefCount(int handle_id);
   void OnDecrementServiceWorkerRefCount(int handle_id);
   void OnIncrementRegistrationRefCount(int registration_handle_id);
   void OnDecrementRegistrationRefCount(int registration_handle_id);
-  void OnPostMessageToWorker(int handle_id,
-                             const base::string16& message,
-                             const std::vector<int>& sent_message_port_ids);
+  void OnPostMessageToWorker(
+      int handle_id,
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports);
   void OnServiceWorkerObjectDestroyed(int handle_id);
   void OnTerminateWorker(int handle_id);
 

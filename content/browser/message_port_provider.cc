@@ -16,49 +16,32 @@
 
 namespace content {
 
-namespace {
-
-void PostMessageOnIOThread(MessagePortMessageFilter* filter,
-                           int routing_id,
-                           ViewMsg_PostMessage_Params* params) {
-  if (!params->message_port_ids.empty()) {
-    filter->UpdateMessagePortsWithNewRoutes(params->message_port_ids,
-                                            &params->new_routing_ids);
-  }
-  filter->Send(new ViewMsg_PostMessageEvent(routing_id, *params));
-}
-
-}  // namespace
-
 // static
 void MessagePortProvider::PostMessageToFrame(
     WebContents* web_contents,
     const base::string16& source_origin,
     const base::string16& target_origin,
     const base::string16& data,
-    const std::vector<int>& ports) {
+    const std::vector<TransferredMessagePort>& ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ViewMsg_PostMessage_Params* params = new ViewMsg_PostMessage_Params();
-  params->is_data_raw_string = true;
-  params->data = data;
+  ViewMsg_PostMessage_Params params;
+  params.is_data_raw_string = true;
+  params.data = data;
   // Blink requires a source frame to transfer ports. This is why a
   // source routing id is set here. See WebDOMMessageEvent::initMessageEvent()
-  params->source_routing_id = web_contents->GetRoutingID();
-  params->source_origin = source_origin;
-  params->target_origin = target_origin;
-  params->message_port_ids = ports;
+  params.source_routing_id = web_contents->GetRoutingID();
+  params.source_origin = source_origin;
+  params.target_origin = target_origin;
+  params.message_ports = ports;
 
   RenderProcessHostImpl* rph =
       static_cast<RenderProcessHostImpl*>(web_contents->GetRenderProcessHost());
-  MessagePortMessageFilter* mf = rph->message_port_message_filter();
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PostMessageOnIOThread,
-                 make_scoped_refptr(mf),
-                 web_contents->GetRoutingID(),
-                 base::Owned(params)));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MessagePortMessageFilter::RouteMessageEventWithMessagePorts,
+                 rph->message_port_message_filter(),
+                 web_contents->GetRoutingID(), params));
 }
 
 // static
@@ -83,7 +66,7 @@ void MessagePortProvider::CreateMessageChannel(MessagePortDelegate* delegate,
 void MessagePortProvider::PostMessageToPort(
     int sender_port_id,
     const MessagePortMessage& message,
-    const std::vector<int>& sent_ports) {
+    const std::vector<TransferredMessagePort>& sent_ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MessagePortService* msp = MessagePortService::GetInstance();
   msp->PostMessage(sender_port_id, message, sent_ports);

@@ -495,7 +495,7 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
 void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     int handle_id,
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids) {
+    const std::vector<TransferredMessagePort>& sent_message_ports) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnPostMessageToWorker");
   if (!GetContext())
@@ -508,7 +508,7 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
   }
 
   handle->version()->DispatchMessageEvent(
-      message, sent_message_port_ids,
+      message, sent_message_ports,
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 

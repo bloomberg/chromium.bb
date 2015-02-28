@@ -28,6 +28,7 @@ class Message;
 
 namespace content {
 class ThreadSafeSender;
+struct TransferredMessagePort;
 
 // Main entry point for the navigator.connect API in a child process. This
 // implements the blink API and passes connect calls on to the browser process.
@@ -60,7 +61,7 @@ class NavigatorConnectProvider : public blink::WebNavigatorConnectProvider,
  private:
   void OnConnectResult(int thread_id,
                        int request_id,
-                       int message_port_id,
+                       const TransferredMessagePort& message_port,
                        int message_port_route_id,
                        bool allow_connect);
 

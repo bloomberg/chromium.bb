@@ -12,8 +12,9 @@ class GURL;
 namespace content {
 
 class MessagePortMessageFilter;
-struct NavigatorConnectClient;
 class NavigatorConnectContextImpl;
+struct NavigatorConnectClient;
+struct TransferredMessagePort;
 
 // Receives navigator.connect connection attempts from a child process.
 // Attempts to find a service that serves the URL the connection is made to
@@ -45,7 +46,7 @@ class NavigatorConnectDispatcherHost : public BrowserMessageFilter {
   // connection event.
   void OnConnectResult(int thread_id,
                        int request_id,
-                       int message_port_id,
+                       const TransferredMessagePort& message_port,
                        int message_port_route_id,
                        bool accept_connection);
 

@@ -4,6 +4,7 @@
 
 // IPC messages for navigator.connect
 
+#include "content/public/common/message_port_types.h"
 #include "content/public/common/navigator_connect_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
@@ -26,6 +27,6 @@ IPC_MESSAGE_CONTROL3(NavigatorConnectHostMsg_Connect,
 IPC_MESSAGE_CONTROL5(NavigatorConnectMsg_ConnectResult,
                      int /* thread_id */,
                      int /* request_id */,
-                     int /* message_port_id */,
+                     content::TransferredMessagePort /* message_port */,
                      int /* message_port_route_id */,
                      bool /* allow_connect */)

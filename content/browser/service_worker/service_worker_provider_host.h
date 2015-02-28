@@ -143,8 +143,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsContextAlive();
 
   // Dispatches message event to the document.
-  void PostMessage(const base::string16& message,
-                   const std::vector<int>& sent_message_port_ids);
+  void PostMessage(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports);
 
   // Activates the WebContents associated with
   // { render_process_id_, render_frame_id_ }.

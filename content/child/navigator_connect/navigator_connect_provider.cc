@@ -77,18 +77,19 @@ NavigatorConnectProvider* NavigatorConnectProvider::ThreadSpecificInstance(
   return provider;
 }
 
-void NavigatorConnectProvider::OnConnectResult(int thread_id,
-                                               int request_id,
-                                               int message_port_id,
-                                               int message_port_route_id,
-                                               bool allow_connect) {
+void NavigatorConnectProvider::OnConnectResult(
+    int thread_id,
+    int request_id,
+    const TransferredMessagePort& message_port,
+    int message_port_route_id,
+    bool allow_connect) {
   blink::WebNavigatorConnectPortCallbacks* callbacks =
       requests_.Lookup(request_id);
   DCHECK(callbacks);
 
   if (allow_connect) {
     WebMessagePortChannelImpl* channel = new WebMessagePortChannelImpl(
-        message_port_route_id, message_port_id, main_loop_);
+        message_port_route_id, message_port, main_loop_);
     callbacks->onSuccess(channel);
   } else {
     callbacks->onError();

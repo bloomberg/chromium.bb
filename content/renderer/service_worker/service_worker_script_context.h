@@ -127,13 +127,14 @@ class ServiceWorkerScriptContext {
                          const blink::WebCircularGeofencingRegion& region);
   void OnCrossOriginConnectEvent(int request_id,
                                  const NavigatorConnectClient& client);
-  void OnPostMessage(const base::string16& message,
-                     const std::vector<int>& sent_message_port_ids,
-                     const std::vector<int>& new_routing_ids);
+  void OnPostMessage(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& new_routing_ids);
   void OnCrossOriginMessageToWorker(
       const NavigatorConnectClient& client,
       const base::string16& message,
-      const std::vector<int>& sent_message_port_ids,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
   void OnDidGetClientDocuments(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);

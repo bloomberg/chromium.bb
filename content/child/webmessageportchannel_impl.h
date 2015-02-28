@@ -36,7 +36,7 @@ class WebMessagePortChannelImpl
           main_thread_task_runner);
   WebMessagePortChannelImpl(
       int route_id,
-      int message_port_id,
+      const TransferredMessagePort& port,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner);
 
@@ -48,8 +48,21 @@ class WebMessagePortChannelImpl
 
   // Extracts port IDs for passing on to the browser process, and queues any
   // received messages. Takes ownership of the passed array (and deletes it).
-  static std::vector<int> ExtractMessagePortIDs(
+  static std::vector<TransferredMessagePort> ExtractMessagePortIDs(
       blink::WebMessagePortChannelArray* channels);
+
+  // Extracts port IDs for passing on to the browser process, and queues any
+  // received messages.
+  static std::vector<TransferredMessagePort> ExtractMessagePortIDs(
+      const blink::WebMessagePortChannelArray& channels);
+
+  // Creates WebMessagePortChannelImpl instances for port IDs passed in from the
+  // browser process.
+  static blink::WebMessagePortChannelArray CreatePorts(
+      const std::vector<TransferredMessagePort>& message_ports,
+      const std::vector<int>& new_routing_ids,
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          main_thread_task_runner);
 
   // Queues received and incoming messages until there are no more in-flight
   // messages, then sends all of them to the browser process.
@@ -78,7 +91,7 @@ class WebMessagePortChannelImpl
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnMessage(const MessagePortMessage& message,
-                 const std::vector<int>& sent_message_port_ids,
+                 const std::vector<TransferredMessagePort>& sent_message_ports,
                  const std::vector<int>& new_routing_ids);
   void OnMessagesQueued();
 
@@ -87,7 +100,7 @@ class WebMessagePortChannelImpl
     ~Message();
 
     MessagePortMessage message;
-    std::vector<WebMessagePortChannelImpl*> ports;
+    blink::WebMessagePortChannelArray ports;
   };
 
   typedef std::queue<Message> MessageQueue;

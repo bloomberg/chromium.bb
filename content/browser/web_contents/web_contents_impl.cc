@@ -4020,7 +4020,7 @@ void WebContentsImpl::RouteMessageEvent(
   // In most cases, we receive this from a swapped out RenderViewHost.
   // It is possible to receive it from one that has just been swapped in,
   // in which case we might as well deliver the message anyway.
-  if (!params.message_port_ids.empty()) {
+  if (!params.message_ports.empty()) {
     // Updating the message port information has to be done in the IO thread;
     // MessagePortMessageFilter::RouteMessageEventWithMessagePorts will send
     // ViewMsg_PostMessageEvent after it's done. Note that a trivial solution

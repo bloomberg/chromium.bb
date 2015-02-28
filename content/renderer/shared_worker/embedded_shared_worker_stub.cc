@@ -274,9 +274,11 @@ void EmbeddedSharedWorkerStub::ConnectToChannel(
 
 void EmbeddedSharedWorkerStub::OnConnect(int sent_message_port_id,
                                          int routing_id) {
+  TransferredMessagePort port;
+  port.id = sent_message_port_id;
   WebMessagePortChannelImpl* channel =
       new WebMessagePortChannelImpl(routing_id,
-                                    sent_message_port_id,
+                                    port,
                                     base::MessageLoopProxy::current().get());
   if (runing_) {
     ConnectToChannel(channel);

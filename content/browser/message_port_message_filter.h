@@ -18,6 +18,7 @@
 struct ViewMsg_PostMessage_Params;
 
 namespace content {
+struct TransferredMessagePort;
 
 // Filter for MessagePort related IPC messages (creating and destroying a
 // MessagePort, sending a message via a MessagePort etc).
@@ -39,15 +40,16 @@ class CONTENT_EXPORT MessagePortMessageFilter
   int GetNextRoutingID();
 
   // MessagePortDelegate implementation.
-  void SendMessage(int route_id,
-                   const MessagePortMessage& message,
-                   const std::vector<int>& sent_message_port_ids) override;
+  void SendMessage(
+      int route_id,
+      const MessagePortMessage& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports) override;
   void SendMessagesAreQueued(int route_id) override;
 
-  // Updates message ports registered for |message_port_ids| and returns
+  // Updates message ports registered for |message_ports| and returns
   // new routing IDs for the updated ports via |new_routing_ids|.
   void UpdateMessagePortsWithNewRoutes(
-      const std::vector<int>& message_port_ids,
+      const std::vector<TransferredMessagePort>& message_ports,
       std::vector<int>* new_routing_ids);
 
   void RouteMessageEventWithMessagePorts(

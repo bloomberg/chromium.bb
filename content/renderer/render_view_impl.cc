@@ -2785,16 +2785,10 @@ void RenderViewImpl::OnPostMessageEvent(
   }
 
   // If the message contained MessagePorts, create the corresponding endpoints.
-  DCHECK_EQ(params.message_port_ids.size(), params.new_routing_ids.size());
-  blink::WebMessagePortChannelArray channels(params.message_port_ids.size());
-  for (size_t i = 0;
-       i < params.message_port_ids.size() && i < params.new_routing_ids.size();
-       ++i) {
-    channels[i] =
-        new WebMessagePortChannelImpl(params.new_routing_ids[i],
-                                      params.message_port_ids[i],
-                                      base::MessageLoopProxy::current().get());
-  }
+  blink::WebMessagePortChannelArray channels =
+      WebMessagePortChannelImpl::CreatePorts(
+          params.message_ports, params.new_routing_ids,
+          base::MessageLoopProxy::current().get());
 
   WebSerializedScriptValue serialized_script_value;
   if (params.is_data_raw_string) {

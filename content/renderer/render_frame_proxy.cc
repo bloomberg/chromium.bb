@@ -289,19 +289,8 @@ void RenderFrameProxy::postMessageEvent(
   if (!target_origin.isNull())
     params.target_origin = target_origin.toString();
 
-  blink::WebMessagePortChannelArray channels = event.releaseChannels();
-  if (!channels.isEmpty()) {
-    std::vector<int> message_port_ids(channels.size());
-     // Extract the port IDs from the channel array.
-     for (size_t i = 0; i < channels.size(); ++i) {
-       WebMessagePortChannelImpl* webchannel =
-           static_cast<WebMessagePortChannelImpl*>(channels[i]);
-       message_port_ids[i] = webchannel->message_port_id();
-       webchannel->QueueMessages();
-       DCHECK_NE(message_port_ids[i], MSG_ROUTING_NONE);
-     }
-     params.message_port_ids = message_port_ids;
-  }
+  params.message_ports =
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(event.releaseChannels());
 
   // Include the routing ID for the source frame (if one exists), which the
   // browser process will translate into the routing ID for the equivalent

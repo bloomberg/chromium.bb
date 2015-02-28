@@ -53,6 +53,7 @@ class ServiceWorkerVersionInfo;
 struct NavigatorConnectClient;
 struct PlatformNotificationData;
 struct ServiceWorkerClientInfo;
+struct TransferredMessagePort;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -173,9 +174,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SendMessage(const IPC::Message& message, const StatusCallback& callback);
 
   // Sends a message event to the associated embedded worker.
-  void DispatchMessageEvent(const base::string16& message,
-                            const std::vector<int>& sent_message_port_ids,
-                            const StatusCallback& callback);
+  void DispatchMessageEvent(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const StatusCallback& callback);
 
   // Sends install event to the associated embedded worker and asynchronously
   // calls |callback| when it errors out or it gets a response from the worker
@@ -264,7 +266,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchCrossOriginMessageEvent(
       const NavigatorConnectClient& client,
       const base::string16& message,
-      const std::vector<int>& sent_message_port_ids,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
 
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
@@ -352,7 +354,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void DispatchMessageEventInternal(
       const base::string16& message,
-      const std::vector<int>& sent_message_port_ids,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
 
   // Message handlers.
@@ -384,9 +386,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnClearCachedMetadata(const GURL& url);
   void OnClearCachedMetadataFinished(int64 callback_id, int result);
 
-  void OnPostMessageToDocument(int client_id,
-                               const base::string16& message,
-                               const std::vector<int>& sent_message_port_ids);
+  void OnPostMessageToDocument(
+      int client_id,
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports);
   void OnFocusClient(int request_id, int client_id);
   void OnSkipWaiting(int request_id);
   void OnClaimClients(int request_id);

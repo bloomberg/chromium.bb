@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
+#include "ipc/ipc_message.h"
 
 namespace content {
 
@@ -35,6 +36,11 @@ struct CONTENT_EXPORT MessagePortMessage {
   // Message as a base::Value. This is either an empty list or a list
   // containing exactly one item.
   base::ListValue message_as_value;
+};
+
+struct TransferredMessagePort {
+  int id = MSG_ROUTING_NONE;
+  bool send_messages_as_values = false;
 };
 
 }  // namespace content

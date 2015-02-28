@@ -48,14 +48,15 @@ void NavigatorConnectDispatcherHost::OnConnect(
                  thread_id, request_id));
 }
 
-void NavigatorConnectDispatcherHost::OnConnectResult(int thread_id,
-                                                     int request_id,
-                                                     int message_port_id,
-                                                     int message_port_route_id,
-                                                     bool accept_connection) {
+void NavigatorConnectDispatcherHost::OnConnectResult(
+    int thread_id,
+    int request_id,
+    const TransferredMessagePort& message_port,
+    int message_port_route_id,
+    bool accept_connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Send(new NavigatorConnectMsg_ConnectResult(
-      thread_id, request_id, message_port_id, message_port_route_id,
+      thread_id, request_id, message_port, message_port_route_id,
       accept_connection));
 }
 

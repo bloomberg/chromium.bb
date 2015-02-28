@@ -632,7 +632,7 @@ void ServiceWorkerDispatcher::OnPostMessage(
     int thread_id,
     int provider_id,
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const std::vector<int>& new_routing_ids) {
   // Make sure we're on the main document thread. (That must be the only
   // thread we get this message)
@@ -648,15 +648,10 @@ void ServiceWorkerDispatcher::OnPostMessage(
     return;
   }
 
-  std::vector<WebMessagePortChannelImpl*> ports;
-  if (!sent_message_port_ids.empty()) {
-    ports.resize(sent_message_port_ids.size());
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i],
-          base::MessageLoopProxy::current());
-    }
-  }
+  blink::WebMessagePortChannelArray ports =
+      WebMessagePortChannelImpl::CreatePorts(sent_message_ports,
+                                             new_routing_ids,
+                                             base::MessageLoopProxy::current());
 
   found->second->dispatchMessageEvent(message, ports);
 }

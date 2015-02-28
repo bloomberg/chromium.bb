@@ -15,8 +15,9 @@
 namespace content {
 
 class MessagePortDelegate;
-struct MessagePortMessage;
 class WebContents;
+struct MessagePortMessage;
+struct TransferredMessagePort;
 
 // An interface consisting of methods that can be called to use Message ports.
 class CONTENT_EXPORT MessagePortProvider {
@@ -27,11 +28,12 @@ class CONTENT_EXPORT MessagePortProvider {
   // See https://html.spec.whatwg.org/multipage/comms.html#messageevent for
   // further information on message events.
   // Should be called on UI thread.
-  static void PostMessageToFrame(WebContents* web_contents,
-                                 const base::string16& source_origin,
-                                 const base::string16& target_origin,
-                                 const base::string16& data,
-                                 const std::vector<int>& ports);
+  static void PostMessageToFrame(
+      WebContents* web_contents,
+      const base::string16& source_origin,
+      const base::string16& target_origin,
+      const base::string16& data,
+      const std::vector<TransferredMessagePort>& ports);
 
   // Creates a message channel and provide the ids of the message ports that are
   // associated with this message channel.
@@ -44,9 +46,10 @@ class CONTENT_EXPORT MessagePortProvider {
                                    int* port2);
 
   // Posts a MessageEvent to a message port associated with a message channel.
-  static void PostMessageToPort(int sender_port_id,
-                                const MessagePortMessage& message,
-                                const std::vector<int>& sent_ports);
+  static void PostMessageToPort(
+      int sender_port_id,
+      const MessagePortMessage& message,
+      const std::vector<TransferredMessagePort>& sent_ports);
 
   // Close the message port. Should be called on IO thread.
   static void ClosePort(int message_port_id);

@@ -14,9 +14,10 @@
 namespace content {
 
 class MessagePortMessageFilter;
-struct NavigatorConnectClient;
 class NavigatorConnectService;
 class NavigatorConnectServiceFactory;
+struct NavigatorConnectClient;
+struct TransferredMessagePort;
 
 // Tracks all active navigator.connect connections, as well as available service
 // factories. Delegates connection requests to the correct factory and passes
@@ -25,8 +26,10 @@ class NavigatorConnectServiceFactory;
 // TODO(mek): Somehow clean up connections when the client side goes away.
 class NavigatorConnectContextImpl : public NavigatorConnectContext {
  public:
-  using ConnectCallback = base::Callback<
-      void(int message_port_id, int message_port_route_id, bool success)>;
+  using ConnectCallback =
+      base::Callback<void(const TransferredMessagePort& message_port,
+                          int message_port_route_id,
+                          bool success)>;
 
   explicit NavigatorConnectContextImpl();
 

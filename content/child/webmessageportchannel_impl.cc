@@ -36,12 +36,12 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
 
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     int route_id,
-    int message_port_id,
+    const TransferredMessagePort& port,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner)
     : client_(NULL),
       route_id_(route_id),
-      message_port_id_(message_port_id),
-      send_messages_as_values_(false),
+      message_port_id_(port.id),
+      send_messages_as_values_(port.send_messages_as_values),
       main_thread_task_runner_(main_thread_task_runner) {
   AddRef();
   Init();
@@ -50,7 +50,7 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
 WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
   // If we have any queued messages with attached ports, manually destroy them.
   while (!message_queue_.empty()) {
-    const std::vector<WebMessagePortChannelImpl*>& channel_array =
+    const WebMessagePortChannelArray& channel_array =
         message_queue_.front().ports;
     for (size_t i = 0; i < channel_array.size(); i++) {
       channel_array[i]->destroy();
@@ -83,25 +83,53 @@ void WebMessagePortChannelImpl::CreatePair(
 }
 
 // static
-std::vector<int> WebMessagePortChannelImpl::ExtractMessagePortIDs(
+std::vector<TransferredMessagePort>
+WebMessagePortChannelImpl::ExtractMessagePortIDs(
     WebMessagePortChannelArray* channels) {
-  std::vector<int> message_port_ids;
+  std::vector<TransferredMessagePort> message_ports;
   if (channels) {
-    message_port_ids.resize(channels->size());
     // Extract the port IDs from the source array, then free it.
-    for (size_t i = 0; i < channels->size(); ++i) {
-      WebMessagePortChannelImpl* webchannel =
-          static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
-      // The message port ids might not be set up yet if this channel
-      // wasn't created on the main thread.
-      DCHECK(webchannel->main_thread_task_runner_->BelongsToCurrentThread());
-      message_port_ids[i] = webchannel->message_port_id();
-      webchannel->QueueMessages();
-      DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
-    }
+    message_ports = ExtractMessagePortIDs(*channels);
     delete channels;
   }
-  return message_port_ids;
+  return message_ports;
+}
+
+// static
+std::vector<TransferredMessagePort>
+WebMessagePortChannelImpl::ExtractMessagePortIDs(
+    const WebMessagePortChannelArray& channels) {
+  std::vector<TransferredMessagePort> message_ports(channels.size());
+  for (size_t i = 0; i < channels.size(); ++i) {
+    WebMessagePortChannelImpl* webchannel =
+        static_cast<WebMessagePortChannelImpl*>(channels[i]);
+    // The message port ids might not be set up yet if this channel
+    // wasn't created on the main thread.
+    DCHECK(webchannel->main_thread_task_runner_->BelongsToCurrentThread());
+    message_ports[i].id = webchannel->message_port_id();
+    message_ports[i].send_messages_as_values =
+        webchannel->send_messages_as_values_;
+    webchannel->QueueMessages();
+    DCHECK(message_ports[i].id != MSG_ROUTING_NONE);
+  }
+  return message_ports;
+}
+
+// static
+WebMessagePortChannelArray WebMessagePortChannelImpl::CreatePorts(
+    const std::vector<TransferredMessagePort>& message_ports,
+    const std::vector<int>& new_routing_ids,
+    const scoped_refptr<base::SingleThreadTaskRunner>&
+        main_thread_task_runner) {
+  DCHECK_EQ(message_ports.size(), new_routing_ids.size());
+  WebMessagePortChannelArray channels(message_ports.size());
+  for (size_t i = 0; i < message_ports.size() && i < new_routing_ids.size();
+       ++i) {
+    channels[i] = new WebMessagePortChannelImpl(
+        new_routing_ids[i], message_ports[i],
+        main_thread_task_runner);
+  }
+  return channels;
 }
 
 void WebMessagePortChannelImpl::setClient(WebMessagePortChannelClient* client) {
@@ -174,14 +202,7 @@ bool WebMessagePortChannelImpl::tryGetMessage(
   } else {
     *message = message_queue_.front().message.message_as_string;
   }
-  const std::vector<WebMessagePortChannelImpl*>& channel_array =
-      message_queue_.front().ports;
-  WebMessagePortChannelArray result_ports(channel_array.size());
-  for (size_t i = 0; i < channel_array.size(); i++) {
-    result_ports[i] = channel_array[i];
-  }
-
-  channels.swap(result_ports);
+  channels = message_queue_.front().ports;
   message_queue_.pop();
   return true;
 }
@@ -263,19 +284,13 @@ bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
 
 void WebMessagePortChannelImpl::OnMessage(
     const MessagePortMessage& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const std::vector<int>& new_routing_ids) {
   base::AutoLock auto_lock(lock_);
   Message msg;
   msg.message = message;
-  if (!sent_message_port_ids.empty()) {
-    msg.ports.resize(sent_message_port_ids.size());
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      msg.ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i],
-          main_thread_task_runner_.get());
-    }
-  }
+  msg.ports = CreatePorts(sent_message_ports, new_routing_ids,
+                          main_thread_task_runner_.get());
 
   bool was_empty = message_queue_.empty();
   message_queue_.push(msg);
@@ -291,14 +306,9 @@ void WebMessagePortChannelImpl::OnMessagesQueued() {
     queued_messages.reserve(message_queue_.size());
     while (!message_queue_.empty()) {
       MessagePortMessage message = message_queue_.front().message;
-      const std::vector<WebMessagePortChannelImpl*>& channel_array =
-          message_queue_.front().ports;
-      std::vector<int> port_ids(channel_array.size());
-      for (size_t i = 0; i < channel_array.size(); ++i) {
-        port_ids[i] = channel_array[i]->message_port_id();
-        channel_array[i]->QueueMessages();
-      }
-      queued_messages.push_back(std::make_pair(message, port_ids));
+      std::vector<TransferredMessagePort> ports =
+          ExtractMessagePortIDs(message_queue_.front().ports);
+      queued_messages.push_back(std::make_pair(message, ports));
       message_queue_.pop();
     }
   }

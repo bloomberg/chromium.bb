@@ -276,19 +276,19 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
 
 void ServiceWorkerProviderHost::PostMessage(
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids) {
+    const std::vector<TransferredMessagePort>& sent_message_ports) {
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 
   std::vector<int> new_routing_ids;
   dispatcher_host_->message_port_message_filter()->
-      UpdateMessagePortsWithNewRoutes(sent_message_port_ids,
+      UpdateMessagePortsWithNewRoutes(sent_message_ports,
                                       &new_routing_ids);
 
   Send(new ServiceWorkerMsg_MessageToDocument(
       kDocumentMainThreadId, provider_id(),
       message,
-      sent_message_port_ids,
+      sent_message_ports,
       new_routing_ids));
 }
 

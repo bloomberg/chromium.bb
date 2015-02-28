@@ -285,11 +285,11 @@ class MockSharedWorkerConnector {
         new MessagePortHostMsg_QueueMessages(remote_port_id_)));
   }
   void SendPostMessage(std::string data) {
-    const std::vector<int> empty_ids;
+    const std::vector<TransferredMessagePort> empty_ports;
     EXPECT_TRUE(
         renderer_host_->OnMessageReceived(new MessagePortHostMsg_PostMessage(
             local_port_id_,
-            MessagePortMessage(base::ASCIIToUTF16(data)), empty_ids)));
+            MessagePortMessage(base::ASCIIToUTF16(data)), empty_ports)));
   }
   void SendConnect() {
     EXPECT_TRUE(
@@ -467,11 +467,11 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
   // When SharedWorker side sends MessagePortHostMsg_PostMessage,
   // SharedWorkerConnector side shuold receive MessagePortMsg_Message.
-  const std::vector<int> empty_ids;
+  const std::vector<TransferredMessagePort> empty_ports;
   EXPECT_TRUE(
       renderer_host->OnMessageReceived(new MessagePortHostMsg_PostMessage(
           connector->remote_port_id(),
-          MessagePortMessage(base::ASCIIToUTF16("test2")), empty_ids)));
+          MessagePortMessage(base::ASCIIToUTF16("test2")), empty_ports)));
   EXPECT_EQ(1U, renderer_host->QueuedMessageCount());
   CheckMessagePortMsgMessage(
       renderer_host.get(), connector->local_port_route_id(), "test2");
@@ -564,11 +564,11 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   // When SharedWorker side sends MessagePortHostMsg_PostMessage,
   // SharedWorkerConnector side shuold receive MessagePortMsg_Message.
-  const std::vector<int> empty_ids;
+  const std::vector<TransferredMessagePort> empty_ports;
   EXPECT_TRUE(
       renderer_host0->OnMessageReceived(new MessagePortHostMsg_PostMessage(
           connector0->remote_port_id(),
-          MessagePortMessage(base::ASCIIToUTF16("test2")), empty_ids)));
+          MessagePortMessage(base::ASCIIToUTF16("test2")), empty_ports)));
   EXPECT_EQ(1U, renderer_host0->QueuedMessageCount());
   CheckMessagePortMsgMessage(
       renderer_host0.get(), connector0->local_port_route_id(), "test2");
@@ -647,7 +647,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   EXPECT_TRUE(
       renderer_host0->OnMessageReceived(new MessagePortHostMsg_PostMessage(
           connector1->remote_port_id(),
-          MessagePortMessage(base::ASCIIToUTF16("test4")), empty_ids)));
+          MessagePortMessage(base::ASCIIToUTF16("test4")), empty_ports)));
   EXPECT_EQ(1U, renderer_host1->QueuedMessageCount());
   CheckMessagePortMsgMessage(
       renderer_host1.get(), connector1->local_port_route_id(), "test4");

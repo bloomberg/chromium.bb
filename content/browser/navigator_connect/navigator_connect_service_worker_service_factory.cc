@@ -30,19 +30,21 @@ class NavigatorConnectServiceWorkerService : public MessagePortDelegate {
   ~NavigatorConnectServiceWorkerService() override;
 
   // MessagePortDelegate implementation.
-  void SendMessage(int route_id,
-                   const MessagePortMessage& message,
-                   const std::vector<int>& sent_message_port_ids) override;
+  void SendMessage(
+      int route_id,
+      const MessagePortMessage& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports) override;
   void SendMessagesAreQueued(int route_id) override;
 
  private:
   // Callback called by SendMessage when the ServiceWorkerRegistration for this
   // service has been located.
-  void DeliverMessage(const base::string16& message,
-                      const std::vector<int>& sent_message_port_ids,
-                      ServiceWorkerStatusCode service_worker_status,
-                      const scoped_refptr<ServiceWorkerRegistration>&
-                          service_worker_registration);
+  void DeliverMessage(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      ServiceWorkerStatusCode service_worker_status,
+      const scoped_refptr<ServiceWorkerRegistration>&
+          service_worker_registration);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   NavigatorConnectClient client_;
@@ -70,7 +72,7 @@ NavigatorConnectServiceWorkerService::~NavigatorConnectServiceWorkerService() {
 void NavigatorConnectServiceWorkerService::SendMessage(
     int route_id,
     const MessagePortMessage& message,
-    const std::vector<int>& sent_message_port_ids) {
+    const std::vector<TransferredMessagePort>& sent_message_ports) {
   DCHECK(route_id == client_.message_port_id);
   DCHECK(message.message_as_value.empty());
 
@@ -78,14 +80,14 @@ void NavigatorConnectServiceWorkerService::SendMessage(
   // by the service can be asynchronous. When a message is delivered,
   // WebMessagePortChannelImpl instances will be constructed which send
   // MessagePortHostMsg_ReleaseMessages to release messages.
-  for (int sent_message_port_id : sent_message_port_ids)
-    MessagePortService::GetInstance()->HoldMessages(sent_message_port_id);
+  for (const auto& port : sent_message_ports)
+    MessagePortService::GetInstance()->HoldMessages(port.id);
 
   service_worker_context_->context()->storage()->FindRegistrationForId(
       service_worker_registration_id_, service_worker_registration_origin_,
       base::Bind(&NavigatorConnectServiceWorkerService::DeliverMessage,
                  weak_factory_.GetWeakPtr(), message.message_as_string,
-                 sent_message_port_ids));
+                 sent_message_ports));
 }
 
 void NavigatorConnectServiceWorkerService::SendMessagesAreQueued(int route_id) {
@@ -94,7 +96,7 @@ void NavigatorConnectServiceWorkerService::SendMessagesAreQueued(int route_id) {
 
 void NavigatorConnectServiceWorkerService::DeliverMessage(
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     ServiceWorkerStatusCode service_worker_status,
     const scoped_refptr<ServiceWorkerRegistration>&
         service_worker_registration) {
@@ -111,7 +113,7 @@ void NavigatorConnectServiceWorkerService::DeliverMessage(
   }
 
   active_version->DispatchCrossOriginMessageEvent(
-      client_, message, sent_message_port_ids,
+      client_, message, sent_message_ports,
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 

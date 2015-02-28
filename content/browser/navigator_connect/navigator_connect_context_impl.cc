@@ -68,10 +68,8 @@ void NavigatorConnectContextImpl::Connect(
 
   if (!factory) {
     // No factories found.
-    // Destroy ports since connection failed.
-    message_port_service->Destroy(client_port);
-    message_port_service->Destroy(service_port);
-    callback.Run(MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+    OnConnectResult(client, client_port, client_port_route_id,
+                    callback, nullptr);
     return;
   }
 
@@ -92,12 +90,15 @@ void NavigatorConnectContextImpl::OnConnectResult(
     // Update service side port with delegate.
     MessagePortService::GetInstance()->UpdateMessagePort(
         client.message_port_id, delegate, client.message_port_id);
-    callback.Run(client_message_port_id, client_port_route_id, true);
+    TransferredMessagePort port;
+    port.id = client_message_port_id;
+    // TODO(mek): Set port.send_value_as_messages depending on connect result.
+    callback.Run(port, client_port_route_id, true);
   } else {
     // Destroy ports since connection failed.
     MessagePortService::GetInstance()->Destroy(client.message_port_id);
     MessagePortService::GetInstance()->Destroy(client_message_port_id);
-    callback.Run(MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+    callback.Run(TransferredMessagePort(), MSG_ROUTING_NONE, false);
   }
 }
 

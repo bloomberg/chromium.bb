@@ -36,6 +36,7 @@ class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
+struct TransferredMessagePort;
 
 // This class manages communication with the browser process about
 // registration of the service worker, exposed to renderer and worker
@@ -200,11 +201,12 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info,
                                     bool should_notify_controllerchange);
-  void OnPostMessage(int thread_id,
-                     int provider_id,
-                     const base::string16& message,
-                     const std::vector<int>& sent_message_port_ids,
-                     const std::vector<int>& new_routing_ids);
+  void OnPostMessage(
+      int thread_id,
+      int provider_id,
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& new_routing_ids);
 
   void SetReadyRegistration(
       int provider_id,

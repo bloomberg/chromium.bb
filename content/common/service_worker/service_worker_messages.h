@@ -11,6 +11,7 @@
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/message_port_types.h"
 #include "content/public/common/navigator_connect_client.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
@@ -145,10 +146,11 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_GetRegistration,
                      GURL /* document_url */)
 
 // Sends a 'message' event to a service worker (renderer->browser).
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessageToWorker,
-                     int /* handle_id */,
-                     base::string16 /* message */,
-                     std::vector<int> /* sent_message_port_ids */)
+IPC_MESSAGE_CONTROL3(
+    ServiceWorkerHostMsg_PostMessageToWorker,
+    int /* handle_id */,
+    base::string16 /* message */,
+    std::vector<content::TransferredMessagePort> /* sent_message_ports */)
 
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process.
@@ -229,10 +231,11 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientDocuments,
                     int /* request_id */)
 
 // Sends a 'message' event to a client document (renderer->browser).
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
-                    int /* client_id */,
-                    base::string16 /* message */,
-                    std::vector<int> /* sent_message_port_ids */)
+IPC_MESSAGE_ROUTED3(
+    ServiceWorkerHostMsg_PostMessageToDocument,
+    int /* client_id */,
+    base::string16 /* message */,
+    std::vector<content::TransferredMessagePort> /* sent_message_ports */)
 
 // ServiceWorker -> Browser message to request that the ServiceWorkerStorage
 // cache |data| associated with |url|.
@@ -414,12 +417,13 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetControllerServiceWorker,
                      bool /* should_notify_controllerchange */)
 
 // Sends a 'message' event to a client document (browser->renderer).
-IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_MessageToDocument,
-                     int /* thread_id */,
-                     int /* provider_id */,
-                     base::string16 /* message */,
-                     std::vector<int> /* sent_message_port_ids */,
-                     std::vector<int> /* new_routing_ids */)
+IPC_MESSAGE_CONTROL5(
+    ServiceWorkerMsg_MessageToDocument,
+    int /* thread_id */,
+    int /* provider_id */,
+    base::string16 /* message */,
+    std::vector<content::TransferredMessagePort> /* sent_message_ports */,
+    std::vector<int> /* new_routing_ids */)
 
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_InstallEvent,
@@ -447,15 +451,17 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CrossOriginConnectEvent,
                      int /* request_id */,
                      content::NavigatorConnectClient /* client */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
-                     base::string16 /* message */,
-                     std::vector<int> /* sent_message_port_ids */,
-                     std::vector<int> /* new_routing_ids */)
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_CrossOriginMessageToWorker,
-                     content::NavigatorConnectClient /* client */,
-                     base::string16 /* message */,
-                     std::vector<int> /* sent_message_port_ids */,
-                     std::vector<int> /* new_routing_ids */)
+IPC_MESSAGE_CONTROL3(
+    ServiceWorkerMsg_MessageToWorker,
+    base::string16 /* message */,
+    std::vector<content::TransferredMessagePort> /* sent_message_ports */,
+    std::vector<int> /* new_routing_ids */)
+IPC_MESSAGE_CONTROL4(
+    ServiceWorkerMsg_CrossOriginMessageToWorker,
+    content::NavigatorConnectClient /* client */,
+    base::string16 /* message */,
+    std::vector<content::TransferredMessagePort> /* sent_message_ports */,
+    std::vector<int> /* new_routing_ids */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidClaimClients,

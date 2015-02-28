@@ -46,12 +46,15 @@ void AwMessagePortMessageFilter::OnConvertedAppToWebMessage(
     int msg_port_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
-
+  std::vector<content::TransferredMessagePort>
+      sent_ports(sent_message_port_ids.size());
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i)
+    sent_ports[i].id = sent_message_port_ids[i];
   // TODO(mek): Bypass the extra roundtrip and just send the unconverted message
   // to the renderer directly.
   MessagePortProvider::PostMessageToPort(msg_port_id,
       content::MessagePortMessage(message),
-      sent_message_port_ids);
+      sent_ports);
 }
 
 void AwMessagePortMessageFilter::OnClosePortAck(int message_port_id) {
@@ -81,8 +84,13 @@ void AwMessagePortMessageFilter::SendClosePortMessage(int message_port_id) {
 void AwMessagePortMessageFilter::SendMessage(
     int msg_port_route_id,
     const content::MessagePortMessage& message,
-    const std::vector<int>& sent_message_port_ids) {
+    const std::vector<content::TransferredMessagePort>& sent_message_ports) {
   DCHECK(message.is_string());
+  std::vector<int> sent_message_port_ids(sent_message_ports.size());
+  for (size_t i = 0; i < sent_message_ports.size(); ++i) {
+    DCHECK(!sent_message_ports[i].send_messages_as_values);
+    sent_message_port_ids[i] = sent_message_ports[i].id;
+  }
   Send(new AwMessagePortMsg_WebToAppMessage(
       route_id_,
       msg_port_route_id, // same as the port id

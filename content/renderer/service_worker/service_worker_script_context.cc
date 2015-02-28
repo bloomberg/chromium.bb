@@ -408,20 +408,14 @@ void ServiceWorkerScriptContext::OnCrossOriginConnectEvent(
 
 void ServiceWorkerScriptContext::OnPostMessage(
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const std::vector<int>& new_routing_ids) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnPostEvent");
-  std::vector<WebMessagePortChannelImpl*> ports;
-  if (!sent_message_port_ids.empty()) {
-    base::SingleThreadTaskRunner* task_runner =
-        embedded_context_->main_thread_task_runner();
-    ports.resize(sent_message_port_ids.size());
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i], task_runner);
-    }
-  }
+  blink::WebMessagePortChannelArray ports =
+      WebMessagePortChannelImpl::CreatePorts(
+          sent_message_ports, new_routing_ids,
+          embedded_context_->main_thread_task_runner());
 
   // dispatchMessageEvent is expected to execute onmessage function
   // synchronously.
@@ -435,20 +429,14 @@ void ServiceWorkerScriptContext::OnPostMessage(
 void ServiceWorkerScriptContext::OnCrossOriginMessageToWorker(
     const NavigatorConnectClient& client,
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const std::vector<int>& new_routing_ids) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnCrossOriginMessageToWorker");
-  std::vector<WebMessagePortChannelImpl*> ports;
-  if (!sent_message_port_ids.empty()) {
-    base::SingleThreadTaskRunner* task_runner =
-        embedded_context_->main_thread_task_runner();
-    ports.resize(sent_message_port_ids.size());
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i], task_runner);
-    }
-  }
+  blink::WebMessagePortChannelArray ports =
+      WebMessagePortChannelImpl::CreatePorts(
+          sent_message_ports, new_routing_ids,
+          embedded_context_->main_thread_task_runner());
 
   blink::WebCrossOriginServiceWorkerClient web_client;
   web_client.origin = client.origin;

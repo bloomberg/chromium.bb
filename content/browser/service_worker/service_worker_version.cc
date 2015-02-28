@@ -153,12 +153,12 @@ void RunErrorFetchCallback(const ServiceWorkerVersion::FetchCallback& callback,
 }
 
 void RunErrorMessageCallback(
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const ServiceWorkerVersion::StatusCallback& callback,
     ServiceWorkerStatusCode status) {
   // Transfering the message ports failed, so destroy the ports.
-  for (int message_port_id : sent_message_port_ids) {
-    MessagePortService::GetInstance()->ClosePort(message_port_id);
+  for (const TransferredMessagePort& port : sent_message_ports) {
+    MessagePortService::GetInstance()->ClosePort(port.id);
   }
   callback.Run(status);
 }
@@ -444,26 +444,26 @@ void ServiceWorkerVersion::SendMessage(
 
 void ServiceWorkerVersion::DispatchMessageEvent(
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const StatusCallback& callback) {
-  for (int message_port_id : sent_message_port_ids) {
-    MessagePortService::GetInstance()->HoldMessages(message_port_id);
+  for (const TransferredMessagePort& port : sent_message_ports) {
+    MessagePortService::GetInstance()->HoldMessages(port.id);
   }
 
-  DispatchMessageEventInternal(message, sent_message_port_ids, callback);
+  DispatchMessageEventInternal(message, sent_message_ports, callback);
 }
 
 void ServiceWorkerVersion::DispatchMessageEventInternal(
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const StatusCallback& callback) {
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(
         &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-        base::Bind(&RunErrorMessageCallback, sent_message_port_ids, callback),
+        base::Bind(&RunErrorMessageCallback, sent_message_ports, callback),
         base::Bind(&self::DispatchMessageEventInternal,
-                   weak_factory_.GetWeakPtr(), message, sent_message_port_ids,
+                   weak_factory_.GetWeakPtr(), message, sent_message_ports,
                    callback)));
     return;
   }
@@ -471,11 +471,10 @@ void ServiceWorkerVersion::DispatchMessageEventInternal(
   MessagePortMessageFilter* filter =
       embedded_worker_->message_port_message_filter();
   std::vector<int> new_routing_ids;
-  filter->UpdateMessagePortsWithNewRoutes(sent_message_port_ids,
-                                          &new_routing_ids);
+  filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_MessageToWorker(
-          message, sent_message_port_ids, new_routing_ids));
+          message, sent_message_ports, new_routing_ids));
   RunSoon(base::Bind(callback, status));
 }
 
@@ -698,7 +697,7 @@ void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
 void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
     const NavigatorConnectClient& client,
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
     const StatusCallback& callback) {
   // Unlike in the case of DispatchMessageEvent, here the caller is assumed to
   // have already put all the sent message ports on hold. So no need to do that
@@ -707,23 +706,24 @@ void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(
-        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
+        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+        base::Bind(&RunErrorMessageCallback, sent_message_ports, callback),
         base::Bind(&self::DispatchCrossOriginMessageEvent,
                    weak_factory_.GetWeakPtr(), client, message,
-                   sent_message_port_ids, callback)));
+                   sent_message_ports, callback)));
     return;
   }
 
   MessagePortMessageFilter* filter =
       embedded_worker_->message_port_message_filter();
   std::vector<int> new_routing_ids;
-  filter->UpdateMessagePortsWithNewRoutes(sent_message_port_ids,
-                                          &new_routing_ids);
+  filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_CrossOriginMessageToWorker(
-          client, message, sent_message_port_ids, new_routing_ids));
+          client, message, sent_message_ports, new_routing_ids));
   RunSoon(base::Bind(callback, status));
 }
+
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   DCHECK(!ContainsKey(controllee_map_, provider_host));
@@ -1285,7 +1285,7 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64 callback_id,
 void ServiceWorkerVersion::OnPostMessageToDocument(
     int client_id,
     const base::string16& message,
-    const std::vector<int>& sent_message_port_ids) {
+    const std::vector<TransferredMessagePort>& sent_message_ports) {
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerVersion::OnPostMessageToDocument",
                "Client id", client_id);
@@ -1295,7 +1295,7 @@ void ServiceWorkerVersion::OnPostMessageToDocument(
     // The client may already have been closed, just ignore.
     return;
   }
-  provider_host->PostMessage(message, sent_message_port_ids);
+  provider_host->PostMessage(message, sent_message_ports);
 }
 
 void ServiceWorkerVersion::OnFocusClient(int request_id, int client_id) {
