@@ -445,7 +445,7 @@ bool PersonalDataManager::ImportFormData(
   // Don't import if we already have this info.
   // Don't present an infobar if we have already saved this card number.
   bool merged_credit_card = false;
-  if (local_imported_credit_card.get()) {
+  if (local_imported_credit_card) {
     for (CreditCard* card : local_credit_cards_) {
       // Make a local copy so that the data in |local_credit_cards_| isn't
       // modified directly by the UpdateFromImportedCard() call.
@@ -454,6 +454,19 @@ bool PersonalDataManager::ImportFormData(
                                            app_locale_)) {
         merged_credit_card = true;
         UpdateCreditCard(card_copy);
+        local_imported_credit_card.reset();
+        break;
+      }
+    }
+  }
+
+  // Also don't offer to save if we already have this stored as a full wallet
+  // card. (In particular this comes up just after filling and submitting a
+  // Wallet card.)
+  if (local_imported_credit_card) {
+    for (CreditCard* card : server_credit_cards_) {
+      if (card->record_type() == CreditCard::FULL_SERVER_CARD &&
+          local_imported_credit_card->IsLocalDuplicateOfServerCard(*card)) {
         local_imported_credit_card.reset();
         break;
       }

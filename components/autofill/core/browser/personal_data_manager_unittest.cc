@@ -1643,6 +1643,70 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   ExpectSameElements(cards, personal_data_->GetCreditCards());
 }
 
+TEST_F(PersonalDataManagerTest, AggregateCardsThatDuplicateServerCards) {
+  // Add server cards.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2010");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+  autofill_table_->SetServerCreditCards(server_cards);
+
+  FormData form1;
+
+  // Type the same data as the masked card into a form.
+  FormFieldData field;
+  test::CreateTestFormField(
+      "Name on card:", "name_on_card", "John Dillinger", "text", &field);
+  form1.fields.push_back(field);
+  test::CreateTestFormField(
+      "Card Number:", "card_number", "4111111111111111", "text", &field);
+  form1.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2010", "text", &field);
+  form1.fields.push_back(field);
+
+  // The card should be offered to be saved locally because it only matches the
+  // masked card.
+  FormStructure form_structure1(form1);
+  form_structure1.DetermineHeuristicTypes();
+  scoped_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
+                                             &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Type the same data as the unmasked card into a form.
+  FormData form2;
+  test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Clyde Barrow", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField(
+      "Card Number:", "card_number", "347666888555", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "04", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2015", "text", &field);
+  form2.fields.push_back(field);
+
+  // The card should not be offered to be saved locally because it only matches
+  // the masked card.
+  FormStructure form_structure2(form2);
+  form_structure2.DetermineHeuristicTypes();
+  EXPECT_FALSE(personal_data_->ImportFormData(form_structure2,
+                                             &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+}
+
 TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   FormData form1;
 
