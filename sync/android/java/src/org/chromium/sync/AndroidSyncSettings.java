@@ -22,6 +22,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * It also provides an observer to be used whenever Android sync settings change.
  *
  * To retrieve an instance of this class, call AndroidSyncSettings.get(someContext).
+ *
+ * This class must be initialized via updateAccount() on startup if the user is signed in.
  */
 @ThreadSafe
 public class AndroidSyncSettings {

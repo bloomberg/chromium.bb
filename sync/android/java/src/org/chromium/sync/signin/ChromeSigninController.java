@@ -51,6 +51,7 @@ public class ChromeSigninController {
     private ChromeSigninController(Context context) {
         mApplicationContext = context.getApplicationContext();
         mAndroidSyncSettings = AndroidSyncSettings.get(context);
+        mAndroidSyncSettings.updateAccount(getSignedInUser());
     }
 
     /**
