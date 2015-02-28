@@ -211,6 +211,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*load_server_info_timeout_srtt_multiplier=*/0.0f,
                  /*enable_truncated_connection_ids=*/true,
                  /*enable_connection_racing=*/false,
+                 /*enable_non_blocking_io=*/true,
                  /*disable_disk_cache=*/false,
                  /*receive_buffer_size=*/0,
                  QuicTagVector()),
