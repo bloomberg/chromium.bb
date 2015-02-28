@@ -247,9 +247,6 @@ void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
 }
 
 void SSLConnectJob::OnIOComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455884 SSLConnectJob::OnIOComplete"));
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING)
     NotifyDelegateOfCompletion(rv);  // Deletes |this|.
@@ -308,10 +305,6 @@ int SSLConnectJob::DoLoop(int result) {
 }
 
 int SSLConnectJob::DoTransportConnect() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 SSLConnectJob::DoTransportConnect"));
   DCHECK(transport_pool_);
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
@@ -334,9 +327,6 @@ int SSLConnectJob::DoTransportConnectComplete(int result) {
 }
 
 int SSLConnectJob::DoSOCKSConnect() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455884 SSLConnectJob::DoSOCKSConnect"));
   DCHECK(socks_pool_);
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
@@ -358,10 +348,6 @@ int SSLConnectJob::DoSOCKSConnectComplete(int result) {
 }
 
 int SSLConnectJob::DoTunnelConnect() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 SSLConnectJob::DoTunnelConnect"));
   DCHECK(http_proxy_pool_);
   next_state_ = STATE_TUNNEL_CONNECT_COMPLETE;
 
@@ -377,10 +363,6 @@ int SSLConnectJob::DoTunnelConnect() {
 }
 
 int SSLConnectJob::DoTunnelConnectComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 SSLConnectJob::DoTunnelConnectComplete"));
   // Extract the information needed to prompt for appropriate proxy
   // authentication so that when ClientSocketPoolBaseHelper calls
   // |GetAdditionalErrorState|, we can easily set the state.
@@ -399,10 +381,10 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
 }
 
 int SSLConnectJob::DoCreateSSLSocket() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462815 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 SSLConnectJob::DoCreateSSLSocket"));
+          "462815 SSLConnectJob::DoCreateSSLSocket"));
   next_state_ = STATE_CHECK_FOR_RESUME;
 
   // Reset the timeout to just the time allowed for the SSL handshake.
@@ -435,10 +417,6 @@ int SSLConnectJob::DoCreateSSLSocket() {
 }
 
 int SSLConnectJob::DoCheckForResume() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 SSLConnectJob::DoCheckForResume"));
   next_state_ = STATE_SSL_CONNECT;
 
   if (!messenger_)
@@ -460,9 +438,9 @@ int SSLConnectJob::DoCheckForResume() {
 }
 
 int SSLConnectJob::DoSSLConnect() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462813 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455884 SSLConnectJob::DoSSLConnect"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("462813 SSLConnectJob::DoSSLConnect"));
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
 
   connect_timing_.ssl_start = base::TimeTicks::Now();
@@ -471,10 +449,6 @@ int SSLConnectJob::DoSSLConnect() {
 }
 
 int SSLConnectJob::DoSSLConnectComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 SSLConnectJob::DoSSLConnectComplete"));
   connect_timing_.ssl_end = base::TimeTicks::Now();
 
   SSLClientSocket::NextProtoStatus status =

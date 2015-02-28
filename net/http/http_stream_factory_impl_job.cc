@@ -441,10 +441,6 @@ void HttpStreamFactoryImpl::Job::OnIOComplete(int result) {
 }
 
 int HttpStreamFactoryImpl::Job::RunLoop(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::RunLoop"));
   result = DoLoop(result);
 
   if (result == ERR_IO_PENDING)
@@ -621,10 +617,6 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoStart"));
   origin_ = HostPortPair::FromURL(request_info_.url);
   origin_url_ = stream_factory_->ApplyHostMappingRules(
       request_info_.url, &origin_);
@@ -655,10 +647,6 @@ int HttpStreamFactoryImpl::Job::DoStart() {
 }
 
 int HttpStreamFactoryImpl::Job::DoResolveProxy() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoResolveProxy"));
   DCHECK(!pac_request_);
   DCHECK(session_);
 
@@ -675,10 +663,6 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
 }
 
 int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoResolveProxyComplete"));
   pac_request_ = NULL;
 
   if (result == OK) {
@@ -752,10 +736,10 @@ int HttpStreamFactoryImpl::Job::DoWaitForJobComplete(int result) {
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnection() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462812 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoInitConnection"));
+          "462812 HttpStreamFactoryImpl::Job::DoInitConnection"));
   DCHECK(!blocking_job_);
   DCHECK(!connection_->is_initialized());
   DCHECK(proxy_info_.proxy_server().is_valid());
@@ -903,10 +887,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoInitConnectionComplete"));
   if (IsPreconnecting()) {
     if (using_quic_)
       return result;
@@ -1093,10 +1073,10 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStream(
 }
 
 int HttpStreamFactoryImpl::Job::DoCreateStream() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462811 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoCreateStream"));
+          "462811 HttpStreamFactoryImpl::Job::DoCreateStream"));
   DCHECK(connection_->socket() || existing_spdy_session_.get() || using_quic_);
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
@@ -1190,10 +1170,6 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 }
 
 int HttpStreamFactoryImpl::Job::DoCreateStreamComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoCreateStreamComplete"));
   if (result < 0)
     return result;
 
@@ -1204,10 +1180,6 @@ int HttpStreamFactoryImpl::Job::DoCreateStreamComplete(int result) {
 }
 
 int HttpStreamFactoryImpl::Job::DoRestartTunnelAuth() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoRestartTunnelAuth"));
   next_state_ = STATE_RESTART_TUNNEL_AUTH_COMPLETE;
   ProxyClientSocket* proxy_socket =
       static_cast<ProxyClientSocket*>(connection_->socket());
@@ -1215,10 +1187,6 @@ int HttpStreamFactoryImpl::Job::DoRestartTunnelAuth() {
 }
 
 int HttpStreamFactoryImpl::Job::DoRestartTunnelAuthComplete(int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455884 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455884 HttpStreamFactoryImpl::Job::DoRestartTunnelAuthComplete"));
   if (result == ERR_PROXY_AUTH_REQUESTED)
     return result;
 
