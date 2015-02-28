@@ -4748,7 +4748,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 void Document::initContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> csp)
 {
     setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
-    if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
+    if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && shouldInheritSecurityOriginFromOwner(m_url))
         contentSecurityPolicy()->copyStateFrom(toLocalFrame(m_frame->tree().parent())->document()->contentSecurityPolicy());
     contentSecurityPolicy()->bindToExecutionContext(this);
 }

@@ -124,6 +124,10 @@ public:
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& styleContent, ReportingStatus = SendReport) const;
     bool allowEval(ScriptState* = nullptr, ReportingStatus = SendReport) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
+    // Checks whether the plugin type should be allowed in the given
+    // document; enforces the CSP rule that PluginDocuments inherit
+    // plugin-types directives from the parent document.
+    bool allowPluginTypeForDocument(const Document&, const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
 
     bool allowScriptFromSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowObjectFromSource(const KURL&, ReportingStatus = SendReport) const;

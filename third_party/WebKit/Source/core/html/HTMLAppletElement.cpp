@@ -227,7 +227,7 @@ bool HTMLAppletElement::canEmbedURL(const KURL& url) const
     }
 
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
-        || !document().contentSecurityPolicy()->allowPluginType(m_serviceType, m_serviceType, url)) {
+        || !document().contentSecurityPolicy()->allowPluginTypeForDocument(document(), m_serviceType, m_serviceType, url)) {
         layoutEmbeddedObject()->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }

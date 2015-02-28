@@ -457,6 +457,26 @@ bool ContentSecurityPolicy::allowPluginType(const String& type, const String& ty
     return true;
 }
 
+bool ContentSecurityPolicy::allowPluginTypeForDocument(const Document& document, const String& type, const String& typeAttribute, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    if (document.contentSecurityPolicy() && !document.contentSecurityPolicy()->allowPluginType(type, typeAttribute, url))
+        return false;
+
+    // CSP says that a plugin document in a nested browsing context should
+    // inherit the plugin-types of its parent.
+    //
+    // FIXME: The plugin-types directive should be pushed down into the
+    // current document instead of reaching up to the parent for it here.
+    LocalFrame* frame = document.frame();
+    if (frame && frame->tree().parent() && frame->tree().parent()->isLocalFrame() && document.isPluginDocument()) {
+        ContentSecurityPolicy* parentCSP = toLocalFrame(frame->tree().parent())->document()->contentSecurityPolicy();
+        if (parentCSP && !parentCSP->allowPluginType(type, typeAttribute, url))
+            return false;
+    }
+
+    return true;
+}
+
 bool ContentSecurityPolicy::allowScriptFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, reportingStatus);
