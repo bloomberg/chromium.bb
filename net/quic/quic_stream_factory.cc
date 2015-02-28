@@ -37,7 +37,6 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/udp/udp_client_socket.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -598,7 +597,6 @@ QuicStreamFactory::QuicStreamFactory(
     float load_server_info_timeout_srtt_multiplier,
     bool enable_truncated_connection_ids,
     bool enable_connection_racing,
-    bool enable_non_blocking_io,
     bool disable_disk_cache,
     int socket_receive_buffer_size,
     const QuicTagVector& connection_options)
@@ -623,7 +621,6 @@ QuicStreamFactory::QuicStreamFactory(
           load_server_info_timeout_srtt_multiplier),
       enable_truncated_connection_ids_(enable_truncated_connection_ids),
       enable_connection_racing_(enable_connection_racing),
-      enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       port_seed_(random_generator_->RandUint64()),
@@ -1017,13 +1014,6 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
           bind_type,
           base::Bind(&PortSuggester::SuggestPort, port_suggester),
           net_log.net_log(), net_log.source()));
-
-  if (enable_non_blocking_io_ &&
-      client_socket_factory_ == ClientSocketFactory::GetDefaultFactory()) {
-#if defined(OS_WIN)
-    static_cast<UDPClientSocket*>(socket.get())->UseNonBlockingIO();
-#endif
-  }
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile2(

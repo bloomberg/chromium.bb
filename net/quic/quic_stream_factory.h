@@ -109,7 +109,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       float load_server_info_timeout_srtt_multiplier,
       bool enable_truncated_connection_ids,
       bool enable_connection_racing,
-      bool enable_non_blocking_io,
       bool disable_disk_cache,
       int socket_receive_buffer_size,
       const QuicTagVector& connection_options);
@@ -331,9 +330,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // INCHOATE_HELLO and another connection that sends CHLO after loading server
   // config from the disk cache.
   bool enable_connection_racing_;
-
-  // Set if experimental non-blocking IO should be used on windows sockets.
-  bool enable_non_blocking_io_;
 
   // Set if we do not want to load server config from the disk cache.
   bool disable_disk_cache_;

@@ -1032,8 +1032,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_enable_truncated_connection_ids);
   globals.quic_enable_connection_racing.CopyToIfSet(
       &params->quic_enable_connection_racing);
-  globals.quic_enable_non_blocking_io.CopyToIfSet(
-      &params->quic_enable_non_blocking_io);
   globals.quic_disable_disk_cache.CopyToIfSet(
       &params->quic_disable_disk_cache);
   globals.quic_socket_receive_buffer_size.CopyToIfSet(
@@ -1180,8 +1178,6 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicEnableTruncatedConnectionIds(quic_trial_params));
     globals->quic_enable_connection_racing.set(
         ShouldQuicEnableConnectionRacing(quic_trial_params));
-    globals->quic_enable_non_blocking_io.set(
-        ShouldQuicEnableNonBlockingIO(quic_trial_params));
     globals->quic_disable_disk_cache.set(
         ShouldQuicDisableDiskCache(quic_trial_params));
     globals->enable_quic_port_selection.set(
@@ -1385,14 +1381,6 @@ bool IOThread::ShouldQuicEnableConnectionRacing(
     const VariationParameters& quic_trial_params) {
   return LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "enable_connection_racing"),
-      "true");
-}
-
-// static
-bool IOThread::ShouldQuicEnableNonBlockingIO(
-    const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_non_blocking_io"),
       "true");
 }
 
