@@ -37,10 +37,5 @@ int main(int argc, char* argv[]) {
 #endif
   // By default, or if not running in the browser we simply run the main
   // entry point directly, on the main thread.
-  int rtn = nacl_io_init();
-  if (rtn != 0)
-    return rtn;
-  rtn = PSUserMainGet()(argc, argv);
-  nacl_io_uninit();
-  return rtn;
+  return PSUserMainGet()(argc, argv);
 }
