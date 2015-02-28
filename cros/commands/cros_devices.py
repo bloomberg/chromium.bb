@@ -10,6 +10,7 @@ import logging
 
 from chromite import cros
 from chromite.lib import cros_build_lib
+from chromite.lib import remote_access
 
 
 @cros.CommandDecorator('devices')
@@ -91,10 +92,24 @@ class DevicesCommand(cros.CrosCommand):
     # TODO(yimingc): Find the USB-connected device.
     return None
 
+  def _PrintDeviceInfo(self, devices):
+    """Print out information about devices."""
+    rows = [('Alias Name', 'IP Address')]
+    rows.extend((device.alias, device.hostname) for device in devices)
+    # Number of offset spaces for the second column. Get the max length of items
+    # in the first column, and add 4 extra spaces to make a clear table view.
+    offset = max(len(row[0]) for row in rows) + 4
+    for row in rows:
+      print('%-*s%s' % (offset, row[0], row[1]))
+
   def _ListDevices(self):
     """List all USB-connected Brillo devices."""
-    print('List all USB-connected Brillo devices:')
-    # TODO(yimingc): List information of USB-connected Brillo devices.
+    devices = remote_access.GetUSBConnectedDevices()
+    if devices:
+      print('Info of all USB-connected Brillo devices:')
+      self._PrintDeviceInfo(devices)
+    else:
+      print('No USB-connected Brillo devices are found.')
 
   def _SetAlias(self):
     """Set a user-friendly alias name to the Brillo device."""

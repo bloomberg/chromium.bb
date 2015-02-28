@@ -918,4 +918,4 @@ class ChromiumOSDevice(RemoteDevice):
 def GetUSBConnectedDevices():
   """Returns a list of all USB-connected devices."""
   # TODO(thieule): Implement this function.
-  return [ChromiumOSDevice('127.0.0.1', connect=False)]
+  return [ChromiumOSDevice('127.0.0.1', connect=False, ping=False)]
