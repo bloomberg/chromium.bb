@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -73,6 +74,7 @@ ExtensionServiceTestBase::ExtensionServiceInitParams::
 
 ExtensionServiceTestBase::ExtensionServiceTestBase()
     : service_(NULL),
+      testing_local_state_(TestingBrowserProcess::GetGlobal()),
       thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
       did_reset_thread_bundle_(false),
       registry_(NULL) {

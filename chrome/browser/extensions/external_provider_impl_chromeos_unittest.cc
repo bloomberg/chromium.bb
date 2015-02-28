@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -57,21 +56,15 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   void SetUp() override {
     ExtensionServiceTestBase::SetUp();
 
-    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    chromeos::ServicesCustomizationDocument::RegisterPrefs(
-        local_state_.registry());
-
     external_externsions_overrides_.reset(new base::ScopedPathOverride(
         chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
   }
 
   void TearDown() override {
     chromeos::KioskAppManager::Shutdown();
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
  private:
-  TestingPrefServiceSimple local_state_;
   scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   user_manager::FakeUserManager* fake_user_manager_;

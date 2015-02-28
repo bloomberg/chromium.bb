@@ -42,13 +42,9 @@ namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest
     : public ExtensionServiceTestBase {
  protected:
-  PrefService& local_state() { return local_state_; }
   const base::FilePath& cache_dir() { return cache_dir_.path(); }
 
   void SetUp() override {
-    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    chrome::RegisterLocalState(local_state_.registry());
-
 #if defined(ENABLE_PLUGINS)
     content::PluginService::GetInstance()->Init();
 #endif
@@ -77,10 +73,6 @@ class ExtensionGarbageCollectorChromeOSUnitTest
         GetFakeUserManager()->GetActiveUser(), profile_.get());
   }
 
-  void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
-  }
-
   void GarbageCollectExtensions() {
     ExtensionGarbageCollector::Get(profile_.get())
         ->GarbageCollectExtensionsForTest();
@@ -100,7 +92,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
                                   const std::string& version,
                                   const std::string& users_string,
                                   const base::FilePath& path) {
-    DictionaryPrefUpdate shared_extensions(&local_state_,
+    DictionaryPrefUpdate shared_extensions(testing_local_state_.Get(),
         ExtensionAssetsManagerChromeOS::kSharedExtensions);
 
     base::DictionaryValue* extension_info = NULL;
@@ -152,7 +144,6 @@ class ExtensionGarbageCollectorChromeOSUnitTest
 
  private:
   scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-  TestingPrefServiceSimple local_state_;
   base::ScopedTempDir cache_dir_;
 };
 
@@ -195,8 +186,8 @@ TEST_F(ExtensionGarbageCollectorChromeOSUnitTest, SharedExtensions) {
 
   EXPECT_TRUE(base::PathExists(path_id2_1));
 
-  const base::DictionaryValue* shared_extensions = local_state().GetDictionary(
-      ExtensionAssetsManagerChromeOS::kSharedExtensions);
+  const base::DictionaryValue* shared_extensions = testing_local_state_.Get()->
+      GetDictionary(ExtensionAssetsManagerChromeOS::kSharedExtensions);
   ASSERT_TRUE(shared_extensions);
 
   EXPECT_FALSE(shared_extensions->HasKey(kExtensionId1));

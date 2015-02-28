@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -99,12 +98,6 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     ExtensionServiceTestBase::SetUp();
     test_server_.reset(new EmbeddedTestServer());
 
-#if defined(OS_CHROMEOS)
-    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    chromeos::ServicesCustomizationDocument::RegisterPrefs(
-        local_state_.registry());
-#endif
-
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(
         base::Bind(&ExternalProviderImplTest::HandleRequest,
@@ -115,10 +108,6 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
     cmdline->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
                                test_server_->GetURL(kManifestPath).spec());
-  }
-
-  void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
  private:
@@ -163,7 +152,6 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   // chromeos::ServicesCustomizationExternalLoader is hooked up as an
   // extensions::ExternalLoader and depends on a functioning StatisticsProvider.
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  TestingPrefServiceSimple local_state_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplTest);

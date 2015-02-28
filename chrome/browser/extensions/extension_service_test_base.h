@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,6 +113,7 @@ class ExtensionServiceTestBase : public testing::Test {
   // The ExtensionService, whose lifetime is managed by |profile|'s
   // ExtensionSystem.
   ExtensionService* service_;
+  ScopedTestingLocalState testing_local_state_;
 
  private:
   void CreateExtensionService(const ExtensionServiceInitParams& params);
