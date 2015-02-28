@@ -31,9 +31,11 @@ const char kDataReductionProxyFallback[] = "spdy-proxy-auth-fallback";
 // A test key for data reduction proxy authentication.
 const char kDataReductionProxyKey[] = "spdy-proxy-auth-value";
 
-// Sets a canary URL to test before committing to using the data reduction
-// proxy. Note this canary does not go through the data reduction proxy.
-const char kDataReductionProxyProbeURL[] = "data-reduction-proxy-probe-url";
+// Sets a secure proxy check URL to test before committing to using the Data
+// Reduction Proxy. Note this check does not go through the Data Reduction
+// Proxy.
+const char kDataReductionProxySecureProxyCheckURL[] =
+    "data-reduction-proxy-secure-proxy-check-url";
 
 // Sets a URL to fetch to warm up the data reduction proxy on startup and
 // network changes.

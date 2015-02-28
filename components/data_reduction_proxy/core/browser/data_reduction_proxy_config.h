@@ -41,25 +41,25 @@ struct DataReductionProxyTypeInfo;
 // DataReductionProxyProbeURLFetchResult in metrics/histograms/histograms.xml.
 // TODO(marq): Rename these histogram buckets with s/DISABLED/RESTRICTED/, so
 //     their names match the behavior they track.
-enum ProbeURLFetchResult {
-  // The probe failed because the Internet was disconnected.
+enum SecureProxyCheckFetchResult {
+  // The secure proxy check failed because the Internet was disconnected.
   INTERNET_DISCONNECTED = 0,
 
-  // The probe failed for any other reason, and as a result, the proxy was
-  // disabled.
+  // The secure proxy check failed for any other reason, and as a result, the
+  // proxy was disabled.
   FAILED_PROXY_DISABLED,
 
-  // The probe failed, but the proxy was already restricted.
+  // The secure proxy check failed, but the proxy was already restricted.
   FAILED_PROXY_ALREADY_DISABLED,
 
-  // The probe succeeded, and as a result the proxy was restricted.
+  // The secure proxy check succeeded, and as a result the proxy was restricted.
   SUCCEEDED_PROXY_ENABLED,
 
-  // The probe succeeded, but the proxy was already restricted.
+  // The secure proxy check succeeded, but the proxy was already restricted.
   SUCCEEDED_PROXY_ALREADY_ENABLED,
 
   // This must always be last.
-  PROBE_URL_FETCH_RESULT_COUNT
+  SECURE_PROXY_CHECK_FETCH_RESULT_COUNT
 };
 
 // Central point for holding the Data Reduction Proxy configuration.
@@ -163,8 +163,9 @@ class DataReductionProxyConfig
   virtual void LogProxyState(bool enabled, bool restricted, bool at_startup);
 
   // Virtualized for mocking. Records UMA containing the result of requesting
-  // the probe URL.
-  virtual void RecordProbeURLFetchResult(ProbeURLFetchResult result);
+  // the secure proxy check.
+  virtual void RecordSecureProxyCheckFetchResult(
+      SecureProxyCheckFetchResult result);
 
   // Virtualized for mocking. Returns the list of network interfaces in use.
   // |interfaces| can be null.
@@ -192,15 +193,15 @@ class DataReductionProxyConfig
                                   bool restricted,
                                   bool at_startup);
 
-  // Begins a probe request to determine if the Data Reduction Proxy is
+  // Begins a secure proxy check to determine if the Data Reduction Proxy is
   // permitted to use the HTTPS proxy servers.
-  void StartProbe();
+  void StartSecureProxyCheck();
 
-  // Parses the probe responses and appropriately configures the Data Reduction
-  // Proxy rules.
-  virtual void HandleProbeResponse(const std::string& response,
-                                   const net::URLRequestStatus& status);
-  virtual void HandleProbeResponseOnIOThread(
+  // Parses the secure proxy check responses and appropriately configures the
+  // Data Reduction Proxy rules.
+  virtual void HandleSecureProxyCheckResponse(
+      const std::string& response, const net::URLRequestStatus& status);
+  virtual void HandleSecureProxyCheckResponseOnIOThread(
       const std::string& response, const net::URLRequestStatus& status);
 
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
@@ -228,10 +229,10 @@ class DataReductionProxyConfig
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
-  // It is used to create new instances of |bound_net_log_| on canary
-  // requests. |bound_net_log_| permits the correlation of the begin and end
-  // phases of a given canary request, and a new one is created for each
-  // canary check (with |net_log_| as a parameter).
+  // It is used to create new instances of |bound_net_log_| on secure proxy
+  // checks. |bound_net_log_| permits the correlation of the begin and end
+  // phases of a given secure proxy check, and a new one is created for each
+  // secure proxy check (with |net_log_| as a parameter).
   net::NetLog* net_log_;
   net::BoundNetLog bound_net_log_;
 
@@ -243,9 +244,9 @@ class DataReductionProxyConfig
 
   base::ThreadChecker thread_checker_;
 
-  // A weak pointer to a |DataReductionProxyService| to perform probe requests.
-  // The weak pointer is required since the |DataReductionProxyService| is
-  // destroyed before this instance of the |DataReductionProxyConfig|.
+  // A weak pointer to a |DataReductionProxyService| to perform secure proxy
+  // checks. The weak pointer is required since the |DataReductionProxyService|
+  // is destroyed before this instance of the |DataReductionProxyConfig|.
   base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);

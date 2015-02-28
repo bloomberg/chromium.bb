@@ -81,7 +81,8 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       DataReductionProxyEventStore* event_store);
   ~MockDataReductionProxyConfig();
 
-  MOCK_METHOD1(RecordProbeURLFetchResult, void(ProbeURLFetchResult result));
+  MOCK_METHOD1(RecordSecureProxyCheckFetchResult,
+               void(SecureProxyCheckFetchResult result));
   MOCK_METHOD3(LogProxyState,
                void(bool enabled, bool restricted, bool at_startup));
   MOCK_METHOD3(SetProxyPrefs,
@@ -95,10 +96,11 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                           bool restricted,
                           bool at_startup) override;
 
-  // HandleProbeResponse should always call RecordProbeURLFetchResult exactly
-  // once.
-  void HandleProbeResponse(const std::string& response,
-                           const net::URLRequestStatus& status) override;
+  // HandleSecureProxyCheckResponse should always call
+  // RecordSecureProxyCheckFetchResult exactly once.
+  void HandleSecureProxyCheckResponse(
+      const std::string& response,
+      const net::URLRequestStatus& status) override;
 };
 
 }  // namespace data_reduction_proxy

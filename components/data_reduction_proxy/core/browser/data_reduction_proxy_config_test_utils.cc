@@ -95,10 +95,9 @@ void MockDataReductionProxyConfig::UpdateConfigurator(bool enabled,
                                                restricted, at_startup);
 }
 
-void MockDataReductionProxyConfig::HandleProbeResponse(
-    const std::string& response,
-    const net::URLRequestStatus& status) {
-  DataReductionProxyConfig::HandleProbeResponse(response, status);
+void MockDataReductionProxyConfig::HandleSecureProxyCheckResponse(
+    const std::string& response, const net::URLRequestStatus& status) {
+  DataReductionProxyConfig::HandleSecureProxyCheckResponse(response, status);
 }
 
 }  // namespace data_reduction_proxy

@@ -30,7 +30,7 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
     HAS_SSL_ORIGIN = 0x08,
     HAS_ALT_ORIGIN = 0x10,
     HAS_ALT_FALLBACK_ORIGIN = 0x20,
-    HAS_PROBE_URL = 0x40,
+    HAS_SECURE_PROXY_CHECK_URL = 0x40,
     HAS_DEV_FALLBACK_ORIGIN = 0x80,
     HAS_EVERYTHING = 0xff,
   };
@@ -60,14 +60,14 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   static std::string DefaultSSLOrigin();
   static std::string DefaultAltOrigin();
   static std::string DefaultAltFallbackOrigin();
-  static std::string DefaultProbeURL();
+  static std::string DefaultSecureProxyCheckURL();
 
   static std::string FlagOrigin();
   static std::string FlagFallbackOrigin();
   static std::string FlagSSLOrigin();
   static std::string FlagAltOrigin();
   static std::string FlagAltFallbackOrigin();
-  static std::string FlagProbeURL();
+  static std::string FlagSecureProxyCheckURL();
 
   void set_origin(const net::ProxyServer& origin);
   void set_fallback_origin(const net::ProxyServer& fallback_origin);
@@ -87,7 +87,7 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
 
   std::string GetDefaultAltFallbackOrigin() const override;
 
-  std::string GetDefaultProbeURL() const override;
+  std::string GetDefaultSecureProxyCheckURL() const override;
 
  private:
   std::string GetDefinition(unsigned int has_def,

@@ -36,14 +36,15 @@ class DataReductionProxyParamsTest : public testing::Test {
                    const std::string& expected_ssl_origin,
                    const std::string& expected_alt_origin,
                    const std::string& expected_alt_fallback_origin,
-                   const std::string& expected_probe_url) {
+                   const std::string& expected_secure_proxy_check_url) {
     EXPECT_EQ(expected_origin, params.origin().ToURI());
     EXPECT_EQ(expected_fallback_origin, params.fallback_origin().ToURI());
     EXPECT_EQ(expected_ssl_origin, params.ssl_origin().ToURI());
     EXPECT_EQ(expected_alt_origin, params.alt_origin().ToURI());
     EXPECT_EQ(expected_alt_fallback_origin,
               params.alt_fallback_origin().ToURI());
-    EXPECT_EQ(GURL(expected_probe_url), params.probe_url());
+    EXPECT_EQ(GURL(expected_secure_proxy_check_url),
+              params.secure_proxy_check_url());
   }
 };
 
@@ -60,7 +61,7 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
               TestDataReductionProxyParams::DefaultSSLOrigin(),
               TestDataReductionProxyParams::DefaultAltOrigin(),
               TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultProbeURL());
+              TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
 }
 
 TEST_F(DataReductionProxyParamsTest, NoDevOrigin) {
@@ -78,7 +79,7 @@ TEST_F(DataReductionProxyParamsTest, NoDevOrigin) {
               TestDataReductionProxyParams::DefaultSSLOrigin(),
               TestDataReductionProxyParams::DefaultAltOrigin(),
               TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultProbeURL());
+              TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
 }
 
 TEST_F(DataReductionProxyParamsTest, Flags) {
@@ -98,8 +99,8 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
       switches::kDataReductionProxyAltFallback,
       TestDataReductionProxyParams::FlagAltFallbackOrigin());
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyProbeURL,
-      TestDataReductionProxyParams::FlagProbeURL());
+      switches::kDataReductionProxySecureProxyCheckURL,
+      TestDataReductionProxyParams::FlagSecureProxyCheckURL());
   TestDataReductionProxyParams params(
       DataReductionProxyParams::kAllowed |
       DataReductionProxyParams::kFallbackAllowed |
@@ -113,7 +114,7 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
               TestDataReductionProxyParams::FlagSSLOrigin(),
               TestDataReductionProxyParams::FlagAltOrigin(),
               TestDataReductionProxyParams::FlagAltFallbackOrigin(),
-              TestDataReductionProxyParams::FlagProbeURL());
+              TestDataReductionProxyParams::FlagSecureProxyCheckURL());
 }
 
 TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
@@ -217,7 +218,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       false,
       true,
-      TestDataReductionProxyParams::HAS_PROBE_URL,
+      TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
       false
     },
     {
@@ -291,7 +292,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       false,
       true,
-      TestDataReductionProxyParams::HAS_PROBE_URL,
+      TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
       false
     },
     {
@@ -366,7 +367,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       false,
       false,
       true,
-      TestDataReductionProxyParams::HAS_PROBE_URL,
+      TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
       false
     },
     {
@@ -431,7 +432,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       false,
       false,
       true,
-      TestDataReductionProxyParams::HAS_PROBE_URL,
+      TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
       false
     },
     {
@@ -505,7 +506,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       false,
       true,
-      TestDataReductionProxyParams::HAS_PROBE_URL,
+      TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL,
       false
     },
   };

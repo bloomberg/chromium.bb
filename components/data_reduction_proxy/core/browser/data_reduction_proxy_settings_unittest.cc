@@ -151,7 +151,7 @@ TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
   EXPECT_EQ(expected_total_received_content_length, received_content_length);
 }
 
-TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndProbe) {
+TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
   struct TestCase {
     const char* response_headers;
     const char* response_body;
@@ -171,7 +171,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndProbe) {
     { "HTTP/1.1 200 OK\r\n\r\n",
       "", net::ERR_ABORTED, true,
     },
-    // The probe request shouldn't attempt to follow the redirect.
+    // The secure proxy check shouldn't attempt to follow the redirect.
     { "HTTP/1.1 302 Found\r\nLocation: http://www.google.com/\r\n\r\n",
       "", net::OK, true,
     },
@@ -213,7 +213,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndProbe) {
         mock_reads, arraysize(mock_reads), nullptr, 0);
     mock_socket_factory.AddSocketDataProvider(&socket_data_provider);
 
-    // Toggle the pref to trigger the probe.
+    // Toggle the pref to trigger the secure proxy check.
     drp_test_context->pref_service()->SetBoolean(
             prefs::kDataReductionProxyEnabled, true);
     drp_test_context->RunUntilIdle();
@@ -267,7 +267,8 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
       prefs::kDataReductionProxyAltEnabled,
       settings_->GetOriginalProfilePrefs());
 
-  // TODO(bengr): Test enabling/disabling while a probe is outstanding.
+  // TODO(bengr): Test enabling/disabling while a secure proxy check is
+  // outstanding.
   // The proxy is enabled and unrestructed initially.
   // Request succeeded but with bad response, expect proxy to be restricted.
   CheckMaybeActivateDataReductionProxy(true, true, true, true, false);
@@ -275,8 +276,8 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   CheckMaybeActivateDataReductionProxy(true, true, true, false, false);
   // Request failed, expect proxy to be enabled but restricted.
   CheckMaybeActivateDataReductionProxy(true, false, true, true, false);
-  // The proxy is disabled initially. Probes should not be emitted to change
-  // state.
+  // The proxy is disabled initially. No secure proxy checks should take place,
+  // and so the state should not change.
   CheckMaybeActivateDataReductionProxy(false, true, false, false, false);
 }
 

@@ -41,7 +41,7 @@ const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 const char kDefaultSslOrigin[] = "ssl.googlezip.net:443";
 const char kDefaultAltOrigin[] = "ssl.googlezip.net:80";
 const char kDefaultAltFallbackOrigin[] = "ssl.googlezip.net:80";
-const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
+const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
 const char kAndroidOneIdentifier[] = "sprout";
@@ -249,8 +249,8 @@ bool DataReductionProxyParams::Init(bool allowed,
     }
   }
 
-  if (allowed && !probe_url_.is_valid()) {
-    DVLOG(1) << "Invalid probe url: <null>";
+  if (allowed && !secure_proxy_check_url_.is_valid()) {
+    DVLOG(1) << "Invalid secure proxy check url: <null>";
     return false;
   }
 
@@ -305,8 +305,8 @@ void DataReductionProxyParams::InitWithoutChecks() {
         alt_origin.empty()))
     alt_allowed_ = true;
 
-  std::string probe_url = command_line.GetSwitchValueASCII(
-      switches::kDataReductionProxyProbeURL);
+  std::string secure_proxy_check_url = command_line.GetSwitchValueASCII(
+      switches::kDataReductionProxySecureProxyCheckURL);
   std::string warmup_url = command_line.GetSwitchValueASCII(
       switches::kDataReductionProxyWarmupURL);
 
@@ -327,8 +327,8 @@ void DataReductionProxyParams::InitWithoutChecks() {
     alt_origin = GetDefaultAltOrigin();
   if (alt_fallback_origin.empty())
     alt_fallback_origin = GetDefaultAltFallbackOrigin();
-  if (probe_url.empty())
-    probe_url = GetDefaultProbeURL();
+  if (secure_proxy_check_url.empty())
+    secure_proxy_check_url = GetDefaultSecureProxyCheckURL();
   if (warmup_url.empty())
     warmup_url = GetDefaultWarmupURL();
 
@@ -342,7 +342,7 @@ void DataReductionProxyParams::InitWithoutChecks() {
   alt_fallback_origin_ =
       net::ProxyServer::FromURI(alt_fallback_origin,
                                 net::ProxyServer::SCHEME_HTTP);
-  probe_url_ = GURL(probe_url);
+  secure_proxy_check_url_ = GURL(secure_proxy_check_url);
   warmup_url_ = GURL(warmup_url);
 
 }
@@ -563,8 +563,8 @@ std::string DataReductionProxyParams::GetDefaultAltFallbackOrigin() const {
   return kDefaultAltFallbackOrigin;
 }
 
-std::string DataReductionProxyParams::GetDefaultProbeURL() const {
-  return kDefaultProbeUrl;
+std::string DataReductionProxyParams::GetDefaultSecureProxyCheckURL() const {
+  return kDefaultSecureProxyCheckUrl;
 }
 
 std::string DataReductionProxyParams::GetDefaultWarmupURL() const {

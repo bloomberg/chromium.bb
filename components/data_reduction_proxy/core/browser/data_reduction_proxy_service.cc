@@ -57,10 +57,10 @@ void DataReductionProxyService::OnURLFetchComplete(
   fetcher_callback_.Run(response, status);
 }
 
-net::URLFetcher* DataReductionProxyService::GetURLFetcherForProbe(
-    const GURL& probe_url) {
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(probe_url, net::URLFetcher::GET, this);
+net::URLFetcher* DataReductionProxyService::GetURLFetcherForSecureProxyCheck(
+    const GURL& secure_proxy_check_url) {
+  net::URLFetcher* fetcher = net::URLFetcher::Create(
+      secure_proxy_check_url, net::URLFetcher::GET, this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
   DCHECK(url_request_context_getter_);
   fetcher->SetRequestContext(url_request_context_getter_);
@@ -68,17 +68,20 @@ net::URLFetcher* DataReductionProxyService::GetURLFetcherForProbe(
   static const int kMaxRetries = 5;
   fetcher->SetMaxRetriesOn5xx(kMaxRetries);
   fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
-  // The probe should not be redirected. Since the probe will inevitably fail if
-  // it gets redirected somewhere else (e.g. by a captive portal), short circuit
-  // that by giving up on the probe if it gets redirected.
+  // The secure proxy check should not be redirected. Since the secure proxy
+  // check will inevitably fail if it gets redirected somewhere else (e.g. by a
+  // captive portal), short circuit that by giving up on the secure proxy check
+  // if it gets redirected.
   fetcher->SetStopOnRedirect(true);
   return fetcher;
 }
 
-void DataReductionProxyService::CheckProbeURL(
-    const GURL& probe_url, FetcherResponseCallback fetcher_callback) {
+void DataReductionProxyService::SecureProxyCheck(
+    const GURL& secure_proxy_check_url,
+    FetcherResponseCallback fetcher_callback) {
   DCHECK(CalledOnValidThread());
-  net::URLFetcher* fetcher = GetURLFetcherForProbe(probe_url);
+  net::URLFetcher* fetcher =
+      GetURLFetcherForSecureProxyCheck(secure_proxy_check_url);
   if (!fetcher)
     return;
   fetcher_.reset(fetcher);

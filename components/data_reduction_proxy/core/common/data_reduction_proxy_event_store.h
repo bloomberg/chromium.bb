@@ -31,11 +31,11 @@ class NetLog;
 
 namespace data_reduction_proxy {
 
-enum DataReductionProxyProbeState {
-  PROBE_UNKNOWN,
-  PROBE_PENDING,
-  PROBE_SUCCESS,
-  PROBE_FAILED,
+enum SecureProxyCheckState {
+  CHECK_UNKNOWN,
+  CHECK_PENDING,
+  CHECK_SUCCESS,
+  CHECK_FAILED,
 };
 
 class DataReductionProxyEventStore {
@@ -83,17 +83,17 @@ class DataReductionProxyEventStore {
       const base::TimeDelta& bypass_duration);
 
   // Adds a DATA_REDUCTION_PROXY_CANARY_REQUEST event to the event store
-  // when the probe request has started.
-  void BeginCanaryRequest(const net::BoundNetLog& net_log, const GURL& gurl);
+  // when the secure proxy request has started.
+  void BeginSecureProxyCheck(const net::BoundNetLog& net_log, const GURL& gurl);
 
   // Adds a DATA_REDUCTION_PROXY_CANARY_REQUEST event to the event store
-  // when the probe request has ended.
-  void EndCanaryRequest(const net::BoundNetLog& net_log, int net_error);
+  // when the secure proxy request has ended.
+  void EndSecureProxyCheck(const net::BoundNetLog& net_log, int net_error);
 
   // Creates a Value summary of Data Reduction Proxy related information:
   // - Whether the proxy is enabled
   // - The proxy configuration
-  // - The state of the last probe response
+  // - The state of the last secure proxy check response
   // - A stream of the last Data Reduction Proxy related events.
   // The caller is responsible for deleting the returned value.
   base::Value* GetSummaryValue() const;
@@ -109,9 +109,9 @@ class DataReductionProxyEventStore {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
                            TestAddBypassTypeEvent);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestBeginCanaryRequest);
+                           TestBeginSecureProxyCheck);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestEndCanaryRequest);
+                           TestEndSecureProxyCheck);
 
   // Prepare and post enabling/disabling proxy events for the event_store on the
   // global net_log.
@@ -129,13 +129,13 @@ class DataReductionProxyEventStore {
       int64 expiration_ticks,
       const net::NetLog::ParametersCallback& callback);
 
-  // Prepare and post a probe request event for the event_store on a
+  // Prepare and post a secure proxy check event for the event_store on a
   // BoundNetLog.
-  void PostBoundNetLogProbeEvent(
+  void PostBoundNetLogSecureProxyCheckEvent(
       const net::BoundNetLog& net_log,
       net::NetLog::EventType type,
       net::NetLog::EventPhase phase,
-      DataReductionProxyProbeState state,
+      SecureProxyCheckState state,
       const net::NetLog::ParametersCallback& callback);
 
   // Put |entry| on a deque of events to store
@@ -144,9 +144,10 @@ class DataReductionProxyEventStore {
   // Put |entry| on the deque of stored events and set |current_configuration_|.
   void AddEnabledEventOnUIThread(scoped_ptr<base::Value> entry, bool enabled);
 
-  // Put |entry| on a deque of events to store and set |probe_state_|
-  void AddEventAndProbeStateOnUIThread(scoped_ptr<base::Value> entry,
-                                       DataReductionProxyProbeState state);
+  // Put |entry| on a deque of events to store and set
+  // |secure_proxy_check_state_|
+  void AddEventAndSecureProxyCheckStateOnUIThread(scoped_ptr<base::Value> entry,
+                                                  SecureProxyCheckState state);
 
   // Put |entry| on a deque of events to store and set |last_bypass_event_| and
   // |expiration_ticks_|
@@ -163,8 +164,8 @@ class DataReductionProxyEventStore {
   bool enabled_;
   // The current data reduction proxy configuration.
   scoped_ptr<base::Value> current_configuration_;
-  // The state based on the last probe request.
-  DataReductionProxyProbeState probe_state_;
+  // The state based on the last secure proxy check.
+  SecureProxyCheckState secure_proxy_check_state_;
   // The last seen data reduction proxy bypass event.
   scoped_ptr<base::Value> last_bypass_event_;
   // The expiration time of the |last_bypass_event_|.

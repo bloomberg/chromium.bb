@@ -40,10 +40,11 @@ struct DataReductionProxyTypeInfo {
   bool is_ssl;
 };
 
-// Provides initialization parameters. Proxy origins, and the probe url are
-// are taken from flags if available and from preprocessor constants otherwise.
-// The DataReductionProxySettings class and others use this class to determine
-// the necessary DNS names to configure use of the data reduction proxy.
+// Provides initialization parameters. Proxy origins, and the secure proxy
+// check url are are taken from flags if available and from preprocessor
+// constants otherwise. The DataReductionProxySettings class and others use this
+// class to determine the necessary DNS names to configure use of the Data
+// Reduction Proxy.
 class DataReductionProxyParams {
  public:
   // Flags used during construction that specify if the data reduction proxy
@@ -224,9 +225,10 @@ class DataReductionProxyParams {
     return alt_fallback_origin_;
   }
 
-  // Returns the URL to probe to decide if the primary origin should be used.
-  const GURL& probe_url() const {
-    return probe_url_;
+  // Returns the URL to check to decide if the secure proxy origin should be
+  // used.
+  const GURL& secure_proxy_check_url() const {
+    return secure_proxy_check_url_;
   }
 
   // Returns the URL to fetch to warm the data reduction proxy connection.
@@ -283,16 +285,16 @@ class DataReductionProxyParams {
   DataReductionProxyParams(int flags,
                            bool should_call_init);
 
-  // Initialize the values of the proxies, and probe URL, from command
-  // line flags and preprocessor constants, and check that there are
+  // Initialize the values of the proxies, and secure proxy check URL, from
+  // command line flags and preprocessor constants, and check that there are
   // corresponding definitions for the allowed configurations.
   bool Init(bool allowed,
             bool fallback_allowed,
             bool alt_allowed,
             bool alt_fallback_allowed);
 
-  // Initialize the values of the proxies, and probe URL from command
-  // line flags and preprocessor constants.
+  // Initialize the values of the proxies, and secure proxy check URL from
+  // command line flags and preprocessor constants.
   void InitWithoutChecks();
 
   // Returns the corresponding string from preprocessor constants if defined,
@@ -304,7 +306,7 @@ class DataReductionProxyParams {
   virtual std::string GetDefaultSSLOrigin() const;
   virtual std::string GetDefaultAltOrigin() const;
   virtual std::string GetDefaultAltFallbackOrigin() const;
-  virtual std::string GetDefaultProbeURL() const;
+  virtual std::string GetDefaultSecureProxyCheckURL() const;
   virtual std::string GetDefaultWarmupURL() const;
 
  protected:
@@ -325,7 +327,7 @@ class DataReductionProxyParams {
   net::ProxyServer ssl_origin_;
   net::ProxyServer alt_origin_;
   net::ProxyServer alt_fallback_origin_;
-  GURL probe_url_;
+  GURL secure_proxy_check_url_;
   GURL warmup_url_;
 
   bool allowed_;

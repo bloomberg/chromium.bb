@@ -47,8 +47,9 @@ class MockDataReductionProxyService : public DataReductionProxyService {
       net::URLRequestContextGetter* request_context);
   ~MockDataReductionProxyService() override;
 
-  MOCK_METHOD2(CheckProbeURL,
-      void(const GURL& probe_url, FetcherResponseCallback fetcher_callback));
+  MOCK_METHOD2(SecureProxyCheck,
+      void(const GURL& secure_proxy_check_url,
+           FetcherResponseCallback fetcher_callback));
 };
 
 // Test version of |DataReductionProxyIOData|, which bypasses initialization in

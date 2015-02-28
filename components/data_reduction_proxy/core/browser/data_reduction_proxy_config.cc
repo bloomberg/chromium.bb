@@ -163,7 +163,7 @@ void DataReductionProxyConfig::SetProxyConfigOnIOThread(
   if (enabled &&
       !(alternative_enabled && !params()->alternative_fallback_allowed())) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartProbe,
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
                               base::Unretained(this)));
   }
 }
@@ -212,29 +212,30 @@ void DataReductionProxyConfig::LogProxyState(bool enabled,
                << (at_startup ? kAtStartup : kByUser);
 }
 
-void DataReductionProxyConfig::HandleProbeResponse(
+void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     const std::string& response, const net::URLRequestStatus& status) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DataReductionProxyConfig::HandleProbeResponseOnIOThread,
-                 base::Unretained(this), response, status));
+      base::Bind(
+          &DataReductionProxyConfig::HandleSecureProxyCheckResponseOnIOThread,
+          base::Unretained(this), response, status));
 }
 
-void DataReductionProxyConfig::HandleProbeResponseOnIOThread(
+void DataReductionProxyConfig::HandleSecureProxyCheckResponseOnIOThread(
     const std::string& response, const net::URLRequestStatus& status) {
   if (event_store_) {
-    event_store_->EndCanaryRequest(bound_net_log_, status.error());
+    event_store_->EndSecureProxyCheck(bound_net_log_, status.error());
   }
 
   if (status.status() == net::URLRequestStatus::FAILED) {
     if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
-      RecordProbeURLFetchResult(INTERNET_DISCONNECTED);
+      RecordSecureProxyCheckFetchResult(INTERNET_DISCONNECTED);
       return;
     }
-    // TODO(bengr): Remove once we understand the reasons probes are failing.
-    // Probe errors are either due to fetcher-level errors or modified
-    // responses. This only tracks the former.
+    // TODO(bengr): Remove once we understand the reasons secure proxy checks
+    // are failing. Secure proxy check errors are either due to fetcher-level
+    // errors or modified responses. This only tracks the former.
     UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAProxyProbeURLNetError,
                                 std::abs(status.error()));
   }
@@ -245,14 +246,14 @@ void DataReductionProxyConfig::HandleProbeResponseOnIOThread(
     if (enabled_by_user_) {
       if (restricted_by_carrier_) {
         // The user enabled the proxy, but sometime previously in the session,
-        // the network operator had blocked the canary and restricted the user.
-        // The current network doesn't block the canary, so don't restrict the
-        // proxy configurations.
+        // the network operator had blocked the secure proxy check and
+        // restricted the user. The current network doesn't block the secure
+        // proxy check, so don't restrict the proxy configurations.
         UpdateConfigurator(true /* enabled */, false /* alternative_enabled */,
                            false /* restricted */, false /* at_startup */);
-        RecordProbeURLFetchResult(SUCCEEDED_PROXY_ENABLED);
+        RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ENABLED);
       } else {
-        RecordProbeURLFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
+        RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
       }
     }
     restricted_by_carrier_ = false;
@@ -265,9 +266,9 @@ void DataReductionProxyConfig::HandleProbeResponseOnIOThread(
       // Restrict the proxy.
       UpdateConfigurator(true /* enabled */, false /* alternative_enabled */,
                          true /* restricted */, false /* at_startup */);
-      RecordProbeURLFetchResult(FAILED_PROXY_DISABLED);
+      RecordSecureProxyCheckFetchResult(FAILED_PROXY_DISABLED);
     } else {
-      RecordProbeURLFetchResult(FAILED_PROXY_ALREADY_DISABLED);
+      RecordSecureProxyCheckFetchResult(FAILED_PROXY_ALREADY_DISABLED);
     }
   }
   restricted_by_carrier_ = true;
@@ -286,7 +287,7 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     }
 
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartProbe,
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
                               base::Unretained(this)));
   }
 }
@@ -332,23 +333,25 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
   configurator_->AddHostPatternToBypass("*-v4.metric.gstatic.com");
 }
 
-void DataReductionProxyConfig::RecordProbeURLFetchResult(
-    ProbeURLFetchResult result) {
+void DataReductionProxyConfig::RecordSecureProxyCheckFetchResult(
+    SecureProxyCheckFetchResult result) {
   UMA_HISTOGRAM_ENUMERATION(kUMAProxyProbeURL, result,
-                            PROBE_URL_FETCH_RESULT_COUNT);
+                            SECURE_PROXY_CHECK_FETCH_RESULT_COUNT);
 }
 
-void DataReductionProxyConfig::StartProbe() {
+void DataReductionProxyConfig::StartSecureProxyCheck() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
   if (data_reduction_proxy_service_) {
-    if (event_store_)
-      event_store_->BeginCanaryRequest(bound_net_log_, params_->probe_url());
+    if (event_store_) {
+      event_store_->BeginSecureProxyCheck(bound_net_log_,
+                                          params_->secure_proxy_check_url());
+    }
 
-    data_reduction_proxy_service_->CheckProbeURL(
-        params_->probe_url(),
-        base::Bind(&DataReductionProxyConfig::HandleProbeResponse,
+    data_reduction_proxy_service_->SecureProxyCheck(
+        params_->secure_proxy_check_url(),
+        base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
 }

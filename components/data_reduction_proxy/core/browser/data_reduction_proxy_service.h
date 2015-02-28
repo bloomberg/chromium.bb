@@ -54,10 +54,11 @@ class DataReductionProxyService : public base::NonThreadSafe,
 
   void Shutdown();
 
-  // Requests the given |probe_url|. Upon completion, returns the results to the
-  // caller via the |fetcher_callback|. Virtualized for unit testing.
-  virtual void CheckProbeURL(const GURL& probe_url,
-                             FetcherResponseCallback fetcher_callback);
+  // Requests the given |secure_proxy_check_url|. Upon completion, returns the
+  // results to the caller via the |fetcher_callback|. Virtualized for unit
+  // testing.
+  virtual void SecureProxyCheck(const GURL& secure_proxy_check_url,
+                                FetcherResponseCallback fetcher_callback);
 
   // Constructs statistics prefs. This should not be called if a valid
   // statistics prefs is passed into the constructor.
@@ -77,9 +78,10 @@ class DataReductionProxyService : public base::NonThreadSafe,
   base::WeakPtr<DataReductionProxyService> GetWeakPtr();
 
  protected:
-  // Virtualized for testing. Returns a fetcher for the probe to check if OK for
-  // the proxy to use TLS.
-  virtual net::URLFetcher* GetURLFetcherForProbe(const GURL& probe_url);
+  // Virtualized for testing. Returns a fetcher to check if it is permitted to
+  // use the secure proxy.
+  virtual net::URLFetcher* GetURLFetcherForSecureProxyCheck(
+      const GURL& secure_proxy_check_url);
 
  private:
   // net::URLFetcherDelegate:
@@ -87,7 +89,7 @@ class DataReductionProxyService : public base::NonThreadSafe,
 
   net::URLRequestContextGetter* url_request_context_getter_;
 
-  // The URLFetcher being used for the canary check.
+  // The URLFetcher being used for the secure proxy check.
   scoped_ptr<net::URLFetcher> fetcher_;
   FetcherResponseCallback fetcher_callback_;
 
