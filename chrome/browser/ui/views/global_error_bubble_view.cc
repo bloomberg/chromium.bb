@@ -35,7 +35,10 @@ const int kMaxBubbleViewWidth = 262;
 // The vertical inset of the wrench bubble anchor from the wrench menu button.
 const int kAnchorVerticalInset = 5;
 
-const int kBubblePadding = 6;
+const int kBubblePadding = 19;
+
+// Spacing between bubble text and buttons.
+const int kLabelToButtonVerticalSpacing = 14;
 
 }  // namespace
 
@@ -67,6 +70,10 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       error_(error) {
+  // Set content margins to left-align the bubble text with the title.
+  // BubbleFrameView adds enough padding below title, no top padding needed.
+  set_margins(gfx::Insets(0, kBubblePadding, kBubblePadding, kBubblePadding));
+
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(
       gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
@@ -105,9 +112,6 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
-  // BubbleFrameView adds enough padding below title, no top padding needed.
-  layout->SetInsets(0, kBubblePadding, kBubblePadding, kBubblePadding);
-
   // First row, message labels.
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
@@ -130,7 +134,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     if (i < message_labels.size() - 1)
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
-  layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
+  layout->AddPaddingRow(0, kLabelToButtonVerticalSpacing);
 
   layout->StartRow(0, 1);
   layout->AddView(accept_button.release());
