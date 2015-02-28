@@ -652,27 +652,37 @@ void SafeBrowsingDatabaseManager::ResetDatabase() {
 }
 
 void SafeBrowsingDatabaseManager::StartOnIOThread() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingDatabaseManager::StartOnIOThread1"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
 
   DCHECK(!safe_browsing_task_runner_);
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455469 SafeBrowsingDatabaseManager::StartOnIOThread"));
   // Use the blocking pool instead of a dedicated thread for safe browsing work,
   // if specified by an experiment.
   const bool use_blocking_pool =
       variations::GetVariationParamValue("LightSpeed", "SBThreadingMode") ==
       "BlockingPool";
   if (use_blocking_pool) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455469 SafeBrowsingDatabaseManager::StartOnIOThread2"));
     base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
     safe_browsing_task_runner_ =
         pool->GetSequencedTaskRunnerWithShutdownBehavior(
             pool->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   } else {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455469 SafeBrowsingDatabaseManager::StartOnIOThread3"));
     DCHECK(!safe_browsing_thread_.get());
 
     safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
@@ -793,10 +803,6 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
 }
 
 bool SafeBrowsingDatabaseManager::DatabaseAvailable() const {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455469 SafeBrowsingDatabaseManager::DatabaseAvailable"));
   base::AutoLock lock(database_lock_);
   return !closing_database_ && (database_ != NULL);
 }
@@ -804,10 +810,6 @@ bool SafeBrowsingDatabaseManager::DatabaseAvailable() const {
 bool SafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455469 SafeBrowsingDatabaseManager::MakeDatabaseAvailable"));
   if (DatabaseAvailable())
     return true;
   safe_browsing_task_runner_->PostTask(

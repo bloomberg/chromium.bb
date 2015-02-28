@@ -453,10 +453,6 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 };
 
 void CookieMonster::SetCookieWithDetailsTask::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::SetCookieWithDetailsTask::Run"));
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_, secure_,
       http_only_, first_party_only_, priority_);
@@ -486,10 +482,6 @@ class CookieMonster::GetAllCookiesTask : public CookieMonsterTask {
 };
 
 void CookieMonster::GetAllCookiesTask::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::GetAllCookiesTask::Run"));
   if (!callback_.is_null()) {
     CookieList cookies = this->cookie_monster()->GetAllCookies();
     this->InvokeCallback(base::Bind(&GetCookieListCallback::Run,
@@ -525,10 +517,6 @@ class CookieMonster::GetAllCookiesForURLWithOptionsTask
 };
 
 void CookieMonster::GetAllCookiesForURLWithOptionsTask::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::GetAllCookiesForURLWithOptionsTask::Run"));
   if (!callback_.is_null()) {
     CookieList cookies =
         this->cookie_monster()->GetAllCookiesForURLWithOptions(url_, options_);
@@ -593,10 +581,6 @@ base::Closure CookieMonster::DeleteTask<void>::RunDeleteTaskAndBindCallback() {
 
 template <typename Result>
 void CookieMonster::DeleteTask<Result>::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::DeleteTask::Run"));
   this->cookie_monster()->FlushStore(base::Bind(
       &DeleteTask<Result>::FlushDone, this, RunDeleteTaskAndBindCallback()));
 }
@@ -893,10 +877,6 @@ class CookieMonster::HasCookiesForETLDP1Task : public CookieMonsterTask {
 };
 
 void CookieMonster::HasCookiesForETLDP1Task::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::HasCookiesForETLDP1Task::Run"));
   bool result = this->cookie_monster()->HasCookiesForETLDP1(etldp1_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&HasCookiesForETLDP1Callback::Run,
@@ -1504,10 +1484,6 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
 
 void CookieMonster::StoreLoadedCookies(
     const std::vector<CanonicalCookie*>& cookies) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::StoreLoadedCookies"));
   // Initialize the store and sync in any saved persistent cookies.  We don't
   // care if it's expired, insert it so it can be garbage collected, removed,
   // and sync'd.
@@ -1583,10 +1559,6 @@ void CookieMonster::InvokeQueue() {
 }
 
 void CookieMonster::EnsureCookiesMapIsValid() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::EnsureCookiesMapIsValid"));
   lock_.AssertAcquired();
 
   int num_duplicates_trimmed = 0;
@@ -1904,10 +1876,6 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
 void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                                          bool sync_to_store,
                                          DeletionCause deletion_cause) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::InternalDeleteCookie"));
   lock_.AssertAcquired();
 
   // Ideally, this would be asserted up where we define ChangeCauseMapping,

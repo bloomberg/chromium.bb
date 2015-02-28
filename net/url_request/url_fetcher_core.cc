@@ -575,6 +575,10 @@ void URLFetcherCore::StartURLRequest() {
   request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLFetcherCore::StartURLRequest2"));
   if (is_chunked_upload_)
     request_->EnableChunkedUpload();
   request_->SetLoadFlags(flags);
@@ -587,6 +591,10 @@ void URLFetcherCore::StartURLRequest() {
                           url_request_create_data_callback_.Run());
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLFetcherCore::StartURLRequest3"));
   switch (request_type_) {
     case URLFetcher::GET:
       break;
@@ -594,11 +602,6 @@ void URLFetcherCore::StartURLRequest() {
     case URLFetcher::POST:
     case URLFetcher::PUT:
     case URLFetcher::PATCH: {
-      // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile2(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "456327 URLFetcherCore::StartURLRequest2"));
       // Upload content must be set.
       DCHECK(is_chunked_upload_ || upload_content_set_);
 
@@ -610,21 +613,11 @@ void URLFetcherCore::StartURLRequest() {
                                          upload_content_type_);
       }
       if (!upload_content_.empty()) {
-        // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is
-        // fixed.
-        tracked_objects::ScopedTracker tracking_profile3(
-            FROM_HERE_WITH_EXPLICIT_FUNCTION(
-                "456327 URLFetcherCore::StartURLRequest3"));
         scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
             upload_content_.data(), upload_content_.size()));
         request_->set_upload(
             ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
       } else if (!upload_file_path_.empty()) {
-        // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is
-        // fixed.
-        tracked_objects::ScopedTracker tracking_profile3(
-            FROM_HERE_WITH_EXPLICIT_FUNCTION(
-                "456327 URLFetcherCore::StartURLRequest4"));
         scoped_ptr<UploadElementReader> reader(
             new UploadFileElementReader(upload_file_task_runner_.get(),
                                         upload_file_path_,
@@ -634,11 +627,6 @@ void URLFetcherCore::StartURLRequest() {
         request_->set_upload(
             ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
       } else if (!upload_stream_factory_.is_null()) {
-        // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is
-        // fixed.
-        tracked_objects::ScopedTracker tracking_profile3(
-            FROM_HERE_WITH_EXPLICIT_FUNCTION(
-                "456327 URLFetcherCore::StartURLRequest5"));
         scoped_ptr<UploadDataStream> stream = upload_stream_factory_.Run();
         DCHECK(stream);
         request_->set_upload(stream.Pass());
@@ -669,6 +657,10 @@ void URLFetcherCore::StartURLRequest() {
       NOTREACHED();
   }
 
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLFetcherCore::StartURLRequest4"));
   if (!extra_request_headers_.IsEmpty())
     request_->SetExtraRequestHeaders(extra_request_headers_);
 

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/profiler/scoped_tracker.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -64,10 +63,6 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456331 ServiceWorkerRequestHandler::InitializeHandler"));
   if (!request->url().SchemeIsHTTPOrHTTPS())
     return;
 

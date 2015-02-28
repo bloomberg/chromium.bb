@@ -1514,19 +1514,12 @@ int SpdySession::DoWriteLoop(WriteState expected_write_state, int result) {
 }
 
 int SpdySession::DoWrite() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite1"));
   CHECK(in_io_loop_);
 
   DCHECK(buffered_spdy_framer_);
   if (in_flight_write_) {
     DCHECK_GT(in_flight_write_->GetRemainingSize(), 0u);
   } else {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite2"));
     // Grab the next frame to send.
     SpdyFrameType frame_type = DATA;
     scoped_ptr<SpdyBufferProducer> producer;
@@ -1542,10 +1535,6 @@ int SpdySession::DoWrite() {
     // Activate the stream only when sending the SYN_STREAM frame to
     // guarantee monotonically-increasing stream IDs.
     if (frame_type == SYN_STREAM) {
-      // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile3(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite3"));
       CHECK(stream.get());
       CHECK_EQ(stream->stream_id(), 0u);
       scoped_ptr<SpdyStream> owned_stream =
@@ -1563,8 +1552,8 @@ int SpdySession::DoWrite() {
 
     // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is
     // fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite4"));
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite1"));
     in_flight_write_ = producer->ProduceBuffer();
     if (!in_flight_write_) {
       NOTREACHED();
@@ -1582,6 +1571,9 @@ int SpdySession::DoWrite() {
   // Explicitly store in a scoped_refptr<IOBuffer> to avoid problems
   // with Socket implementations that don't store their IOBuffer
   // argument in a scoped_refptr<IOBuffer> (see crbug.com/232345).
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite2"));
   scoped_refptr<IOBuffer> write_io_buffer =
       in_flight_write_->GetIOBufferForRemainingData();
   return connection_->socket()->Write(

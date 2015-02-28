@@ -2033,10 +2033,6 @@ int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
 void ResourceDispatcherHostImpl::BeginRequestInternal(
     scoped_ptr<net::URLRequest> request,
     scoped_ptr<ResourceHandler> handler) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456331 ResourceDispatcherHostImpl::BeginRequestInternal1"));
   DCHECK(!request->is_pending());
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request.get());
@@ -2054,11 +2050,6 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   // bound, abort it right away.
   OustandingRequestsStats stats = IncrementOutstandingRequestsMemory(1, *info);
   if (stats.memory_cost > max_outstanding_requests_cost_per_process_) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "456331 ResourceDispatcherHostImpl::BeginRequestInternal2"));
     // We call "CancelWithError()" as a way of setting the net::URLRequest's
     // status -- it has no effect beyond this, since the request hasn't started.
     request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
@@ -2077,10 +2068,6 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     return;
   }
 
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456331 ResourceDispatcherHostImpl::BeginRequestInternal3"));
   linked_ptr<ResourceLoader> loader(
       new ResourceLoader(request.Pass(), handler.Pass(), this));
 

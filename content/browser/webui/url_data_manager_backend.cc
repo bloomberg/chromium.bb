@@ -337,11 +337,6 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
     int bytes_read;
     if (pending_buf_.get()) {
       CHECK(pending_buf_->data());
-      // TODO(pkasting): Remove ScopedTracker below once crbug.com/455423 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "455423 URLRequestChromeJob::CompleteRead"));
       CompleteRead(pending_buf_.get(), pending_buf_size_, &bytes_read);
       pending_buf_ = NULL;
       NotifyReadComplete(bytes_read);

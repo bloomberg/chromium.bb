@@ -4,7 +4,6 @@
 
 #include "content/browser/appcache/appcache_interceptor.h"
 
-#include "base/profiler/scoped_tracker.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -35,10 +34,6 @@ void AppCacheInterceptor::SetExtraRequestInfo(
     int host_id,
     ResourceType resource_type,
     bool should_reset_appcache) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456331 AppCacheInterceptor::SetExtraRequestInfo"));
   if (!service || (host_id == kAppCacheNoHostId))
     return;
 
