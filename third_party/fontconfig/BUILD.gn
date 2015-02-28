@@ -36,8 +36,8 @@ component("fontconfig") {
     "src/src/fcstat.c",
     "src/src/fcstr.c",
     "src/src/fcxml.c",
-    "src/src/ftglue.h",
     "src/src/ftglue.c",
+    "src/src/ftglue.h",
   ]
 
   include_dirs = [

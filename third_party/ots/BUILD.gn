@@ -8,8 +8,8 @@ config("ots_config") {
 
 source_set("ots") {
   sources = [
-    "include/ots-memory-stream.h",
     "include/opentype-sanitiser.h",
+    "include/ots-memory-stream.h",
     "src/cff.cc",
     "src/cff.h",
     "src/cff_type2_charstring.cc",
@@ -46,10 +46,10 @@ source_set("ots") {
     "src/loca.h",
     "src/ltsh.cc",
     "src/ltsh.h",
-    "src/maxp.cc",
-    "src/maxp.h",
     "src/math.cc",
     "src/math_.h",
+    "src/maxp.cc",
+    "src/maxp.h",
     "src/metrics.cc",
     "src/metrics.h",
     "src/name.cc",

@@ -314,12 +314,12 @@ source_set("libc_urandom_override") {
 if (compile_suid_client) {
   component("suid_sandbox_client") {
     sources = [
-      "suid/common/sandbox.h",
-      "suid/common/suid_unsafe_environment_variables.h",
       "suid/client/setuid_sandbox_client.cc",
       "suid/client/setuid_sandbox_client.h",
       "suid/client/setuid_sandbox_host.cc",
       "suid/client/setuid_sandbox_host.h",
+      "suid/common/sandbox.h",
+      "suid/common/suid_unsafe_environment_variables.h",
     ]
     defines = [ "SANDBOX_IMPLEMENTATION" ]
 

@@ -52,8 +52,8 @@ generate_stubs_output_stem = "xpc_stubs"
 action("generate_stubs") {
   script = generate_stubs_script
   sources = [
-    generate_stubs_sig_public,
     generate_stubs_sig_private,
+    generate_stubs_sig_public,
   ]
   inputs = [
     generate_stubs_header,

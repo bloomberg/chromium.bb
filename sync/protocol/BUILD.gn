@@ -6,10 +6,10 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("protocol") {
   sources = [
+    "app_list_specifics.proto",
     "app_notification_specifics.proto",
     "app_setting_specifics.proto",
     "app_specifics.proto",
-    "app_list_specifics.proto",
     "article_specifics.proto",
     "attachments.proto",
     "autofill_specifics.proto",
@@ -27,11 +27,11 @@ proto_library("protocol") {
     "favicon_tracking_specifics.proto",
     "get_updates_caller_info.proto",
     "history_delete_directive_specifics.proto",
-    "nigori_specifics.proto",
     "managed_user_setting_specifics.proto",
     "managed_user_shared_setting_specifics.proto",
     "managed_user_specifics.proto",
     "managed_user_whitelist_specifics.proto",
+    "nigori_specifics.proto",
     "password_specifics.proto",
     "preference_specifics.proto",
     "priority_preference_specifics.proto",

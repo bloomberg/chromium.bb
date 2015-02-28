@@ -31,8 +31,8 @@ component("accessibility") {
     "platform/ax_platform_node_delegate.h",
     "platform/ax_platform_node_mac.h",
     "platform/ax_platform_node_mac.mm",
-    "platform/ax_platform_node_win.h",
     "platform/ax_platform_node_win.cc",
+    "platform/ax_platform_node_win.h",
   ]
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]

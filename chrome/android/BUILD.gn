@@ -245,7 +245,6 @@ copy_ex("chrome_shell_assets") {
   clear_dir = true
   dest = chrome_shell_assets_dir
   sources = [
-    "$root_build_dir/resources.pak",
     "$root_build_dir/chrome_100_percent.pak",
     "$root_build_dir/locales/am.pak",
     "$root_build_dir/locales/ar.pak",
@@ -257,8 +256,8 @@ copy_ex("chrome_shell_assets") {
     "$root_build_dir/locales/el.pak",
     "$root_build_dir/locales/en-GB.pak",
     "$root_build_dir/locales/en-US.pak",
-    "$root_build_dir/locales/es.pak",
     "$root_build_dir/locales/es-419.pak",
+    "$root_build_dir/locales/es.pak",
     "$root_build_dir/locales/fa.pak",
     "$root_build_dir/locales/fi.pak",
     "$root_build_dir/locales/fil.pak",
@@ -291,6 +290,7 @@ copy_ex("chrome_shell_assets") {
     "$root_build_dir/locales/vi.pak",
     "$root_build_dir/locales/zh-CN.pak",
     "$root_build_dir/locales/zh-TW.pak",
+    "$root_build_dir/resources.pak",
   ]
   deps = [
     "//chrome:packed_resources",

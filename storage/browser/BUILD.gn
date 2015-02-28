@@ -6,7 +6,6 @@
 component("browser") {
   output_name = "storage_browser"
   sources = [
-    "storage_browser_export.h",
     "blob/blob_data_builder.cc",
     "blob/blob_data_builder.h",
     "blob/blob_data_handle.cc",
@@ -167,6 +166,7 @@ component("browser") {
     "quota/storage_observer.h",
     "quota/usage_tracker.cc",
     "quota/usage_tracker.h",
+    "storage_browser_export.h",
   ]
 
   defines = [ "STORAGE_BROWSER_IMPLEMENTATION" ]

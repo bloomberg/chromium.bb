@@ -6,7 +6,7 @@ assert(is_android)
 
 source_set("ashmem") {
   sources = [
-    "ashmem.h",
     "ashmem-dev.c",
+    "ashmem.h",
   ]
 }

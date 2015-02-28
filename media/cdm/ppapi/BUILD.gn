@@ -54,8 +54,8 @@ clearkeycdmadapter_rc_file = "$target_gen_dir/clearkeycdmadapter_version.rc"
 process_version("clearkeycdmadapter_resources") {
   visibility = [ ":*" ]
   sources = [
-    "external_clear_key/BRANDING",
     "//media/clearkeycdmadapter.ver",
+    "external_clear_key/BRANDING",
   ]
   output = clearkeycdmadapter_rc_file
 }

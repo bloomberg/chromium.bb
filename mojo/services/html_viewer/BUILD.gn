@@ -48,6 +48,8 @@ source_set("lib") {
     "webclipboard_impl.h",
     "webcookiejar_impl.cc",
     "webcookiejar_impl.h",
+    "weblayertreeview_impl.cc",
+    "weblayertreeview_impl.h",
     "webmediaplayer_factory.cc",
     "webmediaplayer_factory.h",
     "webmimeregistry_impl.cc",
@@ -64,8 +66,6 @@ source_set("lib") {
     "webthread_impl.h",
     "weburlloader_impl.cc",
     "weburlloader_impl.h",
-    "weblayertreeview_impl.cc",
-    "weblayertreeview_impl.h",
   ]
 
   include_dirs = [ "third_party/WebKit" ]

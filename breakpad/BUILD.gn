@@ -210,10 +210,10 @@ if (current_toolchain == host_toolchain && is_mac) {
   executable("dump_syms") {
     sources = [
       "src/common/dwarf/bytereader.cc",
-      "src/common/dwarf_cfi_to_module.cc",
-      "src/common/dwarf_cu_to_module.cc",
       "src/common/dwarf/dwarf2diehandler.cc",
       "src/common/dwarf/dwarf2reader.cc",
+      "src/common/dwarf_cfi_to_module.cc",
+      "src/common/dwarf_cu_to_module.cc",
       "src/common/dwarf_line_to_module.cc",
       "src/common/language.cc",
       "src/common/mac/arch_utilities.cc",
@@ -339,12 +339,12 @@ if (is_mac) {
 
   static_library("breakpad") {
     sources = [
-      "src/client/mac/crash_generation/crash_generation_client.cc",
-      "src/client/mac/crash_generation/crash_generation_client.h",
-      "src/client/mac/handler/protected_memory_allocator.cc",
-      "src/client/mac/handler/exception_handler.cc",
       "src/client/mac/Framework/Breakpad.mm",
       "src/client/mac/Framework/OnDemandServer.mm",
+      "src/client/mac/crash_generation/crash_generation_client.cc",
+      "src/client/mac/crash_generation/crash_generation_client.h",
+      "src/client/mac/handler/exception_handler.cc",
+      "src/client/mac/handler/protected_memory_allocator.cc",
     ]
 
     configs += [ ":internal_config" ]
@@ -368,9 +368,9 @@ if (is_mac) {
 if (is_linux) {
   executable("symupload") {
     sources = [
-      "src/tools/linux/symupload/sym_upload.cc",
       "src/common/linux/http_upload.cc",
       "src/common/linux/http_upload.h",
+      "src/tools/linux/symupload/sym_upload.cc",
     ]
 
     include_dirs = [
@@ -390,12 +390,12 @@ if (is_linux || is_android) {
     executable("dump_syms") {
       sources = [
         "src/common/dwarf/bytereader.cc",
+        "src/common/dwarf/dwarf2diehandler.cc",
+        "src/common/dwarf/dwarf2reader.cc",
         "src/common/dwarf_cfi_to_module.cc",
         "src/common/dwarf_cfi_to_module.h",
         "src/common/dwarf_cu_to_module.cc",
         "src/common/dwarf_cu_to_module.h",
-        "src/common/dwarf/dwarf2diehandler.cc",
-        "src/common/dwarf/dwarf2reader.cc",
         "src/common/dwarf_line_to_module.cc",
         "src/common/dwarf_line_to_module.h",
         "src/common/language.cc",
@@ -410,11 +410,11 @@ if (is_linux || is_android) {
         "src/common/linux/elfutils.h",
         "src/common/linux/file_id.cc",
         "src/common/linux/file_id.h",
+        "src/common/linux/guid_creator.h",
         "src/common/linux/linux_libc_support.cc",
         "src/common/linux/linux_libc_support.h",
         "src/common/linux/memory_mapped_file.cc",
         "src/common/linux/memory_mapped_file.h",
-        "src/common/linux/guid_creator.h",
         "src/common/module.cc",
         "src/common/module.h",
         "src/common/stabs_reader.cc",
@@ -689,30 +689,30 @@ if (is_ios) {
       "src/client/ios/Breakpad.mm",
       "src/client/ios/BreakpadController.h",
       "src/client/ios/BreakpadController.mm",
-      "src/client/ios/handler/ios_exception_minidump_generator.mm",
       "src/client/ios/handler/ios_exception_minidump_generator.h",
+      "src/client/ios/handler/ios_exception_minidump_generator.mm",
       "src/client/mac/crash_generation/ConfigFile.h",
       "src/client/mac/crash_generation/ConfigFile.mm",
       "src/client/mac/handler/breakpad_nlist_64.cc",
       "src/client/mac/handler/breakpad_nlist_64.h",
       "src/client/mac/handler/dynamic_images.cc",
       "src/client/mac/handler/dynamic_images.h",
-      "src/client/mac/handler/protected_memory_allocator.cc",
-      "src/client/mac/handler/protected_memory_allocator.h",
       "src/client/mac/handler/exception_handler.cc",
       "src/client/mac/handler/exception_handler.h",
       "src/client/mac/handler/minidump_generator.cc",
       "src/client/mac/handler/minidump_generator.h",
+      "src/client/mac/handler/protected_memory_allocator.cc",
+      "src/client/mac/handler/protected_memory_allocator.h",
       "src/client/mac/sender/uploader.h",
       "src/client/mac/sender/uploader.mm",
+      "src/client/minidump_file_writer-inl.h",
       "src/client/minidump_file_writer.cc",
       "src/client/minidump_file_writer.h",
-      "src/client/minidump_file_writer-inl.h",
       "src/common/convert_UTF.c",
       "src/common/convert_UTF.h",
+      "src/common/mac/HTTPMultipartUpload.m",
       "src/common/mac/file_id.cc",
       "src/common/mac/file_id.h",
-      "src/common/mac/HTTPMultipartUpload.m",
       "src/common/mac/macho_id.cc",
       "src/common/mac/macho_id.h",
       "src/common/mac/macho_utilities.cc",
@@ -759,14 +759,14 @@ if (is_win) {
       "src/client/windows/crash_generation/crash_generation_client.h",
       "src/client/windows/crash_generation/crash_generation_server.cc",
       "src/client/windows/crash_generation/crash_generation_server.h",
+      "src/client/windows/crash_generation/minidump_generator.cc",
+      "src/client/windows/crash_generation/minidump_generator.h",
       "src/client/windows/handler/exception_handler.cc",
       "src/client/windows/handler/exception_handler.h",
       "src/common/windows/guid_string.cc",
       "src/common/windows/guid_string.h",
-      "src/google_breakpad/common/minidump_format.h",
-      "src/client/windows/crash_generation/minidump_generator.cc",
-      "src/client/windows/crash_generation/minidump_generator.h",
       "src/common/windows/string_utils-inl.h",
+      "src/google_breakpad/common/minidump_format.h",
     ]
   }
 

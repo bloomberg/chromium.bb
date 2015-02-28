@@ -91,17 +91,17 @@ if (use_system_libsrtp) {
       "srtp/include/ut_sim.h",
 
       # headers
-      "srtp/crypto/include/aes_cbc.h",
       "srtp/crypto/include/aes.h",
+      "srtp/crypto/include/aes_cbc.h",
       "srtp/crypto/include/aes_icm.h",
       "srtp/crypto/include/alloc.h",
       "srtp/crypto/include/auth.h",
       "srtp/crypto/include/cipher.h",
-      "srtp/crypto/include/cryptoalg.h",
       "srtp/crypto/include/crypto.h",
       "srtp/crypto/include/crypto_kernel.h",
       "srtp/crypto/include/crypto_math.h",
       "srtp/crypto/include/crypto_types.h",
+      "srtp/crypto/include/cryptoalg.h",
       "srtp/crypto/include/datatypes.h",
       "srtp/crypto/include/err.h",
       "srtp/crypto/include/gf2_8.h",
@@ -120,8 +120,6 @@ if (use_system_libsrtp) {
       "srtp/crypto/include/xfm.h",
 
       # sources
-      "srtp/srtp/ekt.c",
-      "srtp/srtp/srtp.c",
       "srtp/crypto/cipher/aes.c",
       "srtp/crypto/cipher/aes_cbc.c",
       "srtp/crypto/cipher/aes_icm.c",
@@ -144,6 +142,8 @@ if (use_system_libsrtp) {
       "srtp/crypto/rng/ctr_prng.c",
       "srtp/crypto/rng/prng.c",
       "srtp/crypto/rng/rand_source.c",
+      "srtp/srtp/ekt.c",
+      "srtp/srtp/srtp.c",
     ]
 
     if (is_clang) {
@@ -214,10 +214,10 @@ if (use_system_libsrtp) {
         ":libsrtp",
       ]
       sources = [
+        "srtp/crypto/include/datatypes.h",
         "srtp/include/getopt_s.h",
         "srtp/include/rtp.h",
         "srtp/include/srtp.h",
-        "srtp/crypto/include/datatypes.h",
         "srtp/test/getopt_s.c",
         "srtp/test/rtp.c",
         "srtp/test/rtpw.c",

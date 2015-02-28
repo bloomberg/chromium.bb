@@ -194,8 +194,8 @@ test("mojo_system_unittests") {
 test("mojo_message_pipe_perftests") {
   sources = [
     "message_pipe_perftest.cc",
-    "message_pipe_test_utils.h",
     "message_pipe_test_utils.cc",
+    "message_pipe_test_utils.h",
   ]
 
   deps = [

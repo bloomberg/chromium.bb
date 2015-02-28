@@ -21,6 +21,9 @@ if (!is_linux || is_chromeos) {
 
   static_library("libexif") {
     sources = [
+      "sources/libexif/canon/exif-mnote-data-canon.c",
+      "sources/libexif/canon/mnote-canon-entry.c",
+      "sources/libexif/canon/mnote-canon-tag.c",
       "sources/libexif/exif-byte-order.c",
       "sources/libexif/exif-content.c",
       "sources/libexif/exif-data.c",
@@ -33,9 +36,6 @@ if (!is_linux || is_chromeos) {
       "sources/libexif/exif-mnote-data.c",
       "sources/libexif/exif-tag.c",
       "sources/libexif/exif-utils.c",
-      "sources/libexif/canon/exif-mnote-data-canon.c",
-      "sources/libexif/canon/mnote-canon-entry.c",
-      "sources/libexif/canon/mnote-canon-tag.c",
       "sources/libexif/fuji/exif-mnote-data-fuji.c",
       "sources/libexif/fuji/mnote-fuji-entry.c",
       "sources/libexif/fuji/mnote-fuji-tag.c",

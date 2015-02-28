@@ -103,9 +103,9 @@ shared_library("mojo_java_unittests") {
   testonly = true
 
   sources = [
+    "javatests/init_library.cc",
     "javatests/mojo_test_case.cc",
     "javatests/mojo_test_case.h",
-    "javatests/init_library.cc",
     "javatests/validation_test_util.cc",
     "javatests/validation_test_util.h",
   ]

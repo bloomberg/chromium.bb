@@ -46,8 +46,8 @@ if (!is_nacl) {
   # A library for launching a NaCl sandbox connected to a Mojo embedder.
   static_library("monacl_sel") {
     sources = [
-      "mojo_syscall_internal.h",
       "$gen_dir/mojo_syscall.cc",
+      "mojo_syscall_internal.h",
       "monacl_sel_main.cc",
     ]
 

@@ -122,10 +122,10 @@ static_library("renderer") {
     ]
     if (!enable_webrtc) {
       sources -= [
-        "media/cast_rtp_stream.cc",
-        "media/cast_rtp_stream.h",
         "media/cast_receiver_session.cc",
         "media/cast_receiver_session.h",
+        "media/cast_rtp_stream.cc",
+        "media/cast_rtp_stream.h",
       ]
     }
   }

@@ -398,9 +398,9 @@ if (use_x11) {
   copy("copy_x11_fonts") {
     visibility = [ ":*" ]
     sources = [
-      "renderer/test_runner/resources/fonts/fonts.conf",
       "//third_party/gardiner_mod/GardinerModBug.ttf",
       "//third_party/gardiner_mod/GardinerModCat.ttf",
+      "renderer/test_runner/resources/fonts/fonts.conf",
     ]
     outputs = [
       "$root_out_dir/{{source_file_part}}",
@@ -411,8 +411,8 @@ if (is_android) {
   copy("copy_android_fonts") {
     visibility = [ ":*" ]
     sources = [
-      "renderer/test_runner/resources/fonts/android_main_fonts.xml",
       "renderer/test_runner/resources/fonts/android_fallback_fonts.xml",
+      "renderer/test_runner/resources/fonts/android_main_fonts.xml",
     ]
     outputs = [
       "$root_out_dir/{{source_file_part}}",

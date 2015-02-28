@@ -13,6 +13,7 @@ source_set("common_constants") {
       rebase_path(extensions_gypi_values.extensions_common_constants_sources,
                   ".",
                   "//extensions")
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
@@ -29,6 +30,7 @@ if (enable_extensions) {
     sources = rebase_path(extensions_gypi_values.extensions_common_sources,
                           ".",
                           "//extensions")
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 

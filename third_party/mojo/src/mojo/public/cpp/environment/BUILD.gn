@@ -7,8 +7,8 @@ import("../../mojo_sdk.gni")
 mojo_sdk_source_set("environment") {
   sources = [
     "async_waiter.h",
-    "logging.h",
     "environment.h",
+    "logging.h",
   ]
 
   mojo_sdk_public_deps = [ "mojo/public/c/environment" ]

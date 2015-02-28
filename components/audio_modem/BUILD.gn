@@ -4,6 +4,8 @@
 
 static_library("audio_modem") {
   sources = [
+    "audio_modem_switches.cc",
+    "audio_modem_switches.h",
     "audio_player.h",
     "audio_player_impl.cc",
     "audio_player_impl.h",
@@ -13,11 +15,9 @@ static_library("audio_modem") {
     "constants.cc",
     "modem_impl.cc",
     "modem_impl.h",
-    "public/modem.h",
     "public/audio_modem_types.h",
+    "public/modem.h",
     "public/whispernet_client.h",
-    "audio_modem_switches.cc",
-    "audio_modem_switches.h",
   ]
 
   deps = [

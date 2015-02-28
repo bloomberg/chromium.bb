@@ -15,9 +15,9 @@ midl("iaccessible2") {
 # Generate a proxy DLL from the generated code.
 shared_library("IAccessible2Proxy") {
   sources = [
-    "IAccessible2Proxy.def",
     "$target_gen_dir/ia2_api_all.dlldata.c",
     "$target_gen_dir/ia2_api_all_p.c",
+    "IAccessible2Proxy.def",
   ]
 
   defines = [ "REGISTER_PROXY_DLL" ]

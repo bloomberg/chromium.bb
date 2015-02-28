@@ -124,13 +124,13 @@ if (current_toolchain == host_toolchain) {
 
   executable("re2c") {
     sources = [
-      "source/patched-yasm/tools/re2c/main.c",
+      "source/patched-yasm/tools/re2c/actions.c",
       "source/patched-yasm/tools/re2c/code.c",
       "source/patched-yasm/tools/re2c/dfa.c",
-      "source/patched-yasm/tools/re2c/parser.c",
-      "source/patched-yasm/tools/re2c/actions.c",
-      "source/patched-yasm/tools/re2c/scanner.c",
+      "source/patched-yasm/tools/re2c/main.c",
       "source/patched-yasm/tools/re2c/mbo_getopt.c",
+      "source/patched-yasm/tools/re2c/parser.c",
+      "source/patched-yasm/tools/re2c/scanner.c",
       "source/patched-yasm/tools/re2c/substr.c",
       "source/patched-yasm/tools/re2c/translate.c",
     ]
@@ -203,8 +203,8 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm/modules/objfmts/macho/macho-objfmt.c",
       "source/patched-yasm/modules/objfmts/rdf/rdf-objfmt.c",
       "source/patched-yasm/modules/objfmts/xdf/xdf-objfmt.c",
-      "source/patched-yasm/modules/parsers/gas/gas-parse.c",
       "source/patched-yasm/modules/parsers/gas/gas-parse-intel.c",
+      "source/patched-yasm/modules/parsers/gas/gas-parse.c",
       "source/patched-yasm/modules/parsers/gas/gas-parser.c",
       "source/patched-yasm/modules/parsers/nasm/nasm-parse.c",
       "source/patched-yasm/modules/parsers/nasm/nasm-parser.c",

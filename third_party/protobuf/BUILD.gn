@@ -95,6 +95,7 @@ component("protobuf_lite") {
   }
   public_configs = [
     ":protobuf_config",
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
@@ -118,57 +119,57 @@ source_set("protobuf_full") {
 
   sources = protobuf_lite_sources
   sources += [
-    "src/google/protobuf/descriptor.h",
-    "src/google/protobuf/descriptor.pb.h",
-    "src/google/protobuf/descriptor_database.h",
-    "src/google/protobuf/dynamic_message.h",
-    "src/google/protobuf/generated_enum_reflection.h",
-    "src/google/protobuf/generated_message_reflection.h",
-    "src/google/protobuf/message.h",
-    "src/google/protobuf/reflection_ops.h",
-    "src/google/protobuf/service.h",
-    "src/google/protobuf/text_format.h",
-    "src/google/protobuf/wire_format.h",
-    "src/google/protobuf/io/gzip_stream.h",
-    "src/google/protobuf/io/printer.h",
-    "src/google/protobuf/io/tokenizer.h",
-    "src/google/protobuf/io/zero_copy_stream_impl.h",
     "src/google/protobuf/compiler/code_generator.h",
     "src/google/protobuf/compiler/command_line_interface.h",
     "src/google/protobuf/compiler/importer.h",
     "src/google/protobuf/compiler/java/java_doc_comment.cc",
     "src/google/protobuf/compiler/java/java_doc_comment.h",
     "src/google/protobuf/compiler/parser.h",
-    "src/google/protobuf/stubs/strutil.cc",
-    "src/google/protobuf/stubs/strutil.h",
-    "src/google/protobuf/stubs/substitute.cc",
-    "src/google/protobuf/stubs/substitute.h",
+    "src/google/protobuf/descriptor.cc",
+    "src/google/protobuf/descriptor.h",
+    "src/google/protobuf/descriptor.pb.cc",
+    "src/google/protobuf/descriptor.pb.h",
+    "src/google/protobuf/descriptor_database.cc",
+    "src/google/protobuf/descriptor_database.h",
+    "src/google/protobuf/dynamic_message.cc",
+    "src/google/protobuf/dynamic_message.h",
+    "src/google/protobuf/extension_set_heavy.cc",
+    "src/google/protobuf/generated_enum_reflection.h",
+    "src/google/protobuf/generated_message_reflection.cc",
+    "src/google/protobuf/generated_message_reflection.h",
+    "src/google/protobuf/io/gzip_stream.h",
+    "src/google/protobuf/io/printer.h",
+    "src/google/protobuf/io/tokenizer.h",
+    "src/google/protobuf/io/zero_copy_stream_impl.h",
+    "src/google/protobuf/message.cc",
+    "src/google/protobuf/message.h",
+    "src/google/protobuf/reflection_ops.cc",
+    "src/google/protobuf/reflection_ops.h",
+    "src/google/protobuf/service.cc",
+    "src/google/protobuf/service.h",
     "src/google/protobuf/stubs/stl_util.h",
     "src/google/protobuf/stubs/stringprintf.cc",
     "src/google/protobuf/stubs/stringprintf.h",
     "src/google/protobuf/stubs/structurally_valid.cc",
+    "src/google/protobuf/stubs/strutil.cc",
+    "src/google/protobuf/stubs/strutil.h",
+    "src/google/protobuf/stubs/substitute.cc",
+    "src/google/protobuf/stubs/substitute.h",
     "src/google/protobuf/stubs/template_util.h",
     "src/google/protobuf/stubs/type_traits.h",
-    "src/google/protobuf/descriptor.cc",
-    "src/google/protobuf/descriptor.pb.cc",
-    "src/google/protobuf/descriptor_database.cc",
-    "src/google/protobuf/dynamic_message.cc",
-    "src/google/protobuf/extension_set_heavy.cc",
-    "src/google/protobuf/generated_message_reflection.cc",
-    "src/google/protobuf/message.cc",
-    "src/google/protobuf/reflection_ops.cc",
-    "src/google/protobuf/service.cc",
     "src/google/protobuf/text_format.cc",
+    "src/google/protobuf/text_format.h",
     "src/google/protobuf/wire_format.cc",
+    "src/google/protobuf/wire_format.h",
 
     # This file pulls in zlib, but it's not actually used by protoc, so
     # instead of compiling zlib for the host, let's just exclude this.
     # "src/src/google/protobuf/io/gzip_stream.cc",
+    "src/google/protobuf/compiler/importer.cc",
+    "src/google/protobuf/compiler/parser.cc",
     "src/google/protobuf/io/printer.cc",
     "src/google/protobuf/io/tokenizer.cc",
     "src/google/protobuf/io/zero_copy_stream_impl.cc",
-    "src/google/protobuf/compiler/importer.cc",
-    "src/google/protobuf/compiler/parser.cc",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -178,6 +179,7 @@ source_set("protobuf_full") {
   }
   public_configs = [
     ":protobuf_config",
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
@@ -191,12 +193,6 @@ if (current_toolchain == host_toolchain) {
     sources = [
       "src/google/protobuf/compiler/code_generator.cc",
       "src/google/protobuf/compiler/command_line_interface.cc",
-      "src/google/protobuf/compiler/plugin.cc",
-      "src/google/protobuf/compiler/plugin.pb.cc",
-      "src/google/protobuf/compiler/subprocess.cc",
-      "src/google/protobuf/compiler/subprocess.h",
-      "src/google/protobuf/compiler/zip_writer.cc",
-      "src/google/protobuf/compiler/zip_writer.h",
       "src/google/protobuf/compiler/cpp/cpp_enum.cc",
       "src/google/protobuf/compiler/cpp/cpp_enum.h",
       "src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
@@ -243,8 +239,14 @@ if (current_toolchain == host_toolchain) {
       "src/google/protobuf/compiler/java/java_service.h",
       "src/google/protobuf/compiler/java/java_string_field.cc",
       "src/google/protobuf/compiler/java/java_string_field.h",
-      "src/google/protobuf/compiler/python/python_generator.cc",
       "src/google/protobuf/compiler/main.cc",
+      "src/google/protobuf/compiler/plugin.cc",
+      "src/google/protobuf/compiler/plugin.pb.cc",
+      "src/google/protobuf/compiler/python/python_generator.cc",
+      "src/google/protobuf/compiler/subprocess.cc",
+      "src/google/protobuf/compiler/subprocess.h",
+      "src/google/protobuf/compiler/zip_writer.cc",
+      "src/google/protobuf/compiler/zip_writer.h",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]

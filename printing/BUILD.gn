@@ -95,8 +95,8 @@ component("printing") {
       sources -= [ "printed_document_mac.cc" ]
     } else {
       sources += [
-        "printing_context_mac.mm",
         "printing_context_mac.h",
+        "printing_context_mac.mm",
       ]
     }
   }
@@ -106,9 +106,9 @@ component("printing") {
     # print backend and enables a custom implementation instead.
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
     sources += [
+      "backend/print_backend_win.cc",
       "backend/win_helper.cc",
       "backend/win_helper.h",
-      "backend/print_backend_win.cc",
       "printing_context_system_dialog_win.cc",
       "printing_context_system_dialog_win.h",
       "printing_context_win.cc",

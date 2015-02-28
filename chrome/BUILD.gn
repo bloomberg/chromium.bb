@@ -41,6 +41,8 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
     if (is_win) {
       sources += [
         "$target_gen_dir/chrome_exe_version.rc",
+        "//content/app/startup_helper_win.cc",
+        "//content/public/common/content_switches.cc",
         "app/chrome_crash_reporter_client.cc",
         "app/chrome_crash_reporter_client.h",
         "app/chrome_exe.rc",
@@ -55,8 +57,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         "app/signature_validator_win.h",
         "common/crash_keys.cc",
         "common/crash_keys.h'",
-        "//content/app/startup_helper_win.cc",
-        "//content/public/common/content_switches.cc",
       ]
       deps += [
         ":chrome_version_resources",
@@ -408,12 +408,12 @@ if (is_chrome_branded) {
   copy("default_apps") {
     visibility = [ ":packed_resources" ]
     sources = [
+      "browser/resources/default_apps/docs.crx",
+      "browser/resources/default_apps/drive.crx",
       "browser/resources/default_apps/external_extensions.json",
       "browser/resources/default_apps/gmail.crx",
       "browser/resources/default_apps/search.crx",
       "browser/resources/default_apps/youtube.crx",
-      "browser/resources/default_apps/drive.crx",
-      "browser/resources/default_apps/docs.crx",
     ]
     outputs = [
       "$root_out_dir/default_apps/{{source_file_part}}",
@@ -473,12 +473,12 @@ repack("packed_extra_resources") {
   if (!is_ios && !is_android) {
     # New paks should be added here by default.
     sources += [
+      "$root_gen_dir/blink/devtools_resources.pak",
       "$root_gen_dir/chrome/component_extension_resources.pak",
       "$root_gen_dir/chrome/options_resources.pak",
       "$root_gen_dir/chrome/quota_internals_resources.pak",
       "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
       "$root_gen_dir/chrome/webrtc_device_provider_resources.pak",
-      "$root_gen_dir/blink/devtools_resources.pak",
     ]
     deps += [
       "//chrome/browser/devtools:webrtc_device_provider_resources",
@@ -578,10 +578,10 @@ template("chrome_repack_percent") {
 
     # All sources should also have deps for completeness.
     sources = [
-      "$root_gen_dir/components/components_resources_${percent}_percent.pak",
-      "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/renderer_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/theme_resources_${percent}_percent.pak",
+      "$root_gen_dir/components/components_resources_${percent}_percent.pak",
+      "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
     ]
 
     deps = [

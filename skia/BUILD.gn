@@ -255,6 +255,7 @@ config("skia_library_config") {
       "/wd4554",  # 'operator' : check operator precedence for possible error
       "/wd4748",  # compiler will disable optimizations if a function has inline
                   # assembly code contains flow control(jmp or jcc) statements.
+
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
     ]
   }
@@ -264,6 +265,9 @@ component("skia") {
   sources = [
     # Chrome sources.
     "config/SkUserConfig.h",
+    "ext/SkDiscardableMemory_chrome.cc",
+    "ext/SkDiscardableMemory_chrome.h",
+    "ext/SkMemory_new_handler.cpp",
     "ext/analysis_canvas.cc",
     "ext/analysis_canvas.h",
     "ext/benchmarking_canvas.cc",
@@ -292,15 +296,12 @@ component("skia") {
     "ext/recursive_gaussian_convolution.cc",
     "ext/recursive_gaussian_convolution.h",
     "ext/refptr.h",
-    "ext/SkDiscardableMemory_chrome.h",
-    "ext/SkDiscardableMemory_chrome.cc",
-    "ext/SkMemory_new_handler.cpp",
     "ext/skia_utils_base.cc",
     "ext/skia_utils_base.h",
-    "ext/skia_utils_ios.mm",
     "ext/skia_utils_ios.h",
-    "ext/skia_utils_mac.mm",
+    "ext/skia_utils_ios.mm",
     "ext/skia_utils_mac.h",
+    "ext/skia_utils_mac.mm",
     "ext/skia_utils_win.cc",
     "ext/skia_utils_win.h",
   ]
@@ -330,7 +331,6 @@ component("skia") {
   # Remove unused util files include in utils.gypi
   sources -= [
     "//third_party/skia/include/utils/SkBoundaryPatch.h",
-    "//third_party/skia/include/utils/SkFrontBufferedStream.h",
     "//third_party/skia/include/utils/SkCamera.h",
     "//third_party/skia/include/utils/SkCanvasStateUtils.h",
     "//third_party/skia/include/utils/SkCubicInterval.h",
@@ -338,6 +338,7 @@ component("skia") {
     "//third_party/skia/include/utils/SkDebugUtils.h",
     "//third_party/skia/include/utils/SkDumpCanvas.h",
     "//third_party/skia/include/utils/SkEventTracer.h",
+    "//third_party/skia/include/utils/SkFrontBufferedStream.h",
     "//third_party/skia/include/utils/SkInterpolator.h",
     "//third_party/skia/include/utils/SkLayer.h",
     "//third_party/skia/include/utils/SkMeshUtils.h",
@@ -349,13 +350,13 @@ component("skia") {
     "//third_party/skia/src/utils/SkBitmapHasher.cpp",
     "//third_party/skia/src/utils/SkBitmapHasher.h",
     "//third_party/skia/src/utils/SkBoundaryPatch.cpp",
-    "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkCamera.cpp",
     "//third_party/skia/src/utils/SkCanvasStack.h",
     "//third_party/skia/src/utils/SkCubicInterval.cpp",
     "//third_party/skia/src/utils/SkCullPoints.cpp",
     "//third_party/skia/src/utils/SkDumpCanvas.cpp",
     "//third_party/skia/src/utils/SkFloatUtils.h",
+    "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkInterpolator.cpp",
     "//third_party/skia/src/utils/SkLayer.cpp",
     "//third_party/skia/src/utils/SkMD5.cpp",
@@ -373,8 +374,8 @@ component("skia") {
     "//third_party/skia/src/utils/SkTLogic.h",
 
     # We don't currently need to change thread affinity, so leave out this complexity for now.
-    "//third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp",
     "//third_party/skia/src/utils/SkThreadUtils_pthread_linux.cpp",
+    "//third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp",
 
     #testing
     "//third_party/skia/src/fonts/SkGScalerContext.cpp",
@@ -417,8 +418,8 @@ component("skia") {
   if (is_win) {
     sources -= [
       "//third_party/skia/src/ports/SkOSFile_posix.cpp",
-      "//third_party/skia/src/ports/SkTime_Unix.cpp",
       "//third_party/skia/src/ports/SkTLS_pthread.cpp",
+      "//third_party/skia/src/ports/SkTime_Unix.cpp",
     ]
   } else {
     sources -= [
@@ -445,16 +446,16 @@ component("skia") {
 
   if (!is_linux) {
     sources -= [
-      "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
       "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
+      "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
     ]
   }
 
   if (!is_linux && !is_android) {
     sources -= [
-      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
+      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
     ]
   }
 

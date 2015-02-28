@@ -111,8 +111,8 @@ static_library("cld2_dynamic") {
 if (!is_win) {
   executable("cld_2_dynamic_data_tool") {
     sources = [
-      "src/internal/cld2_dynamic_data_extractor.h",
       "src/internal/cld2_dynamic_data_extractor.cc",
+      "src/internal/cld2_dynamic_data_extractor.h",
       "src/internal/cld2_dynamic_data_tool.cc",
     ]
 

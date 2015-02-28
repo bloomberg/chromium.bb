@@ -8,8 +8,8 @@ config("sqlite_config") {
 
 source_set("sqlite") {
   sources = [
-    "amalgamation/sqlite3.h",
     "amalgamation/sqlite3.c",
+    "amalgamation/sqlite3.h",
 
     # fts2.c currently has a lot of conflicts when added to
     # the amalgamation.  It is probably not worth fixing that.

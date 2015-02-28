@@ -16,6 +16,7 @@ component("gpu") {
   defines = [ "WEBKIT_GPU_IMPLEMENTATION" ]
   configs += [
     "//build/config/compiler:wexit_time_destructors",
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]

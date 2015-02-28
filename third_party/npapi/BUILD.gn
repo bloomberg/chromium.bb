@@ -19,8 +19,8 @@ source_set("npapi") {
     "bindings/npapi_x11.h",
     "bindings/npfunctions.h",
     "bindings/nphostapi.h",
-    "bindings/nptypes.h",
     "bindings/npruntime.h",
+    "bindings/nptypes.h",
   ]
 
   public_configs = [ ":npapi_config" ]

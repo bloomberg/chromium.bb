@@ -60,8 +60,8 @@ template("generate_library_loader") {
       public_configs = [ invoker.config ]
     }
     sources = [
-      output_h,
       output_cc,
+      output_h,
     ]
     deps = [
       ":${target_name}_loader",

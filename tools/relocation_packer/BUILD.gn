@@ -28,8 +28,8 @@ if (current_toolchain == host_toolchain) {
       "src/elf_file.cc",
       "src/leb128.cc",
       "src/packer.cc",
-      "src/sleb128.cc",
       "src/run_length_encoder.cc",
+      "src/sleb128.cc",
     ]
   }
 
@@ -53,9 +53,9 @@ if (current_toolchain == host_toolchain) {
       "src/elf_file_unittest.cc",
       "src/leb128_unittest.cc",
       "src/packer_unittest.cc",
-      "src/sleb128_unittest.cc",
-      "src/run_length_encoder_unittest.cc",
       "src/run_all_unittests.cc",
+      "src/run_length_encoder_unittest.cc",
+      "src/sleb128_unittest.cc",
     ]
     rebased_test_data = rebase_path("test_data", root_build_dir)
     data = [

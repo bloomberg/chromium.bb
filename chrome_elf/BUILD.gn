@@ -14,9 +14,9 @@ process_version("chrome_elf_resources") {
 
 shared_library("chrome_elf") {
   sources = [
+    "$target_gen_dir/chrome_elf_version.rc",
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
-    "$target_gen_dir/chrome_elf_version.rc",
   ]
   deps = [
     ":blacklist",

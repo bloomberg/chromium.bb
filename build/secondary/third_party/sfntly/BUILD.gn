@@ -4,6 +4,10 @@
 
 static_library("sfntly") {
   sources = [
+    "cpp/src/sample/chromium/font_subsetter.cc",
+    "cpp/src/sample/chromium/font_subsetter.h",
+    "cpp/src/sample/chromium/subsetter_impl.cc",
+    "cpp/src/sample/chromium/subsetter_impl.h",
     "cpp/src/sfntly/data/byte_array.cc",
     "cpp/src/sfntly/data/byte_array.h",
     "cpp/src/sfntly/data/font_data.cc",
@@ -113,10 +117,6 @@ static_library("sfntly") {
     "cpp/src/sfntly/table/truetype/loca_table.h",
     "cpp/src/sfntly/tag.cc",
     "cpp/src/sfntly/tag.h",
-    "cpp/src/sample/chromium/font_subsetter.cc",
-    "cpp/src/sample/chromium/font_subsetter.h",
-    "cpp/src/sample/chromium/subsetter_impl.cc",
-    "cpp/src/sample/chromium/subsetter_impl.h",
   ]
 
   defines = [ "SFNTLY_NO_EXCEPTION" ]

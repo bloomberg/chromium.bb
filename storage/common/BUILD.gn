@@ -8,7 +8,6 @@ component("common") {
   sources = [
     "data_element.cc",
     "data_element.h",
-    "storage_common_export.h",
     "database/database_connections.cc",
     "database/database_connections.h",
     "database/database_identifier.cc",
@@ -24,6 +23,7 @@ component("common") {
     "quota/quota_status_code.cc",
     "quota/quota_status_code.h",
     "quota/quota_types.h",
+    "storage_common_export.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

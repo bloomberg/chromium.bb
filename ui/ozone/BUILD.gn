@@ -75,9 +75,6 @@ component("ozone_base") {
 
 component("ozone") {
   sources = [
-    platform_list_cc_file,
-    platform_list_h_file,
-    constructor_list_cc_file,
     "common/display_mode_proxy.cc",
     "common/display_mode_proxy.h",
     "common/display_snapshot_proxy.cc",
@@ -103,6 +100,9 @@ component("ozone") {
     "public/ozone_platform.h",
     "public/ozone_switches.cc",
     "public/ozone_switches.h",
+    constructor_list_cc_file,
+    platform_list_cc_file,
+    platform_list_h_file,
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]

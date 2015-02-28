@@ -163,8 +163,8 @@ template("generate_jar_jni") {
       depfile = "$target_gen_dir/$target_name.d"
       script = "//base/android/jni_generator/jni_generator.py"
       sources = [
-        jni_generator_include,
         jar_file,
+        jni_generator_include,
       ]
       outputs = [
         depfile,

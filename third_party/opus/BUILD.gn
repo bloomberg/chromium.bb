@@ -122,10 +122,10 @@ source_set("opus") {
       "src/celt/arm/kiss_fft_armv4.h",
       "src/celt/arm/kiss_fft_armv5e.h",
       "src/celt/pitch_arm.h",
-      "src/silk/arm/macro_armv4.h",
-      "src/silk/arm/macro_armv5e.h",
       "src/silk/arm/SigProc_FIX_armv4.h",
       "src/silk/arm/SigProc_FIX_armv5e.h",
+      "src/silk/arm/macro_armv4.h",
+      "src/silk/arm/macro_armv5e.h",
     ]
 
     defines += [
@@ -136,10 +136,10 @@ source_set("opus") {
 
     if (use_opus_rtcd) {
       sources += [
+        "$target_gen_dir/celt_pitch_xcorr_arm_gnu.S",
         "src/celt/arm/arm_celt_map.c",
         "src/celt/arm/armcpu.c",
         "src/celt/arm/armcpu.h",
-        "$target_gen_dir/celt_pitch_xcorr_arm_gnu.S",
       ]
 
       defines += [
