@@ -562,22 +562,18 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
   if (ContainsKey(pending_callback_map_, handle))
     return LOAD_STATE_CONNECTING;
 
-  if (!ContainsKey(group_map_, group_name)) {
-    NOTREACHED() << "ClientSocketPool does not contain group: " << group_name
-                 << " for handle: " << handle;
-    return LOAD_STATE_IDLE;
-  }
-
-  // Can't use operator[] since it is non-const.
-  const Group& group = *group_map_.find(group_name)->second;
+  GroupMap::const_iterator group_it = group_map_.find(group_name);
+  // TODO(mmenke):  Switch to DCHECK once sure this doesn't break anything.
+  //     Added in M43.
+  CHECK(group_it != group_map_.end());
+  const Group& group = *group_it->second;
 
   if (group.HasConnectJobForHandle(handle)) {
-    // Just return the state  of the farthest along ConnectJob for the first
+    // Just return the state of the farthest along ConnectJob for the first
     // group.jobs().size() pending requests.
     LoadState max_state = LOAD_STATE_IDLE;
-    for (ConnectJobSet::const_iterator job_it = group.jobs().begin();
-         job_it != group.jobs().end(); ++job_it) {
-      max_state = std::max(max_state, (*job_it)->GetLoadState());
+    for (const auto& job : group.jobs()) {
+      max_state = std::max(max_state, job->GetLoadState());
     }
     return max_state;
   }
