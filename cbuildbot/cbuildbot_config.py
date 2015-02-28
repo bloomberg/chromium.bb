@@ -1601,6 +1601,7 @@ _freon_boards = frozenset([
   'candy_freon',
   'cid',
   'clapper_freon',
+  'daisy_freon',
   'enguarde_freon',
   'expresso_freon',
   'falco',
@@ -1764,6 +1765,7 @@ internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
 )
 
 _chrome_pfq_important_boards = frozenset([
+  'daisy_freon',
   'peppy',
   'rush_ryu',
   'veyron_pinky',
@@ -3327,7 +3329,6 @@ _waterfall_config_map = {
       'urara-release',
 
       # Experimental PFQs.
-      'daisy_freon-chrome-pfq',
       'peach_pit-chrome-pfq',
       'tricky-chrome-pfq',
 
