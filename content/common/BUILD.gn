@@ -410,6 +410,7 @@ source_set("common") {
     deps += [ "//ui/gl" ]
     libs += [
       "d3d9.lib",
+      "d3d11.lib",
       "dxva2.lib",
       "strmiids.lib",
       "mf.lib",
@@ -418,6 +419,7 @@ source_set("common") {
     ]
     ldflags += [
       "/DELAYLOAD:d3d9.dll",
+      "/DELAYLOAD:d3d11.dll",
       "/DELAYLOAD:dxva2.dll",
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",

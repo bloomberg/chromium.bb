@@ -510,7 +510,9 @@ GLRenderingVDAClient::CreateDXVAVDA() {
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     decoder.reset(
-        new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
+        new DXVAVideoDecodeAccelerator(
+            base::Bind(&DoNothingReturnTrue),
+            rendering_helper_->GetGLContext().get()));
 #endif
   return decoder.Pass();
 }

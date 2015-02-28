@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_DXVA_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_DXVA_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <d3d11.h>
 #include <d3d9.h>
 // Work around bug in this header by disabling the relevant warning for it.
 // https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
@@ -30,6 +31,14 @@
 interface IMFSample;
 interface IDirect3DSurface9;
 
+namespace gfx {
+class GLContext;
+}
+
+typedef HRESULT (WINAPI* CreateDXGIDeviceManager)(
+    UINT* reset_token,
+    IMFDXGIDeviceManager** device_manager);
+
 namespace content {
 
 // Class to provide a DXVA 2.0 based accelerator using the Microsoft Media
@@ -49,7 +58,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Does not take ownership of |client| which must outlive |*this|.
   explicit DXVAVideoDecodeAccelerator(
-      const base::Callback<bool(void)>& make_context_current);
+      const base::Callback<bool(void)>& make_context_current,
+      gfx::GLContext* gl_context);
   ~DXVAVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -73,6 +83,11 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // corresponding device manager. The device manager instance is eventually
   // passed to the IMFTransform interface implemented by the decoder.
   bool CreateD3DDevManager();
+
+  // Creates and initializes an instance of the DX11 device and the
+  // corresponding device manager. The device manager instance is eventually
+  // passed to the IMFTransform interface implemented by the decoder.
+  bool CreateDX11DevManager();
 
   // Creates, initializes and sets the media codec types for the decoder.
   bool InitDecoder(media::VideoCodecProfile profile);
@@ -195,6 +210,15 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
                            int picture_buffer_id,
                            int input_buffer_id);
 
+  // Copies the source texture |src_texture| to the destination |dest_texture|.
+  // The copying is done on the decoder thread. The |video_frame| parameter
+  // is the sample containing the frame to be copied.
+  void CopyTexture(ID3D11Texture2D* src_texture,
+                   ID3D11Texture2D* dest_texture,
+                   IMFSample* video_frame,
+                   int picture_buffer_id,
+                   int input_buffer_id);
+
   // Flushes the decoder device to ensure that the decoded surface is copied
   // to the target surface. |iterations| helps to maintain an upper limit on
   // the number of times we try to complete the flush operation.
@@ -204,21 +228,44 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
                     int picture_buffer_id,
                     int input_buffer_id);
 
+  // Initializes the DX11 Video format converter media types.
+  // Returns true on success.
+  bool InitializeDX11VideoFormatConverterMediaType(int width, int height);
+
+  // Returns the output video frame dimensions (width, height).
+  // |sample| :- This is the output sample containing the video frame.
+  // |width| :- The width is returned here.
+  // |height| :- The height is returned here.
+  // Returns true on success.
+  bool GetVideoFrameDimensions(IMFSample* sample, int* width, int* height);
+
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
 
   base::win::ScopedComPtr<IMFTransform> decoder_;
+  base::win::ScopedComPtr<IMFTransform> video_format_converter_mft_;
 
   base::win::ScopedComPtr<IDirect3D9Ex> d3d9_;
-  base::win::ScopedComPtr<IDirect3DDevice9Ex> device_;
+  base::win::ScopedComPtr<IDirect3DDevice9Ex> d3d9_device_ex_;
   base::win::ScopedComPtr<IDirect3DDeviceManager9> device_manager_;
   base::win::ScopedComPtr<IDirect3DQuery9> query_;
+
+  base::win::ScopedComPtr<ID3D11DeviceContext> d3d11_device_context_;
+  base::win::ScopedComPtr<ID3D11Device > d3d11_device_;
+  base::win::ScopedComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
+  base::win::ScopedComPtr<ID3D11Query> d3d11_query_;
+
   // Ideally the reset token would be a stack variable which is used while
   // creating the device manager. However it seems that the device manager
   // holds onto the token and attempts to access it if the underlying device
   // changes.
   // TODO(ananta): This needs to be verified.
   uint32 dev_manager_reset_token_;
+
+  // Reset token for the DX11 device manager.
+  uint32 dx11_dev_manager_reset_token_;
+
+  uint32 dx11_dev_manager_reset_token_format_conversion_;
 
   // The EGL config to use for decoded frames.
   EGLConfig egl_config_;
@@ -305,6 +352,20 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Set to true if we are in the context of a Flush operation. Used to prevent
   // multiple flush done notifications being sent out.
   bool pending_flush_;
+
+  // Defaults to false. Indicates if we should use D3D or DX11 interfaces for
+  // H/W decoding.
+  bool use_dx11_;
+
+  // Set to true if the DX11 video format converter input media types need to
+  // be initialized. Defaults to true.
+  bool dx11_video_format_converter_media_type_needs_init_;
+
+  // The GLContext to be used by the decoder.
+  scoped_refptr<gfx::GLContext> gl_context_;
+
+  // Function pointer for the MFCreateDXGIDeviceManager API.
+  static CreateDXGIDeviceManager create_dxgi_device_manager_;
 };
 
 }  // namespace content

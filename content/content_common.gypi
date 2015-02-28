@@ -953,6 +953,7 @@
       'link_settings': {
         'libraries': [
            '-ld3d9.lib',
+           '-ld3d11.lib',
            '-ldxva2.lib',
            '-lstrmiids.lib',
            '-lmf.lib',
@@ -963,6 +964,7 @@
           'VCLinkerTool': {
             'DelayLoadDLLs': [
               'd3d9.dll',
+			  'd3d11.dll',
               'dxva2.dll',
               'mf.dll',
               'mfplat.dll',

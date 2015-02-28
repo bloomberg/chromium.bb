@@ -289,7 +289,8 @@ GpuVideoDecodeAccelerator::CreateDXVAVDA() {
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     DVLOG(0) << "Initializing DXVA HW decoder for windows.";
-    decoder.reset(new DXVAVideoDecodeAccelerator(make_context_current_));
+    decoder.reset(new DXVAVideoDecodeAccelerator(make_context_current_,
+        stub_->decoder()->GetGLContext()));
   } else {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   }
