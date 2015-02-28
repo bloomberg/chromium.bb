@@ -1802,11 +1802,6 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionState& excepti
     frameView->setTracksPaintInvalidations(false);
 }
 
-void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(ExceptionState& exceptionState)
-{
-    updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(0, exceptionState);
-}
-
 void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node* node, ExceptionState& exceptionState)
 {
     Document* document;

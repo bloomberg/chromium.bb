@@ -268,7 +268,6 @@ public:
 
     void startTrackingRepaints(Document*, ExceptionState&);
     void stopTrackingRepaints(Document*, ExceptionState&);
-    void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(ExceptionState&);
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node*, ExceptionState&);
     void forceFullRepaint(Document*, ExceptionState&);
 

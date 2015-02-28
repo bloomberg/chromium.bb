@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected
+    GarbageCollected,
+    TypeChecking=Interface,
 ] interface PrivateScriptTest {
     [ImplementedInPrivateScript] void doNothing();
     [ImplementedInPrivateScript] short return123();
@@ -28,7 +29,7 @@
     [ImplementedInPrivateScript] attribute short shortAttribute;
     [ImplementedInPrivateScript] attribute DOMString stringAttribute;
     [ImplementedInPrivateScript] attribute Node nodeAttribute;
-    [ImplementedInPrivateScript] attribute Node nodeAttributeThrowsIndexSizeError;
+    [ImplementedInPrivateScript] attribute Node? nodeAttributeThrowsIndexSizeError;
     [ImplementedInPrivateScript] void voidMethodThrowsDOMSyntaxError();
     [ImplementedInPrivateScript] void voidMethodThrowsError();
     [ImplementedInPrivateScript] void voidMethodThrowsTypeError();
