@@ -794,7 +794,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
           cmd, sleep=sleep,
           redirect_stderr=True,
           capture_output=True,
-          extra_env={'BOTO_CONFIG': mock.ANY})
+          extra_env=mock.ANY)
 
   def testDoCommandDefault(self):
     """Verify the internal DoCommand function works correctly."""
