@@ -21,9 +21,7 @@ import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.net.test.util.TestWebServer;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -511,59 +509,4 @@ public class AwTestBase
         });
     }
 
-    /**
-     * Loads the main html then triggers the popup window.
-     */
-    public void triggerPopup(final AwContents parentAwContents,
-            TestAwContentsClient parentAwContentsClient, TestWebServer testWebServer,
-            String mainHtml, String popupHtml, String popupPath, String triggerScript)
-            throws Exception {
-        enableJavaScriptOnUiThread(parentAwContents);
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                parentAwContents.getSettings().setSupportMultipleWindows(true);
-                parentAwContents.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-            }
-        });
-
-        final String parentUrl = testWebServer.setResponse("/popupParent.html", mainHtml, null);
-        testWebServer.setResponse(popupPath, popupHtml, null);
-
-        parentAwContentsClient.getOnCreateWindowHelper().setReturnValue(true);
-        loadUrlSync(parentAwContents, parentAwContentsClient.getOnPageFinishedHelper(), parentUrl);
-
-        TestAwContentsClient.OnCreateWindowHelper onCreateWindowHelper =
-                parentAwContentsClient.getOnCreateWindowHelper();
-        int currentCallCount = onCreateWindowHelper.getCallCount();
-        parentAwContents.evaluateJavaScript(triggerScript, null);
-        onCreateWindowHelper.waitForCallback(
-                currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Supplies the popup window with AwContents then waits for the popup window to finish loading.
-     */
-    public AwContents connectPendingPopup(final AwContents parentAwContents) throws Exception {
-        TestAwContentsClient popupContentsClient;
-        AwTestContainerView popupContainerView;
-        final AwContents popupContents;
-        popupContentsClient = new TestAwContentsClient();
-        popupContainerView = createAwTestContainerViewOnMainSync(popupContentsClient);
-        popupContents = popupContainerView.getAwContents();
-        enableJavaScriptOnUiThread(popupContents);
-
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                parentAwContents.supplyContentsForPopup(popupContents);
-            }
-        });
-
-        OnPageFinishedHelper onPageFinishedHelper = popupContentsClient.getOnPageFinishedHelper();
-        int callCount = onPageFinishedHelper.getCallCount();
-        onPageFinishedHelper.waitForCallback(callCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-
-        return popupContents;
-    }
 }
