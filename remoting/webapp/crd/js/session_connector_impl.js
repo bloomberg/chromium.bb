@@ -437,7 +437,7 @@ remoting.SessionConnectorImpl.prototype.connectIT2MeWithToken_ =
     method: 'GET',
     url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
         encodeURIComponent(hostId),
-    onDone: this.onIT2MeHostInfo_.bind(this),
+    onDone: this.onIT2MeHostInfo_.bind(this, hostId),
     oauthToken: token
   });
 };

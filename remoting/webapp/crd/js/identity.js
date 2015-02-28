@@ -195,14 +195,11 @@ remoting.Identity.prototype.getCachedUserFullName = function() {
  */
 remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
   var authTokenDeferred = this.authTokenDeferred_;
-  if (authTokenDeferred == null) {
-    return;
-  }
-  this.authTokenDeferred_ = null;
 
   // Pass the token to the callback(s) if it was retrieved successfully.
   if (token) {
     authTokenDeferred.resolve(token);
+    this.authTokenDeferred_ = null;
     return;
   }
 
@@ -214,6 +211,7 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
                                  : 'Unknown error.';
     console.error(error_message);
     authTokenDeferred.reject(remoting.Error.NOT_AUTHENTICATED);
+    this.authTokenDeferred_ = null;
     return;
   }
 
