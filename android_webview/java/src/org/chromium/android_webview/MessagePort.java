@@ -4,6 +4,9 @@
 
 package org.chromium.android_webview;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 /**
@@ -32,7 +35,10 @@ import android.util.Log;
  * since the ownership is also transferred during the transfer. Closing a transferred port will
  * throw an exception.
  *
- * TODO(sgurun) implement queueing messages while a port is in transfer
+ * The fact that messages can be handled on a separate thread means that thread
+ * synchronization is important. All methods are called on UI thread except as noted.
+ *
+ * TODO(sgurun) implement queueing messages while a port is in transfer.
  */
 public class MessagePort implements PostMessageSender.PostMessageSenderDelegate {
 
@@ -41,16 +47,53 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
      */
     public abstract static class WebEventHandler {
         public abstract void onMessage(String message);
-    };
+    }
 
     private static final String TAG = "MessagePort";
     private static final int PENDING = -1;
+
+    // the what value for POST_MESSAGE
+    private static final int POST_MESSAGE = 1;
+
+    private static class PostMessageFromWeb {
+        public MessagePort port;
+        public String message;
+
+        public PostMessageFromWeb(MessagePort port, String message) {
+            this.port = port;
+            this.message = message;
+        }
+    }
+
+    // Implements the handler to handle messageport messages received from web.
+    // These messages are received on IO thread and normally handled in main
+    // thread however, alternatively application can pass a handler to execute them.
+    private static class MessageHandler extends Handler {
+        public MessageHandler(Looper looper) {
+            super(looper);
+        }
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == POST_MESSAGE) {
+                PostMessageFromWeb m = (PostMessageFromWeb) msg.obj;
+                m.port.onMessage(m.message);
+                return;
+            }
+            throw new IllegalStateException("undefined message");
+        }
+    }
+    // The default message handler
+    private static final MessageHandler sDefaultHandler =
+            new MessageHandler(Looper.getMainLooper());
+
     private int mPortId = PENDING;
     private WebEventHandler mWebEventHandler;
     private AwMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
     private PostMessageSender mPostMessageSender;
+    private MessageHandler mHandler;
+    private Object mLock = new Object();
 
     public MessagePort(AwMessagePortService messagePortService) {
         mMessagePortService = messagePortService;
@@ -74,8 +117,10 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         if (mTransferred) {
             throw new IllegalStateException("Port is already transferred");
         }
-        if (mClosed) return;
-        mClosed = true;
+        synchronized (mLock) {
+            if (mClosed) return;
+            mClosed = true;
+        }
         // If the port is already ready, and no messages are waiting in the
         // queue to be transferred, onPostMessageQueueEmpty() callback is not
         // received (it is received only after messages are purged). In this
@@ -97,20 +142,39 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         mTransferred = true;
     }
 
-    public void setWebEventHandler(WebEventHandler webEventHandler) {
-        mWebEventHandler = webEventHandler;
+    public void setWebEventHandler(WebEventHandler webEventHandler, Handler handler) {
+        synchronized (mLock) {
+            mWebEventHandler = webEventHandler;
+            if (handler != null) {
+                mHandler = new MessageHandler(handler.getLooper());
+            }
+        }
     }
 
+    // Called on IO thread.
+    public void onReceivedMessage(String message) {
+        synchronized (mLock) {
+            PostMessageFromWeb m = new PostMessageFromWeb(this, message);
+            Handler handler = mHandler != null ? mHandler : sDefaultHandler;
+            Message msg = handler.obtainMessage(POST_MESSAGE, m);
+            handler.sendMessage(msg);
+        }
+    }
+
+    // This method may be called on a different thread than UI thread.
     public void onMessage(String message) {
-        if (isClosed()) {
-            Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
-            return;
+        synchronized (mLock) {
+            if (isClosed()) {
+                Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
+                return;
+            }
+            if (mWebEventHandler == null) {
+                Log.w(TAG, "No handler set for port [" + mPortId + "], dropping message "
+                        + message);
+                return;
+            }
+            mWebEventHandler.onMessage(message);
         }
-        if (mWebEventHandler == null) {
-            Log.w(TAG, "No handler set for port [" + mPortId + "], dropping message " + message);
-            return;
-        }
-        mWebEventHandler.onMessage(message);
     }
 
     public void postMessage(String message, MessagePort[] msgPorts) throws IllegalStateException {

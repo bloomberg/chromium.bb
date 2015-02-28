@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.os.Build;
+import android.os.Handler;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
@@ -463,7 +464,7 @@ public class PostMessageTest extends AwTestBase {
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
                     }
-                });
+                }, null);
                 mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
                         new MessagePort[]{channel[1]});
             }
@@ -497,7 +498,6 @@ public class PostMessageTest extends AwTestBase {
             + "        }"
             + "   </script>"
             + "</body></html>";
-
 
     // Call on non-UI thread.
     private void waitUntilPortReady(final MessagePort port) throws Throwable {
@@ -545,7 +545,7 @@ public class PostMessageTest extends AwTestBase {
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
                     }
-                });
+                }, null);
                 mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
                         new MessagePort[]{channel[1]});
                 channel[0].postMessage(HELLO, null);
@@ -561,12 +561,8 @@ public class PostMessageTest extends AwTestBase {
     // transferred to JS and full communication can happen on it.
     // Do this by sending a message to JS and let it echo'ing the message with
     // some text prepended to it.
-    // @SmallTest
-    // @Feature({"AndroidWebView", "Android-PostMessage"})
-    // TODO(sgurun) enable. This test fails occasionally because the handler that
-    // handles messages in background may not be ready. This logic will be rewritten,
-    // disabling till then.
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testMessageChannelUsingPendingPort() throws Throwable {
         final ChannelContainer channelContainer = new ChannelContainer();
         loadPage(ECHO_PAGE);
@@ -579,7 +575,7 @@ public class PostMessageTest extends AwTestBase {
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
                     }
-                });
+                }, null);
                 mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
                         new MessagePort[]{channel[1]});
                 channel[0].postMessage(HELLO, null);
@@ -606,7 +602,7 @@ public class PostMessageTest extends AwTestBase {
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
                     }
-                });
+                }, null);
                 channel[0].postMessage(HELLO, null);
             }
         });
@@ -676,8 +672,8 @@ public class PostMessageTest extends AwTestBase {
             return mPort.isClosed();
         }
         @Override
-        public void setWebEventHandler(WebEventHandler handler) {
-            mPort.setWebEventHandler(handler);
+        public void setWebEventHandler(WebEventHandler webEventHandler, Handler handler) {
+            mPort.setWebEventHandler(webEventHandler, handler);
         }
         @Override
         public void onMessage(String message) {

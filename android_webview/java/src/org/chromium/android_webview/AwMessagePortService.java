@@ -4,9 +4,6 @@
 
 package org.chromium.android_webview;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.SparseArray;
 
 import org.chromium.base.CalledByNative;
@@ -39,52 +36,11 @@ public class AwMessagePortService {
 
     private static final String TAG = "AwMessagePortService";
 
-    private static final int POST_MESSAGE = 1;
-
     /**
      * Observer for MessageChannel events.
      */
     public static interface MessageChannelObserver {
         void onMessageChannelCreated();
-    }
-
-    private static class PostMessageFromWeb {
-        public MessagePort port;
-        public String message;
-
-        public PostMessageFromWeb(MessagePort port, String message) {
-            this.port = port;
-            this.message = message;
-        }
-    }
-
-    // The messages from JS to Java are posted to a message port on a background thread.
-    // We do this to make any potential synchronization between Java and JS
-    // easier for user programs.
-    private static class MessageHandlerThread extends Thread {
-        private static class MessageHandler extends Handler {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.what == POST_MESSAGE) {
-                    PostMessageFromWeb m = (PostMessageFromWeb) msg.obj;
-                    m.port.onMessage(m.message);
-                    return;
-                }
-                throw new IllegalStateException("undefined message");
-            }
-        }
-
-        private MessageHandler mHandler;
-
-        public Handler getHandler() {
-            return mHandler;
-        }
-
-        public void run() {
-            Looper.prepare();
-            mHandler = new MessageHandler();
-            Looper.loop();
-        }
     }
 
     // A thread safe storage for Message Ports.
@@ -112,13 +68,11 @@ public class AwMessagePortService {
 
     private long mNativeMessagePortService;
     private MessagePortStorage mPortStorage = new MessagePortStorage();
-    private MessageHandlerThread mMessageHandlerThread = new MessageHandlerThread();
     private ObserverList<MessageChannelObserver> mObserverList =
             new ObserverList<MessageChannelObserver>();
 
     AwMessagePortService() {
         mNativeMessagePortService = nativeInitAwMessagePortService();
-        mMessageHandlerThread.start();
     }
 
     public void addObserver(MessageChannelObserver observer) {
@@ -181,16 +135,11 @@ public class AwMessagePortService {
         }
     }
 
+    // Called on IO thread.
     @CalledByNative
-    private void onPostMessage(int portId, String message, int[] ports) {
-        PostMessageFromWeb m = new PostMessageFromWeb(mPortStorage.get(portId), message);
-        Handler handler = mMessageHandlerThread.getHandler();
-        if (handler == null) {
-            // TODO(sgurun) handler could be null. But this logic will be removed.
-            return;
-        }
-        Message msg = handler.obtainMessage(POST_MESSAGE, m);
-        handler.sendMessage(msg);
+    private void onReceivedMessage(int portId, String message, int[] ports) {
+        // TODO(sgurun) implement receiving ports from native
+        mPortStorage.get(portId).onReceivedMessage(message);
     }
 
     @CalledByNative

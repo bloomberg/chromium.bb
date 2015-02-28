@@ -98,11 +98,11 @@ void AwMessagePortServiceImpl::OnConvertedWebToAppMessage(
   ScopedJavaLocalRef<jstring> jmsg = ConvertUTF16ToJavaString(env, value);
   ScopedJavaLocalRef<jintArray> jports =
       ToJavaIntArray(env, sent_message_port_ids);
-  Java_AwMessagePortService_onPostMessage(env,
-                                          jobj.obj(),
-                                          message_port_id,
-                                          jmsg.obj(),
-                                          jports.obj());
+  Java_AwMessagePortService_onReceivedMessage(env,
+                                              jobj.obj(),
+                                              message_port_id,
+                                              jmsg.obj(),
+                                              jports.obj());
 }
 
 void AwMessagePortServiceImpl::OnMessagePortMessageFilterClosing(
