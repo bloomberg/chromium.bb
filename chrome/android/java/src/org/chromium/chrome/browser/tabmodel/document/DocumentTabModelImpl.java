@@ -266,7 +266,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         // Try to create a Tab that will hold the Tab's info.
         Entry entry = mEntryMap.get(tabId);
-        if (entry == null) return null;
+        assert entry != null;
 
         // If a tab has already been initialized, use that.
         if (entry.placeholderTab != null && entry.placeholderTab.isInitialized()) {
@@ -351,6 +351,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * @param tabId ID to add.
      */
     private void addTabId(int index, int tabId) {
+        assert tabId != Tab.INVALID_TAB_ID;
         if (mTabIdList.contains(tabId)) return;
         mTabIdList.add(index, tabId);
     }
@@ -430,7 +431,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
     @Override
     public void updateEntry(Intent intent, Tab tab) {
-        if (!mActivityDelegate.isValidActivity(isIncognito(), intent)) return;
+        assert mActivityDelegate.isValidActivity(isIncognito(), intent);
 
         int id = ActivityDelegate.getTabIdFromIntent(intent);
         if (id == Tab.INVALID_TAB_ID) return;
@@ -867,6 +868,14 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         int parentIndex = indexOf(tab.getParentId());
         int index = parentIndex == -1 ? getCount() : parentIndex + 1;
         addTab(tab, index, tab.getLaunchType());
+    }
+
+    @Override
+    public void addTab(Intent intent, Tab tab) {
+        int parentIndex = indexOf(tab.getParentId());
+        int index = parentIndex == -1 ? getCount() : parentIndex + 1;
+        addTab(tab, index, tab.getLaunchType());
+        updateEntry(intent, tab);
     }
 
     @Override

@@ -168,6 +168,13 @@ public interface DocumentTabModel extends TabModel {
     void addTab(Tab tab);
 
     /**
+     * Adds the given Tab to this TabModel.
+     * @param intent Intent of the DocumentActivity.
+     * @param tab Tab to add.
+     */
+    void addTab(Intent intent, Tab tab);
+
+    /**
      * @return The stage of initialization that the DocumentTabModel is currently going through.
      */
     int getCurrentInitializationStage();

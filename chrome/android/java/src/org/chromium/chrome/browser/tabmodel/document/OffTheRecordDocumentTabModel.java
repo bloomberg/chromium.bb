@@ -114,6 +114,12 @@ public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implement
     }
 
     @Override
+    public void addTab(Intent intent, Tab tab) {
+        ensureTabModelImpl();
+        getDelegateDocumentTabModel().addTab(intent, tab);
+    }
+
+    @Override
     public boolean closeTabAt(int index) {
         boolean success = false;
         if (isDocumentTabModelImplCreated()) {
