@@ -82,7 +82,11 @@ public enum ModelType {
     /**
      * A supervised user whitelist object.
      */
-    MANAGED_USER_WHITELIST("MANAGED_USER_WHITELIST");
+    MANAGED_USER_WHITELIST("MANAGED_USER_WHITELIST"),
+    /**
+     * An autofill wallet data object.
+     */
+    AUTOFILL_WALLET("AUTOFILL_WALLET");
 
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";
