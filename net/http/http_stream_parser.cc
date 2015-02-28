@@ -358,11 +358,6 @@ int HttpStreamParser::ReadResponseBody(IOBuffer* buf, int buf_len,
 }
 
 void HttpStreamParser::OnIOComplete(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 DidCompleteReadWrite => HttpStreamParser::OnIOComplete"));
-
   result = DoLoop(result);
 
   // The client callback can do anything, including destroying this class,

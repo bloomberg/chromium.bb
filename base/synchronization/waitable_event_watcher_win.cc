@@ -5,7 +5,6 @@
 #include "base/synchronization/waitable_event_watcher.h"
 
 #include "base/compiler_specific.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/object_watcher.h"
 
@@ -37,11 +36,6 @@ WaitableEvent* WaitableEventWatcher::GetWatchedEvent() {
 }
 
 void WaitableEventWatcher::OnObjectSignaled(HANDLE h) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 WaitableEventWatcher::OnObjectSignaled"));
-
   WaitableEvent* event = event_;
   EventCallback callback = callback_;
   event_ = NULL;

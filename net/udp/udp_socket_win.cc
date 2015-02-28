@@ -145,10 +145,10 @@ void UDPSocketWin::Core::WatchForWrite() {
 }
 
 void UDPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462789 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 UDPSocketWin::Core::ReadDelegate::OnObjectSignaled"));
+          "462789 UDPSocketWin::Core::ReadDelegate::OnObjectSignaled"));
 
   DCHECK_EQ(object, core_->read_overlapped_.hEvent);
   if (core_->socket_)
@@ -158,11 +158,6 @@ void UDPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
 }
 
 void UDPSocketWin::Core::WriteDelegate::OnObjectSignaled(HANDLE object) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 UDPSocketWin::Core::WriteDelegate::OnObjectSignaled"));
-
   DCHECK_EQ(object, core_->write_overlapped_.hEvent);
   if (core_->socket_)
     core_->socket_->DidCompleteWrite();

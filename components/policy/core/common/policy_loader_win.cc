@@ -31,7 +31,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/scoped_native_library.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -683,11 +682,6 @@ void PolicyLoaderWin::SetupWatches() {
 }
 
 void PolicyLoaderWin::OnObjectSignaled(HANDLE object) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 PolicyLoaderWin::OnObjectSignaled"));
-
   DCHECK(object == user_policy_changed_event_.handle() ||
          object == machine_policy_changed_event_.handle())
       << "unexpected object signaled policy reload, obj = "

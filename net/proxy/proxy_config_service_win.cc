@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/string_tokenizer.h"
@@ -113,11 +112,6 @@ bool ProxyConfigServiceWin::AddKeyToWatchList(HKEY rootkey,
 }
 
 void ProxyConfigServiceWin::OnObjectSignaled(base::win::RegKey* key) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 ProxyConfigServiceWin::OnObjectSignaled"));
-
   // Figure out which registry key signalled this change.
   RegKeyList::iterator it =
       std::find(keys_to_watch_.begin(), keys_to_watch_.end(), key);

@@ -1346,10 +1346,9 @@ void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
 }
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462774 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 DoReadCallback => SpdySession::PumpReadLoop"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("462774 SpdySession::PumpReadLoop"));
 
   CHECK(!in_io_loop_);
   if (availability_state_ == STATE_DRAINING) {

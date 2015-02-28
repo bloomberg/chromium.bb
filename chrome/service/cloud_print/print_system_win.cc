@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_bstr.h"
@@ -89,11 +88,6 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   // base::ObjectWatcher::Delegate method
   virtual void OnObjectSignaled(HANDLE object) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "418183 PrintSystemWatcherWin::OnObjectSignaled"));
-
     crash_keys::ScopedPrinterInfo crash_key(printer_info_);
     DWORD change = 0;
     FindNextPrinterChangeNotification(object, &change, NULL, NULL);
@@ -355,11 +349,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
 
     // base::win::ObjectWatcher::Delegate implementation.
     virtual void OnObjectSignaled(HANDLE object) override {
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("Core_OnObjectSignaled"));
-
       DCHECK(xps_print_job_.get());
       DCHECK(object == job_progress_event_.Get());
       ResetEvent(job_progress_event_.Get());

@@ -21,7 +21,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -247,11 +246,6 @@ void StreamListenSocket::UnwatchSocket() {
 #if defined(OS_WIN)
 // MessageLoop watcher callback.
 void StreamListenSocket::OnObjectSignaled(HANDLE object) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "418183 StreamListenSocket::OnObjectSignaled"));
-
   WSANETWORKEVENTS ev;
   if (kSocketError == WSAEnumNetworkEvents(socket_, socket_event_, &ev)) {
     // TODO
