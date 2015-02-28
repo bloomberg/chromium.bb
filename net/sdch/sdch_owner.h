@@ -92,7 +92,8 @@ class NET_EXPORT SdchOwner : public net::SdchObserver {
   unsigned int destroyed_;
 #endif
 
-  base::MemoryPressureListener memory_pressure_listener_;
+  // TODO(rmcilroy) Add back memory_pressure_listener_ when
+  // http://crbug.com/447208 is fixed
 
   DISALLOW_COPY_AND_ASSIGN(SdchOwner);
 };

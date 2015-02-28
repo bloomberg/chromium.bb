@@ -87,17 +87,14 @@ SdchOwner::SdchOwner(net::SdchManager* sdch_manager,
       total_dictionary_bytes_(0),
       clock_(new base::DefaultClock),
       max_total_dictionary_size_(kMaxTotalDictionarySize),
-      min_space_for_dictionary_fetch_(kMinSpaceForDictionaryFetch),
+      min_space_for_dictionary_fetch_(kMinSpaceForDictionaryFetch)
+      // TODO(rmcilroy) Add back memory_pressure_listener_ when
+      // http://crbug.com/447208 is fixed
 #if defined(OS_CHROMEOS)
       // For debugging http://crbug.com/454198; remove when resolved.
-      destroyed_(0),
+      , destroyed_(0)
 #endif
-      memory_pressure_listener_(
-          base::Bind(&SdchOwner::OnMemoryPressure,
-                     // Because |memory_pressure_listener_| is owned by
-                     // SdchOwner, the SdchOwner object will be available
-                     // for the lifetime of |memory_pressure_listener_|.
-                     base::Unretained(this))) {
+      {
 #if defined(OS_CHROMEOS)
   // For debugging http://crbug.com/454198; remove when resolved.
   CHECK(clock_.get());

@@ -461,7 +461,9 @@ TEST_F(SdchOwnerTest, ClearReturnsSpace) {
 }
 
 // Confirm memory pressure gets all the space back.
-TEST_F(SdchOwnerTest, MemoryPressureReturnsSpace) {
+// TODO(rmcilroy) Disabled while investigating http://crbug.com/447208 -
+// re-enable once fixed.
+TEST_F(SdchOwnerTest, DISABLED_MemoryPressureReturnsSpace) {
   std::string server_hash_d1;
   std::string server_hash_d2;
 
