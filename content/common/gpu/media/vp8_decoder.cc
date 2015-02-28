@@ -171,8 +171,9 @@ bool VP8Decoder::DecodeAndOutputCurrentFrame() {
                                   golden_frame_, alt_frame_))
     return false;
 
-  if (!accelerator_->OutputPicture(curr_pic_))
-    return false;
+  if (curr_frame_hdr_->show_frame)
+    if (!accelerator_->OutputPicture(curr_pic_))
+      return false;
 
   RefreshReferenceFrames();
 
