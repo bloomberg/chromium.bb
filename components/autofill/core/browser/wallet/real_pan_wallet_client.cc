@@ -86,6 +86,7 @@ RealPanWalletClient::RealPanWalletClient(
     : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
       context_getter_(context_getter),
       delegate_(delegate),
+      has_retried_authorization_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate);
 }
@@ -95,45 +96,20 @@ RealPanWalletClient::~RealPanWalletClient() {
 
 void RealPanWalletClient::Prepare() {
   if (access_token_.empty())
-    StartTokenFetch();
+    StartTokenFetch(false);
 }
 
 void RealPanWalletClient::UnmaskCard(
     const CreditCard& card,
     const CardUnmaskDelegate::UnmaskResponse& response) {
   DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
+  card_ = card;
+  response_ = response;
+  has_retried_authorization_ = false;
 
-  request_.reset(net::URLFetcher::Create(
-      0, GetUnmaskCardRequestUrl(), net::URLFetcher::POST, this));
-  request_->SetRequestContext(context_getter_.get());
-  request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE);
-
-  base::DictionaryValue request_dict;
-  request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
-  request_dict.SetString("credit_card_id", card.server_id());
-  request_dict.SetString("risk_data_base64", response.risk_data);
-  request_dict.Set("context", make_scoped_ptr(new base::DictionaryValue()));
-
-  int value = 0;
-  if (base::StringToInt(response.exp_month, &value))
-    request_dict.SetInteger("expiration_month", value);
-  if (base::StringToInt(response.exp_year, &value))
-    request_dict.SetInteger("expiration_year", value);
-
-  std::string json_request;
-  base::JSONWriter::Write(&request_dict, &json_request);
-  std::string post_body =
-      base::StringPrintf(kUnmaskCardRequestFormat,
-                         net::EscapeUrlEncodedData(json_request, true).c_str(),
-                         net::EscapeUrlEncodedData(
-                             base::UTF16ToASCII(response.cvc), true).c_str());
-  request_->SetUploadData("application/x-www-form-urlencoded", post_body);
-  request_->AddExtraRequestHeader(
-      net::HttpRequestHeaders::kAcceptEncoding + std::string(": chunked;q=0"));
-
+  CreateRequest();
   if (access_token_.empty())
-    StartTokenFetch();
+    StartTokenFetch(false);
   else
     SetOAuth2TokenAndStartRequest();
 }
@@ -179,6 +155,16 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
       break;
     }
 
+    case net::HTTP_UNAUTHORIZED: {
+      if (has_retried_authorization_)
+        break;
+      has_retried_authorization_ = true;
+
+      CreateRequest();
+      StartTokenFetch(true);
+      return;
+    }
+
     // Handle anything else as a generic error.
     default:
       break;
@@ -222,17 +208,49 @@ void RealPanWalletClient::OnGetTokenFailure(
   access_token_request_.reset();
 }
 
-void RealPanWalletClient::StartTokenFetch() {
-  // Don't cancel outstanding requests.
-  if (access_token_request_)
-    return;
+void RealPanWalletClient::CreateRequest() {
+  request_.reset(net::URLFetcher::Create(
+      0, GetUnmaskCardRequestUrl(), net::URLFetcher::POST, this));
+  request_->SetRequestContext(context_getter_.get());
+  request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE);
 
-  // However, do clear old tokens.
-  access_token_.clear();
+  base::DictionaryValue request_dict;
+  request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
+  request_dict.SetString("credit_card_id", card_.server_id());
+  request_dict.SetString("risk_data_base64", response_.risk_data);
+  request_dict.Set("context", make_scoped_ptr(new base::DictionaryValue()));
+
+  int value = 0;
+  if (base::StringToInt(response_.exp_month, &value))
+    request_dict.SetInteger("expiration_month", value);
+  if (base::StringToInt(response_.exp_year, &value))
+    request_dict.SetInteger("expiration_year", value);
+
+  std::string json_request;
+  base::JSONWriter::Write(&request_dict, &json_request);
+  std::string post_body =
+      base::StringPrintf(kUnmaskCardRequestFormat,
+                         net::EscapeUrlEncodedData(json_request, true).c_str(),
+                         net::EscapeUrlEncodedData(
+                             base::UTF16ToASCII(response_.cvc), true).c_str());
+  request_->SetUploadData("application/x-www-form-urlencoded", post_body);
+}
+
+void RealPanWalletClient::StartTokenFetch(bool invalidate_old) {
+  // We're still waiting for the last request to come back.
+  if (!invalidate_old && access_token_request_)
+    return;
 
   OAuth2TokenService::ScopeSet wallet_scopes;
   wallet_scopes.insert(kWalletOAuth2Scope);
   IdentityProvider* identity = delegate_->GetIdentityProvider();
+  if (invalidate_old) {
+    DCHECK(!access_token_.empty());
+    identity->GetTokenService()->InvalidateToken(
+        identity->GetActiveAccountId(), wallet_scopes, access_token_);
+  }
+  access_token_.clear();
   access_token_request_ = identity->GetTokenService()->StartRequest(
       identity->GetActiveAccountId(), wallet_scopes, this);
 }
