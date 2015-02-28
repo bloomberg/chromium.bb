@@ -43,20 +43,11 @@ group("all_blink") {
   testonly = true
 
   deps = [
+    ":blink_tests",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
-    "//third_party/WebKit/Source/platform:heap_unittests",
-    "//third_party/WebKit/Source/platform:platform_unittests",
     "//third_party/WebKit/Source/web",
-    "//third_party/WebKit/Source/wtf:wtf_unittests",
   ]
-  if (is_mac) {
-    # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
-    deps -= [
-      "//third_party/WebKit/Source/platform:heap_unittests",
-      "//third_party/WebKit/Source/platform:platform_unittests",
-    ]
-  }
 }
 
 group("blink_tests") {
@@ -65,6 +56,7 @@ group("blink_tests") {
   deps = [
     "//third_party/WebKit/Source/platform:heap_unittests",
     "//third_party/WebKit/Source/platform:platform_unittests",
+    "//third_party/WebKit/Source/web:webkit_unit_tests",
     "//third_party/WebKit/Source/wtf:wtf_unittests",
   ]
 
@@ -73,6 +65,7 @@ group("blink_tests") {
     deps -= [
       "//third_party/WebKit/Source/platform:heap_unittests",
       "//third_party/WebKit/Source/platform:platform_unittests",
+      "//third_party/WebKit/Source/web:webkit_unit_tests",
     ]
   }
 }

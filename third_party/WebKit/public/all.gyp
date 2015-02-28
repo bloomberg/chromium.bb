@@ -37,6 +37,14 @@
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
+                'blink_tests',
+            ],
+        },
+        {
+            # GN version: //third_party/WebKit/public:blink_tests
+            'target_name': 'blink_tests',
+            'type': 'none',
+            'dependencies': [
                 '../Source/platform/blink_platform_tests.gyp:blink_heap_unittests',
                 '../Source/platform/blink_platform_tests.gyp:blink_platform_unittests',
                 '../Source/web/web_tests.gyp:webkit_unit_tests',
