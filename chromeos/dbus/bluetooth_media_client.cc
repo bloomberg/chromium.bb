@@ -103,6 +103,8 @@ class BluetoothMediaClientImpl
                         const EndpointProperties& properties,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) override {
+    VLOG(1) << "RegisterEndpoint - endpoint: " << endpoint_path.value();
+
     dbus::MethodCall method_call(kBluetoothMediaInterface, kRegisterEndpoint);
 
     dbus::MessageWriter writer(&method_call);
@@ -155,6 +157,8 @@ class BluetoothMediaClientImpl
                           const dbus::ObjectPath& endpoint_path,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) override {
+    VLOG(1) << "UnregisterEndpoint - endpoint: " << endpoint_path.value();
+
     dbus::MethodCall method_call(kBluetoothMediaInterface, kUnregisterEndpoint);
 
     // Send the path to the endpoint.

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "base/debug/stack_trace.h"
@@ -30,10 +31,43 @@ ObjectPath GenerateEndpointPath() {
   return ObjectPath(path.str());
 }
 
+std::string StateToString(const BluetoothAudioSink::State& state) {
+  switch (state) {
+    case BluetoothAudioSink::STATE_INVALID:
+      return "invalid";
+    case BluetoothAudioSink::STATE_DISCONNECTED:
+      return "disconnected";
+    case BluetoothAudioSink::STATE_IDLE:
+      return "idle";
+    case BluetoothAudioSink::STATE_PENDING:
+      return "pending";
+    case BluetoothAudioSink::STATE_ACTIVE:
+      return "active";
+    default:
+      return "unknown";
+  }
+}
+
+std::string ErrorCodeToString(const BluetoothAudioSink::ErrorCode& error_code) {
+  switch (error_code) {
+    case BluetoothAudioSink::ERROR_UNSUPPORTED_PLATFORM:
+      return "unsupported platform";
+    case BluetoothAudioSink::ERROR_INVALID_ADAPTER:
+      return "invalid adapter";
+    case BluetoothAudioSink::ERROR_NOT_REGISTERED:
+      return "not registered";
+    case BluetoothAudioSink::ERROR_NOT_UNREGISTERED:
+      return "not unregistered";
+    default:
+      return "unknown";
+  }
+}
+
 // A dummy error callback for calling Unregister() in destructor.
 void UnregisterErrorCallback(
     device::BluetoothAudioSink::ErrorCode error_code) {
-  VLOG(1) << "Bluetooth audio sink: Error code: " << error_code;
+  VLOG(1) << "UnregisterErrorCallback - " << ErrorCodeToString(error_code)
+          << "(" << error_code << ")";
 }
 
 }  // namespace
@@ -48,6 +82,8 @@ BluetoothAudioSinkChromeOS::BluetoothAudioSinkChromeOS(
       write_mtu_(nullptr),
       adapter_(adapter),
       weak_ptr_factory_(this) {
+  VLOG(1) << "BluetoothAudioSinkChromeOS created";
+
   DCHECK(adapter_.get());
   DCHECK(adapter_->IsPresent());
 
@@ -67,6 +103,8 @@ BluetoothAudioSinkChromeOS::BluetoothAudioSinkChromeOS(
 }
 
 BluetoothAudioSinkChromeOS::~BluetoothAudioSinkChromeOS() {
+  VLOG(1) << "BluetoothAudioSinkChromeOS destroyed";
+
   DCHECK(adapter_.get());
 
   if (state_ != BluetoothAudioSink::STATE_INVALID && media_endpoint_.get()) {
@@ -90,6 +128,8 @@ BluetoothAudioSinkChromeOS::~BluetoothAudioSinkChromeOS() {
 void BluetoothAudioSinkChromeOS::Unregister(
     const base::Closure& callback,
     const device::BluetoothAudioSink::ErrorCallback& error_callback) {
+  VLOG(1) << "Unregister";
+
   if (!DBusThreadManager::IsInitialized())
     error_callback.Run(BluetoothAudioSink::ERROR_NOT_UNREGISTERED);
 
@@ -128,8 +168,7 @@ uint16_t BluetoothAudioSinkChromeOS::GetVolume() const {
 
 void BluetoothAudioSinkChromeOS::AdapterPresentChanged(
     device::BluetoothAdapter* adapter, bool present) {
-  VLOG(1) << "Bluetooth audio sink: Bluetooth adapter present changed: "
-          << present;
+  VLOG(1) << "AdapterPresentChanged: " << present;
 
   if (adapter->IsPresent()) {
     StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
@@ -141,8 +180,7 @@ void BluetoothAudioSinkChromeOS::AdapterPresentChanged(
 
 void BluetoothAudioSinkChromeOS::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter, bool powered) {
-  VLOG(1) << "Bluetooth audio sink: Bluetooth adapter powered changed: "
-          << powered;
+  VLOG(1) << "AdapterPoweredChanged: " << powered;
 
   // Regardless of the new powered state, |state_| goes to STATE_DISCONNECTED.
   // If false, the transport is closed, but the endpoint is still valid for use.
@@ -154,6 +192,7 @@ void BluetoothAudioSinkChromeOS::AdapterPoweredChanged(
 
 void BluetoothAudioSinkChromeOS::MediaRemoved(const ObjectPath& object_path) {
   if (object_path == media_path_) {
+    VLOG(1) << "MediaRemoved: " << object_path.value();
     StateChanged(BluetoothAudioSink::STATE_INVALID);
   }
 }
@@ -164,6 +203,7 @@ void BluetoothAudioSinkChromeOS::MediaTransportRemoved(
   // transport object should be removed accordingly, and the state should be
   // changed to STATE_DISCONNECTED.
   if (object_path == transport_path_) {
+    VLOG(1) << "MediaTransportRemoved: " << object_path.value();
     StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
   }
 }
@@ -173,6 +213,8 @@ void BluetoothAudioSinkChromeOS::MediaTransportPropertyChanged(
     const std::string& property_name) {
   if (object_path != transport_path_)
     return;
+
+  VLOG(1) << "MediaTransportPropertyChanged: " << property_name;
 
   // Retrieves the property set of the transport object with |object_path|.
   chromeos::BluetoothMediaTransportClient::Properties* properties =
@@ -194,21 +236,18 @@ void BluetoothAudioSinkChromeOS::MediaTransportPropertyChanged(
     }
   } else if (property_name == properties->volume.name()) {
     VolumeChanged(properties->volume.value());
-  } else {
-    VLOG(1) << "Bluetooth audio sink: transport property " << property_name
-            << " changed";
   }
 }
 
 void BluetoothAudioSinkChromeOS::SetConfiguration(
     const ObjectPath& transport_path,
     const TransportProperties& properties) {
-  VLOG(1) << "Bluetooth audio sink: SetConfiguration called";
+  VLOG(1) << "SetConfiguration";
   transport_path_ = transport_path;
 
   // The initial state for a connection should be "idle".
   if (properties.state != BluetoothMediaTransportClient::kStateIdle) {
-    VLOG(1) << "Bluetooth Audio Sink: unexpected state " << properties.state;
+    VLOG(1) << "SetConfiugration - unexpected state :" << properties.state;
     return;
   }
 
@@ -223,7 +262,7 @@ void BluetoothAudioSinkChromeOS::SetConfiguration(
 void BluetoothAudioSinkChromeOS::SelectConfiguration(
     const std::vector<uint8_t>& capabilities,
     const SelectConfigurationCallback& callback) {
-  VLOG(1) << "Bluetooth audio sink: SelectConfiguration called";
+  VLOG(1) << "SelectConfiguration";
   callback.Run(options_.capabilities);
 }
 
@@ -231,12 +270,12 @@ void BluetoothAudioSinkChromeOS::ClearConfiguration(
     const ObjectPath& transport_path) {
   if (transport_path != transport_path_)
     return;
-  VLOG(1) << "Bluetooth audio sink: ClearConfiguration called";
+  VLOG(1) << "ClearConfiguration";
   StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
 }
 
 void BluetoothAudioSinkChromeOS::Released() {
-  VLOG(1) << "Bluetooth audio sink: Released called";
+  VLOG(1) << "Released";
   StateChanged(BluetoothAudioSink::STATE_INVALID);
 }
 
@@ -244,6 +283,8 @@ void BluetoothAudioSinkChromeOS::Register(
     const BluetoothAudioSink::Options& options,
     const base::Closure& callback,
     const BluetoothAudioSink::ErrorCallback& error_callback) {
+  VLOG(1) << "Register";
+
   DCHECK(adapter_.get());
   DCHECK_EQ(state_, BluetoothAudioSink::STATE_DISCONNECTED);
 
@@ -291,7 +332,8 @@ void BluetoothAudioSinkChromeOS::StateChanged(
   if (state == state_)
     return;
 
-  VLOG(1) << "Bluetooth audio sink state changed: " << state;
+  VLOG(1) << "StateChnaged: " << StateToString(state);
+
   switch (state) {
     case BluetoothAudioSink::STATE_INVALID:
       ResetMedia();
@@ -326,9 +368,9 @@ void BluetoothAudioSinkChromeOS::VolumeChanged(uint16_t volume) {
   if (volume == volume_)
     return;
 
-  VLOG(1) << "Bluetooth audio sink volume changed: " << volume;
-  volume_ = std::min(volume, BluetoothAudioSink::kInvalidVolume);
+  VLOG(1) << "VolumeChanged: " << volume;
 
+  volume_ = std::min(volume, BluetoothAudioSink::kInvalidVolume);
   FOR_EACH_OBSERVER(BluetoothAudioSink::Observer, observers_,
                     BluetoothAudioSinkVolumeChanged(this, volume_));
 }
@@ -336,7 +378,7 @@ void BluetoothAudioSinkChromeOS::VolumeChanged(uint16_t volume) {
 void BluetoothAudioSinkChromeOS::OnRegisterSucceeded(
     const base::Closure& callback) {
   DCHECK(media_endpoint_.get());
-  VLOG(1) << "Bluetooth audio sink registerd";
+  VLOG(1) << "OnRegisterSucceeded";
 
   StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
   callback.Run();
@@ -346,7 +388,8 @@ void BluetoothAudioSinkChromeOS::OnRegisterFailed(
     const BluetoothAudioSink::ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  VLOG(1) << "Bluetooth audio sink: " << error_name << ": " <<  error_message;
+  VLOG(1) << "OnRegisterFailed - error name: " << error_name
+          << ", error message: " << error_message;
 
   ResetEndpoint();
   error_callback.Run(BluetoothAudioSink::ERROR_NOT_REGISTERED);
@@ -354,7 +397,7 @@ void BluetoothAudioSinkChromeOS::OnRegisterFailed(
 
 void BluetoothAudioSinkChromeOS::OnUnregisterSucceeded(
     const base::Closure& callback) {
-  VLOG(1) << "Bluetooth audio sink unregisterd";
+  VLOG(1) << "Unregisterd";
 
   // Once the state becomes STATE_INVALID, media, media transport and media
   // endpoint will be reset.
@@ -366,7 +409,9 @@ void BluetoothAudioSinkChromeOS::OnUnregisterFailed(
     const device::BluetoothAudioSink::ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  VLOG(1) << "Bluetooth audio sink: " << error_name << ": " <<  error_message;
+  VLOG(1) << "OnUnregisterFailed - error name: " << error_name
+          << ", error message: " << error_message;
+
   error_callback.Run(BluetoothAudioSink::ERROR_NOT_UNREGISTERED);
 }
 
@@ -379,10 +424,14 @@ void BluetoothAudioSinkChromeOS::ReadFromFD() {
 }
 
 void BluetoothAudioSinkChromeOS::ResetMedia() {
+  VLOG(1) << "ResetMedia";
+
   media_path_ = dbus::ObjectPath("");
 }
 
 void BluetoothAudioSinkChromeOS::ResetTransport() {
+  VLOG(1) << "ResetTransport";
+
   if (transport_path_.value() == "")
     return;
   transport_path_ = dbus::ObjectPath("");
@@ -393,6 +442,8 @@ void BluetoothAudioSinkChromeOS::ResetTransport() {
 }
 
 void BluetoothAudioSinkChromeOS::ResetEndpoint() {
+  VLOG(1) << "ResetEndpoint";
+
   endpoint_path_ = ObjectPath("");
   media_endpoint_ = nullptr;
 }

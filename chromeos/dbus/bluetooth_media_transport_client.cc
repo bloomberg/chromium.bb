@@ -129,6 +129,8 @@ class BluetoothMediaTransportClientImpl
   void Acquire(const dbus::ObjectPath& object_path,
                const AcquireCallback& callback,
                const ErrorCallback& error_callback) override {
+    VLOG(1) << "Acquire - transport: " << object_path.value();
+
     DCHECK(object_manager_);
 
     dbus::MethodCall method_call(kBluetoothMediaTransportInterface, kAcquire);
@@ -150,6 +152,8 @@ class BluetoothMediaTransportClientImpl
   void TryAcquire(const dbus::ObjectPath& object_path,
                   const AcquireCallback& callback,
                   const ErrorCallback& error_callback) override {
+    VLOG(1) << "TryAcquire - transport: " << object_path.value();
+
     DCHECK(object_manager_);
 
     dbus::MethodCall method_call(kBluetoothMediaTransportInterface,
@@ -172,6 +176,8 @@ class BluetoothMediaTransportClientImpl
   void Release(const dbus::ObjectPath& object_path,
                const base::Closure& callback,
                const ErrorCallback& error_callback) override {
+    VLOG(1) << "Release - transport: " << object_path.value();
+
     DCHECK(object_manager_);
 
     dbus::MethodCall method_call(kBluetoothMediaTransportInterface, kRelease);

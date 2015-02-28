@@ -106,13 +106,15 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success) {
-    LOG_IF(WARNING, !success) << "Failed to export "
-                              << interface_name << "." << method_name;
+    LOG_IF(ERROR, !success) << "Failed to export " << interface_name << "."
+                            << method_name;
   }
 
   // Called by dbus:: when the remote device connects to the Media Endpoint.
   void SetConfiguration(dbus::MethodCall* method_call,
                         dbus::ExportedObject::ResponseSender response_sender) {
+    VLOG(1) << "SetConfiuration";
+
     DCHECK(OnOriginThread());
     DCHECK(delegate_);
 
@@ -121,8 +123,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
     dbus::MessageReader property_reader(method_call);
     if (!reader.PopObjectPath(&transport_path) ||
         !reader.PopArray(&property_reader)) {
-      LOG(WARNING) << "SetConfiguration called with incorrect parameters: "
-                   << method_call->ToString();
+      LOG(ERROR) << "SetConfiguration called with incorrect parameters: "
+                 << method_call->ToString();
       return;
     }
 
@@ -134,8 +136,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
       std::string key;
       if (!property_reader.PopDictEntry(&dict_entry_reader) ||
           !dict_entry_reader.PopString(&key)) {
-        LOG(WARNING) << "SetConfiguration called with incorrect parameters: "
-                     << method_call->ToString();
+        LOG(ERROR) << "SetConfiguration called with incorrect parameters: "
+                   << method_call->ToString();
       } else if (key == BluetoothMediaTransportClient::kDeviceProperty) {
         dict_entry_reader.PopVariantOfObjectPath(&properties.device);
       } else if (key == BluetoothMediaTransportClient::kUUIDProperty) {
@@ -164,8 +166,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
         properties.state != kInvalidState) {
       delegate_->SetConfiguration(transport_path, properties);
     } else {
-      LOG(WARNING) << "SetConfiguration called with incorrect parameters: "
-                   << method_call->ToString();
+      LOG(ERROR) << "SetConfiguration called with incorrect parameters: "
+                 << method_call->ToString();
     }
 
     response_sender.Run(dbus::Response::FromMethodCall(method_call));
@@ -176,6 +178,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
   void SelectConfiguration(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender) {
+    VLOG(1) << "SelectConfiguration";
+
     DCHECK(OnOriginThread());
     DCHECK(delegate_);
 
@@ -183,8 +187,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
     const uint8_t* capabilities = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&capabilities, &length)) {
-      LOG(WARNING) << "SelectConfiguration called with incorrect parameters: "
-                   << method_call->ToString();
+      LOG(ERROR) << "SelectConfiguration called with incorrect parameters: "
+                 << method_call->ToString();
       return;
     }
 
@@ -205,14 +209,16 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
   void ClearConfiguration(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender) {
+    VLOG(1) << "ClearConfiguration";
+
     DCHECK(OnOriginThread());
     DCHECK(delegate_);
 
     dbus::MessageReader reader(method_call);
     dbus::ObjectPath transport_path;
     if (!reader.PopObjectPath(&transport_path)) {
-      LOG(WARNING) << "ClearConfiguration called with incorrect parameters: "
-                   << method_call->ToString();
+      LOG(ERROR) << "ClearConfiguration called with incorrect parameters: "
+                 << method_call->ToString();
       return;
     }
 
@@ -225,6 +231,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
   // Endpoint.
   void Release(dbus::MethodCall* method_call,
                dbus::ExportedObject::ResponseSender response_sender) {
+    VLOG(1) << "Release";
+
     DCHECK(OnOriginThread());
     DCHECK(delegate_);
 
@@ -238,6 +246,8 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
   void OnConfiguration(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender,
                        const std::vector<uint8_t>& configuration) {
+    VLOG(1) << "OnConfiguration";
+
     DCHECK(OnOriginThread());
 
     // Generates the response to the method call.
@@ -245,7 +255,7 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
         dbus::Response::FromMethodCall(method_call));
     dbus::MessageWriter writer(response.get());
     if (configuration.empty()) {
-      LOG(WARNING) << "OnConfiguration called with empty configuration.";
+      LOG(ERROR) << "OnConfiguration called with empty configuration.";
       writer.AppendArrayOfBytes(nullptr, 0);
     } else {
       writer.AppendArrayOfBytes(&configuration[0], configuration.size());
