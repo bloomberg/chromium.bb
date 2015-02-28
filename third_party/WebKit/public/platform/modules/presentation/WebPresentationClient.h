@@ -11,6 +11,7 @@ namespace blink {
 
 class WebPresentationController;
 class WebPresentationSessionClient;
+class WebString;
 struct WebPresentationError;
 
 // If session was created, callback's onSuccess() is invoked with the information about the
@@ -29,6 +30,14 @@ public:
     // Called when the frame attaches the first event listener to or removes the
     // last event listener from the |availablechange| event.
     virtual void updateAvailableChangeWatched(bool watched) = 0;
+
+    // Called when the frame request to start a new session.
+    // The ownership of the |callbacks| argument is transferred to the embedder.
+    virtual void startSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
+
+    // Called when the frame request to start a new session.
+    // The ownership of the |callbacks| argument is transferred to the embedder.
+    virtual void joinSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
 };
 
 } // namespace blink

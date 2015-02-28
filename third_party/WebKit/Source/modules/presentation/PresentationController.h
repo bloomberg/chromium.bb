@@ -9,12 +9,12 @@
 #include "modules/presentation/Presentation.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "public/platform/modules/presentation/WebPresentationController.h"
 
 namespace blink {
 
 class LocalFrame;
-class WebPresentationClient;
 
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
@@ -45,6 +45,12 @@ public:
     // Called when the first listener was added to or the last listener was removed from the
     // |availablechange| event.
     void updateAvailableChangeWatched(bool watched);
+
+    // Called when the frame wants to start a new presentation.
+    void startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
+
+    // Called when the frame wants to join an existing presentation.
+    void joinSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
 
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);

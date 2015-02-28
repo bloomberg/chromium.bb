@@ -74,6 +74,24 @@ void PresentationController::updateAvailableChangeWatched(bool watched)
         m_client->updateAvailableChangeWatched(watched);
 }
 
+void PresentationController::startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)
+{
+    if (!m_client) {
+        delete callbacks;
+        return;
+    }
+    m_client->startSession(presentationUrl, presentationId, callbacks);
+}
+
+void PresentationController::joinSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)
+{
+    if (!m_client) {
+        delete callbacks;
+        return;
+    }
+    m_client->joinSession(presentationUrl, presentationId, callbacks);
+}
+
 void PresentationController::setPresentation(Presentation* presentation)
 {
     m_presentation = presentation;

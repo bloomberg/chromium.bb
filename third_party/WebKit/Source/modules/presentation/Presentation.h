@@ -10,6 +10,7 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "modules/presentation/PresentationSession.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/Heap.h"
 
 namespace WTF {
 class String;
@@ -56,6 +57,9 @@ public:
     void didChangeAvailability(bool available);
     // Queried by the controller if |availablechange| event has any listeners.
     bool isAvailableChangeWatched() const;
+    // Adds a session to the open sessions list.
+    void registerSession(PresentationSession*);
+
 private:
     explicit Presentation(LocalFrame*);
 
@@ -63,7 +67,11 @@ private:
     // Can return |nullptr| if the frame is detached from the document.
     PresentationController* presentationController();
 
+    // The session object provided to the presentation page. Not supported.
     Member<PresentationSession> m_session;
+
+    // The sessions opened for this frame.
+    HeapHashSet<Member<PresentationSession>> m_openSessions;
 };
 
 } // namespace blink
