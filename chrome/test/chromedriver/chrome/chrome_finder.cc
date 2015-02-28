@@ -52,6 +52,10 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   locations->push_back(base::FilePath("/bin"));
   locations->push_back(base::FilePath("/sbin"));
 }
+#elif defined(OS_ANDROID)
+void GetApplicationDirs(std::vector<base::FilePath>* locations) {
+  // On Android we won't be able to find Chrome executable
+}
 #endif
 
 }  // namespace
@@ -82,23 +86,23 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations);
 #endif
 
 bool FindChrome(base::FilePath* browser_exe) {
+  base::FilePath browser_exes_array[] = {
 #if defined(OS_WIN)
-  base::FilePath browser_exes_array[] = {
       base::FilePath(L"chrome.exe")
-  };
 #elif defined(OS_MACOSX)
-  base::FilePath browser_exes_array[] = {
       base::FilePath("Google Chrome.app/Contents/MacOS/Google Chrome"),
       base::FilePath("Chromium.app/Contents/MacOS/Chromium")
-  };
 #elif defined(OS_LINUX)
-  base::FilePath browser_exes_array[] = {
       base::FilePath("google-chrome"),
       base::FilePath("chrome"),
       base::FilePath("chromium"),
       base::FilePath("chromium-browser")
-  };
+#else
+      // it will compile but won't work on other OSes
+      base::FilePath()
 #endif
+  };
+
   std::vector<base::FilePath> browser_exes(
       browser_exes_array, browser_exes_array + arraysize(browser_exes_array));
   base::FilePath module_dir;
