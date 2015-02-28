@@ -79,6 +79,10 @@
 //#define SK_DEBUG
 //#define SK_RELEASE
 
+#ifdef DCHECK_ALWAYS_ON
+    #undef SK_RELEASE
+    #define SK_DEBUG
+#endif
 
 /*  If, in debugging mode, Skia needs to stop (presumably to invoke a debugger)
     it will call SK_CRASH(). If this is not defined it, it is defined in
