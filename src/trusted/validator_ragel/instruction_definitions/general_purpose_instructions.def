@@ -274,7 +274,7 @@ ins od Yd, data16 rexw 0x6d, amd64 rep att-show-name-suffix-l nacl-forbidden
 ######## INT ###################################################################
 int =Ib, 0xcd, nacl-forbidden
 ######## JCXZ/JECXZ/JRCXZ ######################################################
-jecxz Jb, 0xe3, ia32 branch_hint nacl-forbidden
+jecxz Jb, 0xe3, ia32 branch_hint
 jrcxz Jb, 0xe3, amd64 branch_hint
 ######## Jcc ###################################################################
 ja Jb, 0x77, branch_hint
