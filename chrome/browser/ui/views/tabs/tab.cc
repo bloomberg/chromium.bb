@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -1358,11 +1359,18 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
                                   TabRendererData::NetworkState state) {
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("461137 Tab::AdvanceLoadingAnimation1"));
   static bool initialized = false;
   static int loading_animation_frame_count = 0;
   static int waiting_animation_frame_count = 0;
   static int waiting_to_loading_frame_count_ratio = 0;
   if (!initialized) {
+    // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461137 Tab::AdvanceLoadingAnimation2"));
     initialized = true;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia loading_animation(*rb.GetImageSkiaNamed(IDR_THROBBER));
@@ -1409,10 +1417,19 @@ void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
     loading_animation_frame_ = 0;
     immersive_loading_step_ = 0;
   }
-  if (controller_->IsImmersiveStyle())
+  if (controller_->IsImmersiveStyle()) {
+    // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461137 Tab::AdvanceLoadingAnimation3"));
     SchedulePaintInRect(GetImmersiveBarRect());
-  else
+  } else {
+    // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461137 Tab::AdvanceLoadingAnimation4"));
     ScheduleIconPaint();
+  }
 }
 
 int Tab::IconCapacity() const {

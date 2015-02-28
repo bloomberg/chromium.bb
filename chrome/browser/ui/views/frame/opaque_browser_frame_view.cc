@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_header_helper.h"
@@ -177,6 +178,11 @@ int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {
 }
 
 void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461137 OpaqueBrowserFrameView::UpdateThrobber"));
+
   if (window_icon_)
     window_icon_->Update();
 }

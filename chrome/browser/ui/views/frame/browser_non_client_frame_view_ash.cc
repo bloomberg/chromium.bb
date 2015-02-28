@@ -11,6 +11,7 @@
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -201,6 +202,11 @@ int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461137 BrowserNonClientFrameViewAsh::UpdateThrobber"));
+
   if (window_icon_)
     window_icon_->Update();
 }
