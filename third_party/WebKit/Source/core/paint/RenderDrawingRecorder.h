@@ -19,6 +19,8 @@ class RenderDrawingRecorder {
 public:
     RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, PaintPhase, const FloatRect&);
     RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const FloatRect&);
+    // paintRect will be pixel-snapped.
+    RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const LayoutRect& paintRect);
 
     ~RenderDrawingRecorder();
 

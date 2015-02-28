@@ -11,6 +11,10 @@
 
 namespace blink {
 
+RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const LayoutObject& renderer, DisplayItem::Type displayItemType, const LayoutRect& clip)
+    : RenderDrawingRecorder(context, renderer, displayItemType, pixelSnappedIntRect(clip))
+{ }
+
 RenderDrawingRecorder::RenderDrawingRecorder(GraphicsContext* context, const LayoutObject& renderer, PaintPhase phase, const FloatRect& clip)
     : m_drawingRecorder(context, renderer.displayItemClient(), DisplayItem::paintPhaseToDrawingType(phase), clip)
 #ifndef NDEBUG
