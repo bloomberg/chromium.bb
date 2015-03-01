@@ -10,6 +10,13 @@ function onload()
         testRunner.waitUntilDone();
         testRunner.showWebInspector();
     }
+    // This test enumerates all resources currently registered, potentially
+    // including ones no longer reachable, but not yet garbage collected
+    // and finalized.
+    //
+    // To ensure stable test output, perform a GC right here to flush out
+    // the finalizable resources.
+    gc();
     runTest();
 }
 
