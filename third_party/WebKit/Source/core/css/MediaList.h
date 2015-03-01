@@ -34,7 +34,6 @@ namespace blink {
 
 class CSSRule;
 class CSSStyleSheet;
-class Document;
 class ExceptionState;
 class MediaList;
 class MediaQuery;
@@ -117,9 +116,6 @@ private:
     // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors when oilpan is not enabled.
     RawPtrWillBeMember<CSSRule> m_parentRule;
 };
-
-// Adds message to inspector console whenever dpi or dpcm values are used for "screen" media.
-void reportMediaQueryWarningIfNeeded(Document*, const MediaQuerySet*);
 
 } // namespace blink
 

@@ -21,14 +21,10 @@
 #include "core/css/MediaList.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/MediaFeatureNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
 #include "core/css/parser/MediaQueryParser.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -245,73 +241,6 @@ DEFINE_TRACE(MediaList)
     visitor->trace(m_mediaQueries);
     visitor->trace(m_parentStyleSheet);
     visitor->trace(m_parentRule);
-}
-
-static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, CSSPrimitiveValue::UnitType type)
-{
-    ASSERT(document);
-
-    DEFINE_STATIC_LOCAL(String, mediaQueryMessage, ("Consider using 'dppx' units, as in CSS '%replacementUnits%' means dots-per-CSS-%lengthUnit%, not dots-per-physical-%lengthUnit%, so does not correspond to the actual '%replacementUnits%' of a screen. In media query expression: "));
-    DEFINE_STATIC_LOCAL(String, mediaValueDPI, ("dpi"));
-    DEFINE_STATIC_LOCAL(String, mediaValueDPCM, ("dpcm"));
-    DEFINE_STATIC_LOCAL(String, lengthUnitInch, ("inch"));
-    DEFINE_STATIC_LOCAL(String, lengthUnitCentimeter, ("centimeter"));
-
-    StringBuilder message;
-    if (CSSPrimitiveValue::isDotsPerInch(type))
-        message.append(String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPI).replace("%lengthUnit%", lengthUnitInch));
-    else if (CSSPrimitiveValue::isDotsPerCentimeter(type))
-        message.append(String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPCM).replace("%lengthUnit%", lengthUnitCentimeter));
-    else
-        ASSERT_NOT_REACHED();
-
-    message.append(serializedExpression);
-
-    document->addConsoleMessage(ConsoleMessage::create(CSSMessageSource, DebugMessageLevel, message.toString()));
-}
-
-static inline bool isResolutionMediaFeature(const String& mediaFeature)
-{
-    return mediaFeature == MediaFeatureNames::resolutionMediaFeature
-        || mediaFeature == MediaFeatureNames::maxResolutionMediaFeature
-        || mediaFeature == MediaFeatureNames::minResolutionMediaFeature;
-}
-
-void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* mediaQuerySet)
-{
-    if (!mediaQuerySet || !document)
-        return;
-
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& mediaQueries = mediaQuerySet->queryVector();
-    const size_t queryCount = mediaQueries.size();
-
-    if (!queryCount)
-        return;
-
-    CSSPrimitiveValue::UnitType suspiciousType = CSSPrimitiveValue::CSS_UNKNOWN;
-    bool dotsPerPixelUsed = false;
-    for (size_t i = 0; i < queryCount; ++i) {
-        const MediaQuery* query = mediaQueries[i].get();
-        if (equalIgnoringCase(query->mediaType(), "print"))
-            continue;
-
-        const ExpressionHeapVector& expressions = query->expressions();
-        for (size_t j = 0; j < expressions.size(); ++j) {
-            const MediaQueryExp* expression = expressions.at(j).get();
-            if (isResolutionMediaFeature(expression->mediaFeature())) {
-                MediaQueryExpValue expValue = expression->expValue();
-                if (expValue.isValue) {
-                    if (CSSPrimitiveValue::isDotsPerPixel(expValue.unit))
-                        dotsPerPixelUsed = true;
-                    else if (CSSPrimitiveValue::isDotsPerInch(expValue.unit) || CSSPrimitiveValue::isDotsPerCentimeter(expValue.unit))
-                        suspiciousType = expValue.unit;
-                }
-            }
-        }
-    }
-
-    if (suspiciousType && !dotsPerPixelUsed)
-        addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), suspiciousType);
 }
 
 }

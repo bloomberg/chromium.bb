@@ -22,7 +22,6 @@
 #include "core/css/StyleSheetContents.h"
 
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/MediaList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
@@ -167,11 +166,8 @@ void StyleSheetContents::parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase> 
         return;
     }
 
-    // Add warning message to inspector if dpi/dpcm values are used for screen media.
-    if (rule->isMediaRule()) {
+    if (rule->isMediaRule())
         setHasMediaQueries();
-        reportMediaQueryWarningIfNeeded(singleOwnerDocument(), toStyleRuleMedia(rule.get())->mediaQueries());
-    }
 
     m_childRules.append(rule);
 }
