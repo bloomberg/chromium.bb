@@ -51,7 +51,6 @@ private:
 
     float offsetX(const FloatRect& boxRect) const;
     float offsetXNoScale(const FloatRect& boxRect) const;
-    float offsetY() const { return style()->font().fontDescription().computedPixelSize(); }
 
     float m_combinedTextWidth;
     float m_scaleX;

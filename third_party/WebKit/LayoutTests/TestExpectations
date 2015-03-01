@@ -72,6 +72,14 @@ crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Pas
 crbug.com/148816 [ Mac Win Linux ] fast/dom/Window/window-scaled-viewport-properties.html [ Pass Failure ]
 crbug.com/148816 [ Mac Win Linux ] fast/dom/element-bounding-client-rect-relative-to-viewport.html [ Pass Failure ]
 
+crbug.com/462458 fast/dynamic/text-combine.html [ NeedsRebaseline ]
+crbug.com/462458 fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/462458 fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/462458 virtual/slimmingpaint/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/462458 virtual/slimmingpaint/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/428980 virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/428980 virtual/antialiasedtext/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+
 # Failing with virtual-viewport mode on, disable for now and fix ASAP
 crbug.com/428980 fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]

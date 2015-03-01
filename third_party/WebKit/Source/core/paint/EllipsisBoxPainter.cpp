@@ -27,8 +27,6 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     GraphicsContext* context = paintInfo.context;
     FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping().toFloatPoint();
     boxOrigin.moveBy(FloatPoint(paintOffset));
-    if (!m_ellipsisBox.isHorizontal())
-        boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());
     FloatRect boxRect(boxOrigin, FloatSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
 
     DrawingRecorder recorder(context, m_ellipsisBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), boxRect);

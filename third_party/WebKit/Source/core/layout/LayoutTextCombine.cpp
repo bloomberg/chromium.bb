@@ -78,19 +78,19 @@ void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, c
     if (m_scaleX >= 1.0f) {
         // Fast path, more than 90% of cases
         ASSERT(m_scaleX == 1.0f);
-        context.concatCTM(AffineTransform::translation(offsetXNoScale(boxRect), offsetY()));
+        context.concatCTM(AffineTransform::translation(offsetXNoScale(boxRect), 0));
         return;
     }
     ASSERT(m_scaleX > 0.0f);
     const float centerX = boxRect.x() + boxRect.width() / 2;
-    scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX(boxRect), offsetY());
+    scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX(boxRect), 0);
 }
 
 void LayoutTextCombine::transformLayoutRect(FloatRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     ASSERT(m_isCombined);
-    boxRect.move(offsetXNoScale(boxRect), offsetY());
+    boxRect.move(offsetXNoScale(boxRect), 0);
 }
 
 void LayoutTextCombine::updateIsCombined()

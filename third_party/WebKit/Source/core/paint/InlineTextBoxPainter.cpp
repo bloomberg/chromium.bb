@@ -103,8 +103,6 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     GraphicsContext* context = paintInfo.context;
     const LayoutStyle& styleToUse = m_inlineTextBox.renderer().styleRef(m_inlineTextBox.isFirstLineStyle());
 
-    adjustedPaintOffset.move(0, styleToUse.isHorizontalWritingMode() ? LayoutUnit() : -m_inlineTextBox.logicalHeight().toLayoutUnit());
-
     FloatPoint boxOrigin = m_inlineTextBox.locationIncludingFlipping().toFloatPoint();
     boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
     FloatRect boxRect(boxOrigin, FloatSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
