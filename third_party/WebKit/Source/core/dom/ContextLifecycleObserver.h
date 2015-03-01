@@ -31,15 +31,26 @@
 
 namespace blink {
 
-template<> void observeContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
-template<> void unobserveContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
+class ContextLifecycleNotifier;
 
-class ContextLifecycleObserver : public LifecycleObserver<ExecutionContext> {
+class ContextLifecycleObserver : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver, ContextLifecycleNotifier> {
 public:
-    explicit ContextLifecycleObserver(ExecutionContext*, Type = GenericType);
     ExecutionContext* executionContext() const { return lifecycleContext(); }
+
+    enum Type {
+        GenericType,
+        ActiveDOMObjectType,
+    };
+
+    Type observerType() const { return m_observerType; }
+
 protected:
+    explicit ContextLifecycleObserver(ExecutionContext*, Type = GenericType);
+
     virtual ~ContextLifecycleObserver();
+
+private:
+    Type m_observerType;
 };
 
 } // namespace blink

@@ -37,6 +37,7 @@
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/DocumentLifecycleNotifier.h"
+#include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/DocumentSupplementable.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"

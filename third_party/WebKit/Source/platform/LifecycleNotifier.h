@@ -34,24 +34,20 @@
 
 namespace blink {
 
-template<typename T>
+template<typename T, typename Observer>
 class LifecycleNotifier {
 public:
-    typedef LifecycleObserver<T> Observer;
     typedef T Context;
 
     virtual ~LifecycleNotifier();
     virtual bool isContextThread() const { return true; }
 
     // notifyContextDestroyed() should be explicitly dispatched from an
-    // observed context to notify observers contextDestroyed().
-    // At the point of contextDestroyed() is called, m_context is still
-    // valid and thus it is safe to use m_context during the notification.
+    // observed context to notify observers that contextDestroyed().
+    //
+    // When contextDestroyed() is called, m_context is still
+    // valid and safe to use m_context during the notification.
     virtual void notifyContextDestroyed();
-
-    // FIXME: this won't need to be virtual anymore.
-    virtual void addObserver(Observer*);
-    virtual void removeObserver(Observer*);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -65,35 +61,37 @@ protected:
     {
     }
 
+    void addObserver(Observer*);
+    void removeObserver(Observer*);
+
     Context* context() const { return m_context; }
 
     enum IterationType {
         IteratingNone,
         IteratingOverAll,
         IteratingOverActiveDOMObjects,
-        IteratingOverDocumentObservers,
-        IteratingOverPageObservers,
-        IteratingOverDOMWindowObservers
     };
 
     IterationType m_iterating;
 
-private:
-    typedef HashSet<Observer*> ObserverSet;
+protected:
+    using ObserverSet = HashSet<Observer*>;
 
     ObserverSet m_observers;
+
+private:
     Context* m_context;
     bool m_didCallContextDestroyed;
 };
 
-template<typename T>
-inline LifecycleNotifier<T>::~LifecycleNotifier()
+template<typename T, typename Observer>
+inline LifecycleNotifier<T, Observer>::~LifecycleNotifier()
 {
     // FIXME: Enable the following ASSERT. Also see a FIXME in Document::detach().
     // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
 
 #if !ENABLE(OILPAN)
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     for (Observer* observer : m_observers) {
         ASSERT(observer->lifecycleContext() == m_context);
         observer->clearLifecycleContext();
@@ -101,14 +99,14 @@ inline LifecycleNotifier<T>::~LifecycleNotifier()
 #endif
 }
 
-template<typename T>
-inline void LifecycleNotifier<T>::notifyContextDestroyed()
+template<typename T, typename Observer>
+inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
 {
     // Don't notify contextDestroyed() twice.
     if (m_didCallContextDestroyed)
         return;
 
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     Vector<Observer*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {
@@ -125,15 +123,15 @@ inline void LifecycleNotifier<T>::notifyContextDestroyed()
     m_didCallContextDestroyed = true;
 }
 
-template<typename T>
-inline void LifecycleNotifier<T>::addObserver(typename LifecycleNotifier<T>::Observer* observer)
+template<typename T, typename Observer>
+inline void LifecycleNotifier<T, Observer>::addObserver(Observer* observer)
 {
     RELEASE_ASSERT(m_iterating != IteratingOverAll);
     m_observers.add(observer);
 }
 
-template<typename T>
-inline void LifecycleNotifier<T>::removeObserver(typename LifecycleNotifier<T>::Observer* observer)
+template<typename T, typename Observer>
+inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer)
 {
     m_observers.remove(observer);
 }

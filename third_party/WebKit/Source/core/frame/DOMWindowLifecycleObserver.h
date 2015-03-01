@@ -33,22 +33,22 @@
 
 namespace blink {
 
-template<> void observeContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
-template<> void unobserveContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
+class DOMWindowLifecycleNotifier;
 
-class DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow> {
+class DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier> {
 public:
-    explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
-    virtual ~DOMWindowLifecycleObserver();
-
     virtual void contextDestroyed()
     {
         didRemoveAllEventListeners(lifecycleContext());
-        LifecycleObserver<LocalDOMWindow>::contextDestroyed();
+        LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier>::contextDestroyed();
     }
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }
+
+protected:
+    explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
+    virtual ~DOMWindowLifecycleObserver();
 };
 
 } // namespace blink

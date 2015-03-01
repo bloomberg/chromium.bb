@@ -27,24 +27,12 @@
 #include "config.h"
 #include "core/page/PageLifecycleObserver.h"
 
-#include "core/page/Page.h"
-#include "core/page/PageLifecycleNotifier.h"
-
 namespace blink {
 
-template<> void observeContext(Page* context, LifecycleObserver<Page>* observer)
-{
-    context->addObserver(observer);
-}
-
-template<> void unobserveContext(Page* context, LifecycleObserver<Page>* observer)
-{
-    context->removeObserver(observer);
-}
-
 PageLifecycleObserver::PageLifecycleObserver(Page* page)
-    : LifecycleObserver<Page>(page, PageLifecycleObserverType)
+    : LifecycleObserver<Page, PageLifecycleObserver, PageLifecycleNotifier>(page)
 {
+    setContext(page);
 }
 
 PageLifecycleObserver::~PageLifecycleObserver()

@@ -58,7 +58,6 @@
 #include "core/events/PopStateEvent.h"
 #include "core/frame/BarProp.h"
 #include "core/frame/Console.h"
-#include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"

@@ -32,49 +32,39 @@
 namespace blink {
 
 DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
-    : LifecycleNotifier<LocalDOMWindow>(context)
+    : LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver>(context)
 {
 }
 
-void DOMWindowLifecycleNotifier::addObserver(DOMWindowLifecycleNotifier::Observer* observer)
+void DOMWindowLifecycleNotifier::addObserver(DOMWindowLifecycleObserver* observer)
 {
-    if (observer->observerType() == Observer::DOMWindowLifecycleObserverType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
-        m_windowObservers.add(static_cast<DOMWindowLifecycleObserver*>(observer));
-    }
-
-    LifecycleNotifier<LocalDOMWindow>::addObserver(observer);
+    LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver>::addObserver(observer);
 }
 
-void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Observer* observer)
+void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleObserver* observer)
 {
-    if (observer->observerType() == Observer::DOMWindowLifecycleObserverType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
-        m_windowObservers.remove(static_cast<DOMWindowLifecycleObserver*>(observer));
-    }
-
-    LifecycleNotifier<LocalDOMWindow>::removeObserver(observer);
+    LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver>::removeObserver(observer);
 }
 
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (const auto& windowObserver : m_windowObservers)
-        windowObserver->didAddEventListener(window, eventType);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    for (DOMWindowLifecycleObserver* observer : m_observers)
+        observer->didAddEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (const auto& windowObserver : m_windowObservers)
-        windowObserver->didRemoveEventListener(window, eventType);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    for (DOMWindowLifecycleObserver* observer : m_observers)
+        static_cast<DOMWindowLifecycleObserver*>(observer)->didRemoveEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* window)
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (const auto& windowObserver : m_windowObservers)
-        windowObserver->didRemoveAllEventListeners(window);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    for (DOMWindowLifecycleObserver* observer : m_observers)
+        static_cast<DOMWindowLifecycleObserver*>(observer)->didRemoveAllEventListeners(window);
 }
 
 } // namespace blink

@@ -27,6 +27,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/PageAnimator.h"
 #include "core/page/PageLifecycleNotifier.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/LayoutRect.h"

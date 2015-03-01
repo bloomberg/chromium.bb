@@ -32,19 +32,10 @@
 
 namespace blink {
 
-template<> void observeContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
-{
-    context->addObserver(observer);
-}
-
-template<> void unobserveContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
-{
-    context->removeObserver(observer);
-}
-
 DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(LocalDOMWindow* window)
-    : LifecycleObserver<LocalDOMWindow>(window, DOMWindowLifecycleObserverType)
+    : LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier>(window)
 {
+    setContext(window);
 }
 
 DOMWindowLifecycleObserver::~DOMWindowLifecycleObserver()

@@ -32,19 +32,10 @@
 
 namespace blink {
 
-template<> void observeContext(Document* context, LifecycleObserver<Document>* observer)
-{
-    static_cast<DocumentLifecycleNotifier*>(context)->addObserver(observer);
-}
-
-template<> void unobserveContext(Document* context, LifecycleObserver<Document>* observer)
-{
-    static_cast<DocumentLifecycleNotifier*>(context)->removeObserver(observer);
-}
-
 DocumentLifecycleObserver::DocumentLifecycleObserver(Document* document)
-    : LifecycleObserver<Document>(document, DocumentLifecycleObserverType)
+    : LifecycleObserver<Document, DocumentLifecycleObserver, DocumentLifecycleNotifier>(document)
 {
+    setContext(document);
 }
 
 DocumentLifecycleObserver::~DocumentLifecycleObserver()

@@ -32,32 +32,23 @@
 
 namespace blink {
 
-template<typename T>
+template<typename T, typename Observer, typename Notifier>
 class LifecycleObserver : public WillBeGarbageCollectedMixin {
     // FIXME: Oilpan: Remove the pre-finalizer by moving LifecycleNotifier
     // to Oilpan's heap and making LifecycleNotifier::m_observers
     // a hash set of weak members.
     WILL_BE_USING_PRE_FINALIZER(LifecycleObserver, dispose);
 public:
-    typedef T Context;
+    using Context = T;
 
-    enum Type {
-        ActiveDOMObjectType,
-        DocumentLifecycleObserverType,
-        GenericType,
-        PageLifecycleObserverType,
-        DOMWindowLifecycleObserverType
-    };
-
-    explicit LifecycleObserver(Context* context, Type type = GenericType)
+    explicit LifecycleObserver(Context* context)
         : m_lifecycleContext(nullptr)
-        , m_observerType(type)
     {
 #if ENABLE(OILPAN)
         ThreadState::current()->registerPreFinalizer(*this);
 #endif
-        setContext(context);
     }
+
     virtual ~LifecycleObserver()
     {
 #if !ENABLE(OILPAN)
@@ -77,32 +68,24 @@ public:
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
     void clearLifecycleContext() { m_lifecycleContext = nullptr; }
-    Type observerType() const { return m_observerType; }
 
 protected:
     void setContext(Context*);
 
+private:
     RawPtrWillBeWeakMember<Context> m_lifecycleContext;
-    Type m_observerType;
 };
 
-//
-// These functions should be specialized for each LifecycleObserver instances.
-//
-template<typename T> void observeContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
-template<typename T> void unobserveContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
-
-
-template<typename T>
-inline void LifecycleObserver<T>::setContext(typename LifecycleObserver<T>::Context* context)
+template<typename T, typename Observer, typename Notifier>
+inline void LifecycleObserver<T, Observer, Notifier>::setContext(typename LifecycleObserver<T, Observer, Notifier>::Context* context)
 {
     if (m_lifecycleContext)
-        unobserveContext(m_lifecycleContext.get(), this);
+        static_cast<Notifier*>(m_lifecycleContext.get())->removeObserver(static_cast<Observer*>(this));
 
     m_lifecycleContext = context;
 
     if (m_lifecycleContext)
-        observeContext(m_lifecycleContext.get(), this);
+        static_cast<Notifier*>(m_lifecycleContext.get())->addObserver(static_cast<Observer*>(this));
 }
 
 } // namespace blink

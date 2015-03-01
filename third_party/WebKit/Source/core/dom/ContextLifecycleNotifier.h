@@ -30,26 +30,25 @@
 
 #include "platform/LifecycleNotifier.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class ActiveDOMObject;
+class ContextLifecycleObserver;
 class ExecutionContext;
 
-class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext> {
+class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
 public:
-    typedef HashSet<ActiveDOMObject*> ActiveDOMObjectSet;
-
-    const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
-
-    virtual void addObserver(Observer*) override;
-    virtual void removeObserver(Observer*) override;
+    void addObserver(ContextLifecycleObserver*);
+    void removeObserver(ContextLifecycleObserver*);
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects();
     void notifyStoppingActiveDOMObjects();
 
+    using ActiveDOMObjectSet = HashSet<ActiveDOMObject*>;
+
+    const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
     bool contains(ActiveDOMObject* object) const { return m_activeDOMObjects.contains(object); }
     bool hasPendingActivity() const;
 

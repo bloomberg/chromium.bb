@@ -33,19 +33,18 @@
 namespace blink {
 
 class LocalFrame;
+class PageLifecycleNotifier;
 
-template<> void observeContext(Page*, LifecycleObserver<Page>*);
-template<> void unobserveContext(Page*, LifecycleObserver<Page>*);
-
-class PageLifecycleObserver : public LifecycleObserver<Page> {
+class PageLifecycleObserver : public LifecycleObserver<Page, PageLifecycleObserver, PageLifecycleNotifier> {
 public:
-    explicit PageLifecycleObserver(Page*);
-    virtual ~PageLifecycleObserver();
+    virtual void pageVisibilityChanged() { }
+    virtual void didCommitLoad(LocalFrame*) { }
 
     Page* page() const;
 
-    virtual void pageVisibilityChanged() { }
-    virtual void didCommitLoad(LocalFrame*) { }
+protected:
+    explicit PageLifecycleObserver(Page*);
+    virtual ~PageLifecycleObserver();
 };
 
 } // namespace blink

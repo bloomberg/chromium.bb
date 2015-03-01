@@ -29,6 +29,7 @@
 #define ExecutionContext_h
 
 #include "core/dom/ContextLifecycleNotifier.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "platform/Supplementable.h"

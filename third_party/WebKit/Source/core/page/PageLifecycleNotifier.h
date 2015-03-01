@@ -27,9 +27,6 @@
 #define PageLifecycleNotifier_h
 
 #include "platform/LifecycleNotifier.h"
-#include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/TemporaryChange.h"
 
 namespace blink {
 
@@ -37,20 +34,16 @@ class LocalFrame;
 class Page;
 class PageLifecycleObserver;
 
-class PageLifecycleNotifier : public LifecycleNotifier<Page> {
+class PageLifecycleNotifier : public LifecycleNotifier<Page, PageLifecycleObserver> {
 public:
+    void addObserver(PageLifecycleObserver*);
+    void removeObserver(PageLifecycleObserver*);
+
     void notifyPageVisibilityChanged();
     void notifyDidCommitLoad(LocalFrame*);
 
-    virtual void addObserver(Observer*) override;
-    virtual void removeObserver(Observer*) override;
-
 protected:
     explicit PageLifecycleNotifier(Page*);
-
-private:
-    using PageObserverSet = HashSet<PageLifecycleObserver*>;
-    PageObserverSet m_pageObservers;
 };
 
 } // namespace blink

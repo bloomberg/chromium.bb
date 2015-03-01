@@ -32,19 +32,11 @@
 
 namespace blink {
 
-template<> void observeContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
-{
-    context->addObserver(observer);
-}
-
-template<> void unobserveContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
-{
-    context->removeObserver(observer);
-}
-
 ContextLifecycleObserver::ContextLifecycleObserver(ExecutionContext* executionContext, Type type)
-    : LifecycleObserver<ExecutionContext>(executionContext, type)
+    : LifecycleObserver<ExecutionContext, ContextLifecycleObserver, ContextLifecycleNotifier>(executionContext)
+    , m_observerType(type)
 {
+    setContext(executionContext);
 }
 
 ContextLifecycleObserver::~ContextLifecycleObserver()

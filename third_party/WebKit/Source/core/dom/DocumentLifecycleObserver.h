@@ -30,17 +30,18 @@
 
 namespace blink {
 
-template<> void observeContext(Document*, LifecycleObserver<Document>*);
-template<> void unobserveContext(Document*, LifecycleObserver<Document>*);
+class DocumentLifecycleNotifier;
 
-class DocumentLifecycleObserver : public LifecycleObserver<Document> {
+class DocumentLifecycleObserver : public LifecycleObserver<Document, DocumentLifecycleObserver, DocumentLifecycleNotifier> {
 public:
-    explicit DocumentLifecycleObserver(Document*);
-    virtual ~DocumentLifecycleObserver();
     virtual void documentWasDetached() { }
 #if !ENABLE(OILPAN)
     virtual void documentWasDisposed() { }
 #endif
+
+protected:
+    explicit DocumentLifecycleObserver(Document*);
+    virtual ~DocumentLifecycleObserver();
 };
 
 } // namespace blink

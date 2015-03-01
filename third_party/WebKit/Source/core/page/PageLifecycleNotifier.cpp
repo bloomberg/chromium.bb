@@ -32,42 +32,32 @@
 namespace blink {
 
 PageLifecycleNotifier::PageLifecycleNotifier(Page* context)
-    : LifecycleNotifier<Page>(context)
+    : LifecycleNotifier<Page, PageLifecycleObserver>(context)
 {
 }
 
-void PageLifecycleNotifier::addObserver(PageLifecycleNotifier::Observer* observer)
+void PageLifecycleNotifier::addObserver(PageLifecycleObserver* observer)
 {
-    if (observer->observerType() == Observer::PageLifecycleObserverType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverPageObservers);
-        m_pageObservers.add(static_cast<PageLifecycleObserver*>(observer));
-    }
-
-    LifecycleNotifier<Page>::addObserver(observer);
+    LifecycleNotifier<Page, PageLifecycleObserver>::addObserver(observer);
 }
 
-void PageLifecycleNotifier::removeObserver(PageLifecycleNotifier::Observer* observer)
+void PageLifecycleNotifier::removeObserver(PageLifecycleObserver* observer)
 {
-    if (observer->observerType() == Observer::PageLifecycleObserverType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverPageObservers);
-        m_pageObservers.remove(static_cast<PageLifecycleObserver*>(observer));
-    }
-
-    LifecycleNotifier<Page>::removeObserver(observer);
+    LifecycleNotifier<Page, PageLifecycleObserver>::removeObserver(observer);
 }
 
 void PageLifecycleNotifier::notifyPageVisibilityChanged()
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverPageObservers);
-    for (PageLifecycleObserver* pageObserver : m_pageObservers)
-        pageObserver->pageVisibilityChanged();
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    for (PageLifecycleObserver* observer : m_observers)
+        observer->pageVisibilityChanged();
 }
 
 void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
 {
-    TemporaryChange<IterationType> scope(m_iterating, IteratingOverPageObservers);
-    for (PageLifecycleObserver* pageObserver : m_pageObservers)
-        pageObserver->didCommitLoad(frame);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
+    for (PageLifecycleObserver* observer : m_observers)
+        observer->didCommitLoad(frame);
 }
 
 } // namespace blink

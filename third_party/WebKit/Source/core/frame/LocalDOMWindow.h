@@ -30,6 +30,7 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
+#include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/Supplementable.h"

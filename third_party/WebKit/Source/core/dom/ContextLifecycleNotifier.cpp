@@ -34,39 +34,36 @@
 namespace blink {
 
 ContextLifecycleNotifier::ContextLifecycleNotifier(ExecutionContext* context)
-    : LifecycleNotifier<ExecutionContext>(context)
+    : LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>(context)
 {
 }
 
-void ContextLifecycleNotifier::addObserver(ContextLifecycleNotifier::Observer* observer)
+void ContextLifecycleNotifier::addObserver(ContextLifecycleObserver* observer)
 {
-    LifecycleNotifier<ExecutionContext>::addObserver(observer);
-
-    if (observer->observerType() == Observer::ActiveDOMObjectType) {
+    LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>::addObserver(observer);
+    if (observer->observerType() == ContextLifecycleObserver::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.add(static_cast<ActiveDOMObject*>(observer));
     }
 }
 
-void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer* observer)
+void ContextLifecycleNotifier::removeObserver(ContextLifecycleObserver* observer)
 {
-    LifecycleNotifier<ExecutionContext>::removeObserver(observer);
-
-    if (observer->observerType() == Observer::ActiveDOMObjectType) {
+    LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>::removeObserver(observer);
+    if (observer->observerType() == ContextLifecycleObserver::ActiveDOMObjectType)
         m_activeDOMObjects.remove(static_cast<ActiveDOMObject*>(observer));
-    }
 }
 
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
         // FIXME: Oilpan: At the moment, it's possible that the ActiveDOMObject
         // is destructed during the iteration. Once we enable Oilpan by default
         // for ActiveDOMObjects, we can remove the hack by making
-        // m_activeDOMObjects a HeapHashSet<WeakMember<ActiveDOMObjects>>.
+        // m_activeDOMObjects a HeapHashSet<WeakMember<ActiveDOMObject>>.
         // (i.e., we can just iterate m_activeDOMObjects without taking
         // a snapshot).
         // For more details, see https://codereview.chromium.org/247253002/.
@@ -80,7 +77,7 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
@@ -96,7 +93,7 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
+    TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
