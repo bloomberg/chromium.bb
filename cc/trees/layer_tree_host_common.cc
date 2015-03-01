@@ -2512,30 +2512,42 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
 
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
-  std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
-  CalculateDrawPropertiesInternal<Layer>(
-      inputs->root_layer, globals, data_for_recursion,
-      inputs->render_surface_layer_list, &dummy_layer_list,
-      &accumulated_surface_state, inputs->current_render_surface_layer_list_id);
 
-  // The dummy layer list should not have been used.
-  DCHECK_EQ(0u, dummy_layer_list.size());
-  // A root layer render_surface should always exist after
-  // CalculateDrawProperties.
-  DCHECK(inputs->root_layer->render_surface());
+  if (!inputs->verify_property_trees) {
+    PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+    std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
+    CalculateDrawPropertiesInternal<Layer>(
+        inputs->root_layer, globals, data_for_recursion,
+        inputs->render_surface_layer_list, &dummy_layer_list,
+        &accumulated_surface_state,
+        inputs->current_render_surface_layer_list_id);
+  } else {
+    {
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                   "LayerTreeHostCommon::CalculateDrawProperties");
+      PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+      std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
+      CalculateDrawPropertiesInternal<Layer>(
+          inputs->root_layer, globals, data_for_recursion,
+          inputs->render_surface_layer_list, &dummy_layer_list,
+          &accumulated_surface_state,
+          inputs->current_render_surface_layer_list_id);
+    }
 
-  if (inputs->verify_property_trees) {
     // The translation from layer to property trees is an intermediate state. We
     // will eventually get these data passed directly to the compositor.
     TransformTree transform_tree;
     ClipTree clip_tree;
     OpacityTree opacity_tree;
-    ComputeVisibleRectsUsingPropertyTrees(
-        inputs->root_layer, inputs->page_scale_application_layer,
-        inputs->page_scale_factor, inputs->device_scale_factor,
-        gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-        &transform_tree, &clip_tree, &opacity_tree);
+    {
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                   "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+      ComputeVisibleRectsUsingPropertyTrees(
+          inputs->root_layer, inputs->page_scale_application_layer,
+          inputs->page_scale_factor, inputs->device_scale_factor,
+          gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+          &transform_tree, &clip_tree, &opacity_tree);
+    }
 
     LayerIterator<Layer> it, end;
     for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
@@ -2561,6 +2573,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       CHECK(draw_opacities_match);
     }
   }
+
+  // The dummy layer list should not have been used.
+  DCHECK_EQ(0u, dummy_layer_list.size());
+  // A root layer render_surface should always exist after
+  // CalculateDrawProperties.
+  DCHECK(inputs->root_layer->render_surface());
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
