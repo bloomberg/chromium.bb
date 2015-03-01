@@ -534,7 +534,7 @@
 2012-01-09  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/ar-ar-g1.utb: Added updates to Generic Arabic table by
-	Mesar Hameed <mhameed@src.gnome.org>
+	Mesar Hameed <mesar.hameed@gmail.com>
 
 2011-08-19  Bert Frees <bertfrees@gmail.com>
 
@@ -553,7 +553,7 @@
 	* tables/Makefile.am (table_files): Added the table provided by
 	Mesar Hameed to the build process.
 
-2011-06-28  Mesar Hameed <mhameed@src.gnome.org>
+2011-06-28  Mesar Hameed <mesar.hameed@gmail.com>
 
 	* tables/ar-fa.utb: Added a table for Arabic Farsi.
 
