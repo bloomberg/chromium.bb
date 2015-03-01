@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x60
-        RenderText {#text} at (0,0) size 784x59
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x60
+        LayoutText {#text} at (0,0) size 784x59
           text run at (0,0) width 307: "You should see a 300x100 green rectangle below. "
           text run at (307,0) width 471: "If you see any red, the test has failed. This test makes a positioned vertical box"
           text run at (0,20) width 118: "with three children. "

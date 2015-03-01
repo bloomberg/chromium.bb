@@ -1,61 +1,61 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x412
-  RenderBlock {HTML} at (0,0) size 800x412
-    RenderBody {BODY} at (8,8) size 784x396
-      RenderBlock (anonymous) at (0,0) size 784x54
-        RenderText {#text} at (0,0) size 342x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x412
+    LayoutBlockFlow {BODY} at (8,8) size 784x396
+      LayoutBlockFlow (anonymous) at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 342x18
           text run at (0,0) width 342: "Tests if glyph caches of different languages interfere."
         LayoutBR {BR} at (341,0) size 1x18
-        RenderText {#text} at (0,18) size 743x36
+        LayoutText {#text} at (0,18) size 743x36
           text run at (0,18) width 743: "On systems that the locales have different font preferences, the following divs should be displayed in corresponding"
           text run at (0,36) width 180: "preferred fonts respectively."
         LayoutBR {BR} at (179,36) size 1x18
-      RenderBlock {DIV} at (0,54) size 784x114
-        RenderBlock (anonymous) at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 130x18
+      LayoutBlockFlow {DIV} at (0,54) size 784x114
+        LayoutBlockFlow (anonymous) at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 130x18
             text run at (0,0) width 130: "Default font-family:"
-        RenderBlock {DIV} at (0,18) size 784x24
-          RenderText {#text} at (0,4) size 180x18
+        LayoutBlockFlow {DIV} at (0,18) size 784x24
+          LayoutText {#text} at (0,4) size 180x18
             text run at (0,4) width 180: "Simplified Chinese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,42) size 784x24
-          RenderText {#text} at (0,4) size 184x18
+        LayoutBlockFlow {DIV} at (0,42) size 784x24
+          LayoutText {#text} at (0,4) size 184x18
             text run at (0,4) width 184: "Traditional Chinese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,66) size 784x24
-          RenderText {#text} at (0,4) size 114x18
+        LayoutBlockFlow {DIV} at (0,66) size 784x24
+          LayoutText {#text} at (0,4) size 114x18
             text run at (0,4) width 114: "Japanese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,90) size 784x24
-          RenderText {#text} at (0,4) size 104x18
+        LayoutBlockFlow {DIV} at (0,90) size 784x24
+          LayoutText {#text} at (0,4) size 104x18
             text run at (0,4) width 104: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
-      RenderBlock {DIV} at (0,168) size 784x114
-        RenderBlock (anonymous) at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 224x18
+      LayoutBlockFlow {DIV} at (0,168) size 784x114
+        LayoutBlockFlow (anonymous) at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 224x18
             text run at (0,0) width 224: "Generic font-family (sans-serif):"
-        RenderBlock {DIV} at (0,18) size 784x24
-          RenderText {#text} at (0,4) size 190x18
+        LayoutBlockFlow {DIV} at (0,18) size 784x24
+          LayoutText {#text} at (0,4) size 190x18
             text run at (0,4) width 190: "Simplified Chinese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,42) size 784x24
-          RenderText {#text} at (0,4) size 195x18
+        LayoutBlockFlow {DIV} at (0,42) size 784x24
+          LayoutText {#text} at (0,4) size 195x18
             text run at (0,4) width 195: "Traditional Chinese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,66) size 784x24
-          RenderText {#text} at (0,4) size 127x18
+        LayoutBlockFlow {DIV} at (0,66) size 784x24
+          LayoutText {#text} at (0,4) size 127x18
             text run at (0,4) width 127: "Japanese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,90) size 784x24
-          RenderText {#text} at (0,4) size 109x18
+        LayoutBlockFlow {DIV} at (0,90) size 784x24
+          LayoutText {#text} at (0,4) size 109x18
             text run at (0,4) width 109: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
-      RenderBlock {DIV} at (0,282) size 784x114
-        RenderBlock (anonymous) at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 301x17
+      LayoutBlockFlow {DIV} at (0,282) size 784x114
+        LayoutBlockFlow (anonymous) at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 301x17
             text run at (0,0) width 301: "Non-generic font-family (Times New Roman):"
-        RenderBlock {DIV} at (0,18) size 784x24
-          RenderText {#text} at (0,4) size 180x17
+        LayoutBlockFlow {DIV} at (0,18) size 784x24
+          LayoutText {#text} at (0,4) size 180x17
             text run at (0,4) width 180: "Simplified Chinese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,42) size 784x24
-          RenderText {#text} at (0,4) size 184x17
+        LayoutBlockFlow {DIV} at (0,42) size 784x24
+          LayoutText {#text} at (0,4) size 184x17
             text run at (0,4) width 184: "Traditional Chinese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,66) size 784x24
-          RenderText {#text} at (0,4) size 114x17
+        LayoutBlockFlow {DIV} at (0,66) size 784x24
+          LayoutText {#text} at (0,4) size 114x17
             text run at (0,4) width 114: "Japanese: \x{8AA4}\x{904E}\x{9AA8}"
-        RenderBlock {DIV} at (0,90) size 784x24
-          RenderText {#text} at (0,4) size 104x17
+        LayoutBlockFlow {DIV} at (0,90) size 784x24
+          LayoutText {#text} at (0,4) size 104x17
             text run at (0,4) width 104: "Korean: \x{8AA4}\x{904E}\x{9AA8}"

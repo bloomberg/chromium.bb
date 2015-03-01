@@ -1,50 +1,50 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 368x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 368x19
           text run at (0,0) width 368: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,36) size 784x48
-        RenderText {#text} at (0,0) size 256x48
+      LayoutBlockFlow {PRE} at (0,36) size 784x48
+        LayoutText {#text} at (0,0) size 256x48
           text run at (0,0) width 256: ".one {font-variant: small-caps;}"
           text run at (256,0) width 0: " "
           text run at (0,16) width 224: ".two {font-variant: normal;}"
           text run at (224,16) width 0: " "
           text run at (0,32) width 0: " "
-      RenderBlock {HR} at (0,97) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,115) size 784x20
-        RenderText {#text} at (0,0) size 261x19
+      LayoutBlockFlow {HR} at (0,97) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,115) size 784x20
+        LayoutText {#text} at (0,0) size 261x19
           text run at (0,0) width 261: "This Paragraph should be in Small Caps."
-      RenderBlock {P} at (0,151) size 784x20
-        RenderText {#text} at (0,0) size 563x19
+      LayoutBlockFlow {P} at (0,151) size 784x20
+        LayoutText {#text} at (0,0) size 563x19
           text run at (0,0) width 563: "This Paragraph should be in Small Caps, but the Last Word in the Sentence should be "
-        RenderInline {SPAN} at (0,0) size 50x19
-          RenderText {#text} at (563,0) size 50x19
+        LayoutInline {SPAN} at (0,0) size 50x19
+          LayoutText {#text} at (563,0) size 50x19
             text run at (563,0) width 50: "Normal"
-        RenderText {#text} at (613,0) size 3x19
+        LayoutText {#text} at (613,0) size 3x19
           text run at (613,0) width 3: "."
       LayoutTable {TABLE} at (0,187) size 638x94 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 636x92
           LayoutTableRow {TR} at (0,0) size 636x28
             LayoutTableCell {TD} at (0,0) size 636x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 169x19
-                RenderText {#text} at (4,4) size 169x19
+              LayoutInline {STRONG} at (0,0) size 169x19
+                LayoutText {#text} at (4,4) size 169x19
                   text run at (4,4) width 169: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 636x64
             LayoutTableCell {TD} at (0,46) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x19
+              LayoutText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,28) size 624x64 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 616x20
-                RenderText {#text} at (0,0) size 261x19
+              LayoutBlockFlow {P} at (4,4) size 616x20
+                LayoutText {#text} at (0,0) size 261x19
                   text run at (0,0) width 261: "This Paragraph should be in Small Caps."
-              RenderBlock {P} at (4,40) size 616x20
-                RenderText {#text} at (0,0) size 563x19
+              LayoutBlockFlow {P} at (4,40) size 616x20
+                LayoutText {#text} at (0,0) size 563x19
                   text run at (0,0) width 563: "This Paragraph should be in Small Caps, but the Last Word in the Sentence should be "
-                RenderInline {SPAN} at (0,0) size 50x19
-                  RenderText {#text} at (563,0) size 50x19
+                LayoutInline {SPAN} at (0,0) size 50x19
+                  LayoutText {#text} at (563,0) size 50x19
                     text run at (563,0) width 50: "Normal"
-                RenderText {#text} at (613,0) size 3x19
+                LayoutText {#text} at (613,0) size 3x19
                   text run at (613,0) width 3: "."

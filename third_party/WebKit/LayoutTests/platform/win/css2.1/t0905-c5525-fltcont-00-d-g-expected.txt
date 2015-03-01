@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x267
-  RenderBlock {HTML} at (0,0) size 800x267
-    RenderBody {BODY} at (8,8) size 784x0
-      RenderBlock (floating) {DIV} at (0,0) size 588x259 [color=#FFFFFF] [bgcolor=#000080]
-        RenderBlock (floating) {DIV} at (277,0) size 294x79 [color=#00FFFF] [bgcolor=#008080]
-          RenderBlock {P} at (0,0) size 294x79
-            RenderText {#text} at (0,0) size 294x75
+  LayoutBlockFlow {HTML} at (0,0) size 800x267
+    LayoutBlockFlow {BODY} at (8,8) size 784x0
+      LayoutBlockFlow (floating) {DIV} at (0,0) size 588x259 [color=#FFFFFF] [bgcolor=#000080]
+        LayoutBlockFlow (floating) {DIV} at (277,0) size 294x79 [color=#00FFFF] [bgcolor=#008080]
+          LayoutBlockFlow {P} at (0,0) size 294x79
+            LayoutText {#text} at (0,0) size 294x75
               text run at (0,0) width 294: "To the right of this teal box there should be a"
               text run at (0,18) width 103: "purple square, "
               text run at (102,18) width 192: "tightly squeezed in between"
               text run at (0,36) width 213: "the edge of the teal box and the "
               text run at (212,36) width 82: "outside edge"
               text run at (0,58) width 131: "of the blue block. \x{21E8}"
-        RenderBlock {P} at (0,0) size 588x259
-          RenderText {#text} at (0,0) size 277x39
+        LayoutBlockFlow {P} at (0,0) size 588x259
+          LayoutText {#text} at (0,0) size 277x39
             text run at (0,0) width 277: "Inside this blue block on the right there"
             text run at (0,22) width 160: "should be a teal box. \x{21E8} "
-          RenderInline {SPAN} at (0,0) size 588x236 [color=#000080]
-            RenderText {#text} at (160,22) size 588x236
+          LayoutInline {SPAN} at (0,0) size 588x236 [color=#000080]
+            LayoutText {#text} at (160,22) size 588x236
               text run at (160,22) width 117: "FAIL FAIL FAIL"
               text run at (0,43) width 277: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
               text run at (0,61) width 81: "FAIL FAIL "
@@ -44,4 +44,4 @@ layer at (0,0) size 800x267
               text run at (126,223) width 462: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
               text run at (0,241) width 40: "FAIL "
               text run at (39,241) width 472: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-          RenderText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 0x0

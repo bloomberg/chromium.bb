@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x292
-  RenderBlock {HTML} at (0,0) size 800x292
-    RenderBody {BODY} at (8,16) size 784x268
-      RenderBlock {UL} at (0,0) size 784x54 [color=#000080]
+  LayoutBlockFlow {HTML} at (0,0) size 800x292
+    LayoutBlockFlow {BODY} at (8,16) size 784x268
+      LayoutBlockFlow {UL} at (0,0) size 784x54 [color=#000080]
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 340x18
+          LayoutText {#text} at (0,0) size 340x18
             text run at (0,0) width 340: "You should not see the background under the border."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 350x18
+          LayoutText {#text} at (0,0) size 350x18
             text run at (0,0) width 350: "As you scroll the element below the cats should move."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 300x18
+          LayoutText {#text} at (0,0) size 300x18
             text run at (0,0) width 300: "The cats should be on a light grey background."
 layer at (8,86) size 390x198 clip at (38,116) size 315x138 scrollHeight 360
-  RenderBlock {DIV} at (0,70) size 390x198 [bgcolor=#C0C0C0] [border: (30px dotted #000000)]
-    RenderText {#text} at (30,30) size 32x360
+  LayoutBlockFlow {DIV} at (0,70) size 390x198 [bgcolor=#C0C0C0] [border: (30px dotted #000000)]
+    LayoutText {#text} at (30,30) size 32x360
       text run at (30,30) width 20: "   1"
       text run at (50,30) width 0: " "
       text run at (30,48) width 20: "   2"

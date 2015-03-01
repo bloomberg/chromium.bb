@@ -1,51 +1,51 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#68A8E8]
-      RenderBlock {DIV} at (0,0) size 784x26 [bgcolor=#D0D0D0]
-        RenderText {#text} at (326,0) size 132x25
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#68A8E8]
+      LayoutBlockFlow {DIV} at (0,0) size 784x26 [bgcolor=#D0D0D0]
+        LayoutText {#text} at (326,0) size 132x25
           text run at (326,0) width 132: "Font Size:6mm"
       LayoutTable {TABLE} at (0,26) size 784x126 [bgcolor=#008000]
         LayoutTableSection {TBODY} at (0,0) size 784x126
           LayoutTableRow {TR} at (0,2) size 784x122
             LayoutTableCell {TD} at (2,2) size 389x120 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 387x26 [bgcolor=#D0D0D0]
-                RenderText {#text} at (98,0) size 191x25
+              LayoutBlockFlow {DIV} at (1,1) size 387x26 [bgcolor=#D0D0D0]
+                LayoutText {#text} at (98,0) size 191x25
                   text run at (98,0) width 191: "Table height at 24mm"
               LayoutTable {TABLE} at (1,27) size 387x92
                 LayoutTableSection {THEAD} at (0,0) size 387x32 [bgcolor=#FF0000]
                   LayoutTableRow {TR} at (0,2) size 387x28
                     LayoutTableCell {TD} at (2,2) size 383x28 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (152,1) size 79x25
+                      LayoutText {#text} at (152,1) size 79x25
                         text run at (152,1) width 79: "THEAD"
                 LayoutTableSection {TFOOT} at (0,62) size 387x30 [bgcolor=#0000FF]
                   LayoutTableRow {TR} at (0,0) size 387x28
                     LayoutTableCell {TD} at (2,0) size 383x28 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (155,1) size 73x25
+                      LayoutText {#text} at (155,1) size 73x25
                         text run at (155,1) width 73: "TFOOT"
                 LayoutTableSection {TBODY} at (0,32) size 387x30 [bgcolor=#FFFF00]
                   LayoutTableRow {TR} at (0,0) size 387x28
                     LayoutTableCell {TD} at (2,0) size 383x28 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (156,1) size 71x25
+                      LayoutText {#text} at (156,1) size 71x25
                         text run at (156,1) width 71: "TBODY"
             LayoutTableCell {TD} at (393,2) size 389x122 [r=0 c=1 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 387x26 [bgcolor=#D0D0D0]
-                RenderText {#text} at (98,0) size 191x25
+              LayoutBlockFlow {DIV} at (1,1) size 387x26 [bgcolor=#D0D0D0]
+                LayoutText {#text} at (98,0) size 191x25
                   text run at (98,0) width 191: "Table height at 25mm"
               LayoutTable {TABLE} at (1,27) size 387x94
                 LayoutTableSection {THEAD} at (0,0) size 387x32 [bgcolor=#FF0000]
                   LayoutTableRow {TR} at (0,2) size 387x28
                     LayoutTableCell {TD} at (2,2) size 383x28 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (152,1) size 79x25
+                      LayoutText {#text} at (152,1) size 79x25
                         text run at (152,1) width 79: "THEAD"
                 LayoutTableSection {TFOOT} at (0,64) size 387x30 [bgcolor=#0000FF]
                   LayoutTableRow {TR} at (0,0) size 387x28
                     LayoutTableCell {TD} at (2,0) size 383x28 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (155,1) size 73x25
+                      LayoutText {#text} at (155,1) size 73x25
                         text run at (155,1) width 73: "TFOOT"
                 LayoutTableSection {TBODY} at (0,32) size 387x32 [bgcolor=#FFFF00]
                   LayoutTableRow {TR} at (0,0) size 387x30
                     LayoutTableCell {TD} at (2,0) size 383x28 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (156,1) size 71x25
+                      LayoutText {#text} at (156,1) size 71x25
                         text run at (156,1) width 71: "TBODY"

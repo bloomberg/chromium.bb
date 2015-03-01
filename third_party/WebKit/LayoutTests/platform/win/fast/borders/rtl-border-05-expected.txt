@@ -1,74 +1,74 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x502
-  RenderBlock {HTML} at (0,0) size 800x502
-    RenderBody {BODY} at (8,16) size 784x478
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 747x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x502
+    LayoutBlockFlow {BODY} at (8,16) size 784x478
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 747x17
           text run at (0,0) width 747: "Test that when we have images sprinkled within a span, borders, paddings and margins are still calculated correctly ."
-      RenderBlock {DIV} at (0,34) size 212x222 [border: (1px solid #000000)]
-        RenderBlock {P} at (6,22) size 200x130
-          RenderText {#text} at (0,7) size 175x50
+      LayoutBlockFlow {DIV} at (0,34) size 212x222 [border: (1px solid #000000)]
+        LayoutBlockFlow {P} at (6,22) size 200x130
+          LayoutText {#text} at (0,7) size 175x50
             text run at (0,7) width 152: "aaa bbb ccc ddd eee fff "
             text run at (151,7) width 24 RTL: "\x{5DC}\x{5DE}\x{5D4}"
             text run at (0,40) width 58 RTL: "\x{5E2}\x{5E9}\x{5D9}\x{5EA}\x{5D9} \x{5D6}\x{5D0}\x{5EA}"
             text run at (57,40) width 5: " "
             text run at (61,40) width 17: "gg"
-          RenderInline {SPAN} at (0,0) size 190x52 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            RenderText {#text} at (122,40) size 46x17
+          LayoutInline {SPAN} at (0,0) size 190x52 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+            LayoutText {#text} at (122,40) size 46x17
               text run at (122,40) width 46: " dgnjk "
-            RenderBlock {IMG} at (167.28,32) size 22x34 [border: (1px solid #0000FF)]
-            RenderText {#text} at (0,73) size 41x17
+            LayoutBlockFlow {IMG} at (167.28,32) size 22x34 [border: (1px solid #0000FF)]
+            LayoutText {#text} at (0,73) size 41x17
               text run at (0,73) width 41: "njkng "
-          RenderText {#text} at (85,73) size 174x49
+          LayoutText {#text} at (85,73) size 174x49
             text run at (85,73) width 85 RTL: "\x{5D6}\x{5D0}\x{5EA} \x{2013} \x{5D0}\x{5D9}\x{5E0}\x{5D9} \x{5D9}\x{5D5}\x{5D3}\x{5E2}"
             text run at (0,105) width 30 RTL: "\x{5D1}\x{5E2}\x{5E6}\x{5DE}"
             text run at (29,105) width 145: " qqq rrr sss ttt uuu vvv"
-        RenderBlock {P} at (6,168) size 200x32
-          RenderInline {SPAN} at (0,0) size 163x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            RenderText {#text} at (45,7) size 88x17
+        LayoutBlockFlow {P} at (6,168) size 200x32
+          LayoutInline {SPAN} at (0,0) size 163x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+            LayoutText {#text} at (45,7) size 88x17
               text run at (45,7) width 88: "Some fill text"
-            RenderBlock {IMG} at (132.09,0) size 20x32
-      RenderBlock {DIV} at (0,256) size 212x222 [border: (1px solid #000000)]
-        RenderBlock {P} at (6,22) size 200x130
-          RenderText {#text} at (25,7) size 190x50
+            LayoutBlockFlow {IMG} at (132.09,0) size 20x32
+      LayoutBlockFlow {DIV} at (0,256) size 212x222 [border: (1px solid #000000)]
+        LayoutBlockFlow {P} at (6,22) size 200x130
+          LayoutText {#text} at (25,7) size 190x50
             text run at (25,7) width 28 RTL: " \x{5DC}\x{5DE}\x{5D4}"
             text run at (52,7) width 148: "aaa bbb ccc ddd eee fff"
             text run at (10,40) width 17: "gg"
             text run at (138,40) width 62 RTL: "\x{5E2}\x{5E9}\x{5D9}\x{5EA}\x{5D9} \x{5D6}\x{5D0}\x{5EA} "
-          RenderInline {SPAN} at (0,0) size 174x52 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            RenderText {#text} at (26,40) size 46x17
+          LayoutInline {SPAN} at (0,0) size 174x52 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+            LayoutText {#text} at (26,40) size 46x17
               text run at (26,40) width 46: " dgnjk "
-            RenderBlock {IMG} at (71.16,32) size 22x34 [border: (1px solid #0000FF)]
-            RenderText {#text} at (159,73) size 41x17
+            LayoutBlockFlow {IMG} at (71.16,32) size 22x34 [border: (1px solid #0000FF)]
+            LayoutText {#text} at (159,73) size 41x17
               text run at (159,73) width 5 RTL: " "
               text run at (163,73) width 37: "njkng"
-          RenderText {#text} at (30,73) size 174x49
+          LayoutText {#text} at (30,73) size 174x49
             text run at (30,73) width 85 RTL: "\x{5D6}\x{5D0}\x{5EA} \x{2013} \x{5D0}\x{5D9}\x{5E0}\x{5D9} \x{5D9}\x{5D5}\x{5D3}\x{5E2}"
             text run at (26,105) width 141: "qqq rrr sss ttt uuu vvv"
             text run at (166,105) width 34 RTL: "\x{5D1}\x{5E2}\x{5E6}\x{5DE} "
-        RenderBlock {P} at (6,168) size 200x32
-          RenderInline {SPAN} at (0,0) size 163x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            RenderText {#text} at (67,7) size 88x17
+        LayoutBlockFlow {P} at (6,168) size 200x32
+          LayoutInline {SPAN} at (0,0) size 163x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+            LayoutText {#text} at (67,7) size 88x17
               text run at (67,7) width 88: "Some fill text"
-            RenderBlock {IMG} at (47.89,0) size 20x32
+            LayoutBlockFlow {IMG} at (47.89,0) size 20x32
 layer at (182,106) size 20x20 clip at (183,107) size 18x18
-  RenderBlock {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage {IMG} at (2,2) size 16x16
 layer at (200,108) size 0x0
-  RenderBlock {DIV} at (18,2) size 0x0
+  LayoutBlockFlow {DIV} at (18,2) size 0x0
 layer at (146,219) size 20x20 clip at (147,220) size 18x18
-  RenderBlock {DIV} at (0,1) size 20x20 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,1) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage {IMG} at (2,2) size 16x16
 layer at (164,221) size 0x0
-  RenderBlock {DIV} at (18,2) size 0x0
+  LayoutBlockFlow {DIV} at (18,2) size 0x0
 layer at (86,328) size 20x20 clip at (87,329) size 18x18
-  RenderBlock {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage {IMG} at (2,2) size 16x16
 layer at (88,330) size 0x0
-  RenderBlock {DIV} at (2,2) size 0x0
+  LayoutBlockFlow {DIV} at (2,2) size 0x0
 layer at (62,441) size 20x20 clip at (63,442) size 18x18
-  RenderBlock {DIV} at (0,1) size 20x20 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,1) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage {IMG} at (2,2) size 16x16
 layer at (64,443) size 0x0
-  RenderBlock {DIV} at (2,2) size 0x0
+  LayoutBlockFlow {DIV} at (2,2) size 0x0

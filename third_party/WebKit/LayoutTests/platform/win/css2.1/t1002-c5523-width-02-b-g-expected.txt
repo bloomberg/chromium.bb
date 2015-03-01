@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 638
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x638 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x638
-    RenderBody {BODY} at (8,16) size 769x614
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 424x17
+  LayoutBlockFlow {HTML} at (0,0) size 785x638
+    LayoutBlockFlow {BODY} at (8,16) size 769x614
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 424x17
           text run at (0,0) width 381: "The blue text should not go past the 50% mark on the ruler "
           text run at (380,0) width 44: "below."
-      RenderBlock {DIV} at (0,34) size 384.50x540 [color=#0000FF]
-        RenderText {#text} at (0,0) size 376x539
+      LayoutBlockFlow {DIV} at (0,34) size 384.50x540 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 376x539
           text run at (0,0) width 359: "a bit of dummy text a bit of dummy text a bit of dummy"
           text run at (0,18) width 40: "text a "
           text run at (39,18) width 295: "bit of dummy text a bit of dummy text a bit of"

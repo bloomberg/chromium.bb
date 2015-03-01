@@ -1,21 +1,21 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x542
-      RenderBlock {P} at (0,0) size 784x18
-        RenderInline {A} at (0,0) size 60x17 [color=#0000EE]
-          RenderText {#text} at (0,0) size 60x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x542
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutInline {A} at (0,0) size 60x17 [color=#0000EE]
+          LayoutText {#text} at (0,0) size 60x17
             text run at (0,0) width 60: "bug 7118"
-        RenderText {#text} at (60,0) size 364x17
+        LayoutText {#text} at (60,0) size 364x17
           text run at (60,0) width 364: ": Wrong property values do not get invalidated correctly."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 385x17
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 385x17
           text run at (0,0) width 385: "The two words \"test\" should look the same, with no outline:"
-      RenderBlock {DIV} at (0,102) size 784x58
-        RenderBlock {P} at (0,0) size 100x58
-          RenderText {#text} at (0,1) size 70x56
+      LayoutBlockFlow {DIV} at (0,102) size 784x58
+        LayoutBlockFlow {P} at (0,0) size 100x58
+          LayoutText {#text} at (0,1) size 70x56
             text run at (0,1) width 70: "test"
-      RenderBlock {P} at (0,210) size 784x58
-        RenderText {#text} at (0,1) size 70x56
+      LayoutBlockFlow {P} at (0,210) size 784x58
+        LayoutText {#text} at (0,1) size 70x56
           text run at (0,1) width 70: "test"

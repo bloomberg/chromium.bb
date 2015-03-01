@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 2563.00 scrollHeight 3163
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x3163 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x3163
-    RenderBody {BODY} at (8,8) size 769x3139
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 785x3163
+    LayoutBlockFlow {BODY} at (8,8) size 769x3139
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {A} at (0,0) size 69x18 [color=#0000EE]
-          RenderText {#text} at (54,0) size 69x18
+        LayoutInline {A} at (0,0) size 69x18 [color=#0000EE]
+          LayoutText {#text} at (54,0) size 69x18
             text run at (54,0) width 69: "bug 12331"
-        RenderText {#text} at (122,0) size 5x18
+        LayoutText {#text} at (122,0) size 5x18
           text run at (122,0) width 5: "."
-      RenderBlock {P} at (0,34) size 769x36
-        RenderText {#text} at (0,0) size 756x36
+      LayoutBlockFlow {P} at (0,34) size 769x36
+        LayoutText {#text} at (0,0) size 756x36
           text run at (0,0) width 756: "To test manually, scroll down until you find the input element. Select some text. If the bug occurs, the page will scroll"
           text run at (0,18) width 119: "back up to the top."
-      RenderBlock {DIV} at (0,86) size 769x3000
-      RenderBlock (anonymous) at (0,3086) size 769x19
+      LayoutBlockFlow {DIV} at (0,86) size 769x3000
+      LayoutBlockFlow (anonymous) at (0,3086) size 769x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,3121) size 769x18
-        RenderText {#text} at (0,0) size 412x18
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,3121) size 769x18
+        LayoutText {#text} at (0,0) size 412x18
           text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
 layer at (11,3097) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 126
-  RenderBlock {DIV} at (3,3) size 117x13
-    RenderText {#text} at (0,0) size 126x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+    LayoutText {#text} at (0,0) size 126x13
       text run at (0,0) width 126: "select some of this text"
 selection start: position 2 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 17 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body

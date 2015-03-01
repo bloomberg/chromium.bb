@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 773
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x600
-  RenderBlock {html} at (0,0) size 785x600
-    RenderBody {body} at (8,16) size 769x600
-      RenderBlock {parsererror} at (16,0) size 737x135.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]
-        RenderBlock {h3} at (18,20.72) size 701x21
-          RenderText {#text} at (0,0) size 306x20
+  LayoutBlockFlow {html} at (0,0) size 785x600
+    LayoutBlockFlow {body} at (8,16) size 769x600
+      LayoutBlockFlow {parsererror} at (16,0) size 737x135.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]
+        LayoutBlockFlow {h3} at (18,20.72) size 701x21
+          LayoutText {#text} at (0,0) size 306x20
             text run at (0,0) width 306: "This page contains the following errors:"
-        RenderBlock {div} at (18,60.44) size 701x15
-          RenderText {#text} at (0,0) size 567x15
+        LayoutBlockFlow {div} at (18,60.44) size 701x15
+          LayoutText {#text} at (0,0) size 567x15
             text run at (0,0) width 567: "error on line 5 at column 7: Opening and ending tag mismatch: rect line 0 and svg"
             text run at (567,0) width 0: " "
-        RenderBlock {h3} at (18,94.16) size 701x21
-          RenderText {#text} at (0,0) size 408x20
+        LayoutBlockFlow {h3} at (18,94.16) size 701x21
+          LayoutText {#text} at (0,0) size 408x20
             text run at (0,0) width 408: "Below is a rendering of the page up to the first error."
-      RenderBlock (anonymous) at (0,151.88) size 769x605
+      LayoutBlockFlow (anonymous) at (0,151.88) size 769x605
         LayoutSVGRoot {svg} at (18,177) size 200x201
           LayoutSVGRect {rect} at (18,177) size 200x201 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=10.00] [width=200.00] [height=200.00]
           LayoutSVGRect {rect} at (18,177) size 200x201 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=10.00] [width=200.00] [height=200.00]

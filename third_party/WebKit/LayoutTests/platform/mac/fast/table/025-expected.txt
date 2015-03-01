@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 784x43
         LayoutTableSection {TBODY} at (0,0) size 784x43
           LayoutTableRow {TR} at (0,0) size 784x43
             LayoutTableCell {TD} at (0,8) size 208x26 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 8x18
+              LayoutText {#text} at (4,4) size 8x18
                 text run at (4,4) width 8: "d"
             LayoutTableCell {TD} at (208,0) size 340x43 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (4,4) size 332x35
@@ -20,20 +20,20 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (2,11) size 39x4 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
                             LayoutTableCell {TD} at (43,2) size 238x23 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=2]
                               LayoutImage {IMG} at (2,2) size 21x15 [bgcolor=#800080]
-                              RenderText {#text} at (23,3) size 4x18
+                              LayoutText {#text} at (23,3) size 4x18
                                 text run at (23,3) width 4: " "
-                              RenderInline {B} at (0,0) size 91x18
-                                RenderText {#text} at (27,3) size 91x18
+                              LayoutInline {B} at (0,0) size 91x18
+                                LayoutText {#text} at (27,3) size 91x18
                                   text run at (27,3) width 91: "Yellow Pages"
-                              RenderText {#text} at (117,3) size 5x18
+                              LayoutText {#text} at (117,3) size 5x18
                                 text run at (117,3) width 5: " "
                               LayoutImage {IMG} at (121.20,2) size 21x15 [bgcolor=#800080]
-                              RenderText {#text} at (142,3) size 5x18
+                              LayoutText {#text} at (142,3) size 5x18
                                 text run at (142,3) width 5: " "
-                              RenderInline {B} at (0,0) size 86x18
-                                RenderText {#text} at (146,3) size 86x18
+                              LayoutInline {B} at (0,0) size 86x18
+                                LayoutText {#text} at (146,3) size 86x18
                                   text run at (146,3) width 86: "White Pages"
-                              RenderText {#text} at (231,3) size 5x18
+                              LayoutText {#text} at (231,3) size 5x18
                                 text run at (231,3) width 5: " "
                             LayoutTableCell {TD} at (283,11) size 39x4 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
             LayoutTableCell {TD} at (548,0) size 236x42 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
@@ -46,13 +46,13 @@ layer at (0,0) size 800x600
                           LayoutTableRow {TR} at (0,2) size 220x22
                             LayoutTableCell {TD} at (2,2) size 216x22 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
                               LayoutImage {IMG} at (2,2) size 212x18 [bgcolor=#800080]
-                              RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,59) size 784x0
+                              LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,59) size 784x0
       LayoutTable {TABLE} at (0,59) size 784x43
         LayoutTableSection {TBODY} at (0,0) size 784x43
           LayoutTableRow {TR} at (0,0) size 784x43
             LayoutTableCell {TD} at (0,8) size 219x26 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 8x18
+              LayoutText {#text} at (4,4) size 8x18
                 text run at (4,4) width 8: "d"
             LayoutTableCell {TD} at (219,0) size 329x43 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (4,4) size 321x35
@@ -65,20 +65,20 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (2,11) size 33x4 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
                             LayoutTableCell {TD} at (37,2) size 238x23 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=2]
                               LayoutImage {IMG} at (2,2) size 21x15 [bgcolor=#800080]
-                              RenderText {#text} at (23,3) size 4x18
+                              LayoutText {#text} at (23,3) size 4x18
                                 text run at (23,3) width 4: " "
-                              RenderInline {B} at (0,0) size 91x18
-                                RenderText {#text} at (27,3) size 91x18
+                              LayoutInline {B} at (0,0) size 91x18
+                                LayoutText {#text} at (27,3) size 91x18
                                   text run at (27,3) width 91: "Yellow Pages"
-                              RenderText {#text} at (117,3) size 5x18
+                              LayoutText {#text} at (117,3) size 5x18
                                 text run at (117,3) width 5: " "
                               LayoutImage {IMG} at (121.20,2) size 21x15 [bgcolor=#800080]
-                              RenderText {#text} at (142,3) size 5x18
+                              LayoutText {#text} at (142,3) size 5x18
                                 text run at (142,3) width 5: " "
-                              RenderInline {B} at (0,0) size 86x18
-                                RenderText {#text} at (146,3) size 86x18
+                              LayoutInline {B} at (0,0) size 86x18
+                                LayoutText {#text} at (146,3) size 86x18
                                   text run at (146,3) width 86: "White Pages"
-                              RenderText {#text} at (231,3) size 5x18
+                              LayoutText {#text} at (231,3) size 5x18
                                 text run at (231,3) width 5: " "
                             LayoutTableCell {TD} at (277,11) size 34x4 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
             LayoutTableCell {TD} at (548,0) size 236x42 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
@@ -91,4 +91,4 @@ layer at (0,0) size 800x600
                           LayoutTableRow {TR} at (0,2) size 220x22
                             LayoutTableCell {TD} at (2,2) size 216x22 [bgcolor=#FFA500] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
                               LayoutImage {IMG} at (2,2) size 212x18 [bgcolor=#800080]
-                              RenderText {#text} at (0,0) size 0x0
+                              LayoutText {#text} at (0,0) size 0x0

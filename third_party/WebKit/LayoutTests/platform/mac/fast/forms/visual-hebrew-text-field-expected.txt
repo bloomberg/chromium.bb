@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 218x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 218x18
           text run at (0,0) width 218 LTR override: "This tests for a regression against "
-        RenderInline {I} at (0,0) size 784x36
-          RenderInline {A} at (0,0) size 355x18 [color=#0000EE]
-            RenderText {#text} at (217,0) size 355x18
+        LayoutInline {I} at (0,0) size 784x36
+          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 355x18
               text run at (217,0) width 355 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8076"
-          RenderText {#text} at (571,0) size 784x36
+          LayoutText {#text} at (571,0) size 784x36
             text run at (571,0) width 213 LTR override: " REGRESSION: native text fields"
             text run at (0,18) width 253 LTR override: "are reversed on \"visual Hebrew\" pages"
-        RenderText {#text} at (252,18) size 5x18
+        LayoutText {#text} at (252,18) size 5x18
           text run at (252,18) width 5 LTR override: "."
-      RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,70) size 784x19
-        RenderText {#text} at (0,1) size 288x18
+      LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,70) size 784x19
+        LayoutText {#text} at (0,1) size 288x18
           text run at (0,1) width 288 LTR override: "Text in the field should look like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
-      RenderBlock (anonymous) at (0,105) size 784x19
+      LayoutBlockFlow (anonymous) at (0,105) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (11,116) size 117x13
-  RenderBlock {DIV} at (3,3) size 117x13
-    RenderText {#text} at (0,0) size 30x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+    LayoutText {#text} at (0,0) size 30x13
       text run at (0,0) width 30 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"

@@ -1,5 +1,5 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 400x200
   LayoutSVGRoot {svg} at (0,0) size 400x200
     LayoutSVGRect {rect} at (0,0) size 400x200 [stroke={[type=SOLID] [color=#0000FF] [stroke width=10.00]}] [x=5.00] [y=5.00] [width=3990.00] [height=1990.00]

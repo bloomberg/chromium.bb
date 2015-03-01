@@ -1,104 +1,104 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 172x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 172x17
           text run at (0,0) width 172: "Tests: the colspan attribute"
         LayoutBR {BR} at (171,14) size 1x0
-      RenderBlock {P} at (0,34) size 784x72
-        RenderText {#text} at (0,0) size 75x17
+      LayoutBlockFlow {P} at (0,34) size 784x72
+        LayoutText {#text} at (0,0) size 75x17
           text run at (0,0) width 75: "Conditions:"
         LayoutBR {BR} at (74,14) size 1x0
-        RenderText {#text} at (0,18) size 763x53
+        LayoutText {#text} at (0,18) size 763x53
           text run at (0,18) width 668: "The colSpan attribute specifies the number of columns spanned by the current cell. The default value of "
           text run at (667,18) width 96: "this attribute is"
           text run at (0,36) width 551: "one (\"1\"). The value zero (\"0\") means that the cell spans all columns from the current "
           text run at (550,36) width 208: "column to the last column of the"
           text run at (0,54) width 372: "column group (COLGROUP) in which the cell is defined."
-      RenderBlock {P} at (0,122) size 784x54
-        RenderText {#text} at (0,0) size 776x53
+      LayoutBlockFlow {P} at (0,122) size 784x54
+        LayoutText {#text} at (0,0) size 776x53
           text run at (0,0) width 776: "The first table tests the default value of one, and an input of 7, which is within the normal range of expect input. The first"
           text run at (0,18) width 722: "column in the first row should span only column \"one\" and the second cell should span all of the other columns. "
           text run at (721,18) width 26: "The"
           text run at (0,36) width 572: "second table tests the zero value. \"Just A\" should span \"A\" and \"Just B\" should span \"B.\""
-      RenderBlock {HR} at (0,192) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock (anonymous) at (0,202) size 784x18
+      LayoutBlockFlow {HR} at (0,192) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow (anonymous) at (0,202) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,220) size 278x70 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 278x18
-          RenderText {#text} at (29,0) size 220x17
+        LayoutBlockFlow {CAPTION} at (0,0) size 278x18
+          LayoutText {#text} at (29,0) size 220x17
             text run at (29,0) width 220: "Testing Default and Regular Input"
         LayoutTableSection {TBODY} at (1,19) size 276x50
           LayoutTableRow {TR} at (0,2) size 276x22
             LayoutTableCell {TD} at (2,2) size 34x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 30x17
+              LayoutText {#text} at (2,2) size 30x17
                 text run at (2,2) width 30: "First"
             LayoutTableCell {TD} at (38,2) size 236x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=7]
-              RenderText {#text} at (2,2) size 77x17
+              LayoutText {#text} at (2,2) size 77x17
                 text run at (2,2) width 77: "All the Rest"
           LayoutTableRow {TR} at (0,26) size 276x22
             LayoutTableCell {TD} at (2,26) size 34x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x17
+              LayoutText {#text} at (2,2) size 24x17
                 text run at (2,2) width 24: "one"
             LayoutTableCell {TD} at (38,26) size 28x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x17
+              LayoutText {#text} at (2,2) size 24x17
                 text run at (2,2) width 24: "two"
             LayoutTableCell {TD} at (68,26) size 36x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 32x17
+              LayoutText {#text} at (2,2) size 32x17
                 text run at (2,2) width 32: "three"
             LayoutTableCell {TD} at (106,26) size 31x22 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 27x17
+              LayoutText {#text} at (2,2) size 27x17
                 text run at (2,2) width 27: "four"
             LayoutTableCell {TD} at (139,26) size 29x22 [border: (1px inset #808080)] [r=1 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 25x17
+              LayoutText {#text} at (2,2) size 25x17
                 text run at (2,2) width 25: "five"
             LayoutTableCell {TD} at (170,26) size 23x22 [border: (1px inset #808080)] [r=1 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 19x17
+              LayoutText {#text} at (2,2) size 19x17
                 text run at (2,2) width 19: "six"
             LayoutTableCell {TD} at (195,26) size 41x22 [border: (1px inset #808080)] [r=1 c=6 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 37x17
+              LayoutText {#text} at (2,2) size 37x17
                 text run at (2,2) width 37: "seven"
             LayoutTableCell {TD} at (238,26) size 36x22 [border: (1px inset #808080)] [r=1 c=7 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 32x17
+              LayoutText {#text} at (2,2) size 32x17
                 text run at (2,2) width 32: "eight"
-      RenderBlock (anonymous) at (0,290) size 784x18
+      LayoutBlockFlow (anonymous) at (0,290) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,308) size 199x70 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 199x18
-          RenderText {#text} at (15,0) size 169x17
+        LayoutBlockFlow {CAPTION} at (0,0) size 199x18
+          LayoutText {#text} at (15,0) size 169x17
             text run at (15,0) width 169: "Testing Zero Special Case"
         LayoutTableSection {TBODY} at (1,19) size 197x50
           LayoutTableRow {TR} at (0,2) size 197x22
             LayoutTableCell {TD} at (2,2) size 45x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 41x17
+              LayoutText {#text} at (2,2) size 41x17
                 text run at (2,2) width 41: "Just A"
             LayoutTableCell {TD} at (49,2) size 44x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 40x17
+              LayoutText {#text} at (2,2) size 40x17
                 text run at (2,2) width 40: "Just B"
           LayoutTableRow {TR} at (0,26) size 197x22
             LayoutTableCell {TD} at (2,26) size 45x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 12x17
+              LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "A"
             LayoutTableCell {TD} at (49,26) size 44x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 11x17
+              LayoutText {#text} at (2,2) size 11x17
                 text run at (2,2) width 11: "B"
             LayoutTableCell {TD} at (95,26) size 15x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 11x17
+              LayoutText {#text} at (2,2) size 11x17
                 text run at (2,2) width 11: "C"
             LayoutTableCell {TD} at (112,26) size 16x22 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 12x17
+              LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "D"
             LayoutTableCell {TD} at (130,26) size 14x22 [border: (1px inset #808080)] [r=1 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 10x17
+              LayoutText {#text} at (2,2) size 10x17
                 text run at (2,2) width 10: "E"
             LayoutTableCell {TD} at (146,26) size 13x22 [border: (1px inset #808080)] [r=1 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 9x17
+              LayoutText {#text} at (2,2) size 9x17
                 text run at (2,2) width 9: "F"
             LayoutTableCell {TD} at (161,26) size 16x22 [border: (1px inset #808080)] [r=1 c=6 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 12x17
+              LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "G"
             LayoutTableCell {TD} at (179,26) size 16x22 [border: (1px inset #808080)] [r=1 c=7 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 12x17
+              LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "H"

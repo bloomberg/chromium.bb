@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (54,54) size 746x546
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
     LayoutSVGForeignObject {foreignObject} at (10,10) size 580x380
-      RenderBlock {xhtml:div} at (0,0) size 580x20
-        RenderText {#text} at (0,0) size 230x19
+      LayoutBlockFlow {xhtml:div} at (0,0) size 580x20
+        LayoutText {#text} at (0,0) size 230x19
           text run at (0,0) width 230: "You should only see this string ONCE"
     LayoutSVGContainer {use} at (0,0) size 0x0 [transform={m=((1.00,0.00)(0.00,1.00)) t=(25.00,25.00)}]
       LayoutSVGViewportContainer {svg} at (0,0) size 0x0

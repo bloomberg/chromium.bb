@@ -1,38 +1,38 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x308
-  RenderBlock {HTML} at (0,0) size 800x308
-    RenderBody {BODY} at (8,16) size 784x276 [color=#0000FF]
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 701x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x308
+    LayoutBlockFlow {BODY} at (8,16) size 784x276 [color=#0000FF]
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 701x19
           text run at (0,0) width 337: "There should be a solid line to the left of the text below, "
           text run at (337,0) width 364: "having three segments each of a different colour as indicated."
-      RenderBlock {UL} at (0,36) size 784x240
+      LayoutBlockFlow {UL} at (0,36) size 784x240
         LayoutListItem {LI} at (40,0) size 744x80 [border: none (3px solid #FFA500)]
-          RenderBlock (anonymous) at (3,0) size 741x20
+          LayoutBlockFlow (anonymous) at (3,0) size 741x20
             LayoutListMarker at (-21,0) size 7x19: bullet
-            RenderText {#text} at (0,0) size 102x19
+            LayoutText {#text} at (0,0) size 102x19
               text run at (0,0) width 102: "Orange orange..."
-          RenderBlock {UL} at (3,20) size 741x60
+          LayoutBlockFlow {UL} at (3,20) size 741x60
             LayoutListItem {LI} at (40,0) size 701x20
               LayoutListMarker at (-18,0) size 7x19: white bullet
-              RenderText {#text} at (0,0) size 110x19
+              LayoutText {#text} at (0,0) size 110x19
                 text run at (0,0) width 110: "...orange orange..."
             LayoutListItem {LI} at (40,20) size 701x20
               LayoutListMarker at (-18,0) size 7x19: white bullet
-              RenderText {#text} at (0,0) size 110x19
+              LayoutText {#text} at (0,0) size 110x19
                 text run at (0,0) width 110: "...orange orange..."
             LayoutListItem {LI} at (40,40) size 701x20
               LayoutListMarker at (-18,0) size 7x19: white bullet
-              RenderText {#text} at (0,0) size 102x19
+              LayoutText {#text} at (0,0) size 102x19
                 text run at (0,0) width 102: "...orange orange."
         LayoutListItem {LI} at (40,80) size 744x20 [border: none (3px solid #00FF00)]
           LayoutListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (3,0) size 34x19
+          LayoutText {#text} at (3,0) size 34x19
             text run at (3,0) width 34: "Lime."
         LayoutListItem {LI} at (40,100) size 744x140 [border: none (3px solid #FFFF00)]
           LayoutListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (3,0) size 731x139
+          LayoutText {#text} at (3,0) size 731x139
             text run at (3,0) width 305: "Yellow yellow yellow yellow yellow yellow yellow "
             text run at (308,0) width 387: "yellow yellow yellow yellow yellow yellow yellow yellow yellow "
             text run at (695,0) width 39: "yellow"

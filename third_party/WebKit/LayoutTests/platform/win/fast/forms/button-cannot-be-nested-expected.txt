@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x106
-  RenderBlock {HTML} at (0,0) size 800x106
-    RenderBody {BODY} at (8,8) size 784x90
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderInline {A} at (0,0) size 63x17 [color=#0000EE]
-          RenderText {#text} at (0,0) size 63x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x106
+    LayoutBlockFlow {BODY} at (8,8) size 784x90
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutInline {A} at (0,0) size 63x17 [color=#0000EE]
+          LayoutText {#text} at (0,0) size 63x17
             text run at (0,0) width 63: "Bug 6584"
-        RenderText {#text} at (62,0) size 379x17
+        LayoutText {#text} at (62,0) size 379x17
           text run at (62,0) width 379: " REGRESSION: button after unclosed button gives trouble"
-      RenderBlock {P} at (0,34) size 784x22
+      LayoutBlockFlow {P} at (0,34) size 784x22
         LayoutButton {BUTTON} at (0,0) size 38x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 22x16
-            RenderText {#text} at (0,0) size 22x16
+          LayoutBlockFlow (anonymous) at (8,3) size 22x16
+            LayoutText {#text} at (0,0) size 22x16
               text run at (0,0) width 22: "test"
         LayoutButton {BUTTON} at (38,0) size 45x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 29x16
-            RenderText {#text} at (0,0) size 29x16
+          LayoutBlockFlow (anonymous) at (8,3) size 29x16
+            LayoutText {#text} at (0,0) size 29x16
               text run at (0,0) width 29: "test2"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,72) size 784x18
-        RenderText {#text} at (0,0) size 613x17
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,72) size 784x18
+        LayoutText {#text} at (0,0) size 613x17
           text run at (0,0) width 613: "There should be two separate buttons instead of button \"test2\" being nested inside button \"test\"."

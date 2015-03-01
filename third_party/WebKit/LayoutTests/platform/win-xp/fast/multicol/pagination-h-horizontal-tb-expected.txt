@@ -1,9 +1,9 @@
 layer at (0,0) size 1600x585
-  RenderView at (0,0) size 800x585
+  LayoutView at (0,0) size 800x585
 layer at (0,0) size 800x922 backgroundClip at (0,0) size 1600x585 clip at (0,0) size 1600x585 outlineClip at (0,0) size 1600x585
-  RenderBlock {HTML} at (0,0) size 800x922
-    RenderBody {BODY} at (8,8) size 784x906
-      RenderBlock {DIV} at (0,0) size 784x906 [border: (3px solid #000000)]
+  LayoutBlockFlow {HTML} at (0,0) size 800x922
+    LayoutBlockFlow {BODY} at (8,8) size 784x906
+      LayoutBlockFlow {DIV} at (0,0) size 784x906 [border: (3px solid #000000)]
         LayoutBR {BR} at (3,-2) size 0x50
         LayoutBR {BR} at (3,38) size 0x50
         LayoutBR {BR} at (3,78) size 0x50
@@ -14,10 +14,10 @@ layer at (0,0) size 800x922 backgroundClip at (0,0) size 1600x585 clip at (0,0) 
         LayoutBR {BR} at (3,278) size 0x50
         LayoutBR {BR} at (3,318) size 0x50
         LayoutBR {BR} at (3,358) size 0x50
-        RenderText {#text} at (3,398) size 250x50
+        LayoutText {#text} at (3,398) size 250x50
           text run at (3,398) width 250: "Lorem"
         LayoutBR {BR} at (253,438) size 0x0
-        RenderInline {SPAN} at (0,0) size 250x50 [color=#FF0000]
-          RenderText {#text} at (3,438) size 250x50
+        LayoutInline {SPAN} at (0,0) size 250x50 [color=#FF0000]
+          LayoutText {#text} at (3,438) size 250x50
             text run at (3,438) width 250: "ipsum"
           LayoutBR {BR} at (253,478) size 0x0

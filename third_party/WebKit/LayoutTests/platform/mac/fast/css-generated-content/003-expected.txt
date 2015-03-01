@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 15x52
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutBlockFlow (floating) {<pseudo:first-letter>} at (0,0) size 15x52
           LayoutTextFragment at (0,0) size 15x52
             text run at (0,0) width 15: "I"
         LayoutTextFragment {#text} at (15,0) size 461x18

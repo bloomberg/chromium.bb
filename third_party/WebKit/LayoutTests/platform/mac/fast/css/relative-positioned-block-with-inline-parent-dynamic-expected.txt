@@ -1,27 +1,27 @@
 layer at (0,0) size 800x600 scrollWidth 984
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x94
-  RenderBlock {HTML} at (0,0) size 800x94
-    RenderBody {BODY} at (8,16) size 784x70
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 572x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x94
+    LayoutBlockFlow {BODY} at (8,16) size 784x70
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 572x18
           text run at (0,0) width 572: "Test passes if the orange box sits atop the blue box and both are in the center of the view."
-      RenderBlock (anonymous) at (0,34) size 784x0
-      RenderBlock (anonymous) at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,34) size 784x0
+      LayoutBlockFlow (anonymous) at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 0x0
 layer at (200,242) size 0x0
-  RenderInline (relative positioned) {SPAN} at (0,0) size 0x0 [bgcolor=#0000FF]
-    RenderText {#text} at (0,0) size 0x0
-    RenderInline {I} at (0,0) size 0x0
-      RenderText {#text} at (0,0) size 0x0
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0 [bgcolor=#0000FF]
+    LayoutText {#text} at (0,0) size 0x0
+    LayoutInline {I} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (200,242) size 784x18 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock (anonymous) at (0,34) size 784x18
-    RenderBlock {DIV} at (0,0) size 192x18 [bgcolor=#FFA500]
-      RenderText {#text} at (0,0) size 68x18
+  LayoutBlockFlow (anonymous) at (0,34) size 784x18
+    LayoutBlockFlow {DIV} at (0,0) size 192x18 [bgcolor=#FFA500]
+      LayoutText {#text} at (0,0) size 68x18
         text run at (0,0) width 68: "Filler Text"
 layer at (200,260) size 68x18
-  RenderInline (relative positioned) {SPAN} at (0,0) size 68x18 [bgcolor=#0000FF]
-    RenderInline {I} at (0,0) size 68x18
-      RenderText {#text} at (0,0) size 68x18
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 68x18 [bgcolor=#0000FF]
+    LayoutInline {I} at (0,0) size 68x18
+      LayoutText {#text} at (0,0) size 68x18
         text run at (0,0) width 68: "Filler Text"
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0

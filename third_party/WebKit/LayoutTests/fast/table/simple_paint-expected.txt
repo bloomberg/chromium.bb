@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (0,0) size 800x600
       LayoutTable {TABLE} at (0,0) size 316x301 [bgcolor=#008000] [border: none]
         LayoutTableSection {TBODY} at (0,0) size 315x300
           LayoutTableRow {TR} at (0,0) size 315x60

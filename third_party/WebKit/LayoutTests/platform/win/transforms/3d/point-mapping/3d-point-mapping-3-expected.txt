@@ -1,29 +1,29 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (30,500) size 347x72
-  RenderBlock (positioned) {DIV} at (30,500) size 346.59x72
-    RenderInline {SPAN} at (0,0) size 307x17 [color=#008000]
-      RenderText {#text} at (0,0) size 307x17
+  LayoutBlockFlow (positioned) {DIV} at (30,500) size 346.59x72
+    LayoutInline {SPAN} at (0,0) size 307x17 [color=#008000]
+      LayoutText {#text} at (0,0) size 307x17
         text run at (0,0) width 307: "PASS: event at (158, 83) hit card at offset (2, 2)"
     LayoutBR {BR} at (306,14) size 1x0
-    RenderInline {SPAN} at (0,0) size 331x17 [color=#008000]
-      RenderText {#text} at (0,18) size 331x17
+    LayoutInline {SPAN} at (0,0) size 331x17 [color=#008000]
+      LayoutText {#text} at (0,18) size 331x17
         text run at (0,18) width 331: "PASS: event at (309, 112) hit card at offset (198, 2)"
     LayoutBR {BR} at (330,32) size 1x0
-    RenderInline {SPAN} at (0,0) size 331x17 [color=#008000]
-      RenderText {#text} at (0,36) size 331x17
+    LayoutInline {SPAN} at (0,0) size 331x17 [color=#008000]
+      LayoutText {#text} at (0,36) size 331x17
         text run at (0,36) width 331: "PASS: event at (158, 338) hit card at offset (2, 198)"
     LayoutBR {BR} at (330,50) size 1x0
-    RenderInline {SPAN} at (0,0) size 347x17 [color=#008000]
-      RenderText {#text} at (0,54) size 347x17
+    LayoutInline {SPAN} at (0,0) size 347x17 [color=#008000]
+      LayoutText {#text} at (0,54) size 347x17
         text run at (0,54) width 347: "PASS: event at (309, 308) hit card at offset (198, 198)"
     LayoutBR {BR} at (346,68) size 1x0
 layer at (8,8) size 402x402
-  RenderBlock (positioned) {DIV} at (8,8) size 402x402 [border: (1px solid #000000)]
+  LayoutBlockFlow (positioned) {DIV} at (8,8) size 402x402 [border: (1px solid #000000)]
 layer at (59,59) size 302x302
-  RenderBlock (positioned) {DIV} at (51,51) size 302x302 [border: (1px solid #0000FF)]
+  LayoutBlockFlow (positioned) {DIV} at (51,51) size 302x302 [border: (1px solid #0000FF)]
 layer at (110,110) size 200x200
-  RenderBlock (positioned) {DIV} at (51,51) size 200x200 [bgcolor=#81AA8A]
+  LayoutBlockFlow (positioned) {DIV} at (51,51) size 200x200 [bgcolor=#81AA8A]

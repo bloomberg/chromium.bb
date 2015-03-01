@@ -1,21 +1,21 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 689x17
-          RenderInline {A} at (0,0) size 354x17 [color=#0000EE]
-            RenderText {#text} at (54,0) size 354x17
+        LayoutInline {I} at (0,0) size 689x17
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 354x17
               text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8848"
-          RenderText {#text} at (407,0) size 336x17
+          LayoutText {#text} at (407,0) size 336x17
             text run at (407,0) width 5: " "
             text run at (411,0) width 332: "TFOOT borders are copied to THEAD and TBODY"
-        RenderText {#text} at (742,0) size 5x17
+        LayoutText {#text} at (742,0) size 5x17
           text run at (742,0) width 5: "."
-      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,44) size 418x211
         LayoutTableSection {TBODY} at (0,0) size 418x211
           LayoutTableRow {TR} at (0,2) size 418x207
@@ -24,254 +24,254 @@ layer at (0,0) size 800x600
                 LayoutTableSection {THEAD} at (0,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TH} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x51
+                      LayoutText {#text} at (1,2) size 17x51
                         text run at (1,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (21,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 1"
                 LayoutTableSection {TBODY} at (42,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
                 LayoutTableSection {TFOOT} at (63,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x42
+                      LayoutText {#text} at (2,2) size 17x42
                         text run at (2,2) width 42: "Footer"
               LayoutTable {TABLE} at (11,76) size 86x55 [border: none]
                 LayoutTableSection {TBODY} at (21,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 1"
                 LayoutTableSection {THEAD} at (0,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TH} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x51
+                      LayoutText {#text} at (1,2) size 17x51
                         text run at (1,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (42,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
                 LayoutTableSection {TFOOT} at (63,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x42
+                      LayoutText {#text} at (2,2) size 17x42
                         text run at (2,2) width 42: "Footer"
               LayoutTable {TABLE} at (11,141) size 86x55 [border: none]
                 LayoutTableSection {TBODY} at (21,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 1"
                 LayoutTableSection {THEAD} at (0,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TH} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x51
+                      LayoutText {#text} at (1,2) size 17x51
                         text run at (1,2) width 51: "Header"
                 LayoutTableSection {TFOOT} at (63,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x42
+                      LayoutText {#text} at (2,2) size 17x42
                         text run at (2,2) width 42: "Footer"
                 LayoutTableSection {TBODY} at (42,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
             LayoutTableCell {TD} at (106,2) size 102x207 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (11,11) size 86x55 [border: none]
                 LayoutTableSection {TBODY} at (21,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 1"
                 LayoutTableSection {TFOOT} at (63,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x42
+                      LayoutText {#text} at (2,2) size 17x42
                         text run at (2,2) width 42: "Footer"
                 LayoutTableSection {THEAD} at (0,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TH} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x51
+                      LayoutText {#text} at (1,2) size 17x51
                         text run at (1,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (42,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
               LayoutTable {TABLE} at (11,76) size 86x55 [border: none]
                 LayoutTableSection {TFOOT} at (63,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x42
+                      LayoutText {#text} at (2,2) size 17x42
                         text run at (2,2) width 42: "Footer"
                 LayoutTableSection {TBODY} at (21,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 1"
                 LayoutTableSection {THEAD} at (0,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TH} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x51
+                      LayoutText {#text} at (1,2) size 17x51
                         text run at (1,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (42,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
               LayoutTable {TABLE} at (11,141) size 86x55 [border: none]
                 LayoutTableSection {TBODY} at (21,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 1"
                 LayoutTableSection {TBODY} at (42,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
                 LayoutTableSection {TFOOT} at (63,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x42
+                      LayoutText {#text} at (2,2) size 17x42
                         text run at (2,2) width 42: "Footer"
                 LayoutTableSection {THEAD} at (0,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TH} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x51
+                      LayoutText {#text} at (1,2) size 17x51
                         text run at (1,2) width 51: "Header"
             LayoutTableCell {TD} at (210,2) size 102x207 [r=0 c=2 rs=1 cs=1]
               LayoutTable {TABLE} at (11,11) size 88x55 [border: none]
                 LayoutTableSection {THEAD} at (1,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TH} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x51
+                      LayoutText {#text} at (2,2) size 17x51
                         text run at (2,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (23,0) size 22x54
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x47
+                      LayoutText {#text} at (2,2) size 17x47
                         text run at (2,2) width 47: "Body 1"
                 LayoutTableSection {TBODY} at (45,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
                 LayoutTableSection {TFOOT} at (66,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x42
+                      LayoutText {#text} at (1,2) size 17x42
                         text run at (1,2) width 42: "Footer"
               LayoutTable {TABLE} at (11,76) size 88x55 [border: none]
                 LayoutTableSection {TBODY} at (23,0) size 22x54
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x47
+                      LayoutText {#text} at (2,2) size 17x47
                         text run at (2,2) width 47: "Body 1"
                 LayoutTableSection {THEAD} at (1,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TH} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x51
+                      LayoutText {#text} at (2,2) size 17x51
                         text run at (2,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (45,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
                 LayoutTableSection {TFOOT} at (66,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x42
+                      LayoutText {#text} at (1,2) size 17x42
                         text run at (1,2) width 42: "Footer"
               LayoutTable {TABLE} at (11,141) size 88x55 [border: none]
                 LayoutTableSection {TBODY} at (23,0) size 22x54
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x47
+                      LayoutText {#text} at (2,2) size 17x47
                         text run at (2,2) width 47: "Body 1"
                 LayoutTableSection {THEAD} at (1,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TH} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x51
+                      LayoutText {#text} at (2,2) size 17x51
                         text run at (2,2) width 51: "Header"
                 LayoutTableSection {TFOOT} at (66,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x42
+                      LayoutText {#text} at (1,2) size 17x42
                         text run at (1,2) width 42: "Footer"
                 LayoutTableSection {TBODY} at (45,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
             LayoutTableCell {TD} at (314,2) size 102x207 [r=0 c=3 rs=1 cs=1]
               LayoutTable {TABLE} at (11,11) size 88x55 [border: none]
                 LayoutTableSection {TBODY} at (23,0) size 22x54
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x47
+                      LayoutText {#text} at (2,2) size 17x47
                         text run at (2,2) width 47: "Body 1"
                 LayoutTableSection {TFOOT} at (66,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x42
+                      LayoutText {#text} at (1,2) size 17x42
                         text run at (1,2) width 42: "Footer"
                 LayoutTableSection {THEAD} at (1,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TH} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x51
+                      LayoutText {#text} at (2,2) size 17x51
                         text run at (2,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (45,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
               LayoutTable {TABLE} at (11,76) size 88x55 [border: none]
                 LayoutTableSection {TFOOT} at (66,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x42
+                      LayoutText {#text} at (1,2) size 17x42
                         text run at (1,2) width 42: "Footer"
                 LayoutTableSection {TBODY} at (23,0) size 22x54
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x47
+                      LayoutText {#text} at (2,2) size 17x47
                         text run at (2,2) width 47: "Body 1"
                 LayoutTableSection {THEAD} at (1,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TH} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x51
+                      LayoutText {#text} at (2,2) size 17x51
                         text run at (2,2) width 51: "Header"
                 LayoutTableSection {TBODY} at (45,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
               LayoutTable {TABLE} at (11,141) size 88x55 [border: none]
                 LayoutTableSection {TBODY} at (23,0) size 22x54
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TD} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x47
+                      LayoutText {#text} at (2,2) size 17x47
                         text run at (2,2) width 47: "Body 1"
                 LayoutTableSection {TBODY} at (45,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x47
+                      LayoutText {#text} at (1,2) size 17x47
                         text run at (1,2) width 47: "Body 2"
                 LayoutTableSection {TFOOT} at (66,0) size 21x54
                   LayoutTableRow {TR} at (0,0) size 21x54
                     LayoutTableCell {TD} at (0,0) size 21x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,2) size 17x42
+                      LayoutText {#text} at (1,2) size 17x42
                         text run at (1,2) width 42: "Footer"
                 LayoutTableSection {THEAD} at (1,0) size 22x54 [border: none (2px solid #0000FF) none (2px solid #008000)]
                   LayoutTableRow {TR} at (0,0) size 22x54
                     LayoutTableCell {TH} at (0,0) size 22x54 [border: (1px solid #D3D3D3)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 17x51
+                      LayoutText {#text} at (2,2) size 17x51
                         text run at (2,2) width 51: "Header"

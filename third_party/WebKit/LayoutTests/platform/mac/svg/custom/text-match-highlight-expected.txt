@@ -1,41 +1,41 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x410
-  RenderBlock {HTML} at (0,0) size 800x410
-    RenderBody {BODY} at (8,8) size 784x394
-      RenderText {#text} at (0,0) size 458x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x410
+    LayoutBlockFlow {BODY} at (8,8) size 784x394
+      LayoutText {#text} at (0,0) size 458x18
         text run at (0,0) width 458: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
-      RenderInline {SPAN} at (0,0) size 46x18
-        RenderText {#text} at (457,0) size 46x18
+      LayoutInline {SPAN} at (0,0) size 46x18
+        LayoutText {#text} at (457,0) size 46x18
           text run at (457,0) width 46: "findme"
-      RenderText {#text} at (502,0) size 758x36
+      LayoutText {#text} at (502,0) size 758x36
         text run at (502,0) width 138: "\". The 6th higlighted "
         text run at (639,0) width 119: "instance should be"
         text run at (0,18) width 43: "active."
       LayoutBR {BR} at (42,18) size 1x18
       LayoutBR {BR} at (0,36) size 0x18
-      RenderText {#text} at (0,54) size 91x18
+      LayoutText {#text} at (0,54) size 91x18
         text run at (0,54) width 91: "Lorum ipsum "
-      RenderInline {SPAN} at (0,0) size 46x18
-        RenderText {#text} at (90,54) size 46x18
+      LayoutInline {SPAN} at (0,0) size 46x18
+        LayoutText {#text} at (90,54) size 46x18
           text run at (90,54) width 46: "findme"
-      RenderText {#text} at (135,54) size 91x18
+      LayoutText {#text} at (135,54) size 91x18
         text run at (135,54) width 91: " lorum ipsum "
-      RenderInline {SPAN} at (0,0) size 46x18
-        RenderText {#text} at (225,54) size 46x18
+      LayoutInline {SPAN} at (0,0) size 46x18
+        LayoutText {#text} at (225,54) size 46x18
           text run at (225,54) width 46: "findme"
-      RenderInline {SPAN} at (0,0) size 46x18
-        RenderText {#text} at (270,54) size 46x18
+      LayoutInline {SPAN} at (0,0) size 46x18
+        LayoutText {#text} at (270,54) size 46x18
           text run at (270,54) width 46: "findme"
-      RenderText {#text} at (315,54) size 48x18
+      LayoutText {#text} at (315,54) size 48x18
         text run at (315,54) width 48: " lorum."
       LayoutBR {BR} at (362,54) size 1x18
-      RenderText {#text} at (0,72) size 53x18
+      LayoutText {#text} at (0,72) size 53x18
         text run at (0,72) width 53: "longtext"
-      RenderInline {SPAN} at (0,0) size 46x18
-        RenderText {#text} at (52,72) size 46x18
+      LayoutInline {SPAN} at (0,0) size 46x18
+        LayoutText {#text} at (52,72) size 46x18
           text run at (52,72) width 46: "findme"
-      RenderText {#text} at (97,72) size 45x18
+      LayoutText {#text} at (97,72) size 45x18
         text run at (97,72) width 45: "noyou."
       LayoutBR {BR} at (141,72) size 1x18
       LayoutSVGRoot {svg} at (18,134) size 228x160
@@ -85,4 +85,4 @@ layer at (0,0) size 800x410
                 chunk 1 text run 32 at (698.38,201.60) startOffset 31 endOffset 32 width 25.32: "e"
                 chunk 1 text run 33 at (716.05,184.78) startOffset 32 endOffset 33 width 23.18: "?"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

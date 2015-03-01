@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x76
-  RenderBlock {HTML} at (0,0) size 800x76
-    RenderBody {BODY} at (8,8) size 784x52
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (784,0) size 0x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x76
+    LayoutBlockFlow {BODY} at (8,8) size 784x52
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (784,0) size 0x17
           text run at (784,0) width 0 RTL: "| "
-        RenderText {#text} at (784,0) size 0x17
+        LayoutText {#text} at (784,0) size 0x17
           text run at (784,0) width 0: "a"
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 586x17
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 586x17
           text run at (0,0) width 417: "The line above should have the letter a partially off screen to the "
           text run at (416,0) width 170: "right of the pipe character."

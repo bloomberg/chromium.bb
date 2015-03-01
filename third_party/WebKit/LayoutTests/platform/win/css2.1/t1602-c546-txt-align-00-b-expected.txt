@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x404
-  RenderBlock {HTML} at (0,0) size 800x404
-    RenderBody {BODY} at (8,16) size 784x372
-      RenderBlock {P} at (0,0) size 784x18 [color=#000080]
-        RenderText {#text} at (0,0) size 241x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x404
+    LayoutBlockFlow {BODY} at (8,16) size 784x372
+      LayoutBlockFlow {P} at (0,0) size 784x18 [color=#000080]
+        LayoutText {#text} at (0,0) size 241x17
           text run at (0,0) width 241: "This sentence should be left-justified."
-      RenderBlock {P} at (0,34) size 784x18 [color=#000080]
-        RenderText {#text} at (534,0) size 250x17
+      LayoutBlockFlow {P} at (0,34) size 784x18 [color=#000080]
+        LayoutText {#text} at (534,0) size 250x17
           text run at (534,0) width 250: "This sentence should be right-justified."
-      RenderBlock {P} at (0,68) size 784x18 [color=#000080]
-        RenderText {#text} at (284,0) size 216x17
+      LayoutBlockFlow {P} at (0,68) size 784x18 [color=#000080]
+        LayoutText {#text} at (284,0) size 216x17
           text run at (284,0) width 216: "This sentence should be centered."
-      RenderBlock {P} at (0,102) size 784x270 [color=#000080]
-        RenderText {#text} at (0,0) size 518x17
+      LayoutBlockFlow {P} at (0,102) size 784x270 [color=#000080]
+        LayoutText {#text} at (0,0) size 518x17
           text run at (0,0) width 410: "This paragraph should be justified (the right and left margins "
           text run at (409,0) width 109: "should line up). "
-        RenderInline {SPAN} at (0,0) size 784x251 [color=#C0C0C0]
-          RenderText {#text} at (517,0) size 784x251
+        LayoutInline {SPAN} at (0,0) size 784x251 [color=#C0C0C0]
+          LayoutText {#text} at (517,0) size 784x251
             text run at (517,0) width 267: "This is just lovely dummy text. Dummy"
             text run at (0,18) width 89: "text. Dummy "
             text run at (88,18) width 529: "text. This is just lovely dummy text. This is just lovely dummy text. Dummy text. "
@@ -49,7 +49,7 @@ layer at (0,0) size 800x404
             text run at (237,216) width 547: "text. This is just lovely dummy text. This is just lovely dummy text. Dummy text."
             text run at (0,234) width 571: "This is just lovely dummy text. This is just lovely dummy text. Dummy text. Dummy "
             text run at (570,234) width 125: "text. Dummy text. "
-        RenderText {#text} at (694,234) size 784x35
+        LayoutText {#text} at (694,234) size 784x35
           text run at (694,234) width 90: "This sentence"
           text run at (0,252) width 173: "should be at the end of the "
           text run at (172,252) width 126: "block, not justified."

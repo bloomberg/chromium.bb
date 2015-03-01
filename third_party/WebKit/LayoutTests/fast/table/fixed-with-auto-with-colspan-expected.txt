@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (0,0) size 400x385
-  RenderBlock (positioned) {DIV} at (0,0) size 400x385
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 400x385
     LayoutTable {TABLE} at (0,5) size 445x50
       LayoutTableSection {TBODY} at (0,0) size 445x50
         LayoutTableRow {TR} at (0,0) size 445x50
@@ -83,7 +83,7 @@ layer at (0,0) size 400x385
           LayoutTableCell {TD} at (335,24) size 50x2 [bgcolor=#FF0000] [r=0 c=6 rs=1 cs=1]
           LayoutTableCell {TD} at (390,24) size 50x2 [bgcolor=#FF0000] [r=0 c=7 rs=1 cs=1]
 layer at (0,0) size 430x385
-  RenderBlock (positioned) {DIV} at (0,0) size 430x385
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 430x385
     LayoutTable {TABLE} at (0,5) size 445x50
       LayoutTableSection {TBODY} at (0,0) size 445x50
         LayoutTableRow {TR} at (0,0) size 445x50

@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600 scrollHeight 2041
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x2041 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x2041
-    RenderBody {BODY} at (8,8) size 784x2025
-      RenderBlock {DIV} at (320,0) size 464x1980
-        RenderInline {B} at (0,0) size 451x673 [color=#0000FF]
-          RenderText {#text} at (0,1) size 451x88
+  LayoutBlockFlow {HTML} at (0,0) size 800x2041
+    LayoutBlockFlow {BODY} at (8,8) size 784x2025
+      LayoutBlockFlow {DIV} at (320,0) size 464x1980
+        LayoutInline {B} at (0,0) size 451x673 [color=#0000FF]
+          LayoutText {#text} at (0,1) size 451x88
             text run at (0,1) width 451: "This test passes if no text is"
             text run at (0,46) width 211: "overlapping."
           LayoutBR {BR} at (210,46) size 1x43
-          RenderText {#text} at (0,91) size 451x583
+          LayoutText {#text} at (0,91) size 451x583
             text run at (0,91) width 451: "Autosize Autosize Autosize"
             text run at (0,136) width 451: "Autosize Autosize Autosize"
             text run at (0,181) width 451: "Autosize Autosize Autosize"
@@ -23,8 +23,8 @@ layer at (0,0) size 800x2041 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,541) width 451: "Autosize Autosize Autosize"
             text run at (0,586) width 451: "Autosize Autosize Autosize"
             text run at (0,631) width 451: "Autosize Autosize Autosize"
-        RenderInline {B} at (0,0) size 451x1303
-          RenderText {#text} at (0,676) size 451x1303
+        LayoutInline {B} at (0,0) size 451x1303
+          LayoutText {#text} at (0,676) size 451x1303
             text run at (0,676) width 451: "Autosize Autosize Autosize"
             text run at (0,721) width 451: "Autosize Autosize Autosize"
             text run at (0,766) width 451: "Autosize Autosize Autosize"
@@ -54,12 +54,12 @@ layer at (0,0) size 800x2041 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,1846) width 451: "Autosize Autosize Autosize"
             text run at (0,1891) width 451: "Autosize Autosize Autosize"
             text run at (0,1936) width 308: "Autosize Autosize "
-          RenderInline {I} at (0,0) size 75x43
-            RenderText {#text} at (307,1936) size 75x43
+          LayoutInline {I} at (0,0) size 75x43
+            LayoutText {#text} at (307,1936) size 75x43
               text run at (307,1936) width 75: "test2"
-          RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,1980) size 784x45
-        RenderInline {B} at (0,0) size 79x43
-          RenderText {#text} at (0,1) size 79x43
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,1980) size 784x45
+        LayoutInline {B} at (0,0) size 79x43
+          LayoutText {#text} at (0,1) size 79x43
             text run at (0,1) width 79: "test1"

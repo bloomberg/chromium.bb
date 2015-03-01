@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1159
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x1159
-    RenderBody {BODY} at (8,8) size 769x1143 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 785x1159
+    LayoutBlockFlow {BODY} at (8,8) size 769x1143 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 769x128
-        RenderText {#text} at (0,0) size 464x128
+      LayoutBlockFlow {PRE} at (0,34) size 769x128
+        LayoutText {#text} at (0,0) size 464x128
           text run at (0,0) width 272: ".one {text-decoration: underline;}"
           text run at (272,0) width 0: " "
           text run at (0,16) width 264: ".two {text-decoration: overline;}"
@@ -23,177 +23,177 @@ layer at (0,0) size 785x1159 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,96) width 464: ".seven {text-decoration: underline overline line-through;}"
           text run at (464,96) width 0: " "
           text run at (0,112) width 0: " "
-      RenderBlock {HR} at (0,175) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,193) size 769x18
-        RenderText {#text} at (0,0) size 230x17
+      LayoutBlockFlow {HR} at (0,175) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,193) size 769x18
+        LayoutText {#text} at (0,0) size 230x17
           text run at (0,0) width 230: "This sentence should be underlined."
-      RenderBlock {P} at (0,227) size 769x18
-        RenderText {#text} at (0,0) size 222x17
+      LayoutBlockFlow {P} at (0,227) size 769x18
+        LayoutText {#text} at (0,0) size 222x17
           text run at (0,0) width 222: "This sentence should be overlined."
-      RenderBlock {P} at (0,261) size 769x18
-        RenderText {#text} at (0,0) size 344x17
+      LayoutBlockFlow {P} at (0,261) size 769x18
+        LayoutText {#text} at (0,0) size 344x17
           text run at (0,0) width 344: "This sentence should have stricken text (linethrough)."
-      RenderBlock {P} at (0,295) size 769x18
-        RenderText {#text} at (0,0) size 603x17
+      LayoutBlockFlow {P} at (0,295) size 769x18
+        LayoutText {#text} at (0,0) size 603x17
           text run at (0,0) width 215: "This element should be blinking. "
           text run at (214,0) width 389: "(It is not required, however, that UAs support this behavior.)"
-      RenderBlock {P} at (0,329) size 769x36
-        RenderText {#text} at (0,0) size 520x17
+      LayoutBlockFlow {P} at (0,329) size 769x36
+        LayoutText {#text} at (0,0) size 520x17
           text run at (0,0) width 298: "The text in this element should be underlined. "
           text run at (297,0) width 223: "The boldfaced text in this element "
-        RenderInline {B} at (0,0) size 176x17
-          RenderText {#text} at (519,0) size 176x17
+        LayoutInline {B} at (0,0) size 176x17
+          LayoutText {#text} at (519,0) size 176x17
             text run at (519,0) width 176: "should also be underlined"
-        RenderText {#text} at (694,0) size 746x35
+        LayoutText {#text} at (694,0) size 746x35
           text run at (694,0) width 9: ". "
           text run at (702,0) width 44: "This is"
           text run at (0,18) width 731: "because the parent's underline will 'span' the boldfaced text, even if the inline element has no underline of its own."
-      RenderBlock {P} at (0,381) size 769x18
-        RenderText {#text} at (0,0) size 322x17
+      LayoutBlockFlow {P} at (0,381) size 769x18
+        LayoutText {#text} at (0,0) size 322x17
           text run at (0,0) width 322: "This sentence should be underlined and overlined."
-      RenderBlock {P} at (0,415) size 769x18
-        RenderText {#text} at (0,0) size 384x17
+      LayoutBlockFlow {P} at (0,415) size 769x18
+        LayoutText {#text} at (0,0) size 384x17
           text run at (0,0) width 384: "This sentence should be underlined, overlined, and stricken."
-      RenderBlock {P} at (0,449) size 769x0
-      RenderBlock {P} at (0,449) size 769x36
-        RenderText {#text} at (0,0) size 741x35
+      LayoutBlockFlow {P} at (0,449) size 769x0
+      LayoutBlockFlow {P} at (0,449) size 769x36
+        LayoutText {#text} at (0,0) size 741x35
           text run at (0,0) width 741: "There should be nothing visible between this sentence and the one above (there is an empty paragraph element with"
           text run at (0,18) width 99: "class of seven)."
-      RenderBlock {P} at (0,501) size 769x55
-        RenderText {#text} at (0,0) size 648x17
+      LayoutBlockFlow {P} at (0,501) size 769x55
+        LayoutText {#text} at (0,0) size 648x17
           text run at (0,0) width 648: "Text decorations only apply to the text of an element, so the image at the end of this sentence should "
-        RenderInline {EM} at (0,0) size 21x17
-          RenderText {#text} at (647,0) size 21x17
+        LayoutInline {EM} at (0,0) size 21x17
+          LayoutText {#text} at (647,0) size 21x17
             text run at (647,0) width 21: "not"
-        RenderText {#text} at (667,0) size 93x17
+        LayoutText {#text} at (667,0) size 93x17
           text run at (667,0) width 93: " be overlined: "
         LayoutImage {IMG} at (0,18) size 15x15
-        RenderText {#text} at (15,19) size 767x35
+        LayoutText {#text} at (15,19) size 767x35
           text run at (15,19) width 8: ". "
           text run at (23,19) width 744: "The underline of the parent element should hold true beneath the image, however, since text-decoration 'spans' child"
           text run at (0,37) width 61: "elements."
-      RenderBlock {P} at (0,572) size 769x18 [color=#008000]
-        RenderText {#text} at (0,0) size 107x17
+      LayoutBlockFlow {P} at (0,572) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 107x17
           text run at (0,0) width 107: "The underlining "
-        RenderInline {SPAN} at (0,0) size 100x17 [color=#0000FF]
-          RenderText {#text} at (106,0) size 100x17
+        LayoutInline {SPAN} at (0,0) size 100x17 [color=#0000FF]
+          LayoutText {#text} at (106,0) size 100x17
             text run at (106,0) width 100: "in this sentence"
-        RenderText {#text} at (205,0) size 238x17
+        LayoutText {#text} at (205,0) size 238x17
           text run at (205,0) width 238: " should be green, no matter what the "
-        RenderInline {SPAN} at (0,0) size 112x17 [color=#000000]
-          RenderText {#text} at (442,0) size 112x17
+        LayoutInline {SPAN} at (0,0) size 112x17 [color=#000000]
+          LayoutText {#text} at (442,0) size 112x17
             text run at (442,0) width 112: "text color may be"
-        RenderText {#text} at (553,0) size 5x17
+        LayoutText {#text} at (553,0) size 5x17
           text run at (553,0) width 5: "."
-      RenderBlock {P} at (0,606) size 769x36
-        RenderText {#text} at (0,0) size 113x17
+      LayoutBlockFlow {P} at (0,606) size 769x36
+        LayoutText {#text} at (0,0) size 113x17
           text run at (0,0) width 113: "The colors of the "
-        RenderInline {SPAN} at (0,0) size 75x17 [color=#800080]
-          RenderText {#text} at (112,0) size 75x17
+        LayoutInline {SPAN} at (0,0) size 75x17 [color=#800080]
+          LayoutText {#text} at (112,0) size 75x17
             text run at (112,0) width 75: "underlining"
-        RenderText {#text} at (186,0) size 22x17
+        LayoutText {#text} at (186,0) size 22x17
           text run at (186,0) width 22: " in "
-        RenderInline {SPAN} at (0,0) size 83x17 [color=#0000FF]
-          RenderText {#text} at (207,0) size 83x17
+        LayoutInline {SPAN} at (0,0) size 83x17 [color=#0000FF]
+          LayoutText {#text} at (207,0) size 83x17
             text run at (207,0) width 83: "this sentence"
-        RenderText {#text} at (289,0) size 71x17
+        LayoutText {#text} at (289,0) size 71x17
           text run at (289,0) width 71: " should be "
-        RenderInline {SPAN} at (0,0) size 215x17 [color=#808080]
-          RenderText {#text} at (359,0) size 215x17
+        LayoutInline {SPAN} at (0,0) size 215x17 [color=#808080]
+          LayoutText {#text} at (359,0) size 215x17
             text run at (359,0) width 215: "the same as that of the parent text"
-        RenderText {#text} at (573,0) size 756x35
+        LayoutText {#text} at (573,0) size 756x35
           text run at (573,0) width 183: " (that is, the first word in the"
           text run at (0,18) width 216: "sentence, which should be black)."
       LayoutTable {TABLE} at (0,658) size 769x485 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x483
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x457
             LayoutTableCell {TD} at (0,241) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 755x457 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 747x18
-                RenderText {#text} at (0,0) size 230x17
+              LayoutBlockFlow {P} at (4,4) size 747x18
+                LayoutText {#text} at (0,0) size 230x17
                   text run at (0,0) width 230: "This sentence should be underlined."
-              RenderBlock {P} at (4,38) size 747x18
-                RenderText {#text} at (0,0) size 222x17
+              LayoutBlockFlow {P} at (4,38) size 747x18
+                LayoutText {#text} at (0,0) size 222x17
                   text run at (0,0) width 222: "This sentence should be overlined."
-              RenderBlock {P} at (4,72) size 747x18
-                RenderText {#text} at (0,0) size 344x17
+              LayoutBlockFlow {P} at (4,72) size 747x18
+                LayoutText {#text} at (0,0) size 344x17
                   text run at (0,0) width 344: "This sentence should have stricken text (linethrough)."
-              RenderBlock {P} at (4,106) size 747x18
-                RenderText {#text} at (0,0) size 603x17
+              LayoutBlockFlow {P} at (4,106) size 747x18
+                LayoutText {#text} at (0,0) size 603x17
                   text run at (0,0) width 215: "This element should be blinking. "
                   text run at (214,0) width 389: "(It is not required, however, that UAs support this behavior.)"
-              RenderBlock {P} at (4,140) size 747x36
-                RenderText {#text} at (0,0) size 520x17
+              LayoutBlockFlow {P} at (4,140) size 747x36
+                LayoutText {#text} at (0,0) size 520x17
                   text run at (0,0) width 298: "The text in this element should be underlined. "
                   text run at (297,0) width 223: "The boldfaced text in this element "
-                RenderInline {B} at (0,0) size 176x17
-                  RenderText {#text} at (519,0) size 176x17
+                LayoutInline {B} at (0,0) size 176x17
+                  LayoutText {#text} at (519,0) size 176x17
                     text run at (519,0) width 176: "should also be underlined"
-                RenderText {#text} at (694,0) size 746x35
+                LayoutText {#text} at (694,0) size 746x35
                   text run at (694,0) width 9: ". "
                   text run at (702,0) width 44: "This is"
                   text run at (0,18) width 731: "because the parent's underline will 'span' the boldfaced text, even if the inline element has no underline of its own."
-              RenderBlock {P} at (4,192) size 747x18
-                RenderText {#text} at (0,0) size 322x17
+              LayoutBlockFlow {P} at (4,192) size 747x18
+                LayoutText {#text} at (0,0) size 322x17
                   text run at (0,0) width 322: "This sentence should be underlined and overlined."
-              RenderBlock {P} at (4,226) size 747x18
-                RenderText {#text} at (0,0) size 384x17
+              LayoutBlockFlow {P} at (4,226) size 747x18
+                LayoutText {#text} at (0,0) size 384x17
                   text run at (0,0) width 384: "This sentence should be underlined, overlined, and stricken."
-              RenderBlock {P} at (4,260) size 747x0
-              RenderBlock {P} at (4,260) size 747x36
-                RenderText {#text} at (0,0) size 741x35
+              LayoutBlockFlow {P} at (4,260) size 747x0
+              LayoutBlockFlow {P} at (4,260) size 747x36
+                LayoutText {#text} at (0,0) size 741x35
                   text run at (0,0) width 741: "There should be nothing visible between this sentence and the one above (there is an empty paragraph element with"
                   text run at (0,18) width 99: "class of seven)."
-              RenderBlock {P} at (4,312) size 747x55
-                RenderText {#text} at (0,0) size 648x17
+              LayoutBlockFlow {P} at (4,312) size 747x55
+                LayoutText {#text} at (0,0) size 648x17
                   text run at (0,0) width 648: "Text decorations only apply to the text of an element, so the image at the end of this sentence should "
-                RenderInline {EM} at (0,0) size 21x17
-                  RenderText {#text} at (647,0) size 21x17
+                LayoutInline {EM} at (0,0) size 21x17
+                  LayoutText {#text} at (647,0) size 21x17
                     text run at (647,0) width 21: "not"
-                RenderText {#text} at (667,0) size 687x36
+                LayoutText {#text} at (667,0) size 687x36
                   text run at (667,0) width 20: " be"
                   text run at (0,19) width 69: "overlined: "
                 LayoutImage {IMG} at (68.86,18) size 15x15
-                RenderText {#text} at (83,19) size 687x35
+                LayoutText {#text} at (83,19) size 687x35
                   text run at (83,19) width 9: ". "
                   text run at (91,19) width 596: "The underline of the parent element should hold true beneath the image, however, since text-"
                   text run at (0,37) width 214: "decoration 'spans' child elements."
-              RenderBlock {P} at (4,383) size 747x18 [color=#008000]
-                RenderText {#text} at (0,0) size 107x17
+              LayoutBlockFlow {P} at (4,383) size 747x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 107x17
                   text run at (0,0) width 107: "The underlining "
-                RenderInline {SPAN} at (0,0) size 100x17 [color=#0000FF]
-                  RenderText {#text} at (106,0) size 100x17
+                LayoutInline {SPAN} at (0,0) size 100x17 [color=#0000FF]
+                  LayoutText {#text} at (106,0) size 100x17
                     text run at (106,0) width 100: "in this sentence"
-                RenderText {#text} at (205,0) size 238x17
+                LayoutText {#text} at (205,0) size 238x17
                   text run at (205,0) width 238: " should be green, no matter what the "
-                RenderInline {SPAN} at (0,0) size 112x17 [color=#000000]
-                  RenderText {#text} at (442,0) size 112x17
+                LayoutInline {SPAN} at (0,0) size 112x17 [color=#000000]
+                  LayoutText {#text} at (442,0) size 112x17
                     text run at (442,0) width 112: "text color may be"
-                RenderText {#text} at (553,0) size 5x17
+                LayoutText {#text} at (553,0) size 5x17
                   text run at (553,0) width 5: "."
-              RenderBlock {P} at (4,417) size 747x36
-                RenderText {#text} at (0,0) size 113x17
+              LayoutBlockFlow {P} at (4,417) size 747x36
+                LayoutText {#text} at (0,0) size 113x17
                   text run at (0,0) width 113: "The colors of the "
-                RenderInline {SPAN} at (0,0) size 75x17 [color=#800080]
-                  RenderText {#text} at (112,0) size 75x17
+                LayoutInline {SPAN} at (0,0) size 75x17 [color=#800080]
+                  LayoutText {#text} at (112,0) size 75x17
                     text run at (112,0) width 75: "underlining"
-                RenderText {#text} at (186,0) size 22x17
+                LayoutText {#text} at (186,0) size 22x17
                   text run at (186,0) width 22: " in "
-                RenderInline {SPAN} at (0,0) size 83x17 [color=#0000FF]
-                  RenderText {#text} at (207,0) size 83x17
+                LayoutInline {SPAN} at (0,0) size 83x17 [color=#0000FF]
+                  LayoutText {#text} at (207,0) size 83x17
                     text run at (207,0) width 83: "this sentence"
-                RenderText {#text} at (289,0) size 71x17
+                LayoutText {#text} at (289,0) size 71x17
                   text run at (289,0) width 71: " should be "
-                RenderInline {SPAN} at (0,0) size 215x17 [color=#808080]
-                  RenderText {#text} at (359,0) size 215x17
+                LayoutInline {SPAN} at (0,0) size 215x17 [color=#808080]
+                  LayoutText {#text} at (359,0) size 215x17
                     text run at (359,0) width 215: "the same as that of the parent text"
-                RenderText {#text} at (573,0) size 733x35
+                LayoutText {#text} at (573,0) size 733x35
                   text run at (573,0) width 160: " (that is, the first word in"
                   text run at (0,18) width 240: "the sentence, which should be black)."

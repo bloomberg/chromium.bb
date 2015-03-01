@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 186x114 [border: (3px solid #0000FF)]
-        RenderText {#text} at (3,9) size 173x95
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 186x114 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,9) size 173x95
           text run at (3,9) width 173: "\x{D835}\x{DC9E}\x{D835}\x{DC9E}\x{D835}\x{DC9E}\x{D835}\x{DC9E}\x{D835}\x{DC9E}\x{D835}\x{DC9E}"
           text run at (3,63) width 115: "\x{D835}\x{DC9E}\x{D835}\x{DC9E}\x{D835}\x{DC9E}\x{D835}\x{DC9E}"

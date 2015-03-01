@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x16
-        RenderText {#text} at (0,0) size 537x16
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x16
+        LayoutText {#text} at (0,0) size 537x16
           text run at (0,0) width 537: "The two divs below should be on the same line, since they are display: inline-block."
-      RenderBlock {CENTER} at (0,32) size 784x20
-        RenderBlock {DIV} at (88,0) size 304x20 [border: (2px solid #0000FF)]
-          RenderText {#text} at (102,2) size 100x16
+      LayoutBlockFlow {CENTER} at (0,32) size 784x20
+        LayoutBlockFlow {DIV} at (88,0) size 304x20 [border: (2px solid #0000FF)]
+          LayoutText {#text} at (102,2) size 100x16
             text run at (102,2) width 100: "This is div one."
-        RenderBlock {DIV} at (392,0) size 304x20 [border: (2px solid #0000FF)]
-          RenderText {#text} at (102,2) size 100x16
+        LayoutBlockFlow {DIV} at (392,0) size 304x20 [border: (2px solid #0000FF)]
+          LayoutText {#text} at (102,2) size 100x16
             text run at (102,2) width 100: "This is div two."
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,68) size 784x16
-        RenderText {#text} at (0,0) size 659x16
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,68) size 784x16
+        LayoutText {#text} at (0,0) size 659x16
           text run at (0,0) width 659: "The two divs below should be on separate lines, since they are wrapped in elements with width: 100%."
-      RenderBlock (anonymous) at (0,100) size 784x48
-        RenderBlock {BLOCK} at (0,0) size 788x24 [border: (2px solid #008000)]
-          RenderBlock {DIV} at (2,2) size 304x20 [border: (2px solid #0000FF)]
-            RenderText {#text} at (2,2) size 99x16
+      LayoutBlockFlow (anonymous) at (0,100) size 784x48
+        LayoutBlockFlow {BLOCK} at (0,0) size 788x24 [border: (2px solid #008000)]
+          LayoutBlockFlow {DIV} at (2,2) size 304x20 [border: (2px solid #0000FF)]
+            LayoutText {#text} at (2,2) size 99x16
               text run at (2,2) width 99: "This is div one."
-        RenderText {#text} at (0,0) size 0x0
-        RenderBlock {BLOCK} at (0,24) size 788x24 [border: (2px solid #008000)]
-          RenderBlock {DIV} at (2,2) size 304x20 [border: (2px solid #0000FF)]
-            RenderText {#text} at (2,2) size 100x16
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {BLOCK} at (0,24) size 788x24 [border: (2px solid #008000)]
+          LayoutBlockFlow {DIV} at (2,2) size 304x20 [border: (2px solid #0000FF)]
+            LayoutText {#text} at (2,2) size 100x16
               text run at (2,2) width 100: "This is div two."
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

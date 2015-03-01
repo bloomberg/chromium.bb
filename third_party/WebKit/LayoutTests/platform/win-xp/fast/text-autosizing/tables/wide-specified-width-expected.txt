@@ -1,37 +1,37 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x171
-  RenderBlock {HTML} at (0,0) size 800x171
-    RenderBody {BODY} at (0,0) size 800x170
-      RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 242x15
+  LayoutBlockFlow {HTML} at (0,0) size 800x171
+    LayoutBlockFlow {BODY} at (0,0) size 800x170
+      LayoutBlockFlow {DIV} at (0,0) size 600x36
+        LayoutText {#text} at (0,0) size 242x15
           text run at (0,0) width 242: "Table autosizing tests - wide-specified-width.html"
         LayoutBR {BR} at (242,0) size 0x15
-        RenderText {#text} at (0,16) size 472x15
+        LayoutText {#text} at (0,16) size 472x15
           text run at (0,16) width 472: "This test passes if the cell with lots of text is autosized and none of the other 5 cells are autosized."
       LayoutTable {TABLE} at (1,37) size 500x133 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 499x132
           LayoutTableRow {TR} at (0,0) size 499x24
             LayoutTableCell {TD} at (0,2) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x15
+              LayoutText {#text} at (2,2) size 23x15
                 text run at (2,2) width 23: "hello"
             LayoutTableCell {TD} at (26,0) size 447x24 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 34x20
+              LayoutText {#text} at (2,2) size 34x20
                 text run at (2,2) width 34: "hello"
             LayoutTableCell {TD} at (473,2) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x15
+              LayoutText {#text} at (2,2) size 23x15
                 text run at (2,2) width 23: "hello"
           LayoutTableRow {TR} at (0,24) size 499x108
             LayoutTableCell {TD} at (0,68) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x15
+              LayoutText {#text} at (2,2) size 23x15
                 text run at (2,2) width 23: "hello"
             LayoutTableCell {TD} at (26,24) size 447x108 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 424x104
+              LayoutText {#text} at (2,2) size 424x104
                 text run at (2,2) width 424: "hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,23) width 424: "hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,44) width 424: "hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,65) width 424: "hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,86) width 307: "hello hello hello hello hello hello hello hello"
             LayoutTableCell {TD} at (473,68) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x15
+              LayoutText {#text} at (2,2) size 23x15
                 text run at (2,2) width 23: "hello"

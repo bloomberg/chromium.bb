@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 191x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 191x18
           text run at (0,0) width 191: "outer width=400 align=center"
       LayoutTable {TABLE} at (192,18) size 400x44 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x42
           LayoutTableRow {TR} at (0,2) size 398x38
             LayoutTableCell {TD} at (2,2) size 394x38 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock {FORM} at (2,2) size 390x18
+              LayoutBlockFlow {FORM} at (2,2) size 390x18
                 LayoutMenuList {SELECT} at (0,0) size 54x18 [bgcolor=#F8F8F8]
-                  RenderBlock (anonymous) at (0,0) size 54x18
-                    RenderText at (8,2) size 23x13
+                  LayoutBlockFlow (anonymous) at (0,0) size 54x18
+                    LayoutText at (8,2) size 23x13
                       text run at (8,2) width 23: "Test"
-                RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,62) size 784x18
-        RenderText {#text} at (0,0) size 301x18
+                LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,62) size 784x18
+        LayoutText {#text} at (0,0) size 301x18
           text run at (0,0) width 301: "outer width=400 inner width=200 align=center"
       LayoutTable {TABLE} at (0,80) size 400x40 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 396x36
@@ -27,10 +27,10 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 198x26
                   LayoutTableRow {TR} at (0,2) size 198x22
                     LayoutTableCell {TD} at (2,2) size 194x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 22x18
+                      LayoutText {#text} at (2,2) size 22x18
                         text run at (2,2) width 22: "foo"
-      RenderBlock (anonymous) at (0,120) size 784x18
-        RenderText {#text} at (0,0) size 186x18
+      LayoutBlockFlow (anonymous) at (0,120) size 784x18
+        LayoutText {#text} at (0,0) size 186x18
           text run at (0,0) width 186: "outer auto inner align=center"
       LayoutTable {TABLE} at (0,138) size 44x40 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 40x36
@@ -40,10 +40,10 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 30x26
                   LayoutTableRow {TR} at (0,2) size 30x22
                     LayoutTableCell {TD} at (2,2) size 26x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 22x18
+                      LayoutText {#text} at (2,2) size 22x18
                         text run at (2,2) width 22: "foo"
-      RenderBlock (anonymous) at (0,178) size 784x18
-        RenderText {#text} at (0,0) size 220x18
+      LayoutBlockFlow (anonymous) at (0,178) size 784x18
+        LayoutText {#text} at (0,0) size 220x18
           text run at (0,0) width 220: "outer width=50 inner align=center"
       LayoutTable {TABLE} at (0,196) size 44x40 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 40x36
@@ -53,10 +53,10 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 30x26
                   LayoutTableRow {TR} at (0,2) size 30x22
                     LayoutTableCell {TD} at (2,2) size 26x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 22x18
+                      LayoutText {#text} at (2,2) size 22x18
                         text run at (2,2) width 22: "foo"
-      RenderBlock (anonymous) at (0,236) size 784x18
-        RenderText {#text} at (0,0) size 232x18
+      LayoutBlockFlow (anonymous) at (0,236) size 784x18
+        LayoutText {#text} at (0,0) size 232x18
           text run at (0,0) width 232: "outer width=50 inner margin-left:50"
       LayoutTable {TABLE} at (0,254) size 94x40 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 90x36
@@ -66,10 +66,10 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 30x26
                   LayoutTableRow {TR} at (0,2) size 30x22
                     LayoutTableCell {TD} at (2,2) size 26x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 22x18
+                      LayoutText {#text} at (2,2) size 22x18
                         text run at (2,2) width 22: "foo"
-      RenderBlock (anonymous) at (0,294) size 784x18
-        RenderText {#text} at (0,0) size 228x18
+      LayoutBlockFlow (anonymous) at (0,294) size 784x18
+        LayoutText {#text} at (0,0) size 228x18
           text run at (0,0) width 228: "outer width=400 inner align=center"
       LayoutTable {TABLE} at (0,312) size 400x40 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 396x36
@@ -79,13 +79,13 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 30x26
                   LayoutTableRow {TR} at (0,2) size 30x22
                     LayoutTableCell {TD} at (2,2) size 26x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 22x18
+                      LayoutText {#text} at (2,2) size 22x18
                         text run at (2,2) width 22: "foo"
             LayoutTableCell {TD} at (121,7) size 273x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 80x18
+              LayoutText {#text} at (2,2) size 80x18
                 text run at (2,2) width 80: "x x x x x x x"
-      RenderBlock (anonymous) at (0,352) size 784x18
-        RenderText {#text} at (0,0) size 228x18
+      LayoutBlockFlow (anonymous) at (0,352) size 784x18
+        LayoutText {#text} at (0,0) size 228x18
           text run at (0,0) width 228: "outer width=400 inner align=center"
       LayoutTable {TABLE} at (0,370) size 400x40 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 396x36
@@ -95,11 +95,11 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 58x26
                   LayoutTableRow {TR} at (0,2) size 58x22
                     LayoutTableCell {TD} at (2,2) size 54x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 16x18
+                      LayoutText {#text} at (2,2) size 16x18
                         text run at (2,2) width 16: "50"
             LayoutTableCell {TD} at (172,7) size 222x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 80x18
+              LayoutText {#text} at (2,2) size 80x18
                 text run at (2,2) width 80: "x x x x x x x"
-      RenderBlock (anonymous) at (0,410) size 784x18
-        RenderText {#text} at (0,0) size 20x18
+      LayoutBlockFlow (anonymous) at (0,410) size 784x18
+        LayoutText {#text} at (0,0) size 20x18
           text run at (0,0) width 20: "-->"

@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x582
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 86x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x582
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 86x17
           text run at (0,0) width 86: "Pixel test for "
-        RenderInline {I} at (0,0) size 573x35
-          RenderInline {A} at (0,0) size 307x17 [color=#0000EE]
-            RenderText {#text} at (85,0) size 307x17
+        LayoutInline {I} at (0,0) size 573x35
+          LayoutInline {A} at (0,0) size 307x17 [color=#0000EE]
+            LayoutText {#text} at (85,0) size 307x17
               text run at (85,0) width 307: "http://bugs.webkit.org/show_bug.cgi?id=12043"
-          RenderText {#text} at (391,0) size 573x35
+          LayoutText {#text} at (391,0) size 573x35
             text run at (391,0) width 5: " "
             text run at (395,0) width 178: "Another assertion failure in"
             text run at (0,18) width 248: "WebCore::LayoutObject::drawBorder"
-        RenderText {#text} at (247,18) size 5x17
+        LayoutText {#text} at (247,18) size 5x17
           text run at (247,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 309x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 309x17
           text run at (0,0) width 309: "There should be three squres and a circle below."
-      RenderBlock {DIV} at (0,86) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
-      RenderBlock {DIV} at (0,152) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
-      RenderBlock {DIV} at (0,218) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
-      RenderBlock {DIV} at (0,284) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,86) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,152) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,218) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,284) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]

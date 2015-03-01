@@ -1,77 +1,77 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x488
-  RenderBlock {HTML} at (0,0) size 800x488
-    RenderBody {BODY} at (8,8) size 784x464
-      RenderBlock (anonymous) at (0,0) size 784x428
-        RenderText {#text} at (302,87) size 4x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x488
+    LayoutBlockFlow {BODY} at (8,8) size 784x464
+      LayoutBlockFlow (anonymous) at (0,0) size 784x428
+        LayoutText {#text} at (302,87) size 4x19
           text run at (302,87) width 4: " "
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (302,194) size 4x19
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (302,194) size 4x19
           text run at (302,194) width 4: " "
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (302,301) size 4x19
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (302,301) size 4x19
           text run at (302,301) width 4: " "
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (302,408) size 4x19
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (302,408) size 4x19
           text run at (302,408) width 4: " "
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,444) size 784x20
-        RenderText {#text} at (0,0) size 338x19
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,444) size 784x20
+        LayoutText {#text} at (0,0) size 338x19
           text run at (0,0) width 338: "Tests that image alt text takes directionality into account."
 layer at (8,8) size 302x102 clip at (9,9) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (0,0) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 164x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (0,0) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "ltr image, rtl alt"
 layer at (9,59) size 280x80 backgroundClip at (9,9) size 300x100 clip at (9,9) size 300x100 outlineClip at (9,9) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (314,8) size 302x102 clip at (315,9) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (306,0) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 164x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (306,0) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "rtl image, rtl alt"
 layer at (315,59) size 280x80 backgroundClip at (315,9) size 300x100 clip at (315,9) size 300x100 outlineClip at (315,9) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (8,115) size 302x102 clip at (9,116) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (0,107) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 164x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (0,107) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "ltr image, ltr alt"
 layer at (9,166) size 280x80 backgroundClip at (9,116) size 300x100 clip at (9,116) size 300x100 outlineClip at (9,116) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (314,115) size 302x102 clip at (315,116) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (306,107) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 164x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (306,107) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "rtl image, ltr alt"
 layer at (315,166) size 280x80 backgroundClip at (315,116) size 300x100 clip at (315,116) size 300x100 outlineClip at (315,116) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (8,222) size 302x102 clip at (9,223) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (0,214) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 191x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (0,214) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 191x26
         text run at (0,0) width 191: "ltr image, weak alt"
 layer at (9,273) size 280x80 backgroundClip at (9,223) size 300x100 clip at (9,223) size 300x100 outlineClip at (9,223) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (314,222) size 302x102 clip at (315,223) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (306,214) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 191x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (306,214) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 191x26
         text run at (0,0) width 191: "rtl image, weak alt"
 layer at (315,273) size 280x80 backgroundClip at (315,223) size 300x100 clip at (315,223) size 300x100 outlineClip at (315,223) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (8,329) size 302x102 clip at (9,330) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (0,321) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 200x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (0,321) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 200x26
         text run at (0,0) width 200: "ltr image, mixed alt"
 layer at (9,380) size 280x80 backgroundClip at (9,330) size 300x100 clip at (9,330) size 300x100 outlineClip at (9,330) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80
 layer at (314,329) size 302x102 clip at (315,330) size 300x100 scrollHeight 130
-  RenderBlock (relative positioned) {SECTION} at (306,321) size 302x102 [border: (1px solid #FF0000)]
-    RenderBlock {H2} at (1,20.91) size 300x27
-      RenderText {#text} at (0,0) size 200x26
+  LayoutBlockFlow (relative positioned) {SECTION} at (306,321) size 302x102 [border: (1px solid #FF0000)]
+    LayoutBlockFlow {H2} at (1,20.91) size 300x27
+      LayoutText {#text} at (0,0) size 200x26
         text run at (0,0) width 200: "rtl image, mixed alt"
 layer at (315,380) size 280x80 backgroundClip at (315,330) size 300x100 clip at (315,330) size 300x100 outlineClip at (315,330) size 300x100
   LayoutImage {IMG} at (1,51) size 280x80

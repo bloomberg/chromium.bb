@@ -1,6 +1,6 @@
 CONSOLE WARNING: 'DOMImplementation.hasFeature()' returning false is deprecated. Please do not use it, as per DOM it should always return true (https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature).
 layer at (0,0) size 480x360
-  RenderView at (0,0) size 480x360
+  LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,0) size 0x0

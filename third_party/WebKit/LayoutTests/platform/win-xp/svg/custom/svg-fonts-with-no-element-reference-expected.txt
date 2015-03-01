@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x99
-  RenderBlock {HTML} at (0,0) size 800x98.67
-    RenderBody {BODY} at (8,18.89) size 784x60.89
-      RenderBlock {P} at (0,0) size 784x21
-        RenderText {#text} at (0,0) size 326x20
+  LayoutBlockFlow {HTML} at (0,0) size 800x98.67
+    LayoutBlockFlow {BODY} at (8,18.89) size 784x60.89
+      LayoutBlockFlow {P} at (0,0) size 784x21
+        LayoutText {#text} at (0,0) size 326x20
           text run at (0,0) width 326: "This text should be rendered with a first font."
-      RenderBlock {P} at (0,39.89) size 784x21
-        RenderText {#text} at (0,0) size 348x20
+      LayoutBlockFlow {P} at (0,39.89) size 784x21
+        LayoutText {#text} at (0,0) size 348x20
           text run at (0,0) width 348: "This text should be rendered with a second font."

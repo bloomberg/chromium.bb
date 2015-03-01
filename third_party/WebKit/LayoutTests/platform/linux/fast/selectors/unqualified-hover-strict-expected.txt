@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x96
-  RenderBlock {HTML} at (0,0) size 800x96.44 [bgcolor=#666666]
-    RenderBody {BODY} at (8,18.72) size 784x61.72
-      RenderBlock {H3} at (0,0) size 784x23
-        RenderText {#text} at (0,0) size 454x22
+  LayoutBlockFlow {HTML} at (0,0) size 800x96.44 [bgcolor=#666666]
+    LayoutBlockFlow {BODY} at (8,18.72) size 784x61.72
+      LayoutBlockFlow {H3} at (0,0) size 784x23
+        LayoutText {#text} at (0,0) size 454x22
           text run at (0,0) width 454: "Test of unqualifed :hover selector in strict parsing mode"
-      RenderBlock {P} at (0,41.72) size 784x20
-        RenderText {#text} at (0,0) size 655x19
+      LayoutBlockFlow {P} at (0,41.72) size 784x20
+        LayoutText {#text} at (0,0) size 655x19
           text run at (0,0) width 655: "Moving the mouse anywhere over the document should result in the background color being changed to grey."

@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x568
-      RenderBlock {H1} at (0,0) size 784x55
-        RenderText {#text} at (0,0) size 776x55
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x568
+      LayoutBlockFlow {H1} at (0,0) size 784x55
+        LayoutText {#text} at (0,0) size 776x55
           text run at (0,0) width 776: "Inheritance bug for floated first-letter"
-      RenderBlock {P} at (0,87.16) size 784x197 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
-        RenderInline {<pseudo:first-letter>} at (0,0) size 54x85 [color=#008000] [border: (1px dashed #008000)]
+      LayoutBlockFlow {P} at (0,87.16) size 784x197 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 54x85 [color=#008000] [border: (1px dashed #008000)]
           LayoutTextFragment at (2,1) size 52x83
             text run at (2,1) width 52: "H"
         LayoutTextFragment {#text} at (54,45) size 756x151
@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
           text run at (1,112) width 687: "3em, and makes the text bold. And here's some more text to pad out the"
           text run at (1,140) width 710: "paragraph and make things look nice (or, at least, to illustrate the problem"
           text run at (1,168) width 100: "correctly)."
-      RenderBlock {P} at (0,308.16) size 784x142 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
-        RenderBlock (floating) {<pseudo:first-letter>} at (1,1) size 54x85 [color=#008000] [border: (1px dashed #008000)]
+      LayoutBlockFlow {P} at (0,308.16) size 784x142 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
+        LayoutBlockFlow (floating) {<pseudo:first-letter>} at (1,1) size 54x85 [color=#008000] [border: (1px dashed #008000)]
           LayoutTextFragment at (1,1) size 52x83
             text run at (1,1) width 52: "H"
         LayoutTextFragment {#text} at (55,1) size 782x140

@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {H1} at (0,0) size 784x37
-        RenderText {#text} at (0,0) size 254x37
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {H1} at (0,0) size 784x37
+        LayoutText {#text} at (0,0) size 254x37
           text run at (0,0) width 254: "setAttribute() Test"
-      RenderBlock {P} at (0,58.44) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 481x18
+      LayoutBlockFlow {P} at (0,58.44) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 481x18
           text run at (0,0) width 481: "This element's Class attribute is set using setAttribute(). It should be green."
-      RenderBlock {P} at (0,92.44) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 463x18
+      LayoutBlockFlow {P} at (0,92.44) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 463x18
           text run at (0,0) width 463: "This element's ID attribute is set using setAttribute(). It should be green."
-      RenderBlock {P} at (0,126.44) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 477x18
+      LayoutBlockFlow {P} at (0,126.44) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 477x18
           text run at (0,0) width 477: "This element's Title attribute is set using setAttribute(). It should be green."
-      RenderBlock {P} at (0,160.44) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 402x18
+      LayoutBlockFlow {P} at (0,160.44) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 402x18
           text run at (0,0) width 402: "This element's Title attribute is hard-coded. It should be green."
-      RenderBlock {P} at (0,194.44) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 479x18
+      LayoutBlockFlow {P} at (0,194.44) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 479x18
           text run at (0,0) width 479: "This element's Lang attribute is set using setAttribute(). It should be green."

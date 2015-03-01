@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x171
-  RenderBlock {HTML} at (0,0) size 800x171
-    RenderBody {BODY} at (8,8) size 784x155
-      RenderText {#text} at (0,0) size 0x0
+  LayoutBlockFlow {HTML} at (0,0) size 800x171
+    LayoutBlockFlow {BODY} at (8,8) size 784x155
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 300x150
   LayoutIFrame {IFRAME} at (0,0) size 300x150
     layer at (0,0) size 300x150
-      RenderView at (0,0) size 300x150
+      LayoutView at (0,0) size 300x150
     layer at (0,0) size 300x150
-      RenderBlock {HTML} at (0,0) size 300x150
-        RenderBody {BODY} at (0,0) size 300x150 [bgcolor=#262626]
+      LayoutBlockFlow {HTML} at (0,0) size 300x150
+        LayoutBlockFlow {BODY} at (0,0) size 300x150 [bgcolor=#262626]
     layer at (0,0) size 300x150
       LayoutEmbeddedObject {EMBED} at (0,0) size 300x150

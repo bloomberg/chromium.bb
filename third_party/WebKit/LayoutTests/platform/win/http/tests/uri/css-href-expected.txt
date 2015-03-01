@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        RenderInline {A} at (0,0) size 69x17 [color=#0000EE]
-          RenderText {#text} at (54,0) size 69x17
+        LayoutInline {A} at (0,0) size 69x17 [color=#0000EE]
+          LayoutText {#text} at (54,0) size 69x17
             text run at (54,0) width 69: "bug 11141"
-        RenderText {#text} at (122,0) size 346x17
+        LayoutText {#text} at (122,0) size 346x17
           text run at (122,0) width 9: ": "
           text run at (130,0) width 338: "CSS '@import' doesn't respect HTML Base element."
-      RenderBlock {P} at (0,34) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 166x17
+      LayoutBlockFlow {P} at (0,34) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 166x17
           text run at (0,0) width 166: "This text should be green."
-      RenderBlock {P} at (0,68) size 784x54
-        RenderText {#text} at (0,0) size 780x53
+      LayoutBlockFlow {P} at (0,68) size 784x54
+        LayoutText {#text} at (0,0) size 780x53
           text run at (0,0) width 387: "If it is red, the css has been loaded relative to the document. "
           text run at (386,0) width 394: "If it is black, no stylesheet has been rendered, if it is rendered"
           text run at (0,18) width 44: "green, "
           text run at (43,18) width 474: "the stylesheet has been rendered correctly from the HREF attribute of the "
           text run at (516,18) width 242: "Base element in the HEAD section of"
           text run at (0,36) width 95: "this document."
-      RenderBlock {P} at (0,138) size 784x18 [color=#008000]
-        RenderText {#text} at (0,0) size 196x17
+      LayoutBlockFlow {P} at (0,138) size 784x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 196x17
           text run at (0,0) width 196: "This text should also be green."

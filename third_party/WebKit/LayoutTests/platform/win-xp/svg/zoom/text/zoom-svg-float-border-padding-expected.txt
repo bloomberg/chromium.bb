@@ -1,27 +1,27 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 630
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x630 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {html} at (0,0) size 785x630.19
-    RenderBody {body} at (8,8) size 769x599.16
-      RenderBlock (anonymous) at (0,0) size 769x54
-        RenderText {#text} at (0,0) size 756x53
+  LayoutBlockFlow {html} at (0,0) size 785x630.19
+    LayoutBlockFlow {body} at (8,8) size 769x599.16
+      LayoutBlockFlow (anonymous) at (0,0) size 769x54
+        LayoutText {#text} at (0,0) size 756x53
           text run at (0,0) width 357: "The two blocks should look identical. "
           text run at (357,0) width 399: "One uses an SVG, and the other just uses a"
           text run at (0,27) width 175: "normal HTML div."
-      RenderBlock {p} at (0,77.03) size 769x27
-        RenderText {#text} at (0,0) size 524x26
+      LayoutBlockFlow {p} at (0,77.03) size 769x27
+        LayoutText {#text} at (0,0) size 524x26
           text run at (0,0) width 524: "There should be a red, white and blue pattern below this"
       LayoutSVGRoot {svg} at (18,145) size 140x141
         LayoutSVGRect {rect} at (38,165) size 100x101 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-      RenderBlock {p} at (0,287.06) size 769x27
-        RenderText {#text} at (0,0) size 523x26
+      LayoutBlockFlow {p} at (0,287.06) size 769x27
+        LayoutText {#text} at (0,0) size 523x26
           text run at (0,0) width 523: "There should be a red, white and blue pattern above this"
-      RenderBlock {hr} at (0,337.09) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {p} at (0,362.13) size 769x27
-        RenderText {#text} at (0,0) size 524x26
+      LayoutBlockFlow {hr} at (0,337.09) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {p} at (0,362.13) size 769x27
+        LayoutText {#text} at (0,0) size 524x26
           text run at (0,0) width 524: "There should be a red, white and blue pattern below this"
-      RenderBlock (floating) {div} at (10,422.16) size 140x140 [border: (10px solid #FF0000)]
-        RenderBlock {div} at (20,20) size 100x100 [bgcolor=#0000FF]
-      RenderBlock {p} at (0,572.16) size 769x27
-        RenderText {#text} at (0,0) size 523x26
+      LayoutBlockFlow (floating) {div} at (10,422.16) size 140x140 [border: (10px solid #FF0000)]
+        LayoutBlockFlow {div} at (20,20) size 100x100 [bgcolor=#0000FF]
+      LayoutBlockFlow {p} at (0,572.16) size 769x27
+        LayoutText {#text} at (0,0) size 523x26
           text run at (0,0) width 523: "There should be a red, white and blue pattern above this"

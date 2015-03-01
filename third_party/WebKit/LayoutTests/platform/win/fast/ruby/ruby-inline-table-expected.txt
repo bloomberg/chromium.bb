@@ -1,45 +1,45 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x54
-        RenderText {#text} at (0,0) size 774x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 774x35
           text run at (0,0) width 774: "Test that <ruby> rendered as inline-table (or somesuch) is not affected by ruby rendering. Both <div> below should look"
           text run at (0,18) width 65: "the same. "
         LayoutBR {BR} at (64,32) size 1x0
         LayoutBR {BR} at (0,36) size 0x17
-      RenderBlock {DIV} at (3.19,57.19) size 777.63x48 [bgcolor=#FFFFDD] [border: (1px solid #000000)]
-        RenderText {#text} at (9,21) size 227x17
+      LayoutBlockFlow {DIV} at (3.19,57.19) size 777.63x48 [bgcolor=#FFFFDD] [border: (1px solid #000000)]
+        LayoutText {#text} at (9,21) size 227x17
           text run at (9,21) width 227: "This is some XHTML1.1 text with "
         LayoutTable {SPAN} at (235.20,9) size 40x30
           LayoutTableSection {SPAN} at (0,12) size 40x18
             LayoutTableRow (anonymous) at (0,0) size 40x18
               LayoutTableCell (anonymous) at (0,0) size 40x18 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (2,0) size 36x17
+                LayoutText {#text} at (2,0) size 36x17
                   text run at (2,0) width 36: "Ruby"
           LayoutTableSection {SPAN} at (0,0) size 40x12
             LayoutTableRow (anonymous) at (0,0) size 40x12
               LayoutTableCell (anonymous) at (0,0) size 40x12 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (0,0) size 40x12
+                LayoutText {#text} at (0,0) size 40x12
                   text run at (0,0) width 40: "guide text"
-        RenderText {#text} at (275,21) size 58x17
+        LayoutText {#text} at (275,21) size 58x17
           text run at (275,21) width 58: " markup."
-      RenderBlock (anonymous) at (0,108.38) size 784x18
+      LayoutBlockFlow (anonymous) at (0,108.38) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
-      RenderBlock {DIV} at (3.19,129.56) size 777.63x48 [bgcolor=#FFFFDD] [border: (1px solid #000000)]
-        RenderText {#text} at (9,21) size 227x17
+      LayoutBlockFlow {DIV} at (3.19,129.56) size 777.63x48 [bgcolor=#FFFFDD] [border: (1px solid #000000)]
+        LayoutText {#text} at (9,21) size 227x17
           text run at (9,21) width 227: "This is some XHTML1.1 text with "
         LayoutTable {RUBY} at (235.20,9) size 40x30
           LayoutTableSection {RB} at (0,12) size 40x18
             LayoutTableRow (anonymous) at (0,0) size 40x18
               LayoutTableCell (anonymous) at (0,0) size 40x18 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (2,0) size 36x17
+                LayoutText {#text} at (2,0) size 36x17
                   text run at (2,0) width 36: "Ruby"
           LayoutTableSection {RT} at (0,0) size 40x12
             LayoutTableRow (anonymous) at (0,0) size 40x12
               LayoutTableCell (anonymous) at (0,0) size 40x12 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (0,0) size 40x12
+                LayoutText {#text} at (0,0) size 40x12
                   text run at (0,0) width 40: "guide text"
-        RenderText {#text} at (275,21) size 58x17
+        LayoutText {#text} at (275,21) size 58x17
           text run at (275,21) width 58: " markup."

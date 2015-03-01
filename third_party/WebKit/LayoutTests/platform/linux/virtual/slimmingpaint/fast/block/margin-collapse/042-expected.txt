@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x354
-  RenderBlock {HTML} at (0,0) size 800x354
-    RenderBody {BODY} at (8,16) size 784x330
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 277x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x354
+    LayoutBlockFlow {BODY} at (8,16) size 784x330
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 277x19
           text run at (0,0) width 277: "The following two squares should be identical."
       LayoutTable {TABLE} at (0,36) size 316x294
         LayoutTableSection {TBODY} at (0,0) size 316x294
           LayoutTableRow {TR} at (0,16) size 316x262
             LayoutTableCell {TD} at (16,16) size 134x262 [bgcolor=#FF0000] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (3,3) size 128x256 [bgcolor=#00FF00]
-                RenderBlock (floating) {DIV} at (0,0) size 64x64 [bgcolor=#00FFFF]
-                RenderBlock {DIV} at (0,64) size 128x64 [bgcolor=#FFFF00]
-                RenderBlock {DIV} at (0,192) size 128x64 [border: (32px solid #AAFFAA)]
+              LayoutBlockFlow {DIV} at (3,3) size 128x256 [bgcolor=#00FF00]
+                LayoutBlockFlow (floating) {DIV} at (0,0) size 64x64 [bgcolor=#00FFFF]
+                LayoutBlockFlow {DIV} at (0,64) size 128x64 [bgcolor=#FFFF00]
+                LayoutBlockFlow {DIV} at (0,192) size 128x64 [border: (32px solid #AAFFAA)]
             LayoutTableCell {TD} at (166,16) size 134x262 [bgcolor=#FF0000] [border: (3px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (3,3) size 128x256
                 LayoutTableSection {TBODY} at (0,0) size 128x256

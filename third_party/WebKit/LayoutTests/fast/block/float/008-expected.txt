@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 608
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x608 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x608
-    RenderBody {BODY} at (8,8) size 769x300
-      RenderBlock (floating) {DIV} at (0,0) size 769x100 [bgcolor=#008000]
-      RenderBlock (floating) {DIV} at (0,100) size 100x100 [bgcolor=#800080]
-      RenderBlock (floating) {DIV} at (569,100) size 200x500 [bgcolor=#FFA500]
+  LayoutBlockFlow {HTML} at (0,0) size 785x608
+    LayoutBlockFlow {BODY} at (8,8) size 769x300
+      LayoutBlockFlow (floating) {DIV} at (0,0) size 769x100 [bgcolor=#008000]
+      LayoutBlockFlow (floating) {DIV} at (0,100) size 100x100 [bgcolor=#800080]
+      LayoutBlockFlow (floating) {DIV} at (569,100) size 200x500 [bgcolor=#FFA500]

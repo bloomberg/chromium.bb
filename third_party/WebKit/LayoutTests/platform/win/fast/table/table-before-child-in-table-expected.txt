@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {DIV} at (0,0) size 138x112 [color=#FF0000] [border: (3px solid #008000)]
         LayoutTableSection (anonymous) at (19,19) size 100x74
           LayoutTableRow (anonymous) at (0,0) size 100x74
@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
                     LayoutTableCell (anonymous) at (0,0) size 62x18 [r=0 c=0 rs=1 cs=1]
                       LayoutTextFragment at (0,0) size 62x17
                         text run at (0,0) width 62: "BEFORE"
-              RenderBlock (anonymous) at (0,56) size 100x18
-                RenderInline {SPAN} at (0,0) size 75x17
-                  RenderText {#text} at (0,0) size 75x17
+              LayoutBlockFlow (anonymous) at (0,56) size 100x18
+                LayoutInline {SPAN} at (0,0) size 75x17
+                  LayoutText {#text} at (0,0) size 75x17
                     text run at (0,0) width 75: "CONTENT"

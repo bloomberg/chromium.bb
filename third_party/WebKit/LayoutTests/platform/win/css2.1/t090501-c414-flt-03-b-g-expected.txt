@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x243
-  RenderBlock {HTML} at (0,0) size 800x243
-    RenderBody {BODY} at (8,16) size 784x129
-      RenderBlock {P} at (0,0) size 784x43 [color=#000080]
-        RenderText {#text} at (0,4) size 407x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x243
+    LayoutBlockFlow {BODY} at (8,16) size 784x129
+      LayoutBlockFlow {P} at (0,0) size 784x43 [color=#000080]
+        LayoutText {#text} at (0,4) size 407x17
           text run at (0,4) width 252: "In the following test, the purple square "
           text run at (251,4) width 156: "should be on the left (\x{21E6}"
         LayoutImage {IMG} at (406.48,2) size 19x19.19
-        RenderText {#text} at (425,4) size 221x17
+        LayoutText {#text} at (425,4) size 221x17
           text run at (425,4) width 221: "), and the teal square on the right ("
         LayoutImage {IMG} at (645.41,2) size 19x19.19
-        RenderText {#text} at (664,4) size 758x38
+        LayoutText {#text} at (664,4) size 758x38
           text run at (664,4) width 94: "\x{21E8}) of the blue"
           text run at (0,25) width 63: "rectangle."
-      RenderBlock {DIV} at (0,59) size 784x70
-        RenderBlock {DIV} at (16,0) size 752x70 [color=#0000FF] [bgcolor=#000080]
+      LayoutBlockFlow {DIV} at (0,59) size 784x70
+        LayoutBlockFlow {DIV} at (16,0) size 752x70 [color=#0000FF] [bgcolor=#000080]
           LayoutImage {IMG} at (8,8) size 160x160
           LayoutImage {IMG} at (584,8) size 160x160
-          RenderText {#text} at (168,8) size 400x53
+          LayoutText {#text} at (168,8) size 400x53
             text run at (168,8) width 400: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
             text run at (168,26) width 202: "Blue rectangle. Blue rectangle. "
             text run at (369,26) width 199: "Blue rectangle. Blue rectangle."

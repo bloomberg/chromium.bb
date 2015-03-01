@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 460x114
         LayoutTableSection {TBODY} at (0,0) size 460x114
           LayoutTableRow {TR} at (0,2) size 460x110
             LayoutTableCell {TD} at (2,2) size 102x110 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 96x108
+              LayoutText {#text} at (1,1) size 96x108
                 text run at (1,1) width 81: "This is some"
                 text run at (1,19) width 96: "filler text. This"
                 text run at (1,37) width 84: "is some filler"
@@ -15,14 +15,14 @@ layer at (0,0) size 800x600
                 text run at (1,73) width 69: "some filler"
                 text run at (1,91) width 28: "text."
             LayoutTableCell {TD} at (106,29) size 352x56 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 203x18
+              LayoutText {#text} at (1,1) size 203x18
                 text run at (1,1) width 203: "The text in this anchor element "
-              RenderInline {A} at (0,0) size 250x36 [color=#0000EE]
-                RenderText {#text} at (203,1) size 48x18
+              LayoutInline {A} at (0,0) size 250x36 [color=#0000EE]
+                LayoutText {#text} at (203,1) size 48x18
                   text run at (203,1) width 48: "should "
                 LayoutBR {BR} at (250,15) size 1x0
-                RenderText {#text} at (1,19) size 48x18
+                LayoutText {#text} at (1,19) size 48x18
                   text run at (1,19) width 48: "contain"
-              RenderText {#text} at (48,19) size 326x36
+              LayoutText {#text} at (48,19) size 326x36
                 text run at (48,19) width 279: " 2 detached pieces. This test shows how the"
                 text run at (1,37) width 134: "link would look text."

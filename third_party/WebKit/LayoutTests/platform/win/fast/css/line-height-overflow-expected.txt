@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 32802
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x32802 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x32802
-    RenderBody {BODY} at (8,8) size 769x32786
-      RenderBlock (anonymous) at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 568x17
+  LayoutBlockFlow {HTML} at (0,0) size 785x32802
+    LayoutBlockFlow {BODY} at (8,8) size 769x32786
+      LayoutBlockFlow (anonymous) at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 568x17
           text run at (0,0) width 568: "You should see a large green block below that is 32,768px tall. No red should be visible."
         LayoutBR {BR} at (567,14) size 1x0
-      RenderBlock {DIV} at (0,18) size 769x32768 [bgcolor=#FF0000]
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,18) size 769x32768 [bgcolor=#FF0000]
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 769x32768 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutIFrame {IFRAME} at (0,0) size 769x32768 [bgcolor=#008000]
     layer at (0,0) size 769x32768
-      RenderView at (0,0) size 769x32768
+      LayoutView at (0,0) size 769x32768
     layer at (0,0) size 769x32768
-      RenderBlock {HTML} at (0,0) size 769x32768
-        RenderBody {BODY} at (8,8) size 753x32752
+      LayoutBlockFlow {HTML} at (0,0) size 769x32768
+        LayoutBlockFlow {BODY} at (8,8) size 753x32752

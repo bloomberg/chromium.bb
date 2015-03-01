@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1435
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x1435 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {html} at (0,0) size 785x1435.14
-    RenderBody {body} at (8,8) size 769x0
-      RenderBlock (floating) {div} at (0,0) size 769x1427.14
-        RenderBlock {h1} at (0,21.44) size 769x37
-          RenderText {#text} at (0,0) size 443x37
+  LayoutBlockFlow {html} at (0,0) size 785x1435.14
+    LayoutBlockFlow {body} at (8,8) size 769x0
+      LayoutBlockFlow (floating) {div} at (0,0) size 769x1427.14
+        LayoutBlockFlow {h1} at (0,21.44) size 769x37
+          LayoutText {#text} at (0,0) size 443x37
             text run at (0,0) width 443: "SVG grid with percentage width"
-        RenderBlock {h4} at (0,79.88) size 769x18
-          RenderText {#text} at (0,0) size 149x18
+        LayoutBlockFlow {h4} at (0,79.88) size 769x18
+          LayoutText {#text} at (0,0) size 149x18
             text run at (0,0) width 149: "WICD Core 1.0 #20-3"
-        RenderBlock {p} at (0,119.14) size 769x0
-          RenderBlock (floating) {div} at (256.30,128) size 256.30x448
+        LayoutBlockFlow {p} at (0,119.14) size 769x0
+          LayoutBlockFlow (floating) {div} at (256.30,128) size 256.30x448
             LayoutBR {br} at (256,0) size 1x18
-          RenderBlock (floating) {div} at (512.59,128) size 256.30x448
-          RenderBlock (floating) {div} at (384.50,704) size 384.50x192
-          RenderBlock (floating) {div} at (0,896) size 384.50x192
-          RenderBlock (floating) {div} at (384.50,1024) size 384.50x128
-        RenderBlock {p} at (0,119.14) size 769x594 [color=#FFFFFF]
+          LayoutBlockFlow (floating) {div} at (512.59,128) size 256.30x448
+          LayoutBlockFlow (floating) {div} at (384.50,704) size 384.50x192
+          LayoutBlockFlow (floating) {div} at (0,896) size 384.50x192
+          LayoutBlockFlow (floating) {div} at (384.50,1024) size 384.50x128
+        LayoutBlockFlow {p} at (0,119.14) size 769x594 [color=#FFFFFF]
           LayoutBR {br} at (769,0) size 0x18
-          RenderText {#text} at (640,576) size 9x18
+          LayoutText {#text} at (640,576) size 9x18
             text run at (640,576) width 9: ".."
-        RenderBlock {p} at (0,729.14) size 769x578
-          RenderText {#text} at (640,0) size 763x578
+        LayoutBlockFlow {p} at (0,729.14) size 769x578
+          LayoutText {#text} at (640,0) size 763x578
             text run at (640,0) width 123: "Above, you should"
             text run at (640,18) width 100: "see a grid of 17"
             text run at (640,36) width 69: "SVG child"
@@ -31,34 +31,34 @@ layer at (0,0) size 785x1435 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,542) width 124: "one rectangle grid. "
             text run at (123,542) width 624: "You should be able to resize your browser window and the grid rendering should adjust to it. The"
             text run at (0,560) width 352: "outcome should look like in these sample screenshots: "
-          RenderInline {a} at (0,0) size 35x18 [color=#0000EE]
-            RenderText {#text} at (351,560) size 35x18
+          LayoutInline {a} at (0,0) size 35x18 [color=#0000EE]
+            LayoutText {#text} at (351,560) size 35x18
               text run at (351,560) width 35: "small"
-          RenderText {#text} at (385,560) size 9x18
+          LayoutText {#text} at (385,560) size 9x18
             text run at (385,560) width 9: ", "
-          RenderInline {a} at (0,0) size 42x18 [color=#0000EE]
-            RenderText {#text} at (393,560) size 42x18
+          LayoutInline {a} at (0,0) size 42x18 [color=#0000EE]
+            LayoutText {#text} at (393,560) size 42x18
               text run at (393,560) width 42: "bigger"
-          RenderText {#text} at (434,560) size 32x18
+          LayoutText {#text} at (434,560) size 32x18
             text run at (434,560) width 32: " and "
-          RenderInline {a} at (0,0) size 22x18 [color=#0000EE]
-            RenderText {#text} at (465,560) size 22x18
+          LayoutInline {a} at (0,0) size 22x18 [color=#0000EE]
+            LayoutText {#text} at (465,560) size 22x18
               text run at (465,560) width 22: "big"
-          RenderText {#text} at (486,560) size 5x18
+          LayoutText {#text} at (486,560) size 5x18
             text run at (486,560) width 5: "."
-        RenderBlock {p} at (0,1323.14) size 769x36
-          RenderText {#text} at (0,0) size 763x36
+        LayoutBlockFlow {p} at (0,1323.14) size 769x36
+          LayoutText {#text} at (0,0) size 763x36
             text run at (0,0) width 763: "The test is successful, if all SVG elements resize exacly dependend on the width of the browser window, but keep their"
             text run at (0,18) width 636: "aspect ratio and relative position. The complete grid should always show a perfect rectangle object."
-        RenderBlock {p} at (0,1375.14) size 769x36
+        LayoutBlockFlow {p} at (0,1375.14) size 769x36
           LayoutBR {br} at (0,0) size 0x18
-          RenderInline {a} at (0,0) size 33x18 [color=#0000EE]
-            RenderText {#text} at (0,18) size 33x18
+          LayoutInline {a} at (0,0) size 33x18 [color=#0000EE]
+            LayoutText {#text} at (0,18) size 33x18
               text run at (0,18) width 33: "Back"
 layer at (8,127) size 385x128
   LayoutEmbeddedObject {object} at (0,0) size 384.50x128
     layer at (0,0) size 385x128
-      RenderView at (0,0) size 385x128
+      LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
       LayoutSVGRoot {svg} at (0,0) size 385x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -72,7 +72,7 @@ layer at (8,127) size 385x128
 layer at (393,127) size 384x128
   LayoutEmbeddedObject {object} at (384.50,0) size 384.50x128
     layer at (0,0) size 385x128
-      RenderView at (0,0) size 385x128
+      LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
       LayoutSVGRoot {svg} at (0,0) size 385x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -86,7 +86,7 @@ layer at (393,127) size 384x128
 layer at (8,255) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,128) size 256.30x449
     layer at (0,0) size 256x449
-      RenderView at (0,0) size 256x449
+      LayoutView at (0,0) size 256x449
     layer at (0,0) size 256x449
       LayoutSVGRoot {svg} at (0,0) size 256x449
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -120,7 +120,7 @@ layer at (8,255) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0)
 layer at (264,255) size 256x256
   LayoutEmbeddedObject {object} at (0,0) size 256.30x256
     layer at (0,0) size 256x256
-      RenderView at (0,0) size 256x256
+      LayoutView at (0,0) size 256x256
     layer at (0,0) size 256x256
       LayoutSVGRoot {svg} at (0,0) size 256x256
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -134,7 +134,7 @@ layer at (264,255) size 256x256
 layer at (264,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,256) size 256.30x192
     layer at (0,0) size 256x192
-      RenderView at (0,0) size 256x192
+      LayoutView at (0,0) size 256x192
     layer at (0,0) size 256x192
       LayoutSVGRoot {svg} at (0,0) size 256x192
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -148,7 +148,7 @@ layer at (264,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
 layer at (521,255) size 256x256
   LayoutEmbeddedObject {object} at (0,0) size 256.30x256
     layer at (0,0) size 256x256
-      RenderView at (0,0) size 256x256
+      LayoutView at (0,0) size 256x256
     layer at (0,0) size 256x256
       LayoutSVGRoot {svg} at (0,0) size 256x256
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -178,7 +178,7 @@ layer at (521,255) size 256x256
 layer at (521,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,256) size 256.30x192
     layer at (0,0) size 256x192
-      RenderView at (0,0) size 256x192
+      LayoutView at (0,0) size 256x192
     layer at (0,0) size 256x192
       LayoutSVGRoot {svg} at (0,0) size 256x192
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -192,7 +192,7 @@ layer at (521,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
 layer at (264,703) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (256.30,576) size 384.50x128
     layer at (0,0) size 385x128
-      RenderView at (0,0) size 385x128
+      LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
       LayoutSVGRoot {svg} at (0,0) size 385x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -206,7 +206,7 @@ layer at (264,703) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,
 layer at (8,831) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,704) size 384.50x128
     layer at (0,0) size 385x128
-      RenderView at (0,0) size 385x128
+      LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
       LayoutSVGRoot {svg} at (0,0) size 385x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -220,7 +220,7 @@ layer at (8,831) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0)
 layer at (393,831) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,0) size 96.13x192
     layer at (0,0) size 96x192
-      RenderView at (0,0) size 96x192
+      LayoutView at (0,0) size 96x192
     layer at (0,0) size 96x192
       LayoutSVGRoot {svg} at (0,0) size 96x192
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -231,7 +231,7 @@ layer at (393,831) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0
 layer at (489,831) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (96.13,0) size 288.38x192
     layer at (0,0) size 288x192
-      RenderView at (0,0) size 288x192
+      LayoutView at (0,0) size 288x192
     layer at (0,0) size 288x192
       LayoutSVGRoot {svg} at (0,0) size 288x192
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -245,7 +245,7 @@ layer at (489,831) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,
 layer at (8,1023) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,0) size 192.25x192
     layer at (0,0) size 192x192
-      RenderView at (0,0) size 192x192
+      LayoutView at (0,0) size 192x192
     layer at (0,0) size 192x192
       LayoutSVGRoot {svg} at (0,0) size 192x192
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -259,7 +259,7 @@ layer at (8,1023) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0
 layer at (200,1023) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (192.25,0) size 192.25x192
     layer at (0,0) size 192x192
-      RenderView at (0,0) size 192x192
+      LayoutView at (0,0) size 192x192
     layer at (0,0) size 192x192
       LayoutSVGRoot {svg} at (0,0) size 192x192
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -273,7 +273,7 @@ layer at (200,1023) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0
 layer at (393,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (384.50,896) size 192.25x128
     layer at (0,0) size 192x128
-      RenderView at (0,0) size 192x128
+      LayoutView at (0,0) size 192x128
     layer at (0,0) size 192x128
       LayoutSVGRoot {svg} at (0,0) size 192x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -284,7 +284,7 @@ layer at (393,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
 layer at (585,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (576.75,896) size 192.25x128
     layer at (0,0) size 192x128
-      RenderView at (0,0) size 192x128
+      LayoutView at (0,0) size 192x128
     layer at (0,0) size 192x128
       LayoutSVGRoot {svg} at (0,0) size 192x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -295,7 +295,7 @@ layer at (585,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
 layer at (393,1151) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,0) size 288.38x128
     layer at (0,0) size 288x128
-      RenderView at (0,0) size 288x128
+      LayoutView at (0,0) size 288x128
     layer at (0,0) size 288x128
       LayoutSVGRoot {svg} at (0,0) size 288x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -309,7 +309,7 @@ layer at (393,1151) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0
 layer at (681,1151) size 97x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (288.38,0) size 96.13x128
     layer at (0,0) size 96x128
-      RenderView at (0,0) size 96x128
+      LayoutView at (0,0) size 96x128
     layer at (0,0) size 96x128
       LayoutSVGRoot {svg} at (0,0) size 96x128
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

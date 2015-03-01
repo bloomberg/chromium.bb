@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [color=#008000]
-      RenderBlock (anonymous) at (0,0) size 784x37
-        RenderText {#text} at (0,0) size 404x37
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [color=#008000]
+      LayoutBlockFlow (anonymous) at (0,0) size 784x37
+        LayoutText {#text} at (0,0) size 404x37
           text run at (0,0) width 404: "This is fixed pitch. "
-        RenderInline {FONT} at (0,0) size 52x13
-          RenderText {#text} at (403,17) size 52x13
+        LayoutInline {FONT} at (0,0) size 52x13
+          LayoutText {#text} at (403,17) size 52x13
             text run at (403,17) width 52: "This is not."
-      RenderBlock (anonymous) at (0,37) size 784x30
+      LayoutBlockFlow (anonymous) at (0,37) size 784x30
         LayoutTable {TABLE} at (0,0) size 124x30 [border: (2px outset #808080)]
           LayoutTableSection {TBODY} at (2,2) size 120x26
             LayoutTableRow {TR} at (0,2) size 120x22
               LayoutTableCell {TD} at (2,2) size 116x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 112x17
+                LayoutText {#text} at (2,2) size 112x17
                   text run at (2,2) width 112: "This is also not."
-      RenderBlock (anonymous) at (0,67) size 784x37
-        RenderInline {FONT} at (0,0) size 44x13
-          RenderText {#text} at (0,17) size 44x13
+      LayoutBlockFlow (anonymous) at (0,67) size 784x37
+        LayoutInline {FONT} at (0,0) size 44x13
+          LayoutText {#text} at (0,17) size 44x13
             text run at (0,17) width 44: "More text"
-        RenderText {#text} at (44,0) size 154x37
+        LayoutText {#text} at (44,0) size 154x37
           text run at (44,0) width 154: " Ending."

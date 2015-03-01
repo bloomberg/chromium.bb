@@ -1,39 +1,39 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 982.00 scrollHeight 2122
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x2122 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x2122.44
-    RenderBody {BODY} at (8,8) size 769x2106.44
-      RenderBlock {H1} at (0,0) size 769x37
-        RenderText {#text} at (0,0) size 181x36
+  LayoutBlockFlow {HTML} at (0,0) size 785x2122.44
+    LayoutBlockFlow {BODY} at (8,8) size 769x2106.44
+      LayoutBlockFlow {H1} at (0,0) size 769x37
+        LayoutText {#text} at (0,0) size 181x36
           text run at (0,0) width 181: "Anchor Lock"
-      RenderBlock {P} at (0,58.44) size 769x36
-        RenderText {#text} at (0,0) size 755x35
+      LayoutBlockFlow {P} at (0,58.44) size 769x36
+        LayoutText {#text} at (0,0) size 755x35
           text run at (0,0) width 755: "This tests WebKit's ability to lock to an anchor and maintain focus on it as images are loaded above and below it. The"
           text run at (0,18) width 376: "Anchor text should be visible and this message should not."
-      RenderBlock {P} at (0,110.44) size 769x200
+      LayoutBlockFlow {P} at (0,110.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,326.44) size 769x200
+      LayoutBlockFlow {P} at (0,326.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,542.44) size 769x200
+      LayoutBlockFlow {P} at (0,542.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,758.44) size 769x200
+      LayoutBlockFlow {P} at (0,758.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock (anonymous) at (0,974.44) size 769x18
-        RenderInline {A} at (0,0) size 313x17
-          RenderText {#text} at (0,0) size 313x17
+      LayoutBlockFlow (anonymous) at (0,974.44) size 769x18
+        LayoutInline {A} at (0,0) size 313x17
+          LayoutText {#text} at (0,0) size 313x17
             text run at (0,0) width 313: "Anchor text - this should be the only visible text."
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,1008.44) size 769x200
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,1008.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1224.44) size 769x200
+      LayoutBlockFlow {P} at (0,1224.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1440.44) size 769x200
+      LayoutBlockFlow {P} at (0,1440.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1656.44) size 769x200
+      LayoutBlockFlow {P} at (0,1656.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1872.44) size 769x200
+      LayoutBlockFlow {P} at (0,1872.44) size 769x200
         LayoutImage {IMG} at (0,0) size 200x200
-      RenderBlock (anonymous) at (0,2088.44) size 769x18
-        RenderText {#text} at (0,0) size 60x17
+      LayoutBlockFlow (anonymous) at (0,2088.44) size 769x18
+        LayoutText {#text} at (0,0) size 60x17
           text run at (0,0) width 60: "#anchor1"
 scrolled to 0,982

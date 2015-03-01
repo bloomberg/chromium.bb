@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 784x424 [border: (3px outset #808080)]
         LayoutTableSection {TBODY} at (3,3) size 778x418
           LayoutTableRow {TR} at (0,0) size 778x231
@@ -14,8 +14,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,0) size 498x229
                     LayoutTableCell {TD} at (0,114) size 0x0 [r=0 c=0 rs=1 cs=1]
                     LayoutTableCell {TD} at (0,67) size 498x95.44 [r=0 c=1 rs=1 cs=1]
-                      RenderBlock {H1} at (0,0) size 498x74
-                        RenderText {#text} at (0,0) size 478x73
+                      LayoutBlockFlow {H1} at (0,0) size 498x74
+                        LayoutText {#text} at (0,0) size 478x73
                           text run at (0,0) width 478: "Detonator Comparison In 3DMark"
                           text run at (0,37) width 64: "2001"
                     LayoutTableCell {TD} at (498,114) size 0x0 [r=0 c=2 rs=1 cs=1]
@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (0,0) size 128x111
                           LayoutTableRow {TR} at (0,0) size 128x111
                             LayoutTableCell {TD} at (0,0) size 128x111 [r=0 c=0 rs=1 cs=1]
-                              RenderInline {A} at (0,0) size 112x19 [color=#0000EE]
+                              LayoutInline {A} at (0,0) size 112x19 [color=#0000EE]
                                 LayoutImage {IMG} at (0,0) size 112x111
           LayoutTableRow {TR} at (0,231) size 778x184
             LayoutTableCell {TD} at (0,322) size 134x2 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]

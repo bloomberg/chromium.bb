@@ -1,29 +1,29 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x204
-  RenderBlock {HTML} at (0,0) size 800x204
-    RenderBody {BODY} at (8,8) size 784x183
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 520x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x204
+    LayoutBlockFlow {BODY} at (8,8) size 784x183
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 520x17
           text run at (0,0) width 520: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
-      RenderBlock {DIV} at (0,18) size 784x72
-        RenderText {#text} at (0,0) size 46x17
+      LayoutBlockFlow {DIV} at (0,18) size 784x72
+        LayoutText {#text} at (0,0) size 46x17
           text run at (0,0) width 46: "!hello. "
         LayoutBR {BR} at (45,0) size 1x17
-        RenderText {#text} at (741,18) size 43x17
+        LayoutText {#text} at (741,18) size 43x17
           text run at (741,18) width 43 RTL: "!\x{5E9}\x{5DC}\x{5D5}\x{5DD}. "
         LayoutBR {BR} at (741,18) size 1x17
-        RenderText {#text} at (0,36) size 65x17
+        LayoutText {#text} at (0,36) size 65x17
           text run at (0,36) width 40: "hello, "
           text run at (39,36) width 17 RTL: "\x{5DC}\x{5D5}\x{5D9}"
           text run at (55,36) width 10: "! "
         LayoutBR {BR} at (64,36) size 1x17
-        RenderText {#text} at (690,54) size 94x17
+        LayoutText {#text} at (690,54) size 94x17
           text run at (690,54) width 7 RTL: "!"
           text run at (696,54) width 51: "WebKit"
           text run at (746,54) width 38 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-      RenderBlock {PRE} at (0,103) size 784x80
-        RenderText {#text} at (0,0) size 784x80
+      LayoutBlockFlow {PRE} at (0,103) size 784x80
+        LayoutText {#text} at (0,0) size 784x80
           text run at (0,0) width 8: "a"
           text run at (8,0) width 0: " "
           text run at (0,16) width 8: "("

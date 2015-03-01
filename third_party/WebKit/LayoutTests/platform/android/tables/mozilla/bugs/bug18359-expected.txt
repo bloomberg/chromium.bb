@@ -1,44 +1,44 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {H2} at (0,0) size 784x27
-        RenderText {#text} at (0,0) size 363x26
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {H2} at (0,0) size 784x27
+        LayoutText {#text} at (0,0) size 363x26
           text run at (0,0) width 363: "SeaMonkey XPInstall Trigger Page"
-      RenderBlock {HR} at (0,46.91) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {FORM} at (0,56.91) size 784x54
+      LayoutBlockFlow {HR} at (0,46.91) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {FORM} at (0,56.91) size 784x54
         LayoutTable {TABLE} at (0,0) size 629x54
           LayoutTableSection {TBODY} at (0,0) size 629x54
             LayoutTableRow {TR} at (0,2) size 629x24
               LayoutTableCell {TD} at (2,3) size 107x22 [r=0 c=0 rs=1 cs=1]
-                RenderInline {B} at (0,0) size 92x19
-                  RenderText {#text} at (1,1) size 92x19
+                LayoutInline {B} at (0,0) size 92x19
+                  LayoutText {#text} at (1,1) size 92x19
                     text run at (1,1) width 92: "Trigger URL:"
               LayoutTableCell {TD} at (111,2) size 425x24 [r=0 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 423x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (538,2) size 89x24 [r=0 c=2 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 55x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  RenderBlock (anonymous) at (8,3) size 39x16
-                    RenderText {#text} at (0,0) size 39x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 39x16
+                    LayoutText {#text} at (0,0) size 39x16
                       text run at (0,0) width 39: "Trigger"
             LayoutTableRow {TR} at (0,28) size 629x24
               LayoutTableCell {TD} at (2,29) size 107x22 [r=1 c=0 rs=1 cs=1]
-                RenderInline {B} at (0,0) size 105x19
-                  RenderText {#text} at (1,1) size 105x19
+                LayoutInline {B} at (0,0) size 105x19
+                  LayoutText {#text} at (1,1) size 105x19
                     text run at (1,1) width 105: "Run Test Case:"
               LayoutTableCell {TD} at (111,29) size 425x22 [r=1 c=1 rs=1 cs=1]
                 LayoutMenuList {SELECT} at (1,1) size 270x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                  RenderBlock (anonymous) at (1,1) size 268x18
-                    RenderText at (4,1) size 77x16
+                  LayoutBlockFlow (anonymous) at (1,1) size 268x18
+                    LayoutText at (4,1) size 77x16
                       text run at (4,1) width 77: "a_abortinstall"
-                RenderText {#text} at (0,0) size 0x0
+                LayoutText {#text} at (0,0) size 0x0
               LayoutTableCell {TD} at (538,28) size 89x24 [r=1 c=2 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 87x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  RenderBlock (anonymous) at (8,3) size 71x16
-                    RenderText {#text} at (0,0) size 71x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 71x16
+                    LayoutText {#text} at (0,0) size 71x16
                       text run at (0,0) width 71: "Trigger case"
 layer at (122,71) size 419x16
-  RenderBlock {DIV} at (2,3) size 419x16
-    RenderText {#text} at (0,0) size 101x16
+  LayoutBlockFlow {DIV} at (2,3) size 419x16
+    LayoutText {#text} at (0,0) size 101x16
       text run at (0,0) width 101: "http://jimbob/jars/"

@@ -1,177 +1,177 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 522x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 522x17
         text run at (0,0) width 522: "This tests that the text color changes appropriately when the text field is disabled."
       LayoutBR {BR} at (521,14) size 1x0
       LayoutTextControl {INPUT} at (0,18) size 173x22 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,20) size 4x17
+      LayoutText {#text} at (173,20) size 4x17
         text run at (173,20) width 4: " "
       LayoutTextControl {INPUT} at (177,18) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,34) size 0x0
       LayoutTextControl {INPUT} at (0,40) size 173x22 [color=#FF0000] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,42) size 4x17
+      LayoutText {#text} at (173,42) size 4x17
         text run at (173,42) width 4: " "
       LayoutTextControl {INPUT} at (177,40) size 173x22 [color=#FF0000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,56) size 0x0
       LayoutTextControl {INPUT} at (0,62) size 173x22 [color=#545454] [bgcolor=#0000FF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,64) size 4x17
+      LayoutText {#text} at (173,64) size 4x17
         text run at (173,64) width 4: " "
       LayoutTextControl {INPUT} at (177,62) size 173x22 [bgcolor=#0000FF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,78) size 0x0
       LayoutTextControl {INPUT} at (0,84) size 173x22 [color=#FF0000] [bgcolor=#0000FF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,86) size 4x17
+      LayoutText {#text} at (173,86) size 4x17
         text run at (173,86) width 4: " "
       LayoutTextControl {INPUT} at (177,84) size 173x22 [color=#FF0000] [bgcolor=#0000FF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,100) size 0x0
       LayoutTextControl {INPUT} at (0,106) size 173x22 [color=#545454] [bgcolor=#000000] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,108) size 4x17
+      LayoutText {#text} at (173,108) size 4x17
         text run at (173,108) width 4: " "
       LayoutTextControl {INPUT} at (177,106) size 173x22 [bgcolor=#000000] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,122) size 0x0
       LayoutTextControl {INPUT} at (0,128) size 173x22 [color=#FFFFFF] [bgcolor=#000000] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,130) size 4x17
+      LayoutText {#text} at (173,130) size 4x17
         text run at (173,130) width 4: " "
       LayoutTextControl {INPUT} at (177,128) size 173x22 [color=#FFFFFF] [bgcolor=#000000] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,144) size 0x0
       LayoutTextControl {INPUT} at (0,150) size 173x22 [color=#545454] [bgcolor=#808080] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,152) size 4x17
+      LayoutText {#text} at (173,152) size 4x17
         text run at (173,152) width 4: " "
       LayoutTextControl {INPUT} at (177,150) size 173x22 [bgcolor=#808080] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,166) size 0x0
       LayoutTextControl {INPUT} at (0,172) size 173x22 [color=#FFFFFF] [bgcolor=#A9A9A9] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,174) size 4x17
+      LayoutText {#text} at (173,174) size 4x17
         text run at (173,174) width 4: " "
       LayoutTextControl {INPUT} at (177,172) size 173x22 [color=#FFFFFF] [bgcolor=#A9A9A9] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,188) size 0x0
       LayoutTextControl {INPUT} at (0,194) size 173x22 [color=#808080] [bgcolor=#000000] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,196) size 4x17
+      LayoutText {#text} at (173,196) size 4x17
         text run at (173,196) width 4: " "
       LayoutTextControl {INPUT} at (177,194) size 173x22 [color=#808080] [bgcolor=#000000] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,210) size 0x0
       LayoutTextControl {INPUT} at (0,216) size 173x22 [color=#FF0000] [bgcolor=#808080] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,218) size 4x17
+      LayoutText {#text} at (173,218) size 4x17
         text run at (173,218) width 4: " "
       LayoutTextControl {INPUT} at (177,216) size 173x22 [color=#FF0000] [bgcolor=#808080] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,232) size 0x0
       LayoutTextControl {INPUT} at (0,238) size 173x22 [color=#808080] [bgcolor=#FF0000] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,240) size 4x17
+      LayoutText {#text} at (173,240) size 4x17
         text run at (173,240) width 4: " "
       LayoutTextControl {INPUT} at (177,238) size 173x22 [color=#808080] [bgcolor=#FF0000] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,254) size 0x0
       LayoutTextControl {INPUT} at (0,260) size 173x22 [color=#FF0000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,262) size 4x17
+      LayoutText {#text} at (173,262) size 4x17
         text run at (173,262) width 4: " "
       LayoutTextControl {INPUT} at (177,260) size 173x22 [color=#FF0000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,276) size 0x0
       LayoutTextControl {INPUT} at (0,282) size 173x22 [color=#FF0000] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (173,284) size 4x17
+      LayoutText {#text} at (173,284) size 4x17
         text run at (173,284) width 4: " "
       LayoutTextControl {INPUT} at (177,282) size 173x22 [color=#FF0000] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (350,298) size 0x0
 layer at (10,29) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,29) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,51) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,51) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,73) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,73) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,95) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,95) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,117) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,117) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,139) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,139) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,161) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,161) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,183) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,183) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,205) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,205) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,227) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,227) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,249) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,249) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,271) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,271) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"
 layer at (10,293) size 169x16 scrollWidth 378
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 378x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 378x16
       text run at (0,0) width 378: "The text in this disabled field should displayed as dimmed or grey"
 layer at (187,293) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 165x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 165x16
       text run at (0,0) width 165: "This text field is not disabled"

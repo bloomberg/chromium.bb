@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGForeignObject {foreignObject} at (0,0) size 250x200
-      RenderBlock {xhtml:div} at (0,0) size 250x20
-        RenderText {#text} at (0,0) size 75x19
+      LayoutBlockFlow {xhtml:div} at (0,0) size 250x20
+        LayoutText {#text} at (0,0) size 75x19
           text run at (0,0) width 75: "This is a text"
-      RenderBlock (anonymous) at (0,20) size 250x20
-        RenderInline {xhtml:a} at (0,0) size 62x19 [color=#0000EE]
-          RenderText {#text} at (0,0) size 62x19
+      LayoutBlockFlow (anonymous) at (0,20) size 250x20
+        LayoutInline {xhtml:a} at (0,0) size 62x19 [color=#0000EE]
+          LayoutText {#text} at (0,0) size 62x19
             text run at (0,0) width 62: "and a link."
         LayoutBR {xhtml:br} at (62,0) size 0x19
-      RenderBlock {xhtml:div} at (0,40) size 250x20
-        RenderText {#text} at (0,0) size 53x19
+      LayoutBlockFlow {xhtml:div} at (0,40) size 250x20
+        LayoutText {#text} at (0,0) size 53x19
           text run at (0,0) width 53: "[HTML]"
     LayoutSVGRect {rect} at (0,0) size 361x289 [stroke={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=250.00] [height=200.00]
     LayoutSVGForeignObject {foreignObject} at (260,0) size 250x200
@@ -28,6 +28,6 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (0,41) size 43x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 43x19
               chunk 1 text run 1 at (0.00,56.00) startOffset 0 endOffset 5 width 42.67: "[SVG]"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutSVGRect {rect} at (373,0) size 363x289 [stroke={[type=SOLID] [color=#008000]}] [x=260.00] [y=0.00] [width=250.00] [height=200.00]
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

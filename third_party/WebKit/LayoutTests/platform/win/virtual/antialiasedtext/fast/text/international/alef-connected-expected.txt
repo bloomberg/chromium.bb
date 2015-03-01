@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x113
-  RenderBlock {HTML} at (0,0) size 800x113
-    RenderBody {BODY} at (8,16) size 784x89
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 689x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x113
+    LayoutBlockFlow {BODY} at (8,16) size 784x89
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 689x17
           text run at (0,0) width 403: "The base of the following three letters should all be connected "
           text run at (402,0) width 287: "and not have a gap between the | and _ parts."
-      RenderBlock (anonymous) at (0,34) size 784x55
-        RenderInline {SPAN} at (0,0) size 22x53
-          RenderText {#text} at (49,1) size 22x53
+      LayoutBlockFlow (anonymous) at (0,34) size 784x55
+        LayoutInline {SPAN} at (0,0) size 22x53
+          LayoutText {#text} at (49,1) size 22x53
             text run at (49,1) width 22 RTL: "\x{640}\x{622}"
-        RenderText {#text} at (45,30) size 5x17
+        LayoutText {#text} at (45,30) size 5x17
           text run at (45,30) width 5 RTL: " "
-        RenderInline {SPAN} at (0,0) size 22x53
-          RenderText {#text} at (24,1) size 22x53
+        LayoutInline {SPAN} at (0,0) size 22x53
+          LayoutText {#text} at (24,1) size 22x53
             text run at (24,1) width 22 RTL: "\x{640}\x{623}"
-        RenderText {#text} at (20,30) size 5x17
+        LayoutText {#text} at (20,30) size 5x17
           text run at (20,30) width 5 RTL: " "
-        RenderInline {SPAN} at (0,0) size 21x53
-          RenderText {#text} at (0,1) size 21x53
+        LayoutInline {SPAN} at (0,0) size 21x53
+          LayoutText {#text} at (0,1) size 21x53
             text run at (0,1) width 21 RTL: "\x{640}\x{625}"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

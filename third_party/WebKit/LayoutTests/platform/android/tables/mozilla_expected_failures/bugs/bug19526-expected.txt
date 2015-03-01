@@ -1,10 +1,10 @@
 layer at (0,0) size 785x1272
-  RenderView at (0,0) size 785x600
+  LayoutView at (0,0) size 785x600
 layer at (0,0) size 785x1272
-  RenderBlock {HTML} at (0,0) size 785x1272
-    RenderBody {BODY} at (8,8) size 769x1256
-      RenderBlock {P} at (0,0) size 769x20
-        RenderText {#text} at (0,0) size 335x19
+  LayoutBlockFlow {HTML} at (0,0) size 785x1272
+    LayoutBlockFlow {BODY} at (8,8) size 769x1256
+      LayoutBlockFlow {P} at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 335x19
           text run at (0,0) width 335: "100 percent height table inside 100 percent height table:"
       LayoutTable {TABLE} at (0,36) size 769x584 [bgcolor=#808080] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x582
@@ -14,16 +14,16 @@ layer at (0,0) size 785x1272
                 LayoutTableSection {TBODY} at (1,1) size 375x572
                   LayoutTableRow {TR} at (0,2) size 375x568
                     LayoutTableCell {TD} at (2,274) size 185x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 126x19
+                      LayoutText {#text} at (2,2) size 126x19
                         text run at (2,2) width 126: " Inner Table (yellow)"
                     LayoutTableCell {TD} at (189,274) size 184x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 4x19
+                      LayoutText {#text} at (2,2) size 4x19
                         text run at (2,2) width 4: " "
             LayoutTableCell {TD} at (385,279) size 380x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 117x19
+              LayoutText {#text} at (2,2) size 117x19
                 text run at (2,2) width 117: " Outer Table (grey)"
-      RenderBlock {P} at (0,636) size 769x20
-        RenderText {#text} at (0,0) size 327x19
+      LayoutBlockFlow {P} at (0,636) size 769x20
+        LayoutText {#text} at (0,0) size 327x19
           text run at (0,0) width 327: "50 percent height table inside 100 percent height table:"
       LayoutTable {TABLE} at (0,672) size 769x584 [bgcolor=#808080] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x582
@@ -33,11 +33,11 @@ layer at (0,0) size 785x1272
                 LayoutTableSection {TBODY} at (1,1) size 375x285
                   LayoutTableRow {TR} at (0,2) size 375x281
                     LayoutTableCell {TD} at (2,130) size 185x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 126x19
+                      LayoutText {#text} at (2,2) size 126x19
                         text run at (2,2) width 126: " Inner Table (yellow)"
                     LayoutTableCell {TD} at (189,130) size 184x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 4x19
+                      LayoutText {#text} at (2,2) size 4x19
                         text run at (2,2) width 4: " "
             LayoutTableCell {TD} at (385,279) size 380x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 117x19
+              LayoutText {#text} at (2,2) size 117x19
                 text run at (2,2) width 117: " Outer Table (grey)"

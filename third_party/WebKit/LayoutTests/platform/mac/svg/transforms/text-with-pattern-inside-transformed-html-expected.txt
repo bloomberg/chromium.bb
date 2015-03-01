@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 620
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x536
-  RenderBlock {html} at (0,0) size 785x536
-    RenderBody {body} at (8,16) size 769x470 [bgcolor=#FFFFFF]
-      RenderBlock {p} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 556x18
+  LayoutBlockFlow {html} at (0,0) size 785x536
+    LayoutBlockFlow {body} at (8,16) size 769x470 [bgcolor=#FFFFFF]
+      LayoutBlockFlow {p} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 556x18
           text run at (0,0) width 321: "CSS Transformed HTML div with SVG inside it. "
           text run at (320,0) width 236: "objectBoundingBox patterns on text."
 layer at (58,84) size 402x402
-  RenderBlock {div} at (50,68) size 402x402 [border: (1px solid #000000)]
+  LayoutBlockFlow {div} at (50,68) size 402x402 [border: (1px solid #000000)]
     LayoutSVGRoot {svg} at (66,58) size 480x420
       LayoutSVGResourcePattern {pattern} [id="pat1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (168,63) size 13x13 [fill={[type=SOLID] [color=#FF0000]}] [x=5.00] [y=5.00] [width=10.00] [height=10.00]
@@ -48,4 +48,4 @@ layer at (58,84) size 402x402
         LayoutSVGInlineText {#text} at (0,0) size 264x46
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.31: "$Revision: 1.6 $"
       LayoutSVGRect {rect} at (66,58) size 480x420 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0

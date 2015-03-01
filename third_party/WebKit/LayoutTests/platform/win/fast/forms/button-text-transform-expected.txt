@@ -1,54 +1,54 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 760x35
-          RenderInline {A} at (0,0) size 306x17 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x17
+        LayoutInline {I} at (0,0) size 760x35
+          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x17
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=15181"
-          RenderText {#text} at (359,0) size 760x35
+          LayoutText {#text} at (359,0) size 760x35
             text run at (359,0) width 5: " "
             text run at (363,0) width 397: "text-transform: uppercase not working in input (submit, reset,"
             text run at (0,18) width 107: "button) elements"
-        RenderText {#text} at (106,18) size 5x17
+        LayoutText {#text} at (106,18) size 5x17
           text run at (106,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x22
+      LayoutBlockFlow {P} at (0,52) size 784x22
         LayoutButton {BUTTON} at (0,0) size 97x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 81x16
-            RenderText {#text} at (0,0) size 81x16
+          LayoutBlockFlow (anonymous) at (8,3) size 81x16
+            LayoutText {#text} at (0,0) size 81x16
               text run at (0,0) width 81: "UPPERCASE"
-        RenderText {#text} at (97,2) size 4x17
+        LayoutText {#text} at (97,2) size 4x17
           text run at (97,2) width 4: " "
         LayoutButton {BUTTON} at (101,0) size 74x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 58x16
-            RenderText {#text} at (0,0) size 58x16
+          LayoutBlockFlow (anonymous) at (8,3) size 58x16
+            LayoutText {#text} at (0,0) size 58x16
               text run at (0,0) width 58: "lowercase"
-        RenderText {#text} at (175,2) size 4x17
+        LayoutText {#text} at (175,2) size 4x17
           text run at (175,2) width 4: " "
         LayoutButton {BUTTON} at (179,0) size 73x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 57x16
-            RenderText {#text} at (0,0) size 57x16
+          LayoutBlockFlow (anonymous) at (8,3) size 57x16
+            LayoutText {#text} at (0,0) size 57x16
               text run at (0,0) width 57: "Capitalize"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,90) size 784x22
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,90) size 784x22
         LayoutButton {INPUT} at (0,0) size 97x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 81x16
-            RenderText {#text} at (0,0) size 81x16
+          LayoutBlockFlow (anonymous) at (8,3) size 81x16
+            LayoutText {#text} at (0,0) size 81x16
               text run at (0,0) width 81: "UPPERCASE"
-        RenderText {#text} at (97,2) size 4x17
+        LayoutText {#text} at (97,2) size 4x17
           text run at (97,2) width 4: " "
         LayoutButton {INPUT} at (101,0) size 74x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 58x16
-            RenderText {#text} at (0,0) size 58x16
+          LayoutBlockFlow (anonymous) at (8,3) size 58x16
+            LayoutText {#text} at (0,0) size 58x16
               text run at (0,0) width 58: "lowercase"
-        RenderText {#text} at (175,2) size 4x17
+        LayoutText {#text} at (175,2) size 4x17
           text run at (175,2) width 4: " "
         LayoutButton {INPUT} at (179,0) size 73x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 57x16
-            RenderText {#text} at (0,0) size 57x16
+          LayoutBlockFlow (anonymous) at (8,3) size 57x16
+            LayoutText {#text} at (0,0) size 57x16
               text run at (0,0) width 57: "Capitalize"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

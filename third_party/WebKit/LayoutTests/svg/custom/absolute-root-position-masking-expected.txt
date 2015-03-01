@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x0
-  RenderBlock {html} at (0,0) size 800x0
-    RenderBody {body} at (0,0) size 800x0
+  LayoutBlockFlow {html} at (0,0) size 800x0
+    LayoutBlockFlow {body} at (0,0) size 800x0
 layer at (0,100) size 300x300
   LayoutSVGRoot {svg:svg} at (200,300) size 100x100
     LayoutSVGEllipse {svg:circle} at (200,300) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=300.00] [cy=300.00] [r=100.00]

@@ -1,73 +1,73 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x400
-  RenderBlock {HTML} at (0,0) size 800x400
-    RenderBody {BODY} at (8,16) size 784x368 [color=#000080]
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 396x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x400
+    LayoutBlockFlow {BODY} at (8,16) size 784x368 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 396x18
           text run at (0,0) width 396: "The two columns should look the same, except for alignment."
-      RenderBlock {OL} at (0,34) size 784x54
+      LayoutBlockFlow {OL} at (0,34) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-16.44,0) size 12.44x18: "i"
-          RenderText {#text} at (0,0) size 9x18
+          LayoutText {#text} at (0,0) size 9x18
             text run at (0,0) width 9: "i."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-20.89,0) size 16.89x18: "ii"
-          RenderText {#text} at (0,0) size 13x18
+          LayoutText {#text} at (0,0) size 13x18
             text run at (0,0) width 13: "ii."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-25.33,0) size 21.33x18: "iii"
-          RenderText {#text} at (0,0) size 18x18
+          LayoutText {#text} at (0,0) size 18x18
             text run at (0,0) width 18: "iii."
-      RenderBlock {OL} at (0,104) size 784x54
+      LayoutBlockFlow {OL} at (0,104) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-17.33,0) size 13.33x18: "I"
-          RenderText {#text} at (0,0) size 10x18
+          LayoutText {#text} at (0,0) size 10x18
             text run at (0,0) width 10: "I."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-22.66,0) size 18.66x18: "II"
-          RenderText {#text} at (0,0) size 15x18
+          LayoutText {#text} at (0,0) size 15x18
             text run at (0,0) width 15: "II."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-27.98,0) size 23.98x18: "III"
-          RenderText {#text} at (0,0) size 20x18
+          LayoutText {#text} at (0,0) size 20x18
             text run at (0,0) width 20: "III."
-      RenderBlock {OL} at (0,174) size 784x54
+      LayoutBlockFlow {OL} at (0,174) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-19.09,0) size 15.09x18: "a"
-          RenderText {#text} at (0,0) size 12x18
+          LayoutText {#text} at (0,0) size 12x18
             text run at (0,0) width 12: "a."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-20,0) size 16x18: "b"
-          RenderText {#text} at (0,0) size 12x18
+          LayoutText {#text} at (0,0) size 12x18
             text run at (0,0) width 12: "b."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-19.09,0) size 15.09x18: "c"
-          RenderText {#text} at (0,0) size 12x18
+          LayoutText {#text} at (0,0) size 12x18
             text run at (0,0) width 12: "c."
-      RenderBlock {OL} at (0,244) size 784x54
+      LayoutBlockFlow {OL} at (0,244) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-23.55,0) size 19.55x18: "A"
-          RenderText {#text} at (0,0) size 16x18
+          LayoutText {#text} at (0,0) size 16x18
             text run at (0,0) width 16: "A."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-22.67,0) size 18.67x18: "B"
-          RenderText {#text} at (0,0) size 15x18
+          LayoutText {#text} at (0,0) size 15x18
             text run at (0,0) width 15: "B."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-22.67,0) size 18.67x18: "C"
-          RenderText {#text} at (0,0) size 15x18
+          LayoutText {#text} at (0,0) size 15x18
             text run at (0,0) width 15: "C."
-      RenderBlock {OL} at (0,314) size 784x54
+      LayoutBlockFlow {OL} at (0,314) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-23.55,0) size 19.55x18: "A"
-          RenderText {#text} at (0,0) size 16x18
+          LayoutText {#text} at (0,0) size 16x18
             text run at (0,0) width 16: "A."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-22.67,0) size 18.67x18: "B"
-          RenderText {#text} at (0,0) size 15x18
+          LayoutText {#text} at (0,0) size 15x18
             text run at (0,0) width 15: "B."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-20,0) size 16x18: "3"
-          RenderText {#text} at (0,0) size 12x18
+          LayoutText {#text} at (0,0) size 12x18
             text run at (0,0) width 12: "3."

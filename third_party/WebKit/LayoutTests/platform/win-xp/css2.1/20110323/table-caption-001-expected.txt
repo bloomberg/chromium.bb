@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x176
-  RenderBlock {HTML} at (0,0) size 800x176
-    RenderBody {BODY} at (8,16) size 784x152
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 285x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x176
+    LayoutBlockFlow {BODY} at (8,16) size 784x152
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 285x19
           text run at (0,0) width 285: "Test passes if the \"Filler Text\" is above the box."
       LayoutTable {DIV} at (0,36) size 96x116
-        RenderBlock {DIV} at (0,0) size 96x20
-          RenderText {#text} at (0,0) size 61x19
+        LayoutBlockFlow {DIV} at (0,0) size 96x20
+          LayoutText {#text} at (0,0) size 61x19
             text run at (0,0) width 61: "Filler Text"
         LayoutTableSection (anonymous) at (0,20) size 96x96
           LayoutTableRow {DIV} at (0,0) size 96x48

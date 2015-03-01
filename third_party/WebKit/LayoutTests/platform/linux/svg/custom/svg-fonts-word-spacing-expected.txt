@@ -1,77 +1,77 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x574
-      RenderBlock (anonymous) at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 67x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x574
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 67x19
           text run at (0,0) width 67: "no spacing:"
-      RenderBlock {P} at (0,38) size 784x22
-        RenderText {#text} at (0,0) size 97x21
+      LayoutBlockFlow {P} at (0,38) size 784x22
+        LayoutText {#text} at (0,0) size 97x21
           text run at (0,0) width 97: "abc abc abc"
-      RenderBlock (anonymous) at (0,78) size 784x20
-        RenderText {#text} at (0,0) size 281x19
+      LayoutBlockFlow (anonymous) at (0,78) size 784x20
+        LayoutText {#text} at (0,0) size 281x19
           text run at (0,0) width 281: "word-spacing: 100px, all should look the same"
-      RenderBlock {P} at (0,116) size 784x22
-        RenderText {#text} at (0,0) size 297x21
+      LayoutBlockFlow {P} at (0,116) size 784x22
+        LayoutText {#text} at (0,0) size 297x21
           text run at (0,0) width 297: "abc abc abc"
-      RenderBlock {P} at (0,156) size 784x22
-        RenderText {#text} at (0,0) size 134x21
+      LayoutBlockFlow {P} at (0,156) size 784x22
+        LayoutText {#text} at (0,0) size 134x21
           text run at (0,0) width 134: "abc "
-        RenderInline {SPAN} at (0,0) size 20x21
-          RenderText {#text} at (134,0) size 20x21
+        LayoutInline {SPAN} at (0,0) size 20x21
+          LayoutText {#text} at (134,0) size 20x21
             text run at (134,0) width 20: "ab"
-        RenderText {#text} at (154,0) size 143x21
+        LayoutText {#text} at (154,0) size 143x21
           text run at (154,0) width 143: "c abc"
-      RenderBlock {P} at (0,196) size 784x22
-        RenderText {#text} at (0,0) size 134x21
+      LayoutBlockFlow {P} at (0,196) size 784x22
+        LayoutText {#text} at (0,0) size 134x21
           text run at (0,0) width 134: "abc "
-        RenderInline {SPAN} at (0,0) size 10x21
-          RenderText {#text} at (134,0) size 10x21
+        LayoutInline {SPAN} at (0,0) size 10x21
+          LayoutText {#text} at (134,0) size 10x21
             text run at (134,0) width 10: "a"
-        RenderInline {SPAN} at (0,0) size 10x21
-          RenderText {#text} at (144,0) size 10x21
+        LayoutInline {SPAN} at (0,0) size 10x21
+          LayoutText {#text} at (144,0) size 10x21
             text run at (144,0) width 10: "b"
-        RenderText {#text} at (154,0) size 143x21
+        LayoutText {#text} at (154,0) size 143x21
           text run at (154,0) width 143: "c abc"
-      RenderBlock {P} at (0,236) size 784x22
-        RenderText {#text} at (0,0) size 134x21
+      LayoutBlockFlow {P} at (0,236) size 784x22
+        LayoutText {#text} at (0,0) size 134x21
           text run at (0,0) width 134: "abc "
-        RenderInline {SPAN} at (0,0) size 10x21
-          RenderText {#text} at (134,0) size 10x21
+        LayoutInline {SPAN} at (0,0) size 10x21
+          LayoutText {#text} at (134,0) size 10x21
             text run at (134,0) width 10: "a"
-        RenderText {#text} at (144,0) size 10x21
+        LayoutText {#text} at (144,0) size 10x21
           text run at (144,0) width 10: "b"
-        RenderInline {SPAN} at (0,0) size 9x21
-          RenderText {#text} at (154,0) size 9x21
+        LayoutInline {SPAN} at (0,0) size 9x21
+          LayoutText {#text} at (154,0) size 9x21
             text run at (154,0) width 9: "c"
-        RenderText {#text} at (263,0) size 34x21
+        LayoutText {#text} at (263,0) size 34x21
           text run at (263,0) width 34: " abc"
-      RenderBlock {P} at (0,276) size 784x22
-        RenderText {#text} at (0,0) size 144x21
+      LayoutBlockFlow {P} at (0,276) size 784x22
+        LayoutText {#text} at (0,0) size 144x21
           text run at (0,0) width 144: "abc a"
-        RenderInline {SPAN} at (0,0) size 10x21
-          RenderText {#text} at (144,0) size 10x21
+        LayoutInline {SPAN} at (0,0) size 10x21
+          LayoutText {#text} at (144,0) size 10x21
             text run at (144,0) width 10: "b"
-        RenderInline {SPAN} at (0,0) size 9x21
-          RenderText {#text} at (154,0) size 9x21
+        LayoutInline {SPAN} at (0,0) size 9x21
+          LayoutText {#text} at (154,0) size 9x21
             text run at (154,0) width 9: "c"
-        RenderText {#text} at (263,0) size 34x21
+        LayoutText {#text} at (263,0) size 34x21
           text run at (263,0) width 34: " abc"
-      RenderBlock {P} at (0,316) size 784x22
-        RenderText {#text} at (0,0) size 144x21
+      LayoutBlockFlow {P} at (0,316) size 784x22
+        LayoutText {#text} at (0,0) size 144x21
           text run at (0,0) width 144: "abc a"
-        RenderInline {SPAN} at (0,0) size 10x21
-          RenderText {#text} at (144,0) size 10x21
+        LayoutInline {SPAN} at (0,0) size 10x21
+          LayoutText {#text} at (144,0) size 10x21
             text run at (144,0) width 10: "b"
-        RenderText {#text} at (154,0) size 143x21
+        LayoutText {#text} at (154,0) size 143x21
           text run at (154,0) width 143: "c abc"
-      RenderBlock {P} at (0,356) size 784x22
-        RenderText {#text} at (0,0) size 134x21
+      LayoutBlockFlow {P} at (0,356) size 784x22
+        LayoutText {#text} at (0,0) size 134x21
           text run at (0,0) width 134: "abc "
-        RenderInline {SPAN} at (0,0) size 0x21
-        RenderText {#text} at (134,0) size 134x21
+        LayoutInline {SPAN} at (0,0) size 0x21
+        LayoutText {#text} at (134,0) size 134x21
           text run at (134,0) width 134: "abc "
-        RenderInline {SPAN} at (0,0) size 0x21
-        RenderText {#text} at (268,0) size 29x21
+        LayoutInline {SPAN} at (0,0) size 0x21
+        LayoutText {#text} at (268,0) size 29x21
           text run at (268,0) width 29: "abc"

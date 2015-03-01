@@ -15,49 +15,49 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 772x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 772x35
           text run at (0,0) width 579: "This tests the ability to start editing in blocks that are visible, but have little or no content. "
           text run at (578,0) width 194: "Each of the divs below should"
           text run at (0,18) width 158: "be able to accept a caret."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 180x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 180x17
           text run at (0,0) width 180: "This div contains some text."
-      RenderBlock {DIV} at (0,86) size 707.59x22 [border: (1px dotted #0000FF)]
-        RenderText {#text} at (1,1) size 40x17
+      LayoutBlockFlow {DIV} at (0,86) size 707.59x22 [border: (1px dotted #0000FF)]
+        LayoutText {#text} at (1,1) size 40x17
           text run at (1,1) width 40: "chello"
-      RenderBlock {P} at (0,124) size 784x18
-        RenderText {#text} at (0,0) size 191x17
+      LayoutBlockFlow {P} at (0,124) size 784x18
+        LayoutText {#text} at (0,0) size 191x17
           text run at (0,0) width 191: "This div is completely empty."
-      RenderBlock {DIV} at (0,158) size 707.59x22 [border: (1px dotted #0000FF)]
-        RenderText {#text} at (1,1) size 8x17
+      LayoutBlockFlow {DIV} at (0,158) size 707.59x22 [border: (1px dotted #0000FF)]
+        LayoutText {#text} at (1,1) size 8x17
           text run at (1,1) width 8: "c"
-      RenderBlock {P} at (0,196) size 784x18
-        RenderText {#text} at (0,0) size 347x17
+      LayoutBlockFlow {P} at (0,196) size 784x18
+        LayoutText {#text} at (0,0) size 347x17
           text run at (0,0) width 347: "This div contains some collapsable whitespace (a '\\n')."
-      RenderBlock {DIV} at (0,230) size 707.59x22 [border: (1px dotted #0000FF)]
-        RenderText {#text} at (1,1) size 8x17
+      LayoutBlockFlow {DIV} at (0,230) size 707.59x22 [border: (1px dotted #0000FF)]
+        LayoutText {#text} at (1,1) size 8x17
           text run at (1,1) width 8: "c"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,268) size 784x18
-        RenderText {#text} at (0,0) size 240x17
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,268) size 784x18
+        LayoutText {#text} at (0,0) size 240x17
           text run at (0,0) width 240: "This div contains a self-closing p tag."
-      RenderBlock {DIV} at (0,302) size 707.59x36 [border: (1px dotted #0000FF)]
-        RenderBlock (anonymous) at (1,1) size 705.59x18
-          RenderText {#text} at (0,0) size 8x17
+      LayoutBlockFlow {DIV} at (0,302) size 707.59x36 [border: (1px dotted #0000FF)]
+        LayoutBlockFlow (anonymous) at (1,1) size 705.59x18
+          LayoutText {#text} at (0,0) size 8x17
             text run at (0,0) width 8: "c"
-        RenderBlock {P} at (1,35) size 705.59x0
-      RenderBlock {P} at (0,354) size 784x18
-        RenderText {#text} at (0,0) size 736x17
+        LayoutBlockFlow {P} at (1,35) size 705.59x0
+      LayoutBlockFlow {P} at (0,354) size 784x18
+        LayoutText {#text} at (0,0) size 736x17
           text run at (0,0) width 736: "This div contains a self-closing p tag and some collapsable whitespace (two '\\n's before and after the self closing p."
-      RenderBlock {DIV} at (0,388) size 707.59x36 [border: (1px dotted #0000FF)]
-        RenderBlock (anonymous) at (1,1) size 705.59x18
-          RenderText {#text} at (0,0) size 8x17
+      LayoutBlockFlow {DIV} at (0,388) size 707.59x36 [border: (1px dotted #0000FF)]
+        LayoutBlockFlow (anonymous) at (1,1) size 705.59x18
+          LayoutText {#text} at (0,0) size 8x17
             text run at (0,0) width 8: "c"
-          RenderText {#text} at (0,0) size 0x0
-        RenderBlock {P} at (1,35) size 705.59x0
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {P} at (1,35) size 705.59x0
 caret: position 1 of child 0 {#text} of child 21 {DIV} of body

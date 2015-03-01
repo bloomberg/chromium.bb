@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {OL} at (0,0) size 784x36
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {OL} at (0,0) size 784x36
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-20,0) size 16x17: "1"
-          RenderText {#text} at (0,0) size 161x17
+          LayoutText {#text} at (0,0) size 161x17
             text run at (0,0) width 161: "Make text bigger/smaller"
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-20,0) size 16x17: "2"
-          RenderText {#text} at (0,0) size 219x17
+          LayoutText {#text} at (0,0) size 219x17
             text run at (0,0) width 219: "Make the window narrower/wider"
 layer at (8,60) size 132x24
-  RenderBlock (positioned) {DIV} at (8,60) size 131.77x24 [border: (3px solid #000000)]
-    RenderText {#text} at (43,3) size 86x17
+  LayoutBlockFlow (positioned) {DIV} at (8,60) size 131.77x24 [border: (3px solid #000000)]
+    LayoutText {#text} at (43,3) size 86x17
       text run at (43,3) width 86: "Lorem ipsum"

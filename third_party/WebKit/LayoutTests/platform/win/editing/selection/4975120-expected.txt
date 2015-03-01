@@ -1,29 +1,29 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x54
-        RenderText {#text} at (0,0) size 773x53
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 773x53
           text run at (0,0) width 768: "This tests for a bug that caused the parent of an active frame to paint as though it were active when its window becomes"
           text run at (0,18) width 32: "key. "
           text run at (31,18) width 742: "To run manually, make another window active and then make this window active. Only the subframe should appear"
           text run at (0,36) width 43: "active."
-      RenderBlock (anonymous) at (0,70) size 784x176
+      LayoutBlockFlow (anonymous) at (0,70) size 784x176
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutBR {BR} at (173,16) size 0x0
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (10,81) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 17x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 17x16
       text run at (0,0) width 17: "foo"
 layer at (8,100) size 304x154
   LayoutIFrame {IFRAME} at (0,22) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
-      RenderView at (0,0) size 300x150
+      LayoutView at (0,0) size 300x150
     layer at (0,0) size 300x150
-      RenderBlock {HTML} at (0,0) size 300x150
-        RenderBody {BODY} at (8,8) size 284x134 [bgcolor=#FFFFE0]
+      LayoutBlockFlow {HTML} at (0,0) size 300x150
+        LayoutBlockFlow {BODY} at (8,8) size 284x134 [bgcolor=#FFFFE0]
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of body
 selection end:   position 3 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of body

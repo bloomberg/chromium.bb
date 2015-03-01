@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 606
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x606 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x605.88
-    RenderBody {BODY} at (8,21.44) size 769x568.44
-      RenderBlock {H1} at (0,0) size 769x37
-        RenderText {#text} at (0,0) size 303x37
+  LayoutBlockFlow {HTML} at (0,0) size 785x605.88
+    LayoutBlockFlow {BODY} at (8,21.44) size 769x568.44
+      LayoutBlockFlow {H1} at (0,0) size 769x37
+        LayoutText {#text} at (0,0) size 303x37
           text run at (0,0) width 303: "Emoticons & Symbols"
-      RenderBlock {PRE} at (0,58.44) size 769x476
-        RenderText {#text} at (0,4) size 440x472
+      LayoutBlockFlow {PRE} at (0,58.44) size 769x476
+        LayoutText {#text} at (0,4) size 440x472
           text run at (0,4) width 440: "U+1F60x \x{D83D}\x{DE00} \x{D83D}\x{DE01} \x{D83D}\x{DE02} \x{D83D}\x{DE03} \x{D83D}\x{DE04} \x{D83D}\x{DE05} \x{D83D}\x{DE06} \x{D83D}\x{DE07} \x{D83D}\x{DE08} \x{D83D}\x{DE09} \x{D83D}\x{DE0A} \x{D83D}\x{DE0B} \x{D83D}\x{DE0C} \x{D83D}\x{DE0D} \x{D83D}\x{DE0E} \x{D83D}\x{DE0F}"
           text run at (439,4) width 1: " "
           text run at (0,25) width 440: "U+1F61x \x{D83D}\x{DE10} \x{D83D}\x{DE11} \x{D83D}\x{DE12} \x{D83D}\x{DE13} \x{D83D}\x{DE14} \x{D83D}\x{DE15} \x{D83D}\x{DE16} \x{D83D}\x{DE17} \x{D83D}\x{DE18} \x{D83D}\x{DE19} \x{D83D}\x{DE1A} \x{D83D}\x{DE1B} \x{D83D}\x{DE1C} \x{D83D}\x{DE1D} \x{D83D}\x{DE1E} \x{D83D}\x{DE1F}"
@@ -53,6 +53,6 @@ layer at (0,0) size 785x606 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,444) width 339: "U+26Fx \x{26F0} \x{26F1} \x{26F2} \x{26F3} \x{26F4} \x{26F5} \x{26F6} \x{26F7} \x{26F8} \x{26F9} \x{26FA} \x{26FB} \x{26FC} \x{26FD} \x{26FE} \x{26FF}"
           text run at (338,444) width 1: " "
           text run at (0,461) width 63: "        "
-      RenderBlock {P} at (0,550.44) size 769x18
-        RenderText {#text} at (0,0) size 478x18
+      LayoutBlockFlow {P} at (0,550.44) size 769x18
+        LayoutText {#text} at (0,0) size 478x18
           text run at (0,0) width 478: "A seriers of emoticons, symbols and pictographs should be shown above1."

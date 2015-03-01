@@ -1,54 +1,54 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x384
-  RenderBlock {HTML} at (0,0) size 800x384
-    RenderBody {BODY} at (8,16) size 784x352
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 336x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x384
+    LayoutBlockFlow {BODY} at (8,16) size 784x352
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 336x18
           text run at (0,0) width 336: "This paragraph is here only to fill space in the DOM"
-      RenderBlock {ADDRESS} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 140x18
+      LayoutBlockFlow {ADDRESS} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 140x18
           text run at (0,0) width 140: "And this address too.."
-      RenderBlock {P} at (0,68) size 784x18
-        RenderText {#text} at (0,0) size 155x18
+      LayoutBlockFlow {P} at (0,68) size 784x18
+        LayoutText {#text} at (0,0) size 155x18
           text run at (0,0) width 155: "So does this paragraph !"
-      RenderBlock {P} at (0,102) size 784x18 [bgcolor=#00FF00]
-        RenderText {#text} at (0,0) size 278x18
+      LayoutBlockFlow {P} at (0,102) size 784x18 [bgcolor=#00FF00]
+        LayoutText {#text} at (0,0) size 278x18
           text run at (0,0) width 278: "But this one should have green background"
-      RenderBlock {DL} at (0,136) size 784x216
-        RenderBlock {DT} at (0,0) size 784x18 [bgcolor=#00FF00]
-          RenderText {#text} at (0,0) size 357x18
+      LayoutBlockFlow {DL} at (0,136) size 784x216
+        LayoutBlockFlow {DT} at (0,0) size 784x18 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 357x18
             text run at (0,0) width 357: "First definition term that should have green background"
-        RenderBlock {DD} at (40,18) size 744x18 [bgcolor=#00FF00]
-          RenderText {#text} at (0,0) size 324x18
+        LayoutBlockFlow {DD} at (40,18) size 744x18 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 324x18
             text run at (0,0) width 324: "First definition that should have green background"
-        RenderBlock {DT} at (0,36) size 784x18
-          RenderText {#text} at (0,0) size 147x18
+        LayoutBlockFlow {DT} at (0,36) size 784x18
+          LayoutText {#text} at (0,0) size 147x18
             text run at (0,0) width 147: "Second definition term"
-        RenderBlock {DD} at (40,54) size 744x18
-          RenderText {#text} at (0,0) size 114x18
+        LayoutBlockFlow {DD} at (40,54) size 744x18
+          LayoutText {#text} at (0,0) size 114x18
             text run at (0,0) width 114: "Second definition"
-        RenderBlock {DT} at (0,72) size 784x18
-          RenderText {#text} at (0,0) size 136x18
+        LayoutBlockFlow {DT} at (0,72) size 784x18
+          LayoutText {#text} at (0,0) size 136x18
             text run at (0,0) width 136: "Third definition term"
-        RenderBlock {DD} at (40,90) size 744x18
-          RenderText {#text} at (0,0) size 102x18
+        LayoutBlockFlow {DD} at (40,90) size 744x18
+          LayoutText {#text} at (0,0) size 102x18
             text run at (0,0) width 102: "Third definition"
-        RenderBlock {DT} at (0,108) size 784x18 [bgcolor=#00FF00]
-          RenderText {#text} at (0,0) size 371x18
+        LayoutBlockFlow {DT} at (0,108) size 784x18 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 371x18
             text run at (0,0) width 371: "Fourth definition term that should have green background"
-        RenderBlock {DD} at (40,126) size 744x18 [bgcolor=#00FF00]
-          RenderText {#text} at (0,0) size 337x18
+        LayoutBlockFlow {DD} at (40,126) size 744x18 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 337x18
             text run at (0,0) width 337: "Fourth definition that should have green background"
-        RenderBlock {DT} at (0,144) size 784x18
-          RenderText {#text} at (0,0) size 131x18
+        LayoutBlockFlow {DT} at (0,144) size 784x18
+          LayoutText {#text} at (0,0) size 131x18
             text run at (0,0) width 131: "Fifth definition term"
-        RenderBlock {DD} at (40,162) size 744x18
-          RenderText {#text} at (0,0) size 98x18
+        LayoutBlockFlow {DD} at (40,162) size 744x18
+          LayoutText {#text} at (0,0) size 98x18
             text run at (0,0) width 98: "Fifth definition"
-        RenderBlock {DT} at (0,180) size 784x18
-          RenderText {#text} at (0,0) size 134x18
+        LayoutBlockFlow {DT} at (0,180) size 784x18
+          LayoutText {#text} at (0,0) size 134x18
             text run at (0,0) width 134: "Sixth definition term"
-        RenderBlock {DD} at (40,198) size 744x18
-          RenderText {#text} at (0,0) size 100x18
+        LayoutBlockFlow {DD} at (40,198) size 744x18
+          LayoutText {#text} at (0,0) size 100x18
             text run at (0,0) width 100: "Sixth definition"

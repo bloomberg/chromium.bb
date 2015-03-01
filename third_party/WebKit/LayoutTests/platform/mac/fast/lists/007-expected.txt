@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {UL} at (0,0) size 784x72 [bgcolor=#808080] [border: none (25px solid #008000)]
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {UL} at (0,0) size 784x72 [bgcolor=#808080] [border: none (25px solid #008000)]
         LayoutListItem {LI} at (50,0) size 734x18
           LayoutListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 732x18
+          LayoutText {#text} at (0,0) size 732x18
             text run at (0,0) width 732: "The left padding on this unordered list has been set to 25 pixels, which will require some extra test in order to test."
         LayoutListItem {LI} at (50,18) size 734x54 [bgcolor=#FFFFFF] [border: none (25px solid #008000)]
           LayoutListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (50,0) size 670x54
+          LayoutText {#text} at (50,0) size 670x54
             text run at (50,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
             text run at (50,18) width 61: "checked. "
             text run at (110,18) width 582: "This list item has its left padding also set to 25 pixels, which should combine with the list's"

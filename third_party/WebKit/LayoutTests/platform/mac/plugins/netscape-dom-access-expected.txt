@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 736x36
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 736x36
           text run at (0,0) width 516: "This page tests whether Netscape plug-ins can access their own DOM elements. "
           text run at (515,0) width 221: "The plug-in should have a 3px red"
           text run at (0,18) width 46: "border."
-      RenderBlock (anonymous) at (0,52) size 784x206
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,52) size 784x206
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,60) size 206x206
   LayoutEmbeddedObject {EMBED} at (0,0) size 206x206 [border: (3px solid #FF0000)]

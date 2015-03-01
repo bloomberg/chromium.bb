@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 784x32
-        RenderText {#text} at (0,0) size 496x32
+      LayoutBlockFlow {PRE} at (0,34) size 784x32
+        LayoutText {#text} at (0,0) size 496x32
           text run at (0,0) width 304: ".one {list-style: upper-alpha inside;}"
           text run at (304,0) width 0: " "
           text run at (0,16) width 496: ".two {list-style: url(../resources/oransqr.gif) disc outside;}"
           text run at (496,16) width 0: " "
-      RenderBlock {HR} at (0,79) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {UL} at (0,97) size 784x36
+      LayoutBlockFlow {HR} at (0,79) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {UL} at (0,97) size 784x36
         LayoutListItem {LI} at (40,0) size 744x36
           LayoutListMarker at (0,0) size 19.55x17: "A"
-          RenderText {#text} at (19,0) size 695x35
+          LayoutText {#text} at (19,0) size 695x35
             text run at (19,0) width 676: "The text in this item should not behave as expected; that is, it should line up with the capital-A on the left"
             text run at (0,18) width 345: "margin, leaving no blank space beneath the capital-A."
-      RenderBlock {UL} at (0,149) size 784x37
+      LayoutBlockFlow {UL} at (0,149) size 784x37
         LayoutListItem {LI} at (40,0) size 744x37
           LayoutListMarker at (-22,0) size 15x15
-          RenderText {#text} at (0,1) size 727x35
+          LayoutText {#text} at (0,1) size 727x35
             text run at (0,1) width 489: "The text in this item have an orange square for its bullet; failing that, a disc. "
             text run at (488,1) width 239: "Also, the bullet should be outside the"
             text run at (0,19) width 290: "text block, as the list has been set to 'outside'."
@@ -30,24 +30,24 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x139
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x113
             LayoutTableCell {TD} at (0,69) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x113 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {UL} at (4,4) size 762x36
+              LayoutBlockFlow {UL} at (4,4) size 762x36
                 LayoutListItem {LI} at (40,0) size 722x36
                   LayoutListMarker at (0,0) size 19.55x17: "A"
-                  RenderText {#text} at (19,0) size 695x35
+                  LayoutText {#text} at (19,0) size 695x35
                     text run at (19,0) width 676: "The text in this item should not behave as expected; that is, it should line up with the capital-A on the left"
                     text run at (0,18) width 345: "margin, leaving no blank space beneath the capital-A."
-              RenderBlock {UL} at (4,56) size 762x37
+              LayoutBlockFlow {UL} at (4,56) size 762x37
                 LayoutListItem {LI} at (40,0) size 722x37
                   LayoutListMarker at (-22,0) size 15x15
-                  RenderText {#text} at (0,1) size 703x35
+                  LayoutText {#text} at (0,1) size 703x35
                     text run at (0,1) width 489: "The text in this item have an orange square for its bullet; failing that, a disc. "
                     text run at (488,1) width 215: "Also, the bullet should be outside"
                     text run at (0,19) width 314: "the text block, as the list has been set to 'outside'."

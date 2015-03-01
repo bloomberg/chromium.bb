@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 40024
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x600
-    RenderBody {BODY} at (8,8) size 769x576
-      RenderBlock {P} at (0,0) size 769x60
-        RenderText {#text} at (0,0) size 747x59
+  LayoutBlockFlow {HTML} at (0,0) size 785x600
+    LayoutBlockFlow {BODY} at (8,8) size 769x576
+      LayoutBlockFlow {P} at (0,0) size 769x60
+        LayoutText {#text} at (0,0) size 747x59
           text run at (0,0) width 747: "The column on the right has explicit spaces. Line breaks should be roughly the same if Thai line breaks are working well. The"
           text run at (0,20) width 734: "original source of this text was ICU, and the test program said \"by it's very nature, Thai word breaking is not exact\", so the"
           text run at (0,40) width 742: "columns don't match exactly. In a future version we might decide to tweak the right column to match our expected behavior."
 layer at (236,84) size 1x38040 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (positioned) {DIV} at (235.50,84) size 1x38040
-    RenderText {#text} at (0,6) size 84x38029
+  LayoutBlockFlow (positioned) {DIV} at (235.50,84) size 1x38040
+    LayoutText {#text} at (0,6) size 84x38029
       text run at (0,6) width 21: "\x{E1A}\x{E17}"
       text run at (0,36) width 49: "\x{E17}\x{E35}\x{E48}\x{E51}\x{E1E}\x{E32}\x{E22}\x{E38}"
       text run at (0,66) width 54: "\x{E44}\x{E0B}\x{E42}\x{E04}\x{E25}\x{E19}"
@@ -1280,8 +1280,8 @@ layer at (236,84) size 1x38040 backgroundClip at (0,0) size 785x600 clip at (0,0
       text run at (0,37986) width 29: "\x{E2B}\x{E27}\x{E35}\x{E14}"
       text run at (0,38016) width 28: "\x{E2B}\x{E27}\x{E37}\x{E2D}"
 layer at (471,84) size 1x39940 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (positioned) {DIV} at (471,84) size 1x39940
-    RenderText {#text} at (0,6) size 70x39929
+  LayoutBlockFlow (positioned) {DIV} at (471,84) size 1x39940
+    LayoutText {#text} at (0,6) size 70x39929
       text run at (0,6) width 21: "\x{E1A}\x{E17}"
       text run at (0,36) width 11: "\x{E17}\x{E35}\x{E48}"
       text run at (0,66) width 10: "\x{E51}"

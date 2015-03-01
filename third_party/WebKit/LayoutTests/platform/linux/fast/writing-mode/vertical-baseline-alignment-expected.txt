@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (531,0) size 269x600
-  RenderBlock {HTML} at (0,0) size 269x600
-    RenderBody {BODY} at (24,8) size 221x584
-      RenderBlock {P} at (0,0) size 114x584
-        RenderInline {SPAN} at (0,0) size 27x102
-          RenderText {#text} at (23,0) size 27x102
+  LayoutBlockFlow {HTML} at (0,0) size 269x600
+    LayoutBlockFlow {BODY} at (24,8) size 221x584
+      LayoutBlockFlow {P} at (0,0) size 114x584
+        LayoutInline {SPAN} at (0,0) size 27x102
+          LayoutText {#text} at (23,0) size 27x102
             text run at (23,0) width 102: "\x{7B2C}\x{4E00}\x{6BB5}\x{843D} "
-        RenderInline {SPAN} at (0,0) size 112x458
-          RenderText {#text} at (1,102) size 55x334
+        LayoutInline {SPAN} at (0,0) size 112x458
+          LayoutText {#text} at (1,102) size 55x334
             text run at (1,102) width 334: "PARAGRAPH 1 "
           LayoutBR {BR} at (1,435) size 55x1
-          RenderText {#text} at (58,0) size 55x293
+          LayoutText {#text} at (58,0) size 55x293
             text run at (58,0) width 293: "MORE TEXT. "
-          RenderInline {SPAN} at (0,0) size 15x166
-            RenderText {#text} at (89,292) size 15x166
+          LayoutInline {SPAN} at (0,0) size 15x166
+            LayoutText {#text} at (89,292) size 15x166
               text run at (89,292) width 165: "SHOULD NOT BE CENTERED."
-          RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (138,0) size 83x584
-        RenderInline {SPAN} at (0,0) size 27x466
-          RenderText {#text} at (49,0) size 27x102
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (138,0) size 83x584
+        LayoutInline {SPAN} at (0,0) size 27x466
+          LayoutText {#text} at (49,0) size 27x102
             text run at (49,0) width 102: "\x{7B2C}\x{4E8C}\x{6BB5}\x{843D} "
-          RenderInline {SPAN} at (0,0) size 55x364
-            RenderText {#text} at (27,102) size 55x334
+          LayoutInline {SPAN} at (0,0) size 55x364
+            LayoutText {#text} at (27,102) size 55x334
               text run at (27,102) width 334: "PARAGRAPH 2 "
             LayoutImage {IMG} at (0,435.59) size 70x30 [bgcolor=#008000]
-            RenderText {#text} at (0,0) size 0x0
+            LayoutText {#text} at (0,0) size 0x0

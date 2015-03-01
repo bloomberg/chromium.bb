@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 770x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 770x35
         text run at (0,0) width 770: "This tests that leading and trailing spaces in a text field don't get lost. There should be 3 spaces before and 3 spaces after"
         text run at (0,18) width 129: "the text in the field. "
       LayoutBR {BR} at (128,32) size 1x0
       LayoutTextControl {INPUT} at (0,36) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (10,47) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 63x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 63x16
       text run at (0,0) width 63: "   foo bar   "

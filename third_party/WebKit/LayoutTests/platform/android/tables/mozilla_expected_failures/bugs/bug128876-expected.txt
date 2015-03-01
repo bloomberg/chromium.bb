@@ -1,9 +1,9 @@
 Blocked access to external URL http://bugzilla.mozilla.org/notfound
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 761x4
         LayoutTableSection {TBODY} at (0,0) size 761x4
           LayoutTableRow {TR} at (0,0) size 761x2
@@ -12,6 +12,6 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,2) size 170x2 [r=1 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (170,2) size 385x2 [r=1 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (555,2) size 206x2 [r=1 c=2 rs=1 cs=1]
-              RenderInline {SPAN} at (0,0) size 0x0
-                RenderText {#text} at (0,0) size 0x0
-                RenderText {#text} at (0,0) size 0x0
+              LayoutInline {SPAN} at (0,0) size 0x0
+                LayoutText {#text} at (0,0) size 0x0
+                LayoutText {#text} at (0,0) size 0x0

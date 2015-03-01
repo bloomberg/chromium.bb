@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x26
-  RenderBlock {HTML} at (0,0) size 800x26 [color=#FFFFFF]
-    RenderBody {BODY} at (8,8) size 784x10
+  LayoutBlockFlow {HTML} at (0,0) size 800x26 [color=#FFFFFF]
+    LayoutBlockFlow {BODY} at (8,8) size 784x10
       LayoutRuby (inline) {RUBY} at (0,0) size 20x10
         LayoutRubyRun (anonymous) at (0,0) size 10x10
           LayoutRubyText {RT} at (0,0) size 10x0
           LayoutRubyBase (anonymous) at (0,0) size 10x10
-            RenderBlock (anonymous) at (0,0) size 10x10
-              RenderText {#text} at (0,0) size 10x10
+            LayoutBlockFlow (anonymous) at (0,0) size 10x10
+              LayoutText {#text} at (0,0) size 10x10
                 text run at (0,0) width 10: "A"
-              RenderInline {I} at (0,0) size 0x10
-            RenderBlock (anonymous) at (0,10) size 10x0
-              RenderBlock {DIV} at (0,0) size 10x0
-            RenderBlock (anonymous) at (0,10) size 10x0
-              RenderInline {I} at (0,0) size 0x0
+              LayoutInline {I} at (0,0) size 0x10
+            LayoutBlockFlow (anonymous) at (0,10) size 10x0
+              LayoutBlockFlow {DIV} at (0,0) size 10x0
+            LayoutBlockFlow (anonymous) at (0,10) size 10x0
+              LayoutInline {I} at (0,0) size 0x0
         LayoutRubyRun (anonymous) at (10,0) size 10x10
           LayoutRubyBase (anonymous) at (0,0) size 10x10
-            RenderBlock (anonymous) at (0,0) size 10x10
-              RenderText {#text} at (0,0) size 10x10
+            LayoutBlockFlow (anonymous) at (0,0) size 10x10
+              LayoutText {#text} at (0,0) size 10x10
                 text run at (0,0) width 10: "B"
-      RenderText {#text} at (0,0) size 0x0
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

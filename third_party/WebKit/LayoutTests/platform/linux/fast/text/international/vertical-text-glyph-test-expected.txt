@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x596
-  RenderBlock {HTML} at (0,0) size 800x595.97
-    RenderBody {BODY} at (8,21.33) size 784x566.64
-      RenderBlock {P} at (0,0) size 784x24
-        RenderText {#text} at (0,0) size 134x23
+  LayoutBlockFlow {HTML} at (0,0) size 800x595.97
+    LayoutBlockFlow {BODY} at (8,21.33) size 784x566.64
+      LayoutBlockFlow {P} at (0,0) size 784x24
+        LayoutText {#text} at (0,0) size 134x23
           text run at (0,0) width 134: "Simple text path"
-      RenderBlock (anonymous) at (0,45.33) size 784x221
-        RenderBlock {SPAN} at (0,0) size 24x215
-          RenderText {#text} at (0,0) size 23x215
+      LayoutBlockFlow (anonymous) at (0,45.33) size 784x221
+        LayoutBlockFlow {SPAN} at (0,0) size 24x215
+          LayoutText {#text} at (0,0) size 23x215
             text run at (0,0) width 215: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,276.98) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,300.31) size 784x24
-        RenderText {#text} at (0,0) size 152x23
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {HR} at (0,276.98) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,300.31) size 784x24
+        LayoutText {#text} at (0,0) size 152x23
           text run at (0,0) width 152: "Complex text path"
-      RenderBlock (anonymous) at (0,345.64) size 784x221
-        RenderBlock {SPAN} at (0,0) size 24x215
-          RenderText {#text} at (0,0) size 23x215
+      LayoutBlockFlow (anonymous) at (0,345.64) size 784x221
+        LayoutBlockFlow {SPAN} at (0,0) size 24x215
+          LayoutText {#text} at (0,0) size 23x215
             text run at (0,0) width 215: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

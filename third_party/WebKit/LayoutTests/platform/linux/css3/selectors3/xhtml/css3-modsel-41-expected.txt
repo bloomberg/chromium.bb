@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x52
-  RenderBlock {html} at (0,0) size 800x52
-    RenderBody {body} at (8,16) size 784x20
-      RenderBlock {p} at (0,0) size 784x20
-        RenderInline {<pseudo:before>} at (0,0) size 173x19 [bgcolor=#00FF00]
+  LayoutBlockFlow {html} at (0,0) size 800x52
+    LayoutBlockFlow {body} at (8,16) size 784x20
+      LayoutBlockFlow {p} at (0,0) size 784x20
+        LayoutInline {<pseudo:before>} at (0,0) size 173x19 [bgcolor=#00FF00]
           LayoutTextFragment at (0,0) size 173x19
             text run at (0,0) width 173: "GENERATED CONTENT "
-        RenderText {#text} at (173,0) size 606x19
+        LayoutText {#text} at (173,0) size 606x19
           text run at (173,0) width 606: "You should see before this paragraph the words GENERATED CONTENT over green background"

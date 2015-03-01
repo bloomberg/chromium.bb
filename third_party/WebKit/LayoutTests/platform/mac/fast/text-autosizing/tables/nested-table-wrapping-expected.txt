@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x260
-  RenderBlock {HTML} at (0,0) size 800x260
-    RenderBody {BODY} at (0,0) size 800x259
-      RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 247x14
+  LayoutBlockFlow {HTML} at (0,0) size 800x260
+    LayoutBlockFlow {BODY} at (0,0) size 800x259
+      LayoutBlockFlow {DIV} at (0,0) size 600x36
+        LayoutText {#text} at (0,0) size 247x14
           text run at (0,0) width 247: "Table autosizing tests - nested-table-wrapping.html"
         LayoutBR {BR} at (246,0) size 1x14
-        RenderText {#text} at (0,14) size 390x14
+        LayoutText {#text} at (0,14) size 390x14
           text run at (0,14) width 390: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
       LayoutTable {TABLE} at (1,37) size 798x222 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 797x221
           LayoutTableRow {TR} at (0,0) size 797x221
             LayoutTableCell {TD} at (0,0) size 797x221 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock (anonymous) at (2,2) size 794x198
-                RenderText {#text} at (0,0) size 786x198
+              LayoutBlockFlow (anonymous) at (2,2) size 794x198
+                LayoutText {#text} at (0,0) size 786x198
                   text run at (0,0) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,33) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,66) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
@@ -25,5 +25,5 @@ layer at (0,0) size 800x260
                 LayoutTableSection {TBODY} at (0,0) size 202x17
                   LayoutTableRow {TR} at (0,0) size 202x17
                     LayoutTableCell {TD} at (0,0) size 202x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 199x14
+                      LayoutText {#text} at (2,2) size 199x14
                         text run at (2,2) width 199: "the table cell should tightly wrap this text"

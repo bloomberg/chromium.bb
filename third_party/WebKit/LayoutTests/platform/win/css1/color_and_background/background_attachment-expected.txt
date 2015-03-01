@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600 scrollWidth 880 scrollHeight 1207
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x1206.53
-    RenderBody {BODY} at (8,8) size 784x1190.53 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x1206.53
+    LayoutBlockFlow {BODY} at (8,8) size 784x1190.53 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 784x32
-        RenderText {#text} at (0,0) size 872x32
+      LayoutBlockFlow {PRE} at (0,34) size 784x32
+        LayoutText {#text} at (0,0) size 872x32
           text run at (0,0) width 872: "BODY {background-image: url(../resources/bg.gif); background-repeat: repeat-x; background-attachment: fixed;}"
           text run at (872,0) width 0: " "
           text run at (0,16) width 0: " "
-      RenderBlock {HR} at (0,79) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,97) size 784x90
-        RenderText {#text} at (0,0) size 778x89
+      LayoutBlockFlow {HR} at (0,79) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,97) size 784x90
+        LayoutText {#text} at (0,0) size 778x89
           text run at (0,0) width 778: "This document should have a green grid-pattern line across the top of the page (or at least a tiled background) which does"
           text run at (0,18) width 204: "NOT scroll with the document. "
           text run at (203,18) width 564: "It should, instead, appear to be a fixed pattern past which the content scrolls, even when"
@@ -23,54 +23,54 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (175,54) width 560: "I'll have to add a lot of extra text to the page in order to make all this something we can"
           text run at (0,72) width 100: "actually check. "
           text run at (99,72) width 233: "Don't worry, I'll think of something."
-      RenderBlock {P} at (0,203) size 784x18
-        RenderText {#text} at (0,0) size 519x17
+      LayoutBlockFlow {P} at (0,203) size 784x18
+        LayoutText {#text} at (0,0) size 519x17
           text run at (0,0) width 426: "In fact, why not the relevant section from the CSS1 specification? "
           text run at (425,0) width 94: "A capital idea."
-      RenderBlock {HR} at (0,237) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {HR} at (0,247) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {H4} at (0,270.27) size 784x18
-        RenderInline {A} at (0,0) size 223x17
-          RenderText {#text} at (0,0) size 223x17
+      LayoutBlockFlow {HR} at (0,237) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,247) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {H4} at (0,270.27) size 784x18
+        LayoutInline {A} at (0,0) size 223x17
+          LayoutText {#text} at (0,0) size 223x17
             text run at (0,0) width 223: "5.3.5    'background-attachment'"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,309.53) size 784x90
-        RenderInline {EM} at (0,0) size 43x17
-          RenderText {#text} at (0,0) size 43x17
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,309.53) size 784x90
+        LayoutInline {EM} at (0,0) size 43x17
+          LayoutText {#text} at (0,0) size 43x17
             text run at (0,0) width 43: "Value:"
-        RenderText {#text} at (42,0) size 85x17
+        LayoutText {#text} at (42,0) size 85x17
           text run at (42,0) width 85: " scroll | fixed"
         LayoutBR {BR} at (126,14) size 1x0
-        RenderInline {EM} at (0,0) size 45x17
-          RenderText {#text} at (0,18) size 45x17
+        LayoutInline {EM} at (0,0) size 45x17
+          LayoutText {#text} at (0,18) size 45x17
             text run at (0,18) width 45: "Initial:"
-        RenderText {#text} at (44,18) size 40x17
+        LayoutText {#text} at (44,18) size 40x17
           text run at (44,18) width 40: " scroll"
         LayoutBR {BR} at (83,32) size 1x0
-        RenderInline {EM} at (0,0) size 70x17
-          RenderText {#text} at (0,36) size 70x17
+        LayoutInline {EM} at (0,0) size 70x17
+          LayoutText {#text} at (0,36) size 70x17
             text run at (0,36) width 70: "Applies to:"
-        RenderText {#text} at (69,36) size 82x17
+        LayoutText {#text} at (69,36) size 82x17
           text run at (69,36) width 82: " all elements"
         LayoutBR {BR} at (150,50) size 1x0
-        RenderInline {EM} at (0,0) size 64x17
-          RenderText {#text} at (0,54) size 64x17
+        LayoutInline {EM} at (0,0) size 64x17
+          LayoutText {#text} at (0,54) size 64x17
             text run at (0,54) width 64: "Inherited:"
-        RenderText {#text} at (63,54) size 21x17
+        LayoutText {#text} at (63,54) size 21x17
           text run at (63,54) width 21: " no"
         LayoutBR {BR} at (83,68) size 1x0
-        RenderInline {EM} at (0,0) size 124x17
-          RenderText {#text} at (0,72) size 124x17
+        LayoutInline {EM} at (0,0) size 124x17
+          LayoutText {#text} at (0,72) size 124x17
             text run at (0,72) width 124: "Percentage values:"
-        RenderText {#text} at (123,72) size 32x17
+        LayoutText {#text} at (123,72) size 32x17
           text run at (123,72) width 32: " N/A"
         LayoutBR {BR} at (154,86) size 1x0
-      RenderBlock {P} at (0,415.53) size 784x36
-        RenderText {#text} at (0,0) size 783x35
+      LayoutBlockFlow {P} at (0,415.53) size 784x36
+        LayoutText {#text} at (0,0) size 783x35
           text run at (0,0) width 783: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the canvas"
           text run at (0,18) width 237: "or if it scrolls along with the content."
-      RenderBlock {PRE} at (0,467.53) size 784x80
-        RenderText {#text} at (0,0) size 296x80
+      LayoutBlockFlow {PRE} at (0,467.53) size 784x80
+        LayoutText {#text} at (0,0) size 296x80
           text run at (0,0) width 72: "  BODY { "
           text run at (72,0) width 0: " "
           text run at (0,16) width 296: "    background: red url(pendant.gif);"
@@ -81,11 +81,11 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (264,48) width 0: " "
           text run at (0,64) width 24: "  }"
           text run at (24,64) width 0: " "
-      RenderBlock {P} at (0,563.53) size 784x54
-        RenderInline {EM} at (0,0) size 73x17
-          RenderText {#text} at (0,0) size 73x17
+      LayoutBlockFlow {P} at (0,563.53) size 784x54
+        LayoutInline {EM} at (0,0) size 73x17
+          LayoutText {#text} at (0,0) size 73x17
             text run at (0,0) width 73: "CSS1 core:"
-        RenderText {#text} at (72,0) size 778x53
+        LayoutText {#text} at (72,0) size 778x53
           text run at (72,0) width 686: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the"
           text run at (0,18) width 778: "HTML and BODY elements, since there is no way for an author to provide an image only for those browsers that support"
           text run at (0,36) width 43: "'fixed'."
@@ -93,16 +93,16 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 782x555
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x529
             LayoutTableCell {TD} at (0,277) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x528.53 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 762x90
-                RenderText {#text} at (0,0) size 761x89
+              LayoutBlockFlow {P} at (4,4) size 762x90
+                LayoutText {#text} at (0,0) size 761x89
                   text run at (0,0) width 745: "This document should have a green grid-pattern line across the top of the page (or at least a tiled background) which"
                   text run at (0,18) width 237: "does NOT scroll with the document. "
                   text run at (236,18) width 525: "It should, instead, appear to be a fixed pattern past which the content scrolls, even"
@@ -112,54 +112,54 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (249,54) width 510: "I'll have to add a lot of extra text to the page in order to make all this something"
                   text run at (0,72) width 149: "we can actually check. "
                   text run at (148,72) width 232: "Don't worry, I'll think of something."
-              RenderBlock {P} at (4,110) size 762x18
-                RenderText {#text} at (0,0) size 519x17
+              LayoutBlockFlow {P} at (4,110) size 762x18
+                LayoutText {#text} at (0,0) size 519x17
                   text run at (0,0) width 426: "In fact, why not the relevant section from the CSS1 specification? "
                   text run at (425,0) width 94: "A capital idea."
-              RenderBlock {HR} at (4,144) size 762x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {HR} at (4,154) size 762x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {H4} at (4,177.27) size 762x18
-                RenderInline {A} at (0,0) size 223x17
-                  RenderText {#text} at (0,0) size 223x17
+              LayoutBlockFlow {HR} at (4,144) size 762x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (4,154) size 762x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H4} at (4,177.27) size 762x18
+                LayoutInline {A} at (0,0) size 223x17
+                  LayoutText {#text} at (0,0) size 223x17
                     text run at (0,0) width 223: "5.3.5    'background-attachment'"
-                RenderText {#text} at (0,0) size 0x0
-              RenderBlock {P} at (4,216.53) size 762x90
-                RenderInline {EM} at (0,0) size 43x17
-                  RenderText {#text} at (0,0) size 43x17
+                LayoutText {#text} at (0,0) size 0x0
+              LayoutBlockFlow {P} at (4,216.53) size 762x90
+                LayoutInline {EM} at (0,0) size 43x17
+                  LayoutText {#text} at (0,0) size 43x17
                     text run at (0,0) width 43: "Value:"
-                RenderText {#text} at (42,0) size 85x17
+                LayoutText {#text} at (42,0) size 85x17
                   text run at (42,0) width 85: " scroll | fixed"
                 LayoutBR {BR} at (126,14) size 1x0
-                RenderInline {EM} at (0,0) size 45x17
-                  RenderText {#text} at (0,18) size 45x17
+                LayoutInline {EM} at (0,0) size 45x17
+                  LayoutText {#text} at (0,18) size 45x17
                     text run at (0,18) width 45: "Initial:"
-                RenderText {#text} at (44,18) size 40x17
+                LayoutText {#text} at (44,18) size 40x17
                   text run at (44,18) width 40: " scroll"
                 LayoutBR {BR} at (83,32) size 1x0
-                RenderInline {EM} at (0,0) size 70x17
-                  RenderText {#text} at (0,36) size 70x17
+                LayoutInline {EM} at (0,0) size 70x17
+                  LayoutText {#text} at (0,36) size 70x17
                     text run at (0,36) width 70: "Applies to:"
-                RenderText {#text} at (69,36) size 82x17
+                LayoutText {#text} at (69,36) size 82x17
                   text run at (69,36) width 82: " all elements"
                 LayoutBR {BR} at (150,50) size 1x0
-                RenderInline {EM} at (0,0) size 64x17
-                  RenderText {#text} at (0,54) size 64x17
+                LayoutInline {EM} at (0,0) size 64x17
+                  LayoutText {#text} at (0,54) size 64x17
                     text run at (0,54) width 64: "Inherited:"
-                RenderText {#text} at (63,54) size 21x17
+                LayoutText {#text} at (63,54) size 21x17
                   text run at (63,54) width 21: " no"
                 LayoutBR {BR} at (83,68) size 1x0
-                RenderInline {EM} at (0,0) size 124x17
-                  RenderText {#text} at (0,72) size 124x17
+                LayoutInline {EM} at (0,0) size 124x17
+                  LayoutText {#text} at (0,72) size 124x17
                     text run at (0,72) width 124: "Percentage values:"
-                RenderText {#text} at (123,72) size 32x17
+                LayoutText {#text} at (123,72) size 32x17
                   text run at (123,72) width 32: " N/A"
                 LayoutBR {BR} at (154,86) size 1x0
-              RenderBlock {P} at (4,322.53) size 762x36
-                RenderText {#text} at (0,0) size 735x35
+              LayoutBlockFlow {P} at (4,322.53) size 762x36
+                LayoutText {#text} at (0,0) size 735x35
                   text run at (0,0) width 735: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the"
                   text run at (0,18) width 284: "canvas or if it scrolls along with the content."
-              RenderBlock {PRE} at (4,374.53) size 762x80
-                RenderText {#text} at (0,0) size 296x80
+              LayoutBlockFlow {PRE} at (4,374.53) size 762x80
+                LayoutText {#text} at (0,0) size 296x80
                   text run at (0,0) width 72: "  BODY { "
                   text run at (72,0) width 0: " "
                   text run at (0,16) width 296: "    background: red url(pendant.gif);"
@@ -170,11 +170,11 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (264,48) width 0: " "
                   text run at (0,64) width 24: "  }"
                   text run at (24,64) width 0: " "
-              RenderBlock {P} at (4,470.53) size 762x54
-                RenderInline {EM} at (0,0) size 73x17
-                  RenderText {#text} at (0,0) size 73x17
+              LayoutBlockFlow {P} at (4,470.53) size 762x54
+                LayoutInline {EM} at (0,0) size 73x17
+                  LayoutText {#text} at (0,0) size 73x17
                     text run at (0,0) width 73: "CSS1 core:"
-                RenderText {#text} at (72,0) size 758x53
+                LayoutText {#text} at (72,0) size 758x53
                   text run at (72,0) width 686: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the"
                   text run at (0,18) width 726: "HTML and BODY elements, since there is no way for an author to provide an image only for those browsers that"
                   text run at (0,36) width 95: "support 'fixed'."

@@ -1,36 +1,36 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x76
-  RenderBlock {HTML} at (0,0) size 800x76 [color=#FFFFFF]
-    RenderBody {BODY} at (8,8) size 784x60
+  LayoutBlockFlow {HTML} at (0,0) size 800x76 [color=#FFFFFF]
+    LayoutBlockFlow {BODY} at (8,8) size 784x60
       LayoutTable {DIV} at (0,0) size 60x60
         LayoutTableSection {DIV} at (0,0) size 60x10
           LayoutTableRow (anonymous) at (0,0) size 60x10
             LayoutTableCell (anonymous) at (0,0) size 60x10 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 60x10
+              LayoutText {#text} at (0,0) size 60x10
                 text run at (0,0) width 60: "Header"
         LayoutTableSection (anonymous) at (0,10) size 60x10
           LayoutTableRow (anonymous) at (0,0) size 60x10
             LayoutTableCell (anonymous) at (0,0) size 60x10 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (0,0) size 60x10
-                RenderText {#text} at (0,0) size 10x10
+              LayoutBlockFlow {DIV} at (0,0) size 60x10
+                LayoutText {#text} at (0,0) size 10x10
                   text run at (0,0) width 10: "A"
         LayoutTableSection {DIV} at (0,20) size 60x10
           LayoutTableRow (anonymous) at (0,0) size 60x10
             LayoutTableCell (anonymous) at (0,0) size 60x10 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 10x10
+              LayoutText {#text} at (0,0) size 10x10
                 text run at (0,0) width 10: "B"
         LayoutTableSection (anonymous) at (0,30) size 60x20
           LayoutTableRow (anonymous) at (0,0) size 60x20
             LayoutTableCell (anonymous) at (0,0) size 60x20 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (0,0) size 60x10
-                RenderText {#text} at (0,0) size 10x10
+              LayoutBlockFlow {DIV} at (0,0) size 60x10
+                LayoutText {#text} at (0,0) size 10x10
                   text run at (0,0) width 10: "C"
-              RenderBlock {DIV} at (0,10) size 60x10
-                RenderText {#text} at (0,0) size 10x10
+              LayoutBlockFlow {DIV} at (0,10) size 60x10
+                LayoutText {#text} at (0,0) size 10x10
                   text run at (0,0) width 10: "D"
         LayoutTableSection {DIV} at (0,50) size 60x10
           LayoutTableRow (anonymous) at (0,0) size 60x10
             LayoutTableCell (anonymous) at (0,0) size 60x10 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 60x10
+              LayoutText {#text} at (0,0) size 60x10
                 text run at (0,0) width 60: "Footer"

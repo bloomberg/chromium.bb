@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600 scrollHeight 625
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x625
-    RenderBody {BODY} at (0,0) size 800x368
-      RenderBlock {DIV} at (0,0) size 800x368
-        RenderText {#text} at (0,0) size 784x368
+  LayoutBlockFlow {HTML} at (0,0) size 800x625
+    LayoutBlockFlow {BODY} at (0,0) size 800x368
+      LayoutBlockFlow {DIV} at (0,0) size 800x368
+        LayoutText {#text} at (0,0) size 784x368
           text run at (0,0) width 643: "This test verifies that FastTextAutosizer"
           text run at (0,46) width 701: "considers a list item (LI) to be \"text\" for the"
           text run at (0,92) width 661: "purpose of determining the deepest block"
@@ -13,11 +13,11 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,230) width 719: "inside the LI, which hasn't entered layout yet"
           text run at (0,276) width 730: "when the list marker is autosized (causing the"
           text run at (0,322) width 304: "autosizer to crash)."
-      RenderBlock (floating) {UL} at (0,384) size 800x225
+      LayoutBlockFlow (floating) {UL} at (0,384) size 800x225
         LayoutListItem {LI} at (40,0) size 760x225
-          RenderBlock {DIV} at (0,0) size 760x225
+          LayoutBlockFlow {DIV} at (0,0) size 760x225
             LayoutListMarker at (-31,0) size 14x45: bullet
-            RenderText {#text} at (0,0) size 733x225
+            LayoutText {#text} at (0,0) size 733x225
               text run at (0,0) width 725: "List item list item list item list item list item list"
               text run at (0,45) width 733: "item list item list item list item list item list item"
               text run at (0,90) width 712: "list item list item list item list item list item list"

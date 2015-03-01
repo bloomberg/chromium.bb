@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock (anonymous) at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 764x36
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow (anonymous) at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 764x36
           text run at (0,0) width 493: "This tests whether alt text is shown for image-type form input elements with "
           text run at (492,0) width 272: "no src attribute. You should see \"Success\""
           text run at (0,18) width 229: "twice, followed by a blue rectangle."
-      RenderBlock {P} at (0,52) size 784x0
-      RenderBlock {FORM} at (0,52) size 784x94
-        RenderBlock {INPUT} at (0,0) size 45.38x17
+      LayoutBlockFlow {P} at (0,52) size 784x0
+      LayoutBlockFlow {FORM} at (0,52) size 784x94
+        LayoutBlockFlow {INPUT} at (0,0) size 45.38x17
         LayoutBR {BR} at (45,17) size 1x0
-        RenderBlock {INPUT} at (0,17) size 102x52 [border: (1px solid #000000)]
+        LayoutBlockFlow {INPUT} at (0,17) size 102x52 [border: (1px solid #000000)]
         LayoutBR {BR} at (102,68) size 0x0
         LayoutImage {INPUT} at (0,69) size 75x25
         LayoutBR {BR} at (75,94) size 0x0
 layer at (8,60) size 45x17 clip at (9,61) size 43x15
-  RenderBlock {DIV} at (0,0) size 45.38x17 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,0) size 45.38x17 [border: (1px solid #C0C0C0)]
 layer at (10,62) size 41x13
-  RenderBlock {DIV} at (2,2) size 41.38x13
-    RenderText {#text} at (0,0) size 42x13
+  LayoutBlockFlow {DIV} at (2,2) size 41.38x13
+    LayoutText {#text} at (0,0) size 42x13
       text run at (0,0) width 42: "Success"
 layer at (9,78) size 100x50 clip at (10,79) size 98x48
-  RenderBlock {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
 layer at (11,80) size 96x13
-  RenderBlock {DIV} at (2,2) size 96x13
-    RenderText {#text} at (0,0) size 42x13
+  LayoutBlockFlow {DIV} at (2,2) size 96x13
+    LayoutText {#text} at (0,0) size 42x13
       text run at (0,0) width 42: "Success"

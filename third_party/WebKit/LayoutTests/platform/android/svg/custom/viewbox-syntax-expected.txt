@@ -9,7 +9,7 @@ CONSOLE ERROR: line 41: Error: A negative value for ViewBox height is not allowe
 CONSOLE ERROR: line 44: Error: Invalid value for <svg> attribute viewBox="0 0 30, , 40"
 CONSOLE ERROR: line 47: Error: Invalid value for <svg> attribute viewBox="0 0 30% 40"
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,36) size 800x400
     LayoutSVGContainer {g} at (0,36) size 800x400

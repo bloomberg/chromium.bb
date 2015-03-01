@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 642
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x642 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x641.97
-    RenderBody {BODY} at (8,21.33) size 769x612.64
-      RenderBlock {P} at (0,0) size 769x33
-        RenderText {#text} at (0,5) size 165x22
+  LayoutBlockFlow {HTML} at (0,0) size 785x641.97
+    LayoutBlockFlow {BODY} at (8,21.33) size 769x612.64
+      LayoutBlockFlow {P} at (0,0) size 769x33
+        LayoutText {#text} at (0,5) size 165x22
           text run at (0,5) width 165: "Simple text path"
-      RenderBlock (anonymous) at (0,54.33) size 769x235
-        RenderBlock {SPAN} at (0,0) size 33x226.88
-          RenderText {#text} at (5,0) size 22x227
+      LayoutBlockFlow (anonymous) at (0,54.33) size 769x235
+        LayoutBlockFlow {SPAN} at (0,0) size 33x226.88
+          LayoutText {#text} at (5,0) size 22x227
             text run at (5,0) width 227: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,299.98) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,323.31) size 769x33
-        RenderText {#text} at (0,5) size 185x22
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {HR} at (0,299.98) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,323.31) size 769x33
+        LayoutText {#text} at (0,5) size 185x22
           text run at (0,5) width 185: "Complex text path"
-      RenderBlock (anonymous) at (0,377.64) size 769x235
-        RenderBlock {SPAN} at (0,0) size 33x226.88
-          RenderText {#text} at (5,0) size 22x227
+      LayoutBlockFlow (anonymous) at (0,377.64) size 769x235
+        LayoutBlockFlow {SPAN} at (0,0) size 33x226.88
+          LayoutText {#text} at (5,0) size 22x227
             text run at (5,0) width 227: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

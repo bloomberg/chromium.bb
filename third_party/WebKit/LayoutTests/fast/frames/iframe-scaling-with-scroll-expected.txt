@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (8,8) size 404x304
   LayoutIFrame {IFRAME} at (8,8) size 404x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 1008x1016
-      RenderView at (0,0) size 385x285
+      LayoutView at (0,0) size 385x285
     layer at (0,0) size 385x1016
-      RenderBlock {HTML} at (0,0) size 385x1016
-        RenderBody {BODY} at (8,8) size 369x1000
-          RenderBlock {DIV} at (0,0) size 1000x1000 [bgcolor=#008000]
+      LayoutBlockFlow {HTML} at (0,0) size 385x1016
+        LayoutBlockFlow {BODY} at (8,8) size 369x1000
+          LayoutBlockFlow {DIV} at (0,0) size 1000x1000 [bgcolor=#008000]

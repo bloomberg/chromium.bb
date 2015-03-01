@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 238.00 scrollHeight 838
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x838 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x838
-    RenderBody {BODY} at (8,8) size 769x822
-      RenderBlock {DIV} at (0,0) size 773x804 [bgcolor=#008000] [border: (2px solid #000000)]
-      RenderBlock {DIV} at (0,804) size 769x18
-        RenderText {#text} at (0,0) size 151x18
+  LayoutBlockFlow {HTML} at (0,0) size 785x838
+    LayoutBlockFlow {BODY} at (8,8) size 769x822
+      LayoutBlockFlow {DIV} at (0,0) size 773x804 [bgcolor=#008000] [border: (2px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,804) size 769x18
+        LayoutText {#text} at (0,0) size 151x18
           text run at (0,0) width 151: "This test requires DRT."
 scrolled to 0,238

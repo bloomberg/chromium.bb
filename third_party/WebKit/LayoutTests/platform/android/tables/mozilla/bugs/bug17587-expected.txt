@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutTable {TABLE} at (0,0) size 606x248 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 604x246
           LayoutTableRow {TR} at (0,0) size 604x62
@@ -16,13 +16,13 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 488x20
                   LayoutTableRow {TR} at (0,0) size 488x20
                     LayoutTableCell {TD} at (0,0) size 488x20 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (0,0) size 81x19
+                      LayoutText {#text} at (0,0) size 81x19
                         text run at (0,0) width 81: "Top Nav Bar"
           LayoutTableRow {TR} at (0,84) size 604x162
             LayoutTableCell {TD} at (114,164) size 337x2 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (451,84) size 153x162 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
-              RenderInline {B} at (0,0) size 147x159
-                RenderText {#text} at (1,1) size 147x159
+              LayoutInline {B} at (0,0) size 147x159
+                LayoutText {#text} at (1,1) size 147x159
                   text run at (1,1) width 121: "\"Freakish animal-"
                   text run at (1,21) width 122: "things, all sporting"
                   text run at (1,41) width 113: "maniacal smiles, "
@@ -33,4 +33,4 @@ layer at (0,0) size 800x600
                   text run at (1,121) width 75: "malformed "
                   text run at (76,121) width 54: "asses to"
                   text run at (1,141) width 121: "the entire world. \""
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0

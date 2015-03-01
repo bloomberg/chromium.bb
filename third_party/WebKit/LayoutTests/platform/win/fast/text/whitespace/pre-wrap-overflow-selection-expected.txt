@@ -1,27 +1,27 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x579
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 260x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x579
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 260x17
           text run at (0,0) width 260: "This test checks for a regression against "
-        RenderInline {I} at (0,0) size 747x35
-          RenderInline {A} at (0,0) size 354x17 [color=#0000EE]
-            RenderText {#text} at (259,0) size 354x17
+        LayoutInline {I} at (0,0) size 747x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (259,0) size 354x17
               text run at (259,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5619"
-          RenderText {#text} at (612,0) size 747x35
+          LayoutText {#text} at (612,0) size 747x35
             text run at (612,0) width 135: " CSS2: pre-wrap has"
             text run at (0,18) width 181: "overflow/selection problems"
-        RenderText {#text} at (180,18) size 5x17
+        LayoutText {#text} at (180,18) size 5x17
           text run at (180,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 707x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 707x17
           text run at (0,0) width 707: "Both boxes should not have scroll bars. The selection should not spill out of the blue box to the right of \x{201C}text\x{201D}."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {HR} at (0,202) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {PRE} at (0,217) size 108x88 [border: (4px solid #0000FF)]
-        RenderText {#text} at (4,4) size 100x80
+      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,202) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {PRE} at (0,217) size 108x88 [border: (4px solid #0000FF)]
+        LayoutText {#text} at (4,4) size 100x80
           text run at (4,4) width 88: "This   text"
           text run at (92,4) width 12: "     "
           text run at (4,20) width 72: "will wrap"
@@ -33,8 +33,8 @@ layer at (0,0) size 800x600
           text run at (4,68) width 32: "box."
           text run at (36,68) width 0: " "
 layer at (8,109) size 108x88 clip at (12,113) size 100x80
-  RenderBlock {PRE} at (0,101) size 108x88 [border: (4px solid #A52A2A)]
-    RenderText {#text} at (4,4) size 100x80
+  LayoutBlockFlow {PRE} at (0,101) size 108x88 [border: (4px solid #A52A2A)]
+    LayoutText {#text} at (4,4) size 100x80
       text run at (4,4) width 88: "This   text"
       text run at (92,4) width 12: "     "
       text run at (4,20) width 72: "will wrap"

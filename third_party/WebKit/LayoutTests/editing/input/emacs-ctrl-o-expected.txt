@@ -8,32 +8,32 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x156
-        RenderBlock {DIV} at (0,0) size 784x56
-          RenderText {#text} at (0,0) size 61x28
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x156
+        LayoutBlockFlow {DIV} at (0,0) size 784x56
+          LayoutText {#text} at (0,0) size 61x28
             text run at (0,0) width 61: "Tests:"
           LayoutBR {BR} at (61,22) size 0x0
-          RenderText {#text} at (0,28) size 254x28
+          LayoutText {#text} at (0,28) size 254x28
             text run at (0,28) width 254: "Key binding for control-O"
-        RenderBlock {DIV} at (0,72) size 784x84
-          RenderText {#text} at (0,0) size 177x28
+        LayoutBlockFlow {DIV} at (0,72) size 784x84
+          LayoutText {#text} at (0,0) size 177x28
             text run at (0,0) width 177: "Expected results:"
           LayoutBR {BR} at (177,22) size 0x0
-          RenderText {#text} at (0,28) size 90x28
+          LayoutText {#text} at (0,28) size 90x28
             text run at (0,28) width 90: "one five |"
           LayoutBR {BR} at (90,50) size 0x0
-          RenderText {#text} at (0,56) size 137x28
+          LayoutText {#text} at (0,56) size 137x28
             text run at (0,56) width 137: "two three four"
-      RenderBlock {DIV} at (0,180) size 784x56
-        RenderBlock {DIV} at (0,0) size 784x28
-          RenderText {#text} at (0,0) size 85x28
+      LayoutBlockFlow {DIV} at (0,180) size 784x56
+        LayoutBlockFlow {DIV} at (0,0) size 784x28
+          LayoutText {#text} at (0,0) size 85x28
             text run at (0,0) width 79: "one five"
             text run at (79,0) width 6: " "
-        RenderBlock {DIV} at (0,28) size 784x28
-          RenderText {#text} at (0,0) size 137x28
+        LayoutBlockFlow {DIV} at (0,28) size 784x28
+          LayoutText {#text} at (0,0) size 137x28
             text run at (0,0) width 137: "two three four"
 caret: position 9 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

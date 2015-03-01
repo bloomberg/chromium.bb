@@ -1,29 +1,29 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 660x17
-          RenderInline {A} at (0,0) size 306x17 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x17
+        LayoutInline {I} at (0,0) size 660x17
+          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x17
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12345"
-          RenderText {#text} at (359,0) size 355x17
+          LayoutText {#text} at (359,0) size 355x17
             text run at (359,0) width 5: " "
             text run at (363,0) width 351: "REGRESSION: Disabled pop-up text is not grayed out"
-        RenderText {#text} at (713,0) size 5x17
+        LayoutText {#text} at (713,0) size 5x17
           text run at (713,0) width 5: "."
-      RenderBlock {P} at (0,34) size 784x20
+      LayoutBlockFlow {P} at (0,34) size 784x20
         LayoutMenuList {SELECT} at (0,0) size 164x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          RenderBlock (anonymous) at (1,1) size 162x18
-            RenderText at (4,1) size 139x16
+          LayoutBlockFlow (anonymous) at (1,1) size 162x18
+            LayoutText at (4,1) size 139x16
               text run at (4,1) width 139: "This text should be gray"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,70) size 784x20
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,70) size 784x20
         LayoutMenuList {SELECT} at (0,0) size 170x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          RenderBlock (anonymous) at (1,1) size 168x18
-            RenderText at (4,1) size 145x16
+          LayoutBlockFlow (anonymous) at (1,1) size 168x18
+            LayoutText at (4,1) size 145x16
               text run at (4,1) width 145: "This text should be black"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

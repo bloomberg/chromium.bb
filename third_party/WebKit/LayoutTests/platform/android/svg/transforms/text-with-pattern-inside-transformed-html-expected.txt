@@ -1,14 +1,14 @@
 layer at (0,0) size 785x622
-  RenderView at (0,0) size 785x600
+  LayoutView at (0,0) size 785x600
 layer at (0,0) size 785x538
-  RenderBlock {html} at (0,0) size 785x538
-    RenderBody {body} at (8,16) size 769x472 [bgcolor=#FFFFFF]
-      RenderBlock {p} at (0,0) size 769x20
-        RenderText {#text} at (0,0) size 521x19
+  LayoutBlockFlow {html} at (0,0) size 785x538
+    LayoutBlockFlow {body} at (8,16) size 769x472 [bgcolor=#FFFFFF]
+      LayoutBlockFlow {p} at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 521x19
           text run at (0,0) width 300: "CSS Transformed HTML div with SVG inside it. "
           text run at (300,0) width 221: "objectBoundingBox patterns on text."
 layer at (58,86) size 402x402
-  RenderBlock {div} at (50,70) size 402x402 [border: (1px solid #000000)]
+  LayoutBlockFlow {div} at (50,70) size 402x402 [border: (1px solid #000000)]
     LayoutSVGRoot {svg} at (66,60) size 480x420
       LayoutSVGResourcePattern {pattern} [id="pat1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (168,65) size 13x13 [fill={[type=SOLID] [color=#FF0000]}] [x=5.00] [y=5.00] [width=10.00] [height=10.00]
@@ -48,4 +48,4 @@ layer at (58,86) size 402x402
         LayoutSVGInlineText {#text} at (0,0) size 259x45
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 258.00: "$Revision: 1.6 $"
       LayoutSVGRect {rect} at (66,60) size 480x420 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0

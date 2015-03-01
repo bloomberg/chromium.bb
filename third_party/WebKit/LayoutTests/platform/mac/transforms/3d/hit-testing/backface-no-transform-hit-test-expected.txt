@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 770x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 770x18
           text run at (0,0) width 770: "There are two boxes inside a container that is rotated 180\x{B0} in Y. box2 has backface-visibility: hidden, so you can't see it."
-      RenderBlock {DIV} at (0,236) size 784x36
-        RenderText {#text} at (0,0) size 197x18
+      LayoutBlockFlow {DIV} at (0,236) size 784x36
+        LayoutText {#text} at (0,0) size 197x18
           text run at (0,0) width 197: "Found container on left: PASS"
         LayoutBR {BR} at (196,14) size 1x0
-        RenderText {#text} at (0,18) size 178x18
+        LayoutText {#text} at (0,18) size 178x18
           text run at (0,18) width 178: "Found box1 on right: PASS"
         LayoutBR {BR} at (177,32) size 1x0
 layer at (8,42) size 402x202
-  RenderBlock {DIV} at (0,34) size 402x202 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
-    RenderText {#text} at (197,34) size 4x18
+  LayoutBlockFlow {DIV} at (0,34) size 402x202 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
+    LayoutText {#text} at (197,34) size 4x18
       text run at (197,34) width 4: " "
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0
 layer at (27,61) size 160x160
-  RenderBlock (relative positioned) {DIV} at (19,19) size 160x160 [bgcolor=#808080]
-    RenderText {#text} at (48,0) size 64x37
+  LayoutBlockFlow (relative positioned) {DIV} at (19,19) size 160x160 [bgcolor=#808080]
+    LayoutText {#text} at (48,0) size 64x37
       text run at (48,0) width 64: "box1"
 layer at (227,61) size 160x160
-  RenderBlock (relative positioned) {DIV} at (219,19) size 160x160 [bgcolor=#808080]
-    RenderText {#text} at (48,0) size 64x37
+  LayoutBlockFlow (relative positioned) {DIV} at (219,19) size 160x160 [bgcolor=#808080]
+    LayoutText {#text} at (48,0) size 64x37
       text run at (48,0) width 64: "box2"

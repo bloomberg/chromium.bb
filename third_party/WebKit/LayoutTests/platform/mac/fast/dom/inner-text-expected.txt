@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {IMG} at (0,0) size 20x20
-      RenderText {#text} at (20,6) size 225x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {IMG} at (0,0) size 20x20
+      LayoutText {#text} at (20,6) size 225x18
         text run at (20,6) width 225: " This text should only appear once."
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 20x20 clip at (9,9) size 18x18
-  RenderBlock {DIV} at (0,0) size 20x20 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,0) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage {IMG} at (2,2) size 16x16
 layer at (26,10) size 0x0
-  RenderBlock {DIV} at (18,2) size 0x0
+  LayoutBlockFlow {DIV} at (18,2) size 0x0

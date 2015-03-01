@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x186
-  RenderBlock {HTML} at (0,0) size 800x186
-    RenderBody {BODY} at (8,8) size 784x170
-      RenderBlock (anonymous) at (0,0) size 784x20
-        RenderInline {DIV} at (0,0) size 528x16 [color=#FFFFFF] [bgcolor=#FF0000]
-          RenderText {#text} at (0,2) size 528x16
+  LayoutBlockFlow {HTML} at (0,0) size 800x186
+    LayoutBlockFlow {BODY} at (8,8) size 784x170
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
+        LayoutInline {DIV} at (0,0) size 528x16 [color=#FFFFFF] [bgcolor=#FF0000]
+          LayoutText {#text} at (0,2) size 528x16
             text run at (0,2) width 528: "Ahem_font_required_for_this_test."
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,20) size 342x150
         LayoutTableSection {TBODY} at (0,0) size 342x150
           LayoutTableRow {TR} at (0,2) size 342x146
             LayoutTableCell {TD} at (2,2) size 338x146 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {PRE} at (1,17) size 336x112 [color=#00FF00] [bgcolor=#008000]
-                RenderText {#text} at (0,0) size 336x112
+              LayoutBlockFlow {PRE} at (1,17) size 336x112 [color=#00FF00] [bgcolor=#008000]
+                LayoutText {#text} at (0,0) size 336x112
                   text run at (0,0) width 336: "                     "
                   text run at (336,0) width 0: " "
                   text run at (0,16) width 336: " xxxx xxxx xxxx xxxx "

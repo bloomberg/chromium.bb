@@ -1,29 +1,29 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x266
-  RenderBlock {HTML} at (0,0) size 800x266
-    RenderBody {BODY} at (8,16) size 784x242
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 583x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x266
+    LayoutBlockFlow {BODY} at (8,16) size 784x242
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 583x18
           text run at (0,0) width 583: "You should see 4 green squares each with one rounded corner. You should not see any red."
-      RenderBlock (anonymous) at (0,34) size 784x208
-        RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
-        RenderText {#text} at (100,86) size 4x18
+      LayoutBlockFlow (anonymous) at (0,34) size 784x208
+        LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
+        LayoutText {#text} at (100,86) size 4x18
           text run at (100,86) width 4: " "
-        RenderBlock {DIV} at (104,0) size 100x100 [bgcolor=#FF0000]
-        RenderText {#text} at (204,86) size 4x18
+        LayoutBlockFlow {DIV} at (104,0) size 100x100 [bgcolor=#FF0000]
+        LayoutText {#text} at (204,86) size 4x18
           text run at (204,86) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
-        RenderBlock {DIV} at (0,104) size 100x100 [bgcolor=#FF0000]
-        RenderText {#text} at (100,190) size 4x18
+        LayoutBlockFlow {DIV} at (0,104) size 100x100 [bgcolor=#FF0000]
+        LayoutText {#text} at (100,190) size 4x18
           text run at (100,190) width 4: " "
-        RenderBlock {DIV} at (104,104) size 100x100 [bgcolor=#FF0000]
-        RenderText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {DIV} at (104,104) size 100x100 [bgcolor=#FF0000]
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,50) size 100x100
-  RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]
 layer at (112,50) size 100x100
-  RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]
 layer at (8,154) size 100x100
-  RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]
 layer at (112,154) size 100x100
-  RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]

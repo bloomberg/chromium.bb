@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollX 50.00 scrollY 50.00 scrollWidth 1008 scrollHeight 1016
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
-  RenderBlock {HTML} at (0,0) size 785x1016
-    RenderBody {BODY} at (8,8) size 1000x1000
+  LayoutBlockFlow {HTML} at (0,0) size 785x1016
+    LayoutBlockFlow {BODY} at (8,8) size 1000x1000
 layer at (50,166) size 302x20
-  RenderBlock (positioned) {P} at (50,166) size 302x20
-    RenderText {#text} at (0,0) size 302x19
+  LayoutBlockFlow (positioned) {P} at (50,166) size 302x20
+    LayoutText {#text} at (0,0) size 302x19
       text run at (0,0) width 302: "You should see a single green square, with no red."
 layer at (58,58) size 100x100
-  RenderBlock (positioned) {DIV} at (8,8) size 100x100 [bgcolor=#FF0000]
+  LayoutBlockFlow (positioned) {DIV} at (8,8) size 100x100 [bgcolor=#FF0000]
 layer at (58,58) size 100x100
-  RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]
 scrolled to 50,50

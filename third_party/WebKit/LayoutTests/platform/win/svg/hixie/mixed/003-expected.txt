@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x300
-  RenderBlock {html} at (0,0) size 800x300
-    RenderBody {body} at (8,16) size 784x276
-      RenderBlock {p} at (0,0) size 784x22
+  LayoutBlockFlow {html} at (0,0) size 800x300
+    LayoutBlockFlow {body} at (8,16) size 784x276
+      LayoutBlockFlow {p} at (0,0) size 784x22
         LayoutTextControl {input} at (0,0) size 383x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBlock {p} at (0,38) size 784x18
-        RenderText {#text} at (0,0) size 467x17
+      LayoutBlockFlow {p} at (0,38) size 784x18
+        LayoutText {#text} at (0,0) size 467x17
           text run at (0,0) width 467: "It should say \"PASSED\" above and there should be a green circle below."
-      RenderBlock (anonymous) at (0,72) size 784x204
+      LayoutBlockFlow (anonymous) at (0,72) size 784x204
         LayoutSVGRoot {svg} at (8,88) size 100x100
           LayoutSVGEllipse {circle} at (8,88) size 100x100 [fill={[type=SOLID] [color=#008000]}] [cx=50.00] [cy=50.00] [r=50.00]
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (10,19) size 379x16
-  RenderBlock {div} at (2,3) size 379x16
-    RenderText {#text} at (0,0) size 137x16
+  LayoutBlockFlow {div} at (2,3) size 379x16
+    LayoutText {#text} at (0,0) size 137x16
       text run at (0,0) width 137: "This test has PASSED."

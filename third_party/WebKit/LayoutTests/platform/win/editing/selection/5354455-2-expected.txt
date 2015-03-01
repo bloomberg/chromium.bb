@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
 layer at (8,8) size 612x142
-  RenderBody {BODY} at (8,8) size 612x142.44 [border: (1px solid #000000)]
-    RenderBlock {H1} at (6,6) size 600x37
-      RenderText {#text} at (0,0) size 451x36
+  LayoutBlockFlow (positioned) {BODY} at (8,8) size 612x142.44 [border: (1px solid #000000)]
+    LayoutBlockFlow {H1} at (6,6) size 600x37
+      LayoutText {#text} at (0,0) size 451x36
         text run at (0,0) width 451: "Word selection on right click test"
-    RenderBlock (anonymous) at (6,64.44) size 600x72
-      RenderText {#text} at (0,0) size 590x35
+    LayoutBlockFlow (anonymous) at (6,64.44) size 600x72
+      LayoutText {#text} at (0,0) size 590x35
         text run at (0,0) width 590: "This tests to make sure that right clicking non-editable content only creates a word selection"
         text run at (0,18) width 129: "for clicks over text. "
-      RenderInline {SPAN} at (0,0) size 19x17
-        RenderText {#text} at (128,18) size 19x17
+      LayoutInline {SPAN} at (0,0) size 19x17
+        LayoutText {#text} at (128,18) size 19x17
           text run at (128,18) width 19: "To"
-      RenderText {#text} at (146,18) size 563x53
+      LayoutText {#text} at (146,18) size 563x53
         text run at (146,18) width 415: " run manually, right click on text, and a word should be selected."
         text run at (0,36) width 563: "Right click on the empty space outside and to the right of the black border, the selection"
         text run at (0,54) width 126: "should be removed."
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 caret: position 0 of child 0 {#text} of child 1 {H1} of body

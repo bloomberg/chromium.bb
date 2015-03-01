@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 680x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 680x17
           text run at (0,0) width 680: "The textarea below should have standard line-height because textareas should ignore negative line-heights"
         LayoutBR {BR} at (679,14) size 1x0
-      RenderBlock {P} at (0,34) size 784x240
-        RenderText {#text} at (0,0) size 85x17
+      LayoutBlockFlow {P} at (0,34) size 784x240
+        LayoutText {#text} at (0,0) size 85x17
           text run at (0,0) width 85: "TEXTAREA"
         LayoutBR {BR} at (84,14) size 1x0
-        RenderText {#text} at (400,204) size 4x17
+        LayoutText {#text} at (400,204) size 4x17
           text run at (400,204) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBR {BR} at (0,222) size 0x17
 layer at (8,60) size 400x200 clip at (9,61) size 398x198
   LayoutTextControl {TEXTAREA} at (0,18) size 400x200 [bgcolor=#FFFFFF] [border: (1px dotted #C0C0C0)]
-    RenderBlock {DIV} at (3,3) size 396x32
-      RenderText {#text} at (0,0) size 390x32
+    LayoutBlockFlow {DIV} at (3,3) size 396x32
+      LayoutText {#text} at (0,0) size 390x32
         text run at (0,0) width 385: "Demo text here that wraps a bit and should demonstrate"
         text run at (385,0) width 5: " "
         text run at (0,16) width 181: "the goodness of line-height"

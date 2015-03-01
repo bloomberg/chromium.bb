@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutTable {TABLE} at (0,0) size 642x180 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 640x178
           LayoutTableRow {TR} at (0,2) size 640x174
@@ -20,10 +20,10 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (0,0) size 496x80
                           LayoutTableRow {TR} at (0,10) size 496x60
                             LayoutTableCell {TD} at (10,10) size 476x60 [r=0 c=0 rs=1 cs=1]
-                              RenderInline {A} at (0,0) size 468x19 [color=#0000EE]
+                              LayoutInline {A} at (0,0) size 468x19 [color=#0000EE]
                                 LayoutImage {IMG} at (0,0) size 468x60
-                      RenderBlock (anonymous) at (2,82) size 496x80
-                        RenderText {#text} at (0,0) size 496x79
+                      LayoutBlockFlow (anonymous) at (2,82) size 496x80
+                        LayoutText {#text} at (0,0) size 496x79
                           text run at (0,0) width 282: "Your donation to protect our wildlife was paid "
                           text run at (282,0) width 214: "for by the sponsors on this page, so"
                           text run at (0,20) width 51: "it's free. "

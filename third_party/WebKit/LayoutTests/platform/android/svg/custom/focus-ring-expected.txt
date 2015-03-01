@@ -1,5 +1,5 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (10,10) size 437x527
     LayoutSVGEllipse {circle} at (10,5) size 110x110 [fill={[type=SOLID] [color=#FFA500]}] [cx=65.00] [cy=60.00] [r=50.00]

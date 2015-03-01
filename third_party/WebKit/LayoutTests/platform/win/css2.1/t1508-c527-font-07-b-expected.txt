@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600 scrollHeight 708
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x708 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x708
-    RenderBody {BODY} at (8,18) size 784x672 [color=#000080]
-      RenderBlock {P} at (0,0) size 784x672
-        RenderText {#text} at (0,38) size 735x116
+  LayoutBlockFlow {HTML} at (0,0) size 800x708
+    LayoutBlockFlow {BODY} at (8,18) size 784x672 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x672
+        LayoutText {#text} at (0,38) size 735x116
           text run at (0,38) width 735: "This text should be 18px sans-serif, in small-caps and italicized. The lines should be one inch"
           text run at (0,134) width 55: "apart. "
-        RenderInline {SPAN} at (0,0) size 778x500 [color=#C0C0C0]
-          RenderText {#text} at (54,134) size 778x500
+        LayoutInline {SPAN} at (0,0) size 778x500 [color=#C0C0C0]
+          LayoutText {#text} at (54,134) size 778x500
             text run at (54,134) width 508: "dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (561,134) width 217: "text dummy text dummy text"
             text run at (0,230) width 326: "dummy text dummy text dummy text dummy "
@@ -22,4 +22,4 @@ layer at (0,0) size 800x708 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (182,518) width 547: "text dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (728,518) width 35: "text"
             text run at (0,614) width 451: "dummy text dummy text dummy text dummy text dummy text"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 213x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 213x18
           text run at (0,0) width 213: "This tests for regressions against "
-        RenderInline {I} at (0,0) size 748x36
-          RenderInline {A} at (0,0) size 355x18 [color=#0000EE]
-            RenderText {#text} at (212,0) size 355x18
+        LayoutInline {I} at (0,0) size 748x36
+          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
+            LayoutText {#text} at (212,0) size 355x18
               text run at (212,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8081"
-          RenderText {#text} at (566,0) size 748x36
+          LayoutText {#text} at (566,0) size 748x36
             text run at (566,0) width 5: " "
             text run at (570,0) width 178: "REGRESSION: Drop-down"
             text run at (0,18) width 130: "menu has gap at top"
-        RenderText {#text} at (129,18) size 5x18
+        LayoutText {#text} at (129,18) size 5x18
           text run at (129,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 543x18
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 543x18
           text run at (0,0) width 543: "You should see two identical green squares, 100x100 pixels each, next to each other."
       LayoutTable {TABLE} at (0,86) size 107x156
         LayoutTableSection {TBODY} at (0,0) size 107x156
@@ -27,6 +27,6 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,54) size 100x2 [bgcolor=#008000] [r=1 c=0 rs=1 cs=1]
             LayoutTableCell (anonymous) at (104,54) size 1x0 [r=1 c=1 rs=1 cs=1]
 layer at (11,149) size 98x98
-  RenderBlock (positioned) {DIV} at (11,149) size 98x98
+  LayoutBlockFlow (positioned) {DIV} at (11,149) size 98x98
 layer at (112,148) size 102x102
-  RenderBlock (positioned) {TD} at (112,148) size 102x102 [bgcolor=#008000]
+  LayoutBlockFlow (positioned) {TD} at (112,148) size 102x102 [bgcolor=#008000]

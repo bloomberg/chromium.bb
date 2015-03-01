@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 765x36
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        LayoutInline {I} at (0,0) size 765x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13072"
-          RenderText {#text} at (359,0) size 765x36
+          LayoutText {#text} at (359,0) size 765x36
             text run at (359,0) width 5: " "
             text run at (363,0) width 402: "REGRESSION (r15617): white-space: pre-wrap breaks off the"
             text run at (0,18) width 189: "last character of a wide word"
-        RenderText {#text} at (188,18) size 5x18
+        LayoutText {#text} at (188,18) size 5x18
           text run at (188,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 231x18
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 231x18
           text run at (0,0) width 231: "The following line should not wrap."
-      RenderBlock {DIV} at (0,86) size 150x18 [bgcolor=#D3D3D3]
-        RenderText {#text} at (0,0) size 192x18
+      LayoutBlockFlow {DIV} at (0,86) size 150x18 [bgcolor=#D3D3D3]
+        LayoutText {#text} at (0,0) size 192x18
           text run at (0,0) width 192: "abcdefghijklmnopqrstuvwxyz"

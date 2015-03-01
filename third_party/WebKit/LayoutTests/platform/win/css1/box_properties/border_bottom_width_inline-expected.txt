@@ -1,87 +1,87 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 784x48
-        RenderText {#text} at (0,0) size 432x48
+      LayoutBlockFlow {PRE} at (0,34) size 784x48
+        LayoutText {#text} at (0,0) size 432x48
           text run at (0,0) width 432: ".one {border-bottom-width: 25px; border-style: solid;}"
           text run at (432,0) width 0: " "
           text run at (0,16) width 432: ".two {border-bottom-width: thin; border-style: solid;}"
           text run at (432,16) width 0: " "
           text run at (0,32) width 280: ".three {border-bottom-width: 25px;}"
           text run at (280,32) width 0: " "
-      RenderBlock {HR} at (0,95) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,113) size 784x100 [border: (3px solid #000000) (25px solid #000000) (3px solid #000000)]
-        RenderText {#text} at (3,3) size 176x17
+      LayoutBlockFlow {HR} at (0,95) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,113) size 784x100 [border: (3px solid #000000) (25px solid #000000) (3px solid #000000)]
+        LayoutText {#text} at (3,3) size 176x17
           text run at (3,3) width 176: "This element has a class of "
-        RenderInline {TT} at (0,0) size 25x16
-          RenderText {#text} at (178,5) size 25x16
+        LayoutInline {TT} at (0,0) size 25x16
+          LayoutText {#text} at (178,5) size 25x16
             text run at (178,5) width 25: "one"
-        RenderText {#text} at (202,3) size 165x17
+        LayoutText {#text} at (202,3) size 165x17
           text run at (202,3) width 9: ". "
           text run at (210,3) width 157: "However, it contains an "
-        RenderInline {SPAN} at (0,0) size 179x21 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
-          RenderText {#text} at (369,3) size 149x17
+        LayoutInline {SPAN} at (0,0) size 179x21 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
+          LayoutText {#text} at (369,3) size 149x17
             text run at (369,3) width 149: "inline element of class "
-          RenderInline {TT} at (0,0) size 25x16
-            RenderText {#text} at (517,5) size 25x16
+          LayoutInline {TT} at (0,0) size 25x16
+            LayoutText {#text} at (517,5) size 25x16
               text run at (517,5) width 25: "two"
-        RenderText {#text} at (544,3) size 768x53
+        LayoutText {#text} at (544,3) size 768x53
           text run at (544,3) width 226: ", which should result in a thin solid"
           text run at (3,21) width 731: "border on the bottom side of each box in the inline element (and the UA's default border on the other three sides). "
           text run at (733,21) width 38: "There"
           text run at (3,39) width 64: "is also an "
-        RenderInline {SPAN} at (0,0) size 189x17
-          RenderText {#text} at (66,39) size 149x17
+        LayoutInline {SPAN} at (0,0) size 189x17
+          LayoutText {#text} at (66,39) size 149x17
             text run at (66,39) width 149: "inline element of class "
-          RenderInline {TT} at (0,0) size 41x16
-            RenderText {#text} at (214,41) size 41x16
+          LayoutInline {TT} at (0,0) size 41x16
+            LayoutText {#text} at (214,41) size 41x16
               text run at (214,41) width 41: "three"
-        RenderText {#text} at (254,39) size 765x35
+        LayoutText {#text} at (254,39) size 765x35
           text run at (254,39) width 514: ", which should have no bottom border width or visible border because no border"
           text run at (3,57) width 85: "style was set."
       LayoutTable {TABLE} at (0,229) size 784x136 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x134
           LayoutTableRow {TR} at (0,0) size 782x26
             LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 782x108
             LayoutTableCell {TD} at (0,67) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x108 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 762x100 [border: (3px solid #000000) (25px solid #000000) (3px solid #000000)]
-                RenderText {#text} at (3,3) size 176x17
+              LayoutBlockFlow {P} at (4,4) size 762x100 [border: (3px solid #000000) (25px solid #000000) (3px solid #000000)]
+                LayoutText {#text} at (3,3) size 176x17
                   text run at (3,3) width 176: "This element has a class of "
-                RenderInline {TT} at (0,0) size 25x16
-                  RenderText {#text} at (178,5) size 25x16
+                LayoutInline {TT} at (0,0) size 25x16
+                  LayoutText {#text} at (178,5) size 25x16
                     text run at (178,5) width 25: "one"
-                RenderText {#text} at (202,3) size 165x17
+                LayoutText {#text} at (202,3) size 165x17
                   text run at (202,3) width 9: ". "
                   text run at (210,3) width 157: "However, it contains an "
-                RenderInline {SPAN} at (0,0) size 179x21 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
-                  RenderText {#text} at (369,3) size 149x17
+                LayoutInline {SPAN} at (0,0) size 179x21 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
+                  LayoutText {#text} at (369,3) size 149x17
                     text run at (369,3) width 149: "inline element of class "
-                  RenderInline {TT} at (0,0) size 25x16
-                    RenderText {#text} at (517,5) size 25x16
+                  LayoutInline {TT} at (0,0) size 25x16
+                    LayoutText {#text} at (517,5) size 25x16
                       text run at (517,5) width 25: "two"
-                RenderText {#text} at (544,3) size 732x53
+                LayoutText {#text} at (544,3) size 732x53
                   text run at (544,3) width 191: ", which should result in a thin"
                   text run at (3,21) width 717: "solid border on the bottom side of each box in the inline element (and the UA's default border on the other three"
                   text run at (3,39) width 46: "sides). "
                   text run at (48,39) width 106: "There is also an "
-                RenderInline {SPAN} at (0,0) size 188x17
-                  RenderText {#text} at (153,39) size 148x17
+                LayoutInline {SPAN} at (0,0) size 188x17
+                  LayoutText {#text} at (153,39) size 148x17
                     text run at (153,39) width 148: "inline element of class "
-                  RenderInline {TT} at (0,0) size 41x16
-                    RenderText {#text} at (300,41) size 41x16
+                  LayoutInline {TT} at (0,0) size 41x16
+                    LayoutText {#text} at (300,41) size 41x16
                       text run at (300,41) width 41: "three"
-                RenderText {#text} at (340,39) size 731x35
+                LayoutText {#text} at (340,39) size 731x35
                   text run at (340,39) width 394: ", which should have no bottom border width or visible border"
                   text run at (3,57) width 206: "because no border style was set."

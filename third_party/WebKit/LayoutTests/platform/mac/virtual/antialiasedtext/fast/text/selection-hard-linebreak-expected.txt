@@ -1,40 +1,40 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 769x36
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        LayoutInline {I} at (0,0) size 769x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13153"
-          RenderText {#text} at (359,0) size 769x36
+          LayoutText {#text} at (359,0) size 769x36
             text run at (359,0) width 5: " "
             text run at (363,0) width 406: "REGRESSION: Visual highlighting of pre-populated blank line"
             text run at (0,18) width 132: "in textarea is broken"
-        RenderText {#text} at (131,18) size 5x18
+        LayoutText {#text} at (131,18) size 5x18
           text run at (131,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 340x18
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 340x18
           text run at (0,0) width 340: "Testing the highlighting of and near hard line breaks."
-      RenderBlock (anonymous) at (0,86) size 784x80
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,182) size 784x18
-        RenderText {#text} at (0,0) size 320x18
+      LayoutBlockFlow (anonymous) at (0,86) size 784x80
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,182) size 784x18
+        LayoutText {#text} at (0,0) size 320x18
           text run at (0,0) width 320: "Testing the highlighting of text split across boxes."
-      RenderBlock (anonymous) at (0,216) size 784x80
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,216) size 784x80
+        LayoutText {#text} at (0,0) size 0x0
 layer at (12,98) size 62x72
   LayoutIFrame {IFRAME} at (4,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -42,12 +42,12 @@ layer at (12,98) size 62x72
 layer at (82,98) size 62x72
   LayoutIFrame {IFRAME} at (74,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -55,12 +55,12 @@ layer at (82,98) size 62x72
 layer at (152,98) size 62x72
   LayoutIFrame {IFRAME} at (144,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -68,12 +68,12 @@ layer at (152,98) size 62x72
 layer at (222,98) size 62x72
   LayoutIFrame {IFRAME} at (214,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -81,12 +81,12 @@ layer at (222,98) size 62x72
 layer at (292,98) size 62x72
   LayoutIFrame {IFRAME} at (284,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -94,12 +94,12 @@ layer at (292,98) size 62x72
 layer at (362,98) size 62x72
   LayoutIFrame {IFRAME} at (354,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -107,12 +107,12 @@ layer at (362,98) size 62x72
 layer at (432,98) size 62x72
   LayoutIFrame {IFRAME} at (424,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -120,12 +120,12 @@ layer at (432,98) size 62x72
 layer at (502,98) size 62x72
   LayoutIFrame {IFRAME} at (494,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -133,12 +133,12 @@ layer at (502,98) size 62x72
 layer at (572,98) size 62x72
   LayoutIFrame {IFRAME} at (564,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -146,12 +146,12 @@ layer at (572,98) size 62x72
 layer at (642,98) size 62x72
   LayoutIFrame {IFRAME} at (634,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
-      RenderView at (0,0) size 60x70
+      LayoutView at (0,0) size 60x70
     layer at (0,0) size 60x70
-      RenderBlock {HTML} at (0,0) size 60x70
-        RenderBody {BODY} at (8,8) size 44x54
-          RenderBlock {PRE} at (0,0) size 44x45
-            RenderText {#text} at (0,0) size 24x45
+      LayoutBlockFlow {HTML} at (0,0) size 60x70
+        LayoutBlockFlow {BODY} at (8,8) size 44x54
+          LayoutBlockFlow {PRE} at (0,0) size 44x45
+            LayoutText {#text} at (0,0) size 24x45
               text run at (0,0) width 24: "foo"
               text run at (23,0) width 1: " "
               text run at (0,15) width 0: " "
@@ -159,12 +159,12 @@ layer at (642,98) size 62x72
 layer at (12,228) size 130x72
   LayoutIFrame {IFRAME} at (4,4) size 130x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 128x70
-      RenderView at (0,0) size 128x70
+      LayoutView at (0,0) size 128x70
     layer at (0,0) size 128x70
-      RenderBlock {HTML} at (0,0) size 128x70
-        RenderBody {BODY} at (8,8) size 112x54
-          RenderBlock {DIV} at (0,0) size 112x36
-            RenderText {#text} at (0,0) size 86x36
+      LayoutBlockFlow {HTML} at (0,0) size 128x70
+        LayoutBlockFlow {BODY} at (8,8) size 112x54
+          LayoutBlockFlow {DIV} at (0,0) size 112x36
+            LayoutText {#text} at (0,0) size 86x36
               text run at (0,0) width 47: "Lorem "
               text run at (46,0) width 40: "ipsum"
               text run at (0,18) width 34: "dolor"

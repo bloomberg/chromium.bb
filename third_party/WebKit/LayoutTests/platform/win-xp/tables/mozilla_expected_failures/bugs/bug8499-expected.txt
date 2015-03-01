@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x60
-        RenderText {#text} at (0,0) size 778x59
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x60
+        LayoutText {#text} at (0,0) size 778x59
           text run at (0,0) width 778: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the final table"
           text run at (0,20) width 528: "is clipped on the right hand side -- try shrinking the window and notice how the clipping "
           text run at (528,20) width 233: "increases. (I couldn't really simplify this"
           text run at (0,40) width 203: "further without losing some of the "
           text run at (203,40) width 103: "original 'flavour'.)"
-      RenderBlock (anonymous) at (0,76) size 784x20
+      LayoutBlockFlow (anonymous) at (0,76) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,96) size 773x148 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 771x146
@@ -24,12 +24,12 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (2,2) size 8x8
                           LayoutTableRow {TR} at (0,2) size 8x4
                             LayoutTableCell {TD} at (2,2) size 4x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              RenderInline {APPLET} at (0,0) size 0x0
-                                RenderText {#text} at (0,0) size 0x0
-                                RenderText {#text} at (0,0) size 0x0
-                              RenderText {#text} at (0,0) size 0x0
-                      RenderBlock {P} at (2,30) size 753x40
-                        RenderText {#text} at (0,0) size 738x39
+                              LayoutInline {APPLET} at (0,0) size 0x0
+                                LayoutText {#text} at (0,0) size 0x0
+                                LayoutText {#text} at (0,0) size 0x0
+                              LayoutText {#text} at (0,0) size 0x0
+                      LayoutBlockFlow {P} at (2,30) size 753x40
+                        LayoutText {#text} at (0,0) size 738x39
                           text run at (0,0) width 407: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
                           text run at (407,0) width 331: "plot of land with a 150 meter long private sandy beach."
                           text run at (0,20) width 91: "The view from "
@@ -40,35 +40,35 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (1,1) size 751x52
                           LayoutTableRow {TR} at (0,0) size 751x52
                             LayoutTableCell {TD} at (0,10) size 293x32 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 281x19
+                              LayoutText {#text} at (6,6) size 281x19
                                 text run at (6,6) width 130: "99 Rates in Drahmas "
                                 text run at (136,6) width 119: "Per Person on H/B "
                                 text run at (255,6) width 32: "Basis"
                             LayoutTableCell {TD} at (293,0) size 102x52 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 90x19
+                              LayoutText {#text} at (6,6) size 90x19
                                 text run at (6,6) width 90: "27/03 - 30/04 "
                               LayoutBR {BR} at (96,21) size 0x0
-                              RenderText {#text} at (6,26) size 86x19
+                              LayoutText {#text} at (6,26) size 86x19
                                 text run at (6,26) width 86: "16/10 - 31/10"
                             LayoutTableCell {TD} at (395,10) size 176x32 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 164x19
+                              LayoutText {#text} at (6,6) size 164x19
                                 text run at (6,6) width 164: "01/5- 21/5 & 2/10 - 15/10"
                             LayoutTableCell {TD} at (571,0) size 90x52 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 78x19
+                              LayoutText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "22/5 - 16/07"
                               LayoutBR {BR} at (84,21) size 0x0
-                              RenderText {#text} at (6,26) size 78x19
+                              LayoutText {#text} at (6,26) size 78x19
                                 text run at (6,26) width 78: "28/8 - 01/10"
                             LayoutTableCell {TD} at (661,10) size 90x32 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 78x19
+                              LayoutText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "17/07 - 27/8"
-      RenderBlock (anonymous) at (0,244) size 784x20
+      LayoutBlockFlow (anonymous) at (0,244) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
-      RenderBlock {P} at (0,280) size 784x20
-        RenderText {#text} at (0,0) size 518x19
+      LayoutBlockFlow {P} at (0,280) size 784x20
+        LayoutText {#text} at (0,0) size 518x19
           text run at (0,0) width 402: "This table repeats the previous table, but removes the 'bad applet'. "
           text run at (402,0) width 116: "Table lays out OK."
-      RenderBlock (anonymous) at (0,316) size 784x20
+      LayoutBlockFlow (anonymous) at (0,316) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,336) size 773x168 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 771x166
@@ -82,10 +82,10 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (2,2) size 103x28
                           LayoutTableRow {TR} at (0,2) size 103x24
                             LayoutTableCell {TD} at (2,2) size 99x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              RenderText {#text} at (2,2) size 95x19
+                              LayoutText {#text} at (2,2) size 95x19
                                 text run at (2,2) width 95: "applet was here"
-                      RenderBlock {P} at (2,50) size 753x40
-                        RenderText {#text} at (0,0) size 738x39
+                      LayoutBlockFlow {P} at (2,50) size 753x40
+                        LayoutText {#text} at (0,0) size 738x39
                           text run at (0,0) width 407: "The Porto Elounda Mare is built on the sea front, on a 110,000 m2 "
                           text run at (407,0) width 331: "plot of land with a 150 meter long private sandy beach."
                           text run at (0,20) width 91: "The view from "
@@ -96,25 +96,25 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (1,1) size 751x52
                           LayoutTableRow {TR} at (0,0) size 751x52
                             LayoutTableCell {TD} at (0,10) size 293x32 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 281x19
+                              LayoutText {#text} at (6,6) size 281x19
                                 text run at (6,6) width 130: "99 Rates in Drahmas "
                                 text run at (136,6) width 119: "Per Person on H/B "
                                 text run at (255,6) width 32: "Basis"
                             LayoutTableCell {TD} at (293,0) size 102x52 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 90x19
+                              LayoutText {#text} at (6,6) size 90x19
                                 text run at (6,6) width 90: "27/03 - 30/04 "
                               LayoutBR {BR} at (96,21) size 0x0
-                              RenderText {#text} at (6,26) size 86x19
+                              LayoutText {#text} at (6,26) size 86x19
                                 text run at (6,26) width 86: "16/10 - 31/10"
                             LayoutTableCell {TD} at (395,10) size 176x32 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 164x19
+                              LayoutText {#text} at (6,6) size 164x19
                                 text run at (6,6) width 164: "01/5- 21/5 & 2/10 - 15/10"
                             LayoutTableCell {TD} at (571,0) size 90x52 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 78x19
+                              LayoutText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "22/5 - 16/07"
                               LayoutBR {BR} at (84,21) size 0x0
-                              RenderText {#text} at (6,26) size 78x19
+                              LayoutText {#text} at (6,26) size 78x19
                                 text run at (6,26) width 78: "28/8 - 01/10"
                             LayoutTableCell {TD} at (661,10) size 90x32 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
-                              RenderText {#text} at (6,6) size 78x19
+                              LayoutText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "17/07 - 27/8"

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (4,4) size 792x592
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (4,4) size 792x592
       LayoutSVGRoot {svg} at (4,59) size 0x0
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="blurY"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
@@ -36,26 +36,26 @@ layer at (0,0) size 800x600
                   [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="turbulence"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
-      RenderText {#text} at (0,47) size 3x10
+      LayoutText {#text} at (0,47) size 3x10
         text run at (0,47) width 3: " "
-      RenderText {#text} at (0,0) size 0x0
-      RenderText {#text} at (92,47) size 3x10
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (92,47) size 3x10
         text run at (92,47) width 3: " "
-      RenderText {#text} at (184,47) size 3x10
+      LayoutText {#text} at (184,47) size 3x10
         text run at (184,47) width 3: " "
-      RenderText {#text} at (276,47) size 3x10
+      LayoutText {#text} at (276,47) size 3x10
         text run at (276,47) width 3: " "
-      RenderText {#text} at (369,47) size 3x10
+      LayoutText {#text} at (369,47) size 3x10
         text run at (369,47) width 3: " "
-      RenderText {#text} at (461,47) size 3x10
+      LayoutText {#text} at (461,47) size 3x10
         text run at (461,47) width 3: " "
-      RenderText {#text} at (553,47) size 3x10
+      LayoutText {#text} at (553,47) size 3x10
         text run at (553,47) width 3: " "
-      RenderText {#text} at (645,47) size 3x10
+      LayoutText {#text} at (645,47) size 3x10
         text run at (645,47) width 3: " "
-      RenderText {#text} at (738,47) size 3x10
+      LayoutText {#text} at (738,47) size 3x10
         text run at (738,47) width 3: " "
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (11,9) size 80x45
   LayoutImage {IMG} at (7.25,5) size 80x45
 layer at (104,9) size 80x45

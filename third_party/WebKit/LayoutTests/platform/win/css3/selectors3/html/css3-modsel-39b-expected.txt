@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x267
-  RenderBlock {HTML} at (0,0) size 800x267
-    RenderBody {BODY} at (8,16) size 784x235
-      RenderBlock {P} at (0,0) size 784x235
-        RenderInline {<pseudo:first-letter>} at (0,0) size 20x36 [bgcolor=#00FF00]
+  LayoutBlockFlow {HTML} at (0,0) size 800x267
+    LayoutBlockFlow {BODY} at (8,16) size 784x235
+      LayoutBlockFlow {P} at (0,0) size 784x235
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 20x36 [bgcolor=#00FF00]
           LayoutTextFragment at (0,0) size 20x36
             text run at (0,0) width 20: "T"
         LayoutTextFragment {#text} at (19,15) size 768x219

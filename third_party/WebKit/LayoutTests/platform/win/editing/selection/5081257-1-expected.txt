@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x54
-        RenderText {#text} at (0,0) size 784x53
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 784x53
           text run at (0,0) width 744: "This tests for setting the selection at a position inside the document when the document node is non-editable and the"
           text run at (743,0) width 5: " "
           text run at (0,18) width 257: "document's body element *is* editable. "

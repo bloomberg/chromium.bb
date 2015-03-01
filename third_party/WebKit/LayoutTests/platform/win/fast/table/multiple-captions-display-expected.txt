@@ -1,65 +1,65 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x280
-  RenderBlock {html} at (0,0) size 800x280
-    RenderBody {body} at (8,8) size 784x264
+  LayoutBlockFlow {html} at (0,0) size 800x280
+    LayoutBlockFlow {body} at (8,8) size 784x264
       LayoutTable {table} at (0,0) size 128x264
         LayoutTableSection (anonymous) at (0,148) size 128x2
           LayoutTableRow (anonymous) at (0,0) size 128x0
             LayoutTableCell (anonymous) at (2,0) size 124x0 [r=0 c=0 rs=1 cs=1]
-        RenderBlock {caption} at (0,36) size 128x36
-          RenderText {#text} at (16,0) size 96x35
+        LayoutBlockFlow {caption} at (0,36) size 128x36
+          LayoutText {#text} at (16,0) size 96x35
             text run at (16,0) width 96: "PASS: Normal"
             text run at (38,18) width 52: "Caption"
         LayoutTableSection {thead} at (0,126) size 128x22
           LayoutTableRow (anonymous) at (0,2) size 128x18
             LayoutTableCell (anonymous) at (2,2) size 124x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 65x17
+              LayoutText {#text} at (0,0) size 65x17
                 text run at (0,0) width 65: "HEADER"
         LayoutTableSection {tbody} at (0,150) size 128x38
           LayoutTableRow (anonymous) at (0,0) size 128x36
             LayoutTableCell (anonymous) at (2,0) size 124x36 [r=0 c=0 rs=1 cs=1]
               LayoutBR {br} at (0,0) size 0x17
-              RenderText {#text} at (0,18) size 124x17
+              LayoutText {#text} at (0,18) size 124x17
                 text run at (0,18) width 124: "Some body content"
               LayoutBR {br} at (123,18) size 1x17
         LayoutTableSection {tfoot} at (0,190) size 128x20
           LayoutTableRow (anonymous) at (0,0) size 128x18
             LayoutTableCell (anonymous) at (2,0) size 124x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 63x17
+              LayoutText {#text} at (0,0) size 63x17
                 text run at (0,0) width 63: "FOOTER"
         LayoutTableSection (anonymous) at (0,188) size 128x2
           LayoutTableRow (anonymous) at (0,0) size 128x0
             LayoutTableCell (anonymous) at (2,0) size 124x0 [r=0 c=0 rs=1 cs=1]
-        RenderBlock {caption} at (0,72) size 128x54
-          RenderText {#text} at (0,0) size 0x0
-        RenderBlock {caption} at (0,126) size 128x0
+        LayoutBlockFlow {caption} at (0,72) size 128x54
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {caption} at (0,126) size 128x0
 layer at (8,218) size 128x54 transparent
-  RenderBlock {caption} at (0,210) size 128x54
-    RenderText {#text} at (25,0) size 120x53
+  LayoutBlockFlow {caption} at (0,210) size 128x54
+    LayoutText {#text} at (25,0) size 120x53
       text run at (25,0) width 78: "PASS: First"
       text run at (4,18) width 120: "Caption aligned to"
       text run at (29,36) width 70: "the bottom"
 layer at (10,156) size 233x18
-  RenderBlock (positioned) {caption} at (10,156) size 233.34x18
-    RenderText {#text} at (0,0) size 234x17
+  LayoutBlockFlow (positioned) {caption} at (10,156) size 233.34x18
+    LayoutText {#text} at (0,0) size 234x17
       text run at (0,0) width 234: "PASS: Caption with a fixed position"
 layer at (8,8) size 128x36 transparent
-  RenderBlock {caption} at (0,0) size 128x36
-    RenderText {#text} at (15,0) size 104x35
+  LayoutBlockFlow {caption} at (0,0) size 128x36
+    LayoutText {#text} at (15,0) size 104x35
       text run at (15,0) width 98: "PASS: Caption"
       text run at (12,18) width 104: "with opacity 0.7"
 layer at (10,196) size 336x18 transparent
-  RenderBlock (positioned) {caption} at (10,196) size 335.55x18
-    RenderText {#text} at (0,0) size 336x17
+  LayoutBlockFlow (positioned) {caption} at (10,196) size 335.55x18
+    LayoutText {#text} at (0,0) size 336x17
       text run at (0,0) width 336: "PASS: Caption with a fixed position and opacity 0.6"
 layer at (8,80) size 120x53 transparent
-  RenderInline {a} at (0,0) size 120x53
-    RenderText {#text} at (15,0) size 120x53
+  LayoutInline {a} at (0,0) size 120x53
+    LayoutText {#text} at (15,0) size 120x53
       text run at (15,0) width 98: "PASS: Caption"
       text run at (4,18) width 120: "with opacity 0.5 in"
       text run at (14,36) width 100: "one of its child."
 layer at (72,134) size 450x18 transparent
-  RenderBlock (positioned) {a} at (72,134) size 449.73x18
-    RenderText {#text} at (0,0) size 450x17
+  LayoutBlockFlow (positioned) {a} at (72,134) size 449.73x18
+    LayoutText {#text} at (0,0) size 450x17
       text run at (0,0) width 450: "PASS: Caption with opacity 0.4 and fixed position of one of the child."

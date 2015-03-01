@@ -1,39 +1,39 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 783x59
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 783x59
         text run at (0,0) width 738: "The documents in the src attributes of the iframes below only contain comments. This test is for a bug where we would only"
-        text run at (0,20) width 783: "construct RenderViews for such iframes. We need to propery construct an empty frame instead, so the RenderView should have a"
-        text run at (0,40) width 435: "RenderBlock and RenderBody below it in the dump of the RenderTree. "
+        text run at (0,20) width 783: "construct LayoutViews for such iframes. We need to propery construct an empty frame instead, so the LayoutView should have a"
+        text run at (0,40) width 435: "LayoutBlockFlow and LayoutBlockFlow below it in the dump of the RenderTree. "
       LayoutBR {BR} at (435,55) size 0x0
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
       LayoutBR {BR} at (0,0) size 0x0
       LayoutBR {BR} at (0,74) size 0x19
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,68) size 788x14
   LayoutIFrame {IFRAME} at (0,60) size 788x14 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 784x10
-      RenderView at (0,0) size 784x10
+      LayoutView at (0,0) size 784x10
     layer at (0,0) size 784x10
-      RenderBlock {HTML} at (0,0) size 784x10
-        RenderBody {BODY} at (8,8) size 768x0
+      LayoutBlockFlow {HTML} at (0,0) size 784x10
+        LayoutBlockFlow {BODY} at (8,8) size 768x0
 layer at (8,102) size 788x14
   LayoutIFrame {IFRAME} at (0,94) size 788x14 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 784x10 clip at (0,0) size 769x10 scrollHeight 168
-      RenderView at (0,0) size 784x10
+      LayoutView at (0,0) size 784x10
     layer at (0,0) size 769x168 backgroundClip at (0,0) size 769x10 clip at (0,0) size 769x10 outlineClip at (0,0) size 769x10
-      RenderBlock {html} at (0,0) size 769x167.88
-        RenderBody {body} at (8,16) size 753x135.88
-          RenderBlock {parsererror} at (16,0) size 721x135.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]
-            RenderBlock {h3} at (18,20.72) size 685x21
-              RenderText {#text} at (0,0) size 306x20
+      LayoutBlockFlow {html} at (0,0) size 769x167.88
+        LayoutBlockFlow {body} at (8,16) size 753x135.88
+          LayoutBlockFlow {parsererror} at (16,0) size 721x135.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]
+            LayoutBlockFlow {h3} at (18,20.72) size 685x21
+              LayoutText {#text} at (0,0) size 306x20
                 text run at (0,0) width 306: "This page contains the following errors:"
-            RenderBlock {div} at (18,60.44) size 685x15
-              RenderText {#text} at (0,0) size 490x15
+            LayoutBlockFlow {div} at (18,60.44) size 685x15
+              LayoutText {#text} at (0,0) size 490x15
                 text run at (0,0) width 490: "error on line 1 at column 15: Extra content at the end of the document"
                 text run at (490,0) width 0: " "
-            RenderBlock {h3} at (18,94.16) size 685x21
-              RenderText {#text} at (0,0) size 408x20
+            LayoutBlockFlow {h3} at (18,94.16) size 685x21
+              LayoutText {#text} at (0,0) size 408x20
                 text run at (0,0) width 408: "Below is a rendering of the page up to the first error."

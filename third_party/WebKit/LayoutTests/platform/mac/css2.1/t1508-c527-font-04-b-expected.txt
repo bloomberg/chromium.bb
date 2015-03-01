@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x252
-  RenderBlock {HTML} at (0,0) size 800x252
-    RenderBody {BODY} at (8,18) size 784x216 [color=#000080]
-      RenderBlock {P} at (0,0) size 784x216
-        RenderText {#text} at (0,3) size 753x48
+  LayoutBlockFlow {HTML} at (0,0) size 800x252
+    LayoutBlockFlow {BODY} at (8,18) size 784x216 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x216
+        LayoutText {#text} at (0,3) size 753x48
           text run at (0,3) width 753: "This text should be 18px sans-serif, in small-caps, italicized, and very bold. There should be a"
           text run at (0,30) width 217: "9px gap between each line. "
-        RenderInline {SPAN} at (0,0) size 766x183 [color=#C0C0C0]
-          RenderText {#text} at (216,30) size 766x183
+        LayoutInline {SPAN} at (0,0) size 766x183 [color=#C0C0C0]
+          LayoutText {#text} at (216,30) size 766x183
             text run at (216,30) width 517: "dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (732,30) width 34: "text"
             text run at (0,57) width 516: "dummy text dummy text dummy text dummy text dummy text dummy "
@@ -23,4 +23,4 @@ layer at (0,0) size 800x252
             text run at (0,165) width 332: "dummy text dummy text dummy text dummy "
             text run at (331,165) width 403: "text dummy text dummy text dummy text dummy text"
             text run at (0,192) width 88: "dummy text"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

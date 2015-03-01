@@ -3142,25 +3142,23 @@ void LayoutBlockFlow::positionDialog()
 
 const char* LayoutBlockFlow::renderName() const
 {
-    if (isBody())
-        return "RenderBody"; // FIXME: Temporary hack until we know that the regression tests pass.
     if (isFloating())
-        return "RenderBlock (floating)";
+        return "LayoutBlockFlow (floating)";
     if (isOutOfFlowPositioned())
-        return "RenderBlock (positioned)";
+        return "LayoutBlockFlow (positioned)";
     if (style()) {
         if (isAnonymousColumnsBlock())
-            return "RenderBlock (anonymous multi-column)";
+            return "LayoutBlockFlow (anonymous multi-column)";
         if (isAnonymousColumnSpanBlock())
-            return "RenderBlock (anonymous multi-column span)";
+            return "LayoutBlockFlow (anonymous multi-column span)";
         if (isAnonymousBlock())
-            return "RenderBlock (anonymous)";
+            return "LayoutBlockFlow (anonymous)";
     }
     if (isAnonymous())
-        return "RenderBlock (generated)";
+        return "LayoutBlockFlow (generated)";
     if (isRelPositioned())
-        return "RenderBlock (relative positioned)";
-    return "RenderBlock";
+        return "LayoutBlockFlow (relative positioned)";
+    return "LayoutBlockFlow";
 }
 
 

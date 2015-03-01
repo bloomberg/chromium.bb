@@ -9,22 +9,22 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 574x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 574x17
           text run at (0,0) width 346: "This tests copy/delete/paste inside an editable iframe. "
           text run at (345,0) width 229: "You should see 'foo bar baz' below."
-      RenderBlock (anonymous) at (0,34) size 784x154
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,34) size 784x154
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,42) size 304x154
   LayoutIFrame {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
-      RenderView at (0,0) size 300x150
+      LayoutView at (0,0) size 300x150
     layer at (0,0) size 300x150
-      RenderBlock {HTML} at (0,0) size 300x150
-        RenderBody {BODY} at (8,8) size 284x134 [bgcolor=#FFFFE0]
-          RenderText {#text} at (0,0) size 72x17
+      LayoutBlockFlow {HTML} at (0,0) size 300x150
+        LayoutBlockFlow {BODY} at (8,8) size 284x134 [bgcolor=#FFFFE0]
+          LayoutText {#text} at (0,0) size 72x17
             text run at (0,0) width 72: "foo bar baz"

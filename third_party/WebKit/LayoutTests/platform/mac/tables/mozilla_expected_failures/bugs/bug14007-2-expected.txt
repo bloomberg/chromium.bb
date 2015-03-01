@@ -1,80 +1,80 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1340
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x1340
-    RenderBody {BODY} at (8,8) size 769x1316
-      RenderBlock {CENTER} at (0,0) size 769x1316
-        RenderBlock (anonymous) at (0,0) size 769x18
-          RenderText {#text} at (250,0) size 269x18
+  LayoutBlockFlow {HTML} at (0,0) size 785x1340
+    LayoutBlockFlow {BODY} at (8,8) size 769x1316
+      LayoutBlockFlow {CENTER} at (0,0) size 769x1316
+        LayoutBlockFlow (anonymous) at (0,0) size 769x18
+          LayoutText {#text} at (250,0) size 269x18
             text run at (250,0) width 269: "Build 1999/10/27/08 Win95 - Daily Build"
           LayoutBR {BR} at (518,14) size 1x0
         LayoutTable {TABLE} at (69.50,18) size 630x1156 [border: (10px outset #808080)]
-          RenderBlock {CAPTION} at (0,0) size 630x18
-            RenderText {#text} at (272,0) size 86x18
+          LayoutBlockFlow {CAPTION} at (0,0) size 630x18
+            LayoutText {#text} at (272,0) size 86x18
               text run at (272,0) width 86: "January 2000"
           LayoutTableSection {TBODY} at (10,28) size 610x1118
             LayoutTableRow {TR} at (0,0) size 610x430
               LayoutTableCell {TD} at (0,0) size 89x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (89,0) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (174,0) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (259,0) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (344,0) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (429,0) size 88x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=5 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (517,0) size 93x430 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=0 c=6 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 89x408 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 89x408
                     LayoutTableRow {TR} at (0,0) size 89x408
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "1."
                       LayoutTableCell {TD} at (18,0) size 71x408 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 69x406 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 69x406 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 69x406
                               LayoutTableCell {TD} at (0,0) size 69x406 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 67x72
-                                  RenderText {#text} at (0,0) size 50x72
+                                LayoutBlockFlow {P} at (1,1) size 67x72
+                                  LayoutText {#text} at (0,0) size 50x72
                                     text run at (0,0) width 28: "Test"
                                     text run at (0,18) width 48: "mozilla"
                                     text run at (0,36) width 50: "one last"
                                     text run at (0,54) width 33: "time."
-                                RenderBlock {P} at (1,89) size 67x54
-                                  RenderText {#text} at (0,0) size 38x54
+                                LayoutBlockFlow {P} at (1,89) size 67x54
+                                  LayoutText {#text} at (0,0) size 38x54
                                     text run at (0,0) width 31: "New"
                                     text run at (0,18) width 38: "Years"
                                     text run at (0,36) width 28: "day."
-                                RenderBlock {P} at (1,159) size 67x18
-                                  RenderText {#text} at (0,0) size 48x18
+                                LayoutBlockFlow {P} at (1,159) size 67x18
+                                  LayoutText {#text} at (0,0) size 48x18
                                     text run at (0,0) width 48: "Y2K!!!"
-                                RenderBlock {P} at (1,193) size 67x54
-                                  RenderText {#text} at (0,0) size 63x54
+                                LayoutBlockFlow {P} at (1,193) size 67x54
+                                  LayoutText {#text} at (0,0) size 63x54
                                     text run at (0,0) width 30: "Find"
                                     text run at (0,18) width 48: "Abacus"
                                     text run at (0,36) width 63: "from attic"
-                                RenderBlock {P} at (1,263) size 67x72
-                                  RenderText {#text} at (0,0) size 54x72
+                                LayoutBlockFlow {P} at (1,263) size 67x72
+                                  LayoutText {#text} at (0,0) size 54x72
                                     text run at (0,0) width 45: "Eat Ice"
                                     text run at (0,18) width 43: "Cream"
                                     text run at (0,36) width 54: "before it"
                                     text run at (0,54) width 35: "melts"
-                                RenderBlock {P} at (1,351) size 67x54
-                                  RenderText {#text} at (0,0) size 52x54
+                                LayoutBlockFlow {P} at (1,351) size 67x54
+                                  LayoutText {#text} at (0,0) size 52x54
                                     text run at (0,0) width 33: "Lock"
                                     text run at (0,18) width 52: "doors &"
                                     text run at (0,36) width 28: "hide"
-                RenderBlock (anonymous) at (2,410) size 89x18
+                LayoutBlockFlow (anonymous) at (2,410) size 89x18
                   LayoutBR {BR} at (0,0) size 0x18
             LayoutTableRow {TR} at (0,430) size 610x274
               LayoutTableCell {TD} at (0,430) size 89x202 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
@@ -82,43 +82,43 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 85x180
                     LayoutTableRow {TR} at (0,0) size 85x180
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "2."
                       LayoutTableCell {TD} at (18,0) size 67x180 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 65x178 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 65x178 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 65x178
                               LayoutTableCell {TD} at (0,0) size 65x178 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 63x54
-                                  RenderText {#text} at (0,0) size 63x54
+                                LayoutBlockFlow {P} at (1,1) size 63x54
+                                  LayoutText {#text} at (0,0) size 63x54
                                     text run at (0,0) width 57: "Look for"
                                     text run at (0,18) width 32: "Y2K"
                                     text run at (0,36) width 63: "survivers."
-                                RenderBlock {P} at (1,71) size 63x36
-                                  RenderText {#text} at (0,0) size 58x36
+                                LayoutBlockFlow {P} at (1,71) size 63x36
+                                  LayoutText {#text} at (0,0) size 58x36
                                     text run at (0,0) width 36: "Build"
                                     text run at (0,18) width 58: "outhouse"
-                                RenderBlock {P} at (1,123) size 63x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,123) size 63x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
-                RenderBlock (anonymous) at (2,182) size 85x18
+                LayoutBlockFlow (anonymous) at (2,182) size 85x18
                   LayoutBR {BR} at (0,0) size 0x18
               LayoutTableCell {TD} at (89,430) size 85x80 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x76 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x76
                     LayoutTableRow {TR} at (0,0) size 81x76
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "3."
                       LayoutTableCell {TD} at (18,0) size 63x76 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 61x74 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 61x74 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 61x74
                               LayoutTableCell {TD} at (0,0) size 61x74 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 59x72
-                                  RenderText {#text} at (0,0) size 59x72
+                                LayoutBlockFlow {P} at (1,1) size 59x72
+                                  LayoutText {#text} at (0,0) size 59x72
                                     text run at (0,0) width 37: "Write"
                                     text run at (0,18) width 50: "letter to"
                                     text run at (0,36) width 48: "electric"
@@ -128,27 +128,27 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 81x234
                     LayoutTableRow {TR} at (0,0) size 81x234
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "4."
                       LayoutTableCell {TD} at (18,0) size 63x234 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 61x232 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 61x232 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 61x232
                               LayoutTableCell {TD} at (0,0) size 61x232 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 59x54
-                                  RenderText {#text} at (0,0) size 56x54
+                                LayoutBlockFlow {P} at (1,1) size 59x54
+                                  LayoutText {#text} at (0,0) size 56x54
                                     text run at (0,0) width 56: "Send the"
                                     text run at (0,18) width 31: "snail"
                                     text run at (0,36) width 29: "mail"
-                                RenderBlock {P} at (1,71) size 59x90
-                                  RenderText {#text} at (0,0) size 58x90
+                                LayoutBlockFlow {P} at (1,71) size 59x90
+                                  LayoutText {#text} at (0,0) size 58x90
                                     text run at (0,0) width 36: "Go to"
                                     text run at (0,18) width 33: "work"
                                     text run at (0,36) width 58: "and stare"
                                     text run at (0,54) width 46: "at dead"
                                     text run at (0,72) width 51: "monitor"
-                                RenderBlock {P} at (1,177) size 59x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,177) size 59x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
@@ -157,22 +157,22 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 81x164
                     LayoutTableRow {TR} at (0,0) size 81x164
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "5."
                       LayoutTableCell {TD} at (18,0) size 63x164 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 61x162 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 61x162 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 61x162
                               LayoutTableCell {TD} at (0,0) size 61x162 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 59x90
-                                  RenderText {#text} at (0,0) size 58x90
+                                LayoutBlockFlow {P} at (1,1) size 59x90
+                                  LayoutText {#text} at (0,0) size 58x90
                                     text run at (0,0) width 36: "Go to"
                                     text run at (0,18) width 33: "work"
                                     text run at (0,36) width 58: "and stare"
                                     text run at (0,54) width 46: "at dead"
                                     text run at (0,72) width 51: "monitor"
-                                RenderBlock {P} at (1,107) size 59x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,107) size 59x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
@@ -181,22 +181,22 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 81x164
                     LayoutTableRow {TR} at (0,0) size 81x164
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "6."
                       LayoutTableCell {TD} at (18,0) size 63x164 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 61x162 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 61x162 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 61x162
                               LayoutTableCell {TD} at (0,0) size 61x162 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 59x90
-                                  RenderText {#text} at (0,0) size 58x90
+                                LayoutBlockFlow {P} at (1,1) size 59x90
+                                  LayoutText {#text} at (0,0) size 58x90
                                     text run at (0,0) width 36: "Go to"
                                     text run at (0,18) width 33: "work"
                                     text run at (0,36) width 58: "and stare"
                                     text run at (0,54) width 46: "at dead"
                                     text run at (0,72) width 51: "monitor"
-                                RenderBlock {P} at (1,107) size 59x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,107) size 59x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
@@ -205,27 +205,27 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 84x234
                     LayoutTableRow {TR} at (0,0) size 84x234
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "7."
                       LayoutTableCell {TD} at (18,0) size 66x234 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 64x232 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 64x232 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 64x232
                               LayoutTableCell {TD} at (0,0) size 64x232 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 62x72
-                                  RenderText {#text} at (0,0) size 62x72
+                                LayoutBlockFlow {P} at (1,1) size 62x72
+                                  LayoutText {#text} at (0,0) size 62x72
                                     text run at (0,0) width 20: "Go"
                                     text run at (0,18) width 49: "internet"
                                     text run at (0,36) width 62: "exploring"
                                     text run at (0,54) width 56: "for food."
-                                RenderBlock {P} at (1,89) size 62x72
-                                  RenderText {#text} at (0,0) size 62x72
+                                LayoutBlockFlow {P} at (1,89) size 62x72
+                                  LayoutText {#text} at (0,0) size 62x72
                                     text run at (0,0) width 50: "Internet"
                                     text run at (0,18) width 62: "exploring"
                                     text run at (0,36) width 45: "doesn't"
                                     text run at (0,54) width 37: "work."
-                                RenderBlock {P} at (1,177) size 62x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,177) size 62x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
@@ -234,29 +234,29 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 89x270
                     LayoutTableRow {TR} at (0,0) size 89x270
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "8."
                       LayoutTableCell {TD} at (18,0) size 71x270 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 69x268 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 69x268 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 69x268
                               LayoutTableCell {TD} at (0,0) size 69x268 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 67x90
-                                  RenderText {#text} at (0,0) size 62x90
+                                LayoutBlockFlow {P} at (1,1) size 67x90
+                                  LayoutText {#text} at (0,0) size 62x90
                                     text run at (0,0) width 20: "Go"
                                     text run at (0,18) width 49: "internet"
                                     text run at (0,36) width 62: "exploring"
                                     text run at (0,54) width 52: "for food"
                                     text run at (0,72) width 39: "again."
-                                RenderBlock {P} at (1,107) size 67x90
-                                  RenderText {#text} at (0,0) size 62x90
+                                LayoutBlockFlow {P} at (1,107) size 67x90
+                                  LayoutText {#text} at (0,0) size 62x90
                                     text run at (0,0) width 50: "Internet"
                                     text run at (0,18) width 62: "exploring"
                                     text run at (0,36) width 45: "doesn't"
                                     text run at (0,54) width 33: "work"
                                     text run at (0,72) width 39: "again."
-                                RenderBlock {P} at (1,213) size 67x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,213) size 67x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
@@ -266,182 +266,182 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 85x340
                     LayoutTableRow {TR} at (0,0) size 85x340
                       LayoutTableCell {TD} at (0,0) size 18x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 16x24
+                        LayoutText {#text} at (1,1) size 16x24
                           text run at (1,1) width 16: "9."
                       LayoutTableCell {TD} at (18,0) size 67x340 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 65x338 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 65x338 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 65x338
                               LayoutTableCell {TD} at (0,0) size 65x338 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 63x72
-                                  RenderText {#text} at (0,0) size 62x72
+                                LayoutBlockFlow {P} at (1,1) size 63x72
+                                  LayoutText {#text} at (0,0) size 62x72
                                     text run at (0,0) width 20: "Go"
                                     text run at (0,18) width 49: "internet"
                                     text run at (0,36) width 62: "exploring"
                                     text run at (0,54) width 56: "for food."
-                                RenderBlock {P} at (1,89) size 63x90
-                                  RenderText {#text} at (0,0) size 62x90
+                                LayoutBlockFlow {P} at (1,89) size 63x90
+                                  LayoutText {#text} at (0,0) size 62x90
                                     text run at (0,0) width 50: "Internet"
                                     text run at (0,18) width 62: "exploring"
                                     text run at (0,36) width 25: "still"
                                     text run at (0,54) width 45: "doesn't"
                                     text run at (0,72) width 37: "work."
-                                RenderBlock {P} at (1,195) size 63x72
-                                  RenderText {#text} at (0,0) size 62x72
+                                LayoutBlockFlow {P} at (1,195) size 63x72
+                                  LayoutText {#text} at (0,0) size 62x72
                                     text run at (0,0) width 52: "Give up"
                                     text run at (0,18) width 49: "internet"
                                     text run at (0,36) width 62: "exploring"
                                     text run at (0,54) width 56: "for food."
-                                RenderBlock {P} at (1,283) size 63x54
-                                  RenderText {#text} at (0,0) size 47x54
+                                LayoutBlockFlow {P} at (1,283) size 63x54
+                                  LayoutText {#text} at (0,0) size 47x54
                                     text run at (0,0) width 22: "Eat"
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
-                RenderBlock (anonymous) at (2,342) size 85x18
+                LayoutBlockFlow (anonymous) at (2,342) size 85x18
                   LayoutBR {BR} at (0,0) size 0x18
               LayoutTableCell {TD} at (89,704) size 85x290 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x286 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x286
                     LayoutTableRow {TR} at (0,0) size 81x286
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "10."
                       LayoutTableCell {TD} at (29,0) size 52x286 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 50x284 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 50x284 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 50x284
                               LayoutTableCell {TD} at (0,0) size 50x284 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 48x72
-                                  RenderText {#text} at (0,0) size 41x72
+                                LayoutBlockFlow {P} at (1,1) size 48x72
+                                  LayoutText {#text} at (0,0) size 41x72
                                     text run at (0,0) width 41: "Power"
                                     text run at (0,18) width 41: "comes"
                                     text run at (0,36) width 31: "back"
                                     text run at (0,54) width 20: "on."
-                                RenderBlock {P} at (1,89) size 48x90
-                                  RenderText {#text} at (0,0) size 47x90
+                                LayoutBlockFlow {P} at (1,89) size 48x90
+                                  LayoutText {#text} at (0,0) size 47x90
                                     text run at (0,0) width 22: "Put"
                                     text run at (0,18) width 37: "trusty"
                                     text run at (0,36) width 44: "abacus"
                                     text run at (0,54) width 47: "back in"
                                     text run at (0,72) width 28: "attic"
-                                RenderBlock {P} at (1,195) size 48x54
-                                  RenderText {#text} at (0,0) size 48x54
+                                LayoutBlockFlow {P} at (1,195) size 48x54
+                                  LayoutText {#text} at (0,0) size 48x54
                                     text run at (0,0) width 32: "Grab"
                                     text run at (0,18) width 34: "latest"
                                     text run at (0,36) width 48: "mozilla"
-                                RenderBlock {P} at (1,265) size 48x18
-                                  RenderText {#text} at (0,0) size 41x18
+                                LayoutBlockFlow {P} at (1,265) size 48x18
+                                  LayoutText {#text} at (0,0) size 41x18
                                     text run at (0,0) width 41: "Test it"
               LayoutTableCell {TD} at (174,704) size 85x96 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x92 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x92
                     LayoutTableRow {TR} at (0,0) size 81x92
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "11."
                       LayoutTableCell {TD} at (29,0) size 52x92 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 50x90 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 50x90 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 50x90
                               LayoutTableCell {TD} at (0,0) size 50x90 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 48x54
-                                  RenderText {#text} at (0,0) size 48x54
+                                LayoutBlockFlow {P} at (1,1) size 48x54
+                                  LayoutText {#text} at (0,0) size 48x54
                                     text run at (0,0) width 32: "Grab"
                                     text run at (0,18) width 34: "latest"
                                     text run at (0,36) width 48: "mozilla"
-                                RenderBlock {P} at (1,71) size 48x18
-                                  RenderText {#text} at (0,0) size 41x18
+                                LayoutBlockFlow {P} at (1,71) size 48x18
+                                  LayoutText {#text} at (0,0) size 41x18
                                     text run at (0,0) width 41: "Test it"
               LayoutTableCell {TD} at (259,704) size 85x96 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=3 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x92 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x92
                     LayoutTableRow {TR} at (0,0) size 81x92
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "12."
                       LayoutTableCell {TD} at (29,0) size 52x92 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 50x90 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 50x90 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 50x90
                               LayoutTableCell {TD} at (0,0) size 50x90 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 48x54
-                                  RenderText {#text} at (0,0) size 48x54
+                                LayoutBlockFlow {P} at (1,1) size 48x54
+                                  LayoutText {#text} at (0,0) size 48x54
                                     text run at (0,0) width 32: "Grab"
                                     text run at (0,18) width 34: "latest"
                                     text run at (0,36) width 48: "mozilla"
-                                RenderBlock {P} at (1,71) size 48x18
-                                  RenderText {#text} at (0,0) size 41x18
+                                LayoutBlockFlow {P} at (1,71) size 48x18
+                                  LayoutText {#text} at (0,0) size 41x18
                                     text run at (0,0) width 41: "Test it"
               LayoutTableCell {TD} at (344,704) size 85x96 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=4 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x92 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x92
                     LayoutTableRow {TR} at (0,0) size 81x92
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "13."
                       LayoutTableCell {TD} at (29,0) size 52x92 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 50x90 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 50x90 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 50x90
                               LayoutTableCell {TD} at (0,0) size 50x90 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 48x54
-                                  RenderText {#text} at (0,0) size 48x54
+                                LayoutBlockFlow {P} at (1,1) size 48x54
+                                  LayoutText {#text} at (0,0) size 48x54
                                     text run at (0,0) width 32: "Grab"
                                     text run at (0,18) width 34: "latest"
                                     text run at (0,36) width 48: "mozilla"
-                                RenderBlock {P} at (1,71) size 48x18
-                                  RenderText {#text} at (0,0) size 41x18
+                                LayoutBlockFlow {P} at (1,71) size 48x18
+                                  LayoutText {#text} at (0,0) size 41x18
                                     text run at (0,0) width 41: "Test it"
               LayoutTableCell {TD} at (429,704) size 88x96 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=5 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 84x92 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 84x92
                     LayoutTableRow {TR} at (0,0) size 84x92
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "14."
                       LayoutTableCell {TD} at (29,0) size 55x92 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 53x90 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 53x90 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 53x90
                               LayoutTableCell {TD} at (0,0) size 53x90 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 51x54
-                                  RenderText {#text} at (0,0) size 48x54
+                                LayoutBlockFlow {P} at (1,1) size 51x54
+                                  LayoutText {#text} at (0,0) size 48x54
                                     text run at (0,0) width 32: "Grab"
                                     text run at (0,18) width 34: "latest"
                                     text run at (0,36) width 48: "mozilla"
-                                RenderBlock {P} at (1,71) size 51x18
-                                  RenderText {#text} at (0,0) size 41x18
+                                LayoutBlockFlow {P} at (1,71) size 51x18
+                                  LayoutText {#text} at (0,0) size 41x18
                                     text run at (0,0) width 41: "Test it"
               LayoutTableCell {TD} at (517,704) size 93x290 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=6 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 89x286 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 89x286
                     LayoutTableRow {TR} at (0,0) size 89x286
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "15."
                       LayoutTableCell {TD} at (29,0) size 60x286 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 58x284 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 58x284 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 58x284
                               LayoutTableCell {TD} at (0,0) size 58x284 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderBlock {P} at (1,1) size 56x54
-                                  RenderText {#text} at (0,0) size 48x54
+                                LayoutBlockFlow {P} at (1,1) size 56x54
+                                  LayoutText {#text} at (0,0) size 48x54
                                     text run at (0,0) width 32: "Grab"
                                     text run at (0,18) width 34: "latest"
                                     text run at (0,36) width 48: "mozilla"
-                                RenderBlock {P} at (1,71) size 56x18
-                                  RenderText {#text} at (0,0) size 41x18
+                                LayoutBlockFlow {P} at (1,71) size 56x18
+                                  LayoutText {#text} at (0,0) size 41x18
                                     text run at (0,0) width 41: "Test it"
-                                RenderBlock {P} at (1,105) size 56x108
-                                  RenderText {#text} at (0,0) size 56x108
+                                LayoutBlockFlow {P} at (1,105) size 56x108
+                                  LayoutText {#text} at (0,0) size 56x108
                                     text run at (0,0) width 50: "Mozilla"
                                     text run at (0,18) width 55: "removes"
                                     text run at (0,36) width 32: "Y2K"
                                     text run at (0,54) width 56: "Warning"
                                     text run at (0,72) width 32: "from"
                                     text run at (0,90) width 54: "FTP site"
-                                RenderBlock {P} at (1,229) size 56x54
-                                  RenderText {#text} at (0,0) size 39x54
+                                LayoutBlockFlow {P} at (1,229) size 56x54
+                                  LayoutText {#text} at (0,0) size 39x54
                                     text run at (0,0) width 29: "This"
                                     text run at (0,18) width 39: "bug is"
                                     text run at (0,36) width 33: "fixed"
@@ -451,62 +451,62 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableSection {TBODY} at (0,0) size 85x26
                     LayoutTableRow {TR} at (0,0) size 85x26
                       LayoutTableCell {TD} at (0,0) size 29x26 [color=#FFFF00] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (1,1) size 27x24
+                        LayoutText {#text} at (1,1) size 27x24
                           text run at (1,1) width 27: "16."
                       LayoutTableCell {TD} at (29,0) size 56x22 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=1 rs=1 cs=1]
                         LayoutTable {TABLE} at (1,1) size 54x20 [color=#000000]
                           LayoutTableSection {TBODY} at (0,0) size 54x20 [bgcolor=#FFFF00]
                             LayoutTableRow {TR} at (0,0) size 54x20
                               LayoutTableCell {TD} at (0,0) size 54x20 [color=#FFFFFF] [bgcolor=#404080] [r=0 c=0 rs=1 cs=1]
-                                RenderText {#text} at (1,1) size 8x18
+                                LayoutText {#text} at (1,1) size 8x18
                                   text run at (1,1) width 8: "?"
               LayoutTableCell {TD} at (89,1066) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=3 c=1 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (174,1066) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=3 c=2 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (259,1066) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=3 c=3 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (344,1066) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=3 c=4 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (429,1066) size 88x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=3 c=5 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (517,1066) size 93x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=3 c=6 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
             LayoutTableRow {TR} at (0,1096) size 610x22
               LayoutTableCell {TD} at (0,1096) size 89x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=0 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (89,1096) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (174,1096) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=2 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (259,1096) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=3 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (344,1096) size 85x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=4 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (429,1096) size 88x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=5 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
               LayoutTableCell {TD} at (517,1096) size 93x22 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=4 c=6 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 6x18
+                LayoutText {#text} at (2,2) size 6x18
                   text run at (2,2) width 6: "-"
-        RenderBlock (anonymous) at (0,1174) size 769x54
+        LayoutBlockFlow (anonymous) at (0,1174) size 769x54
           LayoutBR {BR} at (384,0) size 1x18
-          RenderText {#text} at (16,18) size 737x36
+          LayoutText {#text} at (16,18) size 737x36
             text run at (16,18) width 737: "Notice the scrollbars, they are rendered outside of the table columns, and the yellow day numbers are hidden under"
             text run at (366,36) width 37: "them."
-        RenderBlock {P} at (0,1244) size 769x72
-          RenderText {#text} at (3,0) size 767x72
+        LayoutBlockFlow {P} at (0,1244) size 769x72
+          LayoutText {#text} at (3,0) size 767x72
             text run at (3,0) width 763: "This is probably another bug already covered, or fixed, but day 3 & 16 should have no scrollbar, but the area where the"
             text run at (1,18) width 424: "other scrollbars are drawn is drawn funny. They are not rendered. "
             text run at (424,18) width 344: "They seem to be whatever was drawn there before, or"

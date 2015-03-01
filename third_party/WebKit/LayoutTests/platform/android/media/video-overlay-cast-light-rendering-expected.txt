@@ -1,30 +1,30 @@
 layer at (0,0) size 785x874
-  RenderView at (0,0) size 785x600
+  LayoutView at (0,0) size 785x600
 layer at (0,0) size 785x620
-  RenderBlock {HTML} at (0,0) size 785x620
-    RenderBody {BODY} at (8,16) size 769x596
-      RenderBlock {P} at (0,0) size 769x20
-        RenderText {#text} at (0,0) size 331x19
+  LayoutBlockFlow {HTML} at (0,0) size 785x620
+    LayoutBlockFlow {BODY} at (8,16) size 769x596
+      LayoutBlockFlow {P} at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 331x19
           text run at (0,0) width 331: "Test overlay cast button rendering on light background."
-      RenderBlock {DIV} at (0,36) size 769x293
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,329) size 769x267
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,596) size 769x0
+      LayoutBlockFlow {DIV} at (0,36) size 769x293
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,329) size 769x267
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,596) size 769x0
 layer at (8,52) size 352x288
   LayoutVideo {VIDEO} at (0,0) size 352x288
 layer at (8,345) size 320x262
   LayoutVideo {VIDEO} at (0,0) size 320x262
 layer at (8,52) size 352x288
   LayoutFlexibleBox {DIV} at (0,0) size 352x288
-    RenderBlock {DIV} at (0,253) size 352x35
+    LayoutBlockFlow {DIV} at (0,253) size 352x35
 layer at (8,52) size 352x253
   LayoutFlexibleBox {DIV} at (0,0) size 352x253
 layer at (26,65) size 30x30
   LayoutButton {INPUT} at (17.59,12.64) size 30x30
 layer at (8,345) size 320x262
   LayoutFlexibleBox {DIV} at (0,0) size 320x262
-    RenderBlock {DIV} at (0,227) size 320x35
+    LayoutBlockFlow {DIV} at (0,227) size 320x35
 layer at (8,345) size 320x227
   LayoutFlexibleBox {DIV} at (0,0) size 320x227
 layer at (24,356) size 30x30
@@ -33,7 +33,7 @@ layer at (8,612) size 320x262
   LayoutVideo {VIDEO} at (8,612) size 320x262
 layer at (8,612) size 320x262
   LayoutFlexibleBox {DIV} at (0,0) size 320x262
-    RenderBlock {DIV} at (0,227) size 320x35
+    LayoutBlockFlow {DIV} at (0,227) size 320x35
 layer at (8,612) size 320x227
   LayoutFlexibleBox {DIV} at (0,0) size 320x227
 layer at (24,623) size 30x30

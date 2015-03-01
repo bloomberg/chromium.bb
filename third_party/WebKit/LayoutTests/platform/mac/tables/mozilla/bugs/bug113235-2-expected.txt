@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x15
-        RenderInline {FONT} at (0,0) size 708x15
-          RenderText {#text} at (0,0) size 708x15
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x15
+        LayoutInline {FONT} at (0,0) size 708x15
+          LayoutText {#text} at (0,0) size 708x15
             text run at (0,0) width 327: "This text node only exists once in the original document! "
             text run at (326,0) width 305: "If it were a large collection of inlines, the page would "
             text run at (630,0) width 78: "hang forever."
-          RenderInline {A} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,31.17) size 784x43.17
-        RenderBlock {H2} at (0,0) size 784x23
-          RenderInline {A} at (0,0) size 165x22
-            RenderText {#text} at (0,0) size 165x22
+          LayoutInline {A} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,31.17) size 784x43.17
+        LayoutBlockFlow {H2} at (0,0) size 784x23
+          LayoutInline {A} at (0,0) size 165x22
+            LayoutText {#text} at (0,0) size 165x22
               text run at (0,0) width 165: "Table of Contents"
         LayoutTable {TABLE} at (0,39.17) size 4x4
           LayoutTableSection {TBODY} at (0,0) size 4x4
             LayoutTableRow {TR} at (0,2) size 4x0
-      RenderBlock (anonymous) at (0,74.34) size 784x0
-        RenderInline {FONT} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,74.34) size 784x0
+        LayoutInline {FONT} at (0,0) size 0x0

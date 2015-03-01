@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x158
-  RenderBlock {html} at (0,0) size 800x158
-    RenderBody {body} at (8,16) size 784x134
-      RenderBlock {p} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 147x17
+  LayoutBlockFlow {html} at (0,0) size 800x158
+    LayoutBlockFlow {body} at (8,16) size 784x134
+      LayoutBlockFlow {p} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 147x17
           text run at (0,0) width 147: "COL WIDTH=relative"
       LayoutTable {table} at (0,34) size 300x100 [border: (1px outset #808080)]
         LayoutTableCol {colgroup} at (0,0) size 0x0
@@ -13,7 +13,7 @@ layer at (0,0) size 800x158
         LayoutTableSection (anonymous) at (1,1) size 298x98
           LayoutTableRow {tr} at (0,2) size 298x94
             LayoutTableCell {td} at (2,2) size 143x94 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 139x89
+              LayoutText {#text} at (2,2) size 139x89
                 text run at (2,2) width 92: "Table width is"
                 text run at (2,20) width 129: "300px. This column"
                 text run at (2,38) width 139: "should be 1/2 as wide"
@@ -21,7 +21,7 @@ layer at (0,0) size 800x158
                 text run at (19,56) width 82: "Column 2 or"
                 text run at (2,74) width 40: "100px"
             LayoutTableCell {td} at (147,11) size 149x76 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 140x71
+              LayoutText {#text} at (2,2) size 140x71
                 text run at (2,2) width 140: "Table width is 300px."
                 text run at (2,20) width 128: "This column should"
                 text run at (2,38) width 124: "be twice as wide as"

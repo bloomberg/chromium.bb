@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x122
-  RenderBlock {HTML} at (0,0) size 800x122
-    RenderBody {BODY} at (8,16) size 784x90
-      RenderBlock {P} at (0,0) size 784x90
-        RenderText {#text} at (0,0) size 782x90
+  LayoutBlockFlow {HTML} at (0,0) size 800x122
+    LayoutBlockFlow {BODY} at (8,16) size 784x90
+      LayoutBlockFlow {P} at (0,0) size 784x90
+        LayoutText {#text} at (0,0) size 782x90
           text run at (0,0) width 258: "This very long paragraph should have a "
           text run at (257,0) width 501: "first line with green background. This very long paragraph should have a first "
           text run at (757,0) width 25: "line"

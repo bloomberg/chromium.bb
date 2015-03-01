@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600 scrollX 1108.00 scrollY 100.00 scrollWidth 2008 scrollHeight 2016
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x2016 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x2016
-    RenderBody {BODY} at (8,8) size 784x2000
-      RenderBlock {DIV} at (-1216,0) size 2000x2000 [bgcolor=#00FF00]
+  LayoutBlockFlow {HTML} at (0,0) size 800x2016
+    LayoutBlockFlow {BODY} at (8,8) size 784x2000
+      LayoutBlockFlow {DIV} at (-1216,0) size 2000x2000 [bgcolor=#00FF00]
 layer at (-100,100) size 100x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock (positioned) {DIV} at (0,0) size 100x100 [bgcolor=#FF00FF]
-    RenderText {#text} at (0,0) size 99x71
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 100x100 [bgcolor=#FF00FF]
+    LayoutText {#text} at (0,0) size 99x71
       text run at (0,0) width 57: "This box"
       text run at (0,18) width 99: "should be fixed"
       text run at (0,36) width 88: "to the top-left"

@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 600x446
         LayoutTableSection {TBODY} at (0,0) size 600x446
           LayoutTableRow {TR} at (0,2) size 600x442
             LayoutTableCell {TD} at (2,222) size 98x2 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (102,2) size 32x442 [r=0 c=1 rs=1 cs=1]
-              RenderBlock {IMG} at (1,1) size 30x440
+              LayoutBlockFlow {IMG} at (1,1) size 30x440
             LayoutTableCell {TD} at (136,65) size 462x316 [r=0 c=2 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 460x230
                 LayoutTableSection {TBODY} at (0,0) size 460x230
@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
                           LayoutTableRow {TR} at (0,2) size 250x87
                             LayoutTableCell {TD} at (2,2) size 246x87 [r=0 c=0 rs=1 cs=1]
                               LayoutImage {IMG} at (1,1) size 93x85
-                              RenderText {#text} at (97,1) size 126x54
+                              LayoutText {#text} at (97,1) size 126x54
                                 text run at (97,1) width 122: "Text text, text: text"
                                 text run at (97,19) width 126: "text text; text. Text,"
                                 text run at (97,37) width 68: "text text...."
@@ -28,9 +28,9 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (10,10) size 180x204
                           LayoutTableRow {TR} at (0,2) size 180x200
                             LayoutTableCell {TD} at (2,100) size 176x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock (anonymous) at (1,231) size 460x36
+              LayoutBlockFlow (anonymous) at (1,231) size 460x36
                 LayoutBR {BR} at (0,0) size 0x18
-                RenderText {#text} at (0,18) size 108x18
+                LayoutText {#text} at (0,18) size 108x18
                   text run at (0,18) width 108: "This is bug 2904"
               LayoutTable {TABLE} at (1,267) size 62x48 [border: (1px outset #808080)]
                 LayoutTableSection {TBODY} at (1,1) size 60x46
@@ -40,13 +40,13 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (1,1) size 16x26
                           LayoutTableRow {TR} at (0,2) size 16x22
                             LayoutTableCell {TD} at (2,2) size 12x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              RenderText {#text} at (2,2) size 8x18
+                              LayoutText {#text} at (2,2) size 8x18
                                 text run at (2,2) width 8: "x"
                     LayoutTableCell {TD} at (26,2) size 32x42 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                      RenderBlock {DIV} at (2,2) size 48x38 [border: (10px groove #008000)]
-                        RenderText {#text} at (10,10) size 8x18
+                      LayoutBlockFlow {DIV} at (2,2) size 48x38 [border: (10px groove #008000)]
+                        LayoutText {#text} at (10,10) size 8x18
                           text run at (10,10) width 8: "x"
 layer at (111,11) size 30x440 clip at (112,12) size 28x438
-  RenderBlock {DIV} at (0,0) size 30x440 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,0) size 30x440 [border: (1px solid #C0C0C0)]
 layer at (113,13) size 26x0
-  RenderBlock {DIV} at (2,2) size 26x0
+  LayoutBlockFlow {DIV} at (2,2) size 26x0

@@ -1,22 +1,22 @@
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 layer at (0,0) size 800x600 scrollWidth 2008 scrollHeight 2088
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x2088 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x2088
-    RenderBody {BODY} at (8,8) size 784x2072
-      RenderBlock (anonymous) at (0,0) size 784x54
-        RenderText {#text} at (0,0) size 595x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x2088
+    LayoutBlockFlow {BODY} at (8,8) size 784x2072
+      LayoutBlockFlow (anonymous) at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 595x17
           text run at (0,0) width 595: "This test makes sure that we don't scroll unnecessarily to reveal an editable HTML Element. "
         LayoutBR {BR} at (594,14) size 1x0
-        RenderText {#text} at (0,18) size 269x17
+        LayoutText {#text} at (0,18) size 269x17
           text run at (0,18) width 269: "If the document doesn't scroll, test passes."
         LayoutBR {BR} at (268,32) size 1x0
-        RenderInline {B} at (0,0) size 538x17
-          RenderText {#text} at (0,36) size 538x17
+        LayoutInline {B} at (0,0) size 538x17
+          LayoutText {#text} at (0,36) size 538x17
             text run at (0,36) width 538: "This demonstrates a bug: normally, focusing an element will select its contents."
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,54) size 2000x2000
-      RenderBlock (anonymous) at (0,2054) size 784x18
-        RenderText {#text} at (0,0) size 245x17
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,54) size 2000x2000
+      LayoutBlockFlow (anonymous) at (0,2054) size 784x18
+        LayoutText {#text} at (0,0) size 245x17
           text run at (0,0) width 245: "If the document scrolls here, test fails."
 caret: position 1 of child 0 {#text} of body

@@ -1,21 +1,21 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {A} at (0,0) size 300x18 [color=#0000EE]
-          RenderText {#text} at (54,0) size 300x18
+        LayoutInline {A} at (0,0) size 300x18 [color=#0000EE]
+          LayoutText {#text} at (54,0) size 300x18
             text run at (54,0) width 300: "http://bugs.webkit.org/show_bug.cgi?id=4104 "
-        RenderText {#text} at (353,0) size 257x18
+        LayoutText {#text} at (353,0) size 257x18
           text run at (353,0) width 257: "first-letter not updating style with hover"
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 397x18
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 397x18
           text run at (0,0) width 397: "The next line of text should turn green when we hover over it."
-      RenderBlock {DIV} at (0,68) size 784x36 [color=#008000]
-        RenderInline {<pseudo:first-letter>} at (0,0) size 10x18 [color=#0000FF]
+      LayoutBlockFlow {DIV} at (0,68) size 784x36 [color=#008000]
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 10x18 [color=#0000FF]
           LayoutTextFragment at (0,0) size 10x18
             text run at (0,0) width 10: "T"
         LayoutTextFragment {#text} at (9,0) size 771x36

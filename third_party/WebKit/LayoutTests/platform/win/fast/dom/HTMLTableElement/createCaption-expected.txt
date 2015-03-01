@@ -1,88 +1,88 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 273x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 273x17
           text run at (0,0) width 273: "Tests: the TABLE.createCaption() method"
         LayoutBR {BR} at (272,14) size 1x0
-      RenderBlock {P} at (0,34) size 784x54
-        RenderText {#text} at (0,0) size 75x17
+      LayoutBlockFlow {P} at (0,34) size 784x54
+        LayoutText {#text} at (0,0) size 75x17
           text run at (0,0) width 75: "Conditions:"
         LayoutBR {BR} at (74,14) size 1x0
-        RenderText {#text} at (0,18) size 768x35
+        LayoutText {#text} at (0,18) size 768x35
           text run at (0,18) width 695: "If no caption exists, the method should create an empty caption, add it to the table, and return a pointer to it. "
           text run at (694,18) width 74: "If a caption"
           text run at (0,36) width 326: "does exist, the method should return a pointer to it."
-      RenderBlock {P} at (0,104) size 784x36
-        RenderText {#text} at (0,0) size 333x17
+      LayoutBlockFlow {P} at (0,104) size 784x36
+        LayoutText {#text} at (0,0) size 333x17
           text run at (0,0) width 333: "If successful, the first table should have the caption "
-        RenderInline {B} at (0,0) size 44x17
-          RenderText {#text} at (332,0) size 44x17
+        LayoutInline {B} at (0,0) size 44x17
+          LayoutText {#text} at (332,0) size 44x17
             text run at (332,0) width 44: "Fruity"
-        RenderText {#text} at (375,0) size 299x17
+        LayoutText {#text} at (375,0) size 299x17
           text run at (375,0) width 299: ", and the second table should have the caption "
-        RenderInline {B} at (0,0) size 77x17
-          RenderText {#text} at (673,0) size 77x17
+        LayoutInline {B} at (0,0) size 77x17
+          LayoutText {#text} at (673,0) size 77x17
             text run at (673,0) width 77: "Vegetabley"
-        RenderText {#text} at (749,0) size 754x35
+        LayoutText {#text} at (749,0) size 754x35
           text run at (749,0) width 5: "."
           text run at (0,18) width 637: "Upon failure, the first table will have no caption, and the second table will have the caption Things."
-      RenderBlock {HR} at (0,156) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,156) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,166) size 112x94 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 112x18
-          RenderInline {B} at (0,0) size 44x17
-            RenderText {#text} at (34,0) size 44x17
+        LayoutBlockFlow {CAPTION} at (0,0) size 112x18
+          LayoutInline {B} at (0,0) size 44x17
+            LayoutText {#text} at (34,0) size 44x17
               text run at (34,0) width 44: "Fruity"
         LayoutTableSection {TBODY} at (1,19) size 110x74
           LayoutTableRow {TR} at (0,2) size 110x22
             LayoutTableCell {TH} at (2,2) size 52x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (8,2) size 36x17
+              LayoutText {#text} at (8,2) size 36x17
                 text run at (8,2) width 36: "Fruit"
             LayoutTableCell {TH} at (56,2) size 52x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (6,2) size 40x17
+              LayoutText {#text} at (6,2) size 40x17
                 text run at (6,2) width 40: "Color"
           LayoutTableRow {TR} at (0,26) size 110x22
             LayoutTableCell {TD} at (2,26) size 52x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 48x17
+              LayoutText {#text} at (2,2) size 48x17
                 text run at (2,2) width 48: "Banana"
             LayoutTableCell {TD} at (56,26) size 52x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 48x17
+              LayoutText {#text} at (2,2) size 48x17
                 text run at (2,2) width 48: "Yellow"
           LayoutTableRow {TR} at (0,50) size 110x22
             LayoutTableCell {TD} at (2,50) size 52x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 40x17
+              LayoutText {#text} at (2,2) size 40x17
                 text run at (2,2) width 40: "Grape"
             LayoutTableCell {TD} at (56,50) size 52x22 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 42x17
+              LayoutText {#text} at (2,2) size 42x17
                 text run at (2,2) width 42: "Purple"
-      RenderBlock (anonymous) at (0,260) size 784x18
+      LayoutBlockFlow (anonymous) at (0,260) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,278) size 132x94 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 132x18
-          RenderInline {B} at (0,0) size 76x17
-            RenderText {#text} at (28,0) size 76x17
+        LayoutBlockFlow {CAPTION} at (0,0) size 132x18
+          LayoutInline {B} at (0,0) size 76x17
+            LayoutText {#text} at (28,0) size 76x17
               text run at (28,0) width 76: "Vegetabley"
         LayoutTableSection {TBODY} at (1,19) size 130x74
           LayoutTableRow {TR} at (0,2) size 130x22
             LayoutTableCell {TH} at (2,2) size 72x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 68x17
+              LayoutText {#text} at (2,2) size 68x17
                 text run at (2,2) width 68: "Vegetable"
             LayoutTableCell {TH} at (76,2) size 52x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (6,2) size 40x17
+              LayoutText {#text} at (6,2) size 40x17
                 text run at (6,2) width 40: "Color"
           LayoutTableRow {TR} at (0,26) size 130x22
             LayoutTableCell {TD} at (2,26) size 72x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 41x17
+              LayoutText {#text} at (2,2) size 41x17
                 text run at (2,2) width 41: "Carrot"
             LayoutTableCell {TD} at (76,26) size 52x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 48x17
+              LayoutText {#text} at (2,2) size 48x17
                 text run at (2,2) width 48: "Orange"
           LayoutTableRow {TR} at (0,50) size 130x22
             LayoutTableCell {TD} at (2,50) size 72x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 67x17
+              LayoutText {#text} at (2,2) size 67x17
                 text run at (2,2) width 67: "Cucumber"
             LayoutTableCell {TD} at (76,50) size 52x22 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 40x17
+              LayoutText {#text} at (2,2) size 40x17
                 text run at (2,2) width 40: "Green"

@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x72
-        RenderText {#text} at (0,0) size 784x71
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x72
+        LayoutText {#text} at (0,0) size 784x71
           text run at (0,0) width 457: "You should see a black box below that is the width of the content area. "
           text run at (456,0) width 265: "It contains alternating struts and springs. "
           text run at (720,0) width 64: "The struts"
@@ -15,36 +15,36 @@ layer at (0,0) size 800x600
           text run at (0,54) width 145: "your browser window."
       LayoutDeprecatedFlexibleBox {DIV} at (0,88) size 784x70 [border: (2px solid #000000)]
         LayoutDeprecatedFlexibleBox {DIV} at (6,6) size 40.45x58 [border: (2px solid #008000)]
-          RenderBlock (anonymous) at (2,2) size 36.45x54
-            RenderText {#text} at (0,0) size 37x17
+          LayoutBlockFlow (anonymous) at (2,2) size 36.45x54
+            LayoutText {#text} at (0,0) size 37x17
               text run at (0,0) width 37: "Fixed"
         LayoutDeprecatedFlexibleBox {DIV} at (50.45,6) size 195.41x58 [border: (2px solid #800080)]
-          RenderBlock (anonymous) at (2,2) size 191.41x54
-            RenderText {#text} at (0,0) size 191x53
+          LayoutBlockFlow (anonymous) at (2,2) size 191.41x54
+            LayoutText {#text} at (0,0) size 191x53
               text run at (0,0) width 191: "This is a flexible block, and it"
               text run at (0,18) width 141: "will shrink or grow as"
               text run at (0,36) width 50: "needed."
         LayoutDeprecatedFlexibleBox {DIV} at (249.86,6) size 40.45x58 [border: (2px solid #008000)]
-          RenderBlock (anonymous) at (2,2) size 36.45x54
-            RenderText {#text} at (0,0) size 37x17
+          LayoutBlockFlow (anonymous) at (2,2) size 36.45x54
+            LayoutText {#text} at (0,0) size 37x17
               text run at (0,0) width 37: "Fixed"
         LayoutDeprecatedFlexibleBox {DIV} at (294.31,6) size 195.39x58 [border: (2px solid #800080)]
-          RenderBlock (anonymous) at (2,2) size 191.39x54
-            RenderText {#text} at (0,0) size 191x53
+          LayoutBlockFlow (anonymous) at (2,2) size 191.39x54
+            LayoutText {#text} at (0,0) size 191x53
               text run at (0,0) width 191: "This is a flexible block, and it"
               text run at (0,18) width 141: "will shrink or grow as"
               text run at (0,36) width 50: "needed."
         LayoutDeprecatedFlexibleBox {DIV} at (493.70,6) size 40.45x58 [border: (2px solid #008000)]
-          RenderBlock (anonymous) at (2,2) size 36.45x54
-            RenderText {#text} at (0,0) size 37x17
+          LayoutBlockFlow (anonymous) at (2,2) size 36.45x54
+            LayoutText {#text} at (0,0) size 37x17
               text run at (0,0) width 37: "Fixed"
         LayoutDeprecatedFlexibleBox {DIV} at (538.16,6) size 195.39x58 [border: (2px solid #800080)]
-          RenderBlock (anonymous) at (2,2) size 191.39x54
-            RenderText {#text} at (0,0) size 191x53
+          LayoutBlockFlow (anonymous) at (2,2) size 191.39x54
+            LayoutText {#text} at (0,0) size 191x53
               text run at (0,0) width 191: "This is a flexible block, and it"
               text run at (0,18) width 141: "will shrink or grow as"
               text run at (0,36) width 50: "needed."
         LayoutDeprecatedFlexibleBox {DIV} at (737.55,6) size 40.45x58 [border: (2px solid #008000)]
-          RenderBlock (anonymous) at (2,2) size 36.45x54
-            RenderText {#text} at (0,0) size 37x17
+          LayoutBlockFlow (anonymous) at (2,2) size 36.45x54
+            LayoutText {#text} at (0,0) size 37x17
               text run at (0,0) width 37: "Fixed"

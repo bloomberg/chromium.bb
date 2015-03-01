@@ -1,120 +1,120 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 659
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x658.50
-    RenderBody {BODY} at (8,21.44) size 769x621.06
-      RenderBlock {H1} at (0,0) size 769x37
-        RenderText {#text} at (0,0) size 317x37
+  LayoutBlockFlow {HTML} at (0,0) size 785x658.50
+    LayoutBlockFlow {BODY} at (8,21.44) size 769x621.06
+      LayoutBlockFlow {H1} at (0,0) size 769x37
+        LayoutText {#text} at (0,0) size 317x37
           text run at (0,0) width 317: "Generic Table Tests - 1"
-      RenderBlock {P} at (0,58.44) size 769x18
-        RenderText {#text} at (0,0) size 397x18
+      LayoutBlockFlow {P} at (0,58.44) size 769x18
+        LayoutText {#text} at (0,0) size 397x18
           text run at (0,0) width 397: "If you have any comments to make regarding this test, e-mail "
-        RenderInline {A} at (0,0) size 186x18 [color=#0000EE]
-          RenderText {#text} at (396,0) size 186x18
+        LayoutInline {A} at (0,0) size 186x18 [color=#0000EE]
+          LayoutText {#text} at (396,0) size 186x18
             text run at (396,0) width 186: "py8ieh=eviltests@bath.ac.uk"
-        RenderText {#text} at (581,0) size 5x18
+        LayoutText {#text} at (581,0) size 5x18
           text run at (581,0) width 5: "."
-      RenderBlock {DL} at (0,92.44) size 769x36
-        RenderBlock {DT} at (0,0) size 769x18
-          RenderText {#text} at (0,0) size 83x18
+      LayoutBlockFlow {DL} at (0,92.44) size 769x36
+        LayoutBlockFlow {DT} at (0,0) size 769x18
+          LayoutText {#text} at (0,0) size 83x18
             text run at (0,0) width 83: "Prerequisites"
-        RenderBlock {DD} at (40,18) size 729x18
-          RenderText {#text} at (0,0) size 697x18
+        LayoutBlockFlow {DD} at (40,18) size 729x18
+          LayoutText {#text} at (0,0) size 697x18
             text run at (0,0) width 697: "Browsers that are subjected to this test should support CSS1 and the CSS2 table model, and multiple classes."
-      RenderBlock {P} at (0,144.44) size 769x98 [border: (5px double #FF0000)]
-        RenderBlock (anonymous) at (13,13) size 743x18
-          RenderText {#text} at (0,0) size 240x18
+      LayoutBlockFlow {P} at (0,144.44) size 769x98 [border: (5px double #FF0000)]
+        LayoutBlockFlow (anonymous) at (13,13) size 743x18
+          LayoutText {#text} at (0,0) size 240x18
             text run at (0,0) width 240: "If this paragraph breaks the line here:"
         LayoutTable {SPAN} at (13,31) size 60x18
           LayoutTableSection (anonymous) at (0,0) size 60x18
             LayoutTableRow (anonymous) at (0,0) size 60x18
               LayoutTableCell (anonymous) at (0,0) size 60x18 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (0,0) size 60x18
+                LayoutText {#text} at (0,0) size 60x18
                   text run at (0,0) width 60: "and here:"
-        RenderBlock (anonymous) at (13,49) size 743x36
-          RenderText {#text} at (0,0) size 121x18
+        LayoutBlockFlow (anonymous) at (13,49) size 743x36
+          LayoutText {#text} at (0,0) size 121x18
             text run at (0,0) width 121: "then your browser "
-          RenderInline {EM} at (0,0) size 83x18
-            RenderText {#text} at (120,0) size 83x18
+          LayoutInline {EM} at (0,0) size 83x18
+            LayoutText {#text} at (120,0) size 83x18
               text run at (120,0) width 83: "does support"
-          RenderText {#text} at (202,0) size 165x18
+          LayoutText {#text} at (202,0) size 165x18
             text run at (202,0) width 165: " table values on 'display'. "
-          RenderInline {STRONG} at (0,0) size 716x36
-            RenderText {#text} at (366,0) size 716x36
+          LayoutInline {STRONG} at (0,0) size 716x36
+            LayoutText {#text} at (366,0) size 716x36
               text run at (366,0) width 350: "If this paragraphs flows without any undue breaks,"
               text run at (0,18) width 459: "then you should mark your browser as not supporting table values!"
-      RenderBlock {H2} at (0,262.34) size 769x28
-        RenderText {#text} at (0,0) size 223x28
+      LayoutBlockFlow {H2} at (0,262.34) size 769x28
+        LayoutText {#text} at (0,0) size 223x28
           text run at (0,0) width 223: "1. Table -> Table Cell"
-      RenderBlock {P} at (0,310.25) size 769x36
-        RenderText {#text} at (0,0) size 764x36
+      LayoutBlockFlow {P} at (0,310.25) size 769x36
+        LayoutText {#text} at (0,0) size 764x36
           text run at (0,0) width 764: "Below there should be a gray bar, spanning the width of the BODY, with the text \"Left\" to the left and the text \"Right\","
           text run at (0,18) width 223: "on the same line, flush to the right."
       LayoutTable {DIV} at (0,362.25) size 769x18 [bgcolor=#C0C0C0]
         LayoutTableSection (anonymous) at (0,0) size 769x18
           LayoutTableRow (anonymous) at (0,0) size 769x18
             LayoutTableCell {DIV} at (0,0) size 329x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 27x18
+              LayoutText {#text} at (0,0) size 27x18
                 text run at (0,0) width 27: "Left"
             LayoutTableCell {DIV} at (329,0) size 440x18 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (404,0) size 36x18
+              LayoutText {#text} at (404,0) size 36x18
                 text run at (404,0) width 36: "Right"
-      RenderBlock {H2} at (0,400.16) size 769x28
-        RenderText {#text} at (0,0) size 156x28
+      LayoutBlockFlow {H2} at (0,400.16) size 769x28
+        LayoutText {#text} at (0,0) size 156x28
           text run at (0,0) width 156: "Submit Results"
-      RenderBlock {FORM} at (0,448.06) size 769x19
-        RenderBlock {P} at (0,0) size 769x19
-          RenderText {#text} at (0,0) size 267x18
+      LayoutBlockFlow {FORM} at (0,448.06) size 769x19
+        LayoutBlockFlow {P} at (0,0) size 769x19
+          LayoutText {#text} at (0,0) size 267x18
             text run at (0,0) width 267: "How does your browser fare on this test? "
           LayoutMenuList {SELECT} at (266.59,1) size 246x18 [bgcolor=#F8F8F8]
-            RenderBlock (anonymous) at (0,0) size 246x18
-              RenderText at (8,2) size 141x13
+            LayoutBlockFlow (anonymous) at (0,0) size 246x18
+              LayoutText at (8,2) size 141x13
                 text run at (8,2) width 141: "The test renders correctly."
-          RenderText {#text} at (512,0) size 5x18
+          LayoutText {#text} at (512,0) size 5x18
             text run at (512,0) width 5: " "
-          RenderInline {LABEL} at (0,0) size 196x18
-            RenderText {#text} at (516,0) size 73x18
+          LayoutInline {LABEL} at (0,0) size 196x18
+            LayoutText {#text} at (516,0) size 73x18
               text run at (516,0) width 73: "Comment: "
             LayoutTextControl {INPUT} at (588.16,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderText {#text} at (711,0) size 5x18
+          LayoutText {#text} at (711,0) size 5x18
             text run at (711,0) width 5: " "
           LayoutButton {INPUT} at (715.16,1) size 53.25x18 [bgcolor=#C0C0C0]
-            RenderBlock (anonymous) at (8,2) size 37.25x13
-              RenderText {#text} at (0,0) size 38x13
+            LayoutBlockFlow (anonymous) at (8,2) size 37.25x13
+              LayoutText {#text} at (0,0) size 38x13
                 text run at (0,0) width 38: "Submit"
-          RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,483.06) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,501.06) size 769x18
-        RenderText {#text} at (0,0) size 64x18
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {HR} at (0,483.06) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,501.06) size 769x18
+        LayoutText {#text} at (0,0) size 64x18
           text run at (0,0) width 64: "Up to the "
-        RenderInline {A} at (0,0) size 75x18 [color=#0000EE]
-          RenderText {#text} at (63,0) size 75x18
+        LayoutInline {A} at (0,0) size 75x18 [color=#0000EE]
+          LayoutText {#text} at (63,0) size 75x18
             text run at (63,0) width 75: "Table Tests"
-        RenderText {#text} at (137,0) size 5x18
+        LayoutText {#text} at (137,0) size 5x18
           text run at (137,0) width 5: "."
-      RenderBlock {P} at (0,535.06) size 769x18
-        RenderText {#text} at (0,0) size 64x18
+      LayoutBlockFlow {P} at (0,535.06) size 769x18
+        LayoutText {#text} at (0,0) size 64x18
           text run at (0,0) width 64: "Up to the "
-        RenderInline {A} at (0,0) size 101x18 [color=#0000EE]
-          RenderText {#text} at (63,0) size 101x18
+        LayoutInline {A} at (0,0) size 101x18 [color=#0000EE]
+          LayoutText {#text} at (63,0) size 101x18
             text run at (63,0) width 101: "Evil Tests Page"
-        RenderText {#text} at (163,0) size 5x18
+        LayoutText {#text} at (163,0) size 5x18
           text run at (163,0) width 5: "."
-      RenderBlock {P} at (0,569.06) size 769x18
-        RenderText {#text} at (0,0) size 177x18
+      LayoutBlockFlow {P} at (0,569.06) size 769x18
+        LayoutText {#text} at (0,0) size 177x18
           text run at (0,0) width 177: "This page is maintained by "
-        RenderInline {A} at (0,0) size 79x18 [color=#0000EE]
-          RenderText {#text} at (176,0) size 79x18
+        LayoutInline {A} at (0,0) size 79x18 [color=#0000EE]
+          LayoutText {#text} at (176,0) size 79x18
             text run at (176,0) width 79: "Ian Hickson"
-        RenderText {#text} at (254,0) size 10x18
+        LayoutText {#text} at (254,0) size 10x18
           text run at (254,0) width 10: " ("
-        RenderInline {A} at (0,0) size 125x18 [color=#0000EE]
-          RenderText {#text} at (263,0) size 125x18
+        LayoutInline {A} at (0,0) size 125x18 [color=#0000EE]
+          LayoutText {#text} at (263,0) size 125x18
             text run at (263,0) width 125: "py8ieh@bath.ac.uk"
-        RenderText {#text} at (387,0) size 10x18
+        LayoutText {#text} at (387,0) size 10x18
           text run at (387,0) width 10: ")."
-      RenderBlock {P} at (0,603.06) size 769x18
-        RenderText {#text} at (0,0) size 185x18
+      LayoutBlockFlow {P} at (0,603.06) size 769x18
+        LayoutText {#text} at (0,0) size 185x18
           text run at (0,0) width 185: "Last updated in March 1999."
 layer at (599,473) size 117x13
-  RenderBlock {DIV} at (3,3) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13

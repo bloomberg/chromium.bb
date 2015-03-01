@@ -1,1 +1,1 @@
-Bug 105545 - RenderBlock and LayoutBox hit testing should ignore PseudoElements
+Bug 105545 - LayoutBlockFlow and LayoutBox hit testing should ignore PseudoElements

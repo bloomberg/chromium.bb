@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1392
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (8,8) size 769x1376 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (8,8) size 769x1376 [bgcolor=#008000] [border: (16px solid #00FF00)]
+  LayoutBlockFlow {HTML} at (8,8) size 769x1376 [bgcolor=#008000] [border: (16px solid #00FF00)]
     LayoutTable at (16,16) size 737x1344
       LayoutTableSection (anonymous) at (0,0) size 737x1344
         LayoutTableRow (anonymous) at (0,0) size 737x1344
           LayoutTableCell {HEAD} at (0,0) size 205x544 [color=#FFFFFF] [bgcolor=#FF0000] [border: (5px solid #FFFFFF)] [r=0 c=0 rs=1 cs=1]
-            RenderBlock {META} at (21,37) size 163x2 [border: (1px dotted #FFFFFF)]
-            RenderBlock {META} at (21,55) size 163x2 [border: (1px dotted #FFFFFF)]
-            RenderBlock {META} at (21,73) size 163x2 [border: (1px dotted #FFFFFF)]
-            RenderBlock {META} at (21,91) size 163x2 [border: (1px dotted #FFFFFF)]
-            RenderBlock {TITLE} at (21,109) size 163x56 [border: (1px dotted #FFFFFF)]
-              RenderText {#text} at (1,1) size 141x53
+            LayoutBlockFlow {META} at (21,37) size 163x2 [border: (1px dotted #FFFFFF)]
+            LayoutBlockFlow {META} at (21,55) size 163x2 [border: (1px dotted #FFFFFF)]
+            LayoutBlockFlow {META} at (21,73) size 163x2 [border: (1px dotted #FFFFFF)]
+            LayoutBlockFlow {META} at (21,91) size 163x2 [border: (1px dotted #FFFFFF)]
+            LayoutBlockFlow {TITLE} at (21,109) size 163x56 [border: (1px dotted #FFFFFF)]
+              LayoutText {#text} at (1,1) size 141x53
                 text run at (1,1) width 140: "Evil Tests: Rendering"
                 text run at (1,19) width 139: "BODY and HEAD as"
                 text run at (1,37) width 141: "children of HTML - 2"
-            RenderBlock {STYLE} at (21,181) size 163x326 [border: (1px dotted #FFFFFF)]
-              RenderText {#text} at (1,1) size 158x323
+            LayoutBlockFlow {STYLE} at (21,181) size 163x326 [border: (1px dotted #FFFFFF)]
+              LayoutText {#text} at (1,1) size 158x323
                 text run at (1,1) width 83: "/* Layout */ "
                 text run at (83,1) width 58: "HTML {"
                 text run at (1,19) width 145: "display: block; border:"
@@ -40,140 +40,140 @@ layer at (8,8) size 769x1376 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,289) width 151: "BODY { color: yellow;"
                 text run at (1,307) width 124: "background: teal; }"
           LayoutTableCell {BODY} at (205,41) size 532x1303 [color=#FFFF00] [bgcolor=#008080] [border: (5px solid #FFFF00)] [r=0 c=1 rs=1 cs=1]
-            RenderBlock {H1} at (21,53) size 490x76 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 152x36
+            LayoutBlockFlow {H1} at (21,53) size 490x76 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 152x36
                 text run at (1,1) width 152: "Rendering "
-              RenderInline {CODE} at (0,0) size 63x30
-                RenderText {#text} at (153,8) size 63x30
+              LayoutInline {CODE} at (0,0) size 63x30
+                LayoutText {#text} at (153,8) size 63x30
                   text run at (153,8) width 63: "BODY"
-              RenderText {#text} at (215,1) size 69x36
+              LayoutText {#text} at (215,1) size 69x36
                 text run at (215,1) width 69: " and "
-              RenderInline {CODE} at (0,0) size 63x30
-                RenderText {#text} at (283,8) size 63x30
+              LayoutInline {CODE} at (0,0) size 63x30
+                LayoutText {#text} at (283,8) size 63x30
                   text run at (283,8) width 63: "HEAD"
-              RenderText {#text} at (345,1) size 381x73
+              LayoutText {#text} at (345,1) size 381x73
                 text run at (345,1) width 37: " as"
                 text run at (1,38) width 157: "children of "
-              RenderInline {CODE} at (0,0) size 63x30
-                RenderText {#text} at (157,45) size 63x30
+              LayoutInline {CODE} at (0,0) size 63x30
+                LayoutText {#text} at (157,45) size 63x30
                   text run at (157,45) width 63: "HTML"
-              RenderText {#text} at (219,38) size 44x36
+              LayoutText {#text} at (219,38) size 44x36
                 text run at (219,38) width 44: " - 2"
-            RenderBlock {P} at (21,161) size 490x38 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 393x17
+            LayoutBlockFlow {P} at (21,161) size 490x38 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 393x17
                 text run at (1,1) width 393: "If you have any comments to make regarding this test, e-mail"
-              RenderInline {A} at (0,0) size 186x17 [color=#0000EE]
-                RenderText {#text} at (1,19) size 186x17
+              LayoutInline {A} at (0,0) size 186x17 [color=#0000EE]
+                LayoutText {#text} at (1,19) size 186x17
                   text run at (1,19) width 186: "py8ieh=eviltests@bath.ac.uk"
-              RenderText {#text} at (186,19) size 5x17
+              LayoutText {#text} at (186,19) size 5x17
                 text run at (186,19) width 5: "."
-            RenderBlock {DL} at (21,215) size 490x92 [border: (1px dotted #FFFF00)]
-              RenderBlock {DT} at (1,1) size 488x18
-                RenderText {#text} at (0,0) size 83x17
+            LayoutBlockFlow {DL} at (21,215) size 490x92 [border: (1px dotted #FFFF00)]
+              LayoutBlockFlow {DT} at (1,1) size 488x18
+                LayoutText {#text} at (0,0) size 83x17
                   text run at (0,0) width 83: "Prerequisites"
-              RenderBlock {DD} at (41,19) size 448x72
-                RenderText {#text} at (0,0) size 424x53
+              LayoutBlockFlow {DD} at (41,19) size 448x72
+                LayoutText {#text} at (0,0) size 424x53
                   text run at (0,0) width 392: "Browsers that are subjected to this test should support the the"
                   text run at (0,18) width 424: "background, padding, margin, border and color properties of CSS,"
                   text run at (0,36) width 124: "and in addition the "
-                RenderInline {CODE} at (0,0) size 65x16
-                  RenderText {#text} at (123,38) size 65x16
+                LayoutInline {CODE} at (0,0) size 65x16
+                  LayoutText {#text} at (123,38) size 65x16
                     text run at (123,38) width 65: "overflow"
-                RenderText {#text} at (187,36) size 434x35
+                LayoutText {#text} at (187,36) size 434x35
                   text run at (187,36) width 247: " property and fixed position stuff from"
                   text run at (0,54) width 41: "CSS2."
-            RenderBlock {H2} at (21,331) size 490x56 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 440x53
+            LayoutBlockFlow {H2} at (21,331) size 490x56 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 440x53
                 text run at (1,1) width 440: "1. Making the BODY and the HEAD into a"
                 text run at (1,28) width 51: "table"
-            RenderBlock {P} at (21,411) size 490x20 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 264x17
+            LayoutBlockFlow {P} at (21,411) size 490x20 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 264x17
                 text run at (1,1) width 264: "This is really evil, but completely valid..."
-            RenderBlock {P} at (21,447) size 490x92 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 487x89
+            LayoutBlockFlow {P} at (21,447) size 490x92 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 487x89
                 text run at (1,1) width 487: "This document should have two cells, side by side: one on the left, the other"
                 text run at (1,19) width 454: "on the right. The one on the left should be red with white writing and a"
                 text run at (1,37) width 477: "thick white border. It should contain four dotted lines separated by a blank"
                 text run at (1,55) width 475: "line, followed by a dotted bordered box containing the document title, and"
                 text run at (1,73) width 471: "another dotted bordered box containing the stylesheet, also shown below:"
-            RenderBlock {PRE} at (21,555) size 490x18 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 40x16
+            LayoutBlockFlow {PRE} at (21,555) size 490x18 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 40x16
                 text run at (1,1) width 40: "  ..."
                 text run at (41,1) width 0: " "
-            RenderBlock {P} at (21,589) size 490x20 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 463x17
+            LayoutBlockFlow {P} at (21,589) size 490x20 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 463x17
                 text run at (1,1) width 463: "The dotted borders and lines and the text in the left cell should be white."
-            RenderBlock {P} at (21,625) size 490x38 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 447x35
+            LayoutBlockFlow {P} at (21,625) size 490x38 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 447x35
                 text run at (1,1) width 447: "The right cell should be teal, with yellow text. This paragraph you are"
                 text run at (1,19) width 255: "reading now should be in this right cell."
-            RenderBlock {P} at (21,679) size 490x20 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 454x17
+            LayoutBlockFlow {P} at (21,679) size 490x20 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 454x17
                 text run at (1,1) width 454: "The width of the two cells is left up to the user agent to decide, I think."
-            RenderBlock {P} at (21,715) size 490x74 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 488x71
+            LayoutBlockFlow {P} at (21,715) size 490x74 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 488x71
                 text run at (1,1) width 488: "The right cell should look similar to the left cell in formatting -- each box of"
                 text run at (1,19) width 465: "text should have a yellow dotted border, and there should be a blank line"
                 text run at (1,37) width 485: "between each such box. No box should be nested -- the dotted boxes should"
                 text run at (1,55) width 224: "always be distinct from each other."
-            RenderBlock {P} at (21,805) size 490x38 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 482x35
+            LayoutBlockFlow {P} at (21,805) size 490x38 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 482x35
                 text run at (1,1) width 482: "The cells should be the same height, and they should have grown vertically"
                 text run at (1,19) width 165: "to accommodate this text."
-            RenderBlock {P} at (21,859) size 490x56 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 482x53
+            LayoutBlockFlow {P} at (21,859) size 490x56 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 482x53
                 text run at (1,1) width 479: "Around the whole setup should be two borders, dark green and light green."
                 text run at (1,19) width 482: "The cells should be separated from each other and from these outer borders"
                 text run at (1,37) width 141: "by 1em of dark green."
-            RenderBlock {P} at (21,931) size 490x38 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 446x35
+            LayoutBlockFlow {P} at (21,931) size 490x38 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 446x35
                 text run at (1,1) width 446: "There should also be some alternate stylesheets set up to allow you to"
                 text run at (1,19) width 389: "display the <META> content. This may help with diagnosis."
-            RenderBlock {H2} at (21,993) size 490x29 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 156x26
+            LayoutBlockFlow {H2} at (21,993) size 490x29 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 156x26
                 text run at (1,1) width 156: "Submit Results"
-            RenderBlock {FORM} at (21,1046) size 490x94 [border: (1px dotted #FFFF00)]
-              RenderBlock {P} at (1,17) size 488x60
-                RenderText {#text} at (0,0) size 263x17
+            LayoutBlockFlow {FORM} at (21,1046) size 490x94 [border: (1px dotted #FFFF00)]
+              LayoutBlockFlow {P} at (1,17) size 488x60
+                LayoutText {#text} at (0,0) size 263x17
                   text run at (0,0) width 263: "How does your browser fare on this test?"
                 LayoutMenuList {SELECT} at (0,18) size 488x20 [color=#000000] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-                  RenderBlock (anonymous) at (1,1) size 486x18
-                    RenderText at (4,1) size 234x16
+                  LayoutBlockFlow (anonymous) at (1,1) size 486x18
+                    LayoutText at (4,1) size 234x16
                       text run at (4,1) width 234: "Document renders exactly as described."
-                RenderText {#text} at (0,0) size 0x0
-                RenderInline {LABEL} at (0,0) size 245x17
-                  RenderText {#text} at (0,40) size 72x17
+                LayoutText {#text} at (0,0) size 0x0
+                LayoutInline {LABEL} at (0,0) size 245x17
+                  LayoutText {#text} at (0,40) size 72x17
                     text run at (0,40) width 72: "Comment: "
                   LayoutTextControl {INPUT} at (71.55,38) size 173x22 [color=#000000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderText {#text} at (244,40) size 5x17
+                LayoutText {#text} at (244,40) size 5x17
                   text run at (244,40) width 5: " "
                 LayoutButton {INPUT} at (248.55,38) size 57x22 [color=#000000] [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  RenderBlock (anonymous) at (8,3) size 41x16
-                    RenderText {#text} at (0,0) size 41x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 41x16
+                    LayoutText {#text} at (0,0) size 41x16
                       text run at (0,0) width 41: "Submit"
-                RenderText {#text} at (0,0) size 0x0
-            RenderBlock {HR} at (21,1156) size 490x2 [border: (1px dotted #FFFF00)]
-            RenderBlock {P} at (21,1174) size 490x20 [border: (1px dotted #FFFF00)]
-              RenderInline {A} at (0,0) size 164x17 [color=#0000EE]
-                RenderText {#text} at (1,1) size 164x17
+                LayoutText {#text} at (0,0) size 0x0
+            LayoutBlockFlow {HR} at (21,1156) size 490x2 [border: (1px dotted #FFFF00)]
+            LayoutBlockFlow {P} at (21,1174) size 490x20 [border: (1px dotted #FFFF00)]
+              LayoutInline {A} at (0,0) size 164x17 [color=#0000EE]
+                LayoutText {#text} at (1,1) size 164x17
                   text run at (1,1) width 164: "Up to the Evil Tests Page"
-              RenderText {#text} at (164,1) size 5x17
+              LayoutText {#text} at (164,1) size 5x17
                 text run at (164,1) width 5: "."
-            RenderBlock {P} at (21,1210) size 490x20 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 177x17
+            LayoutBlockFlow {P} at (21,1210) size 490x20 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 177x17
                 text run at (1,1) width 177: "This page is maintained by "
-              RenderInline {A} at (0,0) size 79x17 [color=#0000EE]
-                RenderText {#text} at (177,1) size 79x17
+              LayoutInline {A} at (0,0) size 79x17 [color=#0000EE]
+                LayoutText {#text} at (177,1) size 79x17
                   text run at (177,1) width 79: "Ian Hickson"
-              RenderText {#text} at (255,1) size 10x17
+              LayoutText {#text} at (255,1) size 10x17
                 text run at (255,1) width 10: " ("
-              RenderInline {A} at (0,0) size 125x17 [color=#0000EE]
-                RenderText {#text} at (264,1) size 125x17
+              LayoutInline {A} at (0,0) size 125x17 [color=#0000EE]
+                LayoutText {#text} at (264,1) size 125x17
                   text run at (264,1) width 125: "py8ieh@bath.ac.uk"
-              RenderText {#text} at (388,1) size 10x17
+              LayoutText {#text} at (388,1) size 10x17
                 text run at (388,1) width 10: ")."
-            RenderBlock {P} at (21,1246) size 490x20 [border: (1px dotted #FFFF00)]
-              RenderText {#text} at (1,1) size 172x17
+            LayoutBlockFlow {P} at (21,1246) size 490x20 [border: (1px dotted #FFFF00)]
+              LayoutText {#text} at (1,1) size 172x17
                 text run at (1,1) width 172: "Last updated in June 1999."
 layer at (325,1169) size 169x16 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (2,3) size 169x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16

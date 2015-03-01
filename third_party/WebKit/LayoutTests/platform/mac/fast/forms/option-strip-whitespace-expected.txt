@@ -1,50 +1,50 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 411x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 411x18
           text run at (0,0) width 411: "All of these selects should have the same amount of whitespace."
-      RenderBlock (anonymous) at (0,34) size 784x245
-        RenderText {#text} at (0,40) size 72x18
+      LayoutBlockFlow (anonymous) at (0,34) size 784x245
+        LayoutText {#text} at (0,40) size 72x18
           text run at (0,40) width 72: "Five Tabs: "
         LayoutBR {BR} at (138,54) size 1x0
         LayoutBR {BR} at (0,58) size 0x18
-        RenderText {#text} at (0,116) size 86x18
+        LayoutText {#text} at (0,116) size 86x18
           text run at (0,116) width 86: "Five Spaces: "
         LayoutBR {BR} at (152,130) size 1x0
         LayoutBR {BR} at (0,134) size 0x18
-        RenderText {#text} at (0,152) size 306x18
+        LayoutText {#text} at (0,152) size 306x18
           text run at (0,152) width 306: "Five Spaces (with leading/trailing whitespace): "
         LayoutMenuList {SELECT} at (305.25,153) size 92x18 [bgcolor=#F8F8F8]
-          RenderBlock (anonymous) at (0,0) size 92x18
-            RenderText at (8,2) size 61x13
+          LayoutBlockFlow (anonymous) at (0,0) size 92x18
+            LayoutText at (8,2) size 61x13
               text run at (8,2) width 61: "Five Spaces"
         LayoutBR {BR} at (397,166) size 1x0
         LayoutBR {BR} at (0,171) size 0x18
-        RenderText {#text} at (0,189) size 292x18
+        LayoutText {#text} at (0,189) size 292x18
           text run at (0,189) width 292: "Five Tabs (with leading/trailing whitespace): "
         LayoutMenuList {SELECT} at (291.92,190) size 81x18 [bgcolor=#F8F8F8]
-          RenderBlock (anonymous) at (0,0) size 81x18
-            RenderText at (8,2) size 50x13
+          LayoutBlockFlow (anonymous) at (0,0) size 81x18
+            LayoutText at (8,2) size 50x13
               text run at (8,2) width 50: "Five Tabs"
         LayoutBR {BR} at (372,203) size 1x0
         LayoutBR {BR} at (0,208) size 0x18
-        RenderText {#text} at (0,226) size 129x18
+        LayoutText {#text} at (0,226) size 129x18
           text run at (0,226) width 129: "Mixed Whitespace: "
         LayoutMenuList {SELECT} at (128.84,227) size 81x18 [bgcolor=#F8F8F8]
-          RenderBlock (anonymous) at (0,0) size 81x18
-            RenderText at (8,2) size 50x13
+          LayoutBlockFlow (anonymous) at (0,0) size 81x18
+            LayoutText at (8,2) size 50x13
               text run at (8,2) width 50: "Five Tabs"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (80,41) size 67x59 clip at (81,42) size 54x57 scrollHeight 56
   LayoutListBox {SELECT} at (71.98,-0.75) size 66.95x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    RenderBlock {OPTION} at (1,1) size 53.95x14.19
-      RenderText {#text} at (2,0) size 50x13
+    LayoutBlockFlow {OPTION} at (1,1) size 53.95x14.19
+      LayoutText {#text} at (2,0) size 50x13
         text run at (2,0) width 50: "Five Tabs"
 layer at (93,117) size 67x59 clip at (94,118) size 54x57 scrollHeight 56
   LayoutListBox {SELECT} at (85.31,75.25) size 66.95x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    RenderBlock {OPTION} at (1,1) size 53.95x14.19
-      RenderText {#text} at (2,0) size 50x13
+    LayoutBlockFlow {OPTION} at (1,1) size 53.95x14.19
+      LayoutText {#text} at (2,0) size 50x13
         text run at (2,0) width 50: "Five Tabs"

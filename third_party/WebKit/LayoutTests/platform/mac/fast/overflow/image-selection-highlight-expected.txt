@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 218x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 218x18
           text run at (0,0) width 218: "This tests for a regression against "
-        RenderInline {I} at (0,0) size 745x36
-          RenderInline {A} at (0,0) size 355x18 [color=#0000EE]
-            RenderText {#text} at (217,0) size 355x18
+        LayoutInline {I} at (0,0) size 745x36
+          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 355x18
               text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6673"
-          RenderText {#text} at (571,0) size 745x36
+          LayoutText {#text} at (571,0) size 745x36
             text run at (571,0) width 5: " "
             text run at (575,0) width 170: "Selection highlight doesn't"
             text run at (0,18) width 416: "scroll along with an image contained in an overflow:scroll block"
-        RenderText {#text} at (415,18) size 5x18
+        LayoutText {#text} at (415,18) size 5x18
           text run at (415,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x36
-        RenderText {#text} at (0,0) size 763x36
+      LayoutBlockFlow {P} at (0,52) size 784x36
+        LayoutText {#text} at (0,0) size 763x36
           text run at (0,0) width 421: "There should be one contiguous highlight from \x{201C}elit\x{201D} to \x{201C}Etiam\x{201D}, "
           text run at (420,0) width 343: "including the orange square, and no other highlighted"
           text run at (0,18) width 37: "areas."
-      RenderBlock {HR} at (0,104) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,104) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,122) size 100x200 clip at (8,122) size 85x200 scrollY 40.00 scrollHeight 288
-  RenderBlock {DIV} at (0,114) size 100x200
-    RenderText {#text} at (0,0) size 80x108
+  LayoutBlockFlow {DIV} at (0,114) size 100x200
+    LayoutText {#text} at (0,0) size 80x108
       text run at (0,0) width 43: "Lorem"
       text run at (0,18) width 77: "ipsum dolor"
       text run at (0,36) width 55: "sit amet,"
@@ -32,7 +32,7 @@ layer at (8,122) size 100x200 clip at (8,122) size 85x200 scrollY 40.00 scrollHe
       text run at (0,72) width 66: "adipiscing"
       text run at (0,90) width 29: "elit. "
     LayoutImage {IMG} at (28.44,94) size 10x10
-    RenderText {#text} at (38,90) size 85x198
+    LayoutText {#text} at (38,90) size 85x198
       text run at (38,90) width 5: " "
       text run at (42,90) width 39: "Etiam"
       text run at (0,108) width 59: "et ipsum."

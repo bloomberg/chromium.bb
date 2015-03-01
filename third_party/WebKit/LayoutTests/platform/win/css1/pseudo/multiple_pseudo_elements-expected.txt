@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1037
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x1037
-    RenderBody {BODY} at (8,8) size 769x1021 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 769x18
-        RenderInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
+  LayoutBlockFlow {HTML} at (0,0) size 785x1037
+    LayoutBlockFlow {BODY} at (8,8) size 769x1021 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
           LayoutTextFragment at (0,0) size 10x17
             text run at (0,0) width 10: "T"
         LayoutTextFragment {#text} at (9,0) size 354x17
           text run at (9,0) width 354: "he style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 769x112
-        RenderText {#text} at (0,0) size 368x112
+      LayoutBlockFlow {PRE} at (0,34) size 769x112
+        LayoutText {#text} at (0,0) size 368x112
           text run at (0,0) width 224: "P:first-line {color: green;}"
           text run at (224,0) width 0: " "
           text run at (0,16) width 248: "P:first-letter {color: maroon;}"
@@ -24,9 +24,9 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,80) width 368: "P.three:first-line {font-variant: small-caps;}"
           text run at (368,80) width 0: " "
           text run at (0,96) width 0: " "
-      RenderBlock {HR} at (0,159) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,177) size 769x54
-        RenderInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
+      LayoutBlockFlow {HR} at (0,159) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,177) size 769x54
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
           LayoutTextFragment at (0,0) size 10x17
             text run at (0,0) width 10: "T"
         LayoutTextFragment {#text} at (9,0) size 744x53
@@ -35,8 +35,8 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (43,18) width 525: "If this precise combination does not occur, then the user agent has failed this test. "
           text run at (567,18) width 170: "Remember that in order to"
           text run at (0,36) width 505: "ensure a complete test, the paragraph must be displayed on more than one line."
-      RenderBlock {P} at (0,247) size 769x183
-        RenderInline {<pseudo:first-letter>} at (0,0) size 69x124 [color=#800000]
+      LayoutBlockFlow {P} at (0,247) size 769x183
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 69x124 [color=#800000]
           LayoutTextFragment at (0,2) size 69x124
             text run at (0,2) width 69: "T"
         LayoutTextFragment {#text} at (68,73) size 766x109
@@ -46,8 +46,8 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (303,147) width 463: "If this precise combination does not occur, then the user agent has failed"
           text run at (0,165) width 58: "this test. "
           text run at (57,165) width 678: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than one line."
-      RenderBlock {P} at (0,446) size 769x118
-        RenderInline {<pseudo:first-letter>} at (0,0) size 76x62 [color=#800000]
+      LayoutBlockFlow {P} at (0,446) size 769x118
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 76x62 [color=#800000]
           LayoutTextFragment at (0,1) size 76x62
             text run at (0,1) width 76: "\"W"
         LayoutTextFragment {#text} at (75,37) size 757x80
@@ -61,16 +61,16 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x439
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x413
             LayoutTableCell {TD} at (0,219) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 755x413 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 747x54
-                RenderInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
+              LayoutBlockFlow {P} at (4,4) size 747x54
+                LayoutInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
                   LayoutTextFragment at (0,0) size 10x17
                     text run at (0,0) width 10: "T"
                 LayoutTextFragment {#text} at (9,0) size 744x53
@@ -79,8 +79,8 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (43,18) width 525: "If this precise combination does not occur, then the user agent has failed this test. "
                   text run at (567,18) width 170: "Remember that in order to"
                   text run at (0,36) width 505: "ensure a complete test, the paragraph must be displayed on more than one line."
-              RenderBlock {P} at (4,74) size 747x201
-                RenderInline {<pseudo:first-letter>} at (0,0) size 69x124 [color=#800000]
+              LayoutBlockFlow {P} at (4,74) size 747x201
+                LayoutInline {<pseudo:first-letter>} at (0,0) size 69x124 [color=#800000]
                   LayoutTextFragment at (0,2) size 69x124
                     text run at (0,2) width 69: "T"
                 LayoutTextFragment {#text} at (68,73) size 742x127
@@ -91,8 +91,8 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,165) width 124: "has failed this test. "
                   text run at (123,165) width 619: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than"
                   text run at (0,183) width 56: "one line."
-              RenderBlock {P} at (4,291) size 747x118
-                RenderInline {<pseudo:first-letter>} at (0,0) size 76x62 [color=#800000]
+              LayoutBlockFlow {P} at (4,291) size 747x118
+                LayoutInline {<pseudo:first-letter>} at (0,0) size 76x62 [color=#800000]
                   LayoutTextFragment at (0,1) size 76x62
                     text run at (0,1) width 76: "\"W"
                 LayoutTextFragment {#text} at (75,37) size 744x80

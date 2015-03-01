@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (0,0) size 800x600 [bgcolor=#FFFFFF]
-      RenderBlock (anonymous) at (0,0) size 800x102
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (0,0) size 800x600 [bgcolor=#FFFFFF]
+      LayoutBlockFlow (anonymous) at (0,0) size 800x102
         LayoutImage {IMG} at (0,0) size 102x102 [border: (1px solid #000000)]
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,102) size 800x130 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 796x126
           LayoutTableRow {TR} at (0,0) size 796x0
@@ -15,11 +15,11 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,0) size 110x122
                     LayoutTableCell {TD} at (0,0) size 110x122 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutImage {IMG} at (5,1) size 100x100
-                      RenderText {#text} at (1,101) size 50x19
+                      LayoutText {#text} at (1,101) size 50x19
                         text run at (1,101) width 50: "HELLO"
           LayoutTableRow {TR} at (0,0) size 796x126
             LayoutTableCell {TD} at (115,2) size 327x122 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 318x119
+              LayoutText {#text} at (1,1) size 318x119
                 text run at (1,1) width 312: "The Zurich football team known as FC Blue Stars is"
                 text run at (1,21) width 98: "one of the city's "
                 text run at (99,21) width 151: "oldest-established clubs, "
@@ -31,6 +31,6 @@ layer at (0,0) size 800x600
                 text run at (1,81) width 308: "Ascension Day and the day before) that it now also"
                 text run at (1,101) width 114: "has an international"
             LayoutTableCell {TD} at (442,52) size 354x22 [bgcolor=#E6E8FA] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 348x19
+              LayoutText {#text} at (1,1) size 348x19
                 text run at (1,1) width 288: "hello hello hello hello hello hello hello hello hello "
                 text run at (289,1) width 60: "hello hello"

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x505
-  RenderBlock {html} at (0,0) size 800x505
-    RenderBody {body} at (0,0) size 800x505
+  LayoutBlockFlow {html} at (0,0) size 800x505
+    LayoutBlockFlow {body} at (0,0) size 800x505
       LayoutSVGRoot {svg} at (9,13) size 571x383
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="grad1"] [gradientUnits=objectBoundingBox] [gradientTransform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [start=(0,0)] [end=(1,0)]
@@ -48,6 +48,6 @@ layer at (0,0) size 800x505
           LayoutSVGText {text} at (0,373) size 569x22 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 569x22
               chunk 1 text run 1 at (0.00,390.00) startOffset 0 endOffset 73 width 569.00: "Selected text should have both gradient fill, solid stroke and background"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 selection start: position 0 of child 0 {#text} of child 3 {text} of child 3 {g} of child 1 {svg} of body
 selection end:   position 73 of child 0 {#text} of child 27 {text} of child 3 {g} of child 1 {svg} of body

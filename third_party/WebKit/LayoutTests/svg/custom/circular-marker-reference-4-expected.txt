@@ -1,5 +1,5 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (108,281) size 460x94
     LayoutSVGResourceMarker {marker} [id="mark1"] [markerUnits=strokeWidth] [ref at (4,4)] [angle=0.00]

@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
-      RenderBlock {H4} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 158x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
+      LayoutBlockFlow {H4} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 158x18
           text run at (0,0) width 158: "Testcase distilled from "
-        RenderInline {A} at (0,0) size 170x18 [color=#0000EE]
-          RenderText {#text} at (157,0) size 170x18
+        LayoutInline {A} at (0,0) size 170x18 [color=#0000EE]
+          LayoutText {#text} at (157,0) size 170x18
             text run at (157,0) width 170: "http://www.weather.com"
       LayoutTable {TABLE} at (0,39.27) size 450x196
         LayoutTableSection {TBODY} at (0,0) size 450x196
@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
                     LayoutTableCell {TD} at (0,0) size 125x196 [r=0 c=0 rs=1 cs=1]
                       LayoutImage {IMG} at (0,0) size 125x34
                       LayoutBR {BR} at (125,34) size 0x0
-                      RenderText {#text} at (0,34) size 122x36
+                      LayoutText {#text} at (0,34) size 122x36
                         text run at (0,34) width 122: "Jose moving out to"
                         text run at (0,52) width 21: "sea"
                       LayoutBR {BR} at (20,66) size 1x0
@@ -35,19 +35,19 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,27) size 450x169
             LayoutTableCell {TD} at (0,27) size 167x105 [r=1 c=0 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 167x105
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (167,102) size 4x18 [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 4x18
+              LayoutText {#text} at (0,0) size 4x18
                 text run at (0,0) width 4: " "
             LayoutTableCell {TD} at (171,27) size 154x75 [r=1 c=2 rs=1 cs=1]
-              RenderInline {FONT} at (0,0) size 144x75
-                RenderInline {B} at (0,0) size 66x15
-                  RenderText {#text} at (0,0) size 66x15
+              LayoutInline {FONT} at (0,0) size 144x75
+                LayoutInline {B} at (0,0) size 66x15
+                  LayoutText {#text} at (0,0) size 66x15
                     text run at (0,0) width 66: "Chilly time"
                 LayoutBR {BR} at (65,12) size 1x0
-                RenderText {#text} at (0,15) size 144x60
+                LayoutText {#text} at (0,15) size 144x60
                   text run at (0,15) width 120: "Though the calendar"
                   text run at (0,30) width 121: "disagrees, the feel of"
                   text run at (0,45) width 144: "winter is in the air across"
                   text run at (0,60) width 102: "much of the East."
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0

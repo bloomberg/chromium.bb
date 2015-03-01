@@ -1,5 +1,5 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600 transparent
   LayoutSVGRoot {svg} at (0,0) size 166x148 [opacity=0.90]
     LayoutSVGViewportContainer {svg} at (0,0) size 166x148

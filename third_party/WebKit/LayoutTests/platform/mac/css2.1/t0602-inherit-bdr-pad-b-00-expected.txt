@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x84
-  RenderBlock {HTML} at (0,0) size 800x84
-    RenderBody {BODY} at (8,16) size 784x52
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 243x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x84
+    LayoutBlockFlow {BODY} at (8,16) size 784x52
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 243x18
           text run at (0,0) width 243: "This sentence should have no border. "
-        RenderInline {SPAN} at (0,0) size 279x28 [border: (5px solid #00FF00)]
-          RenderText {#text} at (247,0) size 269x18
+        LayoutInline {SPAN} at (0,0) size 279x28 [border: (5px solid #00FF00)]
+          LayoutText {#text} at (247,0) size 269x18
             text run at (247,0) width 269: "This sentence should have a green border."
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,34) size 784x18
-        RenderInline {SPAN} at (0,0) size 380x34 [bgcolor=#FF0000]
-          RenderInline {SPAN} at (0,0) size 380x34 [bgcolor=#00FF00]
-            RenderText {#text} at (0,0) size 380x18
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutInline {SPAN} at (0,0) size 380x34 [bgcolor=#FF0000]
+          LayoutInline {SPAN} at (0,0) size 380x34 [bgcolor=#00FF00]
+            LayoutText {#text} at (0,0) size 380x18
               text run at (0,0) width 380: "This sentence should be in a green bar, with no red present."
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

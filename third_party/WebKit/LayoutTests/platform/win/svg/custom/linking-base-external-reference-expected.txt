@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 603
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x600
-  RenderBlock {html} at (0,0) size 785x600
-    RenderInline {base} at (0,0) size 0x0
-    RenderText {#text} at (0,0) size 0x0
-    RenderText {#text} at (0,0) size 0x0
+  LayoutBlockFlow {html} at (0,0) size 785x600
+    LayoutInline {base} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0
     LayoutSVGRoot {svg} at (0,0) size 100x100
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceLinearGradient {linearGradient} [id="orange_red"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
       LayoutSVGRect {rect} at (0,0) size 100x100 [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0

@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 268x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 268x17
           text run at (0,0) width 268: "Tables: both lines should be 1 pixel thick."
         LayoutBR {BR} at (267,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x17
@@ -14,35 +14,35 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,2) size 31x1 [bgcolor=#FF0000] [r=0 c=0 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 30x1
             LayoutTableCell {TD} at (35,2) size 0x0 [r=0 c=1 rs=1 cs=1]
-      RenderBlock (anonymous) at (0,41) size 784x18
+      LayoutBlockFlow (anonymous) at (0,41) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,59) size 34x5
         LayoutTableSection {TBODY} at (0,0) size 34x5
           LayoutTableRow {TR} at (0,2) size 34x1
             LayoutTableCell {TD} at (2,2) size 30x1 [bgcolor=#FF0000] [r=0 c=0 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 30x1
-      RenderBlock (anonymous) at (0,64) size 784x178
+      LayoutBlockFlow (anonymous) at (0,64) size 784x178
         LayoutBR {BR} at (0,0) size 0x17
         LayoutBR {BR} at (0,18) size 0x17
         LayoutBR {BR} at (0,36) size 0x17
-        RenderText {#text} at (0,54) size 403x17
+        LayoutText {#text} at (0,54) size 403x17
           text run at (0,54) width 224: "2 texts, FACE=\"Arial, Helvetica\", "
           text run at (223,54) width 180: "1st at size=0, 2nd at size=-4"
         LayoutBR {BR} at (402,68) size 1x0
         LayoutBR {BR} at (0,72) size 0x17
-        RenderInline {FONT} at (0,0) size 104x26
-          RenderText {#text} at (0,90) size 104x13
+        LayoutInline {FONT} at (0,0) size 104x26
+          LayoutText {#text} at (0,90) size 104x13
             text run at (0,90) width 104: "Detonator 3.53 Drivers"
           LayoutBR {BR} at (104,100) size 0x0
-          RenderText {#text} at (0,103) size 78x13
+          LayoutText {#text} at (0,103) size 78x13
             text run at (0,103) width 78: "Available NOW! "
         LayoutBR {BR} at (78,113) size 0x0
         LayoutBR {BR} at (0,116) size 0x17
-        RenderInline {FONT} at (0,0) size 104x26
-          RenderText {#text} at (0,134) size 104x13
+        LayoutInline {FONT} at (0,0) size 104x26
+          LayoutText {#text} at (0,134) size 104x13
             text run at (0,134) width 104: "Detonator 3.53 Drivers"
           LayoutBR {BR} at (104,144) size 0x0
-          RenderText {#text} at (0,147) size 78x13
+          LayoutText {#text} at (0,147) size 78x13
             text run at (0,147) width 78: "Available NOW! "
         LayoutBR {BR} at (78,157) size 0x0
         LayoutBR {BR} at (0,160) size 0x17

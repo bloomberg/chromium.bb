@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x464
-  RenderBlock {HTML} at (0,0) size 800x464
-    RenderBody {BODY} at (8,8) size 784x448
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 61x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x464
+    LayoutBlockFlow {BODY} at (8,8) size 784x448
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 61x18
           text run at (0,0) width 61: "Test Rect"
-      RenderBlock (anonymous) at (0,18) size 784x206
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,224) size 784x18
-        RenderText {#text} at (0,0) size 72x18
+      LayoutBlockFlow (anonymous) at (0,18) size 784x206
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,224) size 784x18
+        LayoutText {#text} at (0,0) size 72x18
           text run at (0,0) width 72: "Test Image"
-      RenderBlock (anonymous) at (0,242) size 784x206
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,242) size 784x206
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 202x202
   LayoutHTMLCanvas {CANVAS} at (0,0) size 202x202 [border: (1px solid #999999)]
 layer at (8,250) size 202x202

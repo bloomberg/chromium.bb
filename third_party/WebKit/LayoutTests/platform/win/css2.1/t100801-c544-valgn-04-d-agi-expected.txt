@@ -1,90 +1,90 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x255
-  RenderBlock {HTML} at (0,0) size 800x255
-    RenderBody {BODY} at (8,16) size 784x224
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 737x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x255
+    LayoutBlockFlow {BODY} at (8,16) size 784x224
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 737x35
           text run at (0,0) width 391: "Change your window size. However the lines wrap, the blue "
           text run at (390,0) width 347: "rectanglues should always have their tops on the same"
           text run at (0,18) width 86: "alignment as "
           text run at (85,18) width 210: "other blue rectangles on the line."
-      RenderBlock {P} at (15,52) size 754x172 [color=#0000FF] [bgcolor=#FFFFFF] [border: (1px solid #C0C0C0)]
-        RenderInline {SPAN} at (0,0) size 46x16
-          RenderText {#text} at (8,8) size 46x16
+      LayoutBlockFlow {P} at (15,52) size 754x172 [color=#0000FF] [bgcolor=#FFFFFF] [border: (1px solid #C0C0C0)]
+        LayoutInline {SPAN} at (0,0) size 46x16
+          LayoutText {#text} at (8,8) size 46x16
             text run at (8,8) width 46: "xxx"
-        RenderText {#text} at (53,8) size 16x16
+        LayoutText {#text} at (53,8) size 16x16
           text run at (53,8) width 16: " "
         LayoutImage {IMG} at (68.50,8.50) size 10x10
-        RenderText {#text} at (78,8) size 16x16
+        LayoutText {#text} at (78,8) size 16x16
           text run at (78,8) width 16: " "
-        RenderInline {SPAN} at (0,0) size 113x39
-          RenderText {#text} at (93,8) size 113x39
+        LayoutInline {SPAN} at (0,0) size 113x39
+          LayoutText {#text} at (93,8) size 113x39
             text run at (93,8) width 113: "xxx"
-        RenderText {#text} at (206,8) size 15x16
+        LayoutText {#text} at (206,8) size 15x16
           text run at (206,8) width 15: " "
         LayoutImage {IMG} at (221,8.50) size 10x10
-        RenderText {#text} at (231,8) size 15x16
+        LayoutText {#text} at (231,8) size 15x16
           text run at (231,8) width 15: " "
-        RenderInline {SPAN} at (0,0) size 45x16
-          RenderText {#text} at (246,8) size 45x16
+        LayoutInline {SPAN} at (0,0) size 45x16
+          LayoutText {#text} at (246,8) size 45x16
             text run at (246,8) width 45: "xxx"
-        RenderText {#text} at (291,8) size 15x16
+        LayoutText {#text} at (291,8) size 15x16
           text run at (291,8) width 15: " "
         LayoutImage {IMG} at (306,8.50) size 10x10
-        RenderText {#text} at (316,8) size 15x16
+        LayoutText {#text} at (316,8) size 15x16
           text run at (316,8) width 15: " "
-        RenderInline {SPAN} at (0,0) size 45x16
-          RenderText {#text} at (331,8) size 45x16
+        LayoutInline {SPAN} at (0,0) size 45x16
+          LayoutText {#text} at (331,8) size 45x16
             text run at (331,8) width 45: "xxx"
-        RenderText {#text} at (376,8) size 15x16
+        LayoutText {#text} at (376,8) size 15x16
           text run at (376,8) width 15: " "
         LayoutImage {IMG} at (391,8.50) size 10x10
-        RenderText {#text} at (401,8) size 15x16
+        LayoutText {#text} at (401,8) size 15x16
           text run at (401,8) width 15: " "
-        RenderInline {BIG} at (0,0) size 60x21
-          RenderText {#text} at (416,8) size 60x21
+        LayoutInline {BIG} at (0,0) size 60x21
+          LayoutText {#text} at (416,8) size 60x21
             text run at (416,8) width 60: "xxx"
-        RenderText {#text} at (476,8) size 15x16
+        LayoutText {#text} at (476,8) size 15x16
           text run at (476,8) width 15: " "
         LayoutImage {IMG} at (491,8.50) size 20x20
-        RenderText {#text} at (511,8) size 15x16
+        LayoutText {#text} at (511,8) size 15x16
           text run at (511,8) width 15: " "
-        RenderInline {SPAN} at (0,0) size 45x16
-          RenderText {#text} at (526,8) size 45x16
+        LayoutInline {SPAN} at (0,0) size 45x16
+          LayoutText {#text} at (526,8) size 45x16
             text run at (526,8) width 45: "xxx"
-        RenderText {#text} at (571,8) size 15x16
+        LayoutText {#text} at (571,8) size 15x16
           text run at (571,8) width 15: " "
         LayoutImage {IMG} at (586,8.50) size 65x65
-        RenderText {#text} at (651,8) size 15x16
+        LayoutText {#text} at (651,8) size 15x16
           text run at (651,8) width 15: " "
-        RenderInline {SPAN} at (0,0) size 45x16
-          RenderText {#text} at (666,8) size 45x16
+        LayoutInline {SPAN} at (0,0) size 45x16
+          LayoutText {#text} at (666,8) size 45x16
             text run at (666,8) width 45: "xxx"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
         LayoutImage {IMG} at (8.50,73.50) size 35x35
-        RenderText {#text} at (43,73) size 16x16
+        LayoutText {#text} at (43,73) size 16x16
           text run at (43,73) width 16: " "
-        RenderInline {SPAN} at (0,0) size 91x31
-          RenderText {#text} at (58,73) size 91x31
+        LayoutInline {SPAN} at (0,0) size 91x31
+          LayoutText {#text} at (58,73) size 91x31
             text run at (58,73) width 91: "xxx"
-        RenderText {#text} at (148,73) size 16x16
+        LayoutText {#text} at (148,73) size 16x16
           text run at (148,73) width 16: " "
         LayoutImage {IMG} at (163.50,73.50) size 50x50
-        RenderText {#text} at (213,73) size 16x16
+        LayoutText {#text} at (213,73) size 16x16
           text run at (213,73) width 16: " "
-        RenderInline {SPAN} at (0,0) size 46x16
-          RenderText {#text} at (228,73) size 46x16
+        LayoutInline {SPAN} at (0,0) size 46x16
+          LayoutText {#text} at (228,73) size 46x16
             text run at (228,73) width 46: "xxx"
-        RenderText {#text} at (273,73) size 16x16
+        LayoutText {#text} at (273,73) size 16x16
           text run at (273,73) width 16: " "
         LayoutImage {IMG} at (288.50,73.50) size 15x15
-        RenderText {#text} at (303,73) size 16x16
+        LayoutText {#text} at (303,73) size 16x16
           text run at (303,73) width 16: " "
-        RenderInline {BIG} at (0,0) size 61x21
-          RenderText {#text} at (318,73) size 61x21
+        LayoutInline {BIG} at (0,0) size 61x21
+          LayoutText {#text} at (318,73) size 61x21
             text run at (318,73) width 61: "xxx"
-        RenderText {#text} at (378,73) size 16x16
+        LayoutText {#text} at (378,73) size 16x16
           text run at (378,73) width 16: " "
         LayoutImage {IMG} at (393.50,73.50) size 90x90
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

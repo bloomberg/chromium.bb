@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 822
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x822 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x822
-    RenderBody {BODY} at (8,8) size 769x806
+  LayoutBlockFlow {HTML} at (0,0) size 785x822
+    LayoutBlockFlow {BODY} at (8,8) size 769x806
       LayoutTable {TABLE} at (0,0) size 769x806
         LayoutTableSection {TBODY} at (0,0) size 769x806
           LayoutTableRow {TR} at (0,2) size 769x802
             LayoutTableCell {TD} at (2,362) size 729x82 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 727x79
+              LayoutText {#text} at (1,1) size 727x79
                 text run at (1,1) width 727: "This is some text to fill a table cell. This is some text to fill a table cell. This is some text to fill a table cell. This is some text"
                 text run at (1,21) width 700: "to fill a table cell. This is some text to fill a table cell. This is some text to fill a table cell. This is some text to fill a table"
                 text run at (1,41) width 693: "cell. This is some text to fill a table cell. This is some text to fill a table cell. This is some text to fill a table cell. This is"
                 text run at (1,61) width 372: "some text to fill a table cell. This is some text to fill a table cell."
             LayoutTableCell {TD} at (733,2) size 34x802 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 32x799
+              LayoutText {#text} at (1,1) size 32x799
                 text run at (1,1) width 25: "This"
                 text run at (1,21) width 9: "is"
                 text run at (1,41) width 32: "some"

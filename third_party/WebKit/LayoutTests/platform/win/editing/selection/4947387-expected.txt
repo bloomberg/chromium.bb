@@ -7,12 +7,12 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x72
-        RenderText {#text} at (0,0) size 778x71
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x72
+        LayoutText {#text} at (0,0) size 778x71
           text run at (0,0) width 424: "This tests moveTo{Beginning, End}OfLineAndModifySelection. "
           text run at (423,0) width 350: "It should operate on line boundaries and not paragraph"
           text run at (0,18) width 79: "boundaries. "
@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
           text run at (0,36) width 620: "Arrow, the selection should extend to the start/end of the line, not the start/end of the paragraph. "
           text run at (619,36) width 35: "Also,"
           text run at (0,54) width 474: "moveTo{Beginning, End}OfParagraphAndModifySelection should work."
-      RenderBlock {DIV} at (0,88) size 200x36
-        RenderText {#text} at (0,0) size 191x35
+      LayoutBlockFlow {DIV} at (0,88) size 200x36
+        LayoutText {#text} at (0,0) size 191x35
           text run at (0,0) width 187: "The quick brown fox jumped"
           text run at (186,0) width 5: " "
           text run at (0,18) width 160: "over the lazy brown dog."

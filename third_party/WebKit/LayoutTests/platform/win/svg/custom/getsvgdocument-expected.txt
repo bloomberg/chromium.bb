@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 775x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 775x35
           text run at (0,0) width 775: "This tests to see if HTMLEmbedElement.getSVGDocument() and HTMLObjectElement.getSVGDocument() work. You"
           text run at (0,18) width 304: "should see SUCCESS printed twice below this:"
-      RenderBlock (anonymous) at (0,52) size 784x58
+      LayoutBlockFlow (anonymous) at (0,52) size 784x58
         LayoutBR {BR} at (85,20) size 0x0
         LayoutBR {BR} at (0,20) size 0x17
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,60) size 85x20
   LayoutEmbeddedObject {EMBED} at (0,0) size 85x20
     layer at (0,0) size 85x20
-      RenderView at (0,0) size 85x20
+      LayoutView at (0,0) size 85x20
     layer at (0,0) size 85x20
       LayoutSVGRoot {svg} at (0,0) size 85x20
         LayoutSVGRect {rect} at (0,0) size 85x20 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=85.00] [height=20.00]
@@ -24,7 +24,7 @@ layer at (8,60) size 85x20
 layer at (8,98) size 85x20
   LayoutEmbeddedObject {OBJECT} at (0,38) size 85x20
     layer at (0,0) size 85x20
-      RenderView at (0,0) size 85x20
+      LayoutView at (0,0) size 85x20
     layer at (0,0) size 85x20
       LayoutSVGRoot {svg} at (0,0) size 85x20
         LayoutSVGRect {rect} at (0,0) size 85x20 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=85.00] [height=20.00]

@@ -1,10 +1,10 @@
 layer at (0,0) size 785x734
-  RenderView at (0,0) size 785x600
+  LayoutView at (0,0) size 785x600
 layer at (0,0) size 785x734
-  RenderBlock {HTML} at (0,0) size 785x734
-    RenderBody {BODY} at (8,8) size 769x718
-      RenderBlock {PRE} at (0,0) size 769x227
-        RenderText {#text} at (0,0) size 656x193
+  LayoutBlockFlow {HTML} at (0,0) size 785x734
+    LayoutBlockFlow {BODY} at (8,8) size 769x718
+      LayoutBlockFlow {PRE} at (0,0) size 769x227
+        LayoutText {#text} at (0,0) size 656x193
           text run at (0,0) width 368: "These tables below all have the HTML + CSS ..."
           text run at (368,0) width 0: " "
           text run at (0,16) width 0: " "
@@ -26,33 +26,33 @@ layer at (0,0) size 785x734
           text run at (0,160) width 520: "... and differ only in the value of 'padding:'. From top table to"
           text run at (520,160) width 0: " "
           text run at (0,177) width 424: "bottom: 0px, 10px, 19px, 20px, 25px. Note that for a "
-        RenderInline {U} at (0,0) size 608x33
-          RenderInline {I} at (0,0) size 608x34
-            RenderText {#text} at (424,176) size 608x34
+        LayoutInline {U} at (0,0) size 608x33
+          LayoutInline {I} at (0,0) size 608x34
+            LayoutText {#text} at (424,176) size 608x34
               text run at (424,176) width 184: "table over-constrained "
               text run at (608,176) width 0: " "
               text run at (0,193) width 160: "within another table"
-        RenderText {#text} at (160,194) size 16x16
+        LayoutText {#text} at (160,194) size 16x16
           text run at (160,194) width 16: ", "
-        RenderInline {I} at (0,0) size 184x17
-          RenderInline {U} at (0,0) size 184x17
-            RenderText {#text} at (176,193) size 184x17
+        LayoutInline {I} at (0,0) size 184x17
+          LayoutInline {U} at (0,0) size 184x17
+            LayoutText {#text} at (176,193) size 184x17
               text run at (176,193) width 184: "when (padding >=margin)"
-        RenderText {#text} at (360,194) size 128x16
+        LayoutText {#text} at (360,194) size 128x16
           text run at (360,194) width 128: ", the margin is "
-        RenderInline {I} at (0,0) size 600x34
-          RenderInline {U} at (0,0) size 600x34
-            RenderText {#text} at (488,193) size 600x34
+        LayoutInline {I} at (0,0) size 600x34
+          LayoutInline {U} at (0,0) size 600x34
+            LayoutText {#text} at (488,193) size 600x34
               text run at (488,193) width 112: "all allocated "
               text run at (600,193) width 0: " "
               text run at (0,210) width 176: "to the right hand side"
-        RenderText {#text} at (176,211) size 416x16
+        LayoutText {#text} at (176,211) size 416x16
           text run at (176,211) width 416: " of the table (and to the left if 'direction: rtl;'."
       LayoutTable {TABLE} at (0,240) size 600x30 [border: (1px dotted #0000FF)]
         LayoutTableSection {TBODY} at (1,1) size 598x28
           LayoutTableRow {TR} at (0,2) size 598x24
             LayoutTableCell {TD} at (2,2) size 594x24 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 204x19
+              LayoutText {#text} at (2,2) size 204x19
                 text run at (2,2) width 204: "600px table for width comparison"
       LayoutTable {TABLE} at (0,270) size 650x60 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 648x58

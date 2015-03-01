@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x148
-  RenderBlock {HTML} at (0,0) size 800x148
-    RenderBody {BODY} at (8,16) size 784x124
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 354x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x148
+    LayoutBlockFlow {BODY} at (8,16) size 784x124
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 354x18
           text run at (0,0) width 354: "All of the table rows and cells below should be rotated."
       LayoutTable {TABLE} at (0,34) size 202x90
         LayoutTableSection {TBODY} at (0,0) size 202x90
@@ -13,18 +13,18 @@ layer at (0,0) size 800x148
 layer at (8,52) size 202x20
   LayoutTableRow {TR} at (0,2) size 202x20
     LayoutTableCell {TD} at (2,2) size 198x20 [r=0 c=0 rs=1 cs=1]
-      RenderText {#text} at (1,1) size 112x18
+      LayoutText {#text} at (1,1) size 112x18
         text run at (1,1) width 112: "Transformed row"
 layer at (8,74) size 202x20 transparent
   LayoutTableRow {TR} at (0,24) size 202x20
     LayoutTableCell {TD} at (2,24) size 198x20 [r=1 c=0 rs=1 cs=1]
-      RenderText {#text} at (1,1) size 196x18
+      LayoutText {#text} at (1,1) size 196x18
         text run at (1,1) width 196: "Transformed row with opacity"
 layer at (10,96) size 198x20
   LayoutTableCell {TD} at (2,46) size 198x20 [r=2 c=0 rs=1 cs=1]
-    RenderText {#text} at (1,1) size 110x18
+    LayoutText {#text} at (1,1) size 110x18
       text run at (1,1) width 110: "Transformed cell"
 layer at (10,118) size 198x20 transparent
   LayoutTableCell {TD} at (2,68) size 198x20 [r=3 c=0 rs=1 cs=1]
-    RenderText {#text} at (1,1) size 194x18
+    LayoutText {#text} at (1,1) size 194x18
       text run at (1,1) width 194: "Transformed cell with opacity"

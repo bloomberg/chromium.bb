@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x164
-  RenderBlock {HTML} at (0,0) size 800x164
-    RenderBody {BODY} at (8,16) size 784x132
+  LayoutBlockFlow {HTML} at (0,0) size 800x164
+    LayoutBlockFlow {BODY} at (8,16) size 784x132
       LayoutTable {TABLE} at (16,0) size 84x64 [border: (3px solid #FF0000)]
         LayoutTableSection {TBODY} at (3,3) size 78x58
           LayoutTableRow {TR} at (0,2) size 78x54
@@ -11,21 +11,21 @@ layer at (0,0) size 800x164
                 LayoutTableSection {TBODY} at (0,0) size 70x26
                   LayoutTableRow {TR} at (0,2) size 70x22
                     LayoutTableCell {TD} at (2,2) size 66x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 64x19
+                      LayoutText {#text} at (1,1) size 64x19
                         text run at (1,1) width 64: "Table One"
               LayoutTable {TABLE} at (1,27) size 72x26 [color=#FFFFFF] [bgcolor=#800080]
                 LayoutTableSection {TBODY} at (0,0) size 72x26
                   LayoutTableRow {TR} at (0,2) size 72x22
                     LayoutTableCell {TD} at (2,2) size 68x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 66x19
+                      LayoutText {#text} at (1,1) size 66x19
                         text run at (1,1) width 66: "Table Two"
       LayoutTable {TABLE} at (16,80) size 65x52 [border: (3px solid #FF0000)]
         LayoutTableSection {TBODY} at (3,3) size 59x46
           LayoutTableRow {TR} at (0,2) size 59x42
             LayoutTableCell {TD} at (2,2) size 55x42 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 53x20 [color=#FFFFFF] [bgcolor=#800080]
-                RenderText {#text} at (0,0) size 51x19
+              LayoutBlockFlow {DIV} at (1,1) size 53x20 [color=#FFFFFF] [bgcolor=#800080]
+                LayoutText {#text} at (0,0) size 51x19
                   text run at (0,0) width 51: "Div One"
-              RenderBlock {DIV} at (1,21) size 53x20 [color=#FFFFFF] [bgcolor=#800080]
-                RenderText {#text} at (0,0) size 53x19
+              LayoutBlockFlow {DIV} at (1,21) size 53x20 [color=#FFFFFF] [bgcolor=#800080]
+                LayoutText {#text} at (0,0) size 53x19
                   text run at (0,0) width 53: "Div Two"

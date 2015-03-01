@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (0,42) size 800x558 clip at (0,42) size 785x558 scrollY 278.00 scrollHeight 836
-  RenderBlock (positioned) {DIV} at (0,42) size 800x558
+  LayoutBlockFlow (positioned) {DIV} at (0,42) size 800x558
 layer at (0,-236) size 572x836 backgroundClip at (0,42) size 785x558 clip at (0,42) size 785x558 outlineClip at (0,42) size 785x558
-  RenderBlock (positioned) {DIV} at (0,0) size 572.31x836
-    RenderBlock (anonymous) at (0,0) size 572.31x18
-      RenderText {#text} at (0,0) size 573x18
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 572.31x836
+    LayoutBlockFlow (anonymous) at (0,0) size 572.31x18
+      LayoutText {#text} at (0,0) size 573x18
         text run at (0,0) width 573: "This tests that we can scroll to reveal something in a nested positioned block in overflow."
-    RenderBlock {DIV} at (0,18) size 572.31x800
-    RenderBlock (anonymous) at (0,818) size 572.31x18
+    LayoutBlockFlow {DIV} at (0,18) size 572.31x800
+    LayoutBlockFlow (anonymous) at (0,818) size 572.31x18
       LayoutButton {INPUT} at (0,0) size 202.27x18 [bgcolor=#C0C0C0]
-        RenderBlock (anonymous) at (8,2) size 186.27x13
-          RenderText {#text} at (0,0) size 187x13
+        LayoutBlockFlow (anonymous) at (8,2) size 186.27x13
+          LayoutText {#text} at (0,0) size 187x13
             text run at (0,0) width 187: "If you can see this, test has passed"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

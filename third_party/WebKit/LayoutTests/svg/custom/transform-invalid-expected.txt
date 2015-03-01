@@ -29,7 +29,7 @@ CONSOLE ERROR: line 32: Error: Invalid value for <rect> attribute transform="ske
 CONSOLE ERROR: line 33: Error: Invalid value for <rect> attribute transform="skewY(r)"
 CONSOLE ERROR: line 34: Error: Invalid value for <rect> attribute transform="scale(20), scale(1)  ,"
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 200x200
   LayoutSVGRoot {svg} at (0,0) size 100x100
     LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]

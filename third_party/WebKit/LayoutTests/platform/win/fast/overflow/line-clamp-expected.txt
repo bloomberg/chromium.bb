@@ -1,34 +1,34 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 270x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 270x17
         text run at (0,0) width 270: "This tests the -webkit-line-clamp property"
       LayoutBR {BR} at (269,14) size 1x0
       LayoutBR {BR} at (0,18) size 0x17
-      RenderText {#text} at (102,114) size 4x17
+      LayoutText {#text} at (102,114) size 4x17
         text run at (102,114) width 4: " "
-      RenderText {#text} at (208,114) size 4x17
+      LayoutText {#text} at (208,114) size 4x17
         text run at (208,114) width 4: " "
-      RenderText {#text} at (314,114) size 4x17
+      LayoutText {#text} at (314,114) size 4x17
         text run at (314,114) width 4: " "
-      RenderText {#text} at (420,114) size 4x17
+      LayoutText {#text} at (420,114) size 4x17
         text run at (420,114) width 4: " "
-      RenderText {#text} at (526,114) size 4x17
+      LayoutText {#text} at (526,114) size 4x17
         text run at (526,114) width 4: " "
-      RenderText {#text} at (632,114) size 4x17
+      LayoutText {#text} at (632,114) size 4x17
         text run at (632,114) width 4: " "
-      RenderText {#text} at (0,0) size 0x0
-      RenderText {#text} at (102,246) size 4x17
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (102,246) size 4x17
         text run at (102,246) width 4: " "
-      RenderText {#text} at (208,246) size 4x17
+      LayoutText {#text} at (208,246) size 4x17
         text run at (208,246) width 4: " "
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,63) size 102x73 clip at (9,64) size 100x71 scrollHeight 143
   LayoutDeprecatedFlexibleBox {DIV} at (0,55) size 102x73 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x71
-      RenderText {#text} at (0,0) size 83x143
+    LayoutBlockFlow (anonymous) at (1,1) size 100x71
+      LayoutText {#text} at (0,0) size 83x143
         text run at (0,0) width 30: "50%"
         text run at (0,18) width 69: "truncation."
         text run at (0,36) width 63: "This is an"
@@ -37,28 +37,28 @@ layer at (8,63) size 102x73 clip at (9,64) size 100x71 scrollHeight 143
         text run at (0,90) width 83: "truncation of"
         text run at (0,108) width 64: "multi-line"
         text run at (0,126) width 28: "text."
-      RenderInline {A} at (0,0) size 36x17 [color=#0000EE]
-        RenderText {#text} at (27,126) size 36x17
+      LayoutInline {A} at (0,0) size 36x17 [color=#0000EE]
+        LayoutText {#text} at (27,126) size 36x17
           text run at (27,126) width 36: "More"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (114,117) size 102x19 clip at (115,118) size 100x17 scrollHeight 107
   LayoutDeprecatedFlexibleBox {DIV} at (106,109) size 102x19 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x17
-      RenderText {#text} at (0,0) size 100x107
+    LayoutBlockFlow (anonymous) at (1,1) size 100x17
+      LayoutText {#text} at (0,0) size 100x107
         text run at (0,0) width 95: "0% truncation."
         text run at (0,18) width 86: "This does the"
         text run at (0,36) width 100: "most truncation"
         text run at (0,54) width 57: "possible,"
         text run at (0,72) width 94: "truncating to 1"
         text run at (0,90) width 28: "line."
-      RenderInline {A} at (0,0) size 36x17 [color=#0000EE]
-        RenderText {#text} at (27,90) size 36x17
+      LayoutInline {A} at (0,0) size 36x17 [color=#0000EE]
+        LayoutText {#text} at (27,90) size 36x17
           text run at (27,90) width 36: "More"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (220,99) size 102x37 clip at (221,100) size 100x35 scrollHeight 107
   LayoutDeprecatedFlexibleBox {DIV} at (212,91) size 102x37 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x35
-      RenderText {#text} at (0,0) size 94x107
+    LayoutBlockFlow (anonymous) at (1,1) size 100x35
+      LayoutText {#text} at (0,0) size 94x107
         text run at (0,0) width 51: "2 lines. "
         text run at (50,0) width 44: "This is"
         text run at (0,18) width 91: "an example of"
@@ -66,14 +66,14 @@ layer at (220,99) size 102x37 clip at (221,100) size 100x35 scrollHeight 107
         text run at (0,54) width 83: "truncation of"
         text run at (0,72) width 64: "multi-line"
         text run at (0,90) width 28: "text."
-      RenderInline {A} at (0,0) size 36x17 [color=#0000EE]
-        RenderText {#text} at (27,90) size 36x17
+      LayoutInline {A} at (0,0) size 36x17 [color=#0000EE]
+        LayoutText {#text} at (27,90) size 36x17
           text run at (27,90) width 36: "More"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (326,81) size 102x55 clip at (327,82) size 100x53 scrollHeight 161
   LayoutDeprecatedFlexibleBox {DIV} at (318,73) size 102x55 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x53
-      RenderText {#text} at (0,0) size 85x161
+    LayoutBlockFlow (anonymous) at (1,1) size 100x53
+      LayoutText {#text} at (0,0) size 85x161
         text run at (0,0) width 72: "Backwards"
         text run at (0,18) width 72: "compatible"
         text run at (0,36) width 73: "truncation. "
@@ -85,14 +85,14 @@ layer at (326,81) size 102x55 clip at (327,82) size 100x53 scrollHeight 161
         text run at (0,108) width 81: "line on older"
         text run at (0,126) width 71: "versions of"
         text run at (0,144) width 55: "WebKit."
-      RenderInline {A} at (0,0) size 36x17 [color=#0000EE]
-        RenderText {#text} at (54,144) size 36x17
+      LayoutInline {A} at (0,0) size 36x17 [color=#0000EE]
+        LayoutText {#text} at (54,144) size 36x17
           text run at (54,144) width 36: "More"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (432,99) size 102x37 clip at (433,100) size 100x35 scrollHeight 143
   LayoutDeprecatedFlexibleBox {DIV} at (424,91) size 102x37 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x35
-      RenderText {#text} at (0,0) size 96x143
+    LayoutBlockFlow (anonymous) at (1,1) size 100x35
+      LayoutText {#text} at (0,0) size 96x143
         text run at (0,0) width 30: "30%"
         text run at (0,18) width 73: "truncation. "
         text run at (72,18) width 21: "No"
@@ -104,8 +104,8 @@ layer at (432,99) size 102x37 clip at (433,100) size 100x35 scrollHeight 143
         text run at (0,126) width 96: "multi-line text."
 layer at (538,81) size 102x55 clip at (539,82) size 100x53 scrollHeight 107
   LayoutDeprecatedFlexibleBox {DIV} at (530,73) size 102x55 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x53
-      RenderText {#text} at (0,0) size 99x107
+    LayoutBlockFlow (anonymous) at (1,1) size 100x53
+      LayoutText {#text} at (0,0) size 99x107
         text run at (0,0) width 51: "3 lines. "
         text run at (50,0) width 49: "No link"
         text run at (0,18) width 71: "at the end. "
@@ -116,8 +116,8 @@ layer at (538,81) size 102x55 clip at (539,82) size 100x53 scrollHeight 107
         text run at (0,90) width 96: "multi-line text."
 layer at (644,44) size 102x92 clip at (645,45) size 100x90
   LayoutDeprecatedFlexibleBox {DIV} at (636,36) size 102x92 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x90
-      RenderText {#text} at (0,0) size 94x89
+    LayoutBlockFlow (anonymous) at (1,1) size 100x90
+      LayoutText {#text} at (0,0) size 94x89
         text run at (0,0) width 51: "0 lines. "
         text run at (50,0) width 44: "This is"
         text run at (0,18) width 64: "an invalid"
@@ -126,8 +126,8 @@ layer at (644,44) size 102x92 clip at (645,45) size 100x90
         text run at (0,72) width 44: "clamp."
 layer at (8,176) size 102x92 clip at (9,177) size 100x90
   LayoutDeprecatedFlexibleBox {DIV} at (0,168) size 102x92 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x90
-      RenderText {#text} at (0,0) size 99x89
+    LayoutBlockFlow (anonymous) at (1,1) size 100x90
+      LayoutText {#text} at (0,0) size 99x89
         text run at (0,0) width 56: "-1 lines. "
         text run at (55,0) width 44: "This is"
         text run at (0,18) width 64: "an invalid"
@@ -136,8 +136,8 @@ layer at (8,176) size 102x92 clip at (9,177) size 100x90
         text run at (0,72) width 44: "clamp."
 layer at (114,194) size 102x74 clip at (115,195) size 100x72
   LayoutDeprecatedFlexibleBox {DIV} at (106,186) size 102x74 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x72
-      RenderText {#text} at (0,0) size 97x71
+    LayoutBlockFlow (anonymous) at (1,1) size 100x72
+      LayoutText {#text} at (0,0) size 97x71
         text run at (0,0) width 35: "-1%. "
         text run at (34,0) width 63: "This is an"
         text run at (0,18) width 84: "invalid value"
@@ -145,8 +145,8 @@ layer at (114,194) size 102x74 clip at (115,195) size 100x72
         text run at (0,54) width 73: "line-clamp."
 layer at (220,140) size 102x128 clip at (221,141) size 100x126
   LayoutDeprecatedFlexibleBox {DIV} at (212,132) size 102x128 [border: (1px solid #808080)]
-    RenderBlock (anonymous) at (1,1) size 100x126
-      RenderText {#text} at (0,0) size 99x125
+    LayoutBlockFlow (anonymous) at (1,1) size 100x126
+      LayoutText {#text} at (0,0) size 99x125
         text run at (0,0) width 38: "150%"
         text run at (0,18) width 69: "truncation."
         text run at (0,36) width 86: "This does the"

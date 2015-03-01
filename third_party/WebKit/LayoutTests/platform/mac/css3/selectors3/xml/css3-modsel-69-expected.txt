@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x73
-  RenderBlock {test} at (0,0) size 800x73
-    RenderBlock {p} at (0,16) size 800x41
+  LayoutBlockFlow {test} at (0,0) size 800x73
+    LayoutBlockFlow {p} at (0,16) size 800x41
       LayoutButton {button} at (0,0) size 242.69x22 [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
-        RenderBlock (anonymous) at (8,4) size 226.69x13
-          RenderText {#text} at (0,0) size 227x13
+        LayoutBlockFlow (anonymous) at (8,4) size 226.69x13
+          LayoutText {#text} at (0,0) size 227x13
             text run at (0,0) width 227: "A button (enabled) with green background"
-      RenderText {#text} at (242,1) size 5x18
+      LayoutText {#text} at (242,1) size 5x18
         text run at (242,1) width 5: " "
       LayoutBR {br} at (0,0) size 0x0
       LayoutTextControl {input} at (0,22) size 203x19 [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (3,41) size 197x13 scrollWidth 238
-  RenderBlock {div} at (3,3) size 197x13
-    RenderText {#text} at (0,0) size 237x13
+  LayoutBlockFlow {div} at (3,3) size 197x13
+    LayoutText {#text} at (0,0) size 237x13
       text run at (0,0) width 237: "a text area (enabled) with green background"

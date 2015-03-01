@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x290
-  RenderBlock {HTML} at (0,0) size 800x290
-    RenderBody {BODY} at (8,16) size 784x258
-      RenderBlock {P} at (0,0) size 784x258 [color=#000080]
+  LayoutBlockFlow {HTML} at (0,0) size 800x290
+    LayoutBlockFlow {BODY} at (8,16) size 784x258
+      LayoutBlockFlow {P} at (0,0) size 784x258 [color=#000080]
         LayoutImage {IMG} at (0,0) size 50x50
-        RenderText {#text} at (50,4) size 334x18
+        LayoutText {#text} at (50,4) size 334x18
           text run at (50,4) width 334: "\x{21E6} This text should flow around the box on the left. "
-        RenderInline {SPAN} at (0,0) size 784x254 [color=#C0C0C0]
-          RenderText {#text} at (383,4) size 784x254
+        LayoutInline {SPAN} at (0,0) size 784x254 [color=#C0C0C0]
+          LayoutText {#text} at (383,4) size 784x254
             text run at (383,4) width 401: "dummy text dummy text dummy text dummy text dummy text"
             text run at (50,24) width 53: "dummy "
             text run at (102,24) width 487: "text dummy text dummy text dummy text dummy text dummy text dummy "
@@ -42,4 +42,4 @@ layer at (0,0) size 800x290
             text run at (404,222) width 348: "text dummy text dummy text dummy text dummy text"
             text run at (0,240) width 134: "dummy text dummy "
             text run at (133,240) width 430: "text dummy text dummy text dummy text dummy text dummy text"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

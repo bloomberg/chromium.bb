@@ -1,90 +1,90 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {H3} at (0,0) size 784x23
-        RenderText {#text} at (0,0) size 490x23
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {H3} at (0,0) size 784x23
+        LayoutText {#text} at (0,0) size 490x23
           text run at (0,0) width 490: "tt's, font-family inheriting and font-size: a bug"
       LayoutTable {TABLE} at (0,41.72) size 784x377
         LayoutTableSection {TBODY} at (0,0) size 784x377
           LayoutTableRow {TR} at (0,10) size 784x211
             LayoutTableCell {TD} at (10,10) size 764x211 [r=0 c=0 rs=1 cs=2]
-              RenderText {#text} at (1,1) size 336x19
+              LayoutText {#text} at (1,1) size 336x19
                 text run at (1,1) width 336: "The css in the head of this file is like this:"
               LayoutBR {BR} at (336,17) size 1x0
               LayoutBR {BR} at (1,20) size 0x19
-              RenderText {#text} at (1,39) size 109x19
+              LayoutText {#text} at (1,39) size 109x19
                 text run at (1,39) width 109: "html, body { "
               LayoutBR {BR} at (109,55) size 1x0
-              RenderText {#text} at (1,58) size 203x19
+              LayoutText {#text} at (1,58) size 203x19
                 text run at (1,58) width 203: "    font-family: Verdana; "
               LayoutBR {BR} at (203,74) size 1x0
-              RenderText {#text} at (1,77) size 11x19
+              LayoutText {#text} at (1,77) size 11x19
                 text run at (1,77) width 11: "}"
               LayoutBR {BR} at (11,93) size 1x0
-              RenderText {#text} at (1,96) size 78x19
+              LayoutText {#text} at (1,96) size 78x19
                 text run at (1,96) width 78: "tt, span {"
               LayoutBR {BR} at (78,112) size 1x0
-              RenderText {#text} at (1,115) size 164x19
+              LayoutText {#text} at (1,115) size 164x19
                 text run at (1,115) width 164: "    font-size: 0.8em;"
               LayoutBR {BR} at (164,131) size 1x0
-              RenderText {#text} at (1,134) size 11x19
+              LayoutText {#text} at (1,134) size 11x19
                 text run at (1,134) width 11: "}"
               LayoutBR {BR} at (11,150) size 1x0
               LayoutBR {BR} at (1,153) size 0x19
-              RenderText {#text} at (1,172) size 739x38
+              LayoutText {#text} at (1,172) size 739x38
                 text run at (1,172) width 739: "The two columns below show that inheriting the font does not correctly inherit the font-size"
                 text run at (1,191) width 136: "for a <tt> block."
               LayoutBR {BR} at (136,207) size 1x0
           LayoutTableRow {TR} at (0,231) size 784x21
             LayoutTableCell {TH} at (10,231) size 377x21 [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (167,1) size 43x19
+              LayoutText {#text} at (167,1) size 43x19
                 text run at (167,1) width 43: "<tt>"
             LayoutTableCell {TH} at (397,231) size 377x21 [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (153,1) size 71x19
+              LayoutText {#text} at (153,1) size 71x19
                 text run at (153,1) width 71: "<span>"
           LayoutTableRow {TR} at (0,262) size 784x18
             LayoutTableCell {TD} at (10,262) size 377x18 [r=2 c=0 rs=1 cs=1]
-              RenderInline {TT} at (0,0) size 265x16
-                RenderText {#text} at (1,1) size 265x16
+              LayoutInline {TT} at (0,0) size 265x16
+                LayoutText {#text} at (1,1) size 265x16
                   text run at (1,1) width 265: "font-family: Verdana; font-size: 0.8em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (397,262) size 377x18 [r=2 c=1 rs=1 cs=1]
-              RenderInline {SPAN} at (0,0) size 265x16
-                RenderText {#text} at (1,1) size 265x16
+              LayoutInline {SPAN} at (0,0) size 265x16
+                LayoutText {#text} at (1,1) size 265x16
                   text run at (1,1) width 265: "font-family: Verdana; font-size: 0.8em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,290) size 784x18
             LayoutTableCell {TD} at (10,290) size 377x18 [r=3 c=0 rs=1 cs=1]
-              RenderInline {TT} at (0,0) size 324x16
-                RenderText {#text} at (1,1) size 324x16
+              LayoutInline {TT} at (0,0) size 324x16
+                LayoutText {#text} at (1,1) size 324x16
                   text run at (1,1) width 324: "font-family: inherit (Verdana); font-size: 0.8em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (397,290) size 377x18 [r=3 c=1 rs=1 cs=1]
-              RenderInline {SPAN} at (0,0) size 253x16
-                RenderText {#text} at (1,1) size 253x16
+              LayoutInline {SPAN} at (0,0) size 253x16
+                LayoutText {#text} at (1,1) size 253x16
                   text run at (1,1) width 253: "font-family: inherit; font-size: 0.8em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,318) size 784x21
             LayoutTableCell {TD} at (10,318) size 377x21 [r=4 c=0 rs=1 cs=1]
-              RenderInline {TT} at (0,0) size 322x19
-                RenderText {#text} at (1,1) size 322x19
+              LayoutInline {TT} at (0,0) size 322x19
+                LayoutText {#text} at (1,1) size 322x19
                   text run at (1,1) width 322: "font-family: Verdana; font-size: 1.0em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (397,318) size 377x21 [r=4 c=1 rs=1 cs=1]
-              RenderInline {SPAN} at (0,0) size 322x19
-                RenderText {#text} at (1,1) size 322x19
+              LayoutInline {SPAN} at (0,0) size 322x19
+                LayoutText {#text} at (1,1) size 322x19
                   text run at (1,1) width 322: "font-family: Verdana; font-size: 1.0em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,349) size 784x18
             LayoutTableCell {TD} at (10,351) size 377x14 [r=5 c=0 rs=1 cs=1]
-              RenderInline {TT} at (0,0) size 186x12
-                RenderText {#text} at (1,1) size 186x12
+              LayoutInline {TT} at (0,0) size 186x12
+                LayoutText {#text} at (1,1) size 186x12
                   text run at (1,1) width 186: "default font; font-size: 0.8em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (397,349) size 377x18 [r=5 c=1 rs=1 cs=1]
-              RenderInline {SPAN} at (0,0) size 312x16
-                RenderText {#text} at (1,1) size 312x16
+              LayoutInline {SPAN} at (0,0) size 312x16
+                LayoutText {#text} at (1,1) size 312x16
                   text run at (1,1) width 312: "font-family: courier; font-size: 0.8em;"
-              RenderText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0

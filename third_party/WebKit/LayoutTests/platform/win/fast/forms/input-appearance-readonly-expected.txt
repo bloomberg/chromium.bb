@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 411x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 411x17
         text run at (0,0) width 411: "This tests that text can not be inserted into a readonly text field. "
       LayoutBR {BR} at (410,14) size 1x0
       LayoutTextControl {INPUT} at (0,18) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (10,29) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 73x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 73x16
       text run at (0,0) width 73: "Test Passed"
 caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 2 {INPUT} of body

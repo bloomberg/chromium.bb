@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x275
-  RenderBlock {html} at (0,0) size 800x275
-    RenderBody {body} at (8,16) size 784x251
-      RenderBlock {p} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 151x19
+  LayoutBlockFlow {html} at (0,0) size 800x275
+    LayoutBlockFlow {body} at (8,16) size 784x251
+      LayoutBlockFlow {p} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 151x19
           text run at (0,0) width 151: "TD VALIGN=MIDDLE"
       LayoutTable {table} at (0,36) size 591x215 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 589x213
@@ -12,6 +12,6 @@ layer at (0,0) size 800x275
             LayoutTableCell {td} at (2,2) size 204x209 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutImage {img} at (2,2) size 200x200
             LayoutTableCell {td} at (208,94) size 379x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 375x19
+              LayoutText {#text} at (2,2) size 375x19
                 text run at (2,2) width 258: "This text should be vertically aligned to the "
                 text run at (260,2) width 117: "middle of the image"

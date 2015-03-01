@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 144x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 144x18
           text run at (0,0) width 144: "This is a pixel test for "
-        RenderInline {I} at (0,0) size 774x36
-          RenderInline {A} at (0,0) size 354x18 [color=#0000EE]
-            RenderText {#text} at (143,0) size 354x18
+        LayoutInline {I} at (0,0) size 774x36
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (143,0) size 354x18
               text run at (143,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=4334"
-          RenderText {#text} at (496,0) size 774x36
+          LayoutText {#text} at (496,0) size 774x36
             text run at (496,0) width 5: " "
             text run at (500,0) width 274: "REGRESSION: Flickering when css-hover"
             text run at (0,18) width 278: "should change opacity on floating elements"
-        RenderText {#text} at (277,18) size 5x18
+        LayoutText {#text} at (277,18) size 5x18
           text run at (277,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 282x18
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 282x18
           text run at (0,0) width 282: "There should be a solid green square below."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock (floating) {DIV} at (0,96) size 100x100 [bgcolor=#008000]
+      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow (floating) {DIV} at (0,96) size 100x100 [bgcolor=#008000]

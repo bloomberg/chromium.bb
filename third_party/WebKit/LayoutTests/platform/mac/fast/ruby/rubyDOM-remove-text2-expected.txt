@@ -1,42 +1,42 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 746x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 746x18
           text run at (0,0) width 746: "The following is a test for DOM manipulation within <ruby>: Removing a ruby base object, leaving the base empty."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 448x18
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 448x18
           text run at (0,0) width 448: "Both lines should look identical (the first line is the one manipulated)."
-      RenderBlock (anonymous) at (0,68) size 784x36
+      LayoutBlockFlow (anonymous) at (0,68) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
-      RenderBlock {P} at (0,120) size 784x18
-        RenderText {#text} at (0,0) size 159x18
+      LayoutBlockFlow {P} at (0,120) size 784x18
+        LayoutText {#text} at (0,0) size 159x18
           text run at (0,0) width 159: "<ruby> is defined in the "
         LayoutRuby (inline) {RUBY} at (0,0) size 116x18
           LayoutRubyRun (anonymous) at (158.02,16) size 107.47x0
             LayoutRubyText {RT} at (0,-10) size 107.47x10
-              RenderText {#text} at (0,0) size 108x10
+              LayoutText {#text} at (0,0) size 108x10
                 text run at (0,0) width 108: "Hyper-text Markup Language"
           LayoutRubyRun (anonymous) at (265.48,0) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
-              RenderText {#text} at (0,0) size 8x18
+              LayoutText {#text} at (0,0) size 8x18
                 text run at (0,0) width 8: "5"
-        RenderText {#text} at (273,0) size 37x18
+        LayoutText {#text} at (273,0) size 37x18
           text run at (273,0) width 37: " spec."
-      RenderBlock {P} at (0,154) size 784x18
-        RenderText {#text} at (0,0) size 159x18
+      LayoutBlockFlow {P} at (0,154) size 784x18
+        LayoutText {#text} at (0,0) size 159x18
           text run at (0,0) width 159: "<ruby> is defined in the "
         LayoutRuby (inline) {RUBY} at (0,0) size 116x18
           LayoutRubyRun (anonymous) at (158.02,16) size 107.47x0
             LayoutRubyText {RT} at (0,-10) size 107.47x10
-              RenderText {#text} at (0,0) size 108x10
+              LayoutText {#text} at (0,0) size 108x10
                 text run at (0,0) width 108: "Hyper-text Markup Language"
           LayoutRubyRun (anonymous) at (265.48,0) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
-              RenderText {#text} at (0,0) size 8x18
+              LayoutText {#text} at (0,0) size 8x18
                 text run at (0,0) width 8: "5"
-        RenderText {#text} at (273,0) size 37x18
+        LayoutText {#text} at (273,0) size 37x18
           text run at (273,0) width 37: " spec."

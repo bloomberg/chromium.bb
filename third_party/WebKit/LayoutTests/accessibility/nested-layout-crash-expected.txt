@@ -1,4 +1,4 @@
-Test for rdar://problem/7050773 Crash at WebCore::RenderBlock::layoutBlock().
+Test for rdar://problem/7050773 Crash at WebCore::LayoutBlockFlow::layoutBlock().
 
 The test passes if it does not crash or cause an assertion failure.
 

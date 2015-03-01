@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x410
-  RenderBlock {HTML} at (0,0) size 800x410
-    RenderBody {BODY} at (8,8) size 784x0
-      RenderBlock (floating) {DIV} at (0,0) size 402x402 [border: (1px solid #FF0000)]
+  LayoutBlockFlow {HTML} at (0,0) size 800x410
+    LayoutBlockFlow {BODY} at (8,8) size 784x0
+      LayoutBlockFlow (floating) {DIV} at (0,0) size 402x402 [border: (1px solid #FF0000)]
 layer at (9,9) size 200x67
   LayoutEmbeddedObject {OBJECT} at (1,1) size 200x67
     layer at (0,0) size 200x67
-      RenderView at (0,0) size 200x67
+      LayoutView at (0,0) size 200x67
     layer at (0,0) size 200x67
       LayoutSVGRoot {svg} at (0,0) size 200x67
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

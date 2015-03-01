@@ -1,5 +1,5 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (149,129) size 202x222
     LayoutSVGPath {path} at (149,149) size 202x202 [stroke={[type=SOLID] [color=#000000]}] [data="M 250 150 C 305.228 150 350 194.772 350 250 C 350 305.228 305.228 350 250 350 C 194.772 350 150 305.228 150 250 C 150 194.772 194.772 150 250 150"]

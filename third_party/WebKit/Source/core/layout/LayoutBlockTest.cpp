@@ -14,11 +14,11 @@ namespace blink {
 class LayoutBlockTest : public RenderingTest {
 };
 
-TEST_F(LayoutBlockTest, RenderNameCalledWithNullStyle)
+TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle)
 {
     LayoutObject* obj = LayoutBlockFlow::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
-    EXPECT_STREQ("RenderBlock (generated)", obj->renderName());
+    EXPECT_STREQ("LayoutBlockFlow (generated)", obj->renderName());
     obj->destroy();
 }
 

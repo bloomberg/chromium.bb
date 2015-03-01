@@ -1,31 +1,31 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 719x18
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        LayoutInline {I} at (0,0) size 719x18
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13800"
-          RenderText {#text} at (359,0) size 414x18
+          LayoutText {#text} at (359,0) size 414x18
             text run at (359,0) width 5: " "
             text run at (363,0) width 410: "REGRESSION: Moving a slider moves another unrelated slider"
-        RenderText {#text} at (772,0) size 5x18
+        LayoutText {#text} at (772,0) size 5x18
           text run at (772,0) width 5: "."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 290x18
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 290x18
           text run at (0,0) width 290: "The first slider\x{2019}s thumb should be on the left."
-      RenderBlock {DIV} at (0,68) size 784x38
+      LayoutBlockFlow {DIV} at (0,68) size 784x38
         LayoutSlider {INPUT} at (2,2) size 129x15 [color=#909090] [bgcolor=#FFFFFF]
           LayoutFlexibleBox {DIV} at (0,0) size 129x15
-            RenderBlock {DIV} at (0,0) size 129x15
-              RenderBlock {DIV} at (0,0) size 15x15
+            LayoutBlockFlow {DIV} at (0,0) size 129x15
+              LayoutBlockFlow {DIV} at (0,0) size 15x15
         LayoutBR {BR} at (133,17) size 0x0
         LayoutSlider {INPUT} at (2,21) size 129x15 [color=#909090] [bgcolor=#FFFFFF]
           LayoutFlexibleBox {DIV} at (0,0) size 129x15
-            RenderBlock {DIV} at (0,0) size 129x15
-              RenderBlock {DIV} at (114,0) size 15x15
-        RenderText {#text} at (0,0) size 0x0
+            LayoutBlockFlow {DIV} at (0,0) size 129x15
+              LayoutBlockFlow {DIV} at (114,0) size 15x15
+        LayoutText {#text} at (0,0) size 0x0

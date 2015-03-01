@@ -176,8 +176,7 @@ LayoutText::~LayoutText()
 
 const char* LayoutText::renderName() const
 {
-    // FIXME: Rename to LayoutText
-    return "RenderText";
+    return "LayoutText";
 }
 
 bool LayoutText::isTextFragment() const

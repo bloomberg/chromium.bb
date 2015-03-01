@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (0,0) size 800x600
-      RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (0,0) size 800x600
+      LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
         LayoutImage {IMG} at (0,0) size 100x100
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

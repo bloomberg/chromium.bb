@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x363
-  RenderBlock {html} at (0,0) size 800x363
-    RenderBody {body} at (8,8) size 784x347
-      RenderText {#text} at (0,0) size 728x19
+  LayoutBlockFlow {html} at (0,0) size 800x363
+    LayoutBlockFlow {body} at (8,8) size 784x347
+      LayoutText {#text} at (0,0) size 728x19
         text run at (0,0) width 728: "There should be no red displayed on the screen, and the patterns should not change when the browser window is resized."
       LayoutBR {br} at (728,0) size 0x19
       LayoutBR {br} at (0,20) size 0x19
@@ -13,7 +13,7 @@ layer at (0,0) size 800x363
           LayoutSVGRect {rect} at (109,49) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=100.00] [y=0.00] [width=100.00] [height=50.00]
           LayoutSVGRect {rect} at (9,149) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=100.00] [width=100.00] [height=100.00]
           LayoutSVGRect {rect} at (109,49) size 100x100 [fill={[type=PATTERN] [id="pattern"]}] [x=100.00] [y=0.00] [width=100.00] [height=100.00]
-      RenderText {#text} at (202,327) size 4x19
+      LayoutText {#text} at (202,327) size 4x19
         text run at (202,327) width 4: " "
       LayoutSVGRoot {svg} at (214,47) size 202x307
         LayoutSVGText {text} at (5,265) size 77x19 contains 1 chunk(s)
@@ -29,9 +29,9 @@ layer at (0,0) size 800x363
           LayoutSVGResourcePattern {pattern} [id="pattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
             LayoutSVGRect {rect} at (215,49) size 100x25 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=100.00] [height=25.00]
             LayoutSVGRect {rect} at (215,74) size 100x25 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=25.00] [width=100.00] [height=25.00]
-      RenderText {#text} at (408,327) size 4x19
+      LayoutText {#text} at (408,327) size 4x19
         text run at (408,327) width 4: " "
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (420,48) size 202x302
   LayoutSVGRoot {svg} at (420,47) size 202x307
     LayoutSVGText {text} at (5,265) size 162x19 contains 1 chunk(s)

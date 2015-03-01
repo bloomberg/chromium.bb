@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 256x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 256x17
           text run at (0,0) width 256: "The textareas below should not overlap."
       LayoutTable {TABLE} at (0,18) size 784x40
         LayoutTableSection {TBODY} at (0,0) size 784x40
@@ -13,9 +13,9 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (8,1) size 6x38 [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (15,1) size 6x38 [r=0 c=2 rs=1 cs=1]
             LayoutTableCell {TD} at (22,10) size 761x20 [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 4x17
+              LayoutText {#text} at (1,1) size 4x17
                 text run at (1,1) width 4: " "
-      RenderBlock (anonymous) at (0,58) size 784x36
+      LayoutBlockFlow (anonymous) at (0,58) size 784x36
         LayoutBR {BR} at (0,0) size 0x17
         LayoutBR {BR} at (0,18) size 0x17
       LayoutTable {TABLE} at (0,94) size 784x40
@@ -25,26 +25,26 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (8,1) size 6x38 [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (15,1) size 6x38 [r=0 c=2 rs=1 cs=1]
             LayoutTableCell {TD} at (22,10) size 761x20 [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 4x17
+              LayoutText {#text} at (1,1) size 4x17
                 text run at (1,1) width 4: " "
 layer at (10,28) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 50
   LayoutTextControl {TEXTAREA} at (1,1) size 4x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 0x48
-      RenderText {#text} at (0,0) size 8x48
+    LayoutBlockFlow {DIV} at (3,3) size 0x48
+      LayoutText {#text} at (0,0) size 8x48
         text run at (0,0) width 8: "o"
         text run at (0,16) width 8: "n"
         text run at (0,32) width 8: "e"
 layer at (17,28) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 50
   LayoutTextControl {TEXTAREA} at (1,1) size 4x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 0x48
-      RenderText {#text} at (0,0) size 8x48
+    LayoutBlockFlow {DIV} at (3,3) size 0x48
+      LayoutText {#text} at (0,0) size 8x48
         text run at (0,0) width 8: "t"
         text run at (0,16) width 8: "w"
         text run at (0,32) width 8: "o"
 layer at (24,28) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 82
   LayoutTextControl {TEXTAREA} at (1,1) size 4x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 0x80
-      RenderText {#text} at (0,0) size 8x80
+    LayoutBlockFlow {DIV} at (3,3) size 0x80
+      LayoutText {#text} at (0,0) size 8x80
         text run at (0,0) width 8: "t"
         text run at (0,16) width 8: "h"
         text run at (0,32) width 8: "r"
@@ -52,8 +52,8 @@ layer at (24,28) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 82
         text run at (0,64) width 8: "e"
 layer at (10,104) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 210
   LayoutTextControl {TEXTAREA} at (1,1) size 4x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 0x208
-      RenderText {#text} at (0,0) size 8x208
+    LayoutBlockFlow {DIV} at (3,3) size 0x208
+      LayoutText {#text} at (0,0) size 8x208
         text run at (0,0) width 8: "o"
         text run at (0,16) width 8: "n"
         text run at (0,32) width 8: "e"
@@ -69,15 +69,15 @@ layer at (10,104) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 2
         text run at (0,192) width 8: "e"
 layer at (17,104) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 50
   LayoutTextControl {TEXTAREA} at (1,1) size 4x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 0x48
-      RenderText {#text} at (0,0) size 8x48
+    LayoutBlockFlow {DIV} at (3,3) size 0x48
+      LayoutText {#text} at (0,0) size 8x48
         text run at (0,0) width 8: "t"
         text run at (0,16) width 8: "w"
         text run at (0,32) width 8: "o"
 layer at (24,104) size 4x36 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 82
   LayoutTextControl {TEXTAREA} at (1,1) size 4x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 0x80
-      RenderText {#text} at (0,0) size 8x80
+    LayoutBlockFlow {DIV} at (3,3) size 0x80
+      LayoutText {#text} at (0,0) size 8x80
         text run at (0,0) width 8: "t"
         text run at (0,16) width 8: "h"
         text run at (0,32) width 8: "r"

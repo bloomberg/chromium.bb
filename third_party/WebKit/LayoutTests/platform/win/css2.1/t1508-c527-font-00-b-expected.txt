@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x106
-  RenderBlock {HTML} at (0,0) size 800x106
-    RenderBody {BODY} at (8,13) size 784x80 [color=#000080]
-      RenderBlock {P} at (0,0) size 784x80
-        RenderText {#text} at (0,0) size 612x16
+  LayoutBlockFlow {HTML} at (0,0) size 800x106
+    LayoutBlockFlow {BODY} at (8,13) size 784x80 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x80
+        LayoutText {#text} at (0,0) size 612x16
           text run at (0,0) width 612: "This text should be 13px Helvetica in small-caps and italicized. There should be a small gap between each line. "
-        RenderInline {SPAN} at (0,0) size 777x80 [color=#C0C0C0]
-          RenderText {#text} at (612,0) size 777x80
+        LayoutInline {SPAN} at (0,0) size 777x80 [color=#C0C0C0]
+          LayoutText {#text} at (612,0) size 777x80
             text run at (612,0) width 165: "dummy text dummy text dummy"
             text run at (0,16) width 195: "text dummy text dummy text dummy "
             text run at (195,16) width 390: "text dummy text dummy text dummy text dummy text dummy text dummy "
@@ -20,4 +20,4 @@ layer at (0,0) size 800x106
             text run at (585,48) width 191: "text dummy text dummy text dummy"
             text run at (0,64) width 195: "text dummy text dummy text dummy "
             text run at (195,64) width 347: "text dummy text dummy text dummy text dummy text dummy text"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

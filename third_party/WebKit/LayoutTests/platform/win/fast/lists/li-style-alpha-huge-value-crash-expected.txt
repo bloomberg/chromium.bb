@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {BLOCKQUOTE} at (40,0) size 704x54
-        RenderBlock {BLOCKQUOTE} at (40,0) size 624x54
-          RenderBlock {OL} at (0,0) size 624x54
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 704x54
+        LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 624x54
+          LayoutBlockFlow {OL} at (0,0) size 624x54
             LayoutListItem {LI} at (40,0) size 584x54
               LayoutListMarker at (-90.22,0) size 86.22x17: "CYWOQVJ"
               LayoutBR {BR} at (0,0) size 0x17
-              RenderText {#text} at (0,18) size 493x35
+              LayoutText {#text} at (0,18) size 493x35
                 text run at (0,18) width 190: "SUCCESS (you didn't crash) "
                 text run at (189,18) width 304: "Our behavior here matches WinIE not FireFox."
                 text run at (0,36) width 349: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8542"

@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 778
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x546
-  RenderBlock {HTML} at (0,0) size 785x546
-    RenderBody {BODY} at (8,16) size 769x522
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 355x17
+  LayoutBlockFlow {HTML} at (0,0) size 785x546
+    LayoutBlockFlow {BODY} at (8,16) size 769x522
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 355x17
           text run at (0,0) width 355: "Test overlay cast button rendering on dark background."
-      RenderBlock {DIV} at (0,34) size 769x244
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,278) size 769x244
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,522) size 769x0
+      LayoutBlockFlow {DIV} at (0,34) size 769x244
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,278) size 769x244
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,522) size 769x0
 layer at (8,50) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,294) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,50) size 320x240
   LayoutFlexibleBox {DIV} at (0,0) size 320x240
-    RenderBlock {DIV} at (0,205) size 320x35
+    LayoutBlockFlow {DIV} at (0,205) size 320x35
 layer at (8,50) size 320x205
   LayoutFlexibleBox {DIV} at (0,0) size 320x205
 layer at (24,60) size 30x30
   LayoutButton {INPUT} at (16,10.25) size 30x30
 layer at (8,294) size 320x240
   LayoutFlexibleBox {DIV} at (0,0) size 320x240
-    RenderBlock {DIV} at (0,205) size 320x35
+    LayoutBlockFlow {DIV} at (0,205) size 320x35
 layer at (8,294) size 320x205
   LayoutFlexibleBox {DIV} at (0,0) size 320x205
 layer at (24,304) size 30x30
@@ -33,7 +33,7 @@ layer at (8,538) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0)
   LayoutVideo {VIDEO} at (8,538) size 320x240
 layer at (8,538) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutFlexibleBox {DIV} at (0,0) size 320x240
-    RenderBlock {DIV} at (0,205) size 320x35
+    LayoutBlockFlow {DIV} at (0,205) size 320x35
 layer at (8,538) size 320x205 backgroundClip at (8,538) size 320x62 clip at (8,538) size 320x62 outlineClip at (0,0) size 785x600
   LayoutFlexibleBox {DIV} at (0,0) size 320x205
 layer at (24,548) size 30x30

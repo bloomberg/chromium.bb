@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x454
-  RenderBlock {HTML} at (0,0) size 800x454.44
-    RenderBody {BODY} at (8,18.72) size 784x427.72
-      RenderBlock {H3} at (0,0) size 784x21
-        RenderText {#text} at (0,0) size 87x20
+  LayoutBlockFlow {HTML} at (0,0) size 800x454.44
+    LayoutBlockFlow {BODY} at (8,18.72) size 784x427.72
+      LayoutBlockFlow {H3} at (0,0) size 784x21
+        LayoutText {#text} at (0,0) size 87x20
           text run at (0,0) width 87: "It passes if:"
-      RenderBlock {UL} at (0,39.72) size 784x40
+      LayoutBlockFlow {UL} at (0,39.72) size 784x40
         LayoutListItem {LI} at (40,0) size 744x20
           LayoutListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 291x19
+          LayoutText {#text} at (0,0) size 291x19
             text run at (0,0) width 291: "the canvas element has 8px gray shadow around"
         LayoutListItem {LI} at (40,20) size 744x20
           LayoutListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 238x19
+          LayoutText {#text} at (0,0) size 238x19
             text run at (0,0) width 238: "the canvas content has rounded corners"
-      RenderBlock (anonymous) at (0,95.72) size 784x332
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,95.72) size 784x332
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (28,134) size 287x287
   LayoutHTMLCanvas {CANVAS} at (20,20) size 287x287 [bgcolor=#808080] [border: (5px solid #FF0000)]

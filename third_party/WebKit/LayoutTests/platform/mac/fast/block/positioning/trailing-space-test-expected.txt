@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderInline {SPAN} at (0,0) size 281x20 [border: (1px solid #000000)]
-        RenderText {#text} at (1,0) size 279x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutInline {SPAN} at (0,0) size 281x20 [border: (1px solid #000000)]
+        LayoutText {#text} at (1,0) size 279x18
           text run at (1,0) width 279: "These two boxes should be the same width."
       LayoutBR {BR} at (280,14) size 1x0
-      RenderInline {SPAN} at (0,0) size 281x20 [border: (1px solid #000000)]
-        RenderText {#text} at (1,18) size 279x18
+      LayoutInline {SPAN} at (0,0) size 281x20 [border: (1px solid #000000)]
+        LayoutText {#text} at (1,18) size 279x18
           text run at (1,18) width 279: "These two boxes should be the same width."
 layer at (287,50) size 100x100
   LayoutImage {IMG} at (287.17,50) size 100x100 [bgcolor=#008000]

@@ -1,28 +1,28 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock (anonymous) at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 782x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow (anonymous) at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 782x35
           text run at (0,0) width 782: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by"
           text run at (0,18) width 106: "a blue rectangle."
-      RenderBlock {P} at (0,52) size 784x99
-        RenderBlock {IMG} at (0,0) size 54.66x22
+      LayoutBlockFlow {P} at (0,52) size 784x99
+        LayoutBlockFlow {IMG} at (0,0) size 54.66x22
         LayoutBR {BR} at (54,22) size 1x0
-        RenderBlock {IMG} at (0,22) size 102x52 [border: (1px solid #000000)]
+        LayoutBlockFlow {IMG} at (0,22) size 102x52 [border: (1px solid #000000)]
         LayoutBR {BR} at (102,73) size 0x0
         LayoutImage {IMG} at (0,74) size 75x25
         LayoutBR {BR} at (75,99) size 0x0
 layer at (8,60) size 55x22 clip at (9,61) size 53x20
-  RenderBlock {DIV} at (0,0) size 54.66x22 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,0) size 54.66x22 [border: (1px solid #C0C0C0)]
 layer at (10,62) size 51x18
-  RenderBlock {DIV} at (2,2) size 50.66x18
-    RenderText {#text} at (0,0) size 51x17
+  LayoutBlockFlow {DIV} at (2,2) size 50.66x18
+    LayoutText {#text} at (0,0) size 51x17
       text run at (0,0) width 51: "Success"
 layer at (9,83) size 100x50 clip at (10,84) size 98x48
-  RenderBlock {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
 layer at (11,85) size 96x18
-  RenderBlock {DIV} at (2,2) size 96x18
-    RenderText {#text} at (0,0) size 51x17
+  LayoutBlockFlow {DIV} at (2,2) size 96x18
+    LayoutText {#text} at (0,0) size 51x17
       text run at (0,0) width 51: "Success"

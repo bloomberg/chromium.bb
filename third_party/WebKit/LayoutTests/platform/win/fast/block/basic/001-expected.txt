@@ -1,33 +1,33 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x183.53 [border: (2px solid #FF0000)]
-        RenderBlock (anonymous) at (2,2) size 780x18
-          RenderInline {I} at (0,0) size 236x17
-            RenderText {#text} at (0,0) size 96x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x183.53 [border: (2px solid #FF0000)]
+        LayoutBlockFlow (anonymous) at (2,2) size 780x18
+          LayoutInline {I} at (0,0) size 236x17
+            LayoutText {#text} at (0,0) size 96x17
               text run at (0,0) width 96: "Start of a line. "
-            RenderInline {FONT} at (0,0) size 141x17 [color=#FF0000]
-              RenderText {#text} at (95,0) size 141x17
+            LayoutInline {FONT} at (0,0) size 141x17 [color=#FF0000]
+              LayoutText {#text} at (95,0) size 141x17
                 text run at (95,0) width 141: "More red on this line:"
-        RenderBlock (anonymous) at (2,38.72) size 780x68.91 [color=#FF0000]
-          RenderBlock {H3} at (0,0) size 780x22
-            RenderText {#text} at (0,0) size 205x21
+        LayoutBlockFlow (anonymous) at (2,38.72) size 780x68.91 [color=#FF0000]
+          LayoutBlockFlow {H3} at (0,0) size 780x22
+            LayoutText {#text} at (0,0) size 205x21
               text run at (0,0) width 205: "Suddenly a block appears!"
-          RenderBlock {H2} at (0,41.91) size 780x27
-            RenderText {#text} at (0,0) size 194x26
+          LayoutBlockFlow {H2} at (0,41.91) size 780x27
+            LayoutText {#text} at (0,0) size 194x26
               text run at (0,0) width 194: "And another block!"
-        RenderBlock (anonymous) at (2,127.53) size 780x54
-          RenderInline {I} at (0,0) size 300x35
-            RenderInline {FONT} at (0,0) size 98x35 [color=#FF0000]
-              RenderText {#text} at (0,0) size 98x17
+        LayoutBlockFlow (anonymous) at (2,127.53) size 780x54
+          LayoutInline {I} at (0,0) size 300x35
+            LayoutInline {FONT} at (0,0) size 98x35 [color=#FF0000]
+              LayoutText {#text} at (0,0) size 98x17
                 text run at (0,0) width 98: "Now more text."
               LayoutBR {BR} at (97,14) size 1x0
-              RenderText {#text} at (0,18) size 68x17
+              LayoutText {#text} at (0,18) size 68x17
                 text run at (0,18) width 68: "This is red"
-            RenderText {#text} at (67,18) size 233x17
+            LayoutText {#text} at (67,18) size 233x17
               text run at (67,18) width 233: " but now only italic on the same line"
           LayoutBR {BR} at (299,32) size 1x0
-          RenderText {#text} at (0,36) size 132x17
+          LayoutText {#text} at (0,36) size 132x17
             text run at (0,36) width 132: "Plain line at the end."

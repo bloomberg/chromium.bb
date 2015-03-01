@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x74
-  RenderBlock {HTML} at (0,0) size 800x74
-    RenderBody {BODY} at (8,8) size 784x58
-      RenderText {#text} at (0,0) size 0x0
-      RenderText {#text} at (0,0) size 0x0
+  LayoutBlockFlow {HTML} at (0,0) size 800x74
+    LayoutBlockFlow {BODY} at (8,8) size 784x58
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,7) size 376x59 clip at (9,8) size 363x57 scrollHeight 56
   LayoutListBox {SELECT} at (0,-0.75) size 376.05x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    RenderBlock {OPTION} at (1,1) size 363.05x14.19 [color=#FFFFFF] [bgcolor=#3875D7]
-      RenderText {#text} at (2,0) size 360x13
+    LayoutBlockFlow {OPTION} at (1,1) size 363.05x14.19 [color=#FFFFFF] [bgcolor=#3875D7]
+      LayoutText {#text} at (2,0) size 360x13
         text run at (2,0) width 360: "make-the-item-long-enough-to-make-a-difference-in-pixel-test"
-    RenderBlock {OPTION} at (1,15.19) size 363.05x14.19
-      RenderText {#text} at (2,0) size 7x13
+    LayoutBlockFlow {OPTION} at (1,15.19) size 363.05x14.19
+      LayoutText {#text} at (2,0) size 7x13
         text run at (2,0) width 7: "b"

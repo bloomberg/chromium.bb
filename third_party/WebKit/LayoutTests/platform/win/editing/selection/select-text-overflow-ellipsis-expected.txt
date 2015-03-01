@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 68x21
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {H3} at (0,0) size 784x22
+        LayoutText {#text} at (0,0) size 68x21
           text run at (0,0) width 68: "Test for "
-        RenderInline {A} at (0,0) size 151x21 [color=#0000EE]
-          RenderText {#text} at (67,0) size 151x21
+        LayoutInline {A} at (0,0) size 151x21 [color=#0000EE]
+          LayoutText {#text} at (67,0) size 151x21
             text run at (67,0) width 151: "WebKit bug 29968"
-        RenderText {#text} at (217,0) size 552x21
+        LayoutText {#text} at (217,0) size 552x21
           text run at (217,0) width 552: ": Selecting text with text-overflow ellipsis should not show cut off text"
 layer at (8,49) size 95x18 scrollWidth 124
-  RenderBlock {DIV} at (0,40.72) size 95x18
-    RenderText {#text} at (0,0) size 124x17
+  LayoutBlockFlow {DIV} at (0,40.72) size 95x18
+    LayoutText {#text} at (0,0) size 124x17
       text run at (0,0) width 124: "Lorem ipsum dolor"
 selection start: position 0 of child 0 {#text} of child 3 {DIV} of body
 selection end:   position 11 of child 0 {#text} of child 3 {DIV} of body

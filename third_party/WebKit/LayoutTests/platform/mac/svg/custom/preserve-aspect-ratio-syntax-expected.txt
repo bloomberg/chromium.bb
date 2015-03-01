@@ -3,7 +3,7 @@ CONSOLE ERROR: line 26: Error: Invalid value for <svg> attribute preserveAspectR
 CONSOLE ERROR: line 29: Error: Invalid value for <svg> attribute preserveAspectRatio="defer 1 xMidYMid meet"
 CONSOLE ERROR: line 32: Error: Invalid value for <svg> attribute preserveAspectRatio="defer , xMidYMid meet"
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,36) size 733x381
     LayoutSVGContainer {g} at (0,36) size 733x381

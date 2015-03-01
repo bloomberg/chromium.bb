@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (100,100) size 500x300
     LayoutSVGForeignObject {foreignObject} at (100,100) size 500x300
-      RenderBlock {div} at (0,0) size 500x183
-        RenderText {#text} at (0,0) size 490x183
+      LayoutBlockFlow {div} at (0,0) size 500x183
+        LayoutText {#text} at (0,0) size 490x183
           text run at (0,0) width 490: "Select this text using"
           text run at (0,61) width 478: "the mouse, it should"
           text run at (0,122) width 338: "not disappear!"

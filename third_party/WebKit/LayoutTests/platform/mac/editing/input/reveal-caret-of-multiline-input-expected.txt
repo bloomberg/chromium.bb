@@ -1,108 +1,108 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x174
-  RenderBlock {HTML} at (0,0) size 800x174
-    RenderBody {BODY} at (8,8) size 784x158
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 610x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x174
+    LayoutBlockFlow {BODY} at (8,8) size 784x158
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 610x18
           text run at (0,0) width 610: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
-      RenderBlock (anonymous) at (0,18) size 784x140
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,18) size 784x140
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 91x136 clip at (9,27) size 74x134 scrollY 98.00 scrollHeight 420
   LayoutTextControl {TEXTAREA} at (0,0) size 91x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    RenderBlock {DIV} at (3,3) size 70x416
-      RenderText {#text} at (0,0) size 14x13
+    LayoutBlockFlow {DIV} at (3,3) size 70x416
+      LayoutText {#text} at (0,0) size 14x13
         text run at (0,0) width 14: "00"
       LayoutBR {BR} at (13,0) size 1x13
-      RenderText {#text} at (0,13) size 14x13
+      LayoutText {#text} at (0,13) size 14x13
         text run at (0,13) width 14: "01"
       LayoutBR {BR} at (13,13) size 1x13
-      RenderText {#text} at (0,26) size 14x13
+      LayoutText {#text} at (0,26) size 14x13
         text run at (0,26) width 14: "02"
       LayoutBR {BR} at (13,26) size 1x13
-      RenderText {#text} at (0,39) size 14x13
+      LayoutText {#text} at (0,39) size 14x13
         text run at (0,39) width 14: "03"
       LayoutBR {BR} at (13,39) size 1x13
-      RenderText {#text} at (0,52) size 14x13
+      LayoutText {#text} at (0,52) size 14x13
         text run at (0,52) width 14: "04"
       LayoutBR {BR} at (13,52) size 1x13
-      RenderText {#text} at (0,65) size 14x13
+      LayoutText {#text} at (0,65) size 14x13
         text run at (0,65) width 14: "05"
       LayoutBR {BR} at (13,65) size 1x13
-      RenderText {#text} at (0,78) size 14x13
+      LayoutText {#text} at (0,78) size 14x13
         text run at (0,78) width 14: "06"
       LayoutBR {BR} at (13,78) size 1x13
-      RenderText {#text} at (0,91) size 14x13
+      LayoutText {#text} at (0,91) size 14x13
         text run at (0,91) width 14: "07"
       LayoutBR {BR} at (13,91) size 1x13
-      RenderText {#text} at (0,104) size 14x13
+      LayoutText {#text} at (0,104) size 14x13
         text run at (0,104) width 14: "08"
       LayoutBR {BR} at (13,104) size 1x13
-      RenderText {#text} at (0,117) size 14x13
+      LayoutText {#text} at (0,117) size 14x13
         text run at (0,117) width 14: "09"
       LayoutBR {BR} at (13,117) size 1x13
-      RenderText {#text} at (0,130) size 14x13
+      LayoutText {#text} at (0,130) size 14x13
         text run at (0,130) width 14: "10"
       LayoutBR {BR} at (13,130) size 1x13
-      RenderText {#text} at (0,143) size 14x13
+      LayoutText {#text} at (0,143) size 14x13
         text run at (0,143) width 14: "11"
       LayoutBR {BR} at (13,143) size 1x13
-      RenderText {#text} at (0,156) size 23x13
+      LayoutText {#text} at (0,156) size 23x13
         text run at (0,156) width 23: ">12"
       LayoutBR {BR} at (22,156) size 1x13
-      RenderText {#text} at (0,169) size 14x13
+      LayoutText {#text} at (0,169) size 14x13
         text run at (0,169) width 14: "13"
       LayoutBR {BR} at (13,169) size 1x13
-      RenderText {#text} at (0,182) size 14x13
+      LayoutText {#text} at (0,182) size 14x13
         text run at (0,182) width 14: "14"
       LayoutBR {BR} at (13,182) size 1x13
-      RenderText {#text} at (0,195) size 14x13
+      LayoutText {#text} at (0,195) size 14x13
         text run at (0,195) width 14: "15"
       LayoutBR {BR} at (13,195) size 1x13
-      RenderText {#text} at (0,208) size 14x13
+      LayoutText {#text} at (0,208) size 14x13
         text run at (0,208) width 14: "16"
       LayoutBR {BR} at (13,208) size 1x13
-      RenderText {#text} at (0,221) size 14x13
+      LayoutText {#text} at (0,221) size 14x13
         text run at (0,221) width 14: "17"
       LayoutBR {BR} at (13,221) size 1x13
-      RenderText {#text} at (0,234) size 14x13
+      LayoutText {#text} at (0,234) size 14x13
         text run at (0,234) width 14: "18"
       LayoutBR {BR} at (13,234) size 1x13
-      RenderText {#text} at (0,247) size 14x13
+      LayoutText {#text} at (0,247) size 14x13
         text run at (0,247) width 14: "19"
       LayoutBR {BR} at (13,247) size 1x13
-      RenderText {#text} at (0,260) size 14x13
+      LayoutText {#text} at (0,260) size 14x13
         text run at (0,260) width 14: "20"
       LayoutBR {BR} at (13,260) size 1x13
-      RenderText {#text} at (0,273) size 14x13
+      LayoutText {#text} at (0,273) size 14x13
         text run at (0,273) width 14: "21"
       LayoutBR {BR} at (13,273) size 1x13
-      RenderText {#text} at (0,286) size 14x13
+      LayoutText {#text} at (0,286) size 14x13
         text run at (0,286) width 14: "22"
       LayoutBR {BR} at (13,286) size 1x13
-      RenderText {#text} at (0,299) size 14x13
+      LayoutText {#text} at (0,299) size 14x13
         text run at (0,299) width 14: "23"
       LayoutBR {BR} at (13,299) size 1x13
-      RenderText {#text} at (0,312) size 14x13
+      LayoutText {#text} at (0,312) size 14x13
         text run at (0,312) width 14: "24"
       LayoutBR {BR} at (13,312) size 1x13
-      RenderText {#text} at (0,325) size 14x13
+      LayoutText {#text} at (0,325) size 14x13
         text run at (0,325) width 14: "25"
       LayoutBR {BR} at (13,325) size 1x13
-      RenderText {#text} at (0,338) size 14x13
+      LayoutText {#text} at (0,338) size 14x13
         text run at (0,338) width 14: "26"
       LayoutBR {BR} at (13,338) size 1x13
-      RenderText {#text} at (0,351) size 14x13
+      LayoutText {#text} at (0,351) size 14x13
         text run at (0,351) width 14: "27"
       LayoutBR {BR} at (13,351) size 1x13
-      RenderText {#text} at (0,364) size 14x13
+      LayoutText {#text} at (0,364) size 14x13
         text run at (0,364) width 14: "28"
       LayoutBR {BR} at (13,364) size 1x13
-      RenderText {#text} at (0,377) size 14x13
+      LayoutText {#text} at (0,377) size 14x13
         text run at (0,377) width 14: "29"
       LayoutBR {BR} at (13,377) size 1x13
-      RenderText {#text} at (0,390) size 14x13
+      LayoutText {#text} at (0,390) size 14x13
         text run at (0,390) width 14: "30"
       LayoutBR {BR} at (13,390) size 1x13
       LayoutBR {BR} at (0,403) size 0x13

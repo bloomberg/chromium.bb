@@ -1,26 +1,26 @@
 layer at (0,0) size 800x1211
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x1211
-  RenderBlock {HTML} at (0,0) size 800x1211
-    RenderBody {BODY} at (0,0) size 800x1210
-      RenderBlock {DIV} at (0,0) size 600x48
-        RenderText {#text} at (0,0) size 306x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x1211
+    LayoutBlockFlow {BODY} at (0,0) size 800x1210
+      LayoutBlockFlow {DIV} at (0,0) size 600x48
+        LayoutText {#text} at (0,0) size 306x19
           text run at (0,0) width 306: "Table autosizing tests - table-with-inline-block.html"
         LayoutBR {BR} at (306,0) size 0x19
-        RenderText {#text} at (0,20) size 358x19
+        LayoutText {#text} at (0,20) size 358x19
           text run at (0,20) width 358: "This test passes if there is not extra space in the pink boxes."
       LayoutTable {TABLE} at (1,49) size 798x292 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 797x291
           LayoutTableRow {TR} at (0,0) size 797x291
             LayoutTableCell {TD} at (0,0) size 797x291 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,3) size 740x142
+              LayoutText {#text} at (2,3) size 740x142
                 text run at (2,3) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,51) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,99) width 600: "Autosize Autosize Autosize Autosize "
-              RenderBlock {B} at (602,120) size 86x20 [bgcolor=#FFC0CB]
-                RenderText {#text} at (0,0) size 86x19
+              LayoutBlockFlow {B} at (602,120) size 86x20 [bgcolor=#FFC0CB]
+                LayoutText {#text} at (0,0) size 86x19
                   text run at (0,0) width 86: "wrapped text"
-              RenderText {#text} at (2,147) size 740x142
+              LayoutText {#text} at (2,147) size 740x142
                 text run at (2,147) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,195) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,243) width 590: "Autosize Autosize Autosize Autosize"
@@ -28,58 +28,58 @@ layer at (0,0) size 800x1211
         LayoutTableSection {TBODY} at (0,0) size 143x867
           LayoutTableRow {TR} at (0,0) size 143x867
             LayoutTableCell {TD} at (0,0) size 143x867 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,3) size 140x46
+              LayoutText {#text} at (2,3) size 140x46
                 text run at (2,3) width 140: "Autosize"
               LayoutBR {BR} at (142,3) size 0x46
-              RenderBlock {B} at (2,72) size 91x20 [bgcolor=#FFC0CB]
-                RenderText {#text} at (0,0) size 91x19
+              LayoutBlockFlow {B} at (2,72) size 91x20 [bgcolor=#FFC0CB]
+                LayoutText {#text} at (0,0) size 91x19
                   text run at (0,0) width 91: "Wrapped text"
               LayoutBR {BR} at (93,51) size 0x46
-              RenderText {#text} at (2,99) size 140x46
+              LayoutText {#text} at (2,99) size 140x46
                 text run at (2,99) width 140: "Autosize"
               LayoutBR {BR} at (142,99) size 0x46
-              RenderText {#text} at (2,147) size 140x46
+              LayoutText {#text} at (2,147) size 140x46
                 text run at (2,147) width 140: "Autosize"
               LayoutBR {BR} at (142,147) size 0x46
-              RenderText {#text} at (2,195) size 140x46
+              LayoutText {#text} at (2,195) size 140x46
                 text run at (2,195) width 140: "Autosize"
               LayoutBR {BR} at (142,195) size 0x46
-              RenderText {#text} at (2,243) size 140x46
+              LayoutText {#text} at (2,243) size 140x46
                 text run at (2,243) width 140: "Autosize"
               LayoutBR {BR} at (142,243) size 0x46
-              RenderText {#text} at (2,291) size 140x46
+              LayoutText {#text} at (2,291) size 140x46
                 text run at (2,291) width 140: "Autosize"
               LayoutBR {BR} at (142,291) size 0x46
-              RenderText {#text} at (2,339) size 140x46
+              LayoutText {#text} at (2,339) size 140x46
                 text run at (2,339) width 140: "Autosize"
               LayoutBR {BR} at (142,339) size 0x46
-              RenderText {#text} at (2,387) size 140x46
+              LayoutText {#text} at (2,387) size 140x46
                 text run at (2,387) width 140: "Autosize"
               LayoutBR {BR} at (142,387) size 0x46
-              RenderText {#text} at (2,435) size 140x46
+              LayoutText {#text} at (2,435) size 140x46
                 text run at (2,435) width 140: "Autosize"
               LayoutBR {BR} at (142,435) size 0x46
-              RenderText {#text} at (2,483) size 140x46
+              LayoutText {#text} at (2,483) size 140x46
                 text run at (2,483) width 140: "Autosize"
               LayoutBR {BR} at (142,483) size 0x46
-              RenderText {#text} at (2,531) size 140x46
+              LayoutText {#text} at (2,531) size 140x46
                 text run at (2,531) width 140: "Autosize"
               LayoutBR {BR} at (142,531) size 0x46
-              RenderText {#text} at (2,579) size 140x46
+              LayoutText {#text} at (2,579) size 140x46
                 text run at (2,579) width 140: "Autosize"
               LayoutBR {BR} at (142,579) size 0x46
-              RenderText {#text} at (2,627) size 140x46
+              LayoutText {#text} at (2,627) size 140x46
                 text run at (2,627) width 140: "Autosize"
               LayoutBR {BR} at (142,627) size 0x46
-              RenderText {#text} at (2,675) size 140x46
+              LayoutText {#text} at (2,675) size 140x46
                 text run at (2,675) width 140: "Autosize"
               LayoutBR {BR} at (142,675) size 0x46
-              RenderText {#text} at (2,723) size 140x46
+              LayoutText {#text} at (2,723) size 140x46
                 text run at (2,723) width 140: "Autosize"
               LayoutBR {BR} at (142,723) size 0x46
-              RenderText {#text} at (2,771) size 140x46
+              LayoutText {#text} at (2,771) size 140x46
                 text run at (2,771) width 140: "Autosize"
               LayoutBR {BR} at (142,771) size 0x46
-              RenderText {#text} at (2,819) size 140x46
+              LayoutText {#text} at (2,819) size 140x46
                 text run at (2,819) width 140: "Autosize"
               LayoutBR {BR} at (142,819) size 0x46

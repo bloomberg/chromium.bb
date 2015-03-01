@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x84
-  RenderBlock {HTML} at (0,0) size 800x84
-    RenderBody {BODY} at (8,16) size 784x52
-      RenderBlock {P} at (0,0) size 784x18
-        RenderInline {A} at (0,0) size 31x18 [color=#0000FF]
-          RenderInline {<pseudo:first-letter>} at (0,0) size 10x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x84
+    LayoutBlockFlow {BODY} at (8,16) size 784x52
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutInline {A} at (0,0) size 31x18 [color=#0000FF]
+          LayoutInline {<pseudo:first-letter>} at (0,0) size 10x18
             LayoutTextFragment at (0,0) size 10x18
               text run at (0,0) width 10: "F"
           LayoutTextFragment {#text} at (9,0) size 22x18
             text run at (9,0) width 22: "irst"
-        RenderText {#text} at (30,0) size 194x18
+        LayoutText {#text} at (30,0) size 194x18
           text run at (30,0) width 194: " letter should be bold and blue"
-      RenderBlock {P} at (0,34) size 784x18
-        RenderInline {<pseudo:first-letter>} at (0,0) size 13x18
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 13x18
           LayoutTextFragment at (0,0) size 13x18
             text run at (0,0) width 13: "H"
         LayoutTextFragment {#text} at (12,0) size 629x18

@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x71
-  RenderBlock {HTML} at (0,0) size 800x71
-    RenderBody {BODY} at (8,8) size 784x55
-      RenderBlock {DIV} at (0,0) size 200x55
-        RenderBlock {SPAN} at (0,24) size 0x0
-        RenderText {#text} at (0,10) size 228x44
+  LayoutBlockFlow {HTML} at (0,0) size 800x71
+    LayoutBlockFlow {BODY} at (8,8) size 784x55
+      LayoutBlockFlow {DIV} at (0,0) size 200x55
+        LayoutBlockFlow {SPAN} at (0,24) size 0x0
+        LayoutText {#text} at (0,10) size 228x44
           text run at (0,10) width 200: "\x{3042}"
           text run at (0,37) width 228: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

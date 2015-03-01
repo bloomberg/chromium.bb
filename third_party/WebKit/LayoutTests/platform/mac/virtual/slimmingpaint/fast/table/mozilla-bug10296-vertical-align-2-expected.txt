@@ -1,74 +1,74 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x476
-  RenderBlock {HTML} at (0,0) size 800x475.88
-    RenderBody {BODY} at (8,21.44) size 784x446.44
-      RenderBlock {H1} at (0,0) size 784x37
-        RenderText {#text} at (0,0) size 484x37
+  LayoutBlockFlow {HTML} at (0,0) size 800x475.88
+    LayoutBlockFlow {BODY} at (8,21.44) size 784x446.44
+      LayoutBlockFlow {H1} at (0,0) size 784x37
+        LayoutText {#text} at (0,0) size 484x37
           text run at (0,0) width 484: "Vertical alignment and table height"
-      RenderBlock {P} at (0,58.44) size 784x18
-        RenderText {#text} at (0,0) size 547x18
+      LayoutBlockFlow {P} at (0,58.44) size 784x18
+        LayoutText {#text} at (0,0) size 547x18
           text run at (0,0) width 547: "In each of the following tables the cells with 'Data' should all have the same baseline:"
       LayoutTable {TABLE} at (0,92.44) size 464x118
         LayoutTableSection {TBODY} at (0,0) size 464x118
           LayoutTableRow {TR} at (0,2) size 464x114
             LayoutTableCell {TD} at (2,2) size 186x114 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 182x110
+              LayoutText {#text} at (2,2) size 182x110
                 text run at (2,2) width 182: "Data"
             LayoutTableCell {TD} at (190,2) size 30x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 26x18
+              LayoutText {#text} at (2,2) size 26x18
                 text run at (2,2) width 26: "Top"
             LayoutTableCell {TD} at (222,48) size 51x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 47x18
+              LayoutText {#text} at (2,2) size 47x18
                 text run at (2,2) width 47: "Middle"
             LayoutTableCell {TD} at (275,74) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 31x18
+              LayoutText {#text} at (2,2) size 31x18
                 text run at (2,2) width 31: "Data"
             LayoutTableCell {TD} at (312,94) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 49x18
+              LayoutText {#text} at (2,2) size 49x18
                 text run at (2,2) width 49: "Bottom"
             LayoutTableCell {TD} at (367,45) size 95x59 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 91x55
+              LayoutText {#text} at (2,2) size 91x55
                 text run at (2,2) width 91: "Data"
       LayoutTable {TABLE} at (0,210.44) size 464x118
         LayoutTableSection {TBODY} at (0,0) size 464x118
           LayoutTableRow {TR} at (0,2) size 464x114
             LayoutTableCell {TD} at (2,2) size 30x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 26x18
+              LayoutText {#text} at (2,2) size 26x18
                 text run at (2,2) width 26: "Top"
             LayoutTableCell {TD} at (34,74) size 35x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 31x18
+              LayoutText {#text} at (2,2) size 31x18
                 text run at (2,2) width 31: "Data"
             LayoutTableCell {TD} at (71,45) size 95x59 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 91x55
+              LayoutText {#text} at (2,2) size 91x55
                 text run at (2,2) width 91: "Data"
             LayoutTableCell {TD} at (168,48) size 51x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 47x18
+              LayoutText {#text} at (2,2) size 47x18
                 text run at (2,2) width 47: "Middle"
             LayoutTableCell {TD} at (221,94) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 49x18
+              LayoutText {#text} at (2,2) size 49x18
                 text run at (2,2) width 49: "Bottom"
             LayoutTableCell {TD} at (276,2) size 186x114 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 182x110
+              LayoutText {#text} at (2,2) size 182x110
                 text run at (2,2) width 182: "Data"
       LayoutTable {TABLE} at (0,328.44) size 464x118
         LayoutTableSection {TBODY} at (0,0) size 464x118
           LayoutTableRow {TR} at (0,2) size 464x114
             LayoutTableCell {TD} at (2,2) size 30x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 26x18
+              LayoutText {#text} at (2,2) size 26x18
                 text run at (2,2) width 26: "Top"
             LayoutTableCell {TD} at (34,45) size 95x59 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 91x55
+              LayoutText {#text} at (2,2) size 91x55
                 text run at (2,2) width 91: "Data"
             LayoutTableCell {TD} at (131,94) size 53x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 49x18
+              LayoutText {#text} at (2,2) size 49x18
                 text run at (2,2) width 49: "Bottom"
             LayoutTableCell {TD} at (186,74) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 31x18
+              LayoutText {#text} at (2,2) size 31x18
                 text run at (2,2) width 31: "Data"
             LayoutTableCell {TD} at (223,2) size 186x114 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 182x110
+              LayoutText {#text} at (2,2) size 182x110
                 text run at (2,2) width 182: "Data"
             LayoutTableCell {TD} at (411,48) size 51x22 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 47x18
+              LayoutText {#text} at (2,2) size 47x18
                 text run at (2,2) width 47: "Middle"

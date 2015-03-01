@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [color=#FFFFFF]
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [color=#FFFFFF]
       LayoutTable {TABLE} at (0,0) size 400x32
         LayoutTableSection {TBODY} at (0,0) size 400x32
           LayoutTableRow {TR} at (0,2) size 400x28
@@ -11,5 +11,5 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 327x26
                   LayoutTableRow {TR} at (0,2) size 327x22
                     LayoutTableCell {TD} at (2,2) size 323x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 321x19
+                      LayoutText {#text} at (1,1) size 321x19
                         text run at (1,1) width 321: "This text should be white, since we're in quirks mode."

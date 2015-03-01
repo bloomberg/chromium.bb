@@ -1,37 +1,37 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x496
-  RenderBlock {HTML} at (0,0) size 800x496
-    RenderBody {BODY} at (8,8) size 784x480
+  LayoutBlockFlow {HTML} at (0,0) size 800x496
+    LayoutBlockFlow {BODY} at (8,8) size 784x480
 layer at (8,8) size 160x160
-  RenderBlock {DIV} at (0,0) size 160x160 [bgcolor=#373763]
-    RenderBlock (anonymous) at (0,0) size 160x20
-      RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,0) size 160x160 [bgcolor=#373763]
+    LayoutBlockFlow (anonymous) at (0,0) size 160x20
+      LayoutText {#text} at (0,0) size 42x19
         text run at (0,0) width 42: "sample"
 layer at (8,28) size 120x120
-  RenderBlock {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
-    RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
+    LayoutText {#text} at (0,0) size 42x19
       text run at (0,0) width 42: "sample"
 layer at (8,168) size 160x160
-  RenderBlock {DIV} at (0,160) size 160x160 [bgcolor=#373763]
-    RenderBlock (anonymous) at (0,0) size 160x20
-      RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,160) size 160x160 [bgcolor=#373763]
+    LayoutBlockFlow (anonymous) at (0,0) size 160x20
+      LayoutText {#text} at (0,0) size 42x19
         text run at (0,0) width 42: "sample"
-    RenderBlock (anonymous) at (0,140) size 160x20
-      RenderText {#text} at (0,0) size 42x19
+    LayoutBlockFlow (anonymous) at (0,140) size 160x20
+      LayoutText {#text} at (0,0) size 42x19
         text run at (0,0) width 42: "sample"
 layer at (8,188) size 120x120
-  RenderBlock {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
-    RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
+    LayoutText {#text} at (0,0) size 42x19
       text run at (0,0) width 42: "sample"
 layer at (8,238) size 120x120
-  RenderBlock {DIV} at (0,70) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
-    RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,70) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
+    LayoutText {#text} at (0,0) size 42x19
       text run at (0,0) width 42: "sample"
 layer at (8,328) size 160x160 layerType: background only
 layer at (8,378) size 120x120
-  RenderBlock (positioned) zI: -1 {DIV} at (0,50) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
-    RenderText zI: -1 {#text} at (0,0) size 88x119
+  LayoutBlockFlow (positioned) zI: -1 {DIV} at (0,50) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
+    LayoutText zI: -1 {#text} at (0,0) size 88x119
       text run at (0,0) width 88: "sample sample"
       text run at (0,20) width 88: "sample sample"
       text run at (0,40) width 88: "sample sample"
@@ -39,11 +39,11 @@ layer at (8,378) size 120x120
       text run at (0,80) width 88: "sample sample"
       text run at (0,100) width 88: "sample sample"
 layer at (8,328) size 160x160 layerType: foreground only
-  RenderBlock {DIV} at (0,320) size 160x160 [bgcolor=#373763]
-    RenderBlock (anonymous) at (0,0) size 160x20
-      RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,320) size 160x160 [bgcolor=#373763]
+    LayoutBlockFlow (anonymous) at (0,0) size 160x20
+      LayoutText {#text} at (0,0) size 42x19
         text run at (0,0) width 42: "sample"
 layer at (8,348) size 120x120
-  RenderBlock {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
-    RenderText {#text} at (0,0) size 42x19
+  LayoutBlockFlow {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
+    LayoutText {#text} at (0,0) size 42x19
       text run at (0,0) width 42: "sample"

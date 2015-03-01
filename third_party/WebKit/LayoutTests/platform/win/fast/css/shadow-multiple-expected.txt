@@ -1,32 +1,32 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,20) size 784x530
-      RenderBlock {DIV} at (20,0) size 744x55
-        RenderInline {SPAN} at (0,0) size 91x53 [textStrokeWidth=1.00]
-          RenderText {#text} at (0,1) size 91x53
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,20) size 784x530
+      LayoutBlockFlow {DIV} at (20,0) size 744x55
+        LayoutInline {SPAN} at (0,0) size 91x53 [textStrokeWidth=1.00]
+          LayoutText {#text} at (0,1) size 91x53
             text run at (0,1) width 91: "This"
-        RenderText {#text} at (90,1) size 13x53
+        LayoutText {#text} at (90,1) size 13x53
           text run at (90,1) width 13: " "
-        RenderInline {SPAN} at (0,0) size 78x53 [textFillColor=#FFFFFF] [textStrokeWidth=1.00]
-          RenderText {#text} at (102,1) size 78x53
+        LayoutInline {SPAN} at (0,0) size 78x53 [textFillColor=#FFFFFF] [textStrokeWidth=1.00]
+          LayoutText {#text} at (102,1) size 78x53
             text run at (102,1) width 78: "text"
-        RenderText {#text} at (180,1) size 12x53
+        LayoutText {#text} at (180,1) size 12x53
           text run at (180,1) width 12: " "
-        RenderInline {SPAN} at (0,0) size 99x53 [color=#0000004C]
-          RenderText {#text} at (192,1) size 99x53
+        LayoutInline {SPAN} at (0,0) size 99x53 [color=#0000004C]
+          LayoutText {#text} at (192,1) size 99x53
             text run at (192,1) width 99: "casts"
-        RenderText {#text} at (290,1) size 13x53
+        LayoutText {#text} at (290,1) size 13x53
           text run at (290,1) width 13: " "
-        RenderInline {SPAN} at (0,0) size 172x53
-          RenderText {#text} at (302,1) size 172x53
+        LayoutInline {SPAN} at (0,0) size 172x53
+          LayoutText {#text} at (302,1) size 172x53
             text run at (302,1) width 172: "multiple"
-        RenderText {#text} at (473,1) size 186x53
+        LayoutText {#text} at (473,1) size 186x53
           text run at (473,1) width 13: " "
           text run at (485,1) width 174: "shadows"
-      RenderBlock {DIV} at (50,105) size 100x100
-      RenderBlock {DIV} at (50,255) size 100x100 [bgcolor=#FFFFFF]
-      RenderBlock {DIV} at (50,405) size 100x100 [bgcolor=#00000033]
+      LayoutBlockFlow {DIV} at (50,105) size 100x100
+      LayoutBlockFlow {DIV} at (50,255) size 100x100 [bgcolor=#FFFFFF]
+      LayoutBlockFlow {DIV} at (50,405) size 100x100 [bgcolor=#00000033]
 selection start: position 0 of child 0 {#text} of child 7 {SPAN} of child 0 {DIV} of body
 selection end:   position 6 of child 0 {#text} of child 7 {SPAN} of child 0 {DIV} of body

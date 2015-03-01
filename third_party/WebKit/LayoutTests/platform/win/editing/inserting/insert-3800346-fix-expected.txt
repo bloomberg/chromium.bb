@@ -16,19 +16,19 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x238 [border: (2px solid #FF0000)]
-        RenderBlock {DIV} at (14,14) size 756x210
-          RenderBlock (anonymous) at (0,0) size 756x27
-            RenderText {#text} at (0,0) size 42x26
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x238 [border: (2px solid #FF0000)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x210
+          LayoutBlockFlow (anonymous) at (0,0) size 756x27
+            LayoutText {#text} at (0,0) size 42x26
               text run at (0,0) width 42: "Test"
-          RenderBlock {BLOCKQUOTE} at (40,51) size 676x27
-            RenderText {#text} at (0,0) size 42x26
+          LayoutBlockFlow {BLOCKQUOTE} at (40,51) size 676x27
+            LayoutText {#text} at (0,0) size 42x26
               text run at (0,0) width 42: "Test"
-          RenderBlock (anonymous) at (0,102) size 756x108
+          LayoutBlockFlow (anonymous) at (0,102) size 756x108
             LayoutBR {BR} at (0,0) size 0x26
             LayoutBR {BR} at (0,27) size 0x26
             LayoutBR {BR} at (0,54) size 0x26

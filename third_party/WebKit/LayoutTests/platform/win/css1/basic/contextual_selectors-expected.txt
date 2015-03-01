@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 784x18 [color=#000080]
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 784x18 [color=#000080]
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 784x64
-        RenderText {#text} at (0,0) size 472x64
+      LayoutBlockFlow {PRE} at (0,34) size 784x64
+        LayoutText {#text} at (0,0) size 472x64
           text run at (0,0) width 288: "P {color: navy; font-family: serif;}"
           text run at (288,0) width 0: " "
           text run at (0,16) width 472: "HTML BODY TABLE P {color: purple; font-family: sans-serif;}"
@@ -15,68 +15,68 @@ layer at (0,0) size 800x600
           text run at (0,32) width 224: "EM, UL LI LI {color: green;}"
           text run at (224,32) width 0: " "
           text run at (0,48) width 0: " "
-      RenderBlock {HR} at (0,111) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,129) size 784x18 [color=#000080]
-        RenderText {#text} at (0,0) size 640x17
+      LayoutBlockFlow {HR} at (0,111) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,129) size 784x18 [color=#000080]
+        LayoutText {#text} at (0,0) size 640x17
           text run at (0,0) width 640: "This sentence should be navy serif in the first half of the page, but purple and sans-serif in the table."
-      RenderBlock {P} at (0,163) size 784x18 [color=#000080]
-        RenderText {#text} at (0,0) size 570x17
+      LayoutBlockFlow {P} at (0,163) size 784x18 [color=#000080]
+        LayoutText {#text} at (0,0) size 570x17
           text run at (0,0) width 570: "This sentence should be normal for its section, except for the last word, which should be "
-        RenderInline {EM} at (0,0) size 38x17 [color=#008000]
-          RenderText {#text} at (569,0) size 38x17
+        LayoutInline {EM} at (0,0) size 38x17 [color=#008000]
+          LayoutText {#text} at (569,0) size 38x17
             text run at (569,0) width 38: "green"
-        RenderText {#text} at (606,0) size 5x17
+        LayoutText {#text} at (606,0) size 5x17
           text run at (606,0) width 5: "."
-      RenderBlock {UL} at (0,197) size 784x36
+      LayoutBlockFlow {UL} at (0,197) size 784x36
         LayoutListItem {LI} at (40,0) size 744x36
-          RenderBlock (anonymous) at (0,0) size 744x18
+          LayoutBlockFlow (anonymous) at (0,0) size 744x18
             LayoutListMarker at (-17,0) size 7x17: bullet
-            RenderInline {EM} at (0,0) size 40x17 [color=#008000]
-              RenderText {#text} at (0,0) size 40x17
+            LayoutInline {EM} at (0,0) size 40x17 [color=#008000]
+              LayoutText {#text} at (0,0) size 40x17
                 text run at (0,0) width 40: "Hello."
-            RenderText {#text} at (39,0) size 407x17
+            LayoutText {#text} at (39,0) size 407x17
               text run at (39,0) width 5: " "
               text run at (43,0) width 403: "The first \"hello\" should be green, but this part should be black."
-          RenderBlock {UL} at (0,18) size 744x18
+          LayoutBlockFlow {UL} at (0,18) size 744x18
             LayoutListItem {LI} at (40,0) size 704x18 [color=#008000]
               LayoutListMarker at (-17,0) size 7x17: white bullet
-              RenderText {#text} at (0,0) size 138x17
+              LayoutText {#text} at (0,0) size 138x17
                 text run at (0,0) width 138: "This should be green."
       LayoutTable {TABLE} at (0,249) size 730x156 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 728x154
           LayoutTableRow {TR} at (0,0) size 728x26
             LayoutTableCell {TD} at (0,0) size 728x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 728x128
             LayoutTableCell {TD} at (0,77) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 716x128 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 708x18 [color=#800080]
-                RenderText {#text} at (0,0) size 708x17
+              LayoutBlockFlow {P} at (4,4) size 708x18 [color=#800080]
+                LayoutText {#text} at (0,0) size 708x17
                   text run at (0,0) width 708: "This sentence should be navy serif in the first half of the page, but purple and sans-serif in the table."
-              RenderBlock {P} at (4,38) size 708x18 [color=#800080]
-                RenderText {#text} at (0,0) size 628x17
+              LayoutBlockFlow {P} at (4,38) size 708x18 [color=#800080]
+                LayoutText {#text} at (0,0) size 628x17
                   text run at (0,0) width 628: "This sentence should be normal for its section, except for the last word, which should be "
-                RenderInline {EM} at (0,0) size 42x17 [color=#008000]
-                  RenderText {#text} at (627,0) size 42x17
+                LayoutInline {EM} at (0,0) size 42x17 [color=#008000]
+                  LayoutText {#text} at (627,0) size 42x17
                     text run at (627,0) width 42: "green"
-                RenderText {#text} at (668,0) size 6x17
+                LayoutText {#text} at (668,0) size 6x17
                   text run at (668,0) width 6: "."
-              RenderBlock {UL} at (4,72) size 708x36
+              LayoutBlockFlow {UL} at (4,72) size 708x36
                 LayoutListItem {LI} at (40,0) size 668x36
-                  RenderBlock (anonymous) at (0,0) size 668x18
+                  LayoutBlockFlow (anonymous) at (0,0) size 668x18
                     LayoutListMarker at (-17,0) size 7x17: bullet
-                    RenderInline {EM} at (0,0) size 40x17 [color=#008000]
-                      RenderText {#text} at (0,0) size 40x17
+                    LayoutInline {EM} at (0,0) size 40x17 [color=#008000]
+                      LayoutText {#text} at (0,0) size 40x17
                         text run at (0,0) width 40: "Hello."
-                    RenderText {#text} at (39,0) size 407x17
+                    LayoutText {#text} at (39,0) size 407x17
                       text run at (39,0) width 5: " "
                       text run at (43,0) width 403: "The first \"hello\" should be green, but this part should be black."
-                  RenderBlock {UL} at (0,18) size 668x18
+                  LayoutBlockFlow {UL} at (0,18) size 668x18
                     LayoutListItem {LI} at (40,0) size 628x18 [color=#008000]
                       LayoutListMarker at (-17,0) size 7x17: white bullet
-                      RenderText {#text} at (0,0) size 138x17
+                      LayoutText {#text} at (0,0) size 138x17
                         text run at (0,0) width 138: "This should be green."

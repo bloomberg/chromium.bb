@@ -1,35 +1,35 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x572
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x572
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 772x36
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        LayoutInline {I} at (0,0) size 772x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=17033"
-          RenderText {#text} at (359,0) size 772x36
+          LayoutText {#text} at (359,0) size 772x36
             text run at (359,0) width 5: " "
             text run at (363,0) width 409: "REGRESSION: Really long <option> causes unnecessary page"
             text run at (0,18) width 230: "scroll bars to accommodate content"
-        RenderText {#text} at (229,18) size 5x18
+        LayoutText {#text} at (229,18) size 5x18
           text run at (229,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 408x18
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 408x18
           text run at (0,0) width 408: "There should not be scroll bars below the popup and the button."
 layer at (8,94) size 100x50
-  RenderBlock {DIV} at (0,86) size 100x50
+  LayoutBlockFlow {DIV} at (0,86) size 100x50
     LayoutMenuList {SELECT} at (0,0) size 80x18 [bgcolor=#F8F8F8]
-      RenderBlock (anonymous) at (0,0) size 80x18
-        RenderText at (8,2) size 148x13
+      LayoutBlockFlow (anonymous) at (0,0) size 80x18
+        LayoutText at (8,2) size 148x13
           text run at (8,2) width 148: "Lorem ipsum dolor sit amet"
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0
 layer at (8,164) size 100x50
-  RenderBlock {DIV} at (0,156) size 100x50
+  LayoutBlockFlow {DIV} at (0,156) size 100x50
     LayoutButton {BUTTON} at (0,0) size 80x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-      RenderBlock (anonymous) at (8,2) size 64x13
-        RenderText {#text} at (0,0) size 148x13
+      LayoutBlockFlow (anonymous) at (8,2) size 64x13
+        LayoutText {#text} at (0,0) size 148x13
           text run at (0,0) width 148: "Lorem ipsum dolor sit amet"
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0

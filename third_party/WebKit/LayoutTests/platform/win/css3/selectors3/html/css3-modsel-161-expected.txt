@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x136
-  RenderBlock {HTML} at (0,0) size 800x136
-    RenderBody {BODY} at (8,16) size 784x112
-      RenderBlock {P} at (0,0) size 784x18 [bgcolor=#00FF00]
-        RenderText {#text} at (0,0) size 272x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x136
+    LayoutBlockFlow {BODY} at (8,16) size 784x112
+      LayoutBlockFlow {P} at (0,0) size 784x18 [bgcolor=#00FF00]
+        LayoutText {#text} at (0,0) size 272x17
           text run at (0,0) width 272: "This line should have a green background."
-      RenderBlock {P} at (0,34) size 784x38 [bgcolor=#00FF00]
-        RenderText {#text} at (0,0) size 705x17
+      LayoutBlockFlow {P} at (0,34) size 784x38 [bgcolor=#00FF00]
+        LayoutText {#text} at (0,0) size 705x17
           text run at (0,0) width 705: "UAs may render the following element as a pop up menu. If so, please ensure the menu is unstyled (or green)."
         LayoutMenuList {SELECT} at (0,18) size 98x20 [border: (1px solid #A9A9A9)]
-          RenderBlock (anonymous) at (1,1) size 96x18
-            RenderText at (4,1) size 66x16
+          LayoutBlockFlow (anonymous) at (1,1) size 96x18
+            LayoutText at (4,1) size 66x16
               text run at (4,1) width 66: "This should"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,88) size 438x24 [bgcolor=#00FF00]
         LayoutTableSection {TBODY} at (0,0) size 438x24
           LayoutTableRow {TR} at (0,2) size 438x20
             LayoutTableCell {TD} at (2,2) size 434x20 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 432x17
+              LayoutText {#text} at (1,1) size 432x17
                 text run at (1,1) width 432: "This line should have a green background (or it might be unstyled)."

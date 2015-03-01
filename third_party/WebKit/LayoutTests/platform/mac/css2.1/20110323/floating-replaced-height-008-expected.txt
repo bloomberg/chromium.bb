@@ -1,27 +1,27 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x186
-  RenderBlock {HTML} at (0,0) size 800x186
-    RenderBody {BODY} at (8,16) size 784x36
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 108x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x186
+    LayoutBlockFlow {BODY} at (8,16) size 784x36
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 108x18
           text run at (0,0) width 108: "There should be "
-        RenderInline {STRONG} at (0,0) size 146x18
-          RenderText {#text} at (107,0) size 146x18
+        LayoutInline {STRONG} at (0,0) size 146x18
+          LayoutText {#text} at (107,0) size 146x18
             text run at (107,0) width 146: "5 filled green squares"
-        RenderText {#text} at (252,0) size 189x18
+        LayoutText {#text} at (252,0) size 189x18
           text run at (252,0) width 189: " with the same width and the "
-        RenderInline {STRONG} at (0,0) size 82x18
-          RenderText {#text} at (440,0) size 82x18
+        LayoutInline {STRONG} at (0,0) size 82x18
+          LayoutText {#text} at (440,0) size 82x18
             text run at (440,0) width 82: "same height"
-        RenderText {#text} at (521,0) size 241x18
+        LayoutText {#text} at (521,0) size 241x18
           text run at (521,0) width 241: ". The 5 filled green squares should be"
-        RenderInline {STRONG} at (0,0) size 59x18
-          RenderText {#text} at (0,18) size 59x18
+        LayoutInline {STRONG} at (0,0) size 59x18
+          LayoutText {#text} at (0,18) size 59x18
             text run at (0,18) width 59: "identical"
-        RenderText {#text} at (58,18) size 456x18
+        LayoutText {#text} at (58,18) size 456x18
           text run at (58,18) width 456: " to each other. This should still remain true even after a window resize."
-      RenderBlock {DIV} at (0,52) size 784x0
+      LayoutBlockFlow {DIV} at (0,52) size 784x0
         LayoutImage {IMG} at (0,0) size 117.59x118
         LayoutImage {IMG} at (117.59,0) size 5x5
         LayoutImage {IMG} at (122.59,0) size 117.59x118

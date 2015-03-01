@@ -13,41 +13,41 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x179 [border: (2px solid #0000FF)]
-        RenderBlock {DIV} at (14,14) size 756x81
-          RenderText {#text} at (0,0) size 68x26
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x179 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x81
+          LayoutText {#text} at (0,0) size 68x26
             text run at (0,0) width 68: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,27) size 718x53
+          LayoutText {#text} at (0,27) size 718x53
             text run at (0,27) width 718: "Pasting black (document default color) text into a block of text with a non-"
             text run at (0,54) width 128: "default color."
-        RenderBlock {DIV} at (14,111) size 756x54
-          RenderText {#text} at (0,0) size 190x26
+        LayoutBlockFlow {DIV} at (14,111) size 756x54
+          LayoutText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,21) size 1x0
-          RenderText {#text} at (0,27) size 438x26
+          LayoutText {#text} at (0,27) size 438x26
             text run at (0,27) width 438: "Should see this content in the red box below: "
-          RenderInline {SPAN} at (0,0) size 77x26 [color=#FF0000]
-            RenderText {#text} at (437,27) size 24x26
+          LayoutInline {SPAN} at (0,0) size 77x26 [color=#FF0000]
+            LayoutText {#text} at (437,27) size 24x26
               text run at (437,27) width 24: "ab"
-            RenderInline {SPAN} at (0,0) size 34x26 [color=#000000]
-              RenderText {#text} at (460,27) size 34x26
+            LayoutInline {SPAN} at (0,0) size 34x26 [color=#000000]
+              LayoutText {#text} at (460,27) size 34x26
                 text run at (460,27) width 34: "cde"
-            RenderText {#text} at (493,27) size 21x26
+            LayoutText {#text} at (493,27) size 21x26
               text run at (493,27) width 21: "fg"
-          RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,203) size 784x31
-        RenderBlock {DIV} at (0,0) size 784x31 [border: (2px solid #FF0000)]
-          RenderInline {SPAN} at (0,0) size 23x26 [color=#FF0000]
-            RenderText {#text} at (2,2) size 23x26
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,203) size 784x31
+        LayoutBlockFlow {DIV} at (0,0) size 784x31 [border: (2px solid #FF0000)]
+          LayoutInline {SPAN} at (0,0) size 23x26 [color=#FF0000]
+            LayoutText {#text} at (2,2) size 23x26
               text run at (2,2) width 23: "ab"
-          RenderText {#text} at (24,2) size 34x26
+          LayoutText {#text} at (24,2) size 34x26
             text run at (24,2) width 34: "cde"
-          RenderInline {SPAN} at (0,0) size 21x26 [color=#FF0000]
-            RenderText {#text} at (57,2) size 21x26
+          LayoutInline {SPAN} at (0,0) size 21x26 [color=#FF0000]
+            LayoutText {#text} at (57,2) size 21x26
               text run at (57,2) width 21: "fg"
 caret: position 3 of child 2 {#text} of child 1 {DIV} of child 3 {DIV} of body

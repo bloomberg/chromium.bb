@@ -1,51 +1,51 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock (anonymous) at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 234x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow (anonymous) at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 234x18
           text run at (0,0) width 234: "This is a test for multiple ruby runs. "
         LayoutBR {BR} at (233,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x18
-      RenderBlock {P} at (0,52) size 784x28
-        RenderText {#text} at (0,10) size 159x18
+      LayoutBlockFlow {P} at (0,52) size 784x28
+        LayoutText {#text} at (0,10) size 159x18
           text run at (0,10) width 159: "<ruby> is defined in the "
         LayoutRuby (inline) {RUBY} at (0,0) size 123x18
           LayoutRubyRun (anonymous) at (154.02,10) size 22.50x18
             LayoutRubyText {RT} at (0,-10) size 22.50x10
-              RenderText {#text} at (0,0) size 23x10
+              LayoutText {#text} at (0,0) size 23x10
                 text run at (0,0) width 23: "Hyper"
             LayoutRubyBase (anonymous) at (0,0) size 22.50x18
-              RenderText {#text} at (5,0) size 13x18
+              LayoutText {#text} at (5,0) size 13x18
                 text run at (5,0) width 13: "H"
           LayoutRubyRun (anonymous) at (176.52,10) size 16.50x18
             LayoutRubyText {RT} at (0,-10) size 16.50x10
-              RenderText {#text} at (0,0) size 17x10
+              LayoutText {#text} at (0,0) size 17x10
                 text run at (0,0) width 17: "Text"
             LayoutRubyBase (anonymous) at (0,0) size 16.50x18
-              RenderText {#text} at (3,0) size 11x18
+              LayoutText {#text} at (3,0) size 11x18
                 text run at (3,0) width 11: "T"
           LayoutRubyRun (anonymous) at (193.02,10) size 28.50x18
             LayoutRubyText {RT} at (0,-10) size 28.50x10
-              RenderText {#text} at (0,0) size 29x10
+              LayoutText {#text} at (0,0) size 29x10
                 text run at (0,0) width 29: "Markup"
             LayoutRubyBase (anonymous) at (0,0) size 28.50x18
-              RenderText {#text} at (7,0) size 15x18
+              LayoutText {#text} at (7,0) size 15x18
                 text run at (7,0) width 15: "M"
           LayoutRubyRun (anonymous) at (221.52,10) size 35.48x18
             LayoutRubyText {RT} at (0,-10) size 35.48x10
-              RenderText {#text} at (0,0) size 36x10
+              LayoutText {#text} at (0,0) size 36x10
                 text run at (0,0) width 36: "Language"
             LayoutRubyBase (anonymous) at (0,0) size 35.48x18
-              RenderText {#text} at (13,0) size 11x18
+              LayoutText {#text} at (13,0) size 11x18
                 text run at (13,0) width 11: "L"
           LayoutRubyRun (anonymous) at (257,10) size 27.25x18
             LayoutRubyText {RT} at (0,-10) size 27.25x10
-              RenderText {#text} at (0,0) size 28x10
+              LayoutText {#text} at (0,0) size 28x10
                 text run at (0,0) width 28: "Level 5"
             LayoutRubyBase (anonymous) at (0,0) size 27.25x18
-              RenderText {#text} at (9,0) size 9x18
+              LayoutText {#text} at (9,0) size 9x18
                 text run at (9,0) width 9: "5"
-        RenderText {#text} at (280,10) size 43x18
+        LayoutText {#text} at (280,10) size 43x18
           text run at (280,10) width 43: " specs."

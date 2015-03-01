@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 347x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 347x17
         text run at (0,0) width 111: "TEST PASSED: "
         text run at (110,0) width 237: "If the popup menu only says \"Text\". "
       LayoutBR {BR} at (346,14) size 1x0
-      RenderText {#text} at (0,18) size 428x17
+      LayoutText {#text} at (0,18) size 428x17
         text run at (0,18) width 108: "TEST FAILED: "
         text run at (107,18) width 321: "If the popup menu says \"document.write('Text')\". "
       LayoutBR {BR} at (427,32) size 1x0
       LayoutMenuList {SELECT} at (0,36) size 50x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderBlock (anonymous) at (1,1) size 48x18
-          RenderText at (4,1) size 25x16
+        LayoutBlockFlow (anonymous) at (1,1) size 48x18
+          LayoutText at (4,1) size 25x16
             text run at (4,1) width 25: "Text"
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

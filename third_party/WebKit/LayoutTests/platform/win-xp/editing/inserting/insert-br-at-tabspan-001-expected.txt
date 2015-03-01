@@ -5,21 +5,21 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x84 [border: (2px solid #FF0000)]
-        RenderInline {SPAN} at (0,0) size 154x55
-          RenderText {#text} at (14,14) size 11x27
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x84 [border: (2px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 154x55
+          LayoutText {#text} at (14,14) size 11x27
             text run at (14,14) width 11: "a"
           LayoutBR {BR} at (25,35) size 0x0
-          RenderText {#text} at (14,42) size 12x27
+          LayoutText {#text} at (14,42) size 12x27
             text run at (14,42) width 12: "x"
-          RenderInline {SPAN} at (0,0) size 132x27
-            RenderText {#text} at (26,42) size 132x27
+          LayoutInline {SPAN} at (0,0) size 132x27
+            LayoutText {#text} at (26,42) size 132x27
               text run at (26,42) width 132: "\x{9}\x{9}\x{9}"
-          RenderText {#text} at (158,42) size 10x27
+          LayoutText {#text} at (158,42) size 10x27
             text run at (158,42) width 10: "z"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 caret: position 1 of child 2 {#text} of child 1 {SPAN} of child 1 {DIV} of body

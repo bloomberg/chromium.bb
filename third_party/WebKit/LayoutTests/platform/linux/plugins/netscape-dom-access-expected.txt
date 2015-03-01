@@ -1,14 +1,14 @@
 CONSOLE ERROR: line 7: Uncaught TypeError: undefined is not a function
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 742x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 742x19
           text run at (0,0) width 488: "This page tests whether Netscape plug-ins can access their own DOM elements. "
           text run at (488,0) width 254: "The plug-in should have a 3px red border."
-      RenderBlock (anonymous) at (0,36) size 784x200
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,36) size 784x200
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,44) size 200x200
   LayoutEmbeddedObject {EMBED} at (0,0) size 200x200

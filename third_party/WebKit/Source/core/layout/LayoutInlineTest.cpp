@@ -13,11 +13,11 @@ namespace blink {
 class LayoutInlineTest : public RenderingTest {
 };
 
-TEST_F(LayoutInlineTest, RenderNameCalledWithNullStyle)
+TEST_F(LayoutInlineTest, LayoutNameCalledWithNullStyle)
 {
     LayoutObject* obj = LayoutInline::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
-    EXPECT_STREQ("RenderInline (generated)", obj->renderName());
+    EXPECT_STREQ("LayoutInline (generated)", obj->renderName());
     obj->destroy();
 }
 

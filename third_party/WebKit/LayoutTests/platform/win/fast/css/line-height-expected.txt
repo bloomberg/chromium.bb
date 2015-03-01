@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        RenderInline {A} at (0,0) size 122x17 [color=#0000EE]
-          RenderText {#text} at (54,0) size 122x17
+        LayoutInline {A} at (0,0) size 122x17 [color=#0000EE]
+          LayoutText {#text} at (54,0) size 122x17
             text run at (54,0) width 122: "Bugzilla Bug 9934"
-        RenderText {#text} at (175,0) size 462x17
+        LayoutText {#text} at (175,0) size 462x17
           text run at (175,0) width 462: " Selecting text in text field with {line-height:100%} causes it to bounce."
-      RenderBlock {DIV} at (0,18) size 784x22
+      LayoutBlockFlow {DIV} at (0,18) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,40) size 784x36
-        RenderText {#text} at (0,0) size 750x35
+      LayoutBlockFlow {DIV} at (0,40) size 784x36
+        LayoutText {#text} at (0,0) size 750x35
           text run at (0,0) width 586: "Select the text in the text field using horizontal mouse movements, then drag up and down. "
           text run at (585,0) width 165: "The text should not move"
           text run at (0,18) width 65: "vertically."
 layer at (10,29) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 75x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 75x16
       text run at (0,0) width 75: "Lorem Ipsum"

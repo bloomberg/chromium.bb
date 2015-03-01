@@ -1,17 +1,17 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x40
-  RenderBlock {HTML} at (0,0) size 800x40
-    RenderBody {BODY} at (8,8) size 784x24
+  LayoutBlockFlow {HTML} at (0,0) size 800x40
+    LayoutBlockFlow {BODY} at (8,8) size 784x24
       LayoutTable {TABLE} at (0,0) size 109x24
         LayoutTableSection {TBODY} at (0,0) size 109x24
           LayoutTableRow {TR} at (0,2) size 109x20
             LayoutTableCell {TD} at (2,2) size 29x20 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 27x17
+              LayoutText {#text} at (1,1) size 27x17
                 text run at (1,1) width 27: "One"
             LayoutTableCell {TD} at (33,2) size 32x20 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 30x17
+              LayoutText {#text} at (1,1) size 30x17
                 text run at (1,1) width 30: "Two"
             LayoutTableCell {TD} at (67,2) size 40x20 [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 38x17
+              LayoutText {#text} at (1,1) size 38x17
                 text run at (1,1) width 38: "Three"

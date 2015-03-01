@@ -7,23 +7,23 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (0,0) size 800x584
-      RenderBlock (anonymous) at (0,0) size 800x304
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,320) size 800x36
-        RenderText {#text} at (0,0) size 775x36
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (0,0) size 800x584
+      LayoutBlockFlow (anonymous) at (0,0) size 800x304
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,320) size 800x36
+        LayoutText {#text} at (0,0) size 775x36
           text run at (0,0) width 775: "This test uses the eventSender to do drag and drop. To run it manually, drag the word selected in the above subframe and"
           text run at (0,18) width 116: "drop it after 'baz'. "
           text run at (115,18) width 217: "The result should be 'foo baz bar'."
 layer at (0,0) size 304x304
   LayoutIFrame {IFRAME} at (0,0) size 304x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x300
-      RenderView at (0,0) size 300x300
+      LayoutView at (0,0) size 300x300
     layer at (0,0) size 300x300
-      RenderBlock {HTML} at (0,0) size 300x300
-        RenderBody {BODY} at (8,8) size 284x284 [bgcolor=#FFFFE0]
-          RenderText {#text} at (0,0) size 72x18
+      LayoutBlockFlow {HTML} at (0,0) size 300x300
+        LayoutBlockFlow {BODY} at (8,8) size 284x284 [bgcolor=#FFFFE0]
+          LayoutText {#text} at (0,0) size 72x18
             text run at (0,0) width 72: "foo baz bar"

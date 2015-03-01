@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x104
-        RenderText {#text} at (0,86) size 99x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x104
+        LayoutText {#text} at (0,86) size 99x17
           text run at (0,86) width 99: "Layout test for "
-        RenderInline {A} at (0,0) size 41x17 [color=#0000EE]
-          RenderText {#text} at (98,86) size 41x17
+        LayoutInline {A} at (0,0) size 41x17 [color=#0000EE]
+          LayoutText {#text} at (98,86) size 41x17
             text run at (98,86) width 41: "11760"
-        RenderText {#text} at (138,86) size 205x17
+        LayoutText {#text} at (138,86) size 205x17
           text run at (138,86) width 9: ". "
           text run at (146,86) width 197: "If it doesn't crash, we're good. "
         LayoutImage {IMG} at (342.13,0) size 100x100
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x514
-  RenderBlock {HTML} at (0,0) size 800x514
-    RenderBody {BODY} at (8,16) size 784x490
-      RenderBlock {DIV} at (0,0) size 600x490
-        RenderBlock {P} at (0,0) size 600x18
-          RenderText {#text} at (0,0) size 291x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x514
+    LayoutBlockFlow {BODY} at (8,16) size 784x490
+      LayoutBlockFlow {DIV} at (0,0) size 600x490
+        LayoutBlockFlow {P} at (0,0) size 600x18
+          LayoutText {#text} at (0,0) size 291x18
             text run at (0,0) width 291: "The following two tables should be the same."
-        RenderBlock {P} at (0,34) size 600x18
-          RenderText {#text} at (0,0) size 164x18
+        LayoutBlockFlow {P} at (0,34) size 600x18
+          LayoutText {#text} at (0,0) size 164x18
             text run at (0,0) width 164: "Table 1: width in <COL>"
         LayoutTable {TABLE} at (0,68) size 256x186
           LayoutTableCol {COLGROUP} at (0,0) size 0x0
@@ -17,7 +17,7 @@ layer at (0,0) size 800x514
           LayoutTableSection {TBODY} at (0,0) size 256x186
             LayoutTableRow {TR} at (0,2) size 256x182
               LayoutTableCell {TD} at (2,2) size 150x182 [bgcolor=#FFFF00] [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 148x180
+                LayoutText {#text} at (1,1) size 148x180
                   text run at (1,1) width 91: "Cras tincidunt"
                   text run at (1,19) width 148: "bibendum nunc. Morbi"
                   text run at (1,37) width 136: "condimentum aliquet"
@@ -29,16 +29,16 @@ layer at (0,0) size 800x514
                   text run at (1,145) width 124: "enim nec est. Nulla"
                   text run at (1,163) width 24: "leo."
               LayoutTableCell {TD} at (154,83) size 100x20 [bgcolor=#008000] [r=0 c=1 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 86x18
+                LayoutText {#text} at (1,1) size 86x18
                   text run at (1,1) width 86: "Lorem ipsum"
-        RenderBlock {P} at (0,270) size 600x18
-          RenderText {#text} at (0,0) size 154x18
+        LayoutBlockFlow {P} at (0,270) size 600x18
+          LayoutText {#text} at (0,0) size 154x18
             text run at (0,0) width 154: "Table 2: width in <TD>"
         LayoutTable {TABLE} at (0,304) size 260x186
           LayoutTableSection {TBODY} at (0,0) size 260x186
             LayoutTableRow {TR} at (0,2) size 260x182
               LayoutTableCell {TD} at (2,2) size 152x182 [bgcolor=#FFFF00] [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 150x180
+                LayoutText {#text} at (1,1) size 150x180
                   text run at (1,1) width 91: "Cras tincidunt"
                   text run at (1,19) width 148: "bibendum nunc. Morbi"
                   text run at (1,37) width 136: "condimentum aliquet"
@@ -50,5 +50,5 @@ layer at (0,0) size 800x514
                   text run at (1,145) width 124: "enim nec est. Nulla"
                   text run at (1,163) width 24: "leo."
               LayoutTableCell {TD} at (156,83) size 102x20 [bgcolor=#008000] [r=0 c=1 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 86x18
+                LayoutText {#text} at (1,1) size 86x18
                   text run at (1,1) width 86: "Lorem ipsum"

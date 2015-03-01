@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderInline {SPAN} at (0,0) size 226x17
-          RenderText {#text} at (0,0) size 226x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutInline {SPAN} at (0,0) size 226x17
+          LayoutText {#text} at (0,0) size 226x17
             text run at (0,0) width 226: "This test passes if it does not crash."
-        RenderText {#text} at (225,0) size 5x17
+        LayoutText {#text} at (225,0) size 5x17
           text run at (225,0) width 5: " "
         LayoutBR {BR} at (229,14) size 1x0
-      RenderBlock {UL} at (0,34) size 784x54
+      LayoutBlockFlow {UL} at (0,34) size 784x54
         LayoutListItem {LI} at (40,0) size 744x54
-          RenderBlock (anonymous) at (0,0) size 744x18
+          LayoutBlockFlow (anonymous) at (0,0) size 744x18
             LayoutListMarker at (-17,0) size 7x17: bullet
           LayoutTable at (0,18) size 32x18
             LayoutTableSection (anonymous) {<pseudo:before>} at (0,0) size 32x18
@@ -20,6 +20,6 @@ layer at (0,0) size 800x600
                 LayoutTableCell (anonymous) at (0,0) size 32x18 [r=0 c=0 rs=1 cs=1]
                   LayoutTextFragment at (0,0) size 32x17
                     text run at (0,0) width 32: "hello"
-          RenderBlock (anonymous) at (0,36) size 744x18
-            RenderText {#text} at (0,0) size 23x17
+          LayoutBlockFlow (anonymous) at (0,36) size 744x18
+            LayoutText {#text} at (0,0) size 23x17
               text run at (0,0) width 23: "test"

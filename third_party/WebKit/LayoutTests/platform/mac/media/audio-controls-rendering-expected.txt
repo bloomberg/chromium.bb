@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 157x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 157x18
           text run at (0,0) width 157: "Test controls placement."
-      RenderBlock (anonymous) at (0,34) size 784x114
+      LayoutBlockFlow (anonymous) at (0,34) size 784x114
         LayoutBR {BR} at (300,30) size 0x0
         LayoutBR {BR} at (0,30) size 0x18
         LayoutBR {BR} at (320,78) size 0x0
@@ -18,60 +18,60 @@ layer at (8,90) size 320x30
   LayoutMedia {AUDIO} at (0,48) size 320x30 [bgcolor=#0000FF]
 layer at (8,42) size 300x30
   LayoutFlexibleBox {DIV} at (0,0) size 300x30
-    RenderBlock {DIV} at (0,0) size 300x30
+    LayoutBlockFlow {DIV} at (0,0) size 300x30
 layer at (8,42) size 300x30
   LayoutFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 102.89x8
       LayoutFlexibleBox {DIV} at (0,0) size 102.89x8 [border: (1px solid #E6E6E659)]
-        RenderBlock {DIV} at (1,-8) size 114.89x24
-          RenderBlock {DIV} at (-7,0) size 32x24
+        LayoutBlockFlow {DIV} at (1,-8) size 114.89x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
     LayoutFlexibleBox {DIV} at (165.89,0) size 26.03x30 [color=#FFFFFF]
-      RenderBlock (anonymous) at (0,0) size 26.03x30
-        RenderText {#text} at (0,7) size 27x15
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
           text run at (0,7) width 27: "0:07"
     LayoutButton {INPUT} at (200.92,0) size 35x30
     LayoutSlider {INPUT} at (241.92,11) size 43.08x8
       LayoutFlexibleBox {DIV} at (0,0) size 43.08x8 [border: (1px solid #E6E6E659)]
-        RenderBlock {DIV} at (1,-8) size 55.08x24
-          RenderBlock {DIV} at (24.08,0) size 24x24
+        LayoutBlockFlow {DIV} at (1,-8) size 55.08x24
+          LayoutBlockFlow {DIV} at (24.08,0) size 24x24
 layer at (8,90) size 320x30
   LayoutFlexibleBox {DIV} at (0,0) size 320x30
-    RenderBlock {DIV} at (0,0) size 320x30
+    LayoutBlockFlow {DIV} at (0,0) size 320x30
 layer at (8,90) size 320x30
   LayoutFlexibleBox {DIV} at (0,0) size 320x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 112.73x8
       LayoutFlexibleBox {DIV} at (0,0) size 112.73x8 [border: (1px solid #E6E6E659)]
-        RenderBlock {DIV} at (1,-8) size 124.73x24
-          RenderBlock {DIV} at (-7,0) size 32x24
+        LayoutBlockFlow {DIV} at (1,-8) size 124.73x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
     LayoutFlexibleBox {DIV} at (175.73,0) size 26.03x30 [color=#FFFFFF]
-      RenderBlock (anonymous) at (0,0) size 26.03x30
-        RenderText {#text} at (0,7) size 27x15
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
           text run at (0,7) width 27: "0:07"
     LayoutButton {INPUT} at (210.77,0) size 35x30
     LayoutSlider {INPUT} at (251.77,11) size 53.23x8
       LayoutFlexibleBox {DIV} at (0,0) size 53.23x8 [border: (1px solid #E6E6E659)]
-        RenderBlock {DIV} at (1,-8) size 65.23x24
-          RenderBlock {DIV} at (34.23,0) size 24x24
+        LayoutBlockFlow {DIV} at (1,-8) size 65.23x24
+          LayoutBlockFlow {DIV} at (34.23,0) size 24x24
 layer at (8,138) size 320x100
   LayoutMedia {AUDIO} at (8,138) size 320x100 [bgcolor=#0000FF]
 layer at (8,138) size 320x100
   LayoutFlexibleBox {DIV} at (0,0) size 320x100
-    RenderBlock {DIV} at (0,70) size 320x30
+    LayoutBlockFlow {DIV} at (0,70) size 320x30
 layer at (8,208) size 320x30
   LayoutFlexibleBox {DIV} at (0,0) size 320x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 112.73x8
       LayoutFlexibleBox {DIV} at (0,0) size 112.73x8 [border: (1px solid #E6E6E659)]
-        RenderBlock {DIV} at (1,-8) size 124.73x24
-          RenderBlock {DIV} at (-7,0) size 32x24
+        LayoutBlockFlow {DIV} at (1,-8) size 124.73x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
     LayoutFlexibleBox {DIV} at (175.73,0) size 26.03x30 [color=#FFFFFF]
-      RenderBlock (anonymous) at (0,0) size 26.03x30
-        RenderText {#text} at (0,7) size 27x15
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
           text run at (0,7) width 27: "0:07"
     LayoutButton {INPUT} at (210.77,0) size 35x30
     LayoutSlider {INPUT} at (251.77,11) size 53.23x8
       LayoutFlexibleBox {DIV} at (0,0) size 53.23x8 [border: (1px solid #E6E6E659)]
-        RenderBlock {DIV} at (1,-8) size 65.23x24
-          RenderBlock {DIV} at (34.23,0) size 24x24
+        LayoutBlockFlow {DIV} at (1,-8) size 65.23x24
+          LayoutBlockFlow {DIV} at (34.23,0) size 24x24

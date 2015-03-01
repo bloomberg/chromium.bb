@@ -1,57 +1,57 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x330
-  RenderBlock {HTML} at (0,0) size 800x330
-    RenderBody {BODY} at (8,16) size 784x298 [color=#000080]
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 466x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x330
+    LayoutBlockFlow {BODY} at (8,16) size 784x298 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 466x17
           text run at (0,0) width 466: "Each bullet should look as described, and there should be no red present."
-      RenderBlock {UL} at (0,34) size 784x54
+      LayoutBlockFlow {UL} at (0,34) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-17,0) size 7x17: bullet
-          RenderText {#text} at (0,0) size 26x17
+          LayoutText {#text} at (0,0) size 26x17
             text run at (0,0) width 26: "disc"
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-17,0) size 7x17: bullet
-          RenderText {#text} at (0,0) size 26x17
+          LayoutText {#text} at (0,0) size 26x17
             text run at (0,0) width 26: "disc"
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-17,0) size 7x17: bullet
-          RenderText {#text} at (0,0) size 26x17
+          LayoutText {#text} at (0,0) size 26x17
             text run at (0,0) width 26: "disc"
-      RenderBlock {UL} at (0,104) size 784x54
+      LayoutBlockFlow {UL} at (0,104) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-17,0) size 7x17: white bullet
-          RenderText {#text} at (0,0) size 36x17
+          LayoutText {#text} at (0,0) size 36x17
             text run at (0,0) width 36: "circle"
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-17,0) size 7x17: white bullet
-          RenderText {#text} at (0,0) size 36x17
+          LayoutText {#text} at (0,0) size 36x17
             text run at (0,0) width 36: "circle"
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-17,0) size 7x17: white bullet
-          RenderText {#text} at (0,0) size 36x17
+          LayoutText {#text} at (0,0) size 36x17
             text run at (0,0) width 36: "circle"
-      RenderBlock {UL} at (0,174) size 784x54
+      LayoutBlockFlow {UL} at (0,174) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker at (-17,0) size 7x17: black square
-          RenderText {#text} at (0,0) size 42x17
+          LayoutText {#text} at (0,0) size 42x17
             text run at (0,0) width 42: "square"
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker at (-17,0) size 7x17: black square
-          RenderText {#text} at (0,0) size 42x17
+          LayoutText {#text} at (0,0) size 42x17
             text run at (0,0) width 42: "square"
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker at (-17,0) size 7x17: black square
-          RenderText {#text} at (0,0) size 42x17
+          LayoutText {#text} at (0,0) size 42x17
             text run at (0,0) width 42: "square"
-      RenderBlock {UL} at (0,244) size 784x54 [color=#FF0000]
+      LayoutBlockFlow {UL} at (0,244) size 784x54 [color=#FF0000]
         LayoutListItem {LI} at (40,0) size 744x18
-          RenderText {#text} at (0,0) size 4x17
+          LayoutText {#text} at (0,0) size 4x17
             text run at (0,0) width 4: " "
         LayoutListItem {LI} at (40,18) size 744x18
-          RenderText {#text} at (0,0) size 4x17
+          LayoutText {#text} at (0,0) size 4x17
             text run at (0,0) width 4: " "
         LayoutListItem {LI} at (40,36) size 744x18
-          RenderText {#text} at (0,0) size 4x17
+          LayoutText {#text} at (0,0) size 4x17
             text run at (0,0) width 4: " "

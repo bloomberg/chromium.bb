@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollX 229.00 scrollWidth 1014 scrollHeight 822
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x822 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
-  RenderBlock {HTML} at (0,0) size 785x822
-    RenderBody {BODY} at (8,8) size 600x806
+  LayoutBlockFlow {HTML} at (0,0) size 785x822
+    LayoutBlockFlow {BODY} at (8,8) size 600x806
 layer at (8,8) size 1006x806 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
-  RenderBlock {DIV} at (0,0) size 1006x806 [border: (3px solid #FF0000)]
+  LayoutBlockFlow {DIV} at (0,0) size 1006x806 [border: (3px solid #FF0000)]
 scrolled to 229,0

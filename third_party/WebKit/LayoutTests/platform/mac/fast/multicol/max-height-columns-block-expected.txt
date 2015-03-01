@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x72
-        RenderText {#text} at (0,0) size 784x72
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x72
+        LayoutText {#text} at (0,0) size 784x72
           text run at (0,0) width 439: "This is capturing current behavior, but it's not clear that it is correct. "
           text run at (438,0) width 299: "It's not clear if max-height on a columns block"
           text run at (0,18) width 299: "constitutes a constraint on the columns or not. "
@@ -14,32 +14,32 @@ layer at (0,0) size 800x600
           text run at (628,36) width 136: "Our current behavior"
           text run at (0,54) width 524: "(which matches Firefox) is to just overflow without changing from balance to fill."
 layer at (8,80) size 404x64
-  RenderBlock {DIV} at (0,72) size 404x64 [border: (2px solid #000000)]
-    RenderText {#text} at (2,2) size 51x112
+  LayoutBlockFlow {DIV} at (0,72) size 404x64 [border: (2px solid #000000)]
+    LayoutText {#text} at (2,2) size 51x112
       text run at (2,2) width 43: "This"
       text run at (2,30) width 17: "is"
       text run at (2,58) width 51: "some"
       text run at (2,86) width 36: "text"
     LayoutBR {BR} at (37,108) size 1x0
-    RenderText {#text} at (2,114) size 51x112
+    LayoutText {#text} at (2,114) size 51x112
       text run at (2,114) width 43: "This"
       text run at (2,142) width 17: "is"
       text run at (2,170) width 51: "some"
       text run at (2,198) width 36: "text"
     LayoutBR {BR} at (37,220) size 1x0
-    RenderText {#text} at (2,226) size 51x112
+    LayoutText {#text} at (2,226) size 51x112
       text run at (2,226) width 43: "This"
       text run at (2,254) width 17: "is"
       text run at (2,282) width 51: "some"
       text run at (2,310) width 36: "text"
     LayoutBR {BR} at (37,332) size 1x0
-    RenderText {#text} at (2,338) size 51x112
+    LayoutText {#text} at (2,338) size 51x112
       text run at (2,338) width 43: "This"
       text run at (2,366) width 17: "is"
       text run at (2,394) width 51: "some"
       text run at (2,422) width 36: "text"
     LayoutBR {BR} at (37,444) size 1x0
-    RenderText {#text} at (2,450) size 51x112
+    LayoutText {#text} at (2,450) size 51x112
       text run at (2,450) width 43: "This"
       text run at (2,478) width 17: "is"
       text run at (2,506) width 51: "some"

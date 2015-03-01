@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600 scrollY 100.00
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x62
-  RenderBlock {HTML} at (0,0) size 800x62
-    RenderBody {BODY} at (8,8) size 784x46
-      RenderBlock {DIV} at (0,0) size 784x30 [bgcolor=#000000]
-      RenderBlock {DIV} at (0,30) size 784x16
-        RenderText {#text} at (0,0) size 151x16
+  LayoutBlockFlow {HTML} at (0,0) size 800x62
+    LayoutBlockFlow {BODY} at (8,8) size 784x46
+      LayoutBlockFlow {DIV} at (0,0) size 784x30 [bgcolor=#000000]
+      LayoutBlockFlow {DIV} at (0,30) size 784x16
+        LayoutText {#text} at (0,0) size 151x16
           text run at (0,0) width 151: "This test requires DRT."
 scrolled to 0,100

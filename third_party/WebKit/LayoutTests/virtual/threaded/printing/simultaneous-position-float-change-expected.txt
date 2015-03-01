@@ -1,7 +1,7 @@
 layer at (0,0) size 0x0
-  RenderView at (0,0) size 0x0
+  LayoutView at (0,0) size 0x0
 layer at (0,0) size 1000x8
-  RenderBlock {HTML} at (0,0) size 1000x8
-    RenderBody {BODY} at (8,8) size 984x0
+  LayoutBlockFlow {HTML} at (0,0) size 1000x8
+    LayoutBlockFlow {BODY} at (8,8) size 984x0
 layer at (8,8) size 0x0
-  RenderBlock (positioned) {DIV} at (8,8) size 0x0
+  LayoutBlockFlow (positioned) {DIV} at (8,8) size 0x0

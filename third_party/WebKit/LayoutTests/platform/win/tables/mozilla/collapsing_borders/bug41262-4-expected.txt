@@ -1,41 +1,41 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {BLOCKQUOTE} at (40,0) size 704x118
-        RenderBlock {CENTER} at (0,0) size 704x118
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 704x118
+        LayoutBlockFlow {CENTER} at (0,0) size 704x118
           LayoutTable {TABLE} at (297.50,0) size 109x80 [border: (2px none #808080)]
             LayoutTableSection {TBODY} at (2,2) size 104x75
               LayoutTableRow {TR} at (0,0) size 104x25
                 LayoutTableCell {TD} at (0,0) size 37x25 [border: (3px groove #0000FF)] [r=0 c=0 rs=1 cs=1]
-                  RenderText {#text} at (4,4) size 29x17
+                  LayoutText {#text} at (4,4) size 29x17
                     text run at (4,4) width 29: "EST"
                 LayoutTableCell {TD} at (37,0) size 67x25 [border: (3px groove #0000FF)] [r=0 c=1 rs=1 cs=1]
-                  RenderText {#text} at (4,4) size 60x17
+                  LayoutText {#text} at (4,4) size 60x17
                     text run at (4,4) width 60: "9:00 a.m."
               LayoutTableRow {TR} at (0,25) size 104x25
                 LayoutTableCell {TD} at (0,25) size 37x25 [border: (3px groove #0000FF)] [r=1 c=0 rs=1 cs=1]
-                  RenderText {#text} at (4,4) size 30x17
+                  LayoutText {#text} at (4,4) size 30x17
                     text run at (4,4) width 30: "CST"
                 LayoutTableCell {TD} at (37,25) size 67x25 [border: (3px groove #0000FF)] [r=1 c=1 rs=1 cs=1]
-                  RenderText {#text} at (4,4) size 60x17
+                  LayoutText {#text} at (4,4) size 60x17
                     text run at (4,4) width 60: "8:00 a.m."
               LayoutTableRow {TR} at (0,50) size 104x25
                 LayoutTableCell {TD} at (0,50) size 37x25 [border: (3px groove #0000FF)] [r=2 c=0 rs=1 cs=1]
-                  RenderText {#text} at (4,4) size 28x17
+                  LayoutText {#text} at (4,4) size 28x17
                     text run at (4,4) width 28: "PST"
                 LayoutTableCell {TD} at (37,50) size 67x25 [border: (3px groove #0000FF)] [r=2 c=1 rs=1 cs=1]
-                  RenderText {#text} at (4,4) size 60x17
+                  LayoutText {#text} at (4,4) size 60x17
                     text run at (4,4) width 60: "6:00 a.m."
-          RenderBlock {P} at (0,96) size 704x22
+          LayoutBlockFlow {P} at (0,96) size 704x22
             LayoutButton {INPUT} at (285,0) size 66x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-              RenderBlock (anonymous) at (8,3) size 50x16
-                RenderText {#text} at (0,0) size 50x16
+              LayoutBlockFlow (anonymous) at (8,3) size 50x16
+                LayoutText {#text} at (0,0) size 50x16
                   text run at (0,0) width 50: "separate"
-            RenderText {#text} at (351,2) size 4x17
+            LayoutText {#text} at (351,2) size 4x17
               text run at (351,2) width 4: " "
             LayoutButton {INPUT} at (355,0) size 64x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-              RenderBlock (anonymous) at (8,3) size 48x16
-                RenderText {#text} at (0,0) size 48x16
+              LayoutBlockFlow (anonymous) at (8,3) size 48x16
+                LayoutText {#text} at (0,0) size 48x16
                   text run at (0,0) width 48: "collapse"

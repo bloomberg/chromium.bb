@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 750x35
-          RenderText {#text} at (54,0) size 750x35
+        LayoutInline {I} at (0,0) size 750x35
+          LayoutText {#text} at (54,0) size 750x35
             text run at (54,0) width 696: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6132 Incorrect selection highlighting for ATSUI text when"
             text run at (0,18) width 179: "selected range is \"CG-safe\""
-        RenderText {#text} at (178,18) size 5x17
+        LayoutText {#text} at (178,18) size 5x17
           text run at (178,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 721x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 721x17
           text run at (0,0) width 721: "The word \x{201C}dolor\x{201D} below should be highlighted in its entirety. The highlight should not extend beyond that word."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock (anonymous) at (0,96) size 784x18
-        RenderInline {SPAN} at (0,0) size 178x17
-          RenderText {#text} at (0,0) size 178x17
+      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow (anonymous) at (0,96) size 784x18
+        LayoutInline {SPAN} at (0,0) size 178x17
+          LayoutText {#text} at (0,0) size 178x17
             text run at (0,0) width 178: "Lo\x{308}re\x{300}m ipsum dolor sit amet"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 selection start: position 14 of child 0 {#text} of child 7 {SPAN} of body
 selection end:   position 19 of child 0 {#text} of child 7 {SPAN} of body

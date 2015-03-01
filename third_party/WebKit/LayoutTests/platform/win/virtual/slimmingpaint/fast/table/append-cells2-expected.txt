@@ -1,89 +1,89 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 465x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 465x17
           text run at (0,0) width 465: "Rows should have different number of columns, but those should match."
       LayoutTable {TABLE} at (0,34) size 725x90
         LayoutTableSection {THEAD} at (0,0) size 725x18
           LayoutTableRow {TR} at (0,0) size 725x18
             LayoutTableCell {TD} at (0,0) size 90x18 [bgcolor=#7CFC00] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "1"
             LayoutTableCell {TD} at (90,0) size 90x18 [bgcolor=#008000] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "1+"
             LayoutTableCell {TD} at (180,0) size 90x18 [bgcolor=#00FFFF] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "2"
             LayoutTableCell {TD} at (270,0) size 91x18 [bgcolor=#008B8B] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "2+"
             LayoutTableCell {TD} at (361,0) size 91x18 [bgcolor=#FFFF00] [r=0 c=4 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "3"
             LayoutTableCell {TD} at (452,0) size 91x18 [bgcolor=#FFD700] [r=0 c=5 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "3+"
         LayoutTableSection {TFOOT} at (0,72) size 725x18
           LayoutTableRow {TR} at (0,0) size 725x18
             LayoutTableCell {TD} at (0,0) size 90x18 [bgcolor=#7CFC00] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "1"
             LayoutTableCell {TD} at (90,0) size 90x18 [bgcolor=#008000] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "1+"
             LayoutTableCell {TD} at (180,0) size 90x18 [bgcolor=#00FFFF] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "2"
             LayoutTableCell {TD} at (270,0) size 91x18 [bgcolor=#008B8B] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "2+"
             LayoutTableCell {TD} at (361,0) size 91x18 [bgcolor=#FFFF00] [r=0 c=4 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "3"
             LayoutTableCell {TD} at (452,0) size 91x18 [bgcolor=#FFD700] [r=0 c=5 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "3+"
             LayoutTableCell {TD} at (543,0) size 91x18 [bgcolor=#FFA500] [r=0 c=6 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "4"
             LayoutTableCell {TD} at (634,0) size 91x18 [bgcolor=#FF8C00] [r=0 c=7 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "4+"
         LayoutTableSection {TBODY} at (0,18) size 725x54
           LayoutTableRow {TR} at (0,0) size 725x18
             LayoutTableCell {TD} at (0,0) size 90x18 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 4x17
+              LayoutText {#text} at (0,0) size 4x17
                 text run at (0,0) width 4: " "
           LayoutTableRow {TR} at (0,18) size 725x18
             LayoutTableCell {TD} at (0,18) size 90x18 [bgcolor=#7CFC00] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "1"
             LayoutTableCell {TD} at (90,18) size 90x18 [bgcolor=#008000] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "1+"
             LayoutTableCell {TD} at (180,18) size 90x18 [bgcolor=#00FFFF] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 8x17
+              LayoutText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "2"
             LayoutTableCell {TD} at (270,18) size 91x18 [bgcolor=#008B8B] [r=1 c=3 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 18x17
+              LayoutText {#text} at (0,0) size 18x17
                 text run at (0,0) width 18: "2+"
           LayoutTableRow {TR} at (0,36) size 725x18
             LayoutTableCell {TD} at (0,36) size 90x18 [r=2 c=0 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 4x17
+              LayoutText {#text} at (0,0) size 4x17
                 text run at (0,0) width 4: " "
-      RenderBlock (anonymous) at (0,124) size 784x22
+      LayoutBlockFlow (anonymous) at (0,124) size 784x22
         LayoutButton {BUTTON} at (0,0) size 46x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 30x16
-            RenderText {#text} at (0,0) size 30x16
+          LayoutBlockFlow (anonymous) at (8,3) size 30x16
+            LayoutText {#text} at (0,0) size 30x16
               text run at (0,0) width 30: "show"
-        RenderText {#text} at (46,2) size 4x17
+        LayoutText {#text} at (46,2) size 4x17
           text run at (46,2) width 4: " "
         LayoutButton {BUTTON} at (50,0) size 40x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 24x16
-            RenderText {#text} at (0,0) size 24x16
+          LayoutBlockFlow (anonymous) at (8,3) size 24x16
+            LayoutText {#text} at (0,0) size 24x16
               text run at (0,0) width 24: "hide"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

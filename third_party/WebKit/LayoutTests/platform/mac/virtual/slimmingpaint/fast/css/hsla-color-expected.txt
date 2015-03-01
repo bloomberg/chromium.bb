@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x570.56 [bgcolor=#FFFF00]
-      RenderBlock {H1} at (0,0) size 784x37 [color=#FF00007F]
-        RenderText {#text} at (0,0) size 394x37
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x570.56 [bgcolor=#FFFF00]
+      LayoutBlockFlow {H1} at (0,0) size 784x37 [color=#FF00007F]
+        LayoutText {#text} at (0,0) size 394x37
           text run at (0,0) width 394: "This should be red, alpha 0.5"
-      RenderBlock {H1} at (0,58.44) size 784x37 [color=#FF00007F]
-        RenderText {#text} at (0,0) size 456x37
+      LayoutBlockFlow {H1} at (0,58.44) size 784x37 [color=#FF00007F]
+        LayoutText {#text} at (0,0) size 456x37
           text run at (0,0) width 456: "This should also be red, alpha 0.5"
-      RenderBlock {H1} at (0,116.88) size 784x37 [color=#00FF0000]
-        RenderText {#text} at (0,0) size 425x37
+      LayoutBlockFlow {H1} at (0,116.88) size 784x37 [color=#00FF0000]
+        LayoutText {#text} at (0,0) size 425x37
           text run at (0,0) width 425: "This should be green, alpha 0.0"
-      RenderBlock {H1} at (0,175.31) size 784x37 [color=#00FF0000]
-        RenderText {#text} at (0,0) size 486x37
+      LayoutBlockFlow {H1} at (0,175.31) size 784x37 [color=#00FF0000]
+        LayoutText {#text} at (0,0) size 486x37
           text run at (0,0) width 486: "This should also be green, alpha 0.0"
-      RenderBlock {H1} at (0,233.75) size 784x37 [color=#00FF00]
-        RenderText {#text} at (0,0) size 425x37
+      LayoutBlockFlow {H1} at (0,233.75) size 784x37 [color=#00FF00]
+        LayoutText {#text} at (0,0) size 425x37
           text run at (0,0) width 425: "This should be green, alpha 1.0"
-      RenderBlock {H1} at (0,292.19) size 784x37 [color=#00FF00]
-        RenderText {#text} at (0,0) size 486x37
+      LayoutBlockFlow {H1} at (0,292.19) size 784x37 [color=#00FF00]
+        LayoutText {#text} at (0,0) size 486x37
           text run at (0,0) width 486: "This should also be green, alpha 1.0"

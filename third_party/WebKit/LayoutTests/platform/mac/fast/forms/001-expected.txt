@@ -1,52 +1,52 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {H1} at (0,0) size 784x37
-        RenderText {#text} at (0,0) size 234x37
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {H1} at (0,0) size 784x37
+        LayoutText {#text} at (0,0) size 234x37
           text run at (0,0) width 234: "Min-Width Tests"
       LayoutTable {TABLE} at (0,58.44) size 784x86 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 780x82
           LayoutTableRow {TR} at (0,0) size 780x82
             LayoutTableCell {TD} at (0,0) size 131x82 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutMenuList {SELECT} at (1,1) size 129x80 [bgcolor=#F8F8F8] [border: (40px solid #FF0000)]
-                RenderBlock (anonymous) at (40,40) size 49x16
-                  RenderText at (8,1) size 20x13
+                LayoutBlockFlow (anonymous) at (40,40) size 49x16
+                  LayoutText at (8,1) size 20x13
                     text run at (8,1) width 20: "Foo"
             LayoutTableCell {TD} at (131,40) size 649x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-      RenderBlock {P} at (0,160.44) size 784x24
+      LayoutBlockFlow {P} at (0,160.44) size 784x24
         LayoutTable {TABLE} at (0,0) size 784x24 [border: (2px outset #808080)]
           LayoutTableSection {TBODY} at (2,2) size 780x20
             LayoutTableRow {TR} at (0,0) size 780x20
               LayoutTableCell {TD} at (0,0) size 20x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderBlock {INPUT} at (3.91,4) size 12x12
+                LayoutBlockFlow {INPUT} at (3.91,4) size 12x12
               LayoutTableCell {TD} at (20,9) size 760x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-      RenderBlock {P} at (0,200.44) size 784x24
+      LayoutBlockFlow {P} at (0,200.44) size 784x24
         LayoutTable {TABLE} at (0,0) size 784x24 [border: (2px outset #808080)]
           LayoutTableSection {TBODY} at (2,2) size 780x20
             LayoutTableRow {TR} at (0,0) size 780x20
               LayoutTableCell {TD} at (0,0) size 20x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderBlock {INPUT} at (3.91,4) size 12x12
+                LayoutBlockFlow {INPUT} at (3.91,4) size 12x12
               LayoutTableCell {TD} at (20,9) size 760x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-      RenderBlock {P} at (0,240.44) size 784x24
+      LayoutBlockFlow {P} at (0,240.44) size 784x24
         LayoutTable {TABLE} at (0,0) size 784x24 [border: (2px outset #808080)]
           LayoutTableSection {TBODY} at (2,2) size 780x20
             LayoutTableRow {TR} at (0,0) size 780x20
               LayoutTableCell {TD} at (0,0) size 38x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 35.42x18 [bgcolor=#C0C0C0]
-                  RenderBlock (anonymous) at (8,2) size 19.42x13
-                    RenderText {#text} at (0,0) size 20x13
+                  LayoutBlockFlow (anonymous) at (8,2) size 19.42x13
+                    LayoutText {#text} at (0,0) size 20x13
                       text run at (0,0) width 20: "Foo"
               LayoutTableCell {TD} at (38,9) size 742x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-      RenderBlock {P} at (0,280.44) size 784x267
+      LayoutBlockFlow {P} at (0,280.44) size 784x267
         LayoutTable {TABLE} at (0,0) size 784x91 [border: (2px outset #808080)]
           LayoutTableSection {TBODY} at (2,2) size 780x87
             LayoutTableRow {TR} at (0,0) size 780x87
               LayoutTableCell {TD} at (0,0) size 114x87 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 111.42x85 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
-                  RenderBlock (anonymous) at (46,42) size 19.42x13
-                    RenderText {#text} at (0,0) size 20x13
+                  LayoutBlockFlow (anonymous) at (46,42) size 19.42x13
+                    LayoutText {#text} at (0,0) size 20x13
                       text run at (0,0) width 20: "Foo"
               LayoutTableCell {TD} at (114,42) size 666x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
         LayoutTable {TABLE} at (0,91) size 784x91 [border: (2px outset #808080)]
@@ -54,12 +54,12 @@ layer at (0,0) size 800x600
             LayoutTableRow {TR} at (0,0) size 780x87
               LayoutTableCell {TD} at (0,0) size 165x87 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 162.89x85 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
-                  RenderBlock (anonymous) at (46,42) size 70.89x13
-                    RenderText {#text} at (0,0) size 71x13
+                  LayoutBlockFlow (anonymous) at (46,42) size 70.89x13
+                    LayoutText {#text} at (0,0) size 71x13
                       text run at (0,0) width 71: "Submit a bug"
               LayoutTableCell {TD} at (165,42) size 615x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-        RenderBlock (anonymous) at (0,182) size 784x85
+        LayoutBlockFlow (anonymous) at (0,182) size 784x85
           LayoutButton {INPUT} at (0,0) size 111.42x85 [bgcolor=#C0C0C0] [border: (40px solid #FF0000)]
-            RenderBlock (anonymous) at (46,42) size 19.42x13
-              RenderText {#text} at (0,0) size 20x13
+            LayoutBlockFlow (anonymous) at (46,42) size 19.42x13
+              LayoutText {#text} at (0,0) size 20x13
                 text run at (0,0) width 20: "Foo"

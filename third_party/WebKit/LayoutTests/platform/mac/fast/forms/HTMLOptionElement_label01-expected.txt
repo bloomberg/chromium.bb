@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 687x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 687x18
         text run at (0,0) width 687: "In the selection list below, the text 'The label for this element is \"1\"' should appear, and not the character '1'"
       LayoutBR {BR} at (686,14) size 1x0
       LayoutMenuList {SELECT} at (0,18) size 197x18 [bgcolor=#F8F8F8]
-        RenderBlock (anonymous) at (0,0) size 197x18
-          RenderText at (8,2) size 166x13
+        LayoutBlockFlow (anonymous) at (0,0) size 197x18
+          LayoutText at (8,2) size 166x13
             text run at (8,2) width 166: "the label for this element is \"1\""
-      RenderText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

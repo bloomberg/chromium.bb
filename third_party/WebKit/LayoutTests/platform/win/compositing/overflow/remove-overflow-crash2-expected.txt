@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x218
-  RenderBlock {HTML} at (0,0) size 800x218
-    RenderBody {BODY} at (8,8) size 784x202
+  LayoutBlockFlow {HTML} at (0,0) size 800x218
+    LayoutBlockFlow {BODY} at (8,8) size 784x202
 layer at (8,8) size 103x202 clip at (9,9) size 86x185 scrollHeight 1512
-  RenderBlock {DIV} at (0,0) size 103x202 [border: (1px solid #000000)]
-    RenderText {#text} at (1,1) size 86x1511
+  LayoutBlockFlow {DIV} at (0,0) size 103x202 [border: (1px solid #000000)]
+    LayoutText {#text} at (1,1) size 86x1511
       text run at (1,1) width 86: "Lorem ipsum"
       text run at (1,19) width 53: "dolor sit"
       text run at (1,37) width 36: "amet,"

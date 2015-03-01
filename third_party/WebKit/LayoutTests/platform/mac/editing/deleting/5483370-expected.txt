@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 777x36
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 777x36
           text run at (0,0) width 722: "This tests for a problem where empty table rows after the selection being deleted would be removed incorrectly. "
           text run at (721,0) width 56: "Only the"
           text run at (0,18) width 352: "last letter in 'foo' should be removed during this delete."
-      RenderBlock {DIV} at (0,52) size 784x34
+      LayoutBlockFlow {DIV} at (0,52) size 784x34
         LayoutTable {TABLE} at (0,0) size 30x34 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 28x32
             LayoutTableRow {TR} at (0,2) size 28x22
               LayoutTableCell {TD} at (2,2) size 18x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (2,2) size 14x18
+                LayoutText {#text} at (2,2) size 14x18
                   text run at (2,2) width 14: "fo"
               LayoutTableCell {TD} at (22,11) size 4x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
             LayoutTableRow {TR} at (0,26) size 28x4

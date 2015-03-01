@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600 scrollWidth 808
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 186x36 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 184x34
           LayoutTableRow {TR} at (0,2) size 184x30
@@ -11,9 +11,9 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 176x26
                   LayoutTableRow {TR} at (0,2) size 176x22
                     LayoutTableCell {TD} at (2,2) size 172x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 170x19
+                      LayoutText {#text} at (1,1) size 170x19
                         text run at (1,1) width 170: "nested in auto, width=100%"
-      RenderBlock (anonymous) at (0,36) size 784x20
+      LayoutBlockFlow (anonymous) at (0,36) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,56) size 200x36 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 198x34
@@ -23,9 +23,9 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 190x26
                   LayoutTableRow {TR} at (0,2) size 190x22
                     LayoutTableCell {TD} at (2,2) size 186x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 173x19
+                      LayoutText {#text} at (1,1) size 173x19
                         text run at (1,1) width 173: "nested in fixed, width=100%"
-      RenderBlock (anonymous) at (0,92) size 784x20
+      LayoutBlockFlow (anonymous) at (0,92) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,112) size 800x36 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 798x34
@@ -35,9 +35,9 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 790x26
                   LayoutTableRow {TR} at (0,2) size 790x22
                     LayoutTableCell {TD} at (2,2) size 786x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 173x19
+                      LayoutText {#text} at (1,1) size 173x19
                         text run at (1,1) width 173: "nested in fixed, width=100%"
-      RenderBlock (anonymous) at (0,148) size 784x20
+      LayoutBlockFlow (anonymous) at (0,148) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,168) size 218x36 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 216x34
@@ -47,12 +47,12 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 176x26
                   LayoutTableRow {TR} at (0,2) size 176x22
                     LayoutTableCell {TD} at (2,2) size 172x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 170x19
+                      LayoutText {#text} at (1,1) size 170x19
                         text run at (1,1) width 170: "nested in auto, width=100%"
             LayoutTableCell {TD} at (184,5) size 30x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 26x19
+              LayoutText {#text} at (2,2) size 26x19
                 text run at (2,2) width 26: "auto"
-      RenderBlock (anonymous) at (0,204) size 784x20
+      LayoutBlockFlow (anonymous) at (0,204) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,224) size 784x36 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x34
@@ -62,12 +62,12 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 341x26
                   LayoutTableRow {TR} at (0,2) size 341x22
                     LayoutTableCell {TD} at (2,2) size 337x22 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 173x19
+                      LayoutText {#text} at (1,1) size 173x19
                         text run at (1,1) width 173: "nested in 100%, width=50%"
             LayoutTableCell {TD} at (690,5) size 90x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 20x19
+              LayoutText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"
-      RenderBlock (anonymous) at (0,260) size 784x20
+      LayoutBlockFlow (anonymous) at (0,260) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,280) size 784x42 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x40
@@ -81,8 +81,8 @@ layer at (0,0) size 800x600
                         LayoutTableSection {TBODY} at (0,0) size 134x26
                           LayoutTableRow {TR} at (0,2) size 134x22
                             LayoutTableCell {TD} at (2,2) size 130x22 [r=0 c=0 rs=1 cs=1]
-                              RenderText {#text} at (1,1) size 44x19
+                              LayoutText {#text} at (1,1) size 44x19
                                 text run at (1,1) width 44: "2n50%"
             LayoutTableCell {TD} at (558,8) size 222x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 20x19
+              LayoutText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"

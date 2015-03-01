@@ -1,17 +1,17 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutFrameSet {FRAMESET} at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutFrame {FRAME} at (0,0) size 800x600
     layer at (0,0) size 800x600
-      RenderView at (0,0) size 800x600
+      LayoutView at (0,0) size 800x600
     layer at (0,0) size 800x600
-      RenderBlock {HTML} at (0,0) size 800x600
-        RenderBody {BODY} at (8,8) size 784x579
-          RenderBlock {PRE} at (0,0) size 784x75
-            RenderText {#text} at (0,0) size 781x75
+      LayoutBlockFlow {HTML} at (0,0) size 800x600
+        LayoutBlockFlow {BODY} at (8,8) size 784x579
+          LayoutBlockFlow {PRE} at (0,0) size 784x75
+            LayoutText {#text} at (0,0) size 781x75
               text run at (0,0) width 406: "This line should wrap with no horizontal scroll bar:"
               text run at (405,0) width 1: " "
               text run at (0,15) width 0: " "

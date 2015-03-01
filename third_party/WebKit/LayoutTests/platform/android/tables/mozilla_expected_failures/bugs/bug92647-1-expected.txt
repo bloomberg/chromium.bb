@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {FORM} at (0,0) size 784x90
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {FORM} at (0,0) size 784x90
         LayoutTable {TABLE} at (0,0) size 296x90 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 294x88
             LayoutTableRow {TR} at (0,2) size 294x84
@@ -12,21 +12,21 @@ layer at (0,0) size 800x600
                   LayoutTableSection {TBODY} at (2,2) size 282x76
                     LayoutTableRow {TR} at (0,2) size 282x44
                       LayoutTableCell {TD} at (2,2) size 80x44 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                        RenderText {#text} at (2,2) size 53x39
+                        LayoutText {#text} at (2,2) size 53x39
                           text run at (2,2) width 52: "Member"
                           text run at (2,22) width 53: "Number:"
                       LayoutTableCell {TD} at (84,11) size 190x26 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                         LayoutTextControl {INPUT} at (2,2) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                        RenderText {#text} at (0,0) size 0x0
+                        LayoutText {#text} at (0,0) size 0x0
                     LayoutTableRow {TR} at (0,48) size 282x26
                       LayoutTableCell {TD} at (2,49) size 80x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                        RenderText {#text} at (2,2) size 29x19
+                        LayoutText {#text} at (2,2) size 29x19
                           text run at (2,2) width 29: "PIN:"
                       LayoutTableCell {TD} at (84,48) size 190x26 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                         LayoutTextControl {INPUT} at (2,2) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                        RenderText {#text} at (0,0) size 0x0
+                        LayoutText {#text} at (0,0) size 0x0
                       LayoutTableCell {TD} at (276,59) size 4x4 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
 layer at (103,31) size 149x16
-  RenderBlock {DIV} at (2,3) size 149x16
+  LayoutBlockFlow {DIV} at (2,3) size 149x16
 layer at (103,68) size 149x16
-  RenderBlock {DIV} at (2,3) size 149x16
+  LayoutBlockFlow {DIV} at (2,3) size 149x16

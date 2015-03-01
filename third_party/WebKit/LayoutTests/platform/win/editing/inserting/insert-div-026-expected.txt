@@ -11,40 +11,40 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x206 [border: (2px solid #0000FF)]
-        RenderBlock {DIV} at (14,14) size 756x108
-          RenderText {#text} at (0,0) size 68x26
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x206 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x108
+          LayoutText {#text} at (0,0) size 68x26
             text run at (0,0) width 68: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,27) size 716x53
+          LayoutText {#text} at (0,27) size 716x53
             text run at (0,27) width 716: "Inserting blocks for paragraphs should do a better job of finding a block to"
             text run at (0,54) width 116: "insert after. "
-          RenderInline {A} at (0,0) size 257x26 [color=#0000EE]
-            RenderText {#text} at (115,54) size 257x26
+          LayoutInline {A} at (0,0) size 257x26 [color=#0000EE]
+            LayoutText {#text} at (115,54) size 257x26
               text run at (115,54) width 257: "<rdar://problem/3996605>"
-          RenderText {#text} at (371,54) size 727x53
+          LayoutText {#text} at (371,54) size 727x53
             text run at (371,54) width 356: " Insert paragraph command puts new"
             text run at (0,81) width 548: "block in wrong place, creating difficult-to-handle HTML"
-        RenderBlock {DIV} at (14,138) size 756x54
-          RenderText {#text} at (0,0) size 190x26
+        LayoutBlockFlow {DIV} at (14,138) size 756x54
+          LayoutText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,21) size 1x0
-          RenderText {#text} at (0,27) size 438x26
+          LayoutText {#text} at (0,27) size 438x26
             text run at (0,27) width 438: "Should see this content in the red box below: "
-          RenderInline {B} at (0,0) size 21x26
-            RenderText {#text} at (437,27) size 21x26
+          LayoutInline {B} at (0,0) size 21x26
+            LayoutText {#text} at (437,27) size 21x26
               text run at (437,27) width 21: "fo"
-          RenderText {#text} at (457,27) size 13x26
+          LayoutText {#text} at (457,27) size 13x26
             text run at (457,27) width 13: "x"
-      RenderBlock {DIV} at (0,230) size 784x31
-        RenderBlock {DIV} at (0,0) size 784x31 [border: (2px solid #FF0000)]
-          RenderInline {B} at (0,0) size 20x26
-            RenderText {#text} at (2,2) size 20x26
+      LayoutBlockFlow {DIV} at (0,230) size 784x31
+        LayoutBlockFlow {DIV} at (0,0) size 784x31 [border: (2px solid #FF0000)]
+          LayoutInline {B} at (0,0) size 20x26
+            LayoutText {#text} at (2,2) size 20x26
               text run at (2,2) width 20: "fo"
-          RenderText {#text} at (21,2) size 13x26
+          LayoutText {#text} at (21,2) size 13x26
             text run at (21,2) width 13: "x"
 caret: position 3 of child 0 {#text} of child 0 {B} of child 1 {DIV} of child 3 {DIV} of body

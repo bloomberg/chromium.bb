@@ -1,35 +1,35 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 93x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 93x17
           text run at (0,0) width 93: "This tests that "
-        RenderInline {TT} at (0,0) size 25x16
-          RenderText {#text} at (92,2) size 25x16
+        LayoutInline {TT} at (0,0) size 25x16
+          LayoutText {#text} at (92,2) size 25x16
             text run at (92,2) width 25: "WBR"
-        RenderText {#text} at (116,0) size 309x17
+        LayoutText {#text} at (116,0) size 309x17
           text run at (116,0) width 309: " elements cannot be styled and that setting their "
-        RenderInline {TT} at (0,0) size 65x16
-          RenderText {#text} at (424,2) size 65x16
+        LayoutInline {TT} at (0,0) size 65x16
+          LayoutText {#text} at (424,2) size 65x16
             text run at (424,2) width 65: "position"
-        RenderText {#text} at (488,0) size 22x17
+        LayoutText {#text} at (488,0) size 22x17
           text run at (488,0) width 22: " to "
-        RenderInline {TT} at (0,0) size 65x16
-          RenderText {#text} at (509,2) size 65x16
+        LayoutInline {TT} at (0,0) size 65x16
+          LayoutText {#text} at (509,2) size 65x16
             text run at (509,2) width 65: "absolute"
-        RenderText {#text} at (573,0) size 155x17
+        LayoutText {#text} at (573,0) size 155x17
           text run at (573,0) width 155: " does not crash WebKit."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 128x17
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 128x17
           text run at (0,0) width 128: "There should be no "
         LayoutWordBreak {WBR} at (0,0) size 0x0
-        RenderText {#text} at (127,0) size 100x17
+        LayoutText {#text} at (127,0) size 100x17
           text run at (127,0) width 100: "red on this line."
-      RenderBlock {P} at (0,68) size 784x18
-        RenderText {#text} at (0,0) size 126x17
+      LayoutBlockFlow {P} at (0,68) size 784x18
+        LayoutText {#text} at (0,0) size 126x17
           text run at (0,0) width 126: "No crashing, please"
         LayoutWordBreak {WBR} at (0,0) size 0x0
-        RenderText {#text} at (125,0) size 5x17
+        LayoutText {#text} at (125,0) size 5x17
           text run at (125,0) width 5: "."

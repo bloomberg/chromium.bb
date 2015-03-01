@@ -1,77 +1,77 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 106x52 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 104x50
           LayoutTableRow {TR} at (0,2) size 104x22
             LayoutTableCell {TD} at (2,2) size 31x22 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x17
+              LayoutText {#text} at (2,2) size 24x17
                 text run at (2,2) width 24: "one"
             LayoutTableCell {TD} at (35,2) size 29x22 [border: (1px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x17
+              LayoutText {#text} at (2,2) size 24x17
                 text run at (2,2) width 24: "two"
             LayoutTableCell {TD} at (66,2) size 36x22 [border: (1px solid #0000FF)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 32x17
+              LayoutText {#text} at (2,2) size 32x17
                 text run at (2,2) width 32: "three"
           LayoutTableRow {TR} at (0,26) size 104x22
             LayoutTableCell {TD} at (2,26) size 31x22 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 27x17
+              LayoutText {#text} at (2,2) size 27x17
                 text run at (2,2) width 27: "four"
             LayoutTableCell {TD} at (35,26) size 29x22 [border: (1px solid #FFFF00)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 25x17
+              LayoutText {#text} at (2,2) size 25x17
                 text run at (2,2) width 25: "five"
             LayoutTableCell {TD} at (66,26) size 36x22 [border: (1px solid #FFA500)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 19x17
+              LayoutText {#text} at (2,2) size 19x17
                 text run at (2,2) width 19: "six"
-      RenderBlock (anonymous) at (0,52) size 784x18
+      LayoutBlockFlow (anonymous) at (0,52) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,70) size 106x52 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 104x50
           LayoutTableRow {TR} at (0,2) size 104x22
             LayoutTableCell {TD} at (2,2) size 31x22 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x17
+              LayoutText {#text} at (2,2) size 24x17
                 text run at (2,2) width 24: "one"
             LayoutTableCell {TD} at (35,2) size 29x22 [border: (1px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x17
+              LayoutText {#text} at (2,2) size 24x17
                 text run at (2,2) width 24: "two"
             LayoutTableCell {TD} at (66,2) size 36x22 [border: (1px solid #0000FF)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 32x17
+              LayoutText {#text} at (2,2) size 32x17
                 text run at (2,2) width 32: "three"
           LayoutTableRow {TR} at (0,26) size 104x22
             LayoutTableCell {TD} at (2,26) size 31x22 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 27x17
+              LayoutText {#text} at (2,2) size 27x17
                 text run at (2,2) width 27: "four"
             LayoutTableCell {TD} at (35,26) size 29x22 [border: (1px solid #FFFF00)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 25x17
+              LayoutText {#text} at (2,2) size 25x17
                 text run at (2,2) width 25: "five"
             LayoutTableCell {TD} at (66,26) size 36x22 [border: (1px solid #FFA500)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 19x17
+              LayoutText {#text} at (2,2) size 19x17
                 text run at (2,2) width 19: "six"
-      RenderBlock (anonymous) at (0,122) size 784x36
+      LayoutBlockFlow (anonymous) at (0,122) size 784x36
         LayoutBR {BR} at (0,0) size 0x17
-        RenderText {#text} at (0,18) size 233x17
+        LayoutText {#text} at (0,18) size 233x17
           text run at (0,18) width 233: "should be 2px solid red around table"
       LayoutTable {TABLE} at (0,158) size 75x30 [border: (2px solid #FF0000)]
         LayoutTableSection {TBODY} at (2,2) size 71x26
           LayoutTableRow {TR} at (0,2) size 71x22
             LayoutTableCell {TD} at (2,2) size 31x22 [border: (1px inset #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 27x17
+              LayoutText {#text} at (2,2) size 27x17
                 text run at (2,2) width 27: "One"
             LayoutTableCell {TD} at (35,2) size 34x22 [border: (1px inset #FF0000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 30x17
+              LayoutText {#text} at (2,2) size 30x17
                 text run at (2,2) width 30: "Two"
-      RenderBlock (anonymous) at (0,188) size 784x36
+      LayoutBlockFlow (anonymous) at (0,188) size 784x36
         LayoutBR {BR} at (0,0) size 0x17
-        RenderText {#text} at (0,18) size 262x17
+        LayoutText {#text} at (0,18) size 262x17
           text run at (0,18) width 262: "should be medium solid red around table"
       LayoutTable {TABLE} at (0,224) size 77x32 [border: (3px solid #FF0000)]
         LayoutTableSection {TBODY} at (3,3) size 71x26
           LayoutTableRow {TR} at (0,2) size 71x22
             LayoutTableCell {TD} at (2,2) size 31x22 [border: (1px inset #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 27x17
+              LayoutText {#text} at (2,2) size 27x17
                 text run at (2,2) width 27: "One"
             LayoutTableCell {TD} at (35,2) size 34x22 [border: (1px inset #FF0000)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 30x17
+              LayoutText {#text} at (2,2) size 30x17
                 text run at (2,2) width 30: "Two"

@@ -1,5 +1,5 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (16,40) size 318x173
     LayoutSVGContainer {g} at (16,40) size 318x173 [transform={m=((1.00,0.00)(0.00,1.50)) t=(0.00,0.00)}]

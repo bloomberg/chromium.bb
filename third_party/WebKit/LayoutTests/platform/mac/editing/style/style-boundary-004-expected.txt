@@ -5,44 +5,44 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
-        RenderBlock {DIV} at (14,14) size 756x56
-          RenderText {#text} at (0,0) size 68x28
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x56
+          LayoutText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,28) size 595x28
+          LayoutText {#text} at (0,28) size 595x28
             text run at (0,28) width 595: "Style checks performed on boundaries between style changes."
-        RenderBlock {DIV} at (14,86) size 756x112
-          RenderBlock (anonymous) at (0,0) size 756x56
-            RenderText {#text} at (0,0) size 190x28
+        LayoutBlockFlow {DIV} at (14,86) size 756x112
+          LayoutBlockFlow (anonymous) at (0,0) size 756x56
+            LayoutText {#text} at (0,0) size 190x28
               text run at (0,0) width 190: "Expected Results: "
             LayoutBR {BR} at (189,22) size 1x0
-            RenderText {#text} at (0,28) size 432x28
+            LayoutText {#text} at (0,28) size 432x28
               text run at (0,28) width 432: "Should see this content in the red box below:"
-            RenderInline {B} at (0,0) size 0x0
-          RenderBlock (anonymous) at (0,56) size 756x56
-            RenderBlock {DIV} at (0,0) size 756x28
-              RenderText {#text} at (0,0) size 12x28
+            LayoutInline {B} at (0,0) size 0x0
+          LayoutBlockFlow (anonymous) at (0,56) size 756x56
+            LayoutBlockFlow {DIV} at (0,0) size 756x28
+              LayoutText {#text} at (0,0) size 12x28
                 text run at (0,0) width 12: "a"
-            RenderBlock {DIV} at (0,28) size 756x28
-              RenderText {#text} at (0,0) size 14x28
+            LayoutBlockFlow {DIV} at (0,28) size 756x28
+              LayoutText {#text} at (0,0) size 14x28
                 text run at (0,0) width 14: "b"
-          RenderBlock (anonymous) at (0,112) size 756x0
-            RenderInline {B} at (0,0) size 0x0
-            RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,236) size 784x60
-        RenderBlock {DIV} at (0,0) size 784x60 [border: (2px solid #FF0000)]
-          RenderBlock {DIV} at (2,2) size 780x28
-            RenderInline {B} at (0,0) size 12x28
-              RenderText {#text} at (0,0) size 12x28
+          LayoutBlockFlow (anonymous) at (0,112) size 756x0
+            LayoutInline {B} at (0,0) size 0x0
+            LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,236) size 784x60
+        LayoutBlockFlow {DIV} at (0,0) size 784x60 [border: (2px solid #FF0000)]
+          LayoutBlockFlow {DIV} at (2,2) size 780x28
+            LayoutInline {B} at (0,0) size 12x28
+              LayoutText {#text} at (0,0) size 12x28
                 text run at (0,0) width 12: "a"
-          RenderBlock {DIV} at (2,30) size 780x28
-            RenderInline {B} at (0,0) size 14x28
-              RenderText {#text} at (0,0) size 14x28
+          LayoutBlockFlow {DIV} at (2,30) size 780x28
+            LayoutInline {B} at (0,0) size 14x28
+              LayoutText {#text} at (0,0) size 14x28
                 text run at (0,0) width 14: "b"
 selection start: position 1 of child 0 {#text} of child 0 {B} of child 0 {DIV} of child 1 {DIV} of child 3 {DIV} of body
 selection end:   position 1 of child 0 {#text} of child 0 {B} of child 1 {DIV} of child 1 {DIV} of child 3 {DIV} of body

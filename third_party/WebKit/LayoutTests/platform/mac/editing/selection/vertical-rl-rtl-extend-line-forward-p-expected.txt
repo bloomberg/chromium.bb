@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x202
-  RenderBlock {HTML} at (0,0) size 800x201.72
-    RenderBody {BODY} at (8,16) size 784x172.72
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 399x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x201.72
+    LayoutBlockFlow {BODY} at (8,16) size 784x172.72
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 399x18
           text run at (0,0) width 399: "This tests horizontal caret movement in vertical writing mode."
-      RenderBlock {DIV} at (0,34) size 108x138.72
-        RenderBlock {P} at (20,0) size 24x138.72
-          RenderText {#text} at (1,42) size 23x97
+      LayoutBlockFlow {DIV} at (0,34) size 108x138.72
+        LayoutBlockFlow {P} at (20,0) size 24x138.72
+          LayoutText {#text} at (1,42) size 23x97
             text run at (1,42) width 97 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D7}\x{5EA}\x{5D5}\x{5DC}."
-        RenderBlock {P} at (64,0) size 24x138.72
-          RenderText {#text} at (1,31) size 23x108
+        LayoutBlockFlow {P} at (64,0) size 24x138.72
+          LayoutText {#text} at (1,31) size 23x108
             text run at (1,31) width 107 RTL: "\x{5D0}\x{5D9}\x{5DF} \x{5DC}\x{5D9} \x{5E9}\x{5DD}."
-      RenderBlock {PRE} at (0,185.72) size 784x0
+      LayoutBlockFlow {PRE} at (0,185.72) size 784x0
 selection start: position 5 of child 0 {#text} of child 1 {P} of child 3 {DIV} of body
 selection end:   position 6 of child 0 {#text} of child 2 {P} of child 3 {DIV} of body

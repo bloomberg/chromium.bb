@@ -1,52 +1,52 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 194x21
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {H3} at (0,0) size 784x22
+        LayoutText {#text} at (0,0) size 194x21
           text run at (0,0) width 194: "With long hidden values"
       LayoutTable {TABLE} at (0,40.72) size 198x66 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 196x64
           LayoutTableRow {TR} at (0,2) size 196x58
             LayoutTableCell {TD} at (2,2) size 192x58 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {FORM} at (1,1) size 190x40
+              LayoutBlockFlow {FORM} at (1,1) size 190x40
                 LayoutTextControl {INPUT} at (0,0) size 124x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderText {#text} at (124,2) size 4x17
+                LayoutText {#text} at (124,2) size 4x17
                   text run at (124,2) width 4: " "
                 LayoutButton {INPUT} at (128,0) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  RenderBlock (anonymous) at (8,3) size 25x16
-                    RenderText {#text} at (0,0) size 25x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 25x16
+                    LayoutText {#text} at (0,0) size 25x16
                       text run at (0,0) width 25: " Go "
-                RenderText {#text} at (169,2) size 4x17
+                LayoutText {#text} at (169,2) size 4x17
                   text run at (169,2) width 4: " "
                 LayoutBR {BR} at (173,16) size 0x0
-                RenderText {#text} at (0,22) size 190x17
+                LayoutText {#text} at (0,22) size 190x17
                   text run at (0,22) width 190: "Enter City Name or Zip Code"
           LayoutTableRow {TR} at (0,62) size 196x0
-      RenderBlock {HR} at (0,114.72) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {H3} at (0,135.44) size 784x22
-        RenderText {#text} at (0,0) size 202x21
+      LayoutBlockFlow {HR} at (0,114.72) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {H3} at (0,135.44) size 784x22
+        LayoutText {#text} at (0,0) size 202x21
           text run at (0,0) width 202: "With short hidden values"
       LayoutTable {TABLE} at (0,176.16) size 198x66 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 196x64
           LayoutTableRow {TR} at (0,2) size 196x58
             LayoutTableCell {TD} at (2,2) size 192x58 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {FORM} at (1,1) size 190x40
+              LayoutBlockFlow {FORM} at (1,1) size 190x40
                 LayoutTextControl {INPUT} at (0,0) size 124x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderText {#text} at (124,2) size 4x17
+                LayoutText {#text} at (124,2) size 4x17
                   text run at (124,2) width 4: " "
                 LayoutButton {INPUT} at (128,0) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  RenderBlock (anonymous) at (8,3) size 25x16
-                    RenderText {#text} at (0,0) size 25x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 25x16
+                    LayoutText {#text} at (0,0) size 25x16
                       text run at (0,0) width 25: " Go "
-                RenderText {#text} at (169,2) size 4x17
+                LayoutText {#text} at (169,2) size 4x17
                   text run at (169,2) width 4: " "
                 LayoutBR {BR} at (173,16) size 0x0
-                RenderText {#text} at (0,22) size 190x17
+                LayoutText {#text} at (0,22) size 190x17
                   text run at (0,22) width 190: "Enter City Name or Zip Code"
           LayoutTableRow {TR} at (0,62) size 196x0
 layer at (14,56) size 120x16
-  RenderBlock {DIV} at (2,3) size 120x16
+  LayoutBlockFlow {DIV} at (2,3) size 120x16
 layer at (14,191) size 120x16
-  RenderBlock {DIV} at (2,3) size 120x16
+  LayoutBlockFlow {DIV} at (2,3) size 120x16

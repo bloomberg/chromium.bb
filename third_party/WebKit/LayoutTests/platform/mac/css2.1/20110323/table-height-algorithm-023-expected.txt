@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x158
-  RenderBlock {HTML} at (0,0) size 800x158
-    RenderBody {BODY} at (8,16) size 784x134
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 398x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x158
+    LayoutBlockFlow {BODY} at (8,16) size 784x134
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 398x18
           text run at (0,0) width 398: "Test passes if the bottom of the \"Filler Text\" below is aligned."
       LayoutTable {TABLE} at (0,34) size 355x100
         LayoutTableSection {TBODY} at (0,0) size 355x100
           LayoutTableRow {TR} at (0,2) size 355x96
             LayoutTableCell {TD} at (2,26) size 59x17 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 57x15
-                RenderText {#text} at (0,0) size 57x15
+              LayoutBlockFlow {DIV} at (1,1) size 57x15
+                LayoutText {#text} at (0,0) size 57x15
                   text run at (0,0) width 57: "Filler Text"
             LayoutTableCell {TD} at (63,14) size 116x33 [r=0 c=1 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 114x31
-                RenderText {#text} at (0,0) size 114x31
+              LayoutBlockFlow {DIV} at (1,1) size 114x31
+                LayoutText {#text} at (0,0) size 114x31
                   text run at (0,0) width 114: "Filler Text"
             LayoutTableCell {TD} at (181,2) size 172x48 [r=0 c=2 rs=1 cs=1]
-              RenderBlock {DIV} at (1,1) size 170x46
-                RenderText {#text} at (0,0) size 170x46
+              LayoutBlockFlow {DIV} at (1,1) size 170x46
+                LayoutText {#text} at (0,0) size 170x46
                   text run at (0,0) width 170: "Filler Text"

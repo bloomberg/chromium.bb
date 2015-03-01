@@ -4,28 +4,28 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x276 [border: (2px solid #FF0000)]
-        RenderInline {SPAN} at (0,0) size 252x247
-          RenderText {#text} at (14,14) size 11x27
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x276 [border: (2px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 252x247
+          LayoutText {#text} at (14,14) size 11x27
             text run at (14,14) width 11: "a"
-          RenderText {#text} at (25,14) size 46x27
+          LayoutText {#text} at (25,14) size 46x27
             text run at (25,14) width 46: "new "
           LayoutBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (14,124) size 66x27
+          LayoutText {#text} at (14,124) size 66x27
             text run at (14,124) width 66: "nation "
-          RenderInline {I} at (0,0) size 0x0
-            RenderText {#text} at (0,0) size 0x0
-          RenderText {#text} at (0,0) size 0x0
+          LayoutInline {I} at (0,0) size 0x0
+            LayoutText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 0x0
           LayoutImage {IMG} at (80,42) size 76x103
-          RenderText {#text} at (156,124) size 110x27
+          LayoutText {#text} at (156,124) size 110x27
             text run at (156,124) width 110: " conceived "
           LayoutBR {BR} at (266,145) size 0x0
-          RenderText {#text} at (14,234) size 60x27
+          LayoutText {#text} at (14,234) size 60x27
             text run at (14,234) width 60: "nation"
           LayoutImage {IMG} at (74,152) size 76x103
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 caret: position 1 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body

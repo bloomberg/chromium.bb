@@ -1,35 +1,35 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 334x18
-          RenderInline {A} at (0,0) size 157x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 157x18
+        LayoutInline {I} at (0,0) size 334x18
+          LayoutInline {A} at (0,0) size 157x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 157x18
               text run at (54,0) width 157: "rdar://problem/7898436"
-          RenderText {#text} at (210,0) size 178x18
+          LayoutText {#text} at (210,0) size 178x18
             text run at (210,0) width 178: " :after content is duplicated"
-        RenderText {#text} at (387,0) size 5x18
+        LayoutText {#text} at (387,0) size 5x18
           text run at (387,0) width 5: "."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 518x18
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 518x18
           text run at (0,0) width 518: "The test passed if the word \x{201C}not\x{201D} appears exactly once in the following sentence:"
-      RenderBlock {DIV} at (0,68) size 784x220
-        RenderBlock (anonymous) at (0,0) size 784x110
-          RenderText {#text} at (0,0) size 454x110
+      LayoutBlockFlow {DIV} at (0,68) size 784x220
+        LayoutBlockFlow (anonymous) at (0,0) size 784x110
+          LayoutText {#text} at (0,0) size 454x110
             text run at (0,0) width 454: "The test did"
-          RenderInline {SPAN} at (0,0) size 0x0
-            RenderInline {B} at (0,0) size 0x0
-        RenderBlock (anonymous) at (0,110) size 784x0
-          RenderBlock {DIV} at (0,0) size 784x0
-        RenderBlock (anonymous) at (0,110) size 784x110
-          RenderInline {SPAN} at (0,0) size 147x110
-            RenderInline {B} at (0,0) size 0x0
-            RenderInline {<pseudo:after>} at (0,0) size 147x110
+          LayoutInline {SPAN} at (0,0) size 0x0
+            LayoutInline {B} at (0,0) size 0x0
+        LayoutBlockFlow (anonymous) at (0,110) size 784x0
+          LayoutBlockFlow {DIV} at (0,0) size 784x0
+        LayoutBlockFlow (anonymous) at (0,110) size 784x110
+          LayoutInline {SPAN} at (0,0) size 147x110
+            LayoutInline {B} at (0,0) size 0x0
+            LayoutInline {<pseudo:after>} at (0,0) size 147x110
               LayoutTextFragment at (0,0) size 147x110
                 text run at (0,0) width 147: "not "
-          RenderText {#text} at (146,0) size 153x110
+          LayoutText {#text} at (146,0) size 153x110
             text run at (146,0) width 153: "fail."

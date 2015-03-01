@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x386
-  RenderBlock {HTML} at (0,0) size 800x386
-    RenderBody {BODY} at (0,0) size 800x386
+  LayoutBlockFlow {HTML} at (0,0) size 800x386
+    LayoutBlockFlow {BODY} at (0,0) size 800x386
       LayoutTable {TABLE} at (0,0) size 800x282
         LayoutTableSection {TBODY} at (0,0) size 800x282
           LayoutTableRow {TR} at (0,2) size 800x278
             LayoutTableCell {TD} at (2,2) size 796x278 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 784x276
+              LayoutText {#text} at (1,1) size 784x276
                 text run at (1,1) width 644: "Lorem ipsum dolor sit amet, consectetur"
                 text run at (1,47) width 627: "adipisicing elit, sed do eiusmod tempor"
                 text run at (1,93) width 213: "incididunt ut "
@@ -20,11 +20,11 @@ layer at (0,0) size 800x386
         LayoutTableSection {TBODY} at (0,0) size 306x52
           LayoutTableRow {TR} at (0,2) size 306x48
             LayoutTableCell {TD} at (2,2) size 302x48 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 300x46
+              LayoutText {#text} at (1,1) size 300x46
                 text run at (1,1) width 300: "Another comment."
       LayoutTable {TABLE} at (100,334) size 306x52
         LayoutTableSection {TBODY} at (0,0) size 306x52
           LayoutTableRow {TR} at (0,2) size 306x48
             LayoutTableCell {TD} at (2,2) size 302x48 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 300x46
+              LayoutText {#text} at (1,1) size 300x46
                 text run at (1,1) width 300: "Another comment."

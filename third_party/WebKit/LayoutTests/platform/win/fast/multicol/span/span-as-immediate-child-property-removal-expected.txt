@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2454
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x2454 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x2454
-    RenderBody {BODY} at (8,8) size 769x2430
-      RenderBlock (anonymous) at (0,0) size 769x36
-        RenderText {#text} at (0,0) size 726x35
+  LayoutBlockFlow {HTML} at (0,0) size 785x2454
+    LayoutBlockFlow {BODY} at (8,8) size 769x2430
+      LayoutBlockFlow (anonymous) at (0,0) size 769x36
+        LayoutText {#text} at (0,0) size 726x35
           text run at (0,0) width 726: "In this test, all of the spanning elements have their spans turned off dynamically, and so they should just be in the"
           text run at (0,18) width 86: "column flow."
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,60) size 760x369
-  RenderBlock {DIV} at (0,52) size 760x369 [border: (5px solid #800000)]
-    RenderBlock (anonymous multi-column span) at (5,5) size 750x0
+  LayoutBlockFlow {DIV} at (0,52) size 760x369 [border: (5px solid #800000)]
+    LayoutBlockFlow (anonymous multi-column span) at (5,5) size 750x0
 layer at (13,65) size 750x359
-  RenderBlock (anonymous multi-column) at (5,5) size 750x359
-    RenderBlock {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
-      RenderText {#text} at (0,0) size 277x26
+  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x359
+    LayoutBlockFlow {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
+      LayoutText {#text} at (0,0) size 277x26
         text run at (0,0) width 277: "This is a spanning element."
-    RenderBlock (anonymous) at (0,66.81) size 367x634.19
-      RenderText {#text} at (0,0) size 367x633
+    LayoutBlockFlow (anonymous) at (0,66.81) size 367x634.19
+      LayoutText {#text} at (0,0) size 367x633
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -57,11 +57,11 @@ layer at (13,65) size 750x359
         text run at (0,598) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
         text run at (0,616) width 76: "enim ac mi."
 layer at (8,445) size 760x368 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (0,437) size 760x368 [border: (5px solid #800000)]
-    RenderBlock (anonymous multi-column span) at (5,329) size 750x0
+  LayoutBlockFlow {DIV} at (0,437) size 760x368 [border: (5px solid #800000)]
+    LayoutBlockFlow (anonymous multi-column span) at (5,329) size 750x0
 layer at (13,450) size 750x324 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,5) size 750x324
-    RenderText {#text} at (0,0) size 367x629
+  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x324
+    LayoutText {#text} at (0,0) size 367x629
       text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
       text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -101,17 +101,17 @@ layer at (13,450) size 750x324 backgroundClip at (0,0) size 785x600 clip at (0,0
       text run at (0,594) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
       text run at (0,612) width 76: "enim ac mi."
 layer at (13,774) size 750x34 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,329) size 750x34
-    RenderBlock {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
-      RenderText {#text} at (0,0) size 277x26
+  LayoutBlockFlow (anonymous multi-column) at (5,329) size 750x34
+    LayoutBlockFlow {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
+      LayoutText {#text} at (0,0) size 277x26
         text run at (0,0) width 277: "This is a spanning element."
 layer at (8,829) size 760x400 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (0,821) size 760x400 [border: (5px solid #800000)]
-    RenderBlock (anonymous multi-column span) at (5,147) size 750x0
+  LayoutBlockFlow {DIV} at (0,821) size 760x400 [border: (5px solid #800000)]
+    LayoutBlockFlow (anonymous multi-column span) at (5,147) size 750x0
 layer at (13,834) size 750x142 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,5) size 750x142
-    RenderBlock {P} at (0,16) size 367x234
-      RenderText {#text} at (0,0) size 367x233
+  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x142
+    LayoutBlockFlow {P} at (0,16) size 367x234
+      LayoutText {#text} at (0,0) size 367x233
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -127,12 +127,12 @@ layer at (13,834) size 750x142 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,198) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
         text run at (0,216) width 76: "enim ac mi."
 layer at (13,976) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,147) size 750x248
-    RenderBlock {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
-      RenderText {#text} at (0,0) size 277x26
+  LayoutBlockFlow (anonymous multi-column) at (5,147) size 750x248
+    LayoutBlockFlow {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
+      LayoutText {#text} at (0,0) size 277x26
         text run at (0,0) width 277: "This is a spanning element."
-    RenderBlock {P} at (0,66.81) size 367x397.19
-      RenderText {#text} at (0,0) size 367x396
+    LayoutBlockFlow {P} at (0,66.81) size 367x397.19
+      LayoutText {#text} at (0,0) size 367x396
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -157,11 +157,11 @@ layer at (13,976) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,361) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,379) width 275: "dolor sit amet, consectetuer adipiscing elit."
 layer at (8,1245) size 760x384 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (0,1237) size 760x384 [border: (5px solid #800000)]
-    RenderBlock (anonymous multi-column span) at (5,131) size 750x0
+  LayoutBlockFlow {DIV} at (0,1237) size 760x384 [border: (5px solid #800000)]
+    LayoutBlockFlow (anonymous multi-column span) at (5,131) size 750x0
 layer at (13,1250) size 750x126 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,5) size 750x126
-    RenderText {#text} at (0,0) size 367x233
+  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x126
+    LayoutText {#text} at (0,0) size 367x233
       text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
       text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -177,15 +177,15 @@ layer at (13,1250) size 750x126 backgroundClip at (0,0) size 785x600 clip at (0,
       text run at (0,198) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
       text run at (0,216) width 76: "enim ac mi."
 layer at (13,1376) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,131) size 750x248
-    RenderBlock {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
-      RenderText {#text} at (0,0) size 277x26
+  LayoutBlockFlow (anonymous multi-column) at (5,131) size 750x248
+    LayoutBlockFlow {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
+      LayoutText {#text} at (0,0) size 277x26
         text run at (0,0) width 277: "This is a spanning element."
-    RenderBlock (anonymous) at (0,66.81) size 367x199.19
-      RenderInline {SPAN} at (0,0) size 43x17
-        RenderText {#text} at (0,0) size 43x17
+    LayoutBlockFlow (anonymous) at (0,66.81) size 367x199.19
+      LayoutInline {SPAN} at (0,0) size 43x17
+        LayoutText {#text} at (0,0) size 43x17
           text run at (0,0) width 43: "Lorem"
-      RenderText {#text} at (42,0) size 367x199
+      LayoutText {#text} at (42,0) size 367x199
         text run at (42,0) width 322: " ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -197,8 +197,8 @@ layer at (13,1376) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,144) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (0,162) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,181) width 275: "dolor sit amet, consectetuer adipiscing elit."
-    RenderBlock {P} at (0,282) size 367x198
-      RenderText {#text} at (0,0) size 367x197
+    LayoutBlockFlow {P} at (0,282) size 367x198
+      LayoutText {#text} at (0,0) size 367x197
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -211,13 +211,13 @@ layer at (13,1376) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,162) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,180) width 275: "dolor sit amet, consectetuer adipiscing elit."
 layer at (8,1645) size 760x368 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (0,1637) size 760x368 [border: (5px solid #800000)]
-    RenderBlock (anonymous multi-column span) at (5,221) size 750x0
+  LayoutBlockFlow {DIV} at (0,1637) size 760x368 [border: (5px solid #800000)]
+    LayoutBlockFlow (anonymous multi-column span) at (5,221) size 750x0
 layer at (13,1650) size 750x216 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,5) size 750x216
-    RenderBlock (anonymous) at (0,0) size 367x198
-      RenderInline {SPAN} at (0,0) size 367x197
-        RenderText {#text} at (0,0) size 367x197
+  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x216
+    LayoutBlockFlow (anonymous) at (0,0) size 367x198
+      LayoutInline {SPAN} at (0,0) size 367x197
+        LayoutText {#text} at (0,0) size 367x197
           text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
           text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
           text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -229,16 +229,16 @@ layer at (13,1650) size 750x216 backgroundClip at (0,0) size 785x600 clip at (0,
           text run at (0,144) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
           text run at (0,162) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
           text run at (0,180) width 275: "dolor sit amet, consectetuer adipiscing elit."
-    RenderBlock (anonymous) at (0,198) size 367x36
-      RenderBlock {SPAN} at (0,0) size 367x36
-        RenderText {#text} at (0,0) size 364x35
+    LayoutBlockFlow (anonymous) at (0,198) size 367x36
+      LayoutBlockFlow {SPAN} at (0,0) size 367x36
+        LayoutText {#text} at (0,0) size 364x35
           text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
           text run at (0,18) width 158: "Nulla varius enim ac mi."
-    RenderBlock (anonymous) at (0,234) size 367x198
-      RenderInline {SPAN} at (0,0) size 43x17
-        RenderText {#text} at (0,0) size 43x17
+    LayoutBlockFlow (anonymous) at (0,234) size 367x198
+      LayoutInline {SPAN} at (0,0) size 43x17
+        LayoutText {#text} at (0,0) size 43x17
           text run at (0,0) width 43: "Lorem"
-      RenderText {#text} at (42,0) size 367x197
+      LayoutText {#text} at (42,0) size 367x197
         text run at (42,0) width 322: " ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -251,12 +251,12 @@ layer at (13,1650) size 750x216 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,162) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,180) width 275: "dolor sit amet, consectetuer adipiscing elit."
 layer at (13,1866) size 750x142 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,221) size 750x142
-    RenderBlock {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
-      RenderText {#text} at (0,0) size 277x26
+  LayoutBlockFlow (anonymous multi-column) at (5,221) size 750x142
+    LayoutBlockFlow {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
+      LayoutText {#text} at (0,0) size 277x26
         text run at (0,0) width 277: "This is a spanning element."
-    RenderBlock {P} at (0,66.81) size 367x201.19
-      RenderText {#text} at (0,0) size 367x200
+    LayoutBlockFlow {P} at (0,66.81) size 367x201.19
+      LayoutText {#text} at (0,0) size 367x200
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -269,16 +269,16 @@ layer at (13,1866) size 750x142 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,165) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,183) width 275: "dolor sit amet, consectetuer adipiscing elit."
 layer at (8,2029) size 760x409 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {DIV} at (0,2021) size 760x409 [border: (5px solid #800000)]
-    RenderBlock (anonymous multi-column span) at (5,253) size 750x0
-    RenderBlock (anonymous) at (5,296) size 750x18
-      RenderBlock {SPAN} at (0,0) size 750x18
-        RenderText {#text} at (0,0) size 158x17
+  LayoutBlockFlow {DIV} at (0,2021) size 760x409 [border: (5px solid #800000)]
+    LayoutBlockFlow (anonymous multi-column span) at (5,253) size 750x0
+    LayoutBlockFlow (anonymous) at (5,296) size 750x18
+      LayoutBlockFlow {SPAN} at (0,0) size 750x18
+        LayoutText {#text} at (0,0) size 158x17
           text run at (0,0) width 158: "Nulla varius enim ac mi."
 layer at (13,2034) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,5) size 750x248
-    RenderBlock {P} at (0,16) size 367x198
-      RenderText {#text} at (0,0) size 367x197
+  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x248
+    LayoutBlockFlow {P} at (0,16) size 367x198
+      LayoutText {#text} at (0,0) size 367x197
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -290,12 +290,12 @@ layer at (13,2034) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,144) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (0,162) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,180) width 275: "dolor sit amet, consectetuer adipiscing elit."
-    RenderBlock {P} at (0,230) size 367x36
-      RenderText {#text} at (0,0) size 364x35
+    LayoutBlockFlow {P} at (0,230) size 367x36
+      LayoutText {#text} at (0,0) size 364x35
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 158: "Nulla varius enim ac mi."
-    RenderBlock {P} at (0,282) size 367x198
-      RenderText {#text} at (0,0) size 367x197
+    LayoutBlockFlow {P} at (0,282) size 367x198
+      LayoutText {#text} at (0,0) size 367x197
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 362: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis"
         text run at (0,36) width 332: "lectus. Quisque adipiscing rhoncus sem. Proin nulla"
@@ -308,18 +308,18 @@ layer at (13,2034) size 750x248 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,162) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,180) width 275: "dolor sit amet, consectetuer adipiscing elit."
 layer at (13,2282) size 750x43 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,253) size 750x43
-    RenderBlock {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
-      RenderText {#text} at (0,0) size 277x26
+  LayoutBlockFlow (anonymous multi-column) at (5,253) size 750x43
+    LayoutBlockFlow {H2} at (0,19.91) size 367x27 [bgcolor=#EEEEEE]
+      LayoutText {#text} at (0,0) size 277x26
         text run at (0,0) width 277: "This is a spanning element."
-    RenderBlock (anonymous) at (0,66.81) size 367x18
-      RenderInline {SPAN} at (0,0) size 364x17
-        RenderText {#text} at (0,0) size 364x17
+    LayoutBlockFlow (anonymous) at (0,66.81) size 367x18
+      LayoutInline {SPAN} at (0,0) size 364x17
+        LayoutText {#text} at (0,0) size 364x17
           text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
 layer at (13,2343) size 750x90 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock (anonymous multi-column) at (5,314) size 750x90
-    RenderInline {SPAN} at (0,0) size 367x179
-      RenderText {#text} at (0,0) size 367x179
+  LayoutBlockFlow (anonymous multi-column) at (5,314) size 750x90
+    LayoutInline {SPAN} at (0,0) size 367x179
+      LayoutText {#text} at (0,0) size 367x179
         text run at (0,0) width 303: "Curabitur sollicitudin felis quis lectus. Quisque"
         text run at (0,18) width 364: "adipiscing rhoncus sem. Proin nulla purus, vulputate vel,"
         text run at (0,36) width 365: "varius ut, euismod et, nisi. Sed vitae felis vel orci sagittis"
@@ -330,4 +330,4 @@ layer at (13,2343) size 750x90 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,126) width 349: "vestibulum. Suspendisse hendrerit quam nec felis. Sed"
         text run at (0,144) width 339: "varius turpis vitae pede. Lorem ipsum dolor sit amet,"
         text run at (0,162) width 179: "consectetuer adipiscing elit."
-    RenderText {#text} at (0,0) size 0x0
+    LayoutText {#text} at (0,0) size 0x0

@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600 scrollHeight 813
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x810 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x810
-    RenderBody {BODY} at (0,0) size 800x810
-      RenderBlock {SPAN} at (0,0) size 200x810
-        RenderBlock {DIV} at (0,0) size 200x810
-          RenderText {#text} at (0,-3) size 200x816
+  LayoutBlockFlow {HTML} at (0,0) size 800x810
+    LayoutBlockFlow {BODY} at (0,0) size 800x810
+      LayoutBlockFlow {SPAN} at (0,0) size 200x810
+        LayoutBlockFlow {DIV} at (0,0) size 200x810
+          LayoutText {#text} at (0,-3) size 200x816
             text run at (0,-3) width 200: "This test verifies"
             text run at (0,27) width 140: "that display"
             text run at (0,57) width 97: "changes"

@@ -1,44 +1,44 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 747x36
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        LayoutInline {I} at (0,0) size 747x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12986"
-          RenderText {#text} at (359,0) size 747x36
+          LayoutText {#text} at (359,0) size 747x36
             text run at (359,0) width 5: " "
             text run at (363,0) width 384: "REGRESSION(NativeListBox): Listboxes not updated when"
             text run at (0,18) width 128: "resized dynamically"
-        RenderText {#text} at (127,18) size 5x18
+        LayoutText {#text} at (127,18) size 5x18
           text run at (127,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 324x18
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 324x18
           text run at (0,0) width 324: "This list box should be tall enough to fit 6 options."
-      RenderBlock (anonymous) at (0,86) size 784x86
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,86) size 784x86
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,94) size 48x87 clip at (9,95) size 35x85
   LayoutListBox {SELECT} at (0,-0.13) size 47.55x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    RenderBlock {OPTION} at (1,1) size 34.55x14.19
-      RenderText {#text} at (2,0) size 22x13
+    LayoutBlockFlow {OPTION} at (1,1) size 34.55x14.19
+      LayoutText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"
-    RenderBlock {OPTION} at (1,15.19) size 34.55x14.19
-      RenderText {#text} at (2,0) size 23x13
+    LayoutBlockFlow {OPTION} at (1,15.19) size 34.55x14.19
+      LayoutText {#text} at (2,0) size 23x13
         text run at (2,0) width 23: "Two"
-    RenderBlock {OPTION} at (1,29.38) size 34.55x14.19
-      RenderText {#text} at (2,0) size 31x13
+    LayoutBlockFlow {OPTION} at (1,29.38) size 34.55x14.19
+      LayoutText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Three"
-    RenderBlock {OPTION} at (1,43.56) size 34.55x14.19
-      RenderText {#text} at (2,0) size 24x13
+    LayoutBlockFlow {OPTION} at (1,43.56) size 34.55x14.19
+      LayoutText {#text} at (2,0) size 24x13
         text run at (2,0) width 24: "Four"
-    RenderBlock {OPTION} at (1,57.75) size 34.55x14.19
-      RenderText {#text} at (2,0) size 21x13
+    LayoutBlockFlow {OPTION} at (1,57.75) size 34.55x14.19
+      LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "Five"
-    RenderBlock {OPTION} at (1,71.94) size 34.55x14.19
-      RenderText {#text} at (2,0) size 16x13
+    LayoutBlockFlow {OPTION} at (1,71.94) size 34.55x14.19
+      LayoutText {#text} at (2,0) size 16x13
         text run at (2,0) width 16: "Six"

@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x84
-  RenderBlock {test} at (0,0) size 800x84
-    RenderBlock {p} at (0,16) size 800x18
-      RenderText {#text} at (0,0) size 84x17
+  LayoutBlockFlow {test} at (0,0) size 800x84
+    LayoutBlockFlow {p} at (0,16) size 800x18
+      LayoutText {#text} at (0,0) size 84x17
         text run at (0,0) width 84: "This test has "
-      RenderInline {span} at (0,0) size 61x17
-        RenderInline {<pseudo:after>} at (0,0) size 61x17 [bgcolor=#00FF00]
+      LayoutInline {span} at (0,0) size 61x17
+        LayoutInline {<pseudo:after>} at (0,0) size 61x17 [bgcolor=#00FF00]
           LayoutTextFragment at (83,0) size 61x17
             text run at (83,0) width 61: "PASSED"
-      RenderText {#text} at (143,0) size 5x17
+      LayoutText {#text} at (143,0) size 5x17
         text run at (143,0) width 5: "."
-    RenderBlock {p} at (0,50) size 800x18
-      RenderText {#text} at (0,0) size 457x17
+    LayoutBlockFlow {p} at (0,50) size 800x18
+      LayoutText {#text} at (0,0) size 457x17
         text run at (0,0) width 457: "(If the previous line just reads \"This test has .\" then this test has failed.)"

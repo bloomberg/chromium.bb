@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600 scrollWidth 944
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x68
-  RenderBlock {html} at (0,0) size 800x68
-    RenderBody {body} at (8,8) size 784x52
+  LayoutBlockFlow {html} at (0,0) size 800x68
+    LayoutBlockFlow {body} at (8,8) size 784x52
       LayoutTable {table} at (0,0) size 936x52 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 934x50
           LayoutTableRow {tr} at (0,2) size 934x22
             LayoutTableCell {td} at (2,2) size 930x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 926x18
+              LayoutText {#text} at (2,2) size 926x18
                 text run at (2,2) width 268: "The text in the cell should not wrap upon "
                 text run at (269,2) width 267: "window resizing    x-fill x-fill x-fill x-fill "
                 text run at (535,2) width 325: "x-fill x-fill x-fill x-fill x-fill x-fill x-fill x-fill x-fill "
                 text run at (859,2) width 69: "x-fill x-fill"
           LayoutTableRow {tr} at (0,26) size 934x22
             LayoutTableCell {td} at (2,26) size 930x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 926x18
+              LayoutText {#text} at (2,2) size 926x18
                 text run at (2,2) width 268: "The text in the cell should not wrap upon "
                 text run at (269,2) width 267: "window resizing    x-fill x-fill x-fill x-fill "
                 text run at (535,2) width 325: "x-fill x-fill x-fill x-fill x-fill x-fill x-fill x-fill x-fill "

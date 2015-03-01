@@ -12,29 +12,29 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x206 [border: (2px solid #0000FF)]
-        RenderBlock {DIV} at (14,14) size 756x54
-          RenderText {#text} at (0,0) size 68x26
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x206 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x54
+          LayoutText {#text} at (0,0) size 68x26
             text run at (0,0) width 68: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,27) size 457x26
+          LayoutText {#text} at (0,27) size 457x26
             text run at (0,27) width 457: "Smart paste when pasting between two periods."
-        RenderBlock {DIV} at (14,84) size 756x108
-          RenderText {#text} at (0,0) size 190x26
+        LayoutBlockFlow {DIV} at (14,84) size 756x108
+          LayoutText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,21) size 1x0
-          RenderText {#text} at (0,27) size 739x53
+          LayoutText {#text} at (0,27) size 739x53
             text run at (0,27) width 739: "A space should be added before, but not after the pasted word. It should look"
             text run at (0,54) width 90: "like this: "
           LayoutBR {BR} at (89,75) size 1x0
-          RenderText {#text} at (0,81) size 52x26
+          LayoutText {#text} at (0,81) size 52x26
             text run at (0,81) width 52: ". test."
-      RenderBlock {DIV} at (0,230) size 784x31
-        RenderBlock {DIV} at (0,0) size 784x31 [border: (2px solid #FF0000)]
-          RenderText {#text} at (2,2) size 52x26
+      LayoutBlockFlow {DIV} at (0,230) size 784x31
+        LayoutBlockFlow {DIV} at (0,0) size 784x31 [border: (2px solid #FF0000)]
+          LayoutText {#text} at (2,2) size 52x26
             text run at (2,2) width 52: ". test."
 caret: position 6 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

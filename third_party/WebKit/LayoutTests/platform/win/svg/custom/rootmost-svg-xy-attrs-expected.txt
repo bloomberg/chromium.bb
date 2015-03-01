@@ -1,44 +1,44 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x302
-  RenderBlock {html} at (0,0) size 800x301.88
-    RenderBody {body} at (8,21.44) size 784x272.44
-      RenderBlock {h1} at (0,0) size 784x37
-        RenderText {#text} at (0,0) size 750x36
+  LayoutBlockFlow {html} at (0,0) size 800x301.88
+    LayoutBlockFlow {body} at (8,21.44) size 784x272.44
+      LayoutBlockFlow {h1} at (0,0) size 784x37
+        LayoutText {#text} at (0,0) size 750x36
           text run at (0,0) width 750: "Test case for x/y attributes on root-most <svg> element"
-      RenderBlock {p} at (0,58.44) size 784x54
-        RenderText {#text} at (0,0) size 29x17
+      LayoutBlockFlow {p} at (0,58.44) size 784x54
+        LayoutText {#text} at (0,0) size 29x17
           text run at (0,0) width 29: "The "
-        RenderInline {code} at (0,0) size 9x16
-          RenderText {#text} at (28,2) size 9x16
+        LayoutInline {code} at (0,0) size 9x16
+          LayoutText {#text} at (28,2) size 9x16
             text run at (28,2) width 9: "x"
-        RenderText {#text} at (36,0) size 32x17
+        LayoutText {#text} at (36,0) size 32x17
           text run at (36,0) width 32: " and "
-        RenderInline {code} at (0,0) size 9x16
-          RenderText {#text} at (67,2) size 9x16
+        LayoutInline {code} at (0,0) size 9x16
+          LayoutText {#text} at (67,2) size 9x16
             text run at (67,2) width 9: "y"
-        RenderText {#text} at (75,0) size 166x17
+        LayoutText {#text} at (75,0) size 166x17
           text run at (75,0) width 166: " attributes on a root-most "
-        RenderInline {code} at (0,0) size 41x16
-          RenderText {#text} at (240,2) size 41x16
+        LayoutInline {code} at (0,0) size 41x16
+          LayoutText {#text} at (240,2) size 41x16
             text run at (240,2) width 41: "<svg>"
-        RenderText {#text} at (280,0) size 441x17
+        LayoutText {#text} at (280,0) size 441x17
           text run at (280,0) width 441: " element should be ignored, as specified by SVG 1.1. The root-most "
-        RenderInline {code} at (0,0) size 41x16
-          RenderText {#text} at (720,2) size 41x16
+        LayoutInline {code} at (0,0) size 41x16
+          LayoutText {#text} at (720,2) size 41x16
             text run at (720,2) width 41: "<svg>"
-        RenderText {#text} at (0,18) size 756x35
+        LayoutText {#text} at (0,18) size 756x35
           text run at (0,18) width 756: "element is the element at the root of an SVG fragment. For the following test to pass, the green SVG square should be"
           text run at (0,36) width 636: "rendered aligned to the top-left of the red CSS-rendered square, which is 10 pixels wider and taller."
-      RenderBlock {p} at (0,128.44) size 784x18
-        RenderText {#text} at (0,0) size 28x17
+      LayoutBlockFlow {p} at (0,128.44) size 784x18
+        LayoutText {#text} at (0,0) size 28x17
           text run at (0,0) width 28: "See "
-        RenderInline {a} at (0,0) size 71x17 [color=#0000EE]
-          RenderText {#text} at (27,0) size 71x17
+        LayoutInline {a} at (0,0) size 71x17 [color=#0000EE]
+          LayoutText {#text} at (27,0) size 71x17
             text run at (27,0) width 71: "Bug 13828"
-        RenderText {#text} at (97,0) size 5x17
+        LayoutText {#text} at (97,0) size 5x17
           text run at (97,0) width 5: "."
-      RenderBlock {div} at (0,162.44) size 110x110 [bgcolor=#FF0000]
+      LayoutBlockFlow {div} at (0,162.44) size 110x110 [bgcolor=#FF0000]
         LayoutSVGRoot {svg} at (8,183) size 100x101
           LayoutSVGRect {rect} at (8,183) size 100x101 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

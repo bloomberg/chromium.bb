@@ -2,40 +2,40 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 108x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 108x17
           text run at (0,0) width 108: "This is a test for "
-        RenderInline {I} at (0,0) size 766x35
-          RenderInline {A} at (0,0) size 354x17 [color=#0000EE]
-            RenderText {#text} at (107,0) size 354x17
+        LayoutInline {I} at (0,0) size 766x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (107,0) size 354x17
               text run at (107,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8394"
-          RenderText {#text} at (460,0) size 766x35
+          LayoutText {#text} at (460,0) size 766x35
             text run at (460,0) width 5: " "
             text run at (464,0) width 302: "Editable region does not accept dropped text if"
             text run at (0,18) width 129: "there is no selection"
-        RenderText {#text} at (128,18) size 5x17
+        LayoutText {#text} at (128,18) size 5x17
           text run at (128,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 668x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 668x17
           text run at (0,0) width 488: "The text field should accept drag-and-dropped text, such as the link, even if "
           text run at (487,0) width 181: "no text is currently selected."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock (anonymous) at (0,96) size 784x22
+      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow (anonymous) at (0,96) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (173,2) size 4x17
+        LayoutText {#text} at (173,2) size 4x17
           text run at (173,2) width 4: " "
-        RenderInline {A} at (0,0) size 167x17 [color=#0000EE]
-          RenderText {#text} at (177,2) size 167x17
+        LayoutInline {A} at (0,0) size 167x17 [color=#0000EE]
+          LayoutText {#text} at (177,2) size 167x17
             text run at (177,2) width 167: "drop me into the text field"
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (10,107) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 119x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 119x16
       text run at (0,0) width 119: "http://www.ibm.com/"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 19 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body

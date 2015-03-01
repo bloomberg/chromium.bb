@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x46 [border: (2px solid #0000FF)]
-        RenderInline {<pseudo:first-letter>} at (0,0) size 33x40 [color=#800000]
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x46 [border: (2px solid #0000FF)]
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 33x40 [color=#800000]
           LayoutTextFragment at (2,3) size 33x40
             text run at (2,3) width 33: "M"
         LayoutTextFragment {#text} at (34,21) size 184x17

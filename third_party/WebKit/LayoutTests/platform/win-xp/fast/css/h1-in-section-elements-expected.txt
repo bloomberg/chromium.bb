@@ -1,177 +1,177 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x414
-  RenderBlock {HTML} at (0,0) size 800x414
-    RenderBody {BODY} at (8,16) size 784x188
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 421x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x414
+    LayoutBlockFlow {BODY} at (8,16) size 784x188
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 421x19
           text run at (0,0) width 421: "For each of pairs, the first one and the second one should be identical."
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,36) size 152x362
         LayoutTableSection {TBODY} at (0,0) size 152x362
           LayoutTableRow {TR} at (0,2) size 152x75
             LayoutTableCell {TD} at (2,2) size 73x74.81 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {SECTION} at (1,1) size 71x72.81
-                RenderBlock {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
-                RenderBlock {H1} at (0,21.91) size 71x29 [border: (1px solid #00FF00)]
-                  RenderText {#text} at (1,1) size 69x26
+              LayoutBlockFlow {SECTION} at (1,1) size 71x72.81
+                LayoutBlockFlow {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
+                LayoutBlockFlow {H1} at (0,21.91) size 71x29 [border: (1px solid #00FF00)]
+                  LayoutText {#text} at (1,1) size 69x26
                     text run at (1,1) width 69: "MMM"
-                RenderBlock {HR} at (0,70.81) size 71x2 [border: (1px inset #EEEEEE)]
+                LayoutBlockFlow {HR} at (0,70.81) size 71x2 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (77,2) size 73x74.81 [r=0 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {H2} at (1,22.91) size 71x29 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 69x26
+              LayoutBlockFlow {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H2} at (1,22.91) size 71x29 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 69x26
                   text run at (1,1) width 69: "MMM"
-              RenderBlock {HR} at (1,71.81) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (1,71.81) size 71x2 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,79) size 152x66
             LayoutTableCell {TD} at (2,79) size 73x66.44 [r=1 c=0 rs=1 cs=1]
-              RenderBlock {ARTICLE} at (1,1) size 71x64.44
-                RenderBlock {SECTION} at (0,0) size 71x64.44
-                  RenderBlock {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
-                  RenderBlock {H1} at (0,20.72) size 71x23 [border: (1px solid #00FF00)]
-                    RenderText {#text} at (1,1) size 51x20
+              LayoutBlockFlow {ARTICLE} at (1,1) size 71x64.44
+                LayoutBlockFlow {SECTION} at (0,0) size 71x64.44
+                  LayoutBlockFlow {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
+                  LayoutBlockFlow {H1} at (0,20.72) size 71x23 [border: (1px solid #00FF00)]
+                    LayoutText {#text} at (1,1) size 51x20
                       text run at (1,1) width 51: "MMM"
-                  RenderBlock {HR} at (0,62.44) size 71x2 [border: (1px inset #EEEEEE)]
+                  LayoutBlockFlow {HR} at (0,62.44) size 71x2 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (77,79) size 73x66.44 [r=1 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {H3} at (1,21.72) size 71x23 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 51x20
+              LayoutBlockFlow {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H3} at (1,21.72) size 71x23 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 51x20
                   text run at (1,1) width 51: "MMM"
-              RenderBlock {HR} at (1,63.44) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (1,63.44) size 71x2 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,147) size 152x71
             LayoutTableCell {TD} at (2,147) size 73x70.53 [r=2 c=0 rs=1 cs=1]
-              RenderBlock {NAV} at (1,1) size 71x68.53
-                RenderBlock {ARTICLE} at (0,0) size 71x68.53
-                  RenderBlock {SECTION} at (0,0) size 71x68.53
-                    RenderBlock {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
-                    RenderBlock {H1} at (0,23.27) size 71x22 [border: (1px solid #00FF00)]
-                      RenderText {#text} at (1,1) size 48x19
+              LayoutBlockFlow {NAV} at (1,1) size 71x68.53
+                LayoutBlockFlow {ARTICLE} at (0,0) size 71x68.53
+                  LayoutBlockFlow {SECTION} at (0,0) size 71x68.53
+                    LayoutBlockFlow {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
+                    LayoutBlockFlow {H1} at (0,23.27) size 71x22 [border: (1px solid #00FF00)]
+                      LayoutText {#text} at (1,1) size 48x19
                         text run at (1,1) width 48: "MMM"
-                    RenderBlock {HR} at (0,66.53) size 71x2 [border: (1px inset #EEEEEE)]
+                    LayoutBlockFlow {HR} at (0,66.53) size 71x2 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (77,147) size 73x70.53 [r=2 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {H4} at (1,24.27) size 71x22 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 48x19
+              LayoutBlockFlow {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H4} at (1,24.27) size 71x22 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 48x19
                   text run at (1,1) width 48: "MMM"
-              RenderBlock {HR} at (1,67.53) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (1,67.53) size 71x2 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,220) size 152x68
             LayoutTableCell {TD} at (2,220) size 73x68.34 [r=3 c=0 rs=1 cs=1]
-              RenderBlock {NAV} at (1,1) size 71x66.34
-                RenderBlock {ASIDE} at (0,0) size 71x66.34
-                  RenderBlock {ARTICLE} at (0,0) size 71x66.34
-                    RenderBlock {SECTION} at (0,0) size 71x66.34
-                      RenderBlock {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
-                      RenderBlock {H1} at (0,24.17) size 71x18 [border: (1px solid #00FF00)]
-                        RenderText {#text} at (1,1) size 33x15
+              LayoutBlockFlow {NAV} at (1,1) size 71x66.34
+                LayoutBlockFlow {ASIDE} at (0,0) size 71x66.34
+                  LayoutBlockFlow {ARTICLE} at (0,0) size 71x66.34
+                    LayoutBlockFlow {SECTION} at (0,0) size 71x66.34
+                      LayoutBlockFlow {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
+                      LayoutBlockFlow {H1} at (0,24.17) size 71x18 [border: (1px solid #00FF00)]
+                        LayoutText {#text} at (1,1) size 33x15
                           text run at (1,1) width 33: "MMM"
-                      RenderBlock {HR} at (0,64.34) size 71x2 [border: (1px inset #EEEEEE)]
+                      LayoutBlockFlow {HR} at (0,64.34) size 71x2 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (77,220) size 73x68.34 [r=3 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {H5} at (1,25.17) size 71x18 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 33x15
+              LayoutBlockFlow {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H5} at (1,25.17) size 71x18 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 33x15
                   text run at (1,1) width 33: "MMM"
-              RenderBlock {HR} at (1,65.34) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (1,65.34) size 71x2 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,290) size 152x70
             LayoutTableCell {TD} at (2,290) size 73x69.94 [r=4 c=0 rs=1 cs=1]
-              RenderBlock {SECTION} at (1,1) size 71x67.94
-                RenderBlock {DIV} at (0,0) size 71x67.94
-                  RenderBlock {NAV} at (0,0) size 71x67.94
-                    RenderBlock {ASIDE} at (0,0) size 71x67.94
-                      RenderBlock {ARTICLE} at (0,0) size 71x67.94
-                        RenderBlock {SECTION} at (0,0) size 71x67.94
-                          RenderBlock {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
-                          RenderBlock {H1} at (0,26.97) size 71x14 [border: (1px solid #00FF00)]
-                            RenderText {#text} at (1,1) size 27x12
+              LayoutBlockFlow {SECTION} at (1,1) size 71x67.94
+                LayoutBlockFlow {DIV} at (0,0) size 71x67.94
+                  LayoutBlockFlow {NAV} at (0,0) size 71x67.94
+                    LayoutBlockFlow {ASIDE} at (0,0) size 71x67.94
+                      LayoutBlockFlow {ARTICLE} at (0,0) size 71x67.94
+                        LayoutBlockFlow {SECTION} at (0,0) size 71x67.94
+                          LayoutBlockFlow {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
+                          LayoutBlockFlow {H1} at (0,26.97) size 71x14 [border: (1px solid #00FF00)]
+                            LayoutText {#text} at (1,1) size 27x12
                               text run at (1,1) width 27: "MMM"
-                          RenderBlock {HR} at (0,65.94) size 71x2 [border: (1px inset #EEEEEE)]
-                  RenderBlock {DIV} at (0,67.94) size 71x0
+                          LayoutBlockFlow {HR} at (0,65.94) size 71x2 [border: (1px inset #EEEEEE)]
+                  LayoutBlockFlow {DIV} at (0,67.94) size 71x0
             LayoutTableCell {TD} at (77,290) size 73x69.94 [r=4 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
-              RenderBlock {H6} at (1,27.97) size 71x14 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 27x12
+              LayoutBlockFlow {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H6} at (1,27.97) size 71x14 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 27x12
                   text run at (1,1) width 27: "MMM"
-              RenderBlock {HR} at (1,66.94) size 71x2 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (1,66.94) size 71x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (152,36) size 362x152
         LayoutTableSection {TBODY} at (0,0) size 362x152
           LayoutTableRow {TR} at (0,2) size 75x152
             LayoutTableCell {TD} at (2,2) size 74.81x73 [r=0 c=0 rs=1 cs=1]
-              RenderBlock {SECTION} at (1,1) size 72.81x71
-                RenderBlock {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
-                RenderBlock {H1} at (21.91,0) size 29x71 [border: (1px solid #00FF00)]
-                  RenderText {#text} at (1,1) size 26x69
+              LayoutBlockFlow {SECTION} at (1,1) size 72.81x71
+                LayoutBlockFlow {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
+                LayoutBlockFlow {H1} at (21.91,0) size 29x71 [border: (1px solid #00FF00)]
+                  LayoutText {#text} at (1,1) size 26x69
                     text run at (1,1) width 69: "MMM"
-                RenderBlock {HR} at (70.81,0) size 2x71 [border: (1px inset #EEEEEE)]
+                LayoutBlockFlow {HR} at (70.81,0) size 2x71 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (2,77) size 74.81x73 [r=0 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
-              RenderBlock {H2} at (22.91,1) size 29x71 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 26x69
+              LayoutBlockFlow {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H2} at (22.91,1) size 29x71 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 26x69
                   text run at (1,1) width 69: "MMM"
-              RenderBlock {HR} at (71.81,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (71.81,1) size 2x71 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,79) size 66x152
             LayoutTableCell {TD} at (79,2) size 66.44x73 [r=1 c=0 rs=1 cs=1]
-              RenderBlock {ARTICLE} at (1,1) size 64.44x71
-                RenderBlock {SECTION} at (0,0) size 64.44x71
-                  RenderBlock {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
-                  RenderBlock {H1} at (20.72,0) size 23x71 [border: (1px solid #00FF00)]
-                    RenderText {#text} at (1,1) size 20x51
+              LayoutBlockFlow {ARTICLE} at (1,1) size 64.44x71
+                LayoutBlockFlow {SECTION} at (0,0) size 64.44x71
+                  LayoutBlockFlow {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
+                  LayoutBlockFlow {H1} at (20.72,0) size 23x71 [border: (1px solid #00FF00)]
+                    LayoutText {#text} at (1,1) size 20x51
                       text run at (1,1) width 51: "MMM"
-                  RenderBlock {HR} at (62.44,0) size 2x71 [border: (1px inset #EEEEEE)]
+                  LayoutBlockFlow {HR} at (62.44,0) size 2x71 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (79,77) size 66.44x73 [r=1 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
-              RenderBlock {H3} at (21.72,1) size 23x71 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 20x51
+              LayoutBlockFlow {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H3} at (21.72,1) size 23x71 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 20x51
                   text run at (1,1) width 51: "MMM"
-              RenderBlock {HR} at (63.44,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (63.44,1) size 2x71 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,147) size 71x152
             LayoutTableCell {TD} at (147,2) size 70.53x73 [r=2 c=0 rs=1 cs=1]
-              RenderBlock {NAV} at (1,1) size 68.53x71
-                RenderBlock {ARTICLE} at (0,0) size 68.53x71
-                  RenderBlock {SECTION} at (0,0) size 68.53x71
-                    RenderBlock {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
-                    RenderBlock {H1} at (23.27,0) size 22x71 [border: (1px solid #00FF00)]
-                      RenderText {#text} at (1,1) size 19x48
+              LayoutBlockFlow {NAV} at (1,1) size 68.53x71
+                LayoutBlockFlow {ARTICLE} at (0,0) size 68.53x71
+                  LayoutBlockFlow {SECTION} at (0,0) size 68.53x71
+                    LayoutBlockFlow {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
+                    LayoutBlockFlow {H1} at (23.27,0) size 22x71 [border: (1px solid #00FF00)]
+                      LayoutText {#text} at (1,1) size 19x48
                         text run at (1,1) width 48: "MMM"
-                    RenderBlock {HR} at (66.53,0) size 2x71 [border: (1px inset #EEEEEE)]
+                    LayoutBlockFlow {HR} at (66.53,0) size 2x71 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (147,77) size 70.53x73 [r=2 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
-              RenderBlock {H4} at (24.27,1) size 22x71 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 19x48
+              LayoutBlockFlow {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H4} at (24.27,1) size 22x71 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 19x48
                   text run at (1,1) width 48: "MMM"
-              RenderBlock {HR} at (67.53,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (67.53,1) size 2x71 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,220) size 68x152
             LayoutTableCell {TD} at (220,2) size 68.34x73 [r=3 c=0 rs=1 cs=1]
-              RenderBlock {NAV} at (1,1) size 66.34x71
-                RenderBlock {ASIDE} at (0,0) size 66.34x71
-                  RenderBlock {ARTICLE} at (0,0) size 66.34x71
-                    RenderBlock {SECTION} at (0,0) size 66.34x71
-                      RenderBlock {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
-                      RenderBlock {H1} at (24.17,0) size 18x71 [border: (1px solid #00FF00)]
-                        RenderText {#text} at (1,1) size 15x33
+              LayoutBlockFlow {NAV} at (1,1) size 66.34x71
+                LayoutBlockFlow {ASIDE} at (0,0) size 66.34x71
+                  LayoutBlockFlow {ARTICLE} at (0,0) size 66.34x71
+                    LayoutBlockFlow {SECTION} at (0,0) size 66.34x71
+                      LayoutBlockFlow {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
+                      LayoutBlockFlow {H1} at (24.17,0) size 18x71 [border: (1px solid #00FF00)]
+                        LayoutText {#text} at (1,1) size 15x33
                           text run at (1,1) width 33: "MMM"
-                      RenderBlock {HR} at (64.34,0) size 2x71 [border: (1px inset #EEEEEE)]
+                      LayoutBlockFlow {HR} at (64.34,0) size 2x71 [border: (1px inset #EEEEEE)]
             LayoutTableCell {TD} at (220,77) size 68.34x73 [r=3 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
-              RenderBlock {H5} at (25.17,1) size 18x71 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 15x33
+              LayoutBlockFlow {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H5} at (25.17,1) size 18x71 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 15x33
                   text run at (1,1) width 33: "MMM"
-              RenderBlock {HR} at (65.34,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (65.34,1) size 2x71 [border: (1px inset #EEEEEE)]
           LayoutTableRow {TR} at (0,290) size 70x152
             LayoutTableCell {TD} at (290,2) size 69.94x73 [r=4 c=0 rs=1 cs=1]
-              RenderBlock {SECTION} at (1,1) size 67.94x71
-                RenderBlock {DIV} at (0,0) size 67.94x71
-                  RenderBlock {NAV} at (0,0) size 67.94x71
-                    RenderBlock {ASIDE} at (0,0) size 67.94x71
-                      RenderBlock {ARTICLE} at (0,0) size 67.94x71
-                        RenderBlock {SECTION} at (0,0) size 67.94x71
-                          RenderBlock {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
-                          RenderBlock {H1} at (26.97,0) size 14x71 [border: (1px solid #00FF00)]
-                            RenderText {#text} at (1,1) size 12x27
+              LayoutBlockFlow {SECTION} at (1,1) size 67.94x71
+                LayoutBlockFlow {DIV} at (0,0) size 67.94x71
+                  LayoutBlockFlow {NAV} at (0,0) size 67.94x71
+                    LayoutBlockFlow {ASIDE} at (0,0) size 67.94x71
+                      LayoutBlockFlow {ARTICLE} at (0,0) size 67.94x71
+                        LayoutBlockFlow {SECTION} at (0,0) size 67.94x71
+                          LayoutBlockFlow {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
+                          LayoutBlockFlow {H1} at (26.97,0) size 14x71 [border: (1px solid #00FF00)]
+                            LayoutText {#text} at (1,1) size 12x27
                               text run at (1,1) width 27: "MMM"
-                          RenderBlock {HR} at (65.94,0) size 2x71 [border: (1px inset #EEEEEE)]
-                  RenderBlock {DIV} at (67.94,0) size 0x71
+                          LayoutBlockFlow {HR} at (65.94,0) size 2x71 [border: (1px inset #EEEEEE)]
+                  LayoutBlockFlow {DIV} at (67.94,0) size 0x71
             LayoutTableCell {TD} at (290,77) size 69.94x73 [r=4 c=1 rs=1 cs=1]
-              RenderBlock {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
-              RenderBlock {H6} at (27.97,1) size 14x71 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 12x27
+              LayoutBlockFlow {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {H6} at (27.97,1) size 14x71 [border: (1px solid #00FF00)]
+                LayoutText {#text} at (1,1) size 12x27
                   text run at (1,1) width 27: "MMM"
-              RenderBlock {HR} at (66.94,1) size 2x71 [border: (1px inset #EEEEEE)]
+              LayoutBlockFlow {HR} at (66.94,1) size 2x71 [border: (1px inset #EEEEEE)]

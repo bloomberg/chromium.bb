@@ -1,17 +1,17 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x468
-  RenderBlock {HTML} at (0,0) size 800x468
-    RenderBody {BODY} at (8,18) size 784x432
-      RenderBlock {P} at (0,0) size 784x432
-        RenderInline {SPAN} at (0,0) size 772x399 [color=#FFFFFF] [bgcolor=#000080]
-          RenderText {#text} at (0,16) size 745x75
+  LayoutBlockFlow {HTML} at (0,0) size 800x468
+    LayoutBlockFlow {BODY} at (8,18) size 784x432
+      LayoutBlockFlow {P} at (0,0) size 784x432
+        LayoutInline {SPAN} at (0,0) size 772x399 [color=#FFFFFF] [bgcolor=#000080]
+          LayoutText {#text} at (0,16) size 745x75
             text run at (0,16) width 482: "This text should be 18px sans-serif, in small-caps, italicized, "
             text run at (481,16) width 264: "and very light. There should be a"
             text run at (0,70) width 250: "36px gap betwen each line. The "
             text run at (249,70) width 455: "text should have a blue background, the gap should not. "
-          RenderInline {SPAN} at (0,0) size 772x345 [color=#0000FF]
-            RenderText {#text} at (703,70) size 772x345
+          LayoutInline {SPAN} at (0,0) size 772x345 [color=#0000FF]
+            LayoutText {#text} at (703,70) size 772x345
               text run at (703,70) width 50: "dummy"
               text run at (0,124) width 462: "text dummy text dummy text dummy text dummy text dummy "
               text run at (461,124) width 311: "text dummy text dummy text dummy text"
@@ -26,5 +26,5 @@ layer at (0,0) size 800x468
               text run at (238,340) width 496: "text dummy text dummy text dummy text dummy text dummy text"
               text run at (0,394) width 55: "dummy "
               text run at (54,394) width 495: "text dummy text dummy text dummy text dummy text dummy text"
-          RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

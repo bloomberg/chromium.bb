@@ -9,16 +9,16 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 392x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 392x17
           text run at (0,0) width 392: "This tests to see if trailing spaces are lost during a copy/paste"
-      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,44) size 784x26 [border: (2px solid #FFAAAA)]
-        RenderBlock {DIV} at (2,2) size 780x22 [border: (2px solid #AAAAFF)]
-          RenderText {#text} at (2,2) size 586x17
+      LayoutBlockFlow {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {DIV} at (0,44) size 784x26 [border: (2px solid #FFAAAA)]
+        LayoutBlockFlow {DIV} at (2,2) size 780x22 [border: (2px solid #AAAAFF)]
+          LayoutText {#text} at (2,2) size 586x17
             text run at (2,2) width 586: "there should be a single trailing space between the '.' and the last character in this sentence ."
 caret: position 96 of child 0 {#text} of child 1 {DIV} of child 5 {DIV} of body

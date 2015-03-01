@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600 scrollHeight 634
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x634 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x634
-    RenderBody {BODY} at (8,8) size 784x618
-      RenderBlock {DIV} at (0,0) size 206x206 [border: (3px solid #000000)]
+  LayoutBlockFlow {HTML} at (0,0) size 800x634
+    LayoutBlockFlow {BODY} at (8,8) size 784x618
+      LayoutBlockFlow {DIV} at (0,0) size 206x206 [border: (3px solid #000000)]
         LayoutTable {TABLE} at (3,3) size 50x118
           LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COLGROUP} at (0,0) size 0x0 [border: none (5px solid #007F007F) none]
@@ -47,7 +47,7 @@ layer at (0,0) size 800x634 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutTableSection {TBODY} at (25,0) size 25x27 [border: none (5px solid #FF0000) none]
             LayoutTableRow {TR} at (0,0) size 25x27
               LayoutTableCell {TD} at (0,10) size 25x6 [border: none] [r=0 c=0 rs=1 cs=1]
-      RenderBlock {DIV} at (0,206) size 206x206 [border: (3px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,206) size 206x206 [border: (3px solid #000000)]
         LayoutTable {TABLE} at (3,3) size 118x50
           LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COLGROUP} at (0,0) size 0x0 [border: none (5px solid #007F007F) none]
@@ -91,7 +91,7 @@ layer at (0,0) size 800x634 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutTableSection {TBODY} at (0,25) size 27x25 [border: none (5px solid #FF0000) none]
             LayoutTableRow {TR} at (0,0) size 27x25
               LayoutTableCell {TD} at (0,10) size 27x4 [border: none] [r=0 c=0 rs=1 cs=1]
-      RenderBlock {DIV} at (0,412) size 206x206 [border: (3px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,412) size 206x206 [border: (3px solid #000000)]
         LayoutTable {TABLE} at (3,3) size 50x118
           LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COLGROUP} at (0,0) size 0x0 [border: none (5px solid #007F007F) none]

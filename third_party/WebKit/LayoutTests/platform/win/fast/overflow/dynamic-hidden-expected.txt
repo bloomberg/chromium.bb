@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x8
-  RenderBlock {HTML} at (0,0) size 800x8
-    RenderBody {BODY} at (8,8) size 784x0
+  LayoutBlockFlow {HTML} at (0,0) size 800x8
+    LayoutBlockFlow {BODY} at (8,8) size 784x0
 layer at (8,8) size 300x300 scrollHeight 756
-  RenderBlock (positioned) {DIV} at (8,8) size 300x300
-    RenderText {#text} at (0,0) size 300x755
+  LayoutBlockFlow (positioned) {DIV} at (8,8) size 300x300
+    LayoutText {#text} at (0,0) size 300x755
       text run at (0,0) width 259: "Lorem ipsum dolor sit amet, consectetur"
       text run at (0,18) width 252: "adipisicing elit, sed do eiusmod tempor"
       text run at (0,36) width 300: "incididunt ut labore et dolore magna aliqua. Ut"

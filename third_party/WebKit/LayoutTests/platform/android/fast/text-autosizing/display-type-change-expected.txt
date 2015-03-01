@@ -1,11 +1,11 @@
 layer at (0,0) size 800x812
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x810
-  RenderBlock {HTML} at (0,0) size 800x810
-    RenderBody {BODY} at (0,0) size 800x810
-      RenderBlock {SPAN} at (0,0) size 200x810
-        RenderBlock {DIV} at (0,0) size 200x810
-          RenderText {#text} at (0,-2) size 197x814
+  LayoutBlockFlow {HTML} at (0,0) size 800x810
+    LayoutBlockFlow {BODY} at (0,0) size 800x810
+      LayoutBlockFlow {SPAN} at (0,0) size 200x810
+        LayoutBlockFlow {DIV} at (0,0) size 200x810
+          LayoutText {#text} at (0,-2) size 197x814
             text run at (0,-2) width 193: "This test verifies"
             text run at (0,28) width 134: "that display"
             text run at (0,58) width 94: "changes"

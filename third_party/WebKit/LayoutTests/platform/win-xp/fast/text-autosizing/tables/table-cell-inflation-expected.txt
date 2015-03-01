@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x231
-  RenderBlock {HTML} at (0,0) size 800x231
-    RenderBody {BODY} at (0,0) size 500x230
-      RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 227x15
+  LayoutBlockFlow {HTML} at (0,0) size 800x231
+    LayoutBlockFlow {BODY} at (0,0) size 500x230
+      LayoutBlockFlow {DIV} at (0,0) size 600x36
+        LayoutText {#text} at (0,0) size 227x15
           text run at (0,0) width 227: "Table autosizing tests - table-cell-inflation.html"
         LayoutBR {BR} at (227,0) size 0x15
-        RenderText {#text} at (0,16) size 361x15
+        LayoutText {#text} at (0,16) size 361x15
           text run at (0,16) width 361: "This test passes if there are no numbers overflowing outside this green box."
       LayoutTable {TABLE} at (1,37) size 693x193 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 692x192
           LayoutTableRow {TR} at (0,0) size 692x192
             LayoutTableCell {TD} at (0,0) size 692x192 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 422x20
+              LayoutText {#text} at (2,2) size 422x20
                 text run at (2,2) width 422: "The pi approximation below should not overrun this block."
               LayoutBR {BR} at (424,2) size 0x20
-              RenderText {#text} at (2,23) size 689x20
+              LayoutText {#text} at (2,23) size 689x20
                 text run at (2,23) width 689: "3.141592653589793238462643383279502884197169399375105820974944592307816406286"
               LayoutBR {BR} at (691,23) size 0x20
-              RenderText {#text} at (2,44) size 658x146
+              LayoutText {#text} at (2,44) size 658x146
                 text run at (2,44) width 658: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,65) width 658: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,86) width 658: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"

@@ -6,42 +6,42 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 784x268 [border: (2px solid #0000FF)]
-        RenderBlock {DIV} at (14,14) size 756x112
-          RenderText {#text} at (0,0) size 68x28
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x268 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x112
+          LayoutText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,28) size 747x56
+          LayoutText {#text} at (0,28) size 747x56
             text run at (0,28) width 747: "Pasting styles we should not remove during the \"smoosh styles\" process. This"
             text run at (0,56) width 151: "tests the fix for "
-          RenderInline {A} at (0,0) size 257x28 [color=#0000EE]
-            RenderText {#text} at (150,56) size 257x28
+          LayoutInline {A} at (0,0) size 257x28 [color=#0000EE]
+            LayoutText {#text} at (150,56) size 257x28
               text run at (150,56) width 257: "<rdar://problem/3972665>"
-          RenderText {#text} at (406,56) size 733x56
+          LayoutText {#text} at (406,56) size 733x56
             text run at (406,56) width 327: " 8A360: HTML message partially"
             text run at (0,84) width 553: "truncated on left hand side, text-indent from Script Editor"
-        RenderBlock {DIV} at (14,142) size 756x112
-          RenderText {#text} at (0,0) size 190x28
+        LayoutBlockFlow {DIV} at (14,142) size 756x112
+          LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          RenderText {#text} at (0,28) size 754x56
+          LayoutText {#text} at (0,28) size 754x56
             text run at (0,28) width 754: "Should see this content in the red box below: foo. Note that there should be no"
             text run at (0,56) width 142: "visible indent. "
           LayoutBR {BR} at (141,78) size 1x0
-          RenderText {#text} at (0,84) size 182x28
+          LayoutText {#text} at (0,84) size 182x28
             text run at (0,84) width 182: "This demonstrates "
-          RenderInline {A} at (0,0) size 53x28 [color=#0000EE]
-            RenderText {#text} at (181,84) size 53x28
+          LayoutInline {A} at (0,0) size 53x28 [color=#0000EE]
+            LayoutText {#text} at (181,84) size 53x28
               text run at (181,84) width 53: "a bug"
-          RenderText {#text} at (233,84) size 252x28
+          LayoutText {#text} at (233,84) size 252x28
             text run at (233,84) width 252: ", the caret is one pixel off."
-      RenderBlock {DIV} at (0,292) size 784x32
-        RenderBlock {DIV} at (0,0) size 784x32 [border: (2px solid #FF0000)]
-          RenderBlock {DIV} at (42,2) size 740x28
-            RenderText {#text} at (-40,0) size 32x28
+      LayoutBlockFlow {DIV} at (0,292) size 784x32
+        LayoutBlockFlow {DIV} at (0,0) size 784x32 [border: (2px solid #FF0000)]
+          LayoutBlockFlow {DIV} at (42,2) size 740x28
+            LayoutText {#text} at (-40,0) size 32x28
               text run at (-40,0) width 32: "foo"
 caret: position 3 of child 0 {#text} of child 1 {DIV} of child 1 {DIV} of child 3 {DIV} of body

@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 146x150 [border: (3px solid #008000)]
-        RenderText {#text} at (3,3) size 132x143
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 146x150 [border: (3px solid #008000)]
+        LayoutText {#text} at (3,3) size 132x143
           text run at (3,3) width 61: "Test float"
           text run at (3,21) width 118: "positioning. There"
           text run at (3,39) width 117: "should be four red"
@@ -13,19 +13,19 @@ layer at (0,0) size 800x600
           text run at (3,93) width 99: "text. The boxes"
           text run at (3,111) width 120: "should not overlap"
           text run at (79,129) width 56: "this text."
-        RenderBlock (floating) {DIV} at (3,129) size 76x24 [border: (3px solid #FF0000)]
-          RenderText {#text} at (3,3) size 8x17
+        LayoutBlockFlow (floating) {DIV} at (3,129) size 76x24 [border: (3px solid #FF0000)]
+          LayoutText {#text} at (3,3) size 8x17
             text run at (3,3) width 8: "1"
-        RenderText {#text} at (0,0) size 0x0
-        RenderBlock (floating) {DIV} at (3,153) size 76x24 [border: (3px solid #FF0000)]
-          RenderText {#text} at (3,3) size 8x17
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow (floating) {DIV} at (3,153) size 76x24 [border: (3px solid #FF0000)]
+          LayoutText {#text} at (3,3) size 8x17
             text run at (3,3) width 8: "2"
-        RenderText {#text} at (0,0) size 0x0
-        RenderBlock (floating) {DIV} at (3,177) size 76x24 [border: (3px solid #FF0000)]
-          RenderText {#text} at (3,3) size 8x17
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow (floating) {DIV} at (3,177) size 76x24 [border: (3px solid #FF0000)]
+          LayoutText {#text} at (3,3) size 8x17
             text run at (3,3) width 8: "3"
-        RenderText {#text} at (0,0) size 0x0
-        RenderBlock (floating) {DIV} at (3,201) size 76x24 [border: (3px solid #FF0000)]
-          RenderText {#text} at (3,3) size 8x17
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow (floating) {DIV} at (3,201) size 76x24 [border: (3px solid #FF0000)]
+          LayoutText {#text} at (3,3) size 8x17
             text run at (3,3) width 8: "4"
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

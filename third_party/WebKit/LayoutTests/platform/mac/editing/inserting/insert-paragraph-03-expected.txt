@@ -4,23 +4,23 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 776x36
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 776x36
           text run at (0,0) width 425: "This tests inserting a paragraph separator before a horizontal rule. "
           text run at (424,0) width 352: "You should see 'foo', empty paragraph, horizontal rule,"
           text run at (0,18) width 379: "'bar', and the caret should be just before the horizontal rule."
-      RenderBlock {DIV} at (0,52) size 784x72
-        RenderBlock (anonymous) at (0,0) size 784x36
-          RenderText {#text} at (0,0) size 22x18
+      LayoutBlockFlow {DIV} at (0,52) size 784x72
+        LayoutBlockFlow (anonymous) at (0,0) size 784x36
+          LayoutText {#text} at (0,0) size 22x18
             text run at (0,0) width 22: "foo"
           LayoutBR {BR} at (21,14) size 1x0
           LayoutBR {BR} at (0,18) size 0x18
-        RenderBlock {HR} at (0,44) size 784x2 [border: (1px inset #EEEEEE)]
-        RenderBlock (anonymous) at (0,54) size 784x18
-          RenderText {#text} at (0,0) size 21x18
+        LayoutBlockFlow {HR} at (0,44) size 784x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (0,54) size 784x18
+          LayoutText {#text} at (0,0) size 21x18
             text run at (0,0) width 21: "bar"
 caret: position 0 of child 3 {HR} of child 2 {DIV} of body

@@ -1,34 +1,34 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 218x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218: "This tests for a regression against "
-        RenderInline {I} at (0,0) size 759x35
-          RenderInline {A} at (0,0) size 355x17 [color=#0000EE]
-            RenderText {#text} at (217,0) size 355x17
+        LayoutInline {I} at (0,0) size 759x35
+          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 355x17
               text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6881"
-          RenderText {#text} at (571,0) size 759x35
+          LayoutText {#text} at (571,0) size 759x35
             text run at (571,0) width 5: " "
             text run at (575,0) width 184: "Block with position:absolute"
             text run at (0,18) width 589: "bottom:0 doesn't always move when height of containing block changes (affects Safari RSS)"
-        RenderText {#text} at (588,18) size 5x17
+        LayoutText {#text} at (588,18) size 5x17
           text run at (588,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 558x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 558x17
           text run at (0,0) width 558: "The squares below should have blue tops and green bottoms, not the other way around."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock (anonymous) at (0,196) size 784x18
+      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow (anonymous) at (0,196) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
 layer at (8,104) size 784x100
-  RenderBlock (relative positioned) {DIV} at (0,96) size 784x100
-    RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#87CEEB]
+  LayoutBlockFlow (relative positioned) {DIV} at (0,96) size 784x100
+    LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#87CEEB]
 layer at (8,154) size 100x50
-  RenderBlock (positioned) {DIV} at (0,50) size 100x50 [bgcolor=#90EE90]
+  LayoutBlockFlow (positioned) {DIV} at (0,50) size 100x50 [bgcolor=#90EE90]
 layer at (8,222) size 784x100
   LayoutDeprecatedFlexibleBox (relative positioned) {DIV} at (0,214) size 784x100
-    RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#87CEEB]
+    LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#87CEEB]
 layer at (8,272) size 100x50
-  RenderBlock (positioned) {DIV} at (0,50) size 100x50 [bgcolor=#90EE90]
+  LayoutBlockFlow (positioned) {DIV} at (0,50) size 100x50 [bgcolor=#90EE90]

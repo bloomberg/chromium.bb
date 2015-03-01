@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 616x30
         LayoutTableSection {TBODY} at (0,0) size 616x30
           LayoutTableRow {TR} at (0,2) size 616x26
@@ -11,38 +11,38 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 610x24
                   LayoutTableRow {TR} at (0,2) size 610x20
                     LayoutTableCell {TD} at (2,2) size 35x20 [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 33x17
+                      LayoutText {#text} at (1,1) size 33x17
                         text run at (1,1) width 33: "news"
                     LayoutTableCell {TD} at (39,2) size 56x20 [r=0 c=1 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 54x17
+                      LayoutText {#text} at (1,1) size 54x17
                         text run at (1,1) width 54: "archives"
                     LayoutTableCell {TD} at (97,2) size 62x20 [r=0 c=2 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 60x17
+                      LayoutText {#text} at (1,1) size 60x17
                         text run at (1,1) width 60: "hardware"
                     LayoutTableCell {TD} at (161,2) size 35x20 [r=0 c=3 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 33x17
+                      LayoutText {#text} at (1,1) size 33x17
                         text run at (1,1) width 33: "shots"
                     LayoutTableCell {TD} at (198,2) size 43x20 [r=0 c=4 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 41x17
+                      LayoutText {#text} at (1,1) size 41x17
                         text run at (1,1) width 41: "games"
                     LayoutTableCell {TD} at (243,2) size 30x20 [r=0 c=5 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 28x17
+                      LayoutText {#text} at (1,1) size 28x17
                         text run at (1,1) width 28: "files"
                     LayoutTableCell {TD} at (275,2) size 74x20 [r=0 c=6 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 72x17
+                      LayoutText {#text} at (1,1) size 72x17
                         text run at (1,1) width 72: "reviewseek"
                     LayoutTableCell {TD} at (351,2) size 48x20 [r=0 c=7 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 46x17
+                      LayoutText {#text} at (1,1) size 46x17
                         text run at (1,1) width 46: "forums"
                     LayoutTableCell {TD} at (401,2) size 69x20 [r=0 c=8 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 67x17
+                      LayoutText {#text} at (1,1) size 67x17
                         text run at (1,1) width 67: "interviews"
                     LayoutTableCell {TD} at (472,2) size 38x20 [r=0 c=9 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 36x17
+                      LayoutText {#text} at (1,1) size 36x17
                         text run at (1,1) width 36: "about"
                     LayoutTableCell {TD} at (512,2) size 34x20 [r=0 c=10 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 32x17
+                      LayoutText {#text} at (1,1) size 32x17
                         text run at (1,1) width 32: "links"
                     LayoutTableCell {TD} at (548,2) size 60x20 [r=0 c=11 rs=1 cs=1]
-                      RenderText {#text} at (1,1) size 58x17
+                      LayoutText {#text} at (1,1) size 58x17
                         text run at (1,1) width 58: "advertise"

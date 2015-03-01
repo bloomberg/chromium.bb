@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 639
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x639 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x639
-    RenderBody {BODY} at (8,8) size 769x623 [bgcolor=#CCCCCC]
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 785x639
+    LayoutBlockFlow {BODY} at (8,8) size 769x623 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 769x128
-        RenderText {#text} at (0,0) size 272x128
+      LayoutBlockFlow {PRE} at (0,34) size 769x128
+        LayoutText {#text} at (0,0) size 272x128
           text run at (0,0) width 160: "#one {color: green;}"
           text run at (160,0) width 0: " "
           text run at (0,16) width 152: "#a1 {color: green;}"
@@ -23,70 +23,70 @@ layer at (0,0) size 785x639 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,96) width 240: "P#five, P#five2 {color: blue;}"
           text run at (240,96) width 0: " "
           text run at (0,112) width 240: "P#six, P#six2 {color: purple;}"
-      RenderBlock {HR} at (0,175) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,193) size 769x18 [color=#008000]
-        RenderText {#text} at (0,0) size 197x17
+      LayoutBlockFlow {HR} at (0,175) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,193) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
           text run at (0,0) width 197: "This sentence should be green."
-      RenderBlock {P} at (0,227) size 769x18 [color=#008000]
-        RenderText {#text} at (0,0) size 197x17
+      LayoutBlockFlow {P} at (0,227) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
           text run at (0,0) width 197: "This sentence should be green."
-      RenderBlock {P} at (0,261) size 769x18 [color=#0000FF]
-        RenderText {#text} at (0,0) size 204x17
+      LayoutBlockFlow {P} at (0,261) size 769x18 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 204x17
           text run at (0,0) width 204: "This paragraph should be blue ["
-        RenderInline {TT} at (0,0) size 65x16
-          RenderText {#text} at (203,2) size 65x16
+        LayoutInline {TT} at (0,0) size 65x16
+          LayoutText {#text} at (203,2) size 65x16
             text run at (203,2) width 65: "ID=\"two\""
-        RenderText {#text} at (267,0) size 10x17
+        LayoutText {#text} at (267,0) size 10x17
           text run at (267,0) width 10: "]."
-      RenderBlock {PRE} at (0,295) size 769x16
-        RenderText {#text} at (0,0) size 392x16
+      LayoutBlockFlow {PRE} at (0,295) size 769x16
+        LayoutText {#text} at (0,0) size 392x16
           text run at (0,0) width 392: "This sentence should NOT be blue [PRE ID=\"two2\"]."
           text run at (392,0) width 0: " "
-      RenderBlock {PRE} at (0,324) size 769x16
-        RenderText {#text} at (0,0) size 472x16
+      LayoutBlockFlow {PRE} at (0,324) size 769x16
+        LayoutText {#text} at (0,0) size 472x16
           text run at (0,0) width 472: "This sentence should be black, not purple [PRE ID=\"three\"]."
           text run at (472,0) width 0: " "
-      RenderBlock {UL} at (0,356) size 769x18
+      LayoutBlockFlow {UL} at (0,356) size 769x18
         LayoutListItem {LI} at (40,0) size 729x18
           LayoutListMarker at (-17,0) size 7x17: bullet
-          RenderText {#text} at (0,0) size 240x17
+          LayoutText {#text} at (0,0) size 240x17
             text run at (0,0) width 240: "This sentence should NOT be purple."
       LayoutTable {TABLE} at (0,390) size 422x233 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 420x231
           LayoutTableRow {TR} at (0,0) size 420x26
             LayoutTableCell {TD} at (0,0) size 420x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 420x205
             LayoutTableCell {TD} at (0,115) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 408x205 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 400x18 [color=#008000]
-                RenderText {#text} at (0,0) size 197x17
+              LayoutBlockFlow {P} at (4,4) size 400x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
                   text run at (0,0) width 197: "This sentence should be green."
-              RenderBlock {P} at (4,38) size 400x18 [color=#008000]
-                RenderText {#text} at (0,0) size 197x17
+              LayoutBlockFlow {P} at (4,38) size 400x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
                   text run at (0,0) width 197: "This sentence should be green."
-              RenderBlock {P} at (4,72) size 400x18 [color=#0000FF]
-                RenderText {#text} at (0,0) size 204x17
+              LayoutBlockFlow {P} at (4,72) size 400x18 [color=#0000FF]
+                LayoutText {#text} at (0,0) size 204x17
                   text run at (0,0) width 204: "This paragraph should be blue ["
-                RenderInline {TT} at (0,0) size 73x16
-                  RenderText {#text} at (203,2) size 73x16
+                LayoutInline {TT} at (0,0) size 73x16
+                  LayoutText {#text} at (203,2) size 73x16
                     text run at (203,2) width 73: "ID=\"five\""
-                RenderText {#text} at (275,0) size 10x17
+                LayoutText {#text} at (275,0) size 10x17
                   text run at (275,0) width 10: "]."
-              RenderBlock {PRE} at (4,106) size 400x16
-                RenderText {#text} at (0,0) size 400x16
+              LayoutBlockFlow {PRE} at (4,106) size 400x16
+                LayoutText {#text} at (0,0) size 400x16
                   text run at (0,0) width 400: "This sentence should NOT be blue [PRE ID=\"five2\"]."
                   text run at (400,0) width 0: " "
-              RenderBlock {PRE} at (4,135) size 400x16
-                RenderText {#text} at (0,0) size 360x16
+              LayoutBlockFlow {PRE} at (4,135) size 400x16
+                LayoutText {#text} at (0,0) size 360x16
                   text run at (0,0) width 360: "This sentence should be black [PRE ID=\"six\"]."
                   text run at (360,0) width 0: " "
-              RenderBlock {UL} at (4,167) size 400x18
+              LayoutBlockFlow {UL} at (4,167) size 400x18
                 LayoutListItem {LI} at (40,0) size 360x18
                   LayoutListMarker at (-17,0) size 7x17: bullet
-                  RenderText {#text} at (0,0) size 240x17
+                  LayoutText {#text} at (0,0) size 240x17
                     text run at (0,0) width 240: "This sentence should NOT be purple."

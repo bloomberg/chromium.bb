@@ -37,7 +37,7 @@ function test() {
     // make sure the svg root's .style attribute is out of date
     svgroot.style.position = "absolute";
     // force layout. this will be rooted at the LayoutSVGRoot and will set m_posChildNeedsLayout on its
-    // containing RenderBlock (corresponding to DIV#root)
+    // containing LayoutBlockFlow (corresponding to DIV#root)
     document.body.offsetWidth;
     // dirty an SVG attribute, will set FrameView::m_layoutRoot to the LayoutSVGRoot
     greenRect.setAttribute("width", "50%");

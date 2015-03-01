@@ -1,21 +1,21 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {A} at (0,0) size 308x18 [color=#0000EE]
-          RenderText {#text} at (54,0) size 308x18
+        LayoutInline {A} at (0,0) size 308x18 [color=#0000EE]
+          LayoutText {#text} at (54,0) size 308x18
             text run at (54,0) width 308: "http://bugs.webkit.org/show_bug.cgi?id=13169 "
-        RenderText {#text} at (361,0) size 309x18
+        LayoutText {#text} at (361,0) size 309x18
           text run at (361,0) width 309: "css-formatted first letter won't hide dynamically"
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 429x18
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 429x18
           text run at (0,0) width 429: "The next line of text should become invisible, including first letter."
-      RenderBlock {DIV} at (0,68) size 784x18
-        RenderInline {<pseudo:first-letter>} at (0,0) size 11x18 [color=#0000FF]
+      LayoutBlockFlow {DIV} at (0,68) size 784x18
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 11x18 [color=#0000FF]
           LayoutTextFragment at (0,0) size 11x18
             text run at (0,0) width 11: "C"
         LayoutTextFragment {#text} at (10,0) size 73x18

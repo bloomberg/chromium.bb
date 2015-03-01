@@ -1,29 +1,29 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x470
-  RenderBlock {HTML} at (0,0) size 800x470.05
-    RenderBody {BODY} at (8,8) size 784x454.05
-      RenderBlock {DIV} at (0,0) size 784x86
-        RenderBlock {DETAILS} at (0,0) size 784x86
-          RenderBlock {SUMMARY} at (0,0) size 784x86
+  LayoutBlockFlow {HTML} at (0,0) size 800x470.05
+    LayoutBlockFlow {BODY} at (8,8) size 784x454.05
+      LayoutBlockFlow {DIV} at (0,0) size 784x86
+        LayoutBlockFlow {DETAILS} at (0,0) size 784x86
+          LayoutBlockFlow {SUMMARY} at (0,0) size 784x86
             LayoutDetailsMarker {DIV} at (0,0) size 111.83x79.83 [border: (8px solid #00FF00) (16px solid #00FF00) (24px solid #00FF00) (32px solid #00FF00)]: right
-            RenderText {#text} at (121,58) size 92x27
+            LayoutText {#text} at (121,58) size 92x27
               text run at (121,58) width 92: "Summary"
-      RenderBlock {DIV} at (0,86) size 118x180.44
-        RenderBlock {DETAILS} at (0,0) size 118x180.44
-          RenderBlock {SUMMARY} at (0,0) size 118x180.44
+      LayoutBlockFlow {DIV} at (0,86) size 118x180.44
+        LayoutBlockFlow {DETAILS} at (0,0) size 118x180.44
+          LayoutBlockFlow {SUMMARY} at (0,0) size 118x180.44
             LayoutDetailsMarker {DIV} at (0,0) size 111.83x79.83 [border: (8px solid #00FF00) (16px solid #00FF00) (24px solid #00FF00) (32px solid #00FF00)]: down
-            RenderText {#text} at (90,89) size 27x92
+            LayoutText {#text} at (90,89) size 27x92
               text run at (90,89) width 91: "Summary"
-      RenderBlock {DIV} at (0,266.44) size 784x47
-        RenderBlock {DETAILS} at (0,0) size 784x47
-          RenderBlock {SUMMARY} at (0,0) size 784x47
+      LayoutBlockFlow {DIV} at (0,266.44) size 784x47
+        LayoutBlockFlow {DETAILS} at (0,0) size 784x47
+          LayoutBlockFlow {SUMMARY} at (0,0) size 784x47
             LayoutDetailsMarker {DIV} at (0,0) size 64x40 [border: (8px solid #00FF00)]: right
-            RenderText {#text} at (73,19) size 92x27
+            LayoutText {#text} at (73,19) size 92x27
               text run at (73,19) width 92: "Summary"
-      RenderBlock {DIV} at (0,313.44) size 71x140.61
-        RenderBlock {DETAILS} at (0,0) size 71x140.61
-          RenderBlock {SUMMARY} at (0,0) size 71x140.61
+      LayoutBlockFlow {DIV} at (0,313.44) size 71x140.61
+        LayoutBlockFlow {DETAILS} at (0,0) size 71x140.61
+          LayoutBlockFlow {SUMMARY} at (0,0) size 71x140.61
             LayoutDetailsMarker {DIV} at (0,0) size 64x40 [border: (8px solid #00FF00)]: down
-            RenderText {#text} at (43,49) size 27x92
+            LayoutText {#text} at (43,49) size 27x92
               text run at (43,49) width 91: "Summary"

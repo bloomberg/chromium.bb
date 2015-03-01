@@ -1,36 +1,36 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 252x149 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 250x147
           LayoutTableRow {TR} at (0,2) size 250x51
             LayoutTableCell {TD} at (2,2) size 246x50.91 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderBlock {H2} at (2,2) size 242x27
-                RenderText {#text} at (0,0) size 174x26
+              LayoutBlockFlow {H2} at (2,2) size 242x27
+                LayoutText {#text} at (0,0) size 174x26
                   text run at (0,0) width 174: "Personal Friends"
           LayoutTableRow {TR} at (0,55) size 250x90
             LayoutTableCell {TD} at (2,55) size 187x90 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderBlock (anonymous) at (2,2) size 183x0
-                RenderInline {FONT} at (0,0) size 0x0
-                RenderText {#text} at (0,0) size 0x0
-              RenderBlock {P} at (2,2) size 183x18
-                RenderText {#text} at (0,0) size 183x17
+              LayoutBlockFlow (anonymous) at (2,2) size 183x0
+                LayoutInline {FONT} at (0,0) size 0x0
+                LayoutText {#text} at (0,0) size 0x0
+              LayoutBlockFlow {P} at (2,2) size 183x18
+                LayoutText {#text} at (0,0) size 183x17
                   text run at (0,0) width 183: "Alisha - Password-Protected"
-              RenderBlock {P} at (2,36) size 183x18
-                RenderText {#text} at (0,0) size 47x17
+              LayoutBlockFlow {P} at (2,36) size 183x18
+                LayoutText {#text} at (0,0) size 47x17
                   text run at (0,0) width 47: "Arlesia"
-              RenderBlock {P} at (2,70) size 183x18
-                RenderText {#text} at (0,0) size 37x17
+              LayoutBlockFlow {P} at (2,70) size 183x18
+                LayoutText {#text} at (0,0) size 37x17
                   text run at (0,0) width 37: "Asale"
             LayoutTableCell {TD} at (191,55) size 57x90 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (2,2) size 53x18
-                RenderText {#text} at (0,0) size 35x17
+              LayoutBlockFlow {P} at (2,2) size 53x18
+                LayoutText {#text} at (0,0) size 35x17
                   text run at (0,0) width 35: "Ernie"
-              RenderBlock {P} at (2,36) size 53x18
-                RenderText {#text} at (0,0) size 53x17
+              LayoutBlockFlow {P} at (2,36) size 53x18
+                LayoutText {#text} at (0,0) size 53x17
                   text run at (0,0) width 53: "Melanie"
-              RenderBlock {P} at (2,70) size 53x18
-                RenderText {#text} at (0,0) size 49x17
+              LayoutBlockFlow {P} at (2,70) size 53x18
+                LayoutText {#text} at (0,0) size 49x17
                   text run at (0,0) width 49: "Tamara"

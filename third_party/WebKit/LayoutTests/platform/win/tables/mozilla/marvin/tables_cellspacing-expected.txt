@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x54
-        RenderText {#text} at (0,0) size 777x53
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 777x53
           text run at (0,0) width 307: "CELLSPACING controls the distance in pixels "
           text run at (306,0) width 437: "between each cell in the table. The first table has a cellspacing of 15"
           text run at (0,18) width 303: "pixels; the second table isn't using cellspacing. "
@@ -15,48 +15,48 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 263x85
           LayoutTableRow {TR} at (0,15) size 263x20
             LayoutTableCell {TD} at (15,15) size 68x20 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 64x17
+              LayoutText {#text} at (1,1) size 64x17
                 text run at (1,1) width 64: "Navigator"
             LayoutTableCell {TD} at (98,15) size 72x20 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 70x17
+              LayoutText {#text} at (1,1) size 70x17
                 text run at (1,1) width 70: "Messenger"
             LayoutTableCell {TD} at (185,15) size 63x20 [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 56x17
+              LayoutText {#text} at (1,1) size 56x17
                 text run at (1,1) width 56: "Collabra"
           LayoutTableRow {TR} at (0,50) size 263x20
             LayoutTableCell {TD} at (15,50) size 68x20 [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 66x17
+              LayoutText {#text} at (1,1) size 66x17
                 text run at (1,1) width 66: "Composer"
             LayoutTableCell {TD} at (98,50) size 72x20 [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 58x17
+              LayoutText {#text} at (1,1) size 58x17
                 text run at (1,1) width 58: "Calendar"
             LayoutTableCell {TD} at (185,50) size 63x20 [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 61x17
+              LayoutText {#text} at (1,1) size 61x17
                 text run at (1,1) width 61: "Netcaster"
-      RenderBlock (anonymous) at (0,139) size 784x54
+      LayoutBlockFlow (anonymous) at (0,139) size 784x54
         LayoutBR {BR} at (0,0) size 0x17
         LayoutBR {BR} at (0,18) size 0x17
-        RenderText {#text} at (0,36) size 221x17
+        LayoutText {#text} at (0,36) size 221x17
           text run at (0,36) width 221: "This table contains no cellspacing."
       LayoutTable {TABLE} at (0,193) size 211x46
         LayoutTableSection {TBODY} at (0,0) size 211x46
           LayoutTableRow {TR} at (0,2) size 211x20
             LayoutTableCell {TD} at (2,2) size 68x20 [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 64x17
+              LayoutText {#text} at (1,1) size 64x17
                 text run at (1,1) width 64: "Navigator"
             LayoutTableCell {TD} at (72,2) size 72x20 [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 70x17
+              LayoutText {#text} at (1,1) size 70x17
                 text run at (1,1) width 70: "Messenger"
             LayoutTableCell {TD} at (146,2) size 63x20 [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 56x17
+              LayoutText {#text} at (1,1) size 56x17
                 text run at (1,1) width 56: "Collabra"
           LayoutTableRow {TR} at (0,24) size 211x20
             LayoutTableCell {TD} at (2,24) size 68x20 [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 66x17
+              LayoutText {#text} at (1,1) size 66x17
                 text run at (1,1) width 66: "Composer"
             LayoutTableCell {TD} at (72,24) size 72x20 [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 58x17
+              LayoutText {#text} at (1,1) size 58x17
                 text run at (1,1) width 58: "Calendar"
             LayoutTableCell {TD} at (146,24) size 63x20 [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 61x17
+              LayoutText {#text} at (1,1) size 61x17
                 text run at (1,1) width 61: "Netcaster"

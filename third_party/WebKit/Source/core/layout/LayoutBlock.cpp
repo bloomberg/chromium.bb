@@ -3745,7 +3745,7 @@ bool LayoutBlock::hasMarginAfterQuirk(const LayoutBox* child) const
 const char* LayoutBlock::renderName() const
 {
     ASSERT_NOT_REACHED();
-    return "RenderBlock";
+    return "LayoutBlock";
 }
 
 LayoutBlock* LayoutBlock::createAnonymousWithParentRendererAndDisplay(const LayoutObject* parent, EDisplay display)

@@ -780,10 +780,10 @@ LayoutUnit LayoutInline::marginAfter(const LayoutStyle* otherStyle) const
 const char* LayoutInline::renderName() const
 {
     if (isRelPositioned())
-        return "RenderInline (relative positioned)";
+        return "LayoutInline (relative positioned)";
     if (isAnonymous())
-        return "RenderInline (generated)";
-    return "RenderInline";
+        return "LayoutInline (generated)";
+    return "LayoutInline";
 }
 
 bool LayoutInline::nodeAtPoint(const HitTestRequest& request, HitTestResult& result,

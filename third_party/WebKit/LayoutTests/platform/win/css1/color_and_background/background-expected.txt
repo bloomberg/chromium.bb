@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 725
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x725 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderBlock {HTML} at (0,0) size 785x725
-    RenderBody {BODY} at (8,8) size 769x709 [bgcolor=#008000]
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 363x17
+  LayoutBlockFlow {HTML} at (0,0) size 785x725
+    LayoutBlockFlow {BODY} at (8,8) size 769x709 [bgcolor=#008000]
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 769x64
-        RenderText {#text} at (0,0) size 648x64
+      LayoutBlockFlow {PRE} at (0,34) size 769x64
+        LayoutText {#text} at (0,0) size 648x64
           text run at (0,0) width 648: "BODY {background: green url(../resources/oransqr.gif) repeat-x center top fixed;}"
           text run at (648,0) width 0: " "
           text run at (0,16) width 568: ".one {background: lime url(../resources/oransqr.gif) repeat-y 100% 0%;}"
@@ -16,32 +16,32 @@ layer at (0,0) size 785x725 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (592,32) width 0: " "
           text run at (0,48) width 592: ".three {background: lime url(../resources/oransqr.gif) repeat-x left top;}"
           text run at (592,48) width 0: " "
-      RenderBlock {HR} at (0,111) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,129) size 769x54
-        RenderText {#text} at (0,0) size 741x17
+      LayoutBlockFlow {HR} at (0,111) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,129) size 769x54
+        LayoutText {#text} at (0,0) size 741x17
           text run at (0,0) width 741: "This document should have a green background with an orange strip running across the entire top of the page, since"
-        RenderInline {CODE} at (0,0) size 64x16
-          RenderText {#text} at (0,20) size 64x16
+        LayoutInline {CODE} at (0,0) size 64x16
+          LayoutText {#text} at (0,20) size 64x16
             text run at (0,20) width 64: "repeat-x"
-        RenderText {#text} at (64,18) size 744x35
+        LayoutText {#text} at (64,18) size 744x35
           text run at (64,18) width 307: " indicates tiling in both directions of the x-axis. "
           text run at (370,18) width 306: "Furthermore, the strip should be fixed in place. "
           text run at (675,18) width 69: "I'll have to"
           text run at (0,36) width 531: "add extra text at the end of this page to make it long enough to scroll conveniently."
-      RenderBlock {P} at (0,199) size 769x54 [bgcolor=#00FF00]
-        RenderText {#text} at (0,0) size 758x53
+      LayoutBlockFlow {P} at (0,199) size 769x54 [bgcolor=#00FF00]
+        LayoutText {#text} at (0,0) size 758x53
           text run at (0,0) width 758: "This paragraph should have a lime background and an orange strip which starts at the top right and runs to the bottom."
           text run at (0,18) width 718: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your browser in"
           text run at (0,36) width 183: "handling these declarations. "
           text run at (182,36) width 313: "Hey, I didn't say the page would be pretty, did I?"
-      RenderBlock {P} at (0,269) size 769x54 [bgcolor=#00FF00]
-        RenderText {#text} at (0,0) size 767x53
+      LayoutBlockFlow {P} at (0,269) size 769x54 [bgcolor=#00FF00]
+        LayoutText {#text} at (0,0) size 767x53
           text run at (0,0) width 767: "This paragraph should have a lime background and an orange strip which starts at the center top and runs to the bottom."
           text run at (0,18) width 718: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your browser in"
           text run at (0,36) width 183: "handling these declarations. "
           text run at (182,36) width 313: "Hey, I didn't say the page would be pretty, did I?"
-      RenderBlock {P} at (0,339) size 769x54 [bgcolor=#00FF00]
-        RenderText {#text} at (0,0) size 758x53
+      LayoutBlockFlow {P} at (0,339) size 769x54 [bgcolor=#00FF00]
+        LayoutText {#text} at (0,0) size 758x53
           text run at (0,0) width 758: "This paragraph should have a lime background and an orange strip which starts at the top left and runs to the top right."
           text run at (0,18) width 718: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your browser in"
           text run at (0,36) width 183: "handling these declarations. "
@@ -50,41 +50,41 @@ layer at (0,0) size 785x725 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 767x298
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              RenderInline {STRONG} at (0,0) size 163x17
-                RenderText {#text} at (4,4) size 163x17
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
                   text run at (4,4) width 163: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,26) size 767x272
             LayoutTableCell {TD} at (0,149) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (4,4) size 4x17
+              LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 755x272 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              RenderBlock {P} at (4,4) size 747x54
-                RenderText {#text} at (0,0) size 741x17
+              LayoutBlockFlow {P} at (4,4) size 747x54
+                LayoutText {#text} at (0,0) size 741x17
                   text run at (0,0) width 741: "This document should have a green background with an orange strip running across the entire top of the page, since"
-                RenderInline {CODE} at (0,0) size 64x16
-                  RenderText {#text} at (0,20) size 64x16
+                LayoutInline {CODE} at (0,0) size 64x16
+                  LayoutText {#text} at (0,20) size 64x16
                     text run at (0,20) width 64: "repeat-x"
-                RenderText {#text} at (64,18) size 744x35
+                LayoutText {#text} at (64,18) size 744x35
                   text run at (64,18) width 307: " indicates tiling in both directions of the x-axis. "
                   text run at (370,18) width 306: "Furthermore, the strip should be fixed in place. "
                   text run at (675,18) width 69: "I'll have to"
                   text run at (0,36) width 531: "add extra text at the end of this page to make it long enough to scroll conveniently."
-              RenderBlock {P} at (4,74) size 747x54 [bgcolor=#00FF00]
-                RenderText {#text} at (0,0) size 704x53
+              LayoutBlockFlow {P} at (4,74) size 747x54 [bgcolor=#00FF00]
+                LayoutText {#text} at (0,0) size 704x53
                   text run at (0,0) width 704: "This paragraph should have a lime background and an orange strip which starts at the top right and runs to the"
                   text run at (0,18) width 54: "bottom. "
                   text run at (53,18) width 646: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your"
                   text run at (0,36) width 255: "browser in handling these declarations. "
                   text run at (254,36) width 313: "Hey, I didn't say the page would be pretty, did I?"
-              RenderBlock {P} at (4,144) size 747x54 [bgcolor=#00FF00]
-                RenderText {#text} at (0,0) size 713x53
+              LayoutBlockFlow {P} at (4,144) size 747x54 [bgcolor=#00FF00]
+                LayoutText {#text} at (0,0) size 713x53
                   text run at (0,0) width 713: "This paragraph should have a lime background and an orange strip which starts at the center top and runs to the"
                   text run at (0,18) width 54: "bottom. "
                   text run at (53,18) width 646: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your"
                   text run at (0,36) width 255: "browser in handling these declarations. "
                   text run at (254,36) width 313: "Hey, I didn't say the page would be pretty, did I?"
-              RenderBlock {P} at (4,214) size 747x54 [bgcolor=#00FF00]
-                RenderText {#text} at (0,0) size 739x53
+              LayoutBlockFlow {P} at (4,214) size 747x54 [bgcolor=#00FF00]
+                LayoutText {#text} at (0,0) size 739x53
                   text run at (0,0) width 720: "This paragraph should have a lime background and an orange strip which starts at the top left and runs to the top"
                   text run at (0,18) width 39: "right. "
                   text run at (38,18) width 701: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your browser"

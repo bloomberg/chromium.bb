@@ -1,35 +1,35 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 784x36
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        LayoutInline {I} at (0,0) size 784x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12364"
-          RenderText {#text} at (359,0) size 784x36
+          LayoutText {#text} at (359,0) size 784x36
             text run at (359,0) width 5: " "
             text run at (363,0) width 421: "REGRESSSION (NativeListBox): Selected option's background is"
             text run at (0,18) width 163: "not clipped to the list box"
-        RenderText {#text} at (162,18) size 5x18
+        LayoutText {#text} at (162,18) size 5x18
           text run at (162,18) width 5: "."
-      RenderBlock (anonymous) at (0,52) size 784x58
-        RenderText {#text} at (0,0) size 0x0
-        RenderText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,52) size 784x58
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,60) size 55x59 clip at (11,63) size 38x53 scrollHeight 62
   LayoutListBox {SELECT} at (0,-0.50) size 54.70x59.50 [bgcolor=#FFFFFF] [border: (3px solid #0000FF)]
-    RenderBlock {OPTION} at (6,6) size 31.70x14.19
-      RenderText {#text} at (2,0) size 20x13
+    LayoutBlockFlow {OPTION} at (6,6) size 31.70x14.19
+      LayoutText {#text} at (2,0) size 20x13
         text run at (2,0) width 20: "one"
-    RenderBlock {OPTION} at (6,20.19) size 31.70x14.19
-      RenderText {#text} at (2,0) size 20x13
+    LayoutBlockFlow {OPTION} at (6,20.19) size 31.70x14.19
+      LayoutText {#text} at (2,0) size 20x13
         text run at (2,0) width 20: "two"
-    RenderBlock {OPTION} at (6,34.38) size 31.70x14.19
-      RenderText {#text} at (2,0) size 28x13
+    LayoutBlockFlow {OPTION} at (6,34.38) size 31.70x14.19
+      LayoutText {#text} at (2,0) size 28x13
         text run at (2,0) width 28: "three"
-    RenderBlock {OPTION} at (6,48.56) size 31.70x14.19 [bgcolor=#800080]
-      RenderText {#text} at (2,0) size 23x13
+    LayoutBlockFlow {OPTION} at (6,48.56) size 31.70x14.19 [bgcolor=#800080]
+      LayoutText {#text} at (2,0) size 23x13
         text run at (2,0) width 23: "four"

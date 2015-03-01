@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x86
-  RenderBlock {HTML} at (0,0) size 800x86
-    RenderBody {BODY} at (8,8) size 784x70
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 636x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x86
+    LayoutBlockFlow {BODY} at (8,8) size 784x70
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 636x18
           text run at (0,0) width 636: "This test case is to see whether distributed text justify works properly for the complicated sentence."
-      RenderBlock (anonymous) at (0,18) size 784x18
+      LayoutBlockFlow (anonymous) at (0,18) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
-      RenderBlock {DIV} at (0,36) size 302x16 [border: (1px solid #000000)]
-        RenderInline {SPAN} at (0,0) size 30x14
-          RenderText {#text} at (1,1) size 30x14
+      LayoutBlockFlow {DIV} at (0,36) size 302x16 [border: (1px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 30x14
+          LayoutText {#text} at (1,1) size 30x14
             text run at (1,1) width 30: "L"
-        RenderInline {SPAN} at (0,0) size 30x14
-          RenderText {#text} at (30,1) size 30x14
+        LayoutInline {SPAN} at (0,0) size 30x14
+          LayoutText {#text} at (30,1) size 30x14
             text run at (30,1) width 30: "o"
-        RenderInline {SPAN} at (0,0) size 30x14
-          RenderText {#text} at (59,1) size 30x14
+        LayoutInline {SPAN} at (0,0) size 30x14
+          LayoutText {#text} at (59,1) size 30x14
             text run at (59,1) width 30: "r"
-        RenderInline {SPAN} at (0,0) size 30x14
-          RenderText {#text} at (88,1) size 30x14
+        LayoutInline {SPAN} at (0,0) size 30x14
+          LayoutText {#text} at (88,1) size 30x14
             text run at (88,1) width 30: "e"
-        RenderInline {SPAN} at (0,0) size 31x14
-          RenderText {#text} at (117,1) size 31x14
+        LayoutInline {SPAN} at (0,0) size 31x14
+          LayoutText {#text} at (117,1) size 31x14
             text run at (117,1) width 31: "m"
-        RenderText {#text} at (147,1) size 154x14
+        LayoutText {#text} at (147,1) size 154x14
           text run at (147,1) width 154: " ipsum"
-      RenderBlock (anonymous) at (0,52) size 784x18
+      LayoutBlockFlow (anonymous) at (0,52) size 784x18
         LayoutBR {BR} at (0,0) size 0x18

@@ -1,32 +1,32 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 101x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 101x19
           text run at (0,0) width 101: "Test for revision "
-        RenderInline {A} at (0,0) size 48x19 [color=#0000EE]
-          RenderText {#text} at (101,0) size 48x19
+        LayoutInline {A} at (0,0) size 48x19 [color=#0000EE]
+          LayoutText {#text} at (101,0) size 48x19
             text run at (101,0) width 48: "#20574"
-        RenderText {#text} at (149,0) size 4x19
+        LayoutText {#text} at (149,0) size 4x19
           text run at (149,0) width 4: "."
-      RenderBlock {P} at (0,36) size 784x20
-        RenderText {#text} at (0,0) size 238x19
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 238x19
           text run at (0,0) width 238: "The two blue boxes should be identical."
-      RenderBlock {DIV} at (0,72) size 106x46 [border: (3px solid #0000FF)]
-        RenderText {#text} at (3,3) size 9x19
+      LayoutBlockFlow {DIV} at (0,72) size 106x46 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,3) size 9x19
           text run at (3,3) width 9: "L"
-        RenderInline {SPAN} at (0,0) size 41x19 [color=#008000] [bgcolor=#FFFF00]
-          RenderText {#text} at (12,3) size 41x19
+        LayoutInline {SPAN} at (0,0) size 41x19 [color=#008000] [bgcolor=#FFFF00]
+          LayoutText {#text} at (12,3) size 41x19
             text run at (12,3) width 41: "o r"
-        RenderText {#text} at (53,3) size 100x39
+        LayoutText {#text} at (53,3) size 100x39
           text run at (53,3) width 50: "e mi"
           text run at (3,23) width 64: "psumdolor"
-      RenderBlock (anonymous) at (0,118) size 784x20
+      LayoutBlockFlow (anonymous) at (0,118) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
-      RenderBlock {DIV} at (0,138) size 106x46 [border: (3px solid #0000FF)]
-        RenderText {#text} at (3,3) size 100x39
+      LayoutBlockFlow {DIV} at (0,138) size 106x46 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,3) size 100x39
           text run at (3,3) width 100: "Lo re mi"
           text run at (3,23) width 64: "psumdolor"
 selection start: position 1 of child 0 {#text} of child 8 {DIV} of body

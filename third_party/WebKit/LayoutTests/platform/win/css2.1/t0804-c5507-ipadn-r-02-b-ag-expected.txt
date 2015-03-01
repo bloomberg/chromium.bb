@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x125
-  RenderBlock {HTML} at (0,0) size 800x125
-    RenderBody {BODY} at (8,16) size 784x94
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 248x17
+  LayoutBlockFlow {HTML} at (0,0) size 800x125
+    LayoutBlockFlow {BODY} at (8,16) size 784x94
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 248x17
           text run at (0,0) width 248: "There should be a green square below:"
-      RenderBlock {DIV} at (15,34) size 754x60
-        RenderBlock {DIV} at (0,0) size 75x60 [bgcolor=#FF0000]
-          RenderBlock {P} at (0,0) size 75x60 [color=#FFFFFF] [bgcolor=#FFFFFF]
-            RenderText {#text} at (0,0) size 75x15
+      LayoutBlockFlow {DIV} at (15,34) size 754x60
+        LayoutBlockFlow {DIV} at (0,0) size 75x60 [bgcolor=#FF0000]
+          LayoutBlockFlow {P} at (0,0) size 75x60 [color=#FFFFFF] [bgcolor=#FFFFFF]
+            LayoutText {#text} at (0,0) size 75x15
               text run at (0,0) width 75: "xx xx"
-            RenderInline {SPAN} at (0,0) size 90x30 [color=#008000]
-              RenderText {#text} at (0,15) size 30x30
+            LayoutInline {SPAN} at (0,0) size 90x30 [color=#008000]
+              LayoutText {#text} at (0,15) size 30x30
                 text run at (0,15) width 30: "xx"
                 text run at (0,30) width 30: "xx"
-            RenderText {#text} at (0,45) size 75x15
+            LayoutText {#text} at (0,45) size 75x15
               text run at (0,45) width 75: "xx xx"

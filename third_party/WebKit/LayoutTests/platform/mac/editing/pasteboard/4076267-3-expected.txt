@@ -345,45 +345,45 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 342x18
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 342x18
           text run at (0,0) width 342: "This tests to see if spaces are lost during a copy/paste"
-      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,44) size 784x198
-        RenderBlock (anonymous) at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 20x18
+      LayoutBlockFlow {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {DIV} at (0,44) size 784x198
+        LayoutBlockFlow (anonymous) at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 20x18
             text run at (0,0) width 20: "x x"
-        RenderBlock {DIV} at (0,18) size 784x18
-          RenderText {#text} at (0,0) size 24x18
+        LayoutBlockFlow {DIV} at (0,18) size 784x18
+          LayoutText {#text} at (0,0) size 24x18
             text run at (0,0) width 24: "x  x"
-        RenderBlock {DIV} at (0,36) size 784x18
-          RenderText {#text} at (0,0) size 28x18
+        LayoutBlockFlow {DIV} at (0,36) size 784x18
+          LayoutText {#text} at (0,0) size 28x18
             text run at (0,0) width 28: "x   x"
-        RenderBlock {DIV} at (0,54) size 784x18
-          RenderText {#text} at (0,0) size 32x18
+        LayoutBlockFlow {DIV} at (0,54) size 784x18
+          LayoutText {#text} at (0,0) size 32x18
             text run at (0,0) width 32: "x    x"
-        RenderBlock {DIV} at (0,72) size 784x18
-          RenderText {#text} at (0,0) size 36x18
+        LayoutBlockFlow {DIV} at (0,72) size 784x18
+          LayoutText {#text} at (0,0) size 36x18
             text run at (0,0) width 36: "x     x"
-        RenderBlock {DIV} at (0,90) size 784x18
-          RenderText {#text} at (0,0) size 40x18
+        LayoutBlockFlow {DIV} at (0,90) size 784x18
+          LayoutText {#text} at (0,0) size 40x18
             text run at (0,0) width 40: "x      x"
-        RenderBlock {DIV} at (0,108) size 784x18
-          RenderText {#text} at (0,0) size 44x18
+        LayoutBlockFlow {DIV} at (0,108) size 784x18
+          LayoutText {#text} at (0,0) size 44x18
             text run at (0,0) width 44: "x       x"
-        RenderBlock {DIV} at (0,126) size 784x18
-          RenderText {#text} at (0,0) size 48x18
+        LayoutBlockFlow {DIV} at (0,126) size 784x18
+          LayoutText {#text} at (0,0) size 48x18
             text run at (0,0) width 48: "x        x"
-        RenderBlock {DIV} at (0,144) size 784x18
-          RenderText {#text} at (0,0) size 52x18
+        LayoutBlockFlow {DIV} at (0,144) size 784x18
+          LayoutText {#text} at (0,0) size 52x18
             text run at (0,0) width 52: "x         x"
-        RenderBlock {DIV} at (0,162) size 784x18
-          RenderText {#text} at (0,0) size 56x18
+        LayoutBlockFlow {DIV} at (0,162) size 784x18
+          LayoutText {#text} at (0,0) size 56x18
             text run at (0,0) width 56: "x          x"
-        RenderBlock {DIV} at (0,180) size 784x18
+        LayoutBlockFlow {DIV} at (0,180) size 784x18
           LayoutBR {BR} at (0,0) size 0x18
 caret: position 0 of child 0 {BR} of child 10 {DIV} of child 5 {DIV} of body

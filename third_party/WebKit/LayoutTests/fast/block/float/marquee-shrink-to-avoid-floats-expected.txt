@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 100x200 [bgcolor=#FF0000]
-        RenderBlock (floating) {DIV} at (0,0) size 50x100 [bgcolor=#008000]
-        RenderBlock {DIV} at (0,0) size 100x200
-          RenderText {#text} at (0,0) size 0x0
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 100x200 [bgcolor=#FF0000]
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 50x100 [bgcolor=#008000]
+        LayoutBlockFlow {DIV} at (0,0) size 100x200
+          LayoutText {#text} at (0,0) size 0x0
 layer at (8,108) size 100x100
-  RenderBlock {MARQUEE} at (0,100) size 100x100 [bgcolor=#0000FF]
-    RenderBlock {DIV} at (0,0) size 100x0
+  LayoutBlockFlow {MARQUEE} at (0,100) size 100x100 [bgcolor=#0000FF]
+    LayoutBlockFlow {DIV} at (0,0) size 100x0

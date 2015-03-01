@@ -1,46 +1,46 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x80
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x80
         LayoutRuby (inline) {RUBY} at (0,0) size 124x53
           LayoutRubyRun (anonymous) at (0,25) size 123.47x55
             LayoutRubyText {RT} at (0,-25) size 123.47x27
-              RenderText {#text} at (0,0) size 124x26
+              LayoutText {#text} at (0,0) size 124x26
                 text run at (0,0) width 124: "\x{304D}\x{3069}\x{3046}\x{305F}\x{3044}\x{304D}"
             LayoutRubyBase (anonymous) at (0,0) size 123.47x55
-              RenderText {#text} at (6,1) size 110x53
+              LayoutText {#text} at (6,1) size 110x53
                 text run at (6,1) width 110: "\x{653B}\x{6BBB}"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,96) size 784x80
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,96) size 784x80
         LayoutRuby (inline) {RUBY} at (0,0) size 162x53
           LayoutRubyRun (anonymous) at (0,25) size 161.63x55
             LayoutRubyText {RT} at (0,-25) size 161.63x27
-              RenderText {#text} at (0,0) size 162x26
+              LayoutText {#text} at (0,0) size 162x26
                 text run at (0,0) width 162: "\x{304D}\x{3069}\x{3046}\x{305F}\x{3044}\x{304D}\x{3069}\x{3046}"
             LayoutRubyBase (anonymous) at (0,0) size 161.63x55
-              RenderText {#text} at (2,1) size 156x53
+              LayoutText {#text} at (2,1) size 156x53
                 text run at (2,1) width 156: "\x{6A5F}\x{52D5}\x{968A}"
-        RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,192) size 210x292
-        RenderBlock {P} at (16,0) size 81x292
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,192) size 210x292
+        LayoutBlockFlow {P} at (16,0) size 81x292
           LayoutRuby (inline) {RUBY} at (0,0) size 53x139
             LayoutRubyRun (anonymous) at (25,0) size 56x138.28
               LayoutRubyText {RT} at (-25,0) size 27x138.28
-                RenderText {#text} at (0,0) size 26x139
+                LayoutText {#text} at (0,0) size 26x139
                   text run at (0,0) width 139: "\x{304D}\x{3069}\x{3046}\x{305F}\x{3044}\x{304D}"
               LayoutRubyBase (anonymous) at (0,0) size 56x138.28
-                RenderText {#text} at (1,10) size 53x118
+                LayoutText {#text} at (1,10) size 53x118
                   text run at (1,10) width 117: "\x{653B}\x{6BBB}"
-          RenderText {#text} at (0,0) size 0x0
-        RenderBlock {P} at (113,0) size 81x292
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {P} at (113,0) size 81x292
           LayoutRuby (inline) {RUBY} at (0,0) size 53x186
             LayoutRubyRun (anonymous) at (25,0) size 56x185.34
               LayoutRubyText {RT} at (-25,0) size 27x185.34
-                RenderText {#text} at (0,0) size 26x186
+                LayoutText {#text} at (0,0) size 26x186
                   text run at (0,0) width 186: "\x{304D}\x{3069}\x{3046}\x{305F}\x{3044}\x{304D}\x{3069}\x{3046}"
               LayoutRubyBase (anonymous) at (0,0) size 56x185.34
-                RenderText {#text} at (1,6) size 53x172
+                LayoutText {#text} at (1,6) size 53x172
                   text run at (1,6) width 171: "\x{6A5F}\x{52D5}\x{968A}"
-          RenderText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 0x0

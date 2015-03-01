@@ -1,228 +1,228 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 765x35
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 765x35
           text run at (0,0) width 765: "Results that match WinIE are two columns on the right that say \"after\" every time, except for the last row which should"
           text run at (0,18) width 196: "have nothing in either column."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 728x17
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 728x17
           text run at (0,0) width 728: "Results that match Gecko are like WinIE, but with \"before\" for the attribute in the first two rows and the last row."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {FORM} at (0,96) size 784x366
+      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {FORM} at (0,96) size 784x366
         LayoutTable {TABLE} at (0,0) size 768x366
           LayoutTableSection {THEAD} at (0,0) size 768x24
             LayoutTableRow {TR} at (0,2) size 768x20
               LayoutTableCell {TH} at (2,2) size 392x20 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 57x17
+                LayoutText {#text} at (1,1) size 57x17
                   text run at (1,1) width 57: "test case"
               LayoutTableCell {TH} at (396,2) size 240x20 [r=0 c=1 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 92x17
+                LayoutText {#text} at (1,1) size 92x17
                   text run at (1,1) width 92: "form element"
               LayoutTableCell {TH} at (638,2) size 63x20 [r=0 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 61x17
+                LayoutText {#text} at (1,1) size 61x17
                   text run at (1,1) width 61: "property"
               LayoutTableCell {TH} at (703,2) size 63x20 [r=0 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 61x17
+                LayoutText {#text} at (1,1) size 61x17
                   text run at (1,1) width 61: "attribute"
           LayoutTableSection {TBODY} at (0,24) size 768x342
             LayoutTableRow {TR} at (0,0) size 768x24
               LayoutTableCell {TD} at (2,2) size 392x20 [r=0 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 211x17
+                LayoutText {#text} at (1,1) size 211x17
                   text run at (1,1) width 211: "text with value property changed"
               LayoutTableCell {TD} at (396,0) size 240x24 [r=0 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (638,2) size 63x20 [r=0 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,2) size 63x20 [r=0 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 41x17
+                LayoutText {#text} at (1,1) size 41x17
                   text run at (1,1) width 41: "before"
             LayoutTableRow {TR} at (0,26) size 768x24
               LayoutTableCell {TD} at (2,28) size 392x20 [r=1 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 248x17
+                LayoutText {#text} at (1,1) size 248x17
                   text run at (1,1) width 248: "password with value property changed"
               LayoutTableCell {TD} at (396,26) size 240x24 [r=1 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (638,28) size 63x20 [r=1 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,28) size 63x20 [r=1 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 41x17
+                LayoutText {#text} at (1,1) size 41x17
                   text run at (1,1) width 41: "before"
             LayoutTableRow {TR} at (0,52) size 768x21
               LayoutTableCell {TD} at (2,52) size 392x20 [r=2 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 252x17
+                LayoutText {#text} at (1,1) size 252x17
                   text run at (1,1) width 252: "check box with value property changed"
               LayoutTableCell {TD} at (396,52) size 240x21 [r=2 c=1 rs=1 cs=1]
-                RenderBlock {INPUT} at (5,4) size 13x13
+                LayoutBlockFlow {INPUT} at (5,4) size 13x13
               LayoutTableCell {TD} at (638,52) size 63x20 [r=2 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,52) size 63x20 [r=2 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,75) size 768x20
               LayoutTableCell {TD} at (2,75) size 392x20 [r=3 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 231x17
+                LayoutText {#text} at (1,1) size 231x17
                   text run at (1,1) width 231: "hidden with value property changed"
               LayoutTableCell {TD} at (396,84) size 240x2 [r=3 c=1 rs=1 cs=1]
               LayoutTableCell {TD} at (638,75) size 63x20 [r=3 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,75) size 63x20 [r=3 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,97) size 768x24
               LayoutTableCell {TD} at (2,99) size 392x20 [r=4 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 228x17
+                LayoutText {#text} at (1,1) size 228x17
                   text run at (1,1) width 228: "button with value property changed"
               LayoutTableCell {TD} at (396,97) size 240x24 [r=4 c=1 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 41x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  RenderBlock (anonymous) at (8,3) size 25x16
-                    RenderText {#text} at (0,0) size 25x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 25x16
+                    LayoutText {#text} at (0,0) size 25x16
                       text run at (0,0) width 25: "after"
               LayoutTableCell {TD} at (638,99) size 63x20 [r=4 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,99) size 63x20 [r=4 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,123) size 768x22
               LayoutTableCell {TD} at (2,124) size 392x20 [r=5 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 226x17
+                LayoutText {#text} at (1,1) size 226x17
                   text run at (1,1) width 226: "image with value property changed"
               LayoutTableCell {TD} at (396,123) size 240x22 [r=5 c=1 rs=1 cs=1]
-                RenderBlock {INPUT} at (1,1) size 39x20
+                LayoutBlockFlow {INPUT} at (1,1) size 39x20
               LayoutTableCell {TD} at (638,124) size 63x20 [r=5 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,124) size 63x20 [r=5 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,147) size 768x20
               LayoutTableCell {TD} at (2,147) size 392x20 [r=6 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 220x17
+                LayoutText {#text} at (1,1) size 220x17
                   text run at (1,1) width 220: "radio with value property changed"
               LayoutTableCell {TD} at (396,148) size 240x18 [r=6 c=1 rs=1 cs=1]
-                RenderBlock {INPUT} at (6,4) size 13x13
+                LayoutBlockFlow {INPUT} at (6,4) size 13x13
               LayoutTableCell {TD} at (638,147) size 63x20 [r=6 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,147) size 63x20 [r=6 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,169) size 768x24
               LayoutTableCell {TD} at (2,171) size 392x20 [r=7 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 210x17
+                LayoutText {#text} at (1,1) size 210x17
                   text run at (1,1) width 210: "text with value attribute changed"
               LayoutTableCell {TD} at (396,169) size 240x24 [r=7 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (638,171) size 63x20 [r=7 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,171) size 63x20 [r=7 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,195) size 768x21
               LayoutTableCell {TD} at (2,195) size 392x20 [r=8 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 252x17
+                LayoutText {#text} at (1,1) size 252x17
                   text run at (1,1) width 252: "check box with value attribute changed"
               LayoutTableCell {TD} at (396,195) size 240x21 [r=8 c=1 rs=1 cs=1]
-                RenderBlock {INPUT} at (5,4) size 13x13
+                LayoutBlockFlow {INPUT} at (5,4) size 13x13
               LayoutTableCell {TD} at (638,195) size 63x20 [r=8 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,195) size 63x20 [r=8 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,218) size 768x21
               LayoutTableCell {TD} at (2,218) size 392x20 [r=9 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 390x17
+                LayoutText {#text} at (1,1) size 390x17
                   text run at (1,1) width 390: "text with value property changed, then turned into check box"
               LayoutTableCell {TD} at (396,218) size 240x21 [r=9 c=1 rs=1 cs=1]
-                RenderBlock {INPUT} at (5,4) size 13x13
+                LayoutBlockFlow {INPUT} at (5,4) size 13x13
               LayoutTableCell {TD} at (638,218) size 63x20 [r=9 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,218) size 63x20 [r=9 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,241) size 768x24
               LayoutTableCell {TD} at (2,243) size 392x20 [r=10 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 390x17
+                LayoutText {#text} at (1,1) size 390x17
                   text run at (1,1) width 390: "check box with value property changed, then turned into text"
               LayoutTableCell {TD} at (396,241) size 240x24 [r=10 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (638,243) size 63x20 [r=10 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,243) size 63x20 [r=10 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,267) size 768x21
               LayoutTableCell {TD} at (2,267) size 392x20 [r=11 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 389x17
+                LayoutText {#text} at (1,1) size 389x17
                   text run at (1,1) width 389: "text with value attribute changed, then turned into check box"
               LayoutTableCell {TD} at (396,267) size 240x21 [r=11 c=1 rs=1 cs=1]
-                RenderBlock {INPUT} at (5,4) size 13x13
+                LayoutBlockFlow {INPUT} at (5,4) size 13x13
               LayoutTableCell {TD} at (638,267) size 63x20 [r=11 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,267) size 63x20 [r=11 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,290) size 768x24
               LayoutTableCell {TD} at (2,292) size 392x20 [r=12 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 389x17
+                LayoutText {#text} at (1,1) size 389x17
                   text run at (1,1) width 389: "check box with value attribute changed, then turned into text"
               LayoutTableCell {TD} at (396,290) size 240x24 [r=12 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (638,292) size 63x20 [r=12 c=2 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
               LayoutTableCell {TD} at (703,292) size 63x20 [r=12 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 30x17
+                LayoutText {#text} at (1,1) size 30x17
                   text run at (1,1) width 30: "after"
             LayoutTableRow {TR} at (0,316) size 768x24
               LayoutTableCell {TD} at (2,318) size 392x20 [r=13 c=0 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 208x17
+                LayoutText {#text} at (1,1) size 208x17
                   text run at (1,1) width 208: "file with value property changed"
               LayoutTableCell {TD} at (396,316) size 240x24 [r=13 c=1 rs=1 cs=1]
                 LayoutFileUploadControl {INPUT} at (1,1) size 238x22 "No file chosen"
                   LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                    RenderBlock (anonymous) at (8,3) size 69x16
-                      RenderText {#text} at (0,0) size 69x16
+                    LayoutBlockFlow (anonymous) at (8,3) size 69x16
+                      LayoutText {#text} at (0,0) size 69x16
                         text run at (0,0) width 69: "Choose File"
               LayoutTableCell {TD} at (638,327) size 63x2 [r=13 c=2 rs=1 cs=1]
               LayoutTableCell {TD} at (703,318) size 63x20 [r=13 c=3 rs=1 cs=1]
-                RenderText {#text} at (1,1) size 41x17
+                LayoutText {#text} at (1,1) size 41x17
                   text run at (1,1) width 41: "before"
 layer at (407,132) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 35x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 35x16
       text run at (0,0) width 35: "before"
 layer at (407,158) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 30x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 30x16
       text run at (0,0) width 30: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
 layer at (405,252) size 39x20 clip at (406,253) size 37x18
-  RenderBlock {DIV} at (0,0) size 39x20 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,0) size 39x20 [border: (1px solid #C0C0C0)]
 layer at (407,254) size 35x16
-  RenderBlock {DIV} at (2,2) size 35x16
-    RenderText {#text} at (0,0) size 35x16
+  LayoutBlockFlow {DIV} at (2,2) size 35x16
+    LayoutText {#text} at (0,0) size 35x16
       text run at (0,0) width 35: "before"
 layer at (407,301) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 25x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 25x16
       text run at (0,0) width 25: "after"
 layer at (407,373) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 25x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 25x16
       text run at (0,0) width 25: "after"
 layer at (407,422) size 169x16
-  RenderBlock {DIV} at (2,3) size 169x16
-    RenderText {#text} at (0,0) size 25x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
+    LayoutText {#text} at (0,0) size 25x16
       text run at (0,0) width 25: "after"

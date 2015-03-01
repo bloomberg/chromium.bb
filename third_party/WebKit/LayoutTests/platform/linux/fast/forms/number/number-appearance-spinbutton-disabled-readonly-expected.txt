@@ -1,47 +1,47 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 754x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 754x19
           text run at (0,0) width 754: "Test appearances of spin buttons. Disabled state and read-only state should have appearances different from the normal state."
-      RenderBlock {DIV} at (0,36) size 784x30
-        RenderInline {LABEL} at (0,0) size 311x19
+      LayoutBlockFlow {DIV} at (0,36) size 784x30
+        LayoutInline {LABEL} at (0,0) size 311x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutFlexibleBox {DIV} at (2,3) size 225x24
-              RenderBlock {DIV} at (0,0) size 210x24
-              RenderBlock {DIV} at (210,0) size 15x24
-          RenderText {#text} at (229,7) size 82x19
+              LayoutBlockFlow {DIV} at (0,0) size 210x24
+              LayoutBlockFlow {DIV} at (210,0) size 15x24
+          LayoutText {#text} at (229,7) size 82x19
             text run at (229,7) width 82: " Normal state"
-      RenderBlock {DIV} at (0,66) size 784x30
-        RenderInline {LABEL} at (0,0) size 318x19
+      LayoutBlockFlow {DIV} at (0,66) size 784x30
+        LayoutInline {LABEL} at (0,0) size 318x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
             LayoutFlexibleBox {DIV} at (2,3) size 225x24
-              RenderBlock {DIV} at (0,0) size 210x24
-          RenderText {#text} at (229,7) size 89x19
+              LayoutBlockFlow {DIV} at (0,0) size 210x24
+          LayoutText {#text} at (229,7) size 89x19
             text run at (229,7) width 89: " Disabled state"
-      RenderBlock {DIV} at (0,96) size 784x30
-        RenderInline {LABEL} at (0,0) size 328x19
+      LayoutBlockFlow {DIV} at (0,96) size 784x30
+        LayoutInline {LABEL} at (0,0) size 328x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutFlexibleBox {DIV} at (2,3) size 225x24
-              RenderBlock {DIV} at (0,0) size 210x24
-          RenderText {#text} at (229,7) size 99x19
+              LayoutBlockFlow {DIV} at (0,0) size 210x24
+          LayoutText {#text} at (229,7) size 99x19
             text run at (229,7) width 99: " Read-only state"
 layer at (10,47) size 210x24
-  RenderBlock {DIV} at (0,0) size 210x24
-    RenderText {#text} at (0,0) size 11x23
+  LayoutBlockFlow {DIV} at (0,0) size 210x24
+    LayoutText {#text} at (0,0) size 11x23
       text run at (0,0) width 11: "0"
 layer at (10,77) size 210x24
-  RenderBlock {DIV} at (0,0) size 210x24
-    RenderText {#text} at (0,0) size 11x23
+  LayoutBlockFlow {DIV} at (0,0) size 210x24
+    LayoutText {#text} at (0,0) size 11x23
       text run at (0,0) width 11: "0"
 layer at (10,107) size 210x24
-  RenderBlock {DIV} at (0,0) size 210x24
-    RenderText {#text} at (0,0) size 11x23
+  LayoutBlockFlow {DIV} at (0,0) size 210x24
+    LayoutText {#text} at (0,0) size 11x23
       text run at (0,0) width 11: "0"
 layer at (220,77) size 15x24 transparent
-  RenderBlock {DIV} at (210,0) size 15x24
+  LayoutBlockFlow {DIV} at (210,0) size 15x24
 layer at (220,107) size 15x24 transparent
-  RenderBlock {DIV} at (210,0) size 15x24
+  LayoutBlockFlow {DIV} at (210,0) size 15x24
 caret: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 9 {DIV} of body

@@ -1,21 +1,21 @@
 layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 122x19
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 122x19
           text run at (0,0) width 122: "These should match:"
-      RenderBlock (floating) {DIV} at (0,36) size 100x100 [bgcolor=#560063]
-      RenderBlock (anonymous) at (0,36) size 784x105
+      LayoutBlockFlow (floating) {DIV} at (0,36) size 100x100 [bgcolor=#560063]
+      LayoutBlockFlow (anonymous) at (0,36) size 784x105
         LayoutImage {IMG} at (100,0) size 100x100
-        RenderText {#text} at (200,85) size 4x19
+        LayoutText {#text} at (200,85) size 4x19
           text run at (200,85) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
-      RenderBlock {P} at (0,157) size 784x20
-        RenderText {#text} at (0,0) size 223x19
+      LayoutBlockFlow {P} at (0,157) size 784x20
+        LayoutText {#text} at (0,0) size 223x19
           text run at (0,0) width 223: "These should not match (at this time):"
-      RenderBlock (floating) {DIV} at (0,193) size 100x100 [bgcolor=#560063]
-      RenderBlock (anonymous) at (0,193) size 784x100
+      LayoutBlockFlow (floating) {DIV} at (0,193) size 100x100 [bgcolor=#560063]
+      LayoutBlockFlow (anonymous) at (0,193) size 784x100
         LayoutImage {IMG} at (100,0) size 100x100
-        RenderText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
