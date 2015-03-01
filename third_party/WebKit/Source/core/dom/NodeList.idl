@@ -18,11 +18,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-nodelist
+
 [
     DependentLifetime,
     SetWrapperReferenceFrom=virtualOwnerNode,
     WillBeGarbageCollected,
 ] interface NodeList {
-    getter Node item(unsigned long index);
+    getter Node? item(unsigned long index);
     readonly attribute unsigned long length;
+    // FIXME: iterable<Node>;
 };
