@@ -84,9 +84,9 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone;
 
     // https://dom.spec.whatwg.org/#interface-nonelementparentnode
-
     [PerWorldBindings] Element? getElementById(DOMString elementId);
 
+    // HTML
     // https://html.spec.whatwg.org/#the-document-object
 
     // resource metadata management
@@ -136,6 +136,7 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
     // FIXME: onreadystatechange should use [LenientThis].
     attribute EventHandler onreadystatechange;
 
+    // HTML obsolete features
     // https://html.spec.whatwg.org/#Document-partial
 
     // FIXME: *Color are on HTMLDocument.
@@ -145,25 +146,30 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
     // FIXME: clear(), captureEvents(), releaseEvents() and all are on HTMLDocument.
 
+    // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-document-interface
     readonly attribute StyleSheetList styleSheets;
     attribute DOMString? selectedStylesheetSet;
     readonly attribute DOMString? preferredStylesheetSet;
 
+    // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-document-interface
     // FIXME: The x and y arguments should be of type double.
     Element? elementFromPoint(long x, long y);
     sequence<Element> elementsFromPoint(long x, long y);
 
+    // Selection API
     // http://w3c.github.io/selection-api/#extensions-to-document-interface
     Selection? getSelection();
 
+    // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-document-interface
     attribute EventHandler onpointerlockchange;
     attribute EventHandler onpointerlockerror;
     [MeasureAs=DocumentPointerLockElement] readonly attribute Element? pointerLockElement;
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
 
+    // Touch Events
     // http://www.w3.org/TR/touch-events/#extensions-to-the-document-interface
     // FIXME: The arguments should not be optional.
     // FIXME: The webkit-prefixed arguments are not in the spec.
@@ -186,15 +192,16 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
     [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
 
+    // Custom Elements
     // http://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
     // FIXME: The registerElement return type should be Function.
     [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString type, optional ElementRegistrationOptions options);
-
     // http://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-instantiate
     // FIXME: The typeExtension arguments should not be nullable.
     [CustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, DOMString? typeExtension);
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString? typeExtension);
 
+    // Page Visibility
     // http://www.w3.org/TR/page-visibility/#sec-document-interface
     readonly attribute boolean hidden;
     readonly attribute VisibilityState visibilityState;
