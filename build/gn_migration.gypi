@@ -174,8 +174,6 @@
             '../net/net.gyp:net_unittests',
             #"//ppapi/examples",
             '../third_party/pdfium/samples/samples.gyp:pdfium_test',
-            '../tools/imagediff/imagediff.gyp:imagediff',
-            '../tools/telemetry/telemetry.gyp:bitmaptools',
             '../tools/gn/gn.gyp:gn',
             '../tools/gn/gn.gyp:gn_unittests',
             '../ui/app_list/app_list.gyp:app_list_unittests',
@@ -422,7 +420,7 @@
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
             '../tools/gn/gn.gyp:generate_test_gn_data',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:clear_system_cache',
-            '../tools/telemetry/telemetry.gyp:bitmaptools',
+            #'../tools/telemetry/telemetry.gyp:bitmaptools', TODO(GYP) should this be #host ?
             '../ui/app_list/app_list.gyp:app_list_demo',
             '../ui/compositor/compositor.gyp:compositor_unittests',
             '../ui/message_center/message_center.gyp:message_center_unittests',
