@@ -8,7 +8,12 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=223108
+CLANG_REVISION=230631
+
+# This is incremented when pushing a new build of Clang at the same revision.
+CLANG_SUB_REVISION=2
+
+PACKAGE_VERSION="${CLANG_REVISION}-${CLANG_SUB_REVISION}"
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -88,7 +93,7 @@ while [[ $# > 0 ]]; do
       force_local_build=yes
       ;;
     --print-revision)
-      echo $CLANG_REVISION
+      echo $PACKAGE_VERSION
       exit 0
       ;;
     --run-tests)
@@ -198,8 +203,8 @@ if [[ -f "${STAMP_FILE}" ]]; then
   PREVIOUSLY_BUILT_REVISON=$(cat "${STAMP_FILE}")
   if [[ -z "$force_local_build" ]] && \
        [[ "${PREVIOUSLY_BUILT_REVISON}" = \
-          "${CLANG_AND_PLUGINS_REVISION}" ]]; then
-    echo "Clang already at ${CLANG_AND_PLUGINS_REVISION}"
+          "${PACKAGE_VERSION}" ]]; then
+    echo "Clang already at ${PACKAGE_VERSION}"
     exit 0
   fi
 fi
@@ -211,7 +216,7 @@ if [[ -z "$force_local_build" ]]; then
   # Check if there's a prebuilt binary and if so just fetch that. That's faster,
   # and goma relies on having matching binary hashes on client and server too.
   CDS_URL=https://commondatastorage.googleapis.com/chromium-browser-clang
-  CDS_FILE="clang-${CLANG_REVISION}.tgz"
+  CDS_FILE="clang-${PACKAGE_VERSION}.tgz"
   CDS_OUT_DIR=$(mktemp -d -t clang_download.XXXXXX)
   CDS_OUTPUT="${CDS_OUT_DIR}/${CDS_FILE}"
   if [ "${OS}" = "Linux" ]; then
@@ -233,12 +238,12 @@ if [[ -z "$force_local_build" ]]; then
     rm -rf "${LLVM_BUILD_DIR}"
     mkdir -p "${LLVM_BUILD_DIR}"
     tar -xzf "${CDS_OUTPUT}" -C "${LLVM_BUILD_DIR}"
-    echo clang "${CLANG_REVISION}" unpacked
-    echo "${CLANG_AND_PLUGINS_REVISION}" > "${STAMP_FILE}"
+    echo clang "${PACKAGE_VERSION}" unpacked
+    echo "${PACKAGE_VERSION}" > "${STAMP_FILE}"
     rm -rf "${CDS_OUT_DIR}"
     exit 0
   else
-    echo Did not find prebuilt clang at r"${CLANG_REVISION}", building
+    echo Did not find prebuilt clang "${PACKAGE_VERSION}", building
   fi
 fi
 
@@ -282,6 +287,8 @@ for i in \
       "${CLANG_DIR}/lib/Sema/SemaExprCXX.cpp" \
       "${CLANG_DIR}/test/SemaCXX/default2.cpp" \
       "${CLANG_DIR}/test/SemaCXX/typo-correction-delayed.cpp" \
+      "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc" \
+      "${COMPILER_RT_DIR}/test/tsan/signal_segv_handler.cc" \
       ; do
   if [[ -e "${i}" ]]; then
     rm -f "${i}"  # For unversioned files.
@@ -364,349 +371,6 @@ EOF
   patch -p0
   popd
 
-  # Apply r223211: "Revert r222997."
-  pushd "${LLVM_DIR}"
-  cat << 'EOF' |
---- a/lib/Transforms/Instrumentation/MemorySanitizer.cpp
-+++ b/lib/Transforms/Instrumentation/MemorySanitizer.cpp
-@@ -921,8 +921,6 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
-             Value *OriginPtr =
-                 getOriginPtrForArgument(&FArg, EntryIRB, ArgOffset);
-             setOrigin(A, EntryIRB.CreateLoad(OriginPtr));
--          } else {
--            setOrigin(A, getCleanOrigin());
-           }
-         }
-         ArgOffset += RoundUpToAlignment(Size, kShadowTLSAlignment);
-@@ -942,13 +940,15 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
-   /// \brief Get the origin for a value.
-   Value *getOrigin(Value *V) {
-     if (!MS.TrackOrigins) return nullptr;
--    if (!PropagateShadow) return getCleanOrigin();
--    if (isa<Constant>(V)) return getCleanOrigin();
--    assert((isa<Instruction>(V) || isa<Argument>(V)) &&
--           "Unexpected value type in getOrigin()");
--    Value *Origin = OriginMap[V];
--    assert(Origin && "Missing origin");
--    return Origin;
-+    if (isa<Instruction>(V) || isa<Argument>(V)) {
-+      Value *Origin = OriginMap[V];
-+      if (!Origin) {
-+        DEBUG(dbgs() << "NO ORIGIN: " << *V << "\n");
-+        Origin = getCleanOrigin();
-+      }
-+      return Origin;
-+    }
-+    return getCleanOrigin();
-   }
- 
-   /// \brief Get the origin for i-th argument of the instruction I.
-@@ -1088,7 +1088,6 @@ struct MemorySanitizerVisitor : public InstVisitor<MemorySanitizerVisitor> {
-     IRB.CreateStore(getCleanShadow(&I), ShadowPtr);
- 
-     setShadow(&I, getCleanShadow(&I));
--    setOrigin(&I, getCleanOrigin());
-   }
- 
-   void visitAtomicRMWInst(AtomicRMWInst &I) {
-EOF
-  patch -p1
-  popd
-
-  # Apply r223219: "Preserve LD_LIBRARY_PATH when using the 'env' command"
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/test/Driver/env.c
-+++ b/test/Driver/env.c
-@@ -5,12 +5,14 @@
- // REQUIRES: shell
- //
- // The PATH variable is heavily used when trying to find a linker.
--// RUN: env -i LC_ALL=C %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
-+// RUN: env -i LC_ALL=C LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
-+// RUN:   %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
- // RUN:     --target=i386-unknown-linux \
- // RUN:     --sysroot=%S/Inputs/basic_linux_tree \
- // RUN:   | FileCheck --check-prefix=CHECK-LD-32 %s
- //
--// RUN: env -i LC_ALL=C PATH="" %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
-+// RUN: env -i LC_ALL=C PATH="" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
-+// RUN:   %clang -no-canonical-prefixes %s -### -o %t.o 2>&1 \
- // RUN:     --target=i386-unknown-linux \
- // RUN:     --sysroot=%S/Inputs/basic_linux_tree \
- // RUN:   | FileCheck --check-prefix=CHECK-LD-32 %s
-EOF
-  patch -p1
-  popd
-
-  # Revert r220714: "Frontend: Define __EXCEPTIONS if -fexceptions is passed"
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/lib/Frontend/InitPreprocessor.cpp
-+++ b/lib/Frontend/InitPreprocessor.cpp
-@@ -566,7 +566,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
-     Builder.defineMacro("__BLOCKS__");
-   }
- 
--  if (!LangOpts.MSVCCompat && LangOpts.Exceptions)
-+  if (!LangOpts.MSVCCompat && LangOpts.CXXExceptions)
-     Builder.defineMacro("__EXCEPTIONS");
-   if (!LangOpts.MSVCCompat && LangOpts.RTTI)
-     Builder.defineMacro("__GXX_RTTI");
-diff --git a/test/Frontend/exceptions.c b/test/Frontend/exceptions.c
-index 981b5b9..4bbaaa3 100644
---- a/test/Frontend/exceptions.c
-+++ b/test/Frontend/exceptions.c
-@@ -1,9 +1,6 @@
--// RUN: %clang_cc1 -fms-compatibility -fexceptions -fcxx-exceptions -DMS_MODE -verify %s
-+// RUN: %clang_cc1 -fms-compatibility -fexceptions -fcxx-exceptions -verify %s
- // expected-no-diagnostics
- 
--// RUN: %clang_cc1 -fms-compatibility -fexceptions -verify %s
--// expected-no-diagnostics
--
--#if defined(MS_MODE) && defined(__EXCEPTIONS)
-+#if defined(__EXCEPTIONS)
- #error __EXCEPTIONS should not be defined.
- #endif
-diff --git a/test/Preprocessor/predefined-exceptions.m b/test/Preprocessor/predefined-exceptions.m
-index 0791075..c13f429 100644
---- a/test/Preprocessor/predefined-exceptions.m
-+++ b/test/Preprocessor/predefined-exceptions.m
-@@ -1,6 +1,6 @@
- // RUN: %clang_cc1 -x objective-c -fobjc-exceptions -fexceptions -E -dM %s | FileCheck -check-prefix=CHECK-OBJC-NOCXX %s 
- // CHECK-OBJC-NOCXX: #define OBJC_ZEROCOST_EXCEPTIONS 1
--// CHECK-OBJC-NOCXX: #define __EXCEPTIONS 1
-+// CHECK-OBJC-NOCXX-NOT: #define __EXCEPTIONS 1
- 
- // RUN: %clang_cc1 -x objective-c++ -fobjc-exceptions -fexceptions -fcxx-exceptions -E -dM %s | FileCheck -check-prefix=CHECK-OBJC-CXX %s 
- // CHECK-OBJC-CXX: #define OBJC_ZEROCOST_EXCEPTIONS 1
-EOF
-  patch -p1
-  popd
-
-  # Apply r223177: "Ensure typos in the default values of template parameters get diagnosed."
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/lib/Parse/ParseTemplate.cpp
-+++ b/lib/Parse/ParseTemplate.cpp
-@@ -676,7 +676,7 @@ Parser::ParseNonTypeTemplateParameter(unsigned Depth, unsigned Position) {
-     GreaterThanIsOperatorScope G(GreaterThanIsOperator, false);
-     EnterExpressionEvaluationContext Unevaluated(Actions, Sema::Unevaluated);
- 
--    DefaultArg = ParseAssignmentExpression();
-+    DefaultArg = Actions.CorrectDelayedTyposInExpr(ParseAssignmentExpression());
-     if (DefaultArg.isInvalid())
-       SkipUntil(tok::comma, tok::greater, StopAtSemi | StopBeforeMatch);
-   }
-diff --git a/test/SemaCXX/default2.cpp b/test/SemaCXX/default2.cpp
-index 1626044..c4d40b4 100644
---- a/test/SemaCXX/default2.cpp
-+++ b/test/SemaCXX/default2.cpp
-@@ -122,3 +122,9 @@ class XX {
-   void A(int length = -1 ) {  } 
-   void B() { A(); }
- };
-+
-+template <int I = (1 * I)> struct S {};  // expected-error-re {{use of undeclared identifier 'I'{{$}}}}
-+S<1> s;
-+
-+template <int I1 = I2, int I2 = 1> struct T {};  // expected-error-re {{use of undeclared identifier 'I2'{{$}}}}
-+T<0, 1> t;
-diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
-index bff1d76..7bf9258 100644
---- a/test/SemaCXX/typo-correction-delayed.cpp
-+++ b/test/SemaCXX/typo-correction-delayed.cpp
-@@ -102,3 +102,7 @@ void f(int *i) {
-   __atomic_load(i, i, something_something);  // expected-error-re {{use of undeclared identifier 'something_something'{{$}}}}
- }
- }
-+
-+const int DefaultArg = 9;  // expected-note {{'DefaultArg' declared here}}
-+template <int I = defaultArg> struct S {};  // expected-error {{use of undeclared identifier 'defaultArg'; did you mean 'DefaultArg'?}}
-+S<1> s;
-EOF
-  patch -p1
-  popd
-
-  # Apply r223209: "Handle delayed corrections in a couple more error paths in ParsePostfixExpressionSuffix."
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/lib/Parse/ParseExpr.cpp
-+++ b/lib/Parse/ParseExpr.cpp
-@@ -1390,6 +1390,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
-         SourceLocation OpenLoc = ConsumeToken();
- 
-         if (ParseSimpleExpressionList(ExecConfigExprs, ExecConfigCommaLocs)) {
-+          (void)Actions.CorrectDelayedTyposInExpr(LHS);
-           LHS = ExprError();
-         }
- 
-@@ -1440,6 +1441,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
-         if (Tok.isNot(tok::r_paren)) {
-           if (ParseExpressionList(ArgExprs, CommaLocs, &Sema::CodeCompleteCall,
-                                   LHS.get())) {
-+            (void)Actions.CorrectDelayedTyposInExpr(LHS);
-             LHS = ExprError();
-           }
-         }
-diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
-index 7bf9258..f7ef015 100644
---- a/test/SemaCXX/typo-correction-delayed.cpp
-+++ b/test/SemaCXX/typo-correction-delayed.cpp
-@@ -106,3 +106,9 @@ void f(int *i) {
- const int DefaultArg = 9;  // expected-note {{'DefaultArg' declared here}}
- template <int I = defaultArg> struct S {};  // expected-error {{use of undeclared identifier 'defaultArg'; did you mean 'DefaultArg'?}}
- S<1> s;
-+
-+namespace foo {}
-+void test_paren_suffix() {
-+  foo::bar({5, 6});  // expected-error-re {{no member named 'bar' in namespace 'foo'{{$}}}} \
-+                     // expected-error {{expected expression}}
-+}
-EOF
-  patch -p1
-  popd
-
-  # Apply r223705: "Handle possible TypoExprs in member initializers."
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/lib/Sema/SemaDeclCXX.cpp
-+++ b/lib/Sema/SemaDeclCXX.cpp
-@@ -2813,6 +2813,11 @@ Sema::BuildMemInitializer(Decl *ConstructorD,
-                           SourceLocation IdLoc,
-                           Expr *Init,
-                           SourceLocation EllipsisLoc) {
-+  ExprResult Res = CorrectDelayedTyposInExpr(Init);
-+  if (!Res.isUsable())
-+    return true;
-+  Init = Res.get();
-+
-   if (!ConstructorD)
-     return true;
- 
-diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
-index f7ef015..d303b58 100644
---- a/test/SemaCXX/typo-correction-delayed.cpp
-+++ b/test/SemaCXX/typo-correction-delayed.cpp
-@@ -112,3 +112,10 @@ void test_paren_suffix() {
-   foo::bar({5, 6});  // expected-error-re {{no member named 'bar' in namespace 'foo'{{$}}}} \
-                      // expected-error {{expected expression}}
- }
-+
-+const int kNum = 10;  // expected-note {{'kNum' declared here}}
-+class SomeClass {
-+  int Kind;
-+public:
-+  explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
-+};
-EOF
-  patch -p1
-  popd
-
-  # Apply r224172: "Typo correction: Ignore temporary binding exprs after overload resolution"
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/lib/Sema/SemaExprCXX.cpp
-+++ b/lib/Sema/SemaExprCXX.cpp
-@@ -6105,8 +6105,13 @@ public:
-     auto Result = BaseTransform::RebuildCallExpr(Callee, LParenLoc, Args,
-                                                  RParenLoc, ExecConfig);
-     if (auto *OE = dyn_cast<OverloadExpr>(Callee)) {
--      if (!Result.isInvalid() && Result.get())
--        OverloadResolution[OE] = cast<CallExpr>(Result.get())->getCallee();
-+      if (!Result.isInvalid() && Result.get()) {
-+        Expr *ResultCall = Result.get();
-+        if (auto *BE = dyn_cast<CXXBindTemporaryExpr>(ResultCall))
-+          ResultCall = BE->getSubExpr();
-+        if (auto *CE = dyn_cast<CallExpr>(ResultCall))
-+          OverloadResolution[OE] = CE->getCallee();
-+      }
-     }
-     return Result;
-   }
-diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
-index d303b58..d42888f 100644
---- a/test/SemaCXX/typo-correction-delayed.cpp
-+++ b/test/SemaCXX/typo-correction-delayed.cpp
-@@ -119,3 +119,23 @@ class SomeClass {
- public:
-   explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
- };
-+
-+extern "C" int printf(const char *, ...);
-+
-+// There used to be an issue with typo resolution inside overloads.
-+struct AssertionResult {
-+  ~AssertionResult();
-+  operator bool();
-+  int val;
-+};
-+AssertionResult Compare(const char *a, const char *b);
-+AssertionResult Compare(int a, int b);
-+int main() {
-+  // expected-note@+1 {{'result' declared here}}
-+  const char *result;
-+  // expected-error@+1 {{use of undeclared identifier 'resulta'; did you mean 'result'?}}
-+  if (AssertionResult ar = (Compare("value1", resulta)))
-+    ;
-+  else
-+    printf("ar: %d\n", ar.val);
-+}
-EOF
-  patch -p1
-  popd
-
-  # Apply r224173: "Implement feedback on r224172 in PR21899"
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- a/lib/Sema/SemaExprCXX.cpp
-+++ b/lib/Sema/SemaExprCXX.cpp
-@@ -6105,7 +6105,7 @@ public:
-     auto Result = BaseTransform::RebuildCallExpr(Callee, LParenLoc, Args,
-                                                  RParenLoc, ExecConfig);
-     if (auto *OE = dyn_cast<OverloadExpr>(Callee)) {
--      if (!Result.isInvalid() && Result.get()) {
-+      if (Result.isUsable()) {
-         Expr *ResultCall = Result.get();
-         if (auto *BE = dyn_cast<CXXBindTemporaryExpr>(ResultCall))
-           ResultCall = BE->getSubExpr();
-diff --git a/test/SemaCXX/typo-correction-delayed.cpp b/test/SemaCXX/typo-correction-delayed.cpp
-index d42888f..7879d29 100644
---- a/test/SemaCXX/typo-correction-delayed.cpp
-+++ b/test/SemaCXX/typo-correction-delayed.cpp
-@@ -120,22 +120,13 @@ public:
-   explicit SomeClass() : Kind(kSum) {}  // expected-error {{use of undeclared identifier 'kSum'; did you mean 'kNum'?}}
- };
- 
--extern "C" int printf(const char *, ...);
--
- // There used to be an issue with typo resolution inside overloads.
--struct AssertionResult {
--  ~AssertionResult();
--  operator bool();
--  int val;
--};
--AssertionResult Compare(const char *a, const char *b);
--AssertionResult Compare(int a, int b);
--int main() {
-+struct AssertionResult { ~AssertionResult(); };
-+AssertionResult Overload(const char *a);
-+AssertionResult Overload(int a);
-+void UseOverload() {
-   // expected-note@+1 {{'result' declared here}}
-   const char *result;
-   // expected-error@+1 {{use of undeclared identifier 'resulta'; did you mean 'result'?}}
--  if (AssertionResult ar = (Compare("value1", resulta)))
--    ;
--  else
--    printf("ar: %d\n", ar.val);
-+  Overload(resulta);
- }
-EOF
-  patch -p1
-  popd
-
   # This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
   pushd "${LLVM_DIR}"
   cat << 'EOF' |
@@ -722,6 +386,225 @@ Index: test/Bindings/Go/go.test
 EOF
   patch -p0
   popd
+
+  # Revert r229678.
+  pushd "${COMPILER_RT_DIR}"
+  cat << 'EOF' |
+--- a/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc
++++ b/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc
+@@ -184,9 +184,10 @@ bool ThreadSuspender::SuspendAllThreads() {
+ // Pointer to the ThreadSuspender instance for use in signal handler.
+ static ThreadSuspender *thread_suspender_instance = NULL;
+ 
+-// Synchronous signals that should not be blocked.
+-static const int kSyncSignals[] = { SIGABRT, SIGILL, SIGFPE, SIGSEGV, SIGBUS,
+-                                    SIGXCPU, SIGXFSZ };
++// Signals that should not be blocked (this is used in the parent thread as well
++// as the tracer thread).
++static const int kUnblockedSignals[] = { SIGABRT, SIGILL, SIGFPE, SIGSEGV,
++                                         SIGBUS, SIGXCPU, SIGXFSZ };
+ 
+ // Structure for passing arguments into the tracer thread.
+ struct TracerThreadArgument {
+@@ -201,7 +202,7 @@ struct TracerThreadArgument {
+ static DieCallbackType old_die_callback;
+ 
+ // Signal handler to wake up suspended threads when the tracer thread dies.
+-static void TracerThreadSignalHandler(int signum, void *siginfo, void *) {
++void TracerThreadSignalHandler(int signum, void *siginfo, void *) {
+   if (thread_suspender_instance != NULL) {
+     if (signum == SIGABRT)
+       thread_suspender_instance->KillAllThreads();
+@@ -241,7 +242,6 @@ static int TracerThread(void* argument) {
+   tracer_thread_argument->mutex.Lock();
+   tracer_thread_argument->mutex.Unlock();
+ 
+-  old_die_callback = GetDieCallback();
+   SetDieCallback(TracerThreadDieCallback);
+ 
+   ThreadSuspender thread_suspender(internal_getppid());
+@@ -256,14 +256,17 @@ static int TracerThread(void* argument) {
+   handler_stack.ss_size = kHandlerStackSize;
+   internal_sigaltstack(&handler_stack, NULL);
+ 
+-  // Install our handler for synchronous signals. Other signals should be
+-  // blocked by the mask we inherited from the parent thread.
+-  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++) {
+-    __sanitizer_sigaction act;
+-    internal_memset(&act, 0, sizeof(act));
+-    act.sigaction = TracerThreadSignalHandler;
+-    act.sa_flags = SA_ONSTACK | SA_SIGINFO;
+-    internal_sigaction_norestorer(kSyncSignals[i], &act, 0);
++  // Install our handler for fatal signals. Other signals should be blocked by
++  // the mask we inherited from the caller thread.
++  for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
++       signal_index++) {
++    __sanitizer_sigaction new_sigaction;
++    internal_memset(&new_sigaction, 0, sizeof(new_sigaction));
++    new_sigaction.sigaction = TracerThreadSignalHandler;
++    new_sigaction.sa_flags = SA_ONSTACK | SA_SIGINFO;
++    internal_sigfillset(&new_sigaction.sa_mask);
++    internal_sigaction_norestorer(kUnblockedSignals[signal_index],
++                                  &new_sigaction, NULL);
+   }
+ 
+   int exit_code = 0;
+@@ -276,11 +279,9 @@ static int TracerThread(void* argument) {
+     thread_suspender.ResumeAllThreads();
+     exit_code = 0;
+   }
+-  // Note, this is a bad race. If TracerThreadDieCallback is already started
+-  // in another thread and observed that thread_suspender_instance != 0,
+-  // it can call KillAllThreads on the destroyed variable.
+-  SetDieCallback(old_die_callback);
+   thread_suspender_instance = NULL;
++  handler_stack.ss_flags = SS_DISABLE;
++  internal_sigaltstack(&handler_stack, NULL);
+   return exit_code;
+ }
+ 
+@@ -312,21 +313,53 @@ class ScopedStackSpaceWithGuard {
+ // into globals.
+ static __sanitizer_sigset_t blocked_sigset;
+ static __sanitizer_sigset_t old_sigset;
++static __sanitizer_sigaction old_sigactions
++    [ARRAY_SIZE(kUnblockedSignals)];
+ 
+ class StopTheWorldScope {
+  public:
+   StopTheWorldScope() {
++    // Block all signals that can be blocked safely, and install
++    // default handlers for the remaining signals.
++    // We cannot allow user-defined handlers to run while the ThreadSuspender
++    // thread is active, because they could conceivably call some libc functions
++    // which modify errno (which is shared between the two threads).
++    internal_sigfillset(&blocked_sigset);
++    for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
++         signal_index++) {
++      // Remove the signal from the set of blocked signals.
++      internal_sigdelset(&blocked_sigset, kUnblockedSignals[signal_index]);
++      // Install the default handler.
++      __sanitizer_sigaction new_sigaction;
++      internal_memset(&new_sigaction, 0, sizeof(new_sigaction));
++      new_sigaction.handler = SIG_DFL;
++      internal_sigfillset(&new_sigaction.sa_mask);
++      internal_sigaction_norestorer(kUnblockedSignals[signal_index],
++          &new_sigaction, &old_sigactions[signal_index]);
++    }
++    int sigprocmask_status =
++        internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
++    CHECK_EQ(sigprocmask_status, 0); // sigprocmask should never fail
+     // Make this process dumpable. Processes that are not dumpable cannot be
+     // attached to.
+     process_was_dumpable_ = internal_prctl(PR_GET_DUMPABLE, 0, 0, 0, 0);
+     if (!process_was_dumpable_)
+       internal_prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
++    old_die_callback = GetDieCallback();
+   }
+ 
+   ~StopTheWorldScope() {
++    SetDieCallback(old_die_callback);
+     // Restore the dumpable flag.
+     if (!process_was_dumpable_)
+       internal_prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
++    // Restore the signal handlers.
++    for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
++         signal_index++) {
++      internal_sigaction_norestorer(kUnblockedSignals[signal_index],
++                                    &old_sigactions[signal_index], NULL);
++    }
++    internal_sigprocmask(SIG_SETMASK, &old_sigset, &old_sigset);
+   }
+ 
+  private:
+@@ -359,36 +392,11 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
+   // Block the execution of TracerThread until after we have set ptrace
+   // permissions.
+   tracer_thread_argument.mutex.Lock();
+-  // Signal handling story.
+-  // We don't want async signals to be delivered to the tracer thread,
+-  // so we block all async signals before creating the thread. An async signal
+-  // handler can temporary modify errno, which is shared with this thread.
+-  // We ought to use pthread_sigmask here, because sigprocmask has undefined
+-  // behavior in multithreaded programs. However, on linux sigprocmask is
+-  // equivalent to pthread_sigmask with the exception that pthread_sigmask
+-  // does not allow to block some signals used internally in pthread
+-  // implementation. We are fine with blocking them here, we are really not
+-  // going to pthread_cancel the thread.
+-  // The tracer thread should not raise any synchronous signals. But in case it
+-  // does, we setup a special handler for sync signals that properly kills the
+-  // parent as well. Note: we don't pass CLONE_SIGHAND to clone, so handlers
+-  // in the tracer thread won't interfere with user program. Double note: if a
+-  // user does something along the lines of 'kill -11 pid', that can kill the
+-  // process even if user setup own handler for SEGV.
+-  // Thing to watch out for: this code should not change behavior of user code
+-  // in any observable way. In particular it should not override user signal
+-  // handlers.
+-  internal_sigfillset(&blocked_sigset);
+-  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++)
+-    internal_sigdelset(&blocked_sigset, kSyncSignals[i]);
+-  int rv = internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
+-  CHECK_EQ(rv, 0);
+   uptr tracer_pid = internal_clone(
+       TracerThread, tracer_stack.Bottom(),
+       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_UNTRACED,
+       &tracer_thread_argument, 0 /* parent_tidptr */, 0 /* newtls */, 0
+       /* child_tidptr */);
+-  internal_sigprocmask(SIG_SETMASK, &old_sigset, 0);
+   int local_errno = 0;
+   if (internal_iserror(tracer_pid, &local_errno)) {
+     VReport(1, "Failed spawning a tracer thread (errno %d).\n", local_errno);
+diff --git a/compiler-rt/test/tsan/signal_segv_handler.cc b/compiler-rt/test/tsan/signal_segv_handler.cc
+deleted file mode 100644
+index 2d806ee..0000000
+--- a/test/tsan/signal_segv_handler.cc
++++ /dev/null
+@@ -1,39 +0,0 @@
+-// RUN: %clang_tsan -O1 %s -o %t && TSAN_OPTIONS="flush_memory_ms=1 memory_limit_mb=1" %run %t 2>&1 | FileCheck %s
+-
+-// JVM uses SEGV to preempt threads. All threads do a load from a known address
+-// periodically. When runtime needs to preempt threads, it unmaps the page.
+-// Threads start triggering SEGV one by one. The signal handler blocks
+-// threads while runtime does its thing. Then runtime maps the page again
+-// and resumes the threads.
+-// Previously this pattern conflicted with stop-the-world machinery,
+-// because it briefly reset SEGV handler to SIG_DFL.
+-// As the consequence JVM just silently died.
+-
+-// This test sets memory flushing rate to maximum, then does series of
+-// "benign" SEGVs that are handled by signal handler, and ensures that
+-// the process survive.
+-
+-#include "test.h"
+-#include <signal.h>
+-#include <sys/mman.h>
+-
+-void *guard;
+-
+-void handler(int signo, siginfo_t *info, void *uctx) {
+-  mprotect(guard, 4096, PROT_READ | PROT_WRITE);
+-}
+-
+-int main() {
+-  struct sigaction a;
+-  a.sa_sigaction = handler;
+-  a.sa_flags = SA_SIGINFO;
+-  sigaction(SIGSEGV, &a, 0);
+-  guard = mmap(0, 4096, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
+-  for (int i = 0; i < 1000000; i++) {
+-    mprotect(guard, 4096, PROT_NONE);
+-    *(int*)guard = 1;
+-  }
+-  fprintf(stderr, "DONE\n");
+-}
+-
+-// CHECK: DONE
+EOF
+  patch -p1
+  popd
+
+
+
 
 fi
 
@@ -975,4 +858,4 @@ if [[ -n "$run_tests" ]]; then
 fi
 
 # After everything is done, log success for this revision.
-echo "${CLANG_AND_PLUGINS_REVISION}" > "${STAMP_FILE}"
+echo "${PACKAGE_VERSION}" > "${STAMP_FILE}"
