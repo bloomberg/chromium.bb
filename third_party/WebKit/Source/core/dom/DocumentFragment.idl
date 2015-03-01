@@ -17,12 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-documentfragment
+
 [
     Constructor,
     ConstructorCallWith=Document,
 ] interface DocumentFragment : Node {
-    // NonElementParentNode API.
-    Element getElementById(DOMString elementId);
 };
 
 DocumentFragment implements ParentNode;
+DocumentFragment implements NonElementParentNode;

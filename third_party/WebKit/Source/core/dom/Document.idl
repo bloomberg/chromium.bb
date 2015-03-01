@@ -83,9 +83,6 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
     [RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString? xmlVersion;
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone;
 
-    // https://dom.spec.whatwg.org/#interface-nonelementparentnode
-    [PerWorldBindings] Element? getElementById(DOMString elementId);
-
     // HTML
     // https://html.spec.whatwg.org/#the-document-object
 
@@ -235,3 +232,4 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
 Document implements GlobalEventHandlers;
 Document implements ParentNode;
+Document implements NonElementParentNode;
