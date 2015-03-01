@@ -299,6 +299,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       bool user_gesture,
       content::WebContents* new_contents);
 
+  // Requests resolution of a potentially relative URL.
+  GURL ResolveURL(const std::string& src);
+
   // Notification that a load in the guest resulted in abort. Note that |url|
   // may be invalid.
   void LoadAbort(bool is_top_level,
