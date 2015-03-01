@@ -34,19 +34,51 @@ class WebstorePrivateApi {
       Profile* profile, const std::string& extension_id);
 };
 
-class WebstorePrivateBeginInstallWithManifest3Function
+// Base class for webstorePrivate functions that show a permission prompt.
+template<typename Params>
+class WebstorePrivateFunctionWithPermissionPrompt
     : public UIThreadExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
-                             WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
+  WebstorePrivateFunctionWithPermissionPrompt();
 
-  WebstorePrivateBeginInstallWithManifest3Function();
+ protected:
+  ~WebstorePrivateFunctionWithPermissionPrompt() override;
+
+  // May be implemented by subclasses to add their own code to the
+  // ExtensionFunction::Run implementation. Return a non-null ResponseValue to
+  // trigger an immediate response.
+  virtual ExtensionFunction::ResponseValue RunExtraForResponse();
+
+  // Must be implemented by subclasses to call one of the Confirm* methods on
+  // |install_prompt|.
+  virtual void ShowPrompt(ExtensionInstallPrompt* install_prompt) = 0;
+
+  // May be implemented by subclasses to add their own code to the
+  // ExtensionInstallPrompt::Delegate::InstallUIProceed and InstallUIAbort
+  // implementations.
+  virtual void InstallUIProceedHook() {}
+  virtual void InstallUIAbortHook(bool user_initiated) {}
+
+  // Must be implemented by subclasses to forward to their own Results::Create
+  // function.
+  virtual scoped_ptr<base::ListValue> CreateResults(
+      api::webstore_private::Result result) const = 0;
+
+  ExtensionFunction::ResponseValue BuildResponse(
+      api::webstore_private::Result result,
+      const std::string& error);
+
+  const Params& params() const { return *params_; }
+  const SkBitmap& icon() const { return icon_; }
+  const scoped_refptr<Extension>& dummy_extension() const {
+    return dummy_extension_;
+  }
+
+  scoped_ptr<base::DictionaryValue> PassParsedManifest();
 
  private:
-  ~WebstorePrivateBeginInstallWithManifest3Function() override;
-
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 
@@ -62,17 +94,10 @@ class WebstorePrivateBeginInstallWithManifest3Function
   void InstallUIProceed() override;
   void InstallUIAbort(bool user_initiated) override;
 
-  // Response helpers.
-  ExtensionFunction::ResponseValue BuildResponseForSuccess();
-  ExtensionFunction::ResponseValue BuildResponseForError(
-      api::webstore_private::Result result, const std::string& error);
-
-  ChromeExtensionFunctionDetails chrome_details_;
-
   // This stores the input parameters to the function.
-  scoped_ptr<api::webstore_private::BeginInstallWithManifest3::Params> params_;
+  scoped_ptr<Params> params_;
 
-  // The results of parsing manifest_ and icon_data_ go into these two.
+  // The results of parsing manifest_ and icon_data_.
   scoped_ptr<base::DictionaryValue> parsed_manifest_;
   SkBitmap icon_;
 
@@ -82,12 +107,30 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   // The class that displays the install prompt.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+};
+
+class WebstorePrivateBeginInstallWithManifest3Function
+    : public WebstorePrivateFunctionWithPermissionPrompt
+          <api::webstore_private::BeginInstallWithManifest3::Params> {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
+                             WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
+
+  WebstorePrivateBeginInstallWithManifest3Function();
+
+ private:
+  ~WebstorePrivateBeginInstallWithManifest3Function() override;
+
+  ExtensionFunction::ResponseValue RunExtraForResponse() override;
+  void ShowPrompt(ExtensionInstallPrompt* install_prompt) override;
+  void InstallUIProceedHook() override;
+  void InstallUIAbortHook(bool user_initiated) override;
+  scoped_ptr<base::ListValue> CreateResults(
+      api::webstore_private::Result result) const override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
 
   scoped_ptr<ScopedActiveInstall> scoped_active_install_;
-
-  // The authuser query parameter value which should be used with CRX download
-  // requests. This is empty if authuser should not be set on download requests.
-  std::string authuser_;
 };
 
 class WebstorePrivateCompleteInstallFunction
@@ -118,6 +161,25 @@ class WebstorePrivateCompleteInstallFunction
 
   scoped_ptr<WebstoreInstaller::Approval> approval_;
   scoped_ptr<ScopedActiveInstall> scoped_active_install_;
+};
+
+class WebstorePrivateShowPermissionPromptForDelegatedInstallFunction
+    : public WebstorePrivateFunctionWithPermissionPrompt
+          <api::webstore_private::ShowPermissionPromptForDelegatedInstall::
+               Params> {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "webstorePrivate.showPermissionPromptForDelegatedInstall",
+      WEBSTOREPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDINSTALL)
+
+  WebstorePrivateShowPermissionPromptForDelegatedInstallFunction();
+
+ private:
+  ~WebstorePrivateShowPermissionPromptForDelegatedInstallFunction() override;
+
+  void ShowPrompt(ExtensionInstallPrompt* install_prompt) override;
+  scoped_ptr<base::ListValue> CreateResults(
+      api::webstore_private::Result result) const override;
 };
 
 class WebstorePrivateEnableAppLauncherFunction

@@ -48584,6 +48584,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="970" label="FILEMANAGERPRIVATE_SETENTRYTAG"/>
   <int value="971" label="INPUTMETHODPRIVATE_FETCHALLDICTIONARYWORDS"/>
   <int value="972" label="INPUTMETHODPRIVATE_ADDWORDTODICTIONARY"/>
+  <int value="973"
+      label="WEBSTOREPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDINSTALL"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

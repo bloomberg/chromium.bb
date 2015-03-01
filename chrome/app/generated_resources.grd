@@ -4322,6 +4322,12 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_REMOTE_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window when an app was installed remotely">
         Confirm New Extension
       </message>
+      <message name="IDS_EXTENSION_DELEGATED_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app delegated installation prompt window">
+        Confirm New App for <ph name="USER_NAME">$1<ex>Wallace</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_DELEGATED_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension delegated installation prompt window">
+        Confirm New Extension for <ph name="USER_NAME">$1<ex>Wallace</ex></ph>
+      </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>

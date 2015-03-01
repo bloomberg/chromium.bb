@@ -70,6 +70,7 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE,
     0,  // The remote install prompt depends on what's being installed.
     0,  // The repair install prompt depends on what's being installed.
+    0,  // The delegated install prompt depends on what's being installed.
 };
 static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_INSTALL_PROMPT_HEADING,
@@ -81,7 +82,8 @@ static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING,
     IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING,
     IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING,
-    IDS_EXTENSION_REPAIR_PROMPT_HEADING
+    IDS_EXTENSION_REPAIR_PROMPT_HEADING,
+    IDS_EXTENSION_INSTALL_PROMPT_HEADING,
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -91,6 +93,7 @@ static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_CANCEL,
+    ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -106,6 +109,7 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_PROMPT_LAUNCH_BUTTON,
     IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON,
     IDS_EXTENSION_PROMPT_REPAIR_BUTTON,
+    IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     0,  // These all use the platform's default cancel label.
@@ -118,6 +122,7 @@ static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     0,  // Platform dependent cancel button.
     0,
     0,
+    IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
 };
 static const int
     kPermissionsHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -131,6 +136,7 @@ static const int
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
         IDS_EXTENSION_PROMPT_CAN_ACCESS,
+        IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
 };
 
 // Returns bitmap for the default icon with size equal to the default icon's
@@ -217,6 +223,8 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "REMOTE_INSTALL_PROMPT";
     case ExtensionInstallPrompt::REPAIR_PROMPT:
       return "REPAIR_PROMPT";
+    case ExtensionInstallPrompt::DELEGATED_PERMISSIONS_PROMPT:
+      return "DELEGATED_PERMISSIONS_PROMPT";
     case ExtensionInstallPrompt::UNSET_PROMPT_TYPE:
     case ExtensionInstallPrompt::NUM_PROMPT_TYPES:
       break;
@@ -331,6 +339,14 @@ base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
       resource_id = IDS_EXTENSION_REPAIR_APP_PROMPT_TITLE;
     else
       resource_id = IDS_EXTENSION_REPAIR_EXTENSION_PROMPT_TITLE;
+  } else if (type_ == DELEGATED_PERMISSIONS_PROMPT) {
+    DCHECK(!delegated_username_.empty());
+    if (extension_->is_app())
+      resource_id = IDS_EXTENSION_DELEGATED_INSTALL_APP_PROMPT_TITLE;
+    else
+      resource_id = IDS_EXTENSION_DELEGATED_INSTALL_EXTENSION_PROMPT_TITLE;
+    return l10n_util::GetStringFUTF16(
+        resource_id, base::UTF8ToUTF16(delegated_username_));
   }
 
   return l10n_util::GetStringUTF16(resource_id);
@@ -752,6 +768,20 @@ void ExtensionInstallPrompt::ConfirmInstall(
   LoadImageIfNeeded();
 }
 
+void ExtensionInstallPrompt::ConfirmPermissionsForDelegatedInstall(
+    Delegate* delegate,
+    const Extension* extension,
+    const std::string& delegated_username,
+    const SkBitmap* icon) {
+  DCHECK(ui_loop_ == base::MessageLoop::current());
+  delegate_ = delegate;
+  extension_ = extension;
+  delegated_username_ = delegated_username;
+  SetIcon(icon);
+  prompt_ = new Prompt(DELEGATED_PERMISSIONS_PROMPT);
+  ShowConfirmation();
+}
+
 void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
                                              const Extension* extension) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
@@ -932,9 +962,11 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case LAUNCH_PROMPT:
     case POST_INSTALL_PERMISSIONS_PROMPT:
     case REMOTE_INSTALL_PROMPT:
-    case REPAIR_PROMPT: {
+    case REPAIR_PROMPT:
+    case DELEGATED_PERMISSIONS_PROMPT: {
       prompt_->set_extension(extension_);
       prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
+      prompt_->set_delegated_username(delegated_username_);
       break;
     }
     case BUNDLE_INSTALL_PROMPT: {

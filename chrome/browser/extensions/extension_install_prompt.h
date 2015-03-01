@@ -75,6 +75,7 @@ class ExtensionInstallPrompt
     LAUNCH_PROMPT,
     REMOTE_INSTALL_PROMPT,
     REPAIR_PROMPT,
+    DELEGATED_PERMISSIONS_PROMPT,
     NUM_PROMPT_TYPES
   };
 
@@ -122,7 +123,6 @@ class ExtensionInstallPrompt
                          bool show_user_count,
                          double average_rating,
                          int rating_count);
-    void SetUserNameFromProfile(Profile* profile);
 
     PromptType type() const { return type_; }
     void set_type(PromptType type) { type_ = type; }
@@ -188,6 +188,13 @@ class ExtensionInstallPrompt
       retained_device_messages_ = retained_device_messages;
     }
 
+    const std::string& delegated_username() const {
+      return delegated_username_;
+    }
+    void set_delegated_username(const std::string& delegated_username) {
+      delegated_username_ = delegated_username;
+    }
+
     const gfx::Image& icon() const { return icon_; }
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
@@ -239,6 +246,8 @@ class ExtensionInstallPrompt
     // The extension or bundle being installed.
     const extensions::Extension* extension_;
     const extensions::BundleInstaller* bundle_;
+
+    std::string delegated_username_;
 
     // The icon to be displayed.
     gfx::Image icon_;
@@ -353,6 +362,16 @@ class ExtensionInstallPrompt
                               const extensions::Extension* extension,
                               const ShowDialogCallback& show_dialog_callback);
 
+  // This is called by the webstore API to verify the permissions for a
+  // delegated install.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmPermissionsForDelegatedInstall(
+      Delegate* delegate,
+      const extensions::Extension* extension,
+      const std::string& delegated_username,
+      const SkBitmap* icon);
+
   // This is called by the app handler launcher to verify whether the app
   // should be re-enabled. This is declared virtual for testing.
   //
@@ -437,6 +456,10 @@ class ExtensionInstallPrompt
 
   // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT.
   const extensions::BundleInstaller* bundle_;
+
+  // The name of the user we are asking about, if type
+  // DELEGATED_PERMISSIONS_PROMPT.
+  std::string delegated_username_;
 
   // A custom set of permissions to show in the install prompt instead of the
   // extension's active permissions.
