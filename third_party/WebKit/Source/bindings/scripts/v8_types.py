@@ -928,11 +928,11 @@ def cpp_type_has_null_value(idl_type):
     # - String types (String/AtomicString) represent null as a null string,
     #   i.e. one for which String::isNull() returns true.
     # - Enum types, as they are implemented as Strings.
-    # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
+    # - Interface types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
     # - Union types, as thier container classes can represent null value.
     # - 'Object' type. We use ScriptValue for object type.
-    return (idl_type.is_string_type or idl_type.is_wrapper_type or
+    return (idl_type.is_string_type or idl_type.is_interface_type or
             idl_type.is_enum or idl_type.is_union_type
             or idl_type.base_type == 'object')
 
