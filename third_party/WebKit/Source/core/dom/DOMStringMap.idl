@@ -23,16 +23,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-domstringmap-interface
+
 [
     OverrideBuiltins,
     SetWrapperReferenceFrom=element,
     WillBeGarbageCollected,
 ] interface DOMStringMap {
-    [NotEnumerable] getter DOMString (unsigned long index);
-    [RaisesException] setter DOMString (unsigned long index, DOMString value);
-    deleter boolean (unsigned long index);
-
     [ImplementedAs=item] getter DOMString (DOMString name);
-    [RaisesException] setter DOMString (DOMString name, DOMString value);
+    [RaisesException] setter void (DOMString name, DOMString value);
+    // FIXME: The deleter return type should be void. crbug.com/462920
     deleter boolean (DOMString name);
+
+    // FIXME: The indexed getter, setter and deleter are not in the
+    // spec and simply converts the index to a string.
+    [NotEnumerable] getter DOMString (unsigned long index);
+    [RaisesException] setter void (unsigned long index, DOMString value);
+    deleter boolean (unsigned long index);
 };
