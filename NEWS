@@ -1,6 +1,10 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 2.6.2 (2015-03-02)
+This release which was mostly pushed out the door by Bert and Mesar
+fixes a long standing emphasis bug, adds more functionality to the
+harness test suite and improves, as usual, on Braille tables.
+
 ** New features
 - Harness tests now can test for typeform differences.
 
@@ -8,9 +12,11 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Fix for emphasis bug, thanks to Michael Gray
 
 ** Braille table improvements
-- Correction to comments in Norwegian generic tables, thanks to Lars Bjørndal 
-- Corrections to dot patterns in no-no-g0.utb thanks to Lars Bjørndal 
-- Corrections and additional testcases for Hungarian grade 1, thanks to Hammer Attila.
+- Correction to comments in Norwegian generic tables, thanks to Lars
+  Bjørndal
+- Corrections to dot patterns in no-no-g0.utb thanks to Lars Bjørndal
+- Corrections and additional test cases for Hungarian grade 1, thanks
+  to Hammer Attila.
 
 * Noteworthy changes in release 2.6.1 (2014-12-01)
 This release focuses on table and documentation improvements. The
