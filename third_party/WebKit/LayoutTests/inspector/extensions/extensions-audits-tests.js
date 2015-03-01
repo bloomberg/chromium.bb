@@ -20,10 +20,7 @@ var initialize_ExtensionsAuditsTest = function()
 
         function onAuditsDone()
         {
-            InspectorTest.runAfterPendingDispatches(function() {
-                InspectorTest.collectAuditResults();
-                callback();
-            });
+            InspectorTest.collectAuditResults(callback);
         }
         InspectorTest.addSniffer(WebInspector.panels.audits, "auditFinishedCallback", onAuditsDone, true);
 

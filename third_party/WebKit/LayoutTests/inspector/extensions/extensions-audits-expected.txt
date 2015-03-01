@@ -6,46 +6,46 @@ RUNNING TEST: extension_testAudits
 Progress: 50%
 Progress: 75%
  Extension audits
-    [severity severe] Failed rule (42)
-     this rule always fails
-    [severity warning] Rule with details subtree (1)
-     This rule has a lot of details
-      Subtree
-       Some url: 
-        WebKit
-        more text 
-        http://www.google.com
-       ... and a snippet
-         function rand()
+      [severity severe] Failed rule (42)
+       this rule always fails
+      [severity warning] Rule with details subtree (1)
+       This rule has a lot of details
+        Subtree
+         Some url: 
+          WebKit
+          more text 
+          http://www.google.com
+         ... and a snippet
+           function rand()
 {
     return 4;
 }
-         /path/to/error.html:10
-            object details
-             a
-             : 
-             42
-             b
-             : 
-             "foo"
-             __proto__
-             : 
-             Object
-                <
-                 span
-                 
-                  id
-                 ="
-                  test-element
-                 "
-                >
-                …
-                <
-                 /span
-                >
-         extensions-audits.html:20
-    [severity info] Passed rule
-     this rule always passes ok
+           /path/to/error.html:10
+              object details
+               a
+               : 
+               42
+               b
+               : 
+               "foo"
+               __proto__
+               : 
+               Object
+                  <
+                   span
+                   
+                    id
+                   ="
+                    test-element
+                   "
+                  >
+                  …
+                  <
+                   /span
+                  >
+           extensions-audits.html:20
+      [severity info] Passed rule
+       this rule always passes ok
  Extension audits that fail
 category.onAuditStarted fired
 failedCategory.onAuditStarted fired, throwing exception

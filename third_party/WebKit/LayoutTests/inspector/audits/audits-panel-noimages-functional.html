@@ -38,8 +38,7 @@ var test = function()
 
     function onAuditsFinished()
     {
-        InspectorTest.collectAuditResults();
-        InspectorTest.completeTest();
+        InspectorTest.collectAuditResults(InspectorTest.completeTest);
     }
 }
 </script>

@@ -172,6 +172,32 @@ InspectorTest.addArray = function(array, customFormatters, prefix, firstLinePref
     InspectorTest.addResult(prefix + "]");
 }
 
+InspectorTest.dumpDeepInnerHTML = function(element)
+{
+    function innerHTML(prefix, element)
+    {
+        var openTag = [];
+        if (element.nodeType === Node.TEXT_NODE) {
+            if (!element.parentElement || element.parentElement.nodeName !== "STYLE")
+                InspectorTest.addResult(element.nodeValue);
+            return;
+        }
+        openTag.push("<" + element.nodeName);
+        var attrs = element.attributes;
+        for (var i = 0; attrs && i < attrs.length; ++i) {
+            openTag.push(attrs[i].name + "=" + attrs[i].value);
+        }
+        openTag.push(">");
+        InspectorTest.addResult(prefix + openTag.join(" "));
+        for (var child = element.firstChild; child; child = child.nextSibling)
+            innerHTML(prefix + "    ", child);
+        if (element.shadowRoot)
+            innerHTML(prefix + "    ", element.shadowRoot);
+        InspectorTest.addResult(prefix + "</" + element.nodeName + ">");
+    }
+    innerHTML("", element)
+}
+
 InspectorTest.dump = function(value, customFormatters, prefix, prefixWithName)
 {
     prefixWithName = prefixWithName || prefix;

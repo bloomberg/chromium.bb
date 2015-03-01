@@ -3,15 +3,21 @@ function initialize_AuditTests()
 
 InspectorTest.preloadPanel("audits");
 
-InspectorTest.collectAuditResults = function()
+InspectorTest.collectAuditResults = function(callback)
 {
     WebInspector.panels.audits.showResults(WebInspector.panels.audits.auditResultsTreeElement.firstChild().results);
-    var liElements = WebInspector.panels.audits.visibleView.element.getElementsByTagName("li");
-    for (var j = 0; j < liElements.length; ++j) {
-        if (liElements[j].treeElement)
-            liElements[j].treeElement.expand();
+    var trees = WebInspector.panels.audits.visibleView.element.querySelectorAll(".audit-result-tree");
+    for (var i = 0; i < trees.length; ++i) {
+        var liElements = trees[i].shadowRoot.getElementsByTagName("li");
+        for (var j = 0; j < liElements.length; ++j) {
+            if (liElements[j].treeElement)
+                liElements[j].treeElement.expand();
+        }
     }
-    InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, "");
+    InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, "");
+        callback();
+    });
 }
 
 InspectorTest.launchAllAudits = function(shouldReload, callback)

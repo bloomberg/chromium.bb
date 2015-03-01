@@ -23,8 +23,7 @@ function test()
 
     function step2()
     {
-        InspectorTest.collectAuditResults();
-        InspectorTest.completeTest();
+        InspectorTest.collectAuditResults(InspectorTest.completeTest);
     }
 }
 </script>
