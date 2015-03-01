@@ -18,107 +18,108 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-element
+
 [
     TypeChecking=Unrestricted,
 ] interface Element : Node {
-
-    // DOM Level 1 Core
-
-    readonly attribute DOMString? tagName;
-
-    DOMString? getAttribute(DOMString name);
-    [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
-    [CustomElementCallbacks] void removeAttribute(DOMString name);
-    [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode(DOMString name);
-    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode(Attr newAttr);
-    [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode(Attr oldAttr);
-    HTMLCollection getElementsByTagName(DOMString name);
-
-    [PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap     attributes;
-    [MeasureAs=HasAttributes] boolean hasAttributes();
-
-    // DOM Level 2 Core
-
-    DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString value);
-    [CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
-    HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
-    [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNodeNS] Attr setAttributeNodeNS(Attr newAttr);
-    boolean hasAttribute(DOMString name);
-    boolean hasAttributeNS(DOMString? namespaceURI, DOMString localName);
-
-    [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
-
-    // DOM4
-    [Reflect, ExposeJSAccessors] attribute DOMString id;
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
     readonly attribute DOMString? localName;
+    readonly attribute DOMString? tagName;
 
-    [RaisesException] boolean matches(DOMString selectors);
-    [RaisesException] Element closest(DOMString selectors);
-
-    // Common extensions
-
-    readonly attribute long offsetLeft;
-    readonly attribute long offsetTop;
-    readonly attribute long offsetWidth;
-    readonly attribute long offsetHeight;
-    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element offsetParent;
-    readonly attribute long clientLeft;
-    readonly attribute long clientTop;
-    readonly attribute long clientWidth;
-    readonly attribute long clientHeight;
-
-    attribute unrestricted double scrollLeft;
-    attribute unrestricted double scrollTop;
-    readonly attribute long scrollWidth;
-    readonly attribute long scrollHeight;
-
-    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(optional ScrollToOptions scrollToOptions);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions scrollToOptions);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions scrollToOptions);
-
-    void focus();
-    void blur();
-    void scrollIntoView(optional boolean alignWithTop);
-
-    // WebKit extensions
-
-    [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
-
-    // HTML 5
-    HTMLCollection getElementsByClassName(DOMString classNames);
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, ExposeJSAccessors] attribute DOMString innerHTML;
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
-
-    [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);
-    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText(DOMString where, DOMString text);
-    [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString where, DOMString html);
-
+    [Reflect, ExposeJSAccessors] attribute DOMString id;
     [Reflect=class] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;
 
-    [PerWorldBindings] readonly attribute DOMStringMap dataset;
+    [MeasureAs=HasAttributes] boolean hasAttributes();
+    [PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap     attributes;
+    DOMString? getAttribute(DOMString name);
+    DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
+    [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
+    [RaisesException, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString value);
+    [CustomElementCallbacks] void removeAttribute(DOMString name);
+    [CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
+    boolean hasAttribute(DOMString name);
+    boolean hasAttributeNS(DOMString? namespaceURI, DOMString localName);
 
-    // WebKit extension
-    [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors);
+    [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode(DOMString name);
+    [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode(Attr newAttr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNodeNS] Attr setAttributeNodeNS(Attr newAttr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode(Attr oldAttr);
 
-    // Shadow DOM API
+    [RaisesException] Element closest(DOMString selectors);
+    [RaisesException] boolean matches(DOMString selectors);
+
+    HTMLCollection getElementsByTagName(DOMString name);
+    HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
+    HTMLCollection getElementsByClassName(DOMString classNames);
+
+    // DOM Parsing and Serialization
+    // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-element-interface
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, ExposeJSAccessors] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
+    [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString where, DOMString html);
+
+    // Shadow DOM
+    // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-element-interface
     [RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
-    [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
     NodeList getDestinationInsertionPoints();
-    [RuntimeEnabled=IsTabStopAttribute] attribute boolean isTabStop;
+    [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
 
-    // CSSOM View Module API
+    // Pointer Lock
+    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-element-interface
+    [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
+
+    // CSSOM View Module
+    // http://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
+    void scrollIntoView(optional boolean alignWithTop);
+    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(unrestricted double x, unrestricted double y);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(unrestricted double x, unrestricted double y);
+    attribute unrestricted double scrollTop;
+    attribute unrestricted double scrollLeft;
+    readonly attribute long scrollWidth;
+    readonly attribute long scrollHeight;
+    readonly attribute long clientTop;
+    readonly attribute long clientLeft;
+    readonly attribute long clientWidth;
+    readonly attribute long clientHeight;
+    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
+    // FIXME: offset* should be on HTMLElement.
+    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element offsetParent;
+    readonly attribute long offsetTop;
+    readonly attribute long offsetLeft;
+    readonly attribute long offsetWidth;
+    readonly attribute long offsetHeight;
 
-    [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
+    // CSS Object Model (CSSOM)
+    // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
+    // FIXME: style should be on HTMLElement and SVGElement.
+    [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
+
+    // HTML
+    // https://html.spec.whatwg.org/#htmlelement
+    // FIXME: dataset, focus() and blur() should be on HTMLElement.
+    [PerWorldBindings] readonly attribute DOMStringMap dataset;
+    void focus();
+    void blur();
+
+    // Non-standard APIs
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=19962
+    [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);
+    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText(DOMString where, DOMString text);
+    [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
+    [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors);
+
+    // Experimental isTapStop API
+    [RuntimeEnabled=IsTabStopAttribute] attribute boolean isTabStop;
 
     // Experimental accessibility API
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
