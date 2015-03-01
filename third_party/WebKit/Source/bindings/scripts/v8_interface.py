@@ -1299,10 +1299,6 @@ def property_deleter(deleter):
         return None
 
     idl_type = deleter.idl_type
-    if str(idl_type) != 'boolean':
-        raise Exception(
-            'Only deleters with boolean type are allowed, but type is "%s"' %
-            idl_type)
     extended_attributes = deleter.extended_attributes
     return {
         'is_custom': 'Custom' in extended_attributes,
