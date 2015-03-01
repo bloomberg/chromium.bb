@@ -11,37 +11,27 @@ function test()
         "last-modified": true,
         "pragma": true
     };
+
     function testLoadForURL(url, headers, next)
     {
         InspectorTest.recordNetwork();
         InspectorTest.addResult("Loading resource from " + url);
         WebInspector.NetworkManager.loadResourceForFrontend(url, headers, callback);
 
-        function callback(error, statusCode, headers, content)
+        function callback(statusCode, headers, content)
         {
-            if (error)
-                InspectorTest.addResult("Failed: " + error);
-            else {
-                InspectorTest.addResult("Success: " + statusCode);
-                var headersArray = [];
-                for (var name in headers) {
-                    var nameLower = name.toLowerCase();
-                    if (nameLower in loggedHeaders)
-                        headersArray.push(nameLower);
-                }
-                headersArray.sort();
-                InspectorTest.addResult("Logged headers: " + headersArray.join(", "));
-                InspectorTest.addResult("Content: \"" + content + "\"");
+            InspectorTest.addResult("Success: " + statusCode);
+            var headersArray = [];
+            for (var name in headers) {
+                var nameLower = name.toLowerCase();
+                if (nameLower in loggedHeaders)
+                    headersArray.push(nameLower);
             }
-            InspectorTest.runAfterPendingDispatches(dumpNetworkRequest);
+            headersArray.sort();
+            InspectorTest.addResult("Logged headers: " + headersArray.join(", "));
+            InspectorTest.addResult("Content: \"" + content + "\"");
 
-            function dumpNetworkRequest()
-            {
-                var request = InspectorTest.networkRequests().pop();
-                InspectorTest.addResult("Dumping request: " + request.url);
-                InspectorTest.addResult("  statusCode: " + request.statusCode);
-                next();
-            }
+            InspectorTest.runAfterPendingDispatches(next);
         }
     }
 
@@ -66,11 +56,6 @@ function test()
             testLoadForURL("resource.php", undefined, next);
         },
 
-        function testResourceFromFileScheme(next)
-        {
-            testLoadForURL("file:///var/www/index.html", undefined, next);
-        },
-
         function testResourceWithCookie(next)
         {
             InspectorTest.makeSimpleXHR("GET", "http://127.0.0.1:8000/inspector/network/resources/set-cookie.php", false, callback)
@@ -79,7 +64,7 @@ function test()
             {
                 testLoadForURL("http://127.0.0.1:8000/inspector/network/resources/print-cookie.php", undefined, next);
             }
-        },
+        }
     ]);
 }
 </script>

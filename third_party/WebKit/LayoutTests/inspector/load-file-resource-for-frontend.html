@@ -11,12 +11,13 @@ function test()
         var urlPrefix = documentURL.substr(0, lastIndexOfSlash + 1);
         var fullURL = urlPrefix + url;
         InspectorTest.addResult("Loading resource from " + url);
-        InspectorTest.NetworkAgent.loadResourceForFrontend(fullURL, undefined, callback);
 
-        function callback(error, statusCode, headers, content)
+        WebInspector.NetworkManager.loadResourceForFrontend(fullURL, null, callback);
+
+        function callback(statusCode, headers, content)
         {
-            if (error)
-                InspectorTest.addResult("Failed: " + error);
+            if (!content)
+                InspectorTest.addResult("Failed: " + statusCode);
             else {
                 InspectorTest.addResult("Content: " + content);
             }

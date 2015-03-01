@@ -57,9 +57,7 @@
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
@@ -78,7 +76,6 @@
 #include "wtf/text/Base64.h"
 
 typedef blink::InspectorBackendDispatcher::NetworkCommandHandler::GetResponseBodyCallback GetResponseBodyCallback;
-typedef blink::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
 
 namespace blink {
 
@@ -93,7 +90,6 @@ static const char monitoringXHR[] = "monitoringXHR";
 namespace {
 
 // Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
-const char kDevToolsRequestInitiator[] = "X-DevTools-Request-Initiator";
 const char kDevToolsEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
 
 static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
@@ -171,83 +167,6 @@ private:
     RefPtrWillBePersistent<GetResponseBodyCallback> m_callback;
     OwnPtr<FileReaderLoader> m_loader;
     OwnPtr<ArrayBufferBuilder> m_rawData;
-};
-
-class InspectorThreadableLoaderClient final : public ThreadableLoaderClient {
-    WTF_MAKE_NONCOPYABLE(InspectorThreadableLoaderClient);
-public:
-    InspectorThreadableLoaderClient(PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback> callback)
-        : m_callback(callback)
-        , m_statusCode(0) { }
-
-    virtual ~InspectorThreadableLoaderClient() { }
-
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle) override
-    {
-        ASSERT_UNUSED(handle, !handle);
-        WTF::TextEncoding textEncoding(response.textEncodingName());
-        bool useDetector = false;
-        if (!textEncoding.isValid()) {
-            textEncoding = UTF8Encoding();
-            useDetector = true;
-        }
-        m_decoder = TextResourceDecoder::create("text/plain", textEncoding, useDetector);
-        m_statusCode = response.httpStatusCode();
-        m_responseHeaders = response.httpHeaderFields();
-    }
-
-    virtual void didReceiveData(const char* data, unsigned dataLength) override
-    {
-        if (!dataLength)
-            return;
-
-        m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, dataLength));
-    }
-
-    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) override
-    {
-        if (m_decoder)
-            m_responseText = m_responseText.concatenateWith(m_decoder->flush());
-        m_callback->sendSuccess(m_statusCode, buildObjectForHeaders(m_responseHeaders), m_responseText.flattenToString());
-        dispose();
-    }
-
-    virtual void didFail(const ResourceError&) override
-    {
-        m_callback->sendFailure("Loading resource for inspector failed");
-        dispose();
-    }
-
-    virtual void didFailRedirectCheck() override
-    {
-        m_callback->sendFailure("Loading resource for inspector failed redirect check");
-        dispose();
-    }
-
-    void didFailLoaderCreation()
-    {
-        m_callback->sendFailure("Couldn't create a loader");
-        dispose();
-    }
-
-    void setLoader(PassRefPtr<ThreadableLoader> loader)
-    {
-        m_loader = loader;
-    }
-
-private:
-    void dispose()
-    {
-        m_loader = nullptr;
-        delete this;
-    }
-
-    RefPtrWillBePersistent<LoadResourceForFrontendCallback> m_callback;
-    RefPtr<ThreadableLoader> m_loader;
-    OwnPtr<TextResourceDecoder> m_decoder;
-    ScriptString m_responseText;
-    int m_statusCode;
-    HTTPHeaderMap m_responseHeaders;
 };
 
 KURL urlWithoutFragment(const KURL& url)
@@ -928,56 +847,6 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
 
 void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double, double, double)
 {
-}
-
-void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback> prpCallback)
-{
-    RefPtrWillBeRawPtr<LoadResourceForFrontendCallback> callback = prpCallback;
-    Frame* frame = m_pageAgent->inspectedFrame();
-    if (!frame || !frame->isLocalFrame()) {
-        *errorString = "No frame to use as a loader found";
-        return;
-    }
-
-    Document* document = static_cast<LocalFrame*>(frame)->document();
-    if (!document) {
-        *errorString = "No Document instance found";
-        return;
-    }
-
-    ResourceRequest request(url);
-    request.setHTTPMethod("GET");
-    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
-    request.setCachePolicy(ReloadIgnoringCacheData);
-    if (requestHeaders) {
-        for (auto& header : *(*requestHeaders)) {
-            String value;
-            bool success = header.value->asString(&value);
-            if (!success) {
-                *errorString = "Request header \"" + header.key + "\" value is not a string";
-                return;
-            }
-            request.addHTTPHeaderField(AtomicString(header.key), AtomicString(value));
-        }
-    }
-    request.addHTTPHeaderField(kDevToolsRequestInitiator, "frontend");
-
-    ThreadableLoaderOptions options;
-    options.crossOriginRequestPolicy = AllowCrossOriginRequests;
-
-    ResourceLoaderOptions resourceLoaderOptions;
-    resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
-
-    InspectorThreadableLoaderClient* inspectorThreadableLoaderClient = new InspectorThreadableLoaderClient(callback);
-    RefPtr<DocumentThreadableLoader> loader = DocumentThreadableLoader::create(*document, inspectorThreadableLoaderClient, request, options, resourceLoaderOptions);
-    if (!loader) {
-        inspectorThreadableLoaderClient->didFailLoaderCreation();
-        return;
-    }
-    loader->setDefersLoading(false);
-    if (!callback->isActive())
-        return;
-    inspectorThreadableLoaderClient->setLoader(loader.release());
 }
 
 void InspectorResourceAgent::setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource)

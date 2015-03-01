@@ -11,6 +11,3 @@ Call stack:
     1) clickButton (compiler-source-mapping-debug.html:13)
 Script execution resumed.
 
-Running: testNo404InConsole
-source2.js:8 button clicked!
-

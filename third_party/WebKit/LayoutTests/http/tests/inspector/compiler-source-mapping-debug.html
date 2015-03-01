@@ -40,32 +40,6 @@ function test()
                 InspectorTest.captureStackTrace(callFrames);
                 InspectorTest.resumeExecution(next);
             }
-        },
-
-        function testNo404InConsole(next)
-        {
-            function callbackWhenSourceMapRequestIsAvailable()
-            {
-                var requests = InspectorTest.networkRequests();
-                for (var i = 0; i < requests.length; ++i) {
-                    if (requests[i].url.indexOf("source-map.json_not_found") === -1 || !requests[i].finished)
-                        continue;
-                    var request = requests[i];
-                    step2(request);
-                    return;
-                }
-                InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "_finishNetworkRequest", callbackWhenSourceMapRequestIsAvailable);
-            }
-
-            callbackWhenSourceMapRequestIsAvailable();
-            InspectorTest.evaluateInPage("installScriptWithPoorSourceMap()");
-
-            function step2(request)
-            {
-                InspectorTest.assertEquals(request.statusCode, 404);
-                InspectorTest.dumpConsoleMessages();
-                next();
-            }
         }
     ]);
 };

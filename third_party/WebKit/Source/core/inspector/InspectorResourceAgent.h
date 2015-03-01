@@ -140,7 +140,6 @@ public:
     virtual void emulateNetworkConditions(ErrorString*, bool, double, double, double) override;
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
 
-    virtual void loadResourceForFrontend(ErrorString*, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback>) override;
     virtual void setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource) override;
 
     // Called from other agents.
