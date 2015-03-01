@@ -58,7 +58,7 @@ public:
 
     LocalFrame* frame() const override; // Can be null
     Document* document() const override { return m_document; } // Can be null
-    void setDocument(RawPtr<Document> document) { m_document = document; }
+    void setDocument(Document* document) { m_document = document; }
     DocumentLoader* documentLoader() const override { return m_documentLoader; }
     void clearDocumentLoader() { m_documentLoader = nullptr; }
 
