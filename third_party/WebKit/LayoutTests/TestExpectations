@@ -682,6 +682,8 @@ crbug.com/450612 virtual/slimmingpaint/svg/text/text-repaint-rects.xhtml [ Needs
 crbug.com/450612 svg/text/text-repaint-rects.xhtml [ NeedsRebaseline ]
 crbug.com/450612 [ Win ] virtual/antialiasedtext/fast/text/midword-break-hang.html [ NeedsRebaseline ]
 crbug.com/450612 [ Win ] virtual/antialiasedtext/fast/text/wbr-in-pre-crash.html [ NeedsRebaseline ]
+crbug.com/450612 [ Mac ] virtual/antialiasedtext/fast/text/midword-break-hang.html [ NeedsRebaseline ]
+crbug.com/450612 [ Mac ] virtual/antialiasedtext/fast/text/wbr-in-pre-crash.html [ NeedsRebaseline ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
 # Windows, Mac and Android use a statically-linked BoringSSL.
