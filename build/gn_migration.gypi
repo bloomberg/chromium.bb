@@ -370,7 +370,6 @@
             '../components/components.gyp:session_manager_component',
             '../components/components_tests.gyp:components_browsertests',
             '../components/components_tests.gyp:components_perftests',
-            '../components/nacl.gyp:nacl_loader_unittests',
             '../content/content.gyp:content_app_browser',
             '../content/content.gyp:content_app_child',
             '../content/content_shell_and_tests.gyp:content_gl_benchmark',
@@ -402,7 +401,6 @@
             '../remoting/app_remoting_webapp.gyp:ar_sample_app',
             '../remoting/remoting.gyp:remoting_host',
             '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
-            '../remoting/remoting.gyp:remoting_key_tester',
             '../remoting/remoting.gyp:remoting_me2me_host',
             '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
             '../remoting/remoting.gyp:remoting_native_messaging_manifests',
@@ -438,7 +436,9 @@
           'conditions': [
             ['disable_nacl==0 and disable_nacl_untrusted==0', {
               'dependencies': [
+                '../components/nacl.gyp:nacl_loader_unittests',
                 '../mojo/mojo_nacl.gyp:monacl_shell',
+                '../remoting/remoting.gyp:remoting_key_tester',
               ]
             }],
             ['test_isolation_mode!="noop"', {
