@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 741x35
+        LayoutInline {I} at (0,0) size 773x35
           LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
             LayoutText {#text} at (54,0) size 306x17
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=17464"
-          LayoutText {#text} at (359,0) size 741x35
+          LayoutText {#text} at (359,0) size 773x35
             text run at (359,0) width 5: " "
-            text run at (363,0) width 378: "REGRESSION: Crash in LayoutBlockFlow::findNextLineBreak"
+            text run at (363,0) width 410: "REGRESSION: Crash in LayoutBlockFlow::findNextLineBreak"
             text run at (0,18) width 253: "reading r30444 commit email in GMail"
         LayoutText {#text} at (252,18) size 5x17
           text run at (252,18) width 5: "."

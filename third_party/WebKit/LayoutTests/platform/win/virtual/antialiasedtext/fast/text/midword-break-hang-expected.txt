@@ -13,9 +13,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (530,0) size 726x35
             text run at (530,0) width 5: " "
             text run at (534,0) width 192: "iExploder(#11705): Freeze in"
-            text run at (0,18) width 144: "LayoutBlockFlow::layout()"
-        LayoutText {#text} at (143,18) size 5x17
-          text run at (143,18) width 5: "."
+            text run at (0,18) width 176: "LayoutBlockFlow::layout()"
+        LayoutText {#text} at (175,18) size 5x17
+          text run at (175,18) width 5: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,62) size 30x276
         LayoutText {#text} at (0,2) size 87x271
