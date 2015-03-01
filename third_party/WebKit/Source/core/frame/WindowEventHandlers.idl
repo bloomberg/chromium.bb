@@ -27,7 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#windoweventhandlers
+// https://html.spec.whatwg.org/multipage/webappapis.html#windoweventhandlers
 
 [
     ImplementedAs=DOMWindowEventHandlers,
@@ -36,6 +36,7 @@
 ] interface WindowEventHandlers {
     //attribute EventHandler onafterprint;
     //attribute EventHandler onbeforeprint;
+    // FIXME: onbeforeunload should be an OnBeforeUnloadEventHandler.
     attribute EventHandler onbeforeunload;
     attribute EventHandler onhashchange;
     attribute EventHandler onlanguagechange;
