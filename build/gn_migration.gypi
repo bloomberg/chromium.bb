@@ -352,7 +352,7 @@
           'dependencies': [
             '../base/base.gyp:base_i18n_perftests',
             '../base/base.gyp:base_perftests',
-            '../base/base.gyp:build_utf8_validator_tables',
+            '../base/base.gyp:build_utf8_validator_tables#host',
             '../base/base.gyp:check_example',
             '../base/base.gyp:protect_file_posix',
             '../breakpad/breakpad.gyp:core-2-minidump',
@@ -393,7 +393,6 @@
             '../media/cast/cast.gyp:tap_proxy',
             '../media/media.gyp:player_x11',
             '../mojo/mojo_base.gyp:mojo_application_chromium',
-            '../mojo/mojo_nacl.gyp:monacl_shell',
             '../net/net.gyp:hpack_example_generator',
             '../net/net.gyp:hpack_fuzz_mutator',
             '../net/net.gyp:hpack_fuzz_wrapper',
@@ -437,6 +436,11 @@
             '../ppapi/ppapi_internal.gyp:*',
           ],
           'conditions': [
+            ['disable_nacl==0 and disable_nacl_untrusted==0', {
+              'dependencies': [
+                '../mojo/mojo_nacl.gyp:monacl_shell',
+              ]
+            }],
             ['test_isolation_mode!="noop"', {
               'dependencies': [
                 '../ash/ash.gyp:ash_unittests_run',

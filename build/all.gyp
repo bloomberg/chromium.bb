@@ -468,7 +468,7 @@
   ],
   'conditions': [
     # TODO(GYP): make gn_migration.gypi work unconditionally.
-    ['OS=="linux" and chromeos==0', {
+    ['OS=="linux" and target_arch=="x64" and chromeos==0', {
       'includes': [
         'gn_migration.gypi',
       ],
