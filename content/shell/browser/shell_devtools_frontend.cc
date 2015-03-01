@@ -10,6 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -37,7 +39,8 @@ namespace {
 
 class ResponseWriter : public net::URLFetcherResponseWriter {
  public:
-  ResponseWriter(Shell* shell, int stream_id);
+  ResponseWriter(base::WeakPtr<ShellDevToolsFrontend> shell_devtools_,
+                 int stream_id);
   ~ResponseWriter() override;
 
   // URLFetcherResponseWriter overrides:
@@ -48,15 +51,16 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   int Finish(const net::CompletionCallback& callback) override;
 
  private:
-  Shell* shell_;
+  base::WeakPtr<ShellDevToolsFrontend> shell_devtools_;
   int stream_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
 };
 
-ResponseWriter::ResponseWriter(Shell* shell,
-                               int stream_id)
-    : shell_(shell),
+ResponseWriter::ResponseWriter(
+    base::WeakPtr<ShellDevToolsFrontend> shell_devtools,
+    int stream_id)
+    : shell_devtools_(shell_devtools),
       stream_id_(stream_id) {
 }
 
@@ -70,23 +74,19 @@ int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
                           const net::CompletionCallback& callback) {
-  base::StringValue chunk(std::string(buffer->data(), num_bytes));
-  std::string encoded;
-  base::JSONWriter::Write(&chunk, &encoded);
+  base::FundamentalValue* id = new base::FundamentalValue(stream_id_);
+  base::StringValue* chunk =
+      new base::StringValue(std::string(buffer->data(), num_bytes));
 
-  std::string code = base::StringPrintf(
-      "DevToolsAPI.streamWrite(%d, %s)", stream_id_, encoded.c_str());
-  shell_->web_contents()->GetMainFrame()->ExecuteJavaScript(
-      base::UTF8ToUTF16(code));
-
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&ShellDevToolsFrontend::CallClientFunction,
+                 shell_devtools_, "DevToolsAPI.streamWrite",
+                 base::Owned(id), base::Owned(chunk), nullptr));
   return num_bytes;
 }
 
 int ResponseWriter::Finish(const net::CompletionCallback& callback) {
-  std::string code = base::StringPrintf(
-      "DevToolsAPI.streamFinish(%d)", stream_id_);
-  shell_->web_contents()->GetMainFrame()->ExecuteJavaScript(
-      base::UTF8ToUTF16(code));
   return net::OK;
 }
 
@@ -145,7 +145,8 @@ ShellDevToolsFrontend::ShellDevToolsFrontend(Shell* frontend_shell,
                                              DevToolsAgentHost* agent_host)
     : WebContentsObserver(frontend_shell->web_contents()),
       frontend_shell_(frontend_shell),
-      agent_host_(agent_host) {
+      agent_host_(agent_host),
+      weak_factory_(this) {
 }
 
 ShellDevToolsFrontend::~ShellDevToolsFrontend() {
@@ -187,8 +188,8 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
       !dict->GetString("method", &method)) {
     return;
   }
-  int id = 0;
-  dict->GetInteger("id", &id);
+  int request_id = 0;
+  dict->GetInteger("id", &request_id);
   dict->GetList("params", &params);
 
   std::string browser_message;
@@ -208,35 +209,31 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
         !params->GetInteger(2, &stream_id)) {
       return;
     }
+
     GURL gurl(url);
     if (!gurl.is_valid()) {
-      std::string code = base::StringPrintf(
-          "DevToolsAPI.embedderMessageAck(%d, { statusCode: 404 });", id);
-      web_contents()->GetMainFrame()->ExecuteJavaScript(
-          base::UTF8ToUTF16(code));
+      base::DictionaryValue response;
+      response.SetInteger("statusCode", 404);
+      SendMessageAck(request_id, &response);
       return;
     }
 
     net::URLFetcher* fetcher =
         net::URLFetcher::Create(gurl, net::URLFetcher::GET, this);
-    pending_requests_[fetcher] = id;
+    pending_requests_[fetcher] = request_id;
     fetcher->SetRequestContext(web_contents()->GetBrowserContext()->
         GetRequestContext());
     fetcher->SetExtraRequestHeaders(headers);
     fetcher->SaveResponseWithWriter(scoped_ptr<net::URLFetcherResponseWriter>(
-        new ResponseWriter(frontend_shell(), stream_id)));
+        new ResponseWriter(weak_factory_.GetWeakPtr(), stream_id)));
     fetcher->Start();
     return;
   } else {
     return;
   }
 
-  if (id) {
-    std::string code = "DevToolsAPI.embedderMessageAck(" +
-        base::IntToString(id) + ",\"\");";
-    base::string16 javascript = base::UTF8ToUTF16(code);
-    web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
-  }
+  if (request_id)
+    SendMessageAck(request_id, nullptr);
 }
 
 void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontendToBackend(
@@ -285,18 +282,40 @@ void ShellDevToolsFrontend::OnURLFetchComplete(const net::URLFetcher* source) {
   while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
     headers->SetString(name, value);
 
-  std::string json;
-  base::JSONWriter::Write(&response, &json);
-
-  std::string message = base::StringPrintf(
-      "DevToolsAPI.embedderMessageAck(%d, %s)",
-      it->second,
-      json.c_str());
-  web_contents()->GetMainFrame()->
-      ExecuteJavaScript(base::UTF8ToUTF16(message));
-
+  SendMessageAck(it->second, &response);
   pending_requests_.erase(it);
   delete source;
+}
+
+void ShellDevToolsFrontend::CallClientFunction(
+    const std::string& function_name,
+    const base::Value* arg1,
+    const base::Value* arg2,
+    const base::Value* arg3) {
+  std::string javascript = function_name + "(";
+  if (arg1) {
+    std::string json;
+    base::JSONWriter::Write(arg1, &json);
+    javascript.append(json);
+    if (arg2) {
+      base::JSONWriter::Write(arg2, &json);
+      javascript.append(", ").append(json);
+      if (arg3) {
+        base::JSONWriter::Write(arg3, &json);
+        javascript.append(", ").append(json);
+      }
+    }
+  }
+  javascript.append(");");
+  web_contents()->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16(javascript));
+}
+
+void ShellDevToolsFrontend::SendMessageAck(int request_id,
+                                           const base::Value* arg) {
+  base::FundamentalValue id_value(request_id);
+  CallClientFunction("DevToolsAPI.embedderMessageAck",
+                     &id_value, arg, nullptr);
 }
 
 void ShellDevToolsFrontend::AttachTo(WebContents* inspected_contents) {

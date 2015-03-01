@@ -242,7 +242,7 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
 
 class ResponseWriter : public net::URLFetcherResponseWriter {
  public:
-  ResponseWriter(DevToolsUIBindings* bindings, int stream_id);
+  ResponseWriter(base::WeakPtr<DevToolsUIBindings> bindings, int stream_id);
   ~ResponseWriter() override;
 
   // URLFetcherResponseWriter overrides:
@@ -253,13 +253,13 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   int Finish(const net::CompletionCallback& callback) override;
 
  private:
-  DevToolsUIBindings* bindings_;
+  base::WeakPtr<DevToolsUIBindings> bindings_;
   int stream_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
 };
 
-ResponseWriter::ResponseWriter(DevToolsUIBindings* bindings,
+ResponseWriter::ResponseWriter(base::WeakPtr<DevToolsUIBindings> bindings,
                                int stream_id)
     : bindings_(bindings),
       stream_id_(stream_id) {
@@ -275,17 +275,19 @@ int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
                           const net::CompletionCallback& callback) {
-  base::FundamentalValue id(stream_id_);
-  base::StringValue chunk(std::string(buffer->data(), num_bytes));
-  bindings_->CallClientFunction(
-      "DevToolsAPI.streamWrite", &id, &chunk, nullptr);
+  base::FundamentalValue* id = new base::FundamentalValue(stream_id_);
+  base::StringValue* chunk =
+      new base::StringValue(std::string(buffer->data(), num_bytes));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DevToolsUIBindings::CallClientFunction,
+                 bindings_, "DevToolsAPI.streamWrite",
+                 base::Owned(id), base::Owned(chunk), nullptr));
   return num_bytes;
 }
 
 int ResponseWriter::Finish(const net::CompletionCallback& callback) {
-  base::FundamentalValue id(stream_id_);
-  bindings_->CallClientFunction(
-      "DevToolsAPI.streamFinish", &id, nullptr, nullptr);
   return net::OK;
 }
 
@@ -587,7 +589,7 @@ void DevToolsUIBindings::LoadNetworkResource(int request_id,
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetExtraRequestHeaders(headers);
   fetcher->SaveResponseWithWriter(scoped_ptr<net::URLFetcherResponseWriter>(
-      new ResponseWriter(this, stream_id)));
+      new ResponseWriter(weak_factory_.GetWeakPtr(), stream_id)));
   fetcher->Start();
 }
 
