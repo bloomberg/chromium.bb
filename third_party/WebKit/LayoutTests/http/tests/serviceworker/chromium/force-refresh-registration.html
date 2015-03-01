@@ -11,10 +11,10 @@ async_test(function(t) {
     with_iframe('../resources/blank.html')
       .then(t.step_func(function(frame) {
           var p = new Promise(function(resolve) {
-              // Override onload handler assigned by with_iframe. 
+              // Override onload handler assigned by with_iframe.
               frame.onload = t.step_func(function() {
                   resolve(frame.contentWindow.navigator.serviceWorker.register(
-                      'empty-worker.js',
+                      '../resources/empty-worker.js',
                       {scope: scope}));
               });
           });

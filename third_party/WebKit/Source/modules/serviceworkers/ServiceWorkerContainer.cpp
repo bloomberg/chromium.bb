@@ -119,8 +119,6 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-    // FIXME: This should use the container's execution context, not
-    // the callers.
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
@@ -135,7 +133,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-    KURL scriptURL = executionContext->completeURL(url);
+    KURL scriptURL = callingExecutionContext(scriptState->isolate())->completeURL(url);
     scriptURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(scriptURL)) {
         RefPtr<SecurityOrigin> scriptOrigin = SecurityOrigin::create(scriptURL);
@@ -151,7 +149,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     if (options.scope().isNull())
         patternURL = KURL(scriptURL, "./");
     else
-        patternURL = executionContext->completeURL(options.scope());
+        patternURL = callingExecutionContext(scriptState->isolate())->completeURL(options.scope());
     patternURL.removeFragmentIdentifier();
 
     if (!documentOrigin->canRequest(patternURL)) {
@@ -193,8 +191,6 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
         return promise;
     }
 
-    // FIXME: This should use the container's execution context, not
-    // the callers.
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
@@ -209,7 +205,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
         return promise;
     }
 
-    KURL completedURL = executionContext->completeURL(documentURL);
+    KURL completedURL = callingExecutionContext(scriptState->isolate())->completeURL(documentURL);
     completedURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(completedURL)) {
         RefPtr<SecurityOrigin> documentURLOrigin = SecurityOrigin::create(completedURL);

@@ -24,8 +24,8 @@ t.step(function() {
             return;
         }
 
-        w.navigator.serviceWorker.register('empty-worker.js',
-                                           {scope: 'blank.html'})
+        w.navigator.serviceWorker.register('resources/empty-worker.js',
+                                           {scope: 'resources/blank.html'})
         .then(function(registration) {
             return wait_for_state(t, registration.installing, 'activated');
           })
