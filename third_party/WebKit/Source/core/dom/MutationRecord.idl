@@ -28,19 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dom.spec.whatwg.org/#interface-mutationrecord
+
 [
     WillBeGarbageCollected,
 ] interface MutationRecord {
     readonly attribute DOMString type;
     readonly attribute Node target;
-
     readonly attribute NodeList addedNodes;
     readonly attribute NodeList removedNodes;
-    readonly attribute Node previousSibling;
-    readonly attribute Node nextSibling;
-
+    readonly attribute Node? previousSibling;
+    readonly attribute Node? nextSibling;
     readonly attribute DOMString? attributeName;
     readonly attribute DOMString? attributeNamespace;
-
     readonly attribute DOMString? oldValue;
 };

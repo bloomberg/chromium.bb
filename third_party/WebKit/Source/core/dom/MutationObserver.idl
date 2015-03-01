@@ -28,12 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dom.spec.whatwg.org/#interface-mutationobserver
+
 [
     CustomConstructor(MutationCallback callback),
     Custom=VisitDOMWrapper,
     WillBeGarbageCollected,
 ] interface MutationObserver {
     [RaisesException] void observe(Node target, MutationObserverInit options);
-    sequence<MutationRecord> takeRecords();
     void disconnect();
+    sequence<MutationRecord> takeRecords();
 };
