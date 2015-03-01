@@ -1,0 +1,25 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 51x19
+          text run at (0,0) width 51: "Test for "
+        LayoutInline {I} at (0,0) size 648x19
+          LayoutInline {A} at (0,0) size 305x19 [color=#0000EE]
+            LayoutText {#text} at (51,0) size 305x19
+              text run at (51,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=15091"
+          LayoutText {#text} at (356,0) size 343x19
+            text run at (356,0) width 4: " "
+            text run at (360,0) width 253: "Crash in LayoutBlockFlow::skipWhitespace "
+            text run at (613,0) width 86: "during layout"
+        LayoutText {#text} at (699,0) size 4x19
+          text run at (699,0) width 4: "."
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 579x19
+          text run at (0,0) width 579: "If Java is enabled, disable it and reload this page. You should see the word PASS at the bottom."
+layer at (8,580) size 38x20
+  LayoutBlockFlow (positioned) {APPLET} at (8,580) size 38x20
+    LayoutText {#text} at (0,0) size 38x19
+      text run at (0,0) width 38: "PASS"
