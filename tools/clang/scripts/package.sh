@@ -52,7 +52,6 @@ LLVM_BOOTSTRAP_INSTALL_DIR="${LLVM_DIR}/../llvm-bootstrap-install"
 LLVM_BUILD_DIR="${THIS_DIR}/../../../third_party/llvm-build"
 LLVM_BIN_DIR="${LLVM_BUILD_DIR}/Release+Asserts/bin"
 LLVM_LIB_DIR="${LLVM_BUILD_DIR}/Release+Asserts/lib"
-STAMP_FILE="${LLVM_DIR}/../llvm-build/cr_build_revision"
 
 echo "Diff in llvm:" | tee buildlog.txt
 svn stat "${LLVM_DIR}" 2>&1 | tee -a buildlog.txt
@@ -87,7 +86,8 @@ fi
 "${THIS_DIR}"/update.sh --bootstrap --force-local-build --run-tests \
     ${extra_flags} 2>&1 | tee -a buildlog.txt
 
-R=$(cat "${STAMP_FILE}")
+R=$("${LLVM_BIN_DIR}/clang" --version | \
+     sed -ne 's/clang version .*(trunk \([0-9]*\))/\1/p')
 
 PDIR=clang-$R
 rm -rf $PDIR
@@ -122,7 +122,11 @@ fi
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
 # care about.
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
-cp "${LLVM_LIB_DIR}/libBlinkGCPlugin.${SO_EXT}" $PDIR/lib
+
+BLINKGCPLUGIN_LIBNAME=\
+$(grep 'set(LIBRARYNAME' "$THIS_DIR"/../blink_gc_plugin/CMakeLists.txt \
+    | cut -d ' ' -f 2 | tr -d ')')
+cp "${LLVM_LIB_DIR}/lib${BLINKGCPLUGIN_LIBNAME}.${SO_EXT}" $PDIR/lib
 
 if [[ -n "${gcc_toolchain}" ]]; then
   # Copy the stdlibc++.so.6 we linked Clang against so it can run.
@@ -178,5 +182,3 @@ fi
 echo To upload, run:
 echo gsutil cp -a public-read $PDIR.tgz \
      gs://chromium-browser-clang/$PLATFORM/$PDIR.tgz
-
-# FIXME: Warn if the file already exists on the server.
