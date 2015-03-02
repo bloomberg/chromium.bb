@@ -21,6 +21,7 @@
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
@@ -117,6 +118,12 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
+}
+
+scoped_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
+    gfx::AcceleratedWidget widget) {
+  LOG(FATAL) << "Software rendering mode is not supported with GBM platform";
+  return nullptr;
 }
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(

@@ -29,6 +29,8 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
+  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+      gfx::AcceleratedWidget widget) override;
   scoped_ptr<ui::SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget w) override;
   scoped_ptr<SurfaceOzoneEGL> CreateSurfacelessEGLSurfaceForWidget(
