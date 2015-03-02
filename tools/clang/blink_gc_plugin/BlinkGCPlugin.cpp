@@ -325,8 +325,12 @@ class CheckDispatchVisitor : public RecursiveASTVisitor<CheckDispatchVisitor> {
 // - A base is traced if a base-qualified call to a trace method is found.
 class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
  public:
-  CheckTraceVisitor(CXXMethodDecl* trace, RecordInfo* info)
-      : trace_(trace), info_(info), delegates_to_traceimpl_(false) {}
+  CheckTraceVisitor(CXXMethodDecl* trace, RecordInfo* info, RecordCache* cache)
+      : trace_(trace),
+        info_(info),
+        cache_(cache),
+        delegates_to_traceimpl_(false) {
+  }
 
   bool delegates_to_traceimpl() const { return delegates_to_traceimpl_; }
 
@@ -541,12 +545,48 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
     if (!IsTraceCallName(func_name))
       return false;
 
-    RecordInfo::Bases::iterator iter = info_->GetBases().find(callee_record);
-    if (iter == info_->GetBases().end())
-      return false;
+    for (auto& base : info_->GetBases()) {
+      // We want to deal with omitted trace() function in an intermediary
+      // class in the class hierarchy, e.g.:
+      //     class A : public GarbageCollected<A> { trace() { ... } };
+      //     class B : public A { /* No trace(); have nothing to trace. */ };
+      //     class C : public B { trace() { B::trace(visitor); } }
+      // where, B::trace() is actually A::trace(), and in some cases we get
+      // A as |callee_record| instead of B. We somehow need to mark B as
+      // traced if we find A::trace() call.
+      //
+      // To solve this, here we keep going up the class hierarchy as long as
+      // they are not required to have a trace method. The implementation is
+      // a simple DFS, where |base_records| represents the set of base classes
+      // we need to visit.
 
-    iter->second.MarkTraced();
-    return true;
+      std::vector<CXXRecordDecl*> base_records;
+      base_records.push_back(base.first);
+
+      while (!base_records.empty()) {
+        CXXRecordDecl* base_record = base_records.back();
+        base_records.pop_back();
+
+        if (base_record == callee_record) {
+          // If we find a matching trace method, pretend the user has written
+          // a correct trace() method of the base; in the example above, we
+          // find A::trace() here and mark B as correctly traced.
+          base.second.MarkTraced();
+          return true;
+        }
+
+        if (RecordInfo* base_info = cache_->Lookup(base_record)) {
+          if (!base_info->RequiresTraceMethod()) {
+            // If this base class is not required to have a trace method, then
+            // the actual trace method may be defined in an ancestor.
+            for (auto& inner_base : base_info->GetBases())
+              base_records.push_back(inner_base.first);
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   bool CheckTraceFieldCall(CXXMemberCallExpr* call) {
@@ -609,7 +649,8 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
   };
 
   // Nested checking for weak callbacks.
-  CheckTraceVisitor(RecordInfo* info) : trace_(0), info_(info) {}
+  CheckTraceVisitor(RecordInfo* info)
+      : trace_(nullptr), info_(info), cache_(nullptr) {}
 
   bool IsWeakCallback() { return !trace_; }
 
@@ -643,6 +684,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
 
   CXXMethodDecl* trace_;
   RecordInfo* info_;
+  RecordCache* cache_;
   bool delegates_to_traceimpl_;
 };
 
@@ -1387,7 +1429,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       }
     }
 
-    CheckTraceVisitor visitor(trace, parent);
+    CheckTraceVisitor visitor(trace, parent, &cache_);
     visitor.TraverseCXXMethodDecl(trace);
 
     // Skip reporting if this trace method is a just delegate to
