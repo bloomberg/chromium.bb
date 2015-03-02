@@ -52,6 +52,7 @@ public:
     }
     unsigned length() const;
     ClientRect* item(unsigned index);
+    ClientRect* anonymousIndexedGetter(unsigned index) { return item(index); }
 
     DECLARE_TRACE();
 

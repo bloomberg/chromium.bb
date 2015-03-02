@@ -24,11 +24,25 @@
  *
  */
 
+// An old version of CSSOM View Module defines the ClientRectList interface:
+// http://www.w3.org/TR/2011/WD-cssom-view-20110804/#the-clientrectlist-interface
+
+// It has since been replace by DOMRectList in CSSOM View Module and
+// Geometry Interfaces Module:
+// http://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
+// http://dev.w3.org/fxtf/geometry/#DOMRectList
+
+// CSSOM View Module also says: "The DOMRectList interface is at-risk.
+// The authors of this specification await feedback from implementers
+// if the item() function of DOMRectList is currently in use on legacy
+// interfaces. If there is no/not enough content to justify
+// DOMRectList, legacy interfaces must use sequences instead and
+// DOMRectList will be removed from this specification."
+
 [
     WillBeGarbageCollected,
 ] interface ClientRectList {
     readonly attribute unsigned long length;
-    getter ClientRect item(unsigned long index);
-    // FIXME: Fix list behavior to allow custom exceptions to be thrown.
+    [MeasureAs=ClientRectListItem] ClientRect item(unsigned long index);
+    getter ClientRect (unsigned long index);
 };
-

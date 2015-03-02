@@ -51,11 +51,8 @@ unsigned ClientRectList::length() const
 
 ClientRect* ClientRectList::item(unsigned index)
 {
-    if (index >= m_list.size()) {
-        // FIXME: this should throw an exception.
-        // ec = IndexSizeError;
+    if (index >= m_list.size())
         return 0;
-    }
 
     return m_list[index].get();
 }
