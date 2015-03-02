@@ -1,5 +1,11 @@
 {
   "WebKit Linux": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
     "scripts": [
       {
         "name": "webkit_lint",
