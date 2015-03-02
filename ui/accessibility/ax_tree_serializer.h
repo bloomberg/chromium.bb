@@ -292,36 +292,39 @@ void AXTreeSerializer<AXSourceNode>::SerializeChanges(
   // with the LCA.
   AXSourceNode lca = LeastCommonAncestor(node);
 
-  if (client_root_) {
-    bool need_delete = false;
-    if (tree_->IsValid(lca)) {
-      // Check for any reparenting within this subtree - if there is
-      // any, we need to delete and reserialize the whole subtree
-      // that contains the old and new parents of the reparented node.
-      if (AnyDescendantWasReparented(lca, &lca))
-        need_delete = true;
-    }
-
-    if (!tree_->IsValid(lca)) {
-      // If there's no LCA, just tell the client to destroy the whole
-      // tree and then we'll serialize everything from the new root.
-      out_update->node_id_to_clear = client_root_->id;
-      Reset();
-    } else if (need_delete) {
-      // Otherwise, if we need to reserialize a subtree, first we need
-      // to delete those nodes in our client tree so that
-      // SerializeChangedNodes() will be sure to send them again.
-      out_update->node_id_to_clear = tree_->GetId(lca);
-      ClientTreeNode* client_lca = ClientTreeNodeById(tree_->GetId(lca));
-      CHECK(client_lca);
-      for (size_t i = 0; i < client_lca->children.size(); ++i) {
-        client_id_map_.erase(client_lca->children[i]->id);
-        DeleteClientSubtree(client_lca->children[i]);
-        delete client_lca->children[i];
+  // This loop computes the least common ancestor that includes the old
+  // and new parents of any nodes that have been reparented, and clears the
+  // whole client subtree of that LCA if necessary. If we do end up clearing
+  // any client nodes, keep looping because we have to search for more
+  // nodes that may have been reparented from this new LCA.
+  bool need_delete;
+  do {
+    need_delete = false;
+    if (client_root_) {
+      if (tree_->IsValid(lca)) {
+        // Check for any reparenting within this subtree - if there is
+        // any, we need to delete and reserialize the whole subtree
+        // that contains the old and new parents of the reparented node.
+        if (AnyDescendantWasReparented(lca, &lca))
+          need_delete = true;
       }
-      client_lca->children.clear();
+
+      if (!tree_->IsValid(lca)) {
+        // If there's no LCA, just tell the client to destroy the whole
+        // tree and then we'll serialize everything from the new root.
+        out_update->node_id_to_clear = client_root_->id;
+        Reset();
+      } else if (need_delete) {
+        // Otherwise, if we need to reserialize a subtree, first we need
+        // to delete those nodes in our client tree so that
+        // SerializeChangedNodes() will be sure to send them again.
+        out_update->node_id_to_clear = tree_->GetId(lca);
+        ClientTreeNode* client_lca = ClientTreeNodeById(tree_->GetId(lca));
+        CHECK(client_lca);
+        DeleteClientSubtree(client_lca);
+      }
     }
-  }
+  } while (need_delete);
 
   // Serialize from the LCA, or from the root if there isn't one.
   if (!tree_->IsValid(lca))
