@@ -14,7 +14,6 @@ import android.preference.Preference;
 import android.text.format.Formatter;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -46,12 +45,9 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
     // Metrics for favicon processing.
     private static final int FAVICON_CORNER_RADIUS_DP = 2;
     private static final int FAVICON_SIZE_DP = 16;
+    private static final int FAVICON_PADDING_DP = 4;
     private static final int FAVICON_TEXT_SIZE_SP = 10;
     private static final int FAVICON_BACKGROUND_COLOR = 0xff969696;
-    // The minimum width of the preference icon parent field.
-    private static final int FAVICON_PARENT_MINWIDTH_DP = 55;
-    // The padding for the preference icon parent field.
-    private static final int FAVICON_PARENT_PADDING_DP = 12;
 
     WebsitePreference(Context context, Website site, String categoryFilter) {
         super(context);
@@ -61,15 +57,11 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
         setWidgetLayoutResource(R.layout.website_features);
 
         // To make sure the layout stays stable throughout, we assign a
-        // transparent drawable of the same size as the favicon. This is so that
+        // transparent drawable as the icon initially. This is so that
         // we can fetch the favicon in the background and not have to worry
         // about the title appearing to jump (http://crbug.com/453626) when the
         // favicon becomes available.
-        ColorDrawable drawable = new ColorDrawable(Color.TRANSPARENT);
-        int size = Math.round(FAVICON_SIZE_DP
-                * getContext().getResources().getDisplayMetrics().density);
-        drawable.setBounds(0, 0, size, size);
-        setIcon(drawable);
+        setIcon(new ColorDrawable(Color.TRANSPARENT));
 
         refresh();
     }
@@ -146,8 +138,8 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
 
         TextView usageText = (TextView) view.findViewById(R.id.usage_text);
         usageText.setVisibility(View.GONE);
-        long totalUsage = mSite.getTotalUsage();
         if (mFilter.showStorageSites(mCategoryFilter)) {
+            long totalUsage = mSite.getTotalUsage();
             if (totalUsage > 0) {
                 usageText.setText(Formatter.formatShortFileSize(getContext(), totalUsage));
                 usageText.setTextSize(TEXT_SIZE_SP);
@@ -181,15 +173,9 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
             mFaviconFetched = true;
         }
 
-        ImageView icon = (ImageView) view.findViewById(android.R.id.icon);
-        View parent = (View) icon.getParent();
-        if (parent instanceof LinearLayout) {
-            LinearLayout parentLayout = (LinearLayout) parent;
-            int minWidth = Math.round(FAVICON_PARENT_MINWIDTH_DP * density);
-            int padding = Math.round(FAVICON_PARENT_PADDING_DP * density);
-            parentLayout.setMinimumWidth(minWidth);
-            parentLayout.setPadding(padding, 0, padding, 0);
-        }
+        int iconPadding = Math.round(FAVICON_PADDING_DP * density);
+        View iconView = view.findViewById(android.R.id.icon);
+        iconView.setPadding(iconPadding, iconPadding, iconPadding, iconPadding);
     }
 
     /**
