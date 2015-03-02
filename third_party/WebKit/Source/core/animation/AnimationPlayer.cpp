@@ -914,15 +914,6 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
         InspectorInstrumentation::didCreateAnimationPlayer(m_player->timeline()->document(), *m_player);
 }
 
-
-#if !ENABLE(OILPAN)
-bool AnimationPlayer::canFree() const
-{
-    ASSERT(m_content);
-    return hasOneRef() && m_content->isAnimation() && m_content->hasOneRef();
-}
-#endif
-
 bool AnimationPlayer::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     if (eventType == EventTypeNames::finish)

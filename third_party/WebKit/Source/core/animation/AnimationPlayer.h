@@ -163,12 +163,6 @@ public:
         return player1->sequenceNumber() < player2->sequenceNumber();
     }
 
-#if !ENABLE(OILPAN)
-    // Checks if the AnimationStack is the last reference holder to the Player.
-    // This won't be needed when AnimationPlayer is moved to Oilpan.
-    bool canFree() const;
-#endif
-
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
 
     DECLARE_VIRTUAL_TRACE();

@@ -119,36 +119,8 @@ TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
 
 TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
 {
-    play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 2);
-    play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(2))).get(), 6);
-    play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(3))).get(), 4);
-    document->compositorPendingAnimations().update();
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > interpolations;
-
-    updateTimeline(11);
-    Heap::collectAllGarbage();
-    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
-    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(3).get()));
-    EXPECT_EQ(3u, effects().size());
-    EXPECT_EQ(1u, interpolations.size());
-
-    updateTimeline(13);
-    Heap::collectAllGarbage();
-    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
-    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(3).get()));
-    EXPECT_EQ(3u, effects().size());
-
-    updateTimeline(15);
-    Heap::collectAllGarbage();
-    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
-    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(3).get()));
-    EXPECT_EQ(2u, effects().size());
-
-    updateTimeline(17);
-    Heap::collectAllGarbage();
-    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
-    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(3).get()));
-    EXPECT_EQ(1u, effects().size());
+    // FIXME: The test WebFrameSwapTest.SwapPreservesGlobalContext breaks if
+    // this test is removed...
 }
 
 }

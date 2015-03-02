@@ -11,9 +11,7 @@ namespace blink {
 
 SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)
     : m_animation(animation)
-#if !ENABLE(OILPAN)
     , m_player(animation->player())
-#endif
     , m_interpolations(interpolations)
     , m_sequenceNumber(animation->player()->sequenceNumber())
     , m_priority(animation->priority())
@@ -21,38 +19,11 @@ SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBe
     ASSERT(m_interpolations && !m_interpolations->isEmpty());
 }
 
-bool SampledEffect::canChange() const
-{
-#if ENABLE(OILPAN)
-    return m_animation;
-#else
-    if (!m_animation)
-        return false;
-    // FIXME: This check won't be needed when Animation and AnimationPlayer are moved to Oilpan.
-    return !m_player->canFree();
-#endif
-}
-
 void SampledEffect::clear()
 {
-#if !ENABLE(OILPAN)
     m_player = nullptr;
-#endif
     m_animation = nullptr;
     m_interpolations->clear();
-}
-
-void SampledEffect::removeReplacedInterpolationsIfNeeded(const BitArray<numCSSProperties>& replacedProperties)
-{
-    if (canChange() && m_animation->isCurrent())
-        return;
-
-    size_t dest = 0;
-    for (auto& interpolation : *m_interpolations) {
-        if (!replacedProperties.get(toStyleInterpolation(interpolation.get())->id()))
-            m_interpolations->at(dest++) = interpolation;
-    }
-    m_interpolations->shrink(dest);
 }
 
 DEFINE_TRACE(SampledEffect)

@@ -211,12 +211,6 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
     }
 }
 
-void Animation::notifySampledEffectRemovedFromAnimationStack()
-{
-    ASSERT(m_sampledEffect);
-    m_sampledEffect = nullptr;
-}
-
 #if !ENABLE(OILPAN)
 void Animation::notifyElementDestroyed()
 {
