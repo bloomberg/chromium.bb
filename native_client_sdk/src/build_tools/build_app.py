@@ -132,14 +132,20 @@ def main(args):
     return list1 + [x for x in list2 if x not in list1]
   all_permissions = []
   all_socket_permissions = []
+  all_filesystem_permissions = []
   for _, project in parse_dsc.GenerateProjects(tree):
     permissions = project.get('PERMISSIONS', [])
     all_permissions = MergeLists(all_permissions, permissions)
     socket_permissions = project.get('SOCKET_PERMISSIONS', [])
     all_socket_permissions = MergeLists(all_socket_permissions,
                                         socket_permissions)
+    filesystem_permissions = project.get('FILESYSTEM_PERMISSIONS', [])
+    all_filesystem_permissions = MergeLists(all_filesystem_permissions,
+                                            filesystem_permissions)
   if all_socket_permissions:
     all_permissions.append({'socket': all_socket_permissions})
+  if all_filesystem_permissions:
+    all_permissions.append({'fileSystem': all_filesystem_permissions})
   pretty_permissions = json.dumps(all_permissions, sort_keys=True, indent=4)
 
   for filename in ['background.js', 'icon128.png']:
