@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipboardManager;
@@ -2806,6 +2807,7 @@ public class ContentViewCore
     /**
      * @see View#onInitializeAccessibilityEvent(AccessibilityEvent)
      */
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         // Note: this is only used by the script-injecting accessibility code.
         event.setClassName(this.getClass().getName());
@@ -2820,9 +2822,7 @@ public class ContentViewCore
         int maxScrollYPix = Math.max(0, mRenderCoordinates.getMaxVerticalScrollPixInt());
         event.setScrollable(maxScrollXPix > 0 || maxScrollYPix > 0);
 
-        // Setting the maximum scroll values requires API level 15 or higher.
-        final int sdkVersionRequiredToSetScroll = 15;
-        if (Build.VERSION.SDK_INT >= sdkVersionRequiredToSetScroll) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
             event.setMaxScrollX(maxScrollXPix);
             event.setMaxScrollY(maxScrollYPix);
         }

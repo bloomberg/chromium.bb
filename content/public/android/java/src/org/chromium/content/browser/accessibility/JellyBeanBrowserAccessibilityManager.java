@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -18,6 +20,7 @@ import java.util.List;
  * AccessibilityNodeProvider and delegates its implementation to this object.
  */
 @JNINamespace("content")
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class JellyBeanBrowserAccessibilityManager extends BrowserAccessibilityManager {
     private AccessibilityNodeProvider mAccessibilityNodeProvider;
 

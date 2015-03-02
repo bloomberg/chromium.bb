@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
@@ -38,6 +39,7 @@ import java.util.Locale;
  * accessibility.
  */
 @JNINamespace("content")
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class BrowserAccessibilityManager {
     private static final String TAG = "BrowserAccessibilityManager";
 

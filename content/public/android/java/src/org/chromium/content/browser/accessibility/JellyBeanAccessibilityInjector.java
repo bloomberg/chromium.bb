@@ -4,7 +4,9 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -22,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Handles injecting accessibility Javascript and related Javascript -> Java APIs for JB and newer
  * devices.
  */
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 class JellyBeanAccessibilityInjector extends AccessibilityInjector {
     private CallbackHandler mCallback;
     private JSONObject mAccessibilityJSONObject;

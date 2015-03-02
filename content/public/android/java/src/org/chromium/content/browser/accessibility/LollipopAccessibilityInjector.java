@@ -4,7 +4,9 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -20,6 +22,7 @@ import java.util.Iterator;
  * Handles injecting accessibility Javascript and related Javascript -> Java APIs for Lollipop and
  * newer devices.
  */
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class LollipopAccessibilityInjector extends JellyBeanAccessibilityInjector {
     /**
      * Constructs an instance of the LollipopAccessibilityInjector.
