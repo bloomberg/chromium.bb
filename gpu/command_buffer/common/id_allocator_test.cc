@@ -125,4 +125,123 @@ TEST_F(IdAllocatorTest, RedundantFreeIsIgnored) {
   EXPECT_NE(kInvalidResource, id3);
 }
 
+TEST_F(IdAllocatorTest, AllocateIDRange) {
+  const ResourceId kMaxPossibleOffset = std::numeric_limits<ResourceId>::max();
+
+  IdAllocator* allocator = id_allocator();
+
+  ResourceId id1 = allocator->AllocateIDRange(1);
+  EXPECT_EQ(1u, id1);
+  ResourceId id2 = allocator->AllocateIDRange(2);
+  EXPECT_EQ(2u, id2);
+  ResourceId id3 = allocator->AllocateIDRange(3);
+  EXPECT_EQ(4u, id3);
+  ResourceId id4 = allocator->AllocateID();
+  EXPECT_EQ(7u, id4);
+  allocator->FreeID(3);
+  ResourceId id5 = allocator->AllocateIDRange(1);
+  EXPECT_EQ(3u, id5);
+  allocator->FreeID(5);
+  allocator->FreeID(2);
+  allocator->FreeID(4);
+  ResourceId id6 = allocator->AllocateIDRange(2);
+  EXPECT_EQ(4u, id6);
+  ResourceId id7 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset);
+  EXPECT_EQ(kMaxPossibleOffset, id7);
+  ResourceId id8 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset);
+  EXPECT_EQ(2u, id8);
+  ResourceId id9 = allocator->AllocateIDRange(50);
+  EXPECT_EQ(8u, id9);
+  ResourceId id10 = allocator->AllocateIDRange(50);
+  EXPECT_EQ(58u, id10);
+  // Remove all the low-numbered ids.
+  allocator->FreeID(1);
+  allocator->FreeID(15);
+  allocator->FreeIDRange(2, 107);
+  ResourceId id11 = allocator->AllocateIDRange(100);
+  EXPECT_EQ(1u, id11);
+  allocator->FreeID(kMaxPossibleOffset);
+  ResourceId id12 = allocator->AllocateIDRange(100);
+  EXPECT_EQ(101u, id12);
+
+  ResourceId id13 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset - 2u);
+  EXPECT_EQ(kMaxPossibleOffset - 2u, id13);
+  ResourceId id14 = allocator->AllocateIDRange(3);
+  EXPECT_EQ(201u, id14);
+}
+
+TEST_F(IdAllocatorTest, AllocateIDRangeEndNoEffect) {
+  const ResourceId kMaxPossibleOffset = std::numeric_limits<ResourceId>::max();
+
+  IdAllocator* allocator = id_allocator();
+  ResourceId id1 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset - 2u);
+  EXPECT_EQ(kMaxPossibleOffset - 2u, id1);
+  ResourceId id3 = allocator->AllocateIDRange(3);
+  EXPECT_EQ(1u, id3);
+  ResourceId id2 = allocator->AllocateIDRange(2);
+  EXPECT_EQ(4u, id2);
+}
+
+TEST_F(IdAllocatorTest, AllocateFullIDRange) {
+  const uint32_t kMaxPossibleRange = std::numeric_limits<uint32_t>::max();
+  const ResourceId kFreedId = 555u;
+  IdAllocator* allocator = id_allocator();
+
+  ResourceId id1 = allocator->AllocateIDRange(kMaxPossibleRange);
+  EXPECT_EQ(1u, id1);
+  ResourceId id2 = allocator->AllocateID();
+  EXPECT_EQ(0u, id2);
+  allocator->FreeID(kFreedId);
+  ResourceId id3 = allocator->AllocateID();
+  EXPECT_EQ(kFreedId, id3);
+  ResourceId id4 = allocator->AllocateID();
+  EXPECT_EQ(0u, id4);
+  allocator->FreeID(kFreedId + 1u);
+  allocator->FreeID(kFreedId + 4u);
+  allocator->FreeID(kFreedId + 3u);
+  allocator->FreeID(kFreedId + 5u);
+  allocator->FreeID(kFreedId + 2u);
+  ResourceId id5 = allocator->AllocateIDRange(5);
+  EXPECT_EQ(kFreedId + 1u, id5);
+}
+
+TEST_F(IdAllocatorTest, AllocateIDRangeNoWrapInRange) {
+  const uint32_t kMaxPossibleRange = std::numeric_limits<uint32_t>::max();
+  const ResourceId kAllocId = 10u;
+  IdAllocator* allocator = id_allocator();
+
+  ResourceId id1 = allocator->AllocateIDAtOrAbove(kAllocId);
+  EXPECT_EQ(kAllocId, id1);
+  ResourceId id2 = allocator->AllocateIDRange(kMaxPossibleRange - 5u);
+  EXPECT_EQ(0u, id2);
+  ResourceId id3 = allocator->AllocateIDRange(kMaxPossibleRange - kAllocId);
+  EXPECT_EQ(kAllocId + 1u, id3);
+}
+
+TEST_F(IdAllocatorTest, AllocateIdMax) {
+  const uint32_t kMaxPossibleRange = std::numeric_limits<uint32_t>::max();
+
+  IdAllocator* allocator = id_allocator();
+  ResourceId id = allocator->AllocateIDRange(kMaxPossibleRange);
+  EXPECT_EQ(1u, id);
+  allocator->FreeIDRange(id, kMaxPossibleRange - 1u);
+  ResourceId id2 = allocator->AllocateIDRange(kMaxPossibleRange);
+  EXPECT_EQ(0u, id2);
+  allocator->FreeIDRange(id, kMaxPossibleRange);
+  ResourceId id3 = allocator->AllocateIDRange(kMaxPossibleRange);
+  EXPECT_EQ(1u, id3);
+}
+
+TEST_F(IdAllocatorTest, ZeroIdCases) {
+  IdAllocator* allocator = id_allocator();
+  EXPECT_FALSE(allocator->InUse(0));
+  ResourceId id1 = allocator->AllocateIDAtOrAbove(0);
+  EXPECT_NE(0u, id1);
+  EXPECT_FALSE(allocator->InUse(0));
+  allocator->FreeID(0);
+  EXPECT_FALSE(allocator->InUse(0));
+  EXPECT_TRUE(allocator->InUse(id1));
+  allocator->FreeID(id1);
+  EXPECT_FALSE(allocator->InUse(id1));
+}
 }  // namespace gpu

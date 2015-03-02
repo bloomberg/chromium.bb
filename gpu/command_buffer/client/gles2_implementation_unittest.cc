@@ -381,8 +381,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLuint kMaxTransformFeedbackSeparateAttribs = 4;
   static const GLuint kMaxUniformBufferBindings = 36;
   static const GLuint kStartId = 1024;
-  static const GLuint kBuffersStartId =
-      GLES2Implementation::kClientSideArrayId + 2 * kNumTestContexts;
+  static const GLuint kBuffersStartId = 1;
   static const GLuint kFramebuffersStartId = 1;
   static const GLuint kProgramsAndShadersStartId = 1;
   static const GLuint kRenderbuffersStartId = 1;

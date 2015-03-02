@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include <set>
+#include <map>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -36,27 +36,28 @@ class GPU_EXPORT IdAllocator {
   // Note: may wrap if it starts near limit.
   ResourceId AllocateIDAtOrAbove(ResourceId desired_id);
 
+  // Allocates |range| amount of contiguous ids.
+  // Returns the first id to |first_id| or |kInvalidResource| if
+  // allocation failed.
+  ResourceId AllocateIDRange(uint32_t range);
+
   // Marks an id as used. Returns false if id was already used.
   bool MarkAsUsed(ResourceId id);
 
   // Frees a resource ID.
   void FreeID(ResourceId id);
 
+  // Frees a |range| amount of contiguous ids, starting from |first_id|.
+  void FreeIDRange(ResourceId first_id, uint32_t range);
+
   // Checks whether or not a resource ID is in use.
   bool InUse(ResourceId id) const;
 
  private:
-  // TODO(gman): This would work much better with ranges or a hash table.
-  typedef std::set<ResourceId> ResourceIdSet;
+  // first_id -> last_id mapping.
+  typedef std::map<ResourceId, ResourceId> ResourceIdRangeMap;
 
-  // The highest ID on the used list.
-  ResourceId LastUsedId() const;
-
-  // Lowest ID that isn't on the used list. This is slow, use as a last resort.
-  ResourceId FindFirstUnusedId() const;
-
-  ResourceIdSet used_ids_;
-  ResourceIdSet free_ids_;
+  ResourceIdRangeMap used_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(IdAllocator);
 };
