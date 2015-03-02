@@ -14,6 +14,7 @@
 #include "cc/layers/layer.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/public/child/v8_value_converter.h"
@@ -381,6 +382,48 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   return true;
 }
 
+bool BeginSmoothDrag(v8::Isolate* isolate,
+                     float start_x,
+                     float start_y,
+                     float end_x,
+                     float end_y,
+                     v8::Handle<v8::Function> callback,
+                     int gesture_source_type,
+                     int speed_in_pixels_s) {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return false;
+  scoped_refptr<CallbackAndContext> callback_and_context =
+      new CallbackAndContext(isolate, callback,
+                             context.web_frame()->mainWorldScriptContext());
+
+  scoped_ptr<SyntheticSmoothDragGestureParams> gesture_params(
+      new SyntheticSmoothDragGestureParams);
+
+  // Convert coordinates from CSS pixels to density independent pixels (DIPs).
+  float page_scale_factor = context.web_view()->pageScaleFactor();
+
+  gesture_params->start_point.SetPoint(start_x * page_scale_factor,
+                                       start_y * page_scale_factor);
+  gfx::PointF end_point(end_x * page_scale_factor,
+                        end_y * page_scale_factor);
+  gfx::Vector2dF distance = gesture_params->start_point - end_point;
+  gesture_params->distances.push_back(distance);
+  gesture_params->speed_in_pixels_s = speed_in_pixels_s * page_scale_factor;
+  gesture_params->gesture_source_type =
+      static_cast<SyntheticGestureParams::GestureSourceType>(
+          gesture_source_type);
+
+  // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+  // progress, we will leak the callback and context. This needs to be fixed,
+  // somehow.
+  context.render_view_impl()->QueueSyntheticGesture(
+      gesture_params.Pass(),
+      base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
+
+  return true;
+}
+
 }  // namespace
 
 gin::WrapperInfo GpuBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
@@ -425,6 +468,7 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("gestureSourceTypeSupported",
                  &GpuBenchmarking::GestureSourceTypeSupported)
       .SetMethod("smoothScrollBy", &GpuBenchmarking::SmoothScrollBy)
+      .SetMethod("smoothDrag", &GpuBenchmarking::SmoothDrag)
       .SetMethod("swipe", &GpuBenchmarking::Swipe)
       .SetMethod("scrollBounce", &GpuBenchmarking::ScrollBounce)
       // TODO(dominikg): Remove once JS interface changes have rolled into
@@ -527,6 +571,39 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
                            true,
                            start_x,
                            start_y);
+}
+
+bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
+  GpuBenchmarkingContext context;
+  if (!context.Init(true))
+    return false;
+
+  float start_x;
+  float start_y;
+  float end_x;
+  float end_y;
+  v8::Handle<v8::Function> callback;
+  int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
+  int speed_in_pixels_s = 800;
+
+  if (!GetArg(args, &start_x) ||
+      !GetArg(args, &start_y) ||
+      !GetArg(args, &end_x) ||
+      !GetArg(args, &end_y) ||
+      !GetOptionalArg(args, &callback) ||
+      !GetOptionalArg(args, &gesture_source_type) ||
+      !GetOptionalArg(args, &speed_in_pixels_s)) {
+    return false;
+  }
+
+  return BeginSmoothDrag(args->isolate(),
+                         start_x,
+                         start_y,
+                         end_x,
+                         end_y,
+                         callback,
+                         gesture_source_type,
+                         speed_in_pixels_s);
 }
 
 bool GpuBenchmarking::Swipe(gin::Arguments* args) {

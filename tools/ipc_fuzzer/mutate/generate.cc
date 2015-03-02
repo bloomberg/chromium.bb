@@ -992,7 +992,8 @@ struct GenerateTraits<content::SyntheticGesturePacket> {
   static bool Generate(content::SyntheticGesturePacket* p,
                        Generator* generator) {
     scoped_ptr<content::SyntheticGestureParams> gesture_params;
-    switch (RandInRange(3)) {
+    switch (RandInRange(
+        content::SyntheticGestureParams::SYNTHETIC_GESTURE_TYPE_MAX + 1)) {
       case content::SyntheticGestureParams::GestureType::
           SMOOTH_SCROLL_GESTURE: {
         content::SyntheticSmoothScrollGestureParams* params =
@@ -1002,6 +1003,19 @@ struct GenerateTraits<content::SyntheticGesturePacket> {
         if (!GenerateParam(&params->distances, generator))
           return false;
         if (!GenerateParam(&params->prevent_fling, generator))
+          return false;
+        if (!GenerateParam(&params->speed_in_pixels_s, generator))
+          return false;
+        gesture_params.reset(params);
+        break;
+      }
+      case content::SyntheticGestureParams::GestureType::
+          SMOOTH_MOUSE_DRAG_GESTURE: {
+        content::SyntheticSmoothMouseDragGestureParams* params =
+            new content::SyntheticSmoothMouseDragGestureParams();
+        if (!GenerateParam(&params->start_point, generator))
+          return false;
+        if (!GenerateParam(&params->distances, generator))
           return false;
         if (!GenerateParam(&params->speed_in_pixels_s, generator))
           return false;

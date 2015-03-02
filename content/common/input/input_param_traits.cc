@@ -6,6 +6,7 @@
 
 #include "content/common/content_param_traits.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
@@ -62,6 +63,10 @@ void ParamTraits<content::SyntheticGesturePacket>::Write(Message* m,
       WriteParam(m, *content::SyntheticSmoothScrollGestureParams::Cast(
           p.gesture_params()));
       break;
+    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+      WriteParam(m, *content::SyntheticSmoothDragGestureParams::Cast(
+                 p.gesture_params()));
+      break;
     case content::SyntheticGestureParams::PINCH_GESTURE:
       WriteParam(m, *content::SyntheticPinchGestureParams::Cast(
           p.gesture_params()));
@@ -69,10 +74,6 @@ void ParamTraits<content::SyntheticGesturePacket>::Write(Message* m,
     case content::SyntheticGestureParams::TAP_GESTURE:
       WriteParam(m, *content::SyntheticTapGestureParams::Cast(
           p.gesture_params()));
-      break;
-    // TODO(ssid): When API and IPC messages are set up, implement this.
-    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
-      NOTIMPLEMENTED();
       break;
   }
 }
@@ -89,6 +90,10 @@ bool ParamTraits<content::SyntheticGesturePacket>::Read(const Message* m,
       gesture_params =
           ReadGestureParams<content::SyntheticSmoothScrollGestureParams>(m,
                                                                          iter);
+      break;
+    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+      gesture_params =
+          ReadGestureParams<content::SyntheticSmoothDragGestureParams>(m, iter);
       break;
     case content::SyntheticGestureParams::PINCH_GESTURE:
       gesture_params =
@@ -116,6 +121,11 @@ void ParamTraits<content::SyntheticGesturePacket>::Log(const param_type& p,
               p.gesture_params()),
           l);
       break;
+    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
+      LogParam(
+          *content::SyntheticSmoothDragGestureParams::Cast(p.gesture_params()),
+          l);
+      break;
     case content::SyntheticGestureParams::PINCH_GESTURE:
       LogParam(
           *content::SyntheticPinchGestureParams::Cast(p.gesture_params()),
@@ -125,10 +135,6 @@ void ParamTraits<content::SyntheticGesturePacket>::Log(const param_type& p,
       LogParam(
           *content::SyntheticTapGestureParams::Cast(p.gesture_params()),
           l);
-      break;
-    // TODO(ssid): When API and IPC messages are set up, implement this.
-    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
-      NOTIMPLEMENTED();
       break;
   }
 }
