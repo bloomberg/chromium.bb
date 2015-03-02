@@ -33,25 +33,18 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
  public:
   class OverviewLabelButton : public views::LabelButton {
    public:
-    OverviewLabelButton(WindowSelectorItem* selector_item,
+    OverviewLabelButton(views::ButtonListener* listener,
                         const base::string16& text);
 
     ~OverviewLabelButton() override;
 
     void set_top_padding(int top_padding) { top_padding_ = top_padding; }
 
-    // views::LabelButton:
-    void OnGestureEvent(ui::GestureEvent* event) override;
-
    protected:
     // views::LabelButton:
     gfx::Rect GetChildAreaBounds() override;
 
    private:
-    // The WindowSelectorItem that the touch gestures are delegated to.
-    // Not owned.
-    WindowSelectorItem* selector_item_;
-
     // Padding on top of the button.
     int top_padding_;
 
@@ -101,9 +94,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
-  // Handles the gestures on the Window
-  void OnGestureEvent(ui::GestureEvent* event);
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -137,14 +127,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Updates the close buttons accessibility name.
   void UpdateCloseButtonAccessibilityName();
 
-  // Animates the |transform_window_| back to it's original overview mode
-  // position.
-  void ResetScrolledWindow();
-
-  // Returns the minimum distance at which a scroll gesture will cause this
-  // selector item to be closed.
-  int GetMinimumCloseDistance() const;
-
   // True if the item is being shown in the overview, false if it's being
   // filtered.
   bool dimmed_;
@@ -175,10 +157,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // An easy to access close button for the window in this item. Owned by the
   // close_button_widget_.
   views::ImageButton* close_button_;
-
-  // The original X location for a scroll begin event. |original_x_| is in the
-  // local coordinate space of |window_label_button_view_|.
-  float scroll_x_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

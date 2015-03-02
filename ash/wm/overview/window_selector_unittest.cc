@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 #include <algorithm>
-#include <map>
 #include <vector>
 
 #include "ash/accessibility_delegate.h"
-#include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -72,18 +70,6 @@ void CancelDrag(DragDropController* controller, bool* canceled) {
     controller->DragCancel();
   }
 }
-
-// A short drag distance that will not cause an overview item to close.
-const int kShortDragDistance = 10;
-
-// A far drag distance that will cause an overview item to close.
-const int kFarDragDistance = 200;
-
-// A slow fling velocity that should not cause selctor items to close.
-const int kSlowFlingVelocity = 2000;
-
-// A fast fling velocity that should cause selector items to close.
-const int kFastFlingVelocity = 5000;
 
 }  // namespace
 
@@ -278,24 +264,6 @@ class WindowSelectorTest : public test::AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
-
-class WindowSelectorSwipeToCloseEnabledTest : public WindowSelectorTest {
- public:
-  WindowSelectorSwipeToCloseEnabledTest() {}
-  ~WindowSelectorSwipeToCloseEnabledTest() override {}
-
-  // WindowSelectorTest:
-  void SetUp() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowSelectorSwipeToCloseEnabledTest);
-};
-
-void WindowSelectorSwipeToCloseEnabledTest::SetUp() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableSwipeToCloseInOverviewMode);
-  WindowSelectorTest::SetUp();
-}
 
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
@@ -1271,212 +1239,6 @@ TEST_F(WindowSelectorTest, CancelOverviewOnTap) {
 
   // Tap should now exit overview mode.
   generator.GestureTapAt(point_in_background_page);
-  EXPECT_FALSE(IsSelecting());
-}
-
-// Verify swipe to close doesn't work when swipe to close is not enabled.
-TEST_F(WindowSelectorTest, WindowTapDragFarDistance) {
-  scoped_ptr<views::Widget> widget =
-      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
-
-  ToggleOverview();
-  ASSERT_TRUE(IsSelecting());
-
-  aura::Window* window = widget->GetNativeWindow();
-  gfx::Rect bounds = ToNearestRect(GetTransformedBoundsInRootWindow(window));
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  ASSERT_FALSE(widget->IsClosed());
-
-  gfx::Point start(bounds.CenterPoint());
-  gfx::Point end(start.x() - kFarDragDistance, start.y());
-  event_generator.GestureScrollSequence(
-      start, end, base::TimeDelta::FromMilliseconds(10), 5);
-
-  EXPECT_FALSE(widget->IsClosed());
-
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSelecting());
-}
-
-// Verify the window moves and fades as it is dragged.
-TEST_F(WindowSelectorSwipeToCloseEnabledTest,
-       VerifyWindowBehaviourDuringTapDrag) {
-  scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 400, 400)));
-
-  ToggleOverview();
-
-  gfx::Rect bounds =
-      ToNearestRect(GetTransformedBoundsInRootWindow(window.get()));
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  const gfx::Point drag_start_point(bounds.CenterPoint());
-  const gfx::Point drag_left_point(drag_start_point.x() - kFarDragDistance,
-                                   drag_start_point.y());
-  const gfx::Point drag_right_point(drag_start_point.x() + kFarDragDistance,
-                                    drag_start_point.y());
-
-  const int drag_left_delta_x = drag_start_point.x() - drag_left_point.x();
-  const int drag_right_delta_x = drag_start_point.x() - drag_right_point.x();
-
-  const gfx::Rect original_bounds = window->GetBoundsInScreen();
-
-  ASSERT_EQ(1.0f, window->layer()->opacity());
-
-  event_generator.set_current_location(drag_start_point);
-  event_generator.PressTouch();
-
-  EXPECT_EQ(1.0f, window->layer()->opacity());
-
-  event_generator.MoveTouch(drag_left_point);
-
-  EXPECT_EQ(original_bounds.x() - drag_left_delta_x,
-            window->GetBoundsInScreen().x());
-  EXPECT_EQ(original_bounds.y(), window->GetBoundsInScreen().y());
-
-  EXPECT_LT(window->layer()->opacity(), 0.5f);
-
-  event_generator.MoveTouch(drag_start_point);
-
-  EXPECT_EQ(original_bounds.x(), window->GetBoundsInScreen().x());
-  EXPECT_EQ(original_bounds.y(), window->GetBoundsInScreen().y());
-  EXPECT_EQ(1.0f, window->layer()->opacity());
-
-  event_generator.MoveTouch(drag_right_point);
-
-  EXPECT_EQ(original_bounds.x() - drag_right_delta_x,
-            window->GetBoundsInScreen().x());
-  EXPECT_EQ(original_bounds.y(), window->GetBoundsInScreen().y());
-
-  EXPECT_LT(window->layer()->opacity(), 0.5f);
-}
-
-// Test dragging a window a short distance.
-TEST_F(WindowSelectorSwipeToCloseEnabledTest, WindowTapDragShortDistance) {
-  scoped_ptr<views::Widget> widget =
-      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
-
-  ToggleOverview();
-
-  aura::Window* window = widget->GetNativeWindow();
-  gfx::Rect bounds = ToNearestRect(GetTransformedBoundsInRootWindow(window));
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  ASSERT_FALSE(widget->IsClosed());
-
-  gfx::Point start(bounds.CenterPoint());
-  gfx::Point end(start.x() - kShortDragDistance, start.y());
-  event_generator.GestureScrollSequence(
-      start, end, base::TimeDelta::FromMilliseconds(10), 5);
-
-  EXPECT_FALSE(widget->IsClosed());
-
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSelecting());
-}
-
-// Test dragging a window a far distance.
-TEST_F(WindowSelectorSwipeToCloseEnabledTest, WindowTapDragFarDistance) {
-  scoped_ptr<views::Widget> widget =
-      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
-
-  ToggleOverview();
-  ASSERT_TRUE(IsSelecting());
-
-  aura::Window* window = widget->GetNativeWindow();
-  gfx::Rect bounds = ToNearestRect(GetTransformedBoundsInRootWindow(window));
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  ASSERT_FALSE(widget->IsClosed());
-
-  gfx::Point start(bounds.CenterPoint());
-  gfx::Point end(start.x() - kFarDragDistance, start.y());
-  event_generator.GestureScrollSequence(
-      start, end, base::TimeDelta::FromMilliseconds(10), 5);
-
-  EXPECT_TRUE(widget->IsClosed());
-
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsSelecting());
-}
-
-// Test a slow velocity fling.
-TEST_F(WindowSelectorSwipeToCloseEnabledTest, SlowVelocityFling) {
-  scoped_ptr<views::Widget> widget =
-      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
-
-  ToggleOverview();
-
-  aura::Window* window = widget->GetNativeWindow();
-  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window);
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  ASSERT_FALSE(widget->IsClosed());
-
-  gfx::Point start(bounds.CenterPoint().x(), bounds.CenterPoint().y());
-  gfx::Point end(start.x() - kShortDragDistance, start.y());
-  const base::TimeDelta kScrollDuration =
-      event_generator.CalculateScrollDurationForFlingVelocity(
-          start, end, kSlowFlingVelocity, 10);
-  event_generator.GestureScrollSequence(start, end, kScrollDuration, 10);
-
-  EXPECT_FALSE(widget->IsClosed());
-
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSelecting());
-}
-
-// Test a fast velocity fling.
-TEST_F(WindowSelectorSwipeToCloseEnabledTest, FastVelocityFling) {
-  scoped_ptr<views::Widget> widget =
-      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
-
-  ToggleOverview();
-  ASSERT_TRUE(IsSelecting());
-
-  aura::Window* window = widget->GetNativeWindow();
-  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window);
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  ASSERT_FALSE(widget->IsClosed());
-
-  gfx::Point start(bounds.CenterPoint().x(), bounds.CenterPoint().y());
-  gfx::Point end(start.x() - kShortDragDistance, start.y());
-  const base::TimeDelta kScrollDuration =
-      event_generator.CalculateScrollDurationForFlingVelocity(
-          start, end, kFastFlingVelocity, 10);
-  event_generator.GestureScrollSequence(start, end, kScrollDuration, 10);
-
-  EXPECT_TRUE(widget->IsClosed());
-
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsSelecting());
-}
-
-// Test a fast velocity fling.
-TEST_F(WindowSelectorSwipeToCloseEnabledTest, SlowVelocityFlingAtAFarDistance) {
-  scoped_ptr<views::Widget> widget =
-      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
-
-  ToggleOverview();
-  ASSERT_TRUE(IsSelecting());
-
-  aura::Window* window = widget->GetNativeWindow();
-  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window);
-  ui::test::EventGenerator event_generator(window->GetRootWindow());
-
-  ASSERT_FALSE(widget->IsClosed());
-
-  gfx::Point start(bounds.CenterPoint().x(), bounds.CenterPoint().y());
-  gfx::Point end(start.x() - kFarDragDistance, start.y());
-  const base::TimeDelta kScrollDuration =
-      event_generator.CalculateScrollDurationForFlingVelocity(
-          start, end, kSlowFlingVelocity, 10);
-  event_generator.GestureScrollSequence(start, end, kScrollDuration, 10);
-
-  EXPECT_TRUE(widget->IsClosed());
-
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsSelecting());
 }
 

@@ -37,13 +37,6 @@ namespace ash {
 
 namespace {
 
-// The minimum fling velocity which will cause a window to be closed.  Unit is
-// pixels per second.
-const float kMinimumFlingVelocity = 4000.0f;
-
-// The minimum opacity used during touch scroll gestures.
-const float kMinimumOpacity = 0.2f;
-
 // In the conceptual overview table, the window margin is the space reserved
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
@@ -91,24 +84,6 @@ void SetupFadeInAfterLayout(aura::Window* window) {
   layer->SetOpacity(1.0f);
 }
 
-// Convenience method to fade out a window using the animation settings defined
-// by OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_OUT.
-void SetupFadeOut(aura::Window* window) {
-  ScopedOverviewAnimationSettings animation_settings(
-      OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_OUT,
-      window);
-  window->layer()->SetOpacity(0.0f);
-}
-
-// Calculates the window opacity from the given scroll |distance| and the
-// |min opacity_distance|.
-float CalculateOpacityFromScrollDistance(int distance,
-                                         int min_opacity_distance) {
-  float opacity =
-      1.0f - static_cast<float>(abs(distance)) / min_opacity_distance;
-  return std::min(1.0f, std::max(kMinimumOpacity, opacity));
-}
-
 // An image button with a close window icon.
 class OverviewCloseButton : public views::ImageButton {
  public:
@@ -136,10 +111,9 @@ OverviewCloseButton::~OverviewCloseButton() {
 }  // namespace
 
 WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
-    WindowSelectorItem* selector_item,
+    views::ButtonListener* listener,
     const base::string16& text)
-    : LabelButton(selector_item, text),
-      selector_item_(selector_item),
+    : LabelButton(listener, text),
       top_padding_(0) {
 }
 
@@ -150,12 +124,6 @@ gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(0, top_padding_, 0, 0);
   return bounds;
-}
-
-void WindowSelectorItem::OverviewLabelButton::OnGestureEvent(
-    ui::GestureEvent* event) {
-  selector_item_->OnGestureEvent(event);
-  views::LabelButton::OnGestureEvent(event);
 }
 
 WindowSelectorItem::WindowSelectorItem(aura::Window* window)
@@ -260,72 +228,6 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
   wm::GetWindowState(transform_window_.window())->Activate();
 }
 
-void WindowSelectorItem::OnGestureEvent(ui::GestureEvent* event) {
-  if (!Shell::GetInstance()
-           ->window_selector_controller()
-           ->swipe_to_close_enabled())
-    return;
-
-  int delta_x = 0;
-  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
-    scroll_x_origin_ = event->x();
-  else
-    delta_x = event->x() - scroll_x_origin_;
-
-  switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN: {
-      // We need to call SetHandled() for the ET_GESTURE_SCROLL_BEGIN event so
-      // that future ET_GESTURE_SCROLL_* events are sent here.
-      event->SetHandled();
-      close_button_->SetEnabled(false);
-      SetupFadeOut(close_button_widget_.GetNativeWindow());
-      break;
-    }
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
-      event->SetHandled();
-      ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
-      transform_window_.BeginScopedAnimation(
-          OverviewAnimationType::OVERVIEW_ANIMATION_SCROLL_SELECTOR_ITEM,
-          &animation_settings);
-
-      gfx::Transform new_transform;
-      new_transform.Translate(delta_x, 0);
-      new_transform.PreconcatTransform(
-          transform_window_.get_overview_transform());
-      transform_window_.SetTransform(root_window(), new_transform);
-
-      const float opacity = CalculateOpacityFromScrollDistance(
-          delta_x, GetMinimumCloseDistance());
-      transform_window_.SetOpacity(opacity);
-      break;
-    }
-    case ui::ET_GESTURE_SCROLL_END: {
-      event->SetHandled();
-      if (abs(delta_x) > GetMinimumCloseDistance()) {
-        transform_window_.Close();
-        break;
-      }
-      ResetScrolledWindow();
-      break;
-    }
-    case ui::ET_SCROLL_FLING_START: {
-      event->SetHandled();
-      if (abs(delta_x) > GetMinimumCloseDistance() ||
-          fabs(event->details().velocity_x()) > kMinimumFlingVelocity) {
-        transform_window_.Close();
-        break;
-      }
-      ResetScrolledWindow();
-      break;
-    }
-    case ui::ET_GESTURE_END:
-      scroll_x_origin_ = 0;
-      break;
-    default:
-      break;
-  }
-}
-
 void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   transform_window_.OnWindowDestroyed();
@@ -336,20 +238,6 @@ void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
   // filter any of the titles the window had while in the overview session.
   window_label_button_view_->SetText(window->title());
   UpdateCloseButtonAccessibilityName();
-}
-
-void WindowSelectorItem::ResetScrolledWindow() {
-  ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
-  transform_window_.BeginScopedAnimation(
-      OverviewAnimationType::OVERVIEW_ANIMATION_CANCEL_SELECTOR_ITEM_SCROLL,
-      &animation_settings);
-
-  transform_window_.SetTransform(root_window(),
-                                 transform_window_.get_overview_transform());
-  transform_window_.SetOpacity(1.0);
-
-  SetupFadeInAfterLayout(close_button_widget_.GetNativeWindow());
-  close_button_->SetEnabled(true);
 }
 
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
@@ -454,10 +342,6 @@ void WindowSelectorItem::UpdateCloseButtonAccessibilityName() {
   close_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_OVERVIEW_CLOSE_ITEM_BUTTON_ACCESSIBLE_NAME,
       GetWindow()->title()));
-}
-
-int WindowSelectorItem::GetMinimumCloseDistance() const {
-  return target_bounds_.size().width() / 2;
 }
 
 }  // namespace ash

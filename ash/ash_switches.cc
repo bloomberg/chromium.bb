@@ -64,10 +64,6 @@ const char kAshEnablePowerButtonQuickLock[] =
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
-// Enables gesture swipe to close windows while in Overview mode.
-const char kAshEnableSwipeToCloseInOverviewMode[] =
-    "ash-enable-swipe-to-close-in-overview-mode";
-
 // Enables touch view testing.
 // TODO(skuhne): Remove TOGGLE_TOUCH_VIEW_TESTING accelerator once this
 // flag is removed.

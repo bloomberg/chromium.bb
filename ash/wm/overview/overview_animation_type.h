@@ -14,8 +14,6 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_NONE,
   // Used to fade in the close button and label.
   OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-  // Used to fade out the close button.
-  OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_OUT,
   // Used to position windows when entering/exiting overview mode and when a
   // window is closed while overview mode is active.
   OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
@@ -23,12 +21,7 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_HIDE_WINDOW,
   // Used to restore windows to their original position when exiting overview
   // mode.
-  OVERVIEW_ANIMATION_RESTORE_WINDOW,
-  // Used to animate windows when a user performs a touch drag gesture.
-  OVERVIEW_ANIMATION_SCROLL_SELECTOR_ITEM,
-  // Used to animate windows back in to position when a touch drag gesture is
-  // cancelled.
-  OVERVIEW_ANIMATION_CANCEL_SELECTOR_ITEM_SCROLL
+  OVERVIEW_ANIMATION_RESTORE_WINDOW
 };
 
 }  // namespace ash

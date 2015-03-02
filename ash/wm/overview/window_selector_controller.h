@@ -48,8 +48,6 @@ class ASH_EXPORT WindowSelectorController
   // are visible during overview mode.
   bool IsRestoringMinimizedWindows() const;
 
-  bool swipe_to_close_enabled() const { return swipe_to_close_enabled_; }
-
   // WindowSelectorDelegate:
   void OnSelectionEnded() override;
 
@@ -61,9 +59,6 @@ class ASH_EXPORT WindowSelectorController
 
   scoped_ptr<WindowSelector> window_selector_;
   base::Time last_selection_time_;
-
-  // Tracks whether the "Swipe-to-close" feature is enabled.
-  bool swipe_to_close_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
 };

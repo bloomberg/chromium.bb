@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
@@ -16,15 +15,12 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 
-WindowSelectorController::WindowSelectorController()
-    : swipe_to_close_enabled_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableSwipeToCloseInOverviewMode)) {
+WindowSelectorController::WindowSelectorController() {
 }
 
 WindowSelectorController::~WindowSelectorController() {
