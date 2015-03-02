@@ -40,10 +40,11 @@ const ProfileManager::CreateCallback kOnProfileSwitchDoNothing;
 
 // An observer that returns back to test code after a new profile is
 // initialized.
-void OnUnblockOnProfileCreation(Profile* profile,
+void OnUnblockOnProfileCreation(base::RunLoop* run_loop,
+                                Profile* profile,
                                 Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    base::MessageLoop::current()->Quit();
+    run_loop->Quit();
 }
 
 void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
@@ -91,26 +92,26 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
 
 // The class serves to retrieve passwords from PasswordStore asynchronously. It
 // used by ProfileManagerBrowserTest.DeletePasswords on some platforms.
-class PasswordStoreConsumerVerifier :
-    public password_manager::PasswordStoreConsumer {
+class PasswordStoreConsumerVerifier
+    : public password_manager::PasswordStoreConsumer {
  public:
-  PasswordStoreConsumerVerifier() : called_(false) {}
-
   void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) override {
-    EXPECT_FALSE(called_);
-    called_ = true;
     password_entries_.swap(results);
+    run_loop_.Quit();
   }
 
-  bool IsCalled() const { return called_; }
+  void Wait() {
+    run_loop_.Run();
+  }
 
   const std::vector<autofill::PasswordForm*>& GetPasswords() const {
     return password_entries_.get();
   }
+
  private:
+  base::RunLoop run_loop_;
   ScopedVector<autofill::PasswordForm> password_entries_;
-  bool called_;
 };
 
 static base::FilePath GetFirstNonSigninProfile(const ProfileInfoCache& cache) {
@@ -160,20 +161,23 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   // Delete singleton profile.
   base::FilePath singleton_profile_path = cache.GetPathOfProfileAtIndex(0);
   EXPECT_FALSE(singleton_profile_path.empty());
-  profile_manager->ScheduleProfileForDeletion(singleton_profile_path,
-                                              ProfileManager::CreateCallback());
+  base::RunLoop run_loop;
+  profile_manager->ScheduleProfileForDeletion(
+      singleton_profile_path,
+      base::Bind(&OnUnblockOnProfileCreation, &run_loop));
 
-  // Spin things till profile is actually deleted.
-  content::RunAllPendingInMessageLoop();
+  // Run the message loop until the profile is actually deleted (as indicated
+  // by the callback above being called).
+  run_loop.Run();
 
   // Make sure a new profile was created automatically.
   EXPECT_EQ(cache.GetNumberOfProfiles(), 1U);
   base::FilePath new_profile_path = cache.GetPathOfProfileAtIndex(0);
-  EXPECT_NE(new_profile_path, singleton_profile_path);
+  EXPECT_NE(new_profile_path.value(), singleton_profile_path.value());
 
   // Make sure that last used profile preference is set correctly.
   Profile* last_used = ProfileManager::GetLastUsedProfile();
-  EXPECT_EQ(new_profile_path, last_used->GetPath());
+  EXPECT_EQ(new_profile_path.value(), last_used->GetPath().value());
 
   // Make sure the last used profile was set correctly before the notification
   // was sent.
@@ -191,14 +195,14 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
 
   // Create an additional profile.
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
-  profile_manager->CreateProfileAsync(new_path,
-                                      base::Bind(&OnUnblockOnProfileCreation),
-                                      base::string16(), base::string16(),
-                                      std::string());
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      base::string16(), base::string16(), std::string());
 
-  // Spin to allow profile creation to take place, loop is terminated
-  // by OnUnblockOnProfileCreation when the profile is created.
-  content::RunMessageLoop();
+  // Run the message loop to allow profile creation to take place; the loop is
+  // terminated by OnUnblockOnProfileCreation when the profile is created.
+  run_loop.Run();
 
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
 
@@ -306,14 +310,14 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   // Create an additional profile.
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
-  profile_manager->CreateProfileAsync(path_profile2,
-                                      base::Bind(&OnUnblockOnProfileCreation),
-                                      base::string16(), base::string16(),
-                                      std::string());
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      path_profile2, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      base::string16(), base::string16(), std::string());
 
-  // Spin to allow profile creation to take place, loop is terminated
-  // by OnUnblockOnProfileCreation when the profile is created.
-  content::RunMessageLoop();
+  // Run the message loop to allow profile creation to take place; the loop is
+  // terminated by OnUnblockOnProfileCreation when the profile is created.
+  run_loop.Run();
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
@@ -445,27 +449,18 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeletePasswords) {
   password_store->AddLogin(form);
   PasswordStoreConsumerVerifier verify_add;
   password_store->GetAutofillableLogins(&verify_add);
+  verify_add.Wait();
+  EXPECT_EQ(1u, verify_add.GetPasswords().size());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_manager->ScheduleProfileForDeletion(profile->GetPath(),
-                                              ProfileManager::CreateCallback());
-  content::RunAllPendingInMessageLoop();
-  PasswordStoreConsumerVerifier verify_delete;
-  password_store->GetAutofillableLogins(&verify_delete);
-
-  // Run the password background thread.
   base::RunLoop run_loop;
-  base::Closure task = base::Bind(
-      base::IgnoreResult(&content::BrowserThread::PostTask),
-      content::BrowserThread::UI,
-      FROM_HERE,
-      run_loop.QuitClosure());
-  EXPECT_TRUE(password_store->ScheduleTask(task));
+  profile_manager->ScheduleProfileForDeletion(
+      profile->GetPath(), base::Bind(&OnUnblockOnProfileCreation, &run_loop));
   run_loop.Run();
 
-  EXPECT_TRUE(verify_add.IsCalled());
-  EXPECT_EQ(1u, verify_add.GetPasswords().size());
-  EXPECT_TRUE(verify_delete.IsCalled());
+  PasswordStoreConsumerVerifier verify_delete;
+  password_store->GetAutofillableLogins(&verify_delete);
+  verify_delete.Wait();
   EXPECT_EQ(0u, verify_delete.GetPasswords().size());
 }
 #endif  // !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

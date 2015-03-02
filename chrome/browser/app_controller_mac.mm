@@ -897,7 +897,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // already loaded a new one, so the pointer needs to be updated;
   // otherwise we will try to start up a browser window with a pointer
   // to the old profile.
-  if (lastProfile_ && profilePath == lastProfile_->GetPath())
+  // In a browser test, the application is not brought to the front, so
+  // |lastProfile_| might be null.
+  if (!lastProfile_ || profilePath == lastProfile_->GetPath())
     lastProfile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
 
   auto it = profileBookmarkMenuBridgeMap_.find(profilePath);
