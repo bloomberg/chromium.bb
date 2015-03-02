@@ -34,12 +34,9 @@ class SignalingConnector
   SignalingConnector(
       XmppSignalStrategy* signal_strategy,
       scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
+      scoped_ptr<OAuthTokenGetter> oauth_token_getter,
       const base::Closure& auth_failed_callback);
   ~SignalingConnector() override;
-
-  // May be called immediately after the constructor to enable OAuth
-  // access token updating.
-  void EnableOAuth(scoped_ptr<OAuthTokenGetter> oauth_token_getter);
 
   // OAuthTokenGetter callback.
   void OnAccessToken(OAuthTokenGetter::Status status,

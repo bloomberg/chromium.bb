@@ -7,11 +7,6 @@
 
 namespace remoting {
 
-// Service name used for authentication.
-// TODO(ajwong): Remove this once we've killed off XmppToken usage.
-// BUG:83897
-extern const char kChromotingTokenDefaultServiceName[];
-
 // Namespace used for chromoting XMPP stanzas.
 extern const char kChromotingXmlNamespace[];
 

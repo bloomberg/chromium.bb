@@ -12,13 +12,13 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "media/base/media.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/base/auth_token_util.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
@@ -164,15 +164,18 @@ void It2MeNativeMessagingHost::ProcessConnect(
     return;
   }
 
-  ParseAuthTokenWithService(auth_service_with_token,
-                            &xmpp_config.auth_token,
-                            &xmpp_config.auth_service);
-  if (xmpp_config.auth_token.empty()) {
-    SendErrorAndExit(
-        response.Pass(),
-        "Invalid 'authServiceWithToken': " + auth_service_with_token);
+  // For backward compatibility the webapp still passes OAuth service as part of
+  // the authServiceWithToken field. But auth service part is always expected to
+  // be set to oauth2.
+  const char kOAuth2ServicePrefix[] = "oauth2:";
+  if (!StartsWithASCII(auth_service_with_token, kOAuth2ServicePrefix, true)) {
+    SendErrorAndExit(response.Pass(), "Invalid 'authServiceWithToken': " +
+                                          auth_service_with_token);
     return;
   }
+
+  xmpp_config.auth_token =
+      auth_service_with_token.substr(strlen(kOAuth2ServicePrefix));
 
 #if !defined(NDEBUG)
   std::string address;

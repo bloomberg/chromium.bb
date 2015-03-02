@@ -83,7 +83,7 @@ void XmppSignalStrategy::Connect() {
   settings.set_user(login_jid.node());
   settings.set_host(login_jid.domain());
   settings.set_resource(resource_name_);
-  settings.set_token_service(xmpp_server_config_.auth_service);
+  settings.set_token_service("oauth2");
   settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN,
                           xmpp_server_config_.auth_token);
 
@@ -203,12 +203,10 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
 }
 
 void XmppSignalStrategy::SetAuthInfo(const std::string& username,
-                                     const std::string& auth_token,
-                                     const std::string& auth_service) {
+                                     const std::string& auth_token) {
   DCHECK(CalledOnValidThread());
   xmpp_server_config_.username = username;
   xmpp_server_config_.auth_token = auth_token;
-  xmpp_server_config_.auth_service = auth_service;
 }
 
 void XmppSignalStrategy::SetResourceName(const std::string &resource_name) {
@@ -269,13 +267,8 @@ void XmppSignalStrategy::SendKeepAlive() {
 buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
-  std::string mechanism = notifier::kDefaultGaiaAuthMechanism;
-  if (settings.token_service() == "oauth2") {
-    mechanism = "X-OAUTH2";
-  }
-
   return new notifier::GaiaTokenPreXmppAuth(
-      jid.Str(), settings.auth_token(), settings.token_service(), mechanism);
+      jid.Str(), settings.auth_token(), settings.token_service(), "X-OAUTH2");
 }
 
 }  // namespace remoting

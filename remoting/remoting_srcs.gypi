@@ -5,8 +5,6 @@
 {
   'variables': {
     'remoting_base_sources': [
-      'base/auth_token_util.cc',
-      'base/auth_token_util.h',
       'base/auto_thread.cc',
       'base/auto_thread.h',
       'base/auto_thread_task_runner.cc',

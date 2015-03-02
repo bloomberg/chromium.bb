@@ -107,7 +107,6 @@
         '../testing/gmock/include',
       ],
       'sources': [
-        'base/auth_token_util_unittest.cc',
         'base/auto_thread_task_runner_unittest.cc',
         'base/auto_thread_unittest.cc',
         'base/breakpad_win_unittest.cc',

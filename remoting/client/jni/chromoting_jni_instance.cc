@@ -63,7 +63,6 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
   xmpp_config_.use_tls = kXmppUseTls;
   xmpp_config_.username = username;
   xmpp_config_.auth_token = auth_token;
-  xmpp_config_.auth_service = "oauth2";
 
   // Initialize |authenticator_|.
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>

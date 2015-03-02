@@ -43,17 +43,13 @@ scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
 
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(new DnsBlackholeChecker(
       url_request_context_getter, talkgadget_prefix_policy));
+  scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetter(
+      oauth_credentials.Pass(), url_request_context_getter, false));
 
   scoped_ptr<SignalingConnector> signaling_connector(new SignalingConnector(
       signal_strategy.get(), dns_blackhole_checker.Pass(),
+      oauth_token_getter.Pass(),
       base::Bind(&Listener::OnAuthFailed, base::Unretained(listener))));
-
-  if (!oauth_credentials->refresh_token.empty()) {
-    scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetter(
-        oauth_credentials.Pass(), url_request_context_getter, false));
-
-    signaling_connector->EnableOAuth(oauth_token_getter.Pass());
-  }
 
   scoped_ptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender(
       base::Bind(&Listener::OnHeartbeatSuccessful, base::Unretained(listener)),

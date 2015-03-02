@@ -17,7 +17,7 @@ namespace {
 const char* kTestConfig =
 "{\n"
 "  \"xmpp_login\" : \"test@gmail.com\",\n"
-"  \"xmpp_auth_token\" : \"TEST_AUTH_TOKEN\",\n"
+"  \"oauth_refresh_token\" : \"TEST_REFRESH_TOKEN\",\n"
 "  \"host_id\" : \"TEST_HOST_ID\",\n"
 "  \"host_name\" : \"TEST_MACHINE_NAME\",\n"
 "  \"private_key\" : \"TEST_PRIVATE_KEY\"\n"
@@ -57,8 +57,8 @@ TEST_F(HostConfigTest, Read) {
   std::string value;
   EXPECT_TRUE(target->GetString(kXmppLoginConfigPath, &value));
   EXPECT_EQ("test@gmail.com", value);
-  EXPECT_TRUE(target->GetString(kXmppAuthTokenConfigPath, &value));
-  EXPECT_EQ("TEST_AUTH_TOKEN", value);
+  EXPECT_TRUE(target->GetString(kOAuthRefreshTokenConfigPath, &value));
+  EXPECT_EQ("TEST_REFRESH_TOKEN", value);
   EXPECT_TRUE(target->GetString(kHostIdConfigPath, &value));
   EXPECT_EQ("TEST_HOST_ID", value);
   EXPECT_TRUE(target->GetString(kHostNameConfigPath, &value));
@@ -77,8 +77,8 @@ TEST_F(HostConfigTest, Write) {
   scoped_ptr<base::DictionaryValue> target(HostConfigFromJsonFile(test_file));
   ASSERT_TRUE(target);
 
-  std::string new_auth_token_value = "NEW_AUTH_TOKEN";
-  target->SetString(kXmppAuthTokenConfigPath, new_auth_token_value);
+  std::string new_refresh_token_value = "NEW_REFRESH_TOKEN";
+  target->SetString(kOAuthRefreshTokenConfigPath, new_refresh_token_value);
   ASSERT_TRUE(HostConfigToJsonFile(*target, test_file));
 
   // Now read the file again and check that the value has been written.
@@ -88,8 +88,8 @@ TEST_F(HostConfigTest, Write) {
   std::string value;
   EXPECT_TRUE(reader->GetString(kXmppLoginConfigPath, &value));
   EXPECT_EQ("test@gmail.com", value);
-  EXPECT_TRUE(reader->GetString(kXmppAuthTokenConfigPath, &value));
-  EXPECT_EQ(new_auth_token_value, value);
+  EXPECT_TRUE(reader->GetString(kOAuthRefreshTokenConfigPath, &value));
+  EXPECT_EQ(new_refresh_token_value, value);
   EXPECT_TRUE(reader->GetString(kHostIdConfigPath, &value));
   EXPECT_EQ("TEST_HOST_ID", value);
   EXPECT_TRUE(reader->GetString(kHostNameConfigPath, &value));

@@ -947,27 +947,11 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
     return false;
   }
 
-  // Use an XMPP connection to the Talk network for session signalling.
+  // Use an XMPP connection to the Talk network for session signaling.
   if (!config.GetString(kXmppLoginConfigPath, &xmpp_server_config_.username) ||
-      !(config.GetString(kXmppAuthTokenConfigPath,
-                         &xmpp_server_config_.auth_token) ||
-        config.GetString(kOAuthRefreshTokenConfigPath,
-                         &oauth_refresh_token_))) {
+      !config.GetString(kOAuthRefreshTokenConfigPath, &oauth_refresh_token_)) {
     LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return false;
-  }
-
-  if (!oauth_refresh_token_.empty()) {
-    // SignalingConnector (inside HostSignalingManager) is responsible for
-    // getting OAuth token.
-    xmpp_server_config_.auth_token = "";
-    xmpp_server_config_.auth_service = "oauth2";
-  } else if (!config.GetString(kXmppAuthServiceConfigPath,
-                               &xmpp_server_config_.auth_service)) {
-    // For the me2me host, we default to ClientLogin token for chromiumsync
-    // because earlier versions of the host had no HTTP stack with which to
-    // request an OAuth2 access token.
-    xmpp_server_config_.auth_service = kChromotingTokenDefaultServiceName;
   }
 
   if (config.GetString(kHostOwnerConfigPath, &host_owner_)) {

@@ -50,7 +50,6 @@ class XmppSignalStrategy : public base::NonThreadSafe,
 
     std::string username;
     std::string auth_token;
-    std::string auth_service;
   };
 
   XmppSignalStrategy(
@@ -77,8 +76,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   // access token is renewed). It is OK to call this even when we are in the
   // CONNECTED state. It will be used on the next Connect() call.
   void SetAuthInfo(const std::string& username,
-                   const std::string& auth_token,
-                   const std::string& auth_service);
+                   const std::string& auth_token);
 
   // Use this method to override the default resource name used (optional).
   // This will be used on the next Connect() call.

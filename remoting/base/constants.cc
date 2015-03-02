@@ -6,8 +6,6 @@
 
 namespace remoting {
 
-const char kChromotingTokenDefaultServiceName[] = "chromiumsync";
-
 const char kChromotingXmlNamespace[] = "google:remoting";
 
 const char kAudioChannelName[] = "audio";
