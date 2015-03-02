@@ -533,48 +533,48 @@
     setAllEventsOccuredHandler(function() {
       // Add an audio track to the local stream and remove the video track and
       // then renegotiate. But first - setup the expectations.
-      local_stream = gFirstConnection.getLocalStreams()[0];
+      var localStream = gFirstConnection.getLocalStreams()[0];
+      var remoteStream1 = gFirstConnection.getRemoteStreams()[0];
 
-      remote_stream_1 = gFirstConnection.getRemoteStreams()[0];
       // Add an expected event that onaddtrack will be called on the remote
       // mediastream received on gFirstConnection when the audio track is
       // received.
       addExpectedEvent();
-      remote_stream_1.onaddtrack = function(){
-        assertEquals(remote_stream_1.getAudioTracks()[0].id,
-                     local_stream.getAudioTracks()[0].id);
+      remoteStream1.onaddtrack = function(){
+        assertEquals(remoteStream1.getAudioTracks()[0].id,
+                     localStream.getAudioTracks()[0].id);
         eventOccured();
       }
 
       // Add an expectation that the received video track is removed from
       // gFirstConnection.
       addExpectedEvent();
-      remote_stream_1.onremovetrack = function() {
+      remoteStream1.onremovetrack = function() {
         eventOccured();
       }
 
       // Add an expected event that onaddtrack will be called on the remote
       // mediastream received on gSecondConnection when the audio track is
       // received.
-      remote_stream_2 = gSecondConnection.getRemoteStreams()[0];
+      remoteStream2 = gSecondConnection.getRemoteStreams()[0];
       addExpectedEvent();
-      remote_stream_2.onaddtrack = function() {
-        assertEquals(remote_stream_2.getAudioTracks()[0].id,
-                     local_stream.getAudioTracks()[0].id);
+      remoteStream2.onaddtrack = function() {
+        assertEquals(remoteStream2.getAudioTracks()[0].id,
+                     localStream.getAudioTracks()[0].id);
         eventOccured();
       }
 
       // Add an expectation that the received video track is removed from
       // gSecondConnection.
       addExpectedEvent();
-      remote_stream_2.onremovetrack = function() {
+      remoteStream2.onremovetrack = function() {
         eventOccured();
       }
       // When all the above events have occurred- the test pass.
       setAllEventsOccuredHandler(reportTestSuccess);
 
-      local_stream.addTrack(gLocalStream.getAudioTracks()[0]);
-      local_stream.removeTrack(local_stream.getVideoTracks()[0]);
+      localStream.addTrack(gLocalStream.getAudioTracks()[0]);
+      localStream.removeTrack(localStream.getVideoTracks()[0]);
       negotiate();
     });
   }
@@ -681,7 +681,7 @@
   function addTwoMediaStreamsToOneConnection() {
     createConnections(null);
     navigator.webkitGetUserMedia({audio: true, video: true},
-        CloneStreamAndAddTwoStreamstoOneConnection, printGetUserMediaError);
+        cloneStreamAndAddTwoStreamsToOneConnection, printGetUserMediaError);
   }
 
   function onToneChange(tone) {
@@ -743,7 +743,7 @@
 
   // Called if getUserMedia succeeds, then clone the stream, send two streams
   // from one peer connection.
-  function CloneStreamAndAddTwoStreamstoOneConnection(localStream) {
+  function cloneStreamAndAddTwoStreamsToOneConnection(localStream) {
     displayAndRemember(localStream);
 
     var clonedStream = null;
@@ -780,15 +780,14 @@
     negotiate();
   }
 
-  // Called if getUserMedia succeeds when we want to send a modified
-  // MediaStream. A new MediaStream is created and the video track from
-  // |localStream| is added.
+  // A new MediaStream is created with video track from |localStream| and is
+  // added to both peer connections.
   function createNewVideoStreamAndAddToBothConnections(localStream) {
     displayAndRemember(localStream);
-    var new_stream = new webkitMediaStream();
-    new_stream.addTrack(localStream.getVideoTracks()[0]);
-    gFirstConnection.addStream(new_stream);
-    gSecondConnection.addStream(new_stream);
+    var newStream = new webkitMediaStream();
+    newStream.addTrack(localStream.getVideoTracks()[0]);
+    gFirstConnection.addStream(newStream);
+    gSecondConnection.addStream(newStream);
     negotiate();
   }
 

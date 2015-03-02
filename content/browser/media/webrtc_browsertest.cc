@@ -371,9 +371,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia. When video is flowing, the VideoTrack is removed and an
 // AudioTrack is added instead.
-// TODO(phoglund): This test is manual since not all buildbots has an audio
-// input.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MANUAL_CallAndModifyStream) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallAndModifyStream) {
   MakeTypicalPeerConnectionCall(
       "callWithNewVideoMediaStreamLaterSwitchToAudio();");
 }
