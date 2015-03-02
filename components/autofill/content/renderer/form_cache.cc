@@ -119,10 +119,41 @@ std::vector<FormData> FormCache::ExtractNewForms() {
       parsed_forms_.insert(form);
     }
   }
+
+  // Look for more parseable fields outside of forms.
+  std::vector<WebElement> fieldsets;
+  std::vector<WebFormControlElement> control_elements =
+      GetUnownedAutofillableFormFieldElements(document.all(), &fieldsets);
+
+  size_t num_editable_elements =
+      ScanFormControlElements(control_elements, log_deprecation_messages);
+
+  if (ShouldIgnoreForm(num_editable_elements, control_elements.size()))
+    return forms;
+
+  FormData synthetic_form;
+  if (!UnownedFormElementsAndFieldSetsToFormData(fieldsets, control_elements,
+                                                 nullptr, document.url(),
+                                                 REQUIRE_NONE, extract_mask,
+                                                 &synthetic_form, nullptr)) {
+    return forms;
+  }
+
+  num_fields_seen += synthetic_form.fields.size();
+  if (num_fields_seen > kMaxParseableFields)
+    return forms;
+
+  if (synthetic_form.fields.size() >= kRequiredAutofillFields &&
+      !parsed_forms_.count(synthetic_form)) {
+    forms.push_back(synthetic_form);
+    parsed_forms_.insert(synthetic_form);
+    synthetic_form_ = synthetic_form;
+  }
   return forms;
 }
 
 void FormCache::Reset() {
+  synthetic_form_ = FormData();
   parsed_forms_.clear();
   initial_select_values_.clear();
   initial_checked_state_.clear();
@@ -191,7 +222,15 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
 
   std::vector<WebFormControlElement> control_elements;
 
+  // First check the synthetic form.
   bool found_synthetic_form = false;
+  if (form.data.SameFormAs(synthetic_form_)) {
+    found_synthetic_form = true;
+    WebDocument document = frame_.document();
+    control_elements =
+        GetUnownedAutofillableFormFieldElements(document.all(), nullptr);
+  }
+
   if (!found_synthetic_form) {
     // Find the real form by searching through the WebDocuments.
     bool found_form = false;

@@ -64,6 +64,10 @@ class FormCache {
   // The cached forms. Used to prevent re-extraction of forms.
   std::set<FormData> parsed_forms_;
 
+  // The synthetic FormData is for all the fieldsets in the document without a
+  // form owner.
+  FormData synthetic_form_;
+
   // The cached initial values for <select> elements.
   std::map<const blink::WebSelectElement, base::string16>
       initial_select_values_;
