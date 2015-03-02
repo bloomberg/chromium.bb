@@ -155,11 +155,14 @@ public class MultiFieldTimePickerDialog
             mMinuteSpinner.setMaxValue(59);
         }
 
-        if (step >= HOUR_IN_MILLIS) {
+        mMinuteSpinner.setValue(minute);
+        if (step % HOUR_IN_MILLIS == 0) {
             mMinuteSpinner.setEnabled(false);
+            // TODO(tkent): We should set minutes value of
+            // WebDateTimeChooserParams::stepBase.
+            mMinuteSpinner.setValue(minMinute);
         }
 
-        mMinuteSpinner.setValue(minute);
         mMinuteSpinner.setFormatter(twoDigitPaddingFormatter);
 
         if (step >= MINUTE_IN_MILLIS) {
