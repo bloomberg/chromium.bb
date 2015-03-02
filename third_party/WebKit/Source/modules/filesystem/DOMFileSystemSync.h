@@ -62,8 +62,11 @@ public:
     File* createFile(const FileEntrySync*, ExceptionState&);
     FileWriterSync* createWriter(const FileEntrySync*, ExceptionState&);
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     DOMFileSystemSync(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
+    Member<DirectoryEntrySync> m_rootEntry;
 };
 
 } // namespace blink

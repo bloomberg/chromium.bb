@@ -57,6 +57,7 @@ DOMFileSystemSync* DOMFileSystemSync::create(DOMFileSystemBase* fileSystem)
 
 DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL)
+    , m_rootEntry(DirectoryEntrySync::create(this, DOMFilePath::root))
 {
 }
 
@@ -71,7 +72,7 @@ void DOMFileSystemSync::reportError(ErrorCallback* errorCallback, FileError* fil
 
 DirectoryEntrySync* DOMFileSystemSync::root()
 {
-    return DirectoryEntrySync::create(this, DOMFilePath::root);
+    return m_rootEntry.get();
 }
 
 namespace {
@@ -222,6 +223,12 @@ FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, 
         return 0;
     }
     return fileWriter;
+}
+
+DEFINE_TRACE(DOMFileSystemSync)
+{
+    DOMFileSystemBase::trace(visitor);
+    visitor->trace(m_rootEntry);
 }
 
 }

@@ -56,7 +56,7 @@ public:
     // Creates a new isolated file system for the given filesystemId.
     static DOMFileSystem* createIsolatedFileSystem(ExecutionContext*, const String& filesystemId);
 
-    DirectoryEntry* root();
+    DirectoryEntry* root() const;
 
     // DOMFileSystemBase overrides.
     virtual void addPendingCallbacks() override;
@@ -196,6 +196,7 @@ private:
     };
 
     int m_numberOfPendingCallbacks;
+    Member<DirectoryEntry> m_rootEntry;
 };
 
 template <typename CB, typename CBArg>

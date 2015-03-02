@@ -88,12 +88,13 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, File
     : DOMFileSystemBase(context, name, type, rootURL)
     , ActiveDOMObject(context)
     , m_numberOfPendingCallbacks(0)
+    , m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root))
 {
 }
 
-DirectoryEntry* DOMFileSystem::root()
+DirectoryEntry* DOMFileSystem::root() const
 {
-    return DirectoryEntry::create(this, DOMFilePath::root);
+    return m_rootEntry.get();
 }
 
 void DOMFileSystem::addPendingCallbacks()
@@ -177,6 +178,7 @@ DEFINE_TRACE(DOMFileSystem)
 {
     DOMFileSystemBase::trace(visitor);
     ActiveDOMObject::trace(visitor);
+    visitor->trace(m_rootEntry);
 }
 
 } // namespace blink
