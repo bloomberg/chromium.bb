@@ -398,12 +398,9 @@ void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 
 void WebPluginContainerImpl::reportGeometry()
 {
-    if (!parent())
+    // We cannot compute geometry without a parent or renderer.
+    if (!parent() || !m_element->renderer())
         return;
-
-    // crbug.com/459713: Remove this once we have been able to isolate the
-    // root cause of this scenario.
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_element->renderer());
 
     IntRect windowRect, clipRect;
     Vector<IntRect> cutOutRects;
