@@ -39,11 +39,12 @@ enum side {
 static int
 usage(int ret)
 {
-	fprintf(stderr, "usage: ./scanner [client-header|server-header|code]\n");
+	fprintf(stderr, "usage: ./scanner [client-header|server-header|code]"
+		" [input_file output_file]\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Converts XML protocol descriptions supplied on "
-			"stdin to client headers,\n"
-			"server headers, or protocol marshalling code.\n");
+			"stdin or input file to client\n"
+			"headers, server headers, or protocol marshalling code.\n");
 	exit(ret);
 }
 
@@ -1252,6 +1253,7 @@ int main(int argc, char *argv[])
 {
 	struct parse_context ctx;
 	struct protocol protocol;
+	FILE *input = stdin;
 	int len;
 	void *buf;
 	enum {
@@ -1260,7 +1262,7 @@ int main(int argc, char *argv[])
 		CODE,
 	} mode;
 
-	if (argc != 2)
+	if (argc != 2 && argc != 4)
 		usage(EXIT_FAILURE);
 	else if (strcmp(argv[1], "help") == 0 || strcmp(argv[1], "--help") == 0)
 		usage(EXIT_SUCCESS);
@@ -1272,6 +1274,20 @@ int main(int argc, char *argv[])
 		mode = CODE;
 	else
 		usage(EXIT_FAILURE);
+
+	if (argc == 4) {
+		input = fopen(argv[2], "r");
+		if (input == NULL) {
+			fprintf(stderr, "Could not open input file: %s\n",
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		if (freopen(argv[3], "w", stdout) == NULL) {
+			fprintf(stderr, "Could not open output file: %s\n",
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	wl_list_init(&protocol.interface_list);
 	protocol.type_index = 0;
@@ -1293,7 +1309,7 @@ int main(int argc, char *argv[])
 
 	do {
 		buf = XML_GetBuffer(ctx.parser, XML_BUFFER_SIZE);
-		len = fread(buf, 1, XML_BUFFER_SIZE, stdin);
+		len = fread(buf, 1, XML_BUFFER_SIZE, input);
 		if (len < 0) {
 			fprintf(stderr, "fread: %m\n");
 			exit(EXIT_FAILURE);
