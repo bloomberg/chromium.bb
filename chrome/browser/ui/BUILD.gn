@@ -47,6 +47,7 @@ static_library("ui") {
     "//components/app_modal",
     "//components/auto_login_parser",
     "//components/dom_distiller/webui",
+    "//components/feedback/proto",
     "//components/history/core/browser:proto",
     "//components/invalidation",
     "//components/onc",
@@ -134,7 +135,6 @@ static_library("ui") {
                     "//chrome")
     deps += [
       "//components/copresence",
-      "//components/feedback/proto",
       "//device/bluetooth",
       "//third_party/libusb",
     ]
@@ -313,6 +313,7 @@ static_library("ui") {
     ]
     deps -= [
       "//chrome/browser/ui/views",
+      "//components/feedback/proto",
       "//ui/events",
     ]
     sources += rebase_path(gypi_values.chrome_browser_ui_android_sources,

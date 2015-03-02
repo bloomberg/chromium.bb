@@ -88,11 +88,15 @@
         'webp_transcode.gypi',
       ],
     }],
+    ['OS != "android"', {
+      'includes': [
+        'feedback.gypi',
+      ]
+    }],
     ['OS != "ios" and OS != "android"', {
       'includes': [
         'audio_modem.gypi',
         'copresence.gypi',
-        'feedback.gypi',
         'proximity_auth.gypi',
         'storage_monitor.gypi',
       ]

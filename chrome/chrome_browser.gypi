@@ -2896,6 +2896,7 @@
         '../components/components.gyp:enhanced_bookmarks',
         '../components/components.gyp:favicon_base',
         '../components/components.gyp:favicon_core',
+        '../components/components.gyp:feedback_component',
         '../components/components.gyp:gcm_driver',
         '../components/components.gyp:google_core_browser',
         '../components/components.gyp:handoff',
@@ -3366,7 +3367,6 @@
         }, {  # OS!="android" and OS!="ios"
           'sources': [ '<@(chrome_browser_non_mobile_sources)' ],
           'dependencies': [
-            '../components/components.gyp:feedback_component',
             '../device/core/core.gyp:device_core',
             '../device/usb/usb.gyp:device_usb',
           ]
@@ -3383,6 +3383,7 @@
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
+            '../components/components.gyp:feedback_component',
             '../components/components.gyp:storage_monitor',
             '../components/components.gyp:web_modal',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',

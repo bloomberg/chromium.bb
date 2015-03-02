@@ -40,6 +40,7 @@ group("all_components") {
     "//components/enhanced_bookmarks",
     "//components/favicon/core",
     "//components/favicon_base",
+    "//components/feedback",
     "//components/gcm_driver",
     "//components/google/core/browser",
     "//components/history/content/browser",
@@ -161,6 +162,7 @@ group("all_components") {
       "//components/domain_reliability",  # Blocked on content.
       "//components/favicon_base",  # Should work, needs checking.
       "//components/favicon/core",  # Blocked on keyed service.
+      "//components/feedback",  # Blocked on content.
       "//components/gcm_driver",  # Should work, needs checking.
       "//components/google/core/browser",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.
@@ -202,7 +204,6 @@ group("all_components") {
   if (!is_ios && !is_android) {
     deps += [
       "//components/copresence",
-      "//components/feedback",
       "//components/storage_monitor",
     ]
   }

@@ -2668,6 +2668,7 @@
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:dom_distiller_core',
         '../components/components.gyp:dom_distiller_webui',
+        '../components/components.gyp:feedback_proto',
         '../components/components.gyp:history_core_browser_proto',
         '../components/components.gyp:invalidation',
         '../components/components.gyp:onc_component',
@@ -2928,6 +2929,7 @@
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
+             '../components/components.gyp:feedback_proto',
              '../ui/events/events.gyp:events',
              'chrome_browser_ui_views.gyp:browser_ui_views',
           ],
@@ -3124,7 +3126,6 @@
         }],
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
-            '../components/components.gyp:feedback_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/libusb/libusb.gyp:libusb',
           ],
