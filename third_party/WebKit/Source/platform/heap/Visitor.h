@@ -40,19 +40,10 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTraits.h"
-#include "wtf/InstanceCounter.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
-#include "wtf/WeakPtr.h"
 #if ENABLE(GC_PROFILING)
+#include "wtf/InstanceCounter.h"
 #include "wtf/text/WTFString.h"
-#endif
-
-#if ENABLE(ASSERT)
-#define DEBUG_ONLY(x) x
-#else
-#define DEBUG_ONLY(x)
 #endif
 
 namespace blink {
@@ -107,9 +98,7 @@ struct GCInfo {
 
 #if ENABLE(ASSERT)
 PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, size_t gcInfoIndex);
-
 #endif
-
 
 // The FinalizerTraitImpl specifies how to finalize objects. Object
 // that inherit from GarbageCollectedFinalized are finalized by
@@ -1020,6 +1009,6 @@ struct GCInfoTrait {
     }
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // Visitor_h

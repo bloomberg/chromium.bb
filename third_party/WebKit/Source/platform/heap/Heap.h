@@ -39,13 +39,11 @@
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/ContainerAnnotations.h"
+#include "wtf/Forward.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PageAllocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include <stdint.h>
 
 namespace blink {

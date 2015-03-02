@@ -30,6 +30,7 @@ namespace WTF {
     template<typename T> class PassRefPtr;
     template<typename T> class RefPtr;
     template<typename T, size_t inlineCapacity, typename Allocator> class Vector;
+    template<typename T> class WeakPtr;
 
     class ArrayBuffer;
     class ArrayBufferView;
@@ -59,6 +60,7 @@ using WTF::PassOwnPtr;
 using WTF::PassRefPtr;
 using WTF::RefPtr;
 using WTF::Vector;
+using WTF::WeakPtr;
 
 using WTF::ArrayBuffer;
 using WTF::ArrayBufferView;

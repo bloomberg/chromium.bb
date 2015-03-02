@@ -34,15 +34,13 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/AddressSanitizer.h"
 #include "public/platform/WebThread.h"
+#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace v8 {
