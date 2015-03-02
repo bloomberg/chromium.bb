@@ -41,6 +41,12 @@
                 testExpected("video.textTracks[0].mode", "showing");
                 consoleWrite("");
 
+                consoleWrite("<b>*** Set to numeric value (no longer supported), should return default</b>");
+                run("textTrack.mode = 2");
+                testExpected("textTrack.mode", "showing");
+                testExpected("video.textTracks[0].mode", "showing");
+                consoleWrite("");
+
                 consoleWrite("<b>*** Set to known values</b>");
                 consoleWrite("<b>++ 'disabled'</b>");
                 setMode("disabled");

@@ -35,6 +35,7 @@ EXPECTED (cues[3].startTime == '61') OK
 
 *** create a new cue and add it to a track created with video.addTextTrack, make sure it is inserted correctly.
 RUN(newTrack = video.addTextTrack("subtitles", "French subtitles", "fr"))
+RUN(newTrack.mode = "showing")
 RUN(newTrack.addCue(new VTTCue(0.0, 1.0, "Test!")))
 RUN(newCue = newTrack.cues[0])
 EXPECTED (newCue.track == '[object TextTrack]') OK

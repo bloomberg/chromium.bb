@@ -49,7 +49,7 @@
                 consoleWrite("<br>*** create a new cue and add it to a track created with video.addTextTrack, make sure it is inserted correctly.");
                 findMediaElement();
                 run('newTrack = video.addTextTrack("subtitles", "French subtitles", "fr")');
-                newTrack.mode = 2;
+                run('newTrack.mode = "showing"');
                 run('newTrack.addCue(new VTTCue(0.0, 1.0, "Test!"))');
                 run('newCue = newTrack.cues[0]');
                 testExpected("newCue.track", newTrack);

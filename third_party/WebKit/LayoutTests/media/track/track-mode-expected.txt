@@ -10,6 +10,11 @@ RUN(textTrack.mode = 'bogus')
 EXPECTED (textTrack.mode == 'showing') OK
 EXPECTED (video.textTracks[0].mode == 'showing') OK
 
+*** Set to numeric value (no longer supported), should return default
+RUN(textTrack.mode = 2)
+EXPECTED (textTrack.mode == 'showing') OK
+EXPECTED (video.textTracks[0].mode == 'showing') OK
+
 *** Set to known values
 ++ 'disabled'
 RUN(textTrack.mode = 'disabled')
