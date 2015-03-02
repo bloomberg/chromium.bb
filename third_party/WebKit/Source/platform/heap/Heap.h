@@ -1571,27 +1571,18 @@ public:
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, VectorHeapIndex, gcInfoIndex));
     }
-    PLATFORM_EXPORT static void freeVectorBacking(void* address);
+    PLATFORM_EXPORT static void freeVectorBacking(void*);
     PLATFORM_EXPORT static bool expandVectorBacking(void*, size_t);
-    static inline bool shrinkVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
-    {
-        shrinkVectorBackingInternal(address, quantizedCurrentSize, quantizedShrunkSize);
-        return true;
-    }
+    PLATFORM_EXPORT static bool shrinkVectorBacking(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     template <typename T>
     static T* allocateInlineVectorBacking(size_t size)
     {
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, InlineVectorHeapIndex, gcInfoIndex));
     }
-    PLATFORM_EXPORT static void freeInlineVectorBacking(void* address);
+    PLATFORM_EXPORT static void freeInlineVectorBacking(void*);
     PLATFORM_EXPORT static bool expandInlineVectorBacking(void*, size_t);
-    static inline bool shrinkInlineVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrinkedSize)
-    {
-        shrinkInlineVectorBackingInternal(address, quantizedCurrentSize, quantizedShrinkedSize);
-        return true;
-    }
-
+    PLATFORM_EXPORT static bool shrinkInlineVectorBacking(void*, size_t quantizedCurrentSize, size_t quantizedShrinkedSize);
 
     template <typename T, typename HashTable>
     static T* allocateHashTableBacking(size_t size)
@@ -1698,8 +1689,6 @@ private:
     static void backingFree(void*);
     static bool backingExpand(void*, size_t);
     static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
-    PLATFORM_EXPORT static void shrinkVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
-    PLATFORM_EXPORT static void shrinkInlineVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
