@@ -32,12 +32,12 @@
 #define Shaper_h
 
 #include "platform/PlatformExport.h"
+#include "platform/fonts/Font.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
 
 class FloatRect;
-class Font;
 class GlyphBuffer;
 class SimpleFontData;
 class TextRun;
@@ -52,6 +52,8 @@ public:
 protected:
     Shaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
 
+    void trackNonPrimaryFallbackFont(const SimpleFontData*);
+
 protected:
     const Font* m_font;
     const TextRun& m_run;
@@ -64,6 +66,16 @@ protected:
 
     ForTextEmphasisOrNot m_forTextEmphasis;
 };
+
+inline void Shaper::trackNonPrimaryFallbackFont(const SimpleFontData* fontData)
+{
+    ASSERT(m_fallbackFonts);
+
+    if (fontData == m_font->primaryFont())
+        return;
+
+    m_fallbackFonts->add(fontData);
+}
 
 } // namespace blink
 

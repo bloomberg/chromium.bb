@@ -793,7 +793,7 @@ void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
     ASSERT(endCharacter > startCharacter);
     ASSERT(script != USCRIPT_INVALID_CODE);
     if (m_fallbackFonts)
-        m_fallbackFonts->add(fontData);
+        trackNonPrimaryFallbackFont(fontData);
     return m_harfBuzzRuns.append(HarfBuzzRun::create(fontData,
         startCharacter, endCharacter - startCharacter,
         TextDirectionToHBDirection(m_run.direction(), m_font->fontDescription().orientation(), fontData),

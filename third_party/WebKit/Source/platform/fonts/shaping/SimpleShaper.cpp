@@ -84,15 +84,6 @@ float SimpleShaper::characterWidth(UChar32 character, const GlyphData& glyphData
     return width;
 }
 
-void SimpleShaper::cacheFallbackFont(const SimpleFontData* fontData,
-    const SimpleFontData* primaryFont)
-{
-    if (fontData == primaryFont)
-        return;
-
-    m_fallbackFonts->add(fontData);
-}
-
 float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 {
     // Account for letter-spacing.
@@ -139,8 +130,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
     bool hasExtraSpacing = (m_font->fontDescription().letterSpacing() || m_font->fontDescription().wordSpacing() || m_expansion)
         && !m_run.spacingDisabled();
 
-    const SimpleFontData* primaryFont = m_font->primaryFont();
-    const SimpleFontData* lastFontData = primaryFont;
+    const SimpleFontData* lastFontData = m_font->primaryFont();
     bool normalizeSpace = m_run.normalizeSpace();
     FloatPoint glyphOrigin;
     FloatRect glyphBounds;
@@ -170,7 +160,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
 
         if (m_fallbackFonts && lastFontData != fontData && width) {
             lastFontData = fontData;
-            cacheFallbackFont(fontData, primaryFont);
+            trackNonPrimaryFallbackFont(fontData);
         }
 
         if (hasExtraSpacing && !spaceUsedAsZeroWidthSpace)

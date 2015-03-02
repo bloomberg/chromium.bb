@@ -63,7 +63,6 @@ private:
 
     GlyphData glyphDataForCharacter(CharacterData&, bool normalizeSpace = false);
     float characterWidth(UChar32, const GlyphData&) const;
-    void cacheFallbackFont(const SimpleFontData*, const SimpleFontData* primaryFont);
     float adjustSpacing(float, const CharacterData&);
 
     template <typename TextIterator>
