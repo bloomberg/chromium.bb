@@ -409,7 +409,7 @@ class StatsResponse : public webrtc::StatsObserver {
     for (const auto& value : report.values) {
       response->addStatistic(idx,
           blink::WebString::fromUTF8(value->display_name()),
-          blink::WebString::fromUTF8(value->value));
+          blink::WebString::fromUTF8(value->ToString()));
     }
   }
 

@@ -217,7 +217,7 @@ static base::DictionaryValue* GetDictValueStats(
 
   for (const auto& v : report.values()) {
     values->AppendString(v->display_name());
-    values->AppendString(v->value);
+    values->AppendString(v->ToString());
   }
 
   return dict;
