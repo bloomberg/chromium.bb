@@ -229,7 +229,7 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
   base::WorkerPool::PostTask(FROM_HERE,
                              base::Bind(&OpenInputDevice, base::Passed(&params),
                                         task_runner_, reply_callback),
-                             true /* task_is_slow */);
+                             false /* task_is_slow */);
 }
 
 void InputDeviceFactoryEvdev::RemoveInputDevice(const base::FilePath& path) {
