@@ -125,10 +125,9 @@ class CC_EXPORT LayerTreeHostCommon {
   static bool RenderSurfaceContributesToTarget(LayerType*,
                                                int target_surface_layer_id);
 
-  template <typename LayerType>
-  static void CallFunctionForSubtree(
-      LayerType* root_layer,
-      const base::Callback<void(LayerType* layer)>& function);
+  template <typename LayerType, typename Function>
+  static void CallFunctionForSubtree(LayerType* layer,
+                                     const Function& function);
 
   // Returns a layer with the given id if one exists in the subtree starting
   // from the given root layer (including mask and replica layers).
@@ -205,22 +204,21 @@ LayerType* LayerTreeHostCommon::FindLayerInSubtree(LayerType* root_layer,
   return NULL;
 }
 
-template <typename LayerType>
-void LayerTreeHostCommon::CallFunctionForSubtree(
-    LayerType* root_layer,
-    const base::Callback<void(LayerType* layer)>& function) {
-  function.Run(root_layer);
+template <typename LayerType, typename Function>
+void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* layer,
+                                                 const Function& function) {
+  function(layer);
 
-  if (LayerType* mask_layer = root_layer->mask_layer())
-    function.Run(mask_layer);
-  if (LayerType* replica_layer = root_layer->replica_layer()) {
-    function.Run(replica_layer);
+  if (LayerType* mask_layer = layer->mask_layer())
+    function(mask_layer);
+  if (LayerType* replica_layer = layer->replica_layer()) {
+    function(replica_layer);
     if (LayerType* mask_layer = replica_layer->mask_layer())
-      function.Run(mask_layer);
+      function(mask_layer);
   }
 
-  for (size_t i = 0; i < root_layer->children().size(); ++i) {
-    CallFunctionForSubtree(get_layer_as_raw_ptr(root_layer->children(), i),
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    CallFunctionForSubtree(get_layer_as_raw_ptr(layer->children(), i),
                            function);
   }
 }

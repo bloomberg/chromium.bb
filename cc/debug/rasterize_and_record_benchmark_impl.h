@@ -31,8 +31,6 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
   void RunOnLayer(PictureLayerImpl* layer) override;
 
  private:
-  void Run(LayerImpl* layer);
-
   struct RasterizeResults {
     RasterizeResults();
     ~RasterizeResults();

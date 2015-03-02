@@ -37,7 +37,6 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
       scoped_refptr<base::MessageLoopProxy> origin_loop) override;
 
  private:
-  void Run(Layer* layer);
   void RunOnDisplayListLayer(PictureLayer* layer,
                              const gfx::Rect& visible_content_rect);
   void RunOnPictureLayer(PictureLayer* layer,

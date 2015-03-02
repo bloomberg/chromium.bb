@@ -31,7 +31,6 @@ class CC_EXPORT InvalidationBenchmark : public MicroBenchmark {
  private:
   enum Mode { FIXED_SIZE, LAYER, VIEWPORT, RANDOM };
 
-  void Run(Layer* layer);
   float LCGRandom();
 
   Mode mode_;

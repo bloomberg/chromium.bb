@@ -121,13 +121,18 @@ void LayerTreeImpl::Shutdown() {
 }
 
 void LayerTreeImpl::ReleaseResources() {
-  if (root_layer_)
-    ProcessLayersRecursive(root_layer_.get(), &LayerImpl::ReleaseResources);
+  if (root_layer_) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer_.get(), [](LayerImpl* layer) { layer->ReleaseResources(); });
+  }
 }
 
 void LayerTreeImpl::RecreateResources() {
-  if (root_layer_)
-    ProcessLayersRecursive(root_layer_.get(), &LayerImpl::RecreateResources);
+  if (root_layer_) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer_.get(),
+        [](LayerImpl* layer) { layer->RecreateResources(); });
+  }
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
@@ -475,10 +480,6 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
                                            gfx::Rect(layer->content_bounds()));
 }
 
-static void ApplySentScrollDeltasFromAbortedCommitTo(LayerImpl* layer) {
-  layer->ApplySentScrollDeltasFromAbortedCommit();
-}
-
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   DCHECK(IsActiveTree());
 
@@ -490,7 +491,9 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
     return;
 
   LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), base::Bind(&ApplySentScrollDeltasFromAbortedCommitTo));
+      root_layer(), [](LayerImpl* layer) {
+        layer->ApplySentScrollDeltasFromAbortedCommit();
+      });
 }
 
 void LayerTreeImpl::SetViewportLayersFromIds(
@@ -748,17 +751,6 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
           currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0));
 }
 
-static void DidBecomeActiveRecursive(LayerImpl* layer) {
-  layer->DidBecomeActive();
-  if (layer->mask_layer())
-    layer->mask_layer()->DidBecomeActive();
-  if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-    layer->replica_layer()->mask_layer()->DidBecomeActive();
-
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    DidBecomeActiveRecursive(layer->children()[i]);
-}
-
 void LayerTreeImpl::DidBecomeActive() {
   if (next_activation_forces_redraw_) {
     layer_tree_host_impl_->SetFullRootLayerDamage();
@@ -774,8 +766,10 @@ void LayerTreeImpl::DidBecomeActive() {
   // if we were in a good state.
   layer_tree_host_impl_->ResetRequiresHighResToDraw();
 
-  if (root_layer())
-    DidBecomeActiveRecursive(root_layer());
+  if (root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer(), [](LayerImpl* layer) { layer->DidBecomeActive(); });
+  }
 
   devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
                                                  source_frame_number_);
@@ -1265,18 +1259,6 @@ const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
   DCHECK(IsActiveTree());
 
   return layers_with_copy_output_request_;
-}
-
-void LayerTreeImpl::ProcessLayersRecursive(LayerImpl* current,
-                                           void (LayerImpl::*function)()) {
-  DCHECK(current);
-  (current->*function)();
-  if (current->mask_layer())
-    ProcessLayersRecursive(current->mask_layer(), function);
-  if (current->replica_layer())
-    ProcessLayersRecursive(current->replica_layer(), function);
-  for (size_t i = 0; i < current->children().size(); ++i)
-    ProcessLayersRecursive(current->children()[i], function);
 }
 
 template <typename LayerType>

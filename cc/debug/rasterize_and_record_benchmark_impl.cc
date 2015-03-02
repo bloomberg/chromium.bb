@@ -132,9 +132,10 @@ RasterizeAndRecordBenchmarkImpl::~RasterizeAndRecordBenchmarkImpl() {}
 void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
     LayerTreeHostImpl* host) {
   LayerTreeHostCommon::CallFunctionForSubtree(
-      host->RootLayer(),
-      base::Bind(&RasterizeAndRecordBenchmarkImpl::Run,
-                 base::Unretained(this)));
+      host->RootLayer(), [this](LayerImpl* layer) {
+        rasterize_results_.total_layers++;
+        layer->RunMicroBenchmark(this);
+      });
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetDouble("rasterize_time_ms",
@@ -155,11 +156,6 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
                      rasterize_results_.total_picture_layers_off_screen);
 
   NotifyDone(result.Pass());
-}
-
-void RasterizeAndRecordBenchmarkImpl::Run(LayerImpl* layer) {
-  rasterize_results_.total_layers++;
-  layer->RunMicroBenchmark(this);
 }
 
 void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {

@@ -27,8 +27,6 @@ class CC_EXPORT PictureRecordBenchmark : public MicroBenchmark {
   void RunOnLayer(PictureLayer* layer) override;
 
  private:
-  void Run(Layer* layer);
-
   typedef std::pair<base::TimeDelta, unsigned> TotalTime;
   std::map<std::pair<int, int>, TotalTime> times_;
   std::vector<std::pair<int, int>> dimensions_;

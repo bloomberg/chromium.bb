@@ -335,8 +335,6 @@ class CC_EXPORT LayerTreeImpl {
       scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
       scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
       scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
-  void ProcessLayersRecursive(LayerImpl* current,
-                              void (LayerImpl::*function)());
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
                                     float min_page_scale_factor,

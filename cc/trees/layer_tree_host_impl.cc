@@ -1453,10 +1453,6 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   return metadata;
 }
 
-static void LayerTreeHostImplDidBeginTracingCallback(LayerImpl* layer) {
-  layer->DidBeginTracing();
-}
-
 void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
@@ -1506,11 +1502,11 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     if (pending_tree_) {
       LayerTreeHostCommon::CallFunctionForSubtree(
           pending_tree_->root_layer(),
-          base::Bind(&LayerTreeHostImplDidBeginTracingCallback));
+          [](LayerImpl* layer) { layer->DidBeginTracing(); });
     }
     LayerTreeHostCommon::CallFunctionForSubtree(
         active_tree_->root_layer(),
-        base::Bind(&LayerTreeHostImplDidBeginTracingCallback));
+        [](LayerImpl* layer) { layer->DidBeginTracing(); });
   }
 
   {

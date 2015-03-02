@@ -163,10 +163,9 @@ void DebugRectHistory::SaveScreenSpaceRects(
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree<LayerImpl>(
-      layer,
-      base::Bind(&DebugRectHistory::SaveTouchEventHandlerRectsCallback,
-                 base::Unretained(this)));
+  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
+    SaveTouchEventHandlerRectsCallback(layer);
+  });
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
@@ -183,10 +182,9 @@ void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree<LayerImpl>(
-      layer,
-      base::Bind(&DebugRectHistory::SaveWheelEventHandlerRectsCallback,
-                 base::Unretained(this)));
+  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
+    SaveWheelEventHandlerRectsCallback(layer);
+  });
 }
 
 void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
@@ -204,10 +202,9 @@ void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree<LayerImpl>(
-      layer,
-      base::Bind(&DebugRectHistory::SaveScrollEventHandlerRectsCallback,
-                 base::Unretained(this)));
+  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
+    SaveScrollEventHandlerRectsCallback(layer);
+  });
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
@@ -225,10 +222,9 @@ void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveNonFastScrollableRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree<LayerImpl>(
-      layer,
-      base::Bind(&DebugRectHistory::SaveNonFastScrollableRectsCallback,
-                 base::Unretained(this)));
+  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
+    SaveNonFastScrollableRectsCallback(layer);
+  });
 }
 
 void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {

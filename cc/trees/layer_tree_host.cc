@@ -211,10 +211,6 @@ void LayerTreeHost::SetLayerTreeHostClientReady() {
   proxy_->SetLayerTreeHostClientReady();
 }
 
-static void LayerTreeHostOnOutputSurfaceCreatedCallback(Layer* layer) {
-  layer->OnOutputSurfaceCreated();
-}
-
 void LayerTreeHost::DeleteContentsTexturesOnImplThread(
     ResourceProvider* resource_provider) {
   DCHECK(proxy_->IsImplThread());
@@ -427,7 +423,7 @@ void LayerTreeHost::DidInitializeOutputSurface() {
 
   if (root_layer()) {
     LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer(), base::Bind(&LayerTreeHostOnOutputSurfaceCreatedCallback));
+        root_layer(), [](Layer* layer) { layer->OnOutputSurfaceCreated(); });
   }
 
   client_->DidInitializeOutputSurface();
@@ -873,17 +869,12 @@ void LayerTreeHost::TriggerPrepaint() {
   SetNeedsCommit();
 }
 
-static void LayerTreeHostReduceMemoryCallback(Layer* layer) {
-  layer->ReduceMemoryUsage();
-}
-
 void LayerTreeHost::ReduceMemoryUsage() {
   if (!root_layer())
     return;
 
   LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(),
-      base::Bind(&LayerTreeHostReduceMemoryCallback));
+      root_layer(), [](Layer* layer) { layer->ReduceMemoryUsage(); });
 }
 
 void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {

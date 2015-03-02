@@ -57,7 +57,7 @@ PictureRecordBenchmark::~PictureRecordBenchmark() {}
 void PictureRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   LayerTreeHostCommon::CallFunctionForSubtree(
       host->root_layer(),
-      base::Bind(&PictureRecordBenchmark::Run, base::Unretained(this)));
+      [this](Layer* layer) { layer->RunMicroBenchmark(this); });
 
   scoped_ptr<base::ListValue> results(new base::ListValue());
   for (std::map<std::pair<int, int>, TotalTime>::iterator it = times_.begin();
@@ -81,10 +81,6 @@ void PictureRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   }
 
   NotifyDone(results.Pass());
-}
-
-void PictureRecordBenchmark::Run(Layer* layer) {
-  layer->RunMicroBenchmark(this);
 }
 
 void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {

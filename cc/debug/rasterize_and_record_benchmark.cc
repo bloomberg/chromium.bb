@@ -65,7 +65,7 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   host_ = host;
   LayerTreeHostCommon::CallFunctionForSubtree(
       host->root_layer(),
-      base::Bind(&RasterizeAndRecordBenchmark::Run, base::Unretained(this)));
+      [this](Layer* layer) { layer->RunMicroBenchmark(this); });
 
   DCHECK(!results_.get());
   results_ = make_scoped_ptr(new base::DictionaryValue);
@@ -100,10 +100,6 @@ scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
       settings_.get(),
       base::Bind(&RasterizeAndRecordBenchmark::RecordRasterResults,
                  weak_ptr_factory_.GetWeakPtr())));
-}
-
-void RasterizeAndRecordBenchmark::Run(Layer* layer) {
-  layer->RunMicroBenchmark(this);
 }
 
 void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
