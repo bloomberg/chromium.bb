@@ -27,8 +27,8 @@ TMPL = fcblanks.tmpl.h
 noinst_SCRIPTS = $(BLANKSPY)
 noinst_HEADERS = $(BLANKS_H)
 
-$(BLANKS_H): $(BLANKSPY) $(TMPL)
-	$(AM_V_GEN) $(PYTHON) $(BLANKSPY) < $(TMPL) > $(BLANKS_H).tmp && \
+$(BLANKS_H): $(TMPL) $(BLANKSPY)
+	$(AM_V_GEN) $(PYTHON) $(srcdir)/$(BLANKSPY) < $< > $(BLANKS_H).tmp && \
 	mv $(BLANKS_H).tmp $(BLANKS_H) || ($(RM) $(BLANKS_H).tmp && false)
 
 EXTRA_DIST = 		\
