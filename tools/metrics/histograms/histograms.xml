@@ -37726,6 +37726,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.PreMainMessageLoopRunImplStep1Time"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the first untracked section of
+    ChromeBrowserMainParts::PreMainMessageLoopRunImpl.
+  </summary>
+</histogram>
+
+<histogram name="Startup.PreMainMessageLoopRunImplStep2Time"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the second untracked section of
+    ChromeBrowserMainParts::PreMainMessageLoopRunImpl. Not written for Android.
+  </summary>
+</histogram>
+
+<histogram name="Startup.PreMainMessageLoopRunImplStep3Time"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the third untracked section of
+    ChromeBrowserMainParts::PreMainMessageLoopRunImpl. Not written for Android.
+  </summary>
+</histogram>
+
 <histogram name="Startup.PreMainMessageLoopRunImplTime" units="milliseconds">
   <obsolete>
     Deprecated as of 2/2015.
