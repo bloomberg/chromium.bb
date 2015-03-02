@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
+import org.chromium.chrome.browser.metrics.MemoryUma;
+
 /**
  * An activity that talks with application and activity level delegates for async initialization.
  */
@@ -30,6 +32,7 @@ public abstract class AsyncInitializationActivity extends ActionBarActivity impl
     private Bundle mSavedInstanceState;
     private boolean mDestroyed;
     private NativeInitializationController mNativeInitializationController;
+    private MemoryUma mMemoryUma;
 
     public AsyncInitializationActivity() {
         mHandler = new Handler();
@@ -71,6 +74,7 @@ public abstract class AsyncInitializationActivity extends ActionBarActivity impl
 
     @Override
     public void finishNativeInitialization() {
+        mMemoryUma = new MemoryUma();
         mNativeInitializationController.onNativeInitializationComplete();
     }
 
@@ -146,6 +150,7 @@ public abstract class AsyncInitializationActivity extends ActionBarActivity impl
     @Override
     public void onStop() {
         super.onStop();
+        if (mMemoryUma != null) mMemoryUma.onStop();
         mNativeInitializationController.onStop();
     }
 
@@ -195,6 +200,19 @@ public abstract class AsyncInitializationActivity extends ActionBarActivity impl
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent data) {
         return false;
     }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mMemoryUma != null) mMemoryUma.onLowMemory();
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (mMemoryUma != null) mMemoryUma.onTrimMemory(level);
+    }
+
 
     /**
      * Extending classes should implement this and call {@link Activity#setContentView(int)} in it.
