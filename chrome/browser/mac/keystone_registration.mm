@@ -39,4 +39,8 @@ NSString* KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
 
 NSString* KSRegistrationRemoveExistingTag = @"";
 
+NSString* KSReportingAttributeValueKey = @"value";
+NSString* KSReportingAttributeExpirationDateKey = @"expiresAt";
+NSString* KSReportingAttributeAggregationTypeKey = @"aggregation";
+
 }  // namespace keystone_registration
