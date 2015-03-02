@@ -327,11 +327,14 @@ create_move_resize_view_transition(
 			ivi_layout_transition_destroy_func destroy_func,
 			uint32_t duration)
 {
-	struct ivi_layout_transition *transition = create_layout_transition();
+	struct ivi_layout_transition *transition;
+	struct move_resize_view_data *data;
+
+	transition = create_layout_transition();
 	if (transition == NULL)
 		return NULL;
 
-	struct move_resize_view_data *data = malloc(sizeof(*data));
+	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
 		return NULL;
@@ -452,11 +455,14 @@ create_fade_view_transition(
 			ivi_layout_transition_destroy_func destroy_func,
 			uint32_t duration)
 {
-	struct ivi_layout_transition *transition = create_layout_transition();
+	struct ivi_layout_transition *transition;
+	struct fade_view_data *data;
+
+	transition = create_layout_transition();
 	if (transition == NULL)
 		return NULL;
 
-	struct fade_view_data *data = malloc(sizeof(*data));
+	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
 		return NULL;
@@ -678,11 +684,14 @@ create_move_layer_transition(
 		ivi_layout_transition_destroy_user_func destroy_user_func,
 		uint32_t duration)
 {
-	struct ivi_layout_transition *transition = create_layout_transition();
+	struct ivi_layout_transition *transition;
+	struct move_layer_data *data;
+
+	transition = create_layout_transition();
 	if (transition == NULL)
 		return NULL;
 
-	struct move_layer_data *data = malloc(sizeof(*data));
+	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
 		return NULL;
