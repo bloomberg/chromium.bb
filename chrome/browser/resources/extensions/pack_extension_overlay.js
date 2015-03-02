@@ -48,24 +48,24 @@ cr.define('extensions', function() {
     handleCommit_: function(e) {
       var extensionPath = $('extension-root-dir').value;
       var privateKeyPath = $('extension-private-key').value;
-      chrome.send('pack', [extensionPath, privateKeyPath, 0]);
+      chrome.developerPrivate.packDirectory(
+          extensionPath, privateKeyPath, 0, this.onPackResponse_.bind(this));
     },
 
     /**
      * Utility function which asks the C++ to show a platform-specific file
-     * select dialog, and fire |callback| with the |filePath| that resulted.
-     * |selectType| can be either 'file' or 'folder'. |operation| can be 'load'
-     * or 'pem' which are signals to the C++ to do some operation-specific
-     * configuration.
+     * select dialog, and set the value property of |node| to the selected path.
+     * @param {SelectType} selectType The type of selection to use.
+     * @param {FileType} fileType The type of file to select.
+     * @param {HTMLInputElement} node The node to set the value of.
      * @private
      */
-    showFileDialog_: function(selectType, operation, callback) {
-      window.handleFilePathSelected = function(filePath) {
-        callback(filePath);
-        window.handleFilePathSelected = function() {};
-      };
-
-      chrome.send('packExtensionSelectFilePath', [selectType, operation]);
+    showFileDialog_: function(selectType, fileType, node) {
+      chrome.developerPrivate.choosePath(selectType, fileType, function(path) {
+        // Last error is set if the user canceled the dialog.
+        if (!chrome.runtime.lastError && path)
+          node.value = path;
+      });
     },
 
     /**
@@ -74,9 +74,10 @@ cr.define('extensions', function() {
      * @private
      */
     handleBrowseExtensionDir_: function(e) {
-      this.showFileDialog_('folder', 'load', function(filePath) {
-        $('extension-root-dir').value = filePath;
-      });
+      this.showFileDialog_(
+          'FOLDER',
+          'LOAD',
+          /** @type {HTMLInputElement} */ ($('extension-root-dir')));
     },
 
     /**
@@ -85,44 +86,78 @@ cr.define('extensions', function() {
      * @private
      */
     handleBrowsePrivateKey_: function(e) {
-      this.showFileDialog_('file', 'pem', function(filePath) {
-        $('extension-private-key').value = filePath;
-      });
+      this.showFileDialog_(
+          'FILE',
+          'PEM',
+          /** @type {HTMLInputElement} */ ($('extension-private-key')));
     },
-  };
 
-  /**
-   * Wrap up the pack process by showing the success |message| and closing
-   * the overlay.
-   * @param {string} message The message to show to the user.
-   */
-  PackExtensionOverlay.showSuccessMessage = function(message) {
-    alertOverlay.setValues(
-        loadTimeData.getString('packExtensionOverlay'),
-        message,
-        loadTimeData.getString('ok'),
-        '',
-        function() {
-          extensions.ExtensionSettings.showOverlay(null);
-        });
-    extensions.ExtensionSettings.showOverlay($('alertOverlay'));
-  };
+    /**
+     * Handles a response from a packDirectory call.
+     * @param {PackDirectoryResponse} response The response of the pack call.
+     * @private
+     */
+    onPackResponse_: function(response) {
+      /** @type {string} */
+      var alertTitle;
+      /** @type {string} */
+      var alertOk;
+      /** @type {string} */
+      var alertCancel;
+      /** @type {function()} */
+      var alertOkCallback;
+      /** @type {function()} */
+      var alertCancelCallback;
 
-  /**
-   * Post an alert overlay showing |message|, and upon acknowledgement, close
-   * the alert overlay and return to showing the PackExtensionOverlay.
-   * @param {string} message The error message.
-   */
-  PackExtensionOverlay.showError = function(message) {
-    alertOverlay.setValues(
-        loadTimeData.getString('packExtensionErrorTitle'),
-        message,
-        loadTimeData.getString('ok'),
-        '',
-        function() {
-          extensions.ExtensionSettings.showOverlay($('pack-extension-overlay'));
-        });
-    extensions.ExtensionSettings.showOverlay($('alertOverlay'));
+      var closeAlert = function() {
+        extensions.ExtensionSettings.showOverlay(null);
+      };
+
+      // TODO(devlin): Once we expose enums on extension APIs, we should use
+      // those objects, instead of a string.
+      switch (response.status) {
+        case 'SUCCESS':
+          alertTitle = loadTimeData.getString('packExtensionOverlay');
+          alertOk = loadTimeData.getString('ok');
+          alertOkCallback = closeAlert;
+          // No 'Cancel' option.
+          break;
+        case 'WARNING':
+          alertTitle = loadTimeData.getString('packExtensionWarningTitle');
+          alertOk = loadTimeData.getString('packExtensionProceedAnyway');
+          alertCancel = loadTimeData.getString('cancel');
+          alertOkCallback = function() {
+            chrome.developerPrivate.packDirectory(
+                response.item_path,
+                response.pem_path,
+                response.override_flags,
+                this.onPackResponse_.bind(this));
+            closeAlert();
+          }.bind(this);
+          alertCancelCallback = closeAlert;
+          break;
+        case 'ERROR':
+          alertTitle = loadTimeData.getString('packExtensionErrorTitle');
+          alertOk = loadTimeData.getString('ok');
+          alertOkCallback = function() {
+            extensions.ExtensionSettings.showOverlay(
+                $('pack-extension-overlay'));
+          };
+          // No 'Cancel' option.
+          break;
+        default:
+          assertNotReached();
+          return;
+      }
+
+      alertOverlay.setValues(alertTitle,
+                             response.message,
+                             alertOk,
+                             alertCancel,
+                             alertOkCallback,
+                             alertCancelCallback);
+      extensions.ExtensionSettings.showOverlay($('alertOverlay'));
+    },
   };
 
   // Export

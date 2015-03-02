@@ -2504,8 +2504,6 @@
       'browser/ui/webui/extensions/extension_error_ui_util.h',
       'browser/ui/webui/extensions/extension_icon_source.cc',
       'browser/ui/webui/extensions/extension_icon_source.h',
-      'browser/ui/webui/extensions/pack_extension_handler.cc',
-      'browser/ui/webui/extensions/pack_extension_handler.h',
       'browser/ui/webui/voice_search_ui.cc',
       'browser/ui/webui/voice_search_ui.h',
     ],

@@ -636,6 +636,30 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   // uber extensions.
   source->AddString("extensionUninstall",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
+
+  // Pack Extension Overlay:
+  source->AddString("packExtensionOverlay",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_TITLE));
+  source->AddString("packExtensionHeading",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_HEADING));
+  source->AddString("packExtensionCommit",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_BUTTON));
+  source->AddString("ok", l10n_util::GetStringUTF16(IDS_OK));
+  source->AddString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
+  source->AddString("packExtensionRootDir",
+      l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL));
+  source->AddString("packExtensionPrivateKey",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
+  source->AddString("packExtensionBrowseButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_BROWSE));
+  source->AddString("packExtensionProceedAnyway",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROCEED_ANYWAY));
+  source->AddString("packExtensionWarningTitle",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_WARNING_TITLE));
+  source->AddString("packExtensionErrorTitle",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_ERROR_TITLE));
+
 }
 
 void ExtensionSettingsHandler::RenderViewDeleted(

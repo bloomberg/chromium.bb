@@ -343,28 +343,6 @@ cr.define('extensions', function() {
     ExtensionList.decorate($('extension-settings-list'));
   };
 
-  // Indicate that warning |message| has occured for pack of |crx_path| and
-  // |pem_path| files.  Ask if user wants override the warning.  Send
-  // |overrideFlags| to repeated 'pack' call to accomplish the override.
-  ExtensionSettings.askToOverrideWarning =
-      function(message, crx_path, pem_path, overrideFlags) {
-    var closeAlert = function() {
-      ExtensionSettings.showOverlay(null);
-    };
-
-    alertOverlay.setValues(
-        loadTimeData.getString('packExtensionWarningTitle'),
-        message,
-        loadTimeData.getString('packExtensionProceedAnyway'),
-        loadTimeData.getString('cancel'),
-        function() {
-          chrome.send('pack', [crx_path, pem_path, overrideFlags]);
-          closeAlert();
-        },
-        closeAlert);
-    ExtensionSettings.showOverlay($('alertOverlay'));
-  };
-
   /**
    * Returns the current overlay or null if one does not exist.
    * @return {Element} The overlay element.

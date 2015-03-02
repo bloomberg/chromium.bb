@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -42,6 +43,11 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
   template<typename T>
   void TestExtensionPrefSetting(
       bool (*has_pref)(const std::string&, content::BrowserContext*));
+
+  testing::AssertionResult TestPackExtensionFunction(
+      const base::ListValue& args,
+      api::developer_private::PackStatus expected_status,
+      int expected_flags);
 
   Browser* browser() { return browser_.get(); }
 
@@ -134,6 +140,37 @@ void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
   EXPECT_FALSE(has_pref(extension_id, profile()));
 }
 
+testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(
+    const base::ListValue& args,
+    api::developer_private::PackStatus expected_status,
+    int expected_flags) {
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivatePackDirectoryFunction());
+  if (!RunFunction(function, args))
+    return testing::AssertionFailure() << "Could not run function.";
+
+  // Extract the result. We don't have to test this here, since it's verified as
+  // part of the general extension api system.
+  const base::Value* response_value = nullptr;
+  CHECK(function->GetResultList()->Get(0u, &response_value));
+  scoped_ptr<api::developer_private::PackDirectoryResponse> response =
+      api::developer_private::PackDirectoryResponse::FromValue(*response_value);
+  CHECK(response);
+
+  if (response->status != expected_status) {
+    return testing::AssertionFailure() << "Expected status: " <<
+        expected_status << ", found status: " << response->status <<
+        ", message: " << response->message;
+  }
+
+  if (response->override_flags != expected_flags) {
+    return testing::AssertionFailure() << "Expected flags: " <<
+        expected_flags << ", found flags: " << response->override_flags;
+  }
+
+  return testing::AssertionSuccess();
+}
+
 void DeveloperPrivateApiUnitTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
@@ -181,6 +218,50 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateAllowFileAccess) {
   TestExtensionPrefSetting<api::DeveloperPrivateAllowFileAccessFunction>(
       &util::AllowFileAccess);
+}
+
+// Test developerPrivate.packDirectory.
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
+  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+
+  base::FilePath root_path = data_dir().AppendASCII("good_unpacked");
+  base::FilePath crx_path = data_dir().AppendASCII("good_unpacked.crx");
+  base::FilePath pem_path = data_dir().AppendASCII("good_unpacked.pem");
+
+  // First, test a directory that should pack properly.
+  base::ListValue pack_args;
+  pack_args.AppendString(root_path.AsUTF8Unsafe());
+  EXPECT_TRUE(TestPackExtensionFunction(
+      pack_args, api::developer_private::PACK_STATUS_SUCCESS, 0));
+
+  // Should have created crx file and pem file.
+  EXPECT_TRUE(base::PathExists(crx_path));
+  EXPECT_TRUE(base::PathExists(pem_path));
+
+  // Deliberately don't cleanup the files, and append the pem path.
+  pack_args.AppendString(pem_path.AsUTF8Unsafe());
+
+  // Try to pack again - we should get a warning abot overwriting the crx.
+  EXPECT_TRUE(TestPackExtensionFunction(
+      pack_args,
+      api::developer_private::PACK_STATUS_WARNING,
+      ExtensionCreator::kOverwriteCRX));
+
+  // Try to pack again, with the overwrite flag; this should succeed.
+  pack_args.AppendInteger(ExtensionCreator::kOverwriteCRX);
+  EXPECT_TRUE(TestPackExtensionFunction(
+      pack_args, api::developer_private::PACK_STATUS_SUCCESS, 0));
+
+  // Try to pack a final time when omitting (an existing) pem file. We should
+  // get an error.
+  base::DeleteFile(crx_path, false);
+  EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the pem key argument.
+  EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the flags argument.
+  EXPECT_TRUE(TestPackExtensionFunction(
+      pack_args, api::developer_private::PACK_STATUS_ERROR, 0));
+
+  base::DeleteFile(crx_path, false);
+  base::DeleteFile(pem_path, false);
 }
 
 }  // namespace extensions

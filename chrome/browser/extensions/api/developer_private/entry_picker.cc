@@ -79,6 +79,13 @@ void EntryPicker::FileSelectionCanceled(void* params) {
   delete this;
 }
 
+void EntryPicker::MultiFilesSelected(const std::vector<base::FilePath>& files,
+                                     void* params) {
+  NOTREACHED();
+  client_->FileSelectionCanceled();
+  delete this;
+}
+
 // static
 void EntryPicker::SkipPickerAndAlwaysSelectPathForTest(
     base::FilePath* path) {

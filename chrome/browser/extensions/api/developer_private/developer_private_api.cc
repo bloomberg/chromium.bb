@@ -96,6 +96,10 @@ const char kCannotModifyPolicyExtensionError[] =
     "Cannot modify the extension by policy.";
 const char kRequiresUserGestureError[] =
     "This action requires a user gesture.";
+const char kCouldNotShowSelectFileDialogError[] =
+    "Could not show a file chooser.";
+const char kFileSelectionCanceled[] =
+    "File selection was canceled.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 
@@ -867,65 +871,57 @@ bool DeveloperPrivateInspectFunction::RunSync() {
 
 DeveloperPrivateInspectFunction::~DeveloperPrivateInspectFunction() {}
 
-bool DeveloperPrivateLoadUnpackedFunction::RunAsync() {
-  base::string16 select_title =
-      l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
+ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
+  if (!ShowPicker(
+           ui::SelectFileDialog::SELECT_FOLDER,
+           l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
+           ui::SelectFileDialog::FileTypeInfo(),
+           0 /* file_type_index */)) {
+    return RespondNow(Error(kCouldNotShowSelectFileDialogError));
+  }
 
-  // Balanced in FileSelected / FileSelectionCanceled.
-  AddRef();
-  bool result = ShowPicker(
-      ui::SelectFileDialog::SELECT_FOLDER,
-      DeveloperPrivateAPI::Get(GetProfile())->GetLastUnpackedDirectory(),
-      select_title,
-      ui::SelectFileDialog::FileTypeInfo(),
-      0);
-  return result;
+  AddRef();  // Balanced in FileSelected / FileSelectionCanceled.
+  return RespondLater();
 }
 
 void DeveloperPrivateLoadUnpackedFunction::FileSelected(
     const base::FilePath& path) {
-  ExtensionService* service = GetExtensionService(GetProfile());
-  UnpackedInstaller::Create(service)->Load(path);
-  DeveloperPrivateAPI::Get(GetProfile())->SetLastUnpackedDirectory(path);
-  SendResponse(true);
-  Release();
+  UnpackedInstaller::Create(GetExtensionService(browser_context()))->Load(path);
+  DeveloperPrivateAPI::Get(browser_context())->SetLastUnpackedDirectory(path);
+  // TODO(devlin): Shouldn't we wait until the extension is loaded?
+  Respond(NoArguments());
+  Release();  // Balanced in Run().
 }
 
 void DeveloperPrivateLoadUnpackedFunction::FileSelectionCanceled() {
-  SendResponse(false);
-  Release();
+  // This isn't really an error, but we should keep it like this for
+  // backward compatability.
+  Respond(Error(kFileSelectionCanceled));
+  Release();  // Balanced in Run().
 }
 
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(
     ui::SelectFileDialog::Type picker_type,
-    const base::FilePath& last_directory,
     const base::string16& select_title,
     const ui::SelectFileDialog::FileTypeInfo& info,
     int file_type_index) {
-  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
-  DCHECK(registry);
-  AppWindow* app_window =
-      registry->GetAppWindowForRenderViewHost(render_view_host());
-  if (!app_window) {
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
     return false;
-  }
 
   // The entry picker will hold a reference to this function instance,
   // and subsequent sending of the function response) until the user has
   // selected a file or cancelled the picker. At that point, the picker will
   // delete itself.
   new EntryPicker(this,
-                  app_window->web_contents(),
+                  web_contents,
                   picker_type,
-                  last_directory,
+                  DeveloperPrivateAPI::Get(browser_context())->
+                      GetLastUnpackedDirectory(),
                   select_title,
                   info,
                   file_type_index);
   return true;
-}
-
-bool DeveloperPrivateChooseEntryFunction::RunAsync() {
-  return false;
 }
 
 DeveloperPrivateChooseEntryFunction::~DeveloperPrivateChooseEntryFunction() {}
@@ -937,9 +933,8 @@ void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
   response.message = base::UTF16ToUTF8(
       PackExtensionJob::StandardSuccessMessage(crx_file, pem_file));
   response.status = developer::PACK_STATUS_SUCCESS;
-  results_ = developer::PackDirectory::Results::Create(response);
-  SendResponse(true);
-  Release();
+  Respond(OneArgument(response.ToValue().release()));
+  Release();  // Balanced in Run().
 }
 
 void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
@@ -955,15 +950,14 @@ void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
   } else {
     response.status = developer::PACK_STATUS_ERROR;
   }
-  results_ = developer::PackDirectory::Results::Create(response);
-  SendResponse(true);
-  Release();
+  Respond(OneArgument(response.ToValue().release()));
+  Release();  // Balanced in Run().
 }
 
-bool DeveloperPrivatePackDirectoryFunction::RunAsync() {
+ExtensionFunction::ResponseAction DeveloperPrivatePackDirectoryFunction::Run() {
   scoped_ptr<PackDirectory::Params> params(
       PackDirectory::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   int flags = params->flags ? *params->flags : 0;
   item_path_str_ = params->path;
@@ -972,7 +966,6 @@ bool DeveloperPrivatePackDirectoryFunction::RunAsync() {
 
   base::FilePath root_directory =
       base::FilePath::FromUTF8Unsafe(item_path_str_);
-
   base::FilePath key_file = base::FilePath::FromUTF8Unsafe(key_path_str_);
 
   developer::PackDirectoryResponse response;
@@ -985,33 +978,29 @@ bool DeveloperPrivatePackDirectoryFunction::RunAsync() {
           IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_INVALID);
 
     response.status = developer::PACK_STATUS_ERROR;
-    results_ = developer::PackDirectory::Results::Create(response);
-    SendResponse(true);
-    return true;
+    return RespondNow(OneArgument(response.ToValue().release()));
   }
 
   if (!key_path_str_.empty() && key_file.empty()) {
     response.message = l10n_util::GetStringUTF8(
         IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID);
     response.status = developer::PACK_STATUS_ERROR;
-    results_ = developer::PackDirectory::Results::Create(response);
-    SendResponse(true);
-    return true;
+    return RespondNow(OneArgument(response.ToValue().release()));
   }
 
-  // Balanced in OnPackSuccess / OnPackFailure.
-  AddRef();
+  AddRef();  // Balanced in OnPackSuccess / OnPackFailure.
 
+  // TODO(devlin): Why is PackExtensionJob ref-counted?
   pack_job_ = new PackExtensionJob(this, root_directory, key_file, flags);
   pack_job_->Start();
-  return true;
+  return RespondLater();
 }
 
-DeveloperPrivatePackDirectoryFunction::DeveloperPrivatePackDirectoryFunction()
-{}
+DeveloperPrivatePackDirectoryFunction::DeveloperPrivatePackDirectoryFunction() {
+}
 
-DeveloperPrivatePackDirectoryFunction::~DeveloperPrivatePackDirectoryFunction()
-{}
+DeveloperPrivatePackDirectoryFunction::
+~DeveloperPrivatePackDirectoryFunction() {}
 
 DeveloperPrivateLoadUnpackedFunction::~DeveloperPrivateLoadUnpackedFunction() {}
 
@@ -1246,16 +1235,16 @@ DeveloperPrivateLoadDirectoryFunction::DeveloperPrivateLoadDirectoryFunction()
 DeveloperPrivateLoadDirectoryFunction::~DeveloperPrivateLoadDirectoryFunction()
     {}
 
-bool DeveloperPrivateChoosePathFunction::RunAsync() {
+ExtensionFunction::ResponseAction DeveloperPrivateChoosePathFunction::Run() {
   scoped_ptr<developer::ChoosePath::Params> params(
       developer::ChoosePath::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   ui::SelectFileDialog::Type type = ui::SelectFileDialog::SELECT_FOLDER;
   ui::SelectFileDialog::FileTypeInfo info;
-  if (params->select_type == developer::SELECT_TYPE_FILE) {
+
+  if (params->select_type == developer::SELECT_TYPE_FILE)
     type = ui::SelectFileDialog::SELECT_OPEN_FILE;
-  }
   base::string16 select_title;
 
   int file_type_index = 0;
@@ -1264,8 +1253,8 @@ bool DeveloperPrivateChoosePathFunction::RunAsync() {
   } else if (params->file_type == developer::FILE_TYPE_PEM) {
     select_title = l10n_util::GetStringUTF16(
         IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
-    info.extensions.push_back(std::vector<base::FilePath::StringType>());
-    info.extensions.front().push_back(FILE_PATH_LITERAL("pem"));
+    info.extensions.push_back(std::vector<base::FilePath::StringType>(
+        1, FILE_PATH_LITERAL("pem")));
     info.extension_description_overrides.push_back(
         l10n_util::GetStringUTF16(
             IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION));
@@ -1275,26 +1264,28 @@ bool DeveloperPrivateChoosePathFunction::RunAsync() {
     NOTREACHED();
   }
 
-  // Balanced by FileSelected / FileSelectionCanceled.
-  AddRef();
-  bool result = ShowPicker(
-      type,
-      DeveloperPrivateAPI::Get(GetProfile())->GetLastUnpackedDirectory(),
-      select_title,
-      info,
-      file_type_index);
-  return result;
+  if (!ShowPicker(
+           type,
+           select_title,
+           info,
+           file_type_index)) {
+    return RespondNow(Error(kCouldNotShowSelectFileDialogError));
+  }
+
+  AddRef();  // Balanced by FileSelected / FileSelectionCanceled.
+  return RespondLater();
 }
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  SetResult(new base::StringValue(base::UTF16ToUTF8(path.LossyDisplayName())));
-  SendResponse(true);
+  Respond(OneArgument(new base::StringValue(path.LossyDisplayName())));
   Release();
 }
 
 void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
-  SendResponse(false);
+  // This isn't really an error, but we should keep it like this for
+  // backward compatability.
+  Respond(Error(kFileSelectionCanceled));
   Release();
 }
 
