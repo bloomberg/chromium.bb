@@ -310,10 +310,12 @@ class PDFiumEngine : public PDFEngine,
   PDFiumPage::Area GetCharIndex(const pp::MouseInputEvent& event,
                                 int* page_index,
                                 int* char_index,
+                                int* form_type,
                                 PDFiumPage::LinkTarget* target);
   PDFiumPage::Area GetCharIndex(const pp::Point& point,
                                 int* page_index,
                                 int* char_index,
+                                int* form_type,
                                 PDFiumPage::LinkTarget* target);
 
   void OnSingleClick(int page_index, int char_index);

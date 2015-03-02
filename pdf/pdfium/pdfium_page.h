@@ -64,7 +64,7 @@ class PDFiumPage {
   // Target is optional. It will be filled in for WEBLINK_AREA or
   // DOCLINK_AREA only.
   Area GetCharIndex(const pp::Point& point, int rotation, int* char_index,
-                    LinkTarget* target);
+                    int* form_type, LinkTarget* target);
 
   // Gets the character at the given index.
   base::char16 GetCharAtIndex(int index);

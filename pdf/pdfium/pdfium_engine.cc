@@ -1614,25 +1614,27 @@ void PDFiumEngine::PrintEnd() {
   FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_DP);
 }
 
-PDFiumPage::Area PDFiumEngine::GetCharIndex(
-    const pp::MouseInputEvent& event, int* page_index,
-    int* char_index, PDFiumPage::LinkTarget* target) {
+PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::MouseInputEvent& event,
+                                            int* page_index,
+                                            int* char_index,
+                                            int* form_type,
+                                            PDFiumPage::LinkTarget* target) {
   // First figure out which page this is in.
   pp::Point mouse_point = event.GetPosition();
-  pp::Point point(
-      static_cast<int>((mouse_point.x() + position_.x()) / current_zoom_),
-      static_cast<int>((mouse_point.y() + position_.y()) / current_zoom_));
-  return GetCharIndex(point, page_index, char_index, target);
+  return GetCharIndex(mouse_point, page_index, char_index, form_type, target);
 }
 
-PDFiumPage::Area PDFiumEngine::GetCharIndex(
-    const pp::Point& point,
-    int* page_index,
-    int* char_index,
-    PDFiumPage::LinkTarget* target) {
+PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
+                                            int* page_index,
+                                            int* char_index,
+                                            int* form_type,
+                                            PDFiumPage::LinkTarget* target) {
   int page = -1;
+  pp::Point point_in_page(
+      static_cast<int>((point.x() + position_.x()) / current_zoom_),
+      static_cast<int>((point.y() + position_.y()) / current_zoom_));
   for (size_t i = 0; i < visible_pages_.size(); ++i) {
-    if (pages_[visible_pages_[i]]->rect().Contains(point)) {
+    if (pages_[visible_pages_[i]]->rect().Contains(point_in_page)) {
       page = visible_pages_[i];
       break;
     }
@@ -1648,15 +1650,11 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(
   }
 
   *page_index = page;
-  return pages_[page]->GetCharIndex(point, current_rotation_, char_index,
-                                    target);
+  return pages_[page]->GetCharIndex(
+      point_in_page, current_rotation_, char_index, form_type, target);
 }
 
 bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
-  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
-      event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
-    return false;
-  }
   if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
     if (!selection_.size())
       return false;
@@ -1672,15 +1670,18 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
     selection_.clear();
     return true;
   }
+  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+    return false;
 
   SelectionChangeInvalidator selection_invalidator(this);
   selection_.clear();
 
   int page_index = -1;
   int char_index = -1;
+  int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  PDFiumPage::Area area = GetCharIndex(event, &page_index,
-                                       &char_index, &target);
+  PDFiumPage::Area area =
+      GetCharIndex(event, &page_index, &char_index, &form_type, &target);
   mouse_down_state_.Set(area, target);
 
   // Decide whether to open link or not based on user action in mouse up and
@@ -1701,16 +1702,14 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
 
     FORM_OnLButtonDown(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
-    int control = FPDPage_HasFormFieldAtPoint(
-        form_, pages_[page_index]->GetPage(), page_x, page_y);
-    if (control > FPDF_FORMFIELD_UNKNOWN) {  // returns -1 sometimes...
+    if (form_type > FPDF_FORMFIELD_UNKNOWN) {  // returns -1 sometimes...
+      mouse_down_state_.Set(PDFiumPage::NONSELECTABLE_AREA, target);
+      bool is_valid_control = (form_type == FPDF_FORMFIELD_TEXTFIELD ||
+                               form_type == FPDF_FORMFIELD_COMBOBOX);
 #ifdef PDF_USE_XFA
-    client_->FormTextFieldFocusChange(control == FPDF_FORMFIELD_TEXTFIELD ||
-        control == FPDF_FORMFIELD_COMBOBOX || control == FPDF_FORMFIELD_XFA);
-#else
-    client_->FormTextFieldFocusChange(control == FPDF_FORMFIELD_TEXTFIELD ||
-        control == FPDF_FORMFIELD_COMBOBOX);
+      is_valid_control |= (form_type == FPDF_FORMFIELD_XFA);
 #endif
+      client_->FormTextFieldFocusChange(is_valid_control);
       return true;  // Return now before we get into the selection code.
     }
   }
@@ -1769,9 +1768,10 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
 
   int page_index = -1;
   int char_index = -1;
+  int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
   PDFiumPage::Area area =
-      GetCharIndex(event, &page_index, &char_index, &target);
+      GetCharIndex(event, &page_index, &char_index, &form_type, &target);
 
   // Open link on mouse up for same link for which mouse down happened earlier.
   if (mouse_down_state_.Matches(area, target)) {
@@ -1801,9 +1801,10 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
 bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
   int page_index = -1;
   int char_index = -1;
+  int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
   PDFiumPage::Area area =
-      GetCharIndex(event, &page_index, &char_index, &target);
+      GetCharIndex(event, &page_index, &char_index, &form_type, &target);
 
   // Clear |mouse_down_state_| if mouse moves away from where the mouse down
   // happened.
@@ -1822,7 +1823,21 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
         break;
       case PDFiumPage::NONSELECTABLE_AREA:
       default:
-        cursor = PP_CURSORTYPE_POINTER;
+        switch (form_type) {
+          case FPDF_FORMFIELD_PUSHBUTTON:
+          case FPDF_FORMFIELD_CHECKBOX:
+          case FPDF_FORMFIELD_RADIOBUTTON:
+          case FPDF_FORMFIELD_COMBOBOX:
+          case FPDF_FORMFIELD_LISTBOX:
+            cursor = PP_CURSORTYPE_HAND;
+            break;
+          case FPDF_FORMFIELD_TEXTFIELD:
+            cursor = PP_CURSORTYPE_IBEAM;
+            break;
+          default:
+            cursor = PP_CURSORTYPE_POINTER;
+            break;
+        }
         break;
     }
 
@@ -1830,24 +1845,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
       double page_x, page_y;
       pp::Point point = event.GetPosition();
       DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
-
       FORM_OnMouseMove(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
-      int control = FPDPage_HasFormFieldAtPoint(
-          form_, pages_[page_index]->GetPage(), page_x, page_y);
-      switch (control) {
-        case FPDF_FORMFIELD_PUSHBUTTON:
-        case FPDF_FORMFIELD_CHECKBOX:
-        case FPDF_FORMFIELD_RADIOBUTTON:
-        case FPDF_FORMFIELD_COMBOBOX:
-        case FPDF_FORMFIELD_LISTBOX:
-          cursor = PP_CURSORTYPE_HAND;
-          break;
-        case FPDF_FORMFIELD_TEXTFIELD:
-          cursor = PP_CURSORTYPE_IBEAM;
-          break;
-        default:
-          break;
-      }
     }
 
     client_->UpdateCursor(cursor);
@@ -2321,15 +2319,16 @@ std::string PDFiumEngine::GetSelectedText() {
 }
 
 std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
+  std::string url;
   int temp;
+  int page_index = -1;
+  int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  pp::Point point_in_page(
-      static_cast<int>((point.x() + position_.x()) / current_zoom_),
-      static_cast<int>((point.y() + position_.y()) / current_zoom_));
-  PDFiumPage::Area area = GetCharIndex(point_in_page, &temp, &temp, &target);
+  PDFiumPage::Area area =
+      GetCharIndex(point, &page_index, &temp, &form_type, &target);
   if (area == PDFiumPage::WEBLINK_AREA)
-    return target.url;
-  return std::string();
+    url = target.url;
+  return url;
 }
 
 bool PDFiumEngine::IsSelecting() {

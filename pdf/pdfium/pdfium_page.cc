@@ -258,6 +258,7 @@ base::Value* PDFiumPage::CreateURLNode(std::string text, std::string url) {
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
                                           int rotation,
                                           int* char_index,
+                                          int* form_type,
                                           LinkTarget* target) {
   if (!available_)
     return NONSELECTABLE_AREA;
@@ -269,6 +270,13 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
   int rv = FPDFText_GetCharIndexAtPos(
       GetTextPage(), new_x, new_y, kTolerance, kTolerance);
   *char_index = rv;
+
+  int control =
+      FPDPage_HasFormFieldAtPoint(engine_->form(), GetPage(), new_x, new_y);
+  if (control > FPDF_FORMFIELD_UNKNOWN) {
+    *form_type = control;
+    return PDFiumPage::NONSELECTABLE_AREA;
+  }
 
   FPDF_LINK link = FPDFLink_GetLinkAtPoint(GetPage(), new_x, new_y);
   if (link) {
