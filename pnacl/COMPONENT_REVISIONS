@@ -31,7 +31,7 @@ libcxxabi=de05b63efeb5df83abe927c08f330c35995c82a7
 #
 # Three lines avoid merge conflicts.
 #
-nacl_newlib=fe55b309fd67115ffe77ed59609506cbd611b210
+nacl_newlib=8c4da477c5348743d900307ce8443da4cc2fcdb8
 #
 # Three lines avoid merge conflicts.
 #
