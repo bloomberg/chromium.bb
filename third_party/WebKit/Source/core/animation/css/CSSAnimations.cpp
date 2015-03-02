@@ -289,7 +289,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
                         ASSERT(!isAnimationStyleChange);
                         update->updateAnimation(animationName, player, InertAnimation::create(
                             createKeyframeEffect(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get()),
-                            timing, isPaused, player->currentTimeInternal()), specifiedTiming, keyframesRule);
+                            timing, isPaused, player->unlimitedCurrentTimeInternal()), specifiedTiming, keyframesRule);
                     }
 
                     if (isPaused != player->paused()) {

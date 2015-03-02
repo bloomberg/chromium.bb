@@ -82,6 +82,7 @@ public:
     void setCurrentTime(double newCurrentTime);
 
     double currentTimeInternal() const;
+    double unlimitedCurrentTimeInternal() const;
 
     void setCurrentTimeInternal(double newCurrentTime, TimingUpdateReason = TimingUpdateOnDemand);
     bool paused() const { return m_paused && !m_isPausedForTesting; }

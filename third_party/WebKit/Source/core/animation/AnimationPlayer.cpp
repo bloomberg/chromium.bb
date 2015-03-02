@@ -166,19 +166,24 @@ void AnimationPlayer::setCurrentTimeInternal(double newCurrentTime, TimingUpdate
 void AnimationPlayer::updateCurrentTimingState(TimingUpdateReason reason)
 {
     if (m_held) {
-        // Add hystersis due to floating point error accumulation
-        if (!isNull(m_startTime) && m_timeline && !limited(calculateCurrentTime() + 0.001 * m_playbackRate) && playStateInternal() == Finished) {
-            m_held = false;
-            setCurrentTimeInternal(calculateCurrentTime(), reason);
-            return;
+        double newCurrentTime = m_holdTime;
+        if (playStateInternal() == Finished && !isNull(m_startTime) && m_timeline) {
+            // Add hystersis due to floating point error accumulation
+            if (!limited(calculateCurrentTime() + 0.001 * m_playbackRate)) {
+                // The current time became unlimited, eg. due to a backwards
+                // seek of the timeline.
+                newCurrentTime = calculateCurrentTime();
+            } else if (!limited(m_holdTime)) {
+                // The hold time became unlimited, eg. due to the source content
+                // becoming longer.
+                newCurrentTime = clampTo<double>(calculateCurrentTime(), 0, sourceEnd());
+            }
         }
-        setCurrentTimeInternal(m_holdTime, reason);
-        return;
+        setCurrentTimeInternal(newCurrentTime, reason);
+    } else if (limited(calculateCurrentTime())) {
+        m_held = true;
+        m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
     }
-    if (!limited(calculateCurrentTime()))
-        return;
-    m_held = true;
-    m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
 }
 
 double AnimationPlayer::startTime(bool& isNull) const
@@ -220,6 +225,16 @@ double AnimationPlayer::currentTimeInternal() const
     ASSERT(result == (m_held ? m_holdTime : calculateCurrentTime()));
 #endif
     return result;
+}
+
+double AnimationPlayer::unlimitedCurrentTimeInternal() const
+{
+#if ENABLE(ASSERT)
+    currentTimeInternal();
+#endif
+    return playStateInternal() == Paused || isNull(m_startTime)
+        ? currentTimeInternal()
+        : calculateCurrentTime();
 }
 
 void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
