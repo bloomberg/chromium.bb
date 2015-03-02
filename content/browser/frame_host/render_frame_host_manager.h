@@ -137,6 +137,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     virtual void NotifySwappedFromRenderManager(RenderFrameHost* old_host,
                                                 RenderFrameHost* new_host,
                                                 bool is_main_frame) = 0;
+    // TODO(nasko): This should be removed once extensions no longer use
+    // NotificationService. See https://crbug.com/462682.
+    virtual void NotifyMainFrameSwappedFromRenderManager(
+        RenderViewHost* old_host,
+        RenderViewHost* new_host) = 0;
     virtual NavigationControllerImpl&
         GetControllerForRenderManager() = 0;
 

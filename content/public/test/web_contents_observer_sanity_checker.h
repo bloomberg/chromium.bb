@@ -87,6 +87,7 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   void AssertRenderFrameExists(RenderFrameHost* render_frame_host);
   void AssertMainFrameExists();
 
+  std::set<std::pair<int, int>> current_hosts_;
   std::set<std::pair<int, int>> live_routes_;
   std::set<std::pair<int, int>> deleted_routes_;
 

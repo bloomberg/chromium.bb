@@ -4,7 +4,6 @@
 
 #include "content/public/test/web_contents_observer_sanity_checker.h"
 
-#include "base/debug/stack_trace.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/render_frame_host.h"
@@ -80,8 +79,27 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
   CHECK(new_host);
   CHECK_NE(new_host, old_host);
 
-  // TODO(nasko): Implement consistency checking for RenderFrameHostChanged
-  // in follow up CL.
+  if (old_host) {
+    std::pair<int, int> routing_pair =
+        std::make_pair(old_host->GetProcess()->GetID(),
+                       old_host->GetRoutingID());
+    bool old_did_exist = !!current_hosts_.erase(routing_pair);
+    if (!old_did_exist) {
+      CHECK(false)
+          << "RenderFrameHostChanged called with old host that did not exist:"
+          << Format(old_host);
+    }
+  }
+
+  std::pair<int, int> routing_pair =
+      std::make_pair(new_host->GetProcess()->GetID(),
+                     new_host->GetRoutingID());
+  bool host_exists = !current_hosts_.insert(routing_pair).second;
+  if (host_exists) {
+    CHECK(false)
+        << "RenderFrameHostChanged called more than once for routing pair:"
+        << Format(new_host);
+  }
 }
 
 void WebContentsObserverSanityChecker::FrameDeleted(

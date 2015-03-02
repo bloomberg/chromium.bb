@@ -568,6 +568,9 @@ class CONTENT_EXPORT WebContentsImpl
   void NotifySwappedFromRenderManager(RenderFrameHost* old_host,
                                       RenderFrameHost* new_host,
                                       bool is_main_frame) override;
+  void NotifyMainFrameSwappedFromRenderManager(
+      RenderViewHost* old_host,
+      RenderViewHost* new_host) override;
   int CreateOpenerRenderViewsForRenderManager(SiteInstance* instance) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
   scoped_ptr<WebUIImpl> CreateWebUIForRenderManager(const GURL& url) override;

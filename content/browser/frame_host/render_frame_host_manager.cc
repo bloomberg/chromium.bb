@@ -109,6 +109,14 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, flags));
 
+  // Notify the delegate of the creation of the current RenderFrameHost.
+  // Do this only for subframes, as the main frame case is taken care of by
+  // WebContentsImpl::Init.
+  if (!frame_tree_node_->IsMainFrame()) {
+    delegate_->NotifySwappedFromRenderManager(
+        nullptr, render_frame_host_.get(), false);
+  }
+
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -224,14 +232,18 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // Now that we've created a new renderer, be sure to hide it if it isn't
     // our primary one.  Otherwise, we might crash if we try to call Show()
     // on it later.
-    if (dest_render_frame_host != render_frame_host_ &&
-        dest_render_frame_host->GetView()) {
-      dest_render_frame_host->GetView()->Hide();
+    if (dest_render_frame_host != render_frame_host_) {
+      if (dest_render_frame_host->GetView())
+        dest_render_frame_host->GetView()->Hide();
     } else {
-      // Notify here as we won't be calling CommitPending (which does the
-      // notify).
-      delegate_->NotifySwappedFromRenderManager(
-          NULL, render_frame_host_.get(), frame_tree_node_->IsMainFrame());
+      // TODO(nasko): This is a very ugly hack. The Chrome extensions process
+      // manager still uses NotificationService and expects to see a
+      // RenderViewHost changed notification after WebContents and
+      // RenderFrameHostManager are completely initialized. This should be
+      // removed once the process manager moves away from NotificationService.
+      // See https://crbug.com/462682.
+      delegate_->NotifyMainFrameSwappedFromRenderManager(
+          nullptr, render_frame_host_->render_view_host());
     }
   }
 

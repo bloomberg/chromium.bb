@@ -1272,6 +1272,13 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
     RenderViewCreated(GetRenderViewHost());
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
   }
+
+  // Ensure that observers are notified of the creation of this WebContents's
+  // main RenderFrameHost. It must be done here for main frames, since the
+  // NotifySwappedFromRenderManager expects view_ to already be created and that
+  // happens after RenderFrameHostManager::Init.
+  NotifySwappedFromRenderManager(
+      nullptr, GetRenderManager()->current_frame_host(), true);
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
@@ -4184,7 +4191,7 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,
                                                      RenderFrameHost* new_host,
                                                      bool is_main_frame) {
   if (is_main_frame) {
-    NotifyViewSwapped(old_host ? old_host->GetRenderViewHost() : NULL,
+    NotifyViewSwapped(old_host ? old_host->GetRenderViewHost() : nullptr,
                       new_host->GetRenderViewHost());
 
     // Make sure the visible RVH reflects the new delegate's preferences.
@@ -4195,6 +4202,12 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,
   }
 
   NotifyFrameSwapped(old_host, new_host);
+}
+
+void WebContentsImpl::NotifyMainFrameSwappedFromRenderManager(
+    RenderViewHost* old_host,
+    RenderViewHost* new_host) {
+  NotifyViewSwapped(old_host, new_host);
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(

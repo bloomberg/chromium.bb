@@ -69,13 +69,9 @@ class TreeWalkingWebContentsLogger : public WebContentsObserver {
 
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override {
-    // TODO(nasko): Re-enable this logging once RenderFrameHostChanged observer
-    // methods are fixed. See https://crbug.com/450799.
-    /*
     if (old_host)
-      LogWhatHappened("RenderFrameChanged(old)", old_host);
-    LogWhatHappened("RenderFrameChanged(new)", new_host);
-    */
+      LogWhatHappened("RenderFrameHostChanged(old)", old_host);
+    LogWhatHappened("RenderFrameHostChanged(new)", new_host);
   }
 
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
@@ -213,9 +209,15 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
 
   // Simulate attaching a series of frames to build the frame tree.
   main_test_rfh()->OnCreateChildFrame(14, std::string(), SandboxFlags::NONE);
-  EXPECT_EQ("RenderFrameCreated(14) -> 1: [14: []]", activity.GetLog());
+  EXPECT_EQ(
+      "RenderFrameHostChanged(new)(14) -> 1: []\n"
+      "RenderFrameCreated(14) -> 1: [14: []]",
+      activity.GetLog());
   main_test_rfh()->OnCreateChildFrame(18, std::string(), SandboxFlags::NONE);
-  EXPECT_EQ("RenderFrameCreated(18) -> 1: [14: [], 18: []]", activity.GetLog());
+  EXPECT_EQ(
+      "RenderFrameHostChanged(new)(18) -> 1: [14: []]\n"
+      "RenderFrameCreated(18) -> 1: [14: [], 18: []]",
+      activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
   EXPECT_EQ("RenderFrameDeleted(14) -> 1: [18: []]", activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
@@ -228,9 +230,15 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   TreeWalkingWebContentsLogger activity(contents());
 
   main_test_rfh()->OnCreateChildFrame(22, std::string(), SandboxFlags::NONE);
-  EXPECT_EQ("RenderFrameCreated(22) -> 1: [22: []]", activity.GetLog());
+  EXPECT_EQ(
+      "RenderFrameHostChanged(new)(22) -> 1: []\n"
+      "RenderFrameCreated(22) -> 1: [22: []]",
+      activity.GetLog());
   main_test_rfh()->OnCreateChildFrame(23, std::string(), SandboxFlags::NONE);
-  EXPECT_EQ("RenderFrameCreated(23) -> 1: [22: [], 23: []]", activity.GetLog());
+  EXPECT_EQ(
+      "RenderFrameHostChanged(new)(23) -> 1: [22: []]\n"
+      "RenderFrameCreated(23) -> 1: [22: [], 23: []]",
+      activity.GetLog());
 
   // Crash the renderer
   main_test_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
