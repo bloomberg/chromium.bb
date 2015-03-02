@@ -128,10 +128,9 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
                                  layer->should_flatten_transform() &&
                                  !layer->parent()->should_flatten_transform();
 
-  bool requires_node = is_root || is_scrollable || is_fixed ||
-                       has_significant_transform || has_animated_transform ||
-                       is_page_scale_application_layer || flattening_change ||
-                       has_surface;
+  bool requires_node = is_root || is_scrollable || has_significant_transform ||
+                       has_animated_transform || has_surface ||
+                       is_page_scale_application_layer || flattening_change;
 
   Layer* transform_parent = GetTransformParent(data_from_ancestor, layer);
 
