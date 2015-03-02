@@ -46,10 +46,9 @@ remoting.MockClientPlugin.prototype.initialize = function(onDone) {
   window.setTimeout(onDone.bind(null, true), 0);
 };
 
-remoting.MockClientPlugin.prototype.connect = function(
-    hostJid, hostPublicKey, localJid, sharedSecret,
-    authenticationMethods, authenticationTag,
-    clientPairingId, clientPairedSecret) {
+
+remoting.MockClientPlugin.prototype.connect =
+    function(host, localJid, credentialsProvider) {
   base.debug.assert(this.connectionStatusUpdateHandler_ != null);
   window.setTimeout(
       this.connectionStatusUpdateHandler_.bind(
@@ -79,15 +78,8 @@ remoting.MockClientPlugin.prototype.hasFeature = function(feature) {
 remoting.MockClientPlugin.prototype.sendClipboardItem =
     function(mimeType, item) {};
 
-remoting.MockClientPlugin.prototype.useAsyncPinDialog = function() {};
-
 remoting.MockClientPlugin.prototype.requestPairing =
     function(clientName, onDone) {};
-
-remoting.MockClientPlugin.prototype.onPinFetched = function(pin) {};
-
-remoting.MockClientPlugin.prototype.onThirdPartyTokenFetched =
-    function(token, sharedSecret) {};
 
 remoting.MockClientPlugin.prototype.pauseAudio = function(pause) {};
 
@@ -140,12 +132,6 @@ remoting.MockClientPlugin.prototype.setCastExtensionHandler =
     function(handler) {};
 
 remoting.MockClientPlugin.prototype.setMouseCursorHandler =
-    function(handler) {};
-
-remoting.MockClientPlugin.prototype.setFetchThirdPartyTokenHandler =
-    function(handler) {};
-
-remoting.MockClientPlugin.prototype.setFetchPinHandler =
     function(handler) {};
 
 /**

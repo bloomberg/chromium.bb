@@ -34,31 +34,17 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
 /**
  * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
+ * @param {remoting.CredentialsProvider} credentialsProvider
+ *     The credentialsProvider to authenticate the client with the host.
  * @param {HTMLElement} container Container element for the client view.
- * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
- * @param {function(boolean, function(string): void): void} fetchPin
- *     Called by Me2Me connections when a PIN needs to be obtained
- *     interactively.
- * @param {function(string, string, string,
- *                  function(string, string): void): void}
- *     fetchThirdPartyToken Called by Me2Me connections when a third party
- *     authentication token must be obtained.
- * @param {string} authenticationMethods Comma-separated list of
- *     authentication methods the client should attempt to use.
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
- * @param {string} clientPairingId For paired Me2Me connections, the
- *     pairing id for this client, as issued by the host.
- * @param {string} clientPairedSecret For paired Me2Me connections, the
- *     paired secret for this client, as issued by the host.
  * @param {string} defaultRemapKeys The default set of remap keys, to use
  *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSourceImpl}
  */
-remoting.ClientSession = function(host, signalStrategy, container, accessCode,
-                                  fetchPin, fetchThirdPartyToken,
-                                  authenticationMethods, mode, clientPairingId,
-                                  clientPairedSecret, defaultRemapKeys) {
+remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
+                                  container, mode, defaultRemapKeys) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
@@ -67,18 +53,9 @@ remoting.ClientSession = function(host, signalStrategy, container, accessCode,
 
   /** @private */
   this.host_ = host;
+
   /** @private */
-  this.accessCode_ = accessCode;
-  /** @private */
-  this.fetchPin_ = fetchPin;
-  /** @private */
-  this.fetchThirdPartyToken_ = fetchThirdPartyToken;
-  /** @private */
-  this.authenticationMethods_ = authenticationMethods;
-  /** @private */
-  this.clientPairingId_ = clientPairingId;
-  /** @private */
-  this.clientPairedSecret_ = clientPairedSecret;
+  this.credentialsProvider_ = credentialsProvider;
 
   /** @private */
   this.uiHandler_ = new remoting.DesktopConnectedView(
@@ -310,7 +287,8 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(
   plugin.setCastExtensionHandler(
       this.processCastExtensionMessage_.bind(this));
 
-  this.initiateConnection_();
+  this.plugin_.connect(
+      this.host_, this.signalStrategy_.getJid(), this.credentialsProvider_);
 };
 
 /**
@@ -321,7 +299,7 @@ remoting.ClientSession.prototype.resetWithError_ = function(error) {
   this.removePlugin();
   this.error_ = error;
   this.setState_(remoting.ClientSession.State.FAILED);
-}
+};
 
 /**
  * Deletes the <embed> element from the container, without sending a
@@ -457,64 +435,6 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
   console.log(remoting.timestamp(),
               remoting.formatIq.prettifyReceiveIq(formatted));
   this.plugin_.onIncomingIq(formatted);
-};
-
-/**
- * @private
- */
-remoting.ClientSession.prototype.initiateConnection_ = function() {
-  /** @type {remoting.ClientSession} */
-  var that = this;
-
-  /** @param {string} sharedSecret Shared secret. */
-  function onSharedSecretReceived(sharedSecret) {
-    that.plugin_.connect(that.host_.jabberId, that.host_.publicKey,
-                         that.signalStrategy_.getJid(), sharedSecret,
-                         that.authenticationMethods_, that.host_.hostId,
-                         that.clientPairingId_, that.clientPairedSecret_);
-  }
-
-  this.getSharedSecret_(onSharedSecretReceived);
-};
-
-/**
- * Gets shared secret to be used for connection.
- *
- * @param {function(string)} callback Callback called with the shared secret.
- * @return {void} Nothing.
- * @private
- */
-remoting.ClientSession.prototype.getSharedSecret_ = function(callback) {
-  /** @type remoting.ClientSession */
-  var that = this;
-  if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.THIRD_PARTY_AUTH)) {
-    /** @type{function(string, string, string): void} */
-    var fetchThirdPartyToken = function(tokenUrl, hostPublicKey, scope) {
-      that.fetchThirdPartyToken_(
-          tokenUrl, hostPublicKey, scope,
-          that.plugin_.onThirdPartyTokenFetched.bind(that.plugin_));
-    };
-    this.plugin_.setFetchThirdPartyTokenHandler(fetchThirdPartyToken);
-  }
-  if (this.accessCode_) {
-    // Shared secret was already supplied before connecting (It2Me case).
-    callback(this.accessCode_);
-  } else if (this.plugin_.hasFeature(
-      remoting.ClientPlugin.Feature.ASYNC_PIN)) {
-    // Plugin supports asynchronously asking for the PIN.
-    this.plugin_.useAsyncPinDialog();
-    /** @param {boolean} pairingSupported */
-    var fetchPin = function(pairingSupported) {
-      that.fetchPin_(pairingSupported,
-                     that.plugin_.onPinFetched.bind(that.plugin_));
-    };
-    this.plugin_.setFetchPinHandler(fetchPin);
-    callback('');
-  } else {
-    // Clients that don't support asking for a PIN asynchronously also don't
-    // support pairing, so request the PIN now without offering to remember it.
-    this.fetchPin_(false, callback);
-  }
 };
 
 /**

@@ -77,22 +77,11 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
    * @private
    */
   this.onConnectionReadyHandler_ = function(ready) {};
-
-  /**
-   * @param {string} tokenUrl Token-request URL, received from the host.
-   * @param {string} hostPublicKey Public key for the host.
-   * @param {string} scope OAuth scope to request the token for.
-   * @private
-   */
-  this.fetchThirdPartyTokenHandler_ = function(
-    tokenUrl, hostPublicKey, scope) {};
   /**
    * @param {!Array<string>} capabilities The negotiated capabilities.
    * @private
    */
   this.onSetCapabilitiesHandler_ = function (capabilities) {};
-  /** @private */
-  this.fetchPinHandler_ = function (supportsPairing) {};
   /**
    * @param {string} data Remote gnubbyd data.
    * @private
@@ -168,6 +157,9 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
 
   this.hostDesktop_ = new remoting.ClientPlugin.HostDesktopImpl(
       this, this.postMessage_.bind(this));
+
+  /** @private {remoting.CredentialsProvider} */
+  this.credentials_ = null;
 };
 
 /**
@@ -279,21 +271,6 @@ remoting.ClientPluginImpl.prototype.setCastExtensionHandler =
  */
 remoting.ClientPluginImpl.prototype.setMouseCursorHandler = function(handler) {
   this.updateMouseCursorImage_ = handler;
-};
-
-/**
- * @param {function(string, string, string):void} handler
- */
-remoting.ClientPluginImpl.prototype.setFetchThirdPartyTokenHandler =
-    function(handler) {
-  this.fetchThirdPartyTokenHandler_ = handler;
-};
-
-/**
- * @param {function(boolean):void} handler
- */
-remoting.ClientPluginImpl.prototype.setFetchPinHandler = function(handler) {
-  this.fetchPinHandler_ = handler;
 };
 
 /**
@@ -436,9 +413,10 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     // client and host support pairing. If the client doesn't support pairing,
     // then the value won't be there at all, so give it a default of false.
     var pairingSupported = getBooleanAttr(message.data, 'pairingSupported',
-                                          false)
-    this.fetchPinHandler_(pairingSupported);
-
+                                          false);
+    this.credentials_.getPIN(pairingSupported).then(
+        this.onPinFetched_.bind(this)
+    );
   } else if (message.method == 'setCapabilities') {
     /** @type {!Array<string>} */
     var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
@@ -448,8 +426,9 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     var tokenUrl = getStringAttr(message.data, 'tokenUrl');
     var hostPublicKey = getStringAttr(message.data, 'hostPublicKey');
     var scope = getStringAttr(message.data, 'scope');
-    this.fetchThirdPartyTokenHandler_(tokenUrl, hostPublicKey, scope);
-
+    this.credentials_.getThirdPartyToken(tokenUrl, hostPublicKey, scope).then(
+      this.onThirdPartyTokenFetched_.bind(this)
+    );
   } else if (message.method == 'pairingResponse') {
     var clientId = getStringAttr(message.data, 'clientId');
     var sharedSecret = getStringAttr(message.data, 'sharedSecret');
@@ -590,25 +569,12 @@ remoting.ClientPluginImpl.prototype.onIncomingIq = function(iq) {
 };
 
 /**
- * @param {string} hostJid The jid of the host to connect to.
- * @param {string} hostPublicKey The base64 encoded version of the host's
- *     public key.
+ * @param {remoting.Host} host The host to connect to.
  * @param {string} localJid Local jid.
- * @param {string} sharedSecret The access code for IT2Me or the PIN
- *     for Me2Me.
- * @param {string} authenticationMethods Comma-separated list of
- *     authentication methods the client should attempt to use.
- * @param {string} authenticationTag A host-specific tag to mix into
- *     authentication hashes.
- * @param {string} clientPairingId For paired Me2Me connections, the
- *     pairing id for this client, as issued by the host.
- * @param {string} clientPairedSecret For paired Me2Me connections, the
- *     paired secret for this client, as issued by the host.
+ * @param {remoting.CredentialsProvider} credentialsProvider
  */
-remoting.ClientPluginImpl.prototype.connect = function(
-    hostJid, hostPublicKey, localJid, sharedSecret,
-    authenticationMethods, authenticationTag,
-    clientPairingId, clientPairedSecret) {
+remoting.ClientPluginImpl.prototype.connect =
+    function(host, localJid, credentialsProvider) {
   var keyFilter = '';
   if (remoting.platformIsMac()) {
     keyFilter = 'mac';
@@ -623,17 +589,20 @@ remoting.ClientPluginImpl.prototype.connect = function(
       parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10) >= 42;
   this.plugin_.postMessage(JSON.stringify(
       { method: 'delegateLargeCursors', data: {} }));
+  var methods = 'third_party,spake2_pair,spake2_hmac,spake2_plain';
+  this.credentials_ = credentialsProvider;
+  this.useAsyncPinDialog_();
   this.plugin_.postMessage(JSON.stringify(
     { method: 'connect', data: {
-        hostJid: hostJid,
-        hostPublicKey: hostPublicKey,
+        hostJid: host.jabberId,
+        hostPublicKey: host.publicKey,
         localJid: localJid,
-        sharedSecret: sharedSecret,
-        authenticationMethods: authenticationMethods,
-        authenticationTag: authenticationTag,
+        sharedSecret: '',
+        authenticationMethods: methods,
+        authenticationTag: host.hostId,
         capabilities: this.capabilities_.join(" "),
-        clientPairingId: clientPairingId,
-        clientPairedSecret: clientPairedSecret,
+        clientPairingId: credentialsProvider.getPairingInfo().id,
+        clientPairedSecret: credentialsProvider.getPairingInfo().secret,
         keyFilter: keyFilter,
         enableVideoDecodeRenderer: enableVideoDecodeRenderer
       }
@@ -790,8 +759,9 @@ remoting.ClientPluginImpl.prototype.setLosslessColor =
  * Called when a PIN is obtained from the user.
  *
  * @param {string} pin The PIN.
+ * @private
  */
-remoting.ClientPluginImpl.prototype.onPinFetched =
+remoting.ClientPluginImpl.prototype.onPinFetched_ =
     function(pin) {
   if (!this.hasFeature(remoting.ClientPlugin.Feature.ASYNC_PIN)) {
     return;
@@ -802,8 +772,9 @@ remoting.ClientPluginImpl.prototype.onPinFetched =
 
 /**
  * Tells the plugin to ask for the PIN asynchronously.
+ * @private
  */
-remoting.ClientPluginImpl.prototype.useAsyncPinDialog =
+remoting.ClientPluginImpl.prototype.useAsyncPinDialog_ =
     function() {
   if (!this.hasFeature(remoting.ClientPlugin.Feature.ASYNC_PIN)) {
     return;
@@ -823,14 +794,14 @@ remoting.ClientPluginImpl.prototype.allowMouseLock = function() {
 /**
  * Sets the third party authentication token and shared secret.
  *
- * @param {string} token The token received from the token URL.
- * @param {string} sharedSecret Shared secret received from the token URL.
+ * @param {remoting.ThirdPartyToken} token
+ * @private
  */
-remoting.ClientPluginImpl.prototype.onThirdPartyTokenFetched = function(
-    token, sharedSecret) {
+remoting.ClientPluginImpl.prototype.onThirdPartyTokenFetched_ = function(
+    token) {
   this.plugin_.postMessage(JSON.stringify(
     { method: 'onThirdPartyTokenFetched',
-      data: { token: token, sharedSecret: sharedSecret}}));
+      data: { token: token.token, sharedSecret: token.secret}}));
 };
 
 /**

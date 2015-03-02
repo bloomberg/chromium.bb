@@ -117,32 +117,6 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
  */
 remoting.SessionConnectorImpl.prototype.reset = function() {
   /**
-   * For paired connections, the client id of this device, issued by the host.
-   *
-   * @type {string}
-   * @private
-   */
-  this.clientPairingId_ = '';
-
-  /**
-   * For paired connections, the paired secret for this device, issued by the
-   * host.
-   *
-   * @type {string}
-   * @private
-   */
-  this.clientPairedSecret_ = '';
-
-  /**
-   * String used to authenticate to the host on connection. For IT2Me, this is
-   * the access code; for Me2Me it is the PIN.
-   *
-   * @type {string}
-   * @private
-   */
-  this.passPhrase_ = '';
-
-  /**
    * @type {remoting.Host}
    * @private
    */
@@ -167,19 +141,10 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
   this.pendingXhr_ = null;
 
   /**
-   * Function to interactively obtain the PIN from the user.
-   * @type {function(boolean, function(string):void):void}
+   * @type {remoting.CredentialsProvider}
    * @private
    */
-  this.fetchPin_ = function(onPinFetched) {};
-
-  /**
-   * @type {function(string, string, string,
-   *                 function(string, string):void): void}
-   * @private
-   */
-  this.fetchThirdPartyToken_ = function(
-      tokenUrl, hostPublicKey, scope, onThirdPartyTokenFetched) {};
+  this.credentialsProvider_ = null;
 };
 
 /**
@@ -191,10 +156,6 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
  * @param {remoting.Host} host The Me2Me host to which to connect.
  * @param {function(boolean, function(string):void):void} fetchPin Function to
  *     interactively obtain the PIN from the user.
- * @param {function(string, string, string,
- *                  function(string, string): void): void}
- *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authentication server.
  * @param {string} clientPairingId The client id issued by the host when
  *     this device was paired, if it is already paired.
  * @param {string} clientPairedSecret The shared secret issued by the host when
@@ -206,8 +167,12 @@ remoting.SessionConnectorImpl.prototype.connectMe2Me =
              clientPairingId, clientPairedSecret) {
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.logHostOfflineErrors_ = false;
-  this.connectMe2MeInternal_(host, fetchPin, fetchThirdPartyToken,
-                             clientPairingId, clientPairedSecret);
+  var credentialsProvider = new remoting.CredentialsProvider({
+    fetchPin: fetchPin,
+    pairingInfo: { id: clientPairingId, secret: clientPairedSecret },
+    fetchThirdPartyToken: fetchThirdPartyToken
+  });
+  this.connectInternal_(host, credentialsProvider);
 };
 
 /**
@@ -222,8 +187,7 @@ remoting.SessionConnectorImpl.prototype.connectMe2Me =
 remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.logHostOfflineErrors_ = true;
-  this.connectMe2MeInternal_(host, this.fetchPin_, this.fetchThirdPartyToken_,
-                             this.clientPairingId_, this.clientPairedSecret_);
+  this.connectInternal_(host, this.credentialsProvider_);
 };
 
 /**
@@ -240,7 +204,10 @@ remoting.SessionConnectorImpl.prototype.connectMe2App =
     function(host, fetchThirdPartyToken) {
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.APP_REMOTING;
   this.logHostOfflineErrors_ = true;
-  this.connectMe2MeInternal_(host, function() {}, fetchThirdPartyToken, '', '');
+  var credentialsProvider = new remoting.CredentialsProvider({
+    fetchThirdPartyToken : fetchThirdPartyToken
+  });
+  this.connectInternal_(host, credentialsProvider);
 };
 
 /**
@@ -251,38 +218,26 @@ remoting.SessionConnectorImpl.prototype.connectMe2App =
  */
 remoting.SessionConnectorImpl.prototype.updatePairingInfo =
     function(clientId, sharedSecret) {
-  this.clientPairingId_ = clientId;
-  this.clientPairedSecret_ = sharedSecret;
+  var pairingInfo = this.credentialsProvider_.getPairingInfo();
+  pairingInfo.id = clientId;
+  pairingInfo.secret = sharedSecret;
 };
 
 /**
- * Initiate a Me2Me connection.
+ * Initiates a connection.
  *
  * @param {remoting.Host} host the Host to connect to.
- * @param {function(boolean, function(string):void):void} fetchPin Function to
- *     interactively obtain the PIN from the user.
- * @param {function(string, string, string,
- *                  function(string, string): void): void}
- *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authentication server.
- * @param {string} clientPairingId The client id issued by the host when
- *     this device was paired, if it is already paired.
- * @param {string} clientPairedSecret The shared secret issued by the host when
- *     this device was paired, if it is already paired.
+ * @param {remoting.CredentialsProvider} credentialsProvider
  * @return {void} Nothing.
  * @private
  */
-remoting.SessionConnectorImpl.prototype.connectMe2MeInternal_ =
-    function(host, fetchPin, fetchThirdPartyToken,
-             clientPairingId, clientPairedSecret) {
+remoting.SessionConnectorImpl.prototype.connectInternal_ =
+    function(host, credentialsProvider) {
   // Cancel any existing connect operation.
   this.cancel();
 
   this.host_ = host;
-  this.fetchPin_ = fetchPin;
-  this.fetchThirdPartyToken_ = fetchThirdPartyToken;
-  this.updatePairingInfo(clientPairingId, clientPairedSecret);
-
+  this.credentialsProvider_ = credentialsProvider;
   this.connectSignaling_();
 };
 
@@ -305,9 +260,10 @@ remoting.SessionConnectorImpl.prototype.connectIT2Me = function(accessCode) {
     this.onError_(remoting.Error.INVALID_ACCESS_CODE);
     return;
   }
-
   var hostId = normalizedAccessCode.substring(0, kSupportIdLen);
-  this.passPhrase_ = normalizedAccessCode;
+  this.credentialsProvider_ = new remoting.CredentialsProvider({
+    accessCode: normalizedAccessCode
+  });
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.IT2ME;
   remoting.identity.getToken().then(
       this.connectIT2MeWithToken_.bind(this, hostId),
@@ -325,9 +281,7 @@ remoting.SessionConnectorImpl.prototype.reconnect = function() {
     return;
   }
   this.logHostOfflineErrors_ = false;
-  this.connectMe2MeInternal_(this.host_, this.fetchPin_,
-                             this.fetchThirdPartyToken_, this.clientPairingId_,
-                             this.clientPairedSecret_);
+  this.connectInternal_(this.host_, this.credentialsProvider_);
 };
 
 /**
@@ -484,13 +438,9 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
     this.clientSession_ = null;
   }
 
-  var authenticationMethods =
-     'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.host_, this.signalStrategy_, this.clientContainer_, this.passPhrase_,
-      this.fetchPin_, this.fetchThirdPartyToken_, authenticationMethods,
-      this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_,
-      this.defaultRemapKeys_);
+      this.host_, this.signalStrategy_, this.credentialsProvider_,
+      this.clientContainer_, this.connectionMode_, this.defaultRemapKeys_);
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,

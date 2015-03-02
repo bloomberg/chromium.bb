@@ -34,25 +34,12 @@ remoting.ClientPlugin.prototype.element = function() {};
 remoting.ClientPlugin.prototype.initialize = function(onDone) {};
 
 /**
- * @param {string} hostJid The jid of the host to connect to.
- * @param {string} hostPublicKey The base64 encoded version of the host's
- *     public key.
+ * @param {remoting.Host} host The host to connect to.
  * @param {string} localJid Local jid.
- * @param {string} sharedSecret The access code for IT2Me or the PIN
- *     for Me2Me.
- * @param {string} authenticationMethods Comma-separated list of
- *     authentication methods the client should attempt to use.
- * @param {string} authenticationTag A host-specific tag to mix into
- *     authentication hashes.
- * @param {string} clientPairingId For paired Me2Me connections, the
- *     pairing id for this client, as issued by the host.
- * @param {string} clientPairedSecret For paired Me2Me connections, the
- *     paired secret for this client, as issued by the host.
+ * @param {remoting.CredentialsProvider} credentialsProvider
  */
-remoting.ClientPlugin.prototype.connect = function(
-    hostJid, hostPublicKey, localJid, sharedSecret,
-    authenticationMethods, authenticationTag,
-    clientPairingId, clientPairedSecret) {};
+remoting.ClientPlugin.prototype.connect =
+    function(host, localJid, credentialsProvider) {};
 
 /**
  * @param {number} key The keycode to inject.
@@ -98,11 +85,6 @@ remoting.ClientPlugin.prototype.sendClipboardItem =
     function(mimeType, item) {};
 
 /**
- * Tell the plugin to request a PIN asynchronously.
- */
-remoting.ClientPlugin.prototype.useAsyncPinDialog = function() {};
-
-/**
  * Request that this client be paired with the current host.
  *
  * @param {string} clientName The human-readable name of the client.
@@ -113,25 +95,9 @@ remoting.ClientPlugin.prototype.requestPairing =
     function(clientName, onDone) {};
 
 /**
- * Called when a PIN is obtained from the user.
- *
- * @param {string} pin The PIN.
- */
-remoting.ClientPlugin.prototype.onPinFetched = function(pin) {};
-
-/**
  * Allows automatic mouse-lock.
  */
 remoting.ClientPlugin.prototype.allowMouseLock = function() {};
-
-/**
- * Sets the third party authentication token and shared secret.
- *
- * @param {string} token The token received from the token URL.
- * @param {string} sharedSecret Shared secret received from the token URL.
- */
-remoting.ClientPlugin.prototype.onThirdPartyTokenFetched =
-    function(token, sharedSecret) {};
 
 /**
  * @param {boolean} pause True to pause the audio stream; false to resume it.
@@ -220,23 +186,6 @@ remoting.ClientPlugin.prototype.setCastExtensionHandler =
  *     the cursor hotspot's x- and y-coordinates, respectively.
  */
 remoting.ClientPlugin.prototype.setMouseCursorHandler =
-    function(handler) {};
-
-/**
- * @param {function(string, string, string):void} handler Callback for
- *     fetching third-party tokens. The first parameter is the token URL; the
- *     second is the public key of the host; the third is the OAuth2 scope
- *     being requested.
- */
-remoting.ClientPlugin.prototype.setFetchThirdPartyTokenHandler =
-    function(handler) {};
-
-/**
- * @param {function(boolean):void} handler Callback for fetching a PIN from
- *     the user. The parameter is true if PIN pairing is supported by the
- *     host, or false otherwise.
- */
-remoting.ClientPlugin.prototype.setFetchPinHandler =
     function(handler) {};
 
 /**
