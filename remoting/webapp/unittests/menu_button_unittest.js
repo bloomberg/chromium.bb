@@ -6,8 +6,11 @@
 
 'use strict';
 
+/** @type {(sinon.Spy|function():void)} */
 var onShow = null;
+/** @type {(sinon.Spy|function():void)} */
 var onHide = null;
+/** @type {remoting.MenuButton} */
 var menuButton = null;
 
 module('MenuButton', {
@@ -20,11 +23,12 @@ module('MenuButton', {
             '<li id="menu-option-1">Option 1</li>' +
           '</ul>' +
         '</span>';
-    onShow = sinon.spy();
-    onHide = sinon.spy();
+    onShow = /** @type {(sinon.Spy|function():void)} */ (sinon.spy());
+    onHide = /** @type {(sinon.Spy|function():void)} */ (sinon.spy());
     menuButton = new remoting.MenuButton(
         document.getElementById('menu-button-container'),
-        onShow, onHide);
+        /** @type {function():void} */ (onShow),
+        /** @type {function():void} */ (onHide));
   },
   teardown: function() {
     onShow = null;

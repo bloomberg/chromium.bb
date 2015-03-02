@@ -2,19 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * TODO(garykac) Remove suppression once chromeMocks has been replaced.
+ * @suppress {checkTypes|checkVars|reportUnknownTypes}
+ */
+
 (function() {
 
 'use strict';
 
+/** @type {base.EventSourceImpl} */
 var eventSource = null;
+
+/** @type {HTMLElement} */
 var domElement = null;
+
+/** @type {chromeMocks.Event} */
 var myChromeEvent = null;
+
+/** @type {Listener} */
 var listener = null;
 
+/**
+ * @param {HTMLElement} element
+ * @constructor
+ */
 var Listener = function(element) {
-  this.onChromeEvent = sinon.stub();
-  this.onClickEvent = sinon.stub();
-  this.onCustomEvent = sinon.stub();
+  /** @type {(sinon.Spy|function(...?))} */
+  this.onChromeEvent = sinon.spy();
+  /** @type {(sinon.Spy|function(...?))} */
+  this.onClickEvent = sinon.spy();
+  /** @type {(sinon.Spy|function(...?))} */
+  this.onCustomEvent = sinon.spy();
+
   this.eventHooks_ = new base.Disposables(
       new base.DomEventHook(element, 'click', this.onClickEvent.bind(this),
                             false),
@@ -35,7 +56,7 @@ function raiseAllEvents() {
 
 module('base.EventHook', {
   setup: function() {
-    domElement = document.createElement('div');
+    domElement = /** @type {HTMLElement} */ (document.createElement('div'));
     eventSource = new base.EventSourceImpl();
     eventSource.defineEvents(['customEvent']);
     myChromeEvent = new chromeMocks.Event();

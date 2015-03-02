@@ -6,14 +6,20 @@
 
 'use strict';
 
+/** @type {Function} */
 var onStanzaStr = null;
-var onError = null;
+
+/** @type {function(string):void} */
+var onError = function(msg) {};
+
+/** @type {remoting.XmppStreamParser} */
 var parser = null;
 
 module('XmppStreamParser', {
   setup: function() {
     onStanzaStr = sinon.spy();
-    onError = sinon.spy();
+    onError = /** @type {function(string):void} */ (sinon.spy());
+    /** @param {Element} stanza */
     function onStanza(stanza) {
       onStanzaStr(new XMLSerializer().serializeToString(stanza));
     }

@@ -9,16 +9,12 @@
 /** @suppress {duplicate} */
 var browserTest = browserTest || {};
 
-/** @suppress {duplicate} */
-var sinon = sinon || {};
-
 /** @interface */
 browserTest.TestableClass = function() {};
 
 /** @param {*} data */
 browserTest.TestableClass.prototype.run = function(data) {};
 
-sinon.spy = function() {};
 
 /** @constructor */
 window.DomAutomationControllerMessage = function() {

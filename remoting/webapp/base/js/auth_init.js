@@ -42,12 +42,14 @@ remoting.initIdentity = function(onUserInfoAvailable) {
     }
   }
 
-  remoting.identity.getUserInfo().then(function(userInfo) {
-    onUserInfoAvailable(userInfo.email, userInfo.name);
-  }).catch(function(error) {
-    onGetIdentityInfoError(
-        /** @type {remoting.Error} */ (error));
-  });
+  remoting.identity.getUserInfo().then(
+      /** @param {{email:string, name:string}} userInfo */
+      function(userInfo) {
+        onUserInfoAvailable(userInfo.email, userInfo.name);
+      }).catch(function(error) {
+        onGetIdentityInfoError(
+            /** @type {remoting.Error} */ (error));
+      });
 };
 
 /**

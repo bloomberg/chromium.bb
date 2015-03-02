@@ -9,22 +9,45 @@
 var testUsername = 'testUsername@gmail.com';
 var testToken = 'testToken';
 
-var sendMessage = null;
-var startTls = null;
-var onHandshakeDone = null;
-var onStanzaStr = null;
-var onError = null;
+/** @type {(sinon.Spy|function(string):void)} */
+var sendMessage_spy = function(msg) {};
+/** @type {function(string):void} */
+var sendMessage = function(msg) {};
+
+/** @type {(sinon.Spy|function():void)} */
+var startTls_spy = function() {};
+/** @type {function():void} */
+var startTls = function() {};
+
+/** @type {(sinon.Spy|function(string, remoting.XmppStreamParser):void)} */
+var onHandshakeDone_spy = function(name, parser) {};
+/** @type {function(string, remoting.XmppStreamParser):void} */
+var onHandshakeDone = function(name, parser) {};
+
+/** @type {(sinon.Spy|function(remoting.Error, string):void)} */
+var onError_spy = function(error, message) {};
+/** @type {function(remoting.Error, string):void} */
+var onError = function(error, message) {};
+
+/** @type {remoting.XmppLoginHandler} */
 var loginHandler = null;
 
 module('XmppLoginHandler', {
   setup: function() {
-    sendMessage = sinon.spy();
-    startTls = sinon.spy();
-    onHandshakeDone = sinon.spy();
-    onError = sinon.spy();
+    sendMessage_spy = sinon.spy();
+    sendMessage = /** @type {function(string):void} */ (sendMessage_spy);
+    startTls_spy = sinon.spy();
+    startTls = /** @type {function():void} */ (startTls_spy);
+    onHandshakeDone_spy = sinon.spy();
+    onHandshakeDone =
+          /** @type {function(string, remoting.XmppStreamParser):void} */
+          (onHandshakeDone_spy);
+    onError_spy = sinon.spy();
+    onError = /** @type {function(remoting.Error, string):void} */(onError_spy);
+
     loginHandler = new remoting.XmppLoginHandler(
-        'google.com', testUsername, testToken, false, sendMessage,
-        startTls, onHandshakeDone, onError);
+        'google.com', testUsername, testToken, false,
+        sendMessage, startTls, onHandshakeDone, onError);
   }
 });
 
@@ -33,7 +56,7 @@ function handshakeBase() {
   loginHandler.start();
 
   sinon.assert.calledWith(startTls);
-  startTls.reset();
+  startTls_spy.reset();
 
   loginHandler.onTlsStarted();
   var cookie = window.btoa("\0" + testUsername + "\0" + testToken);
@@ -47,7 +70,7 @@ function handshakeBase() {
           'auth:allow-non-google-login="true" ' +
           'xmlns:auth="http://www.google.com/talk/protocol/auth">' + cookie +
       '</auth>');
-  sendMessage.reset();
+  sendMessage_spy.reset();
 
   loginHandler.onDataReceived(base.encodeUtf8(
       '<stream:stream from="google.com" id="DCDDE5171CB2154A" version="1.0" ' +
@@ -79,7 +102,7 @@ test('should authenticate', function() {
         '<iq type="set" id="1">' +
           '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
         '</iq>');
-  sendMessage.reset();
+  sendMessage_spy.reset();
 
   loginHandler.onDataReceived(base.encodeUtf8(
       '<stream:stream from="google.com" id="104FA10576E2AA80" version="1.0" ' +
@@ -110,7 +133,7 @@ test('use <starttls> handshake', function() {
       '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
           'xmlns:stream="http://etherx.jabber.org/streams">' +
           '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
-  sendMessage.reset();
+  sendMessage_spy.reset();
 
   loginHandler.onDataReceived(base.encodeUtf8(
       '<stream:stream from="google.com" id="78A87C70559EF28A" version="1.0" ' +

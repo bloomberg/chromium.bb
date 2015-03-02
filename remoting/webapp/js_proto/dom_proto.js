@@ -45,6 +45,12 @@ Element.prototype.innerText;
 /** @type {string} */
 Element.prototype.localName;
 
+/** @type {number} */
+Element.prototype.offsetRight;
+
+/** @type {number} */
+Element.prototype.offsetBottom;
+
 /** @type {string} */
 Element.prototype.textContent;
 

@@ -9,6 +9,16 @@ Entry = function() {};
 
 var chromeMocks = {};
 
+/** @constructor */
+chrome.Event = function() {};
+
+/** @param {Function} callback */
+chrome.Event.prototype.addListener = function(callback) {};
+
+/** @param {Function} callback */
+chrome.Event.prototype.removeListener = function(callback) {};
+
+
 (function(){
 
 /**

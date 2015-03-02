@@ -9,8 +9,8 @@ var remoting = remoting || {};
 
 
 /**
- * @param {string} jid
- * @param {remoting.SignalStrategy.Type} type
+ * @param {string=} jid
+ * @param {remoting.SignalStrategy.Type=} type
  *
  * @implements {remoting.SignalStrategy}
  * @constructor

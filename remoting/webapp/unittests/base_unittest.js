@@ -22,14 +22,14 @@ test('mix(dest, src) should assert if properties are overwritten',
     var src = { a: 'a', b: 'b'};
     var dest = { a: 'a'};
 
-    sinon.spy(base.debug, 'assert');
+    sinon.$setupStub(base.debug, 'assert');
 
     try {
       base.mix(dest, src);
     } catch (e) {
     } finally {
       sinon.assert.called(base.debug.assert);
-      base.debug.assert.restore();
+      base.debug.assert.$testStub.restore();
     }
 });
 
@@ -72,9 +72,14 @@ test('modify the original after deepCopy(obj) should not affect the copy',
 
 test('dispose(obj) should invoke the dispose method on |obj|',
   function() {
-    var obj = {
-      dispose: sinon.spy()
-    };
+    /**
+     * @constructor
+     * @implements {base.Disposable}
+     */
+    base.MockDisposable = function() {};
+    base.MockDisposable.prototype.dispose = sinon.spy();
+
+    var obj = new base.MockDisposable();
     base.dispose(obj);
     sinon.assert.called(obj.dispose);
 });
@@ -111,9 +116,14 @@ test('escapeHTML(str) should escape special characters', function() {
 });
 
 QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
+  /**
+   * 'this' is not defined for jscompile, so it can't figure out the type of
+   * this.clock.
+   * @suppress {reportUnknownTypes|checkVars|checkTypes}
+   */
   function() {
     var isCalled = false;
-    var clock = this.clock;
+    var clock = /** @type {QUnit.Clock} */ (this.clock);
 
     base.Promise.sleep(100).then(function(){
       isCalled = true;
@@ -129,18 +139,18 @@ QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
     window.requestAnimationFrame(function(){
       ok(!isCalled, 'Promise.sleep() should not be fulfilled prematurely.');
       clock.tick(101);
-    }.bind(this));
+    });
 });
 
 QUnit.asyncTest('Promise.negate should fulfill iff the promise does not.',
   function() {
 
     base.Promise.negate(Promise.reject()).then(
-        ok.bind(null, true),
-        ok.bind(null, false));
+        QUnit.ok.bind(null, true),
+        /** @type {Function} */ (QUnit.ok.bind(null, false)));
     base.Promise.negate(Promise.resolve()).then(
-        ok.bind(null, false),
-        ok.bind(null, true));
+        QUnit.ok.bind(null, false),
+        /** @type {Function} */ (QUnit.ok.bind(null, true)));
     window.requestAnimationFrame(function(){
       QUnit.start();
     });
@@ -149,21 +159,25 @@ QUnit.asyncTest('Promise.negate should fulfill iff the promise does not.',
 module('base.Deferred');
 
 QUnit.asyncTest('resolve() should fulfill the underlying promise.', function() {
+  /** @returns {Promise} */
   function async() {
     var deferred = new base.Deferred();
     deferred.resolve('bar');
     return deferred.promise();
   }
 
-  async().then(function(value){
-    QUnit.equal(value, 'bar');
-    QUnit.start();
-  }, function() {
-    QUnit.ok(false, 'The reject handler should not be invoked.');
-  });
+  async().then(
+      /** @param {string} value */
+      function(value){
+          QUnit.equal(value, 'bar');
+          QUnit.start();
+      }, function() {
+          QUnit.ok(false, 'The reject handler should not be invoked.');
+      });
 });
 
 QUnit.asyncTest('reject() should fail the underlying promise.', function() {
+  /** @returns {Promise} */
   function async() {
     var deferred = new base.Deferred();
     deferred.reject('bar');
@@ -179,6 +193,7 @@ QUnit.asyncTest('reject() should fail the underlying promise.', function() {
 });
 
 
+/** @type {base.EventSourceImpl} */
 var source = null;
 var listener = null;
 
@@ -229,13 +244,13 @@ test('raiseEvent() should not invoke listeners of a different event',
 
 test('raiseEvent() should assert when undeclared events are raised',
   function() {
-    sinon.spy(base.debug, 'assert');
+    sinon.$setupStub(base.debug, 'assert');
     try {
       source.raiseEvent('undefined');
     } catch (e) {
     } finally {
       sinon.assert.called(base.debug.assert);
-      base.debug.assert.restore();
+      base.debug.assert.$testStub.restore();
     }
 });
 
@@ -268,6 +283,7 @@ test('removeEventListener() should work even if the listener ' +
 });
 
 test('encodeUtf8() can encode UTF8 strings', function() {
+  /** @type {function(ArrayBuffer):Array} */
   function toJsArray(arrayBuffer) {
     var result = [];
     var array = new Uint8Array(arrayBuffer);

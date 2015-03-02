@@ -23,7 +23,10 @@ var remoting = remoting || {};
 remoting.oauth2 = null;
 
 
-/** @constructor */
+/**
+ * @constructor
+ * @extends {remoting.Identity}
+ */
 remoting.OAuth2 = function() {
 };
 

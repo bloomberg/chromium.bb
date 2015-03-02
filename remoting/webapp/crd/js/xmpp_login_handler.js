@@ -65,6 +65,12 @@ remoting.XmppLoginHandler = function(server,
   this.streamParser_ = null;
 }
 
+/** @return {function(string, remoting.XmppStreamParser):void} */
+remoting.XmppLoginHandler.prototype.getHandshakeDoneCallbackForTesting =
+    function() {
+  return this.onHandshakeDoneCallback_;
+};
+
 /**
  * States the handshake goes through. States are iterated from INIT to DONE
  * sequentially, except for ERROR state which may be accepted at any point.

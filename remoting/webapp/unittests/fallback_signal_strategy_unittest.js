@@ -2,15 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * TODO(garykac): Create interfaces for LogToServer and SignalStrategy.
+ * @suppress {checkTypes|checkVars|reportUnknownTypes|visibility}
+ */
+
 (function() {
 
 'use strict';
 
-
+/** @constructor */
 var MockLogToServer = function() {
+  /** @type {(sinon.Spy|Function)} */
   this.logSignalStrategyProgress = sinon.spy();
 };
 
+/** @type {function(...)} */
 MockLogToServer.prototype.assertProgress = function() {
   equal(this.logSignalStrategyProgress.callCount * 2, arguments.length);
   for (var i = 0; i < this.logSignalStrategyProgress.callCount; ++i) {
@@ -20,13 +28,29 @@ MockLogToServer.prototype.assertProgress = function() {
   }
 };
 
+/** @type {(sinon.Spy|function(remoting.SignalStrategy.State))} */
 var onStateChange = null;
+
+/** @type {(sinon.Spy|function(Element):void)} */
 var onIncomingStanzaCallback = null;
+
+/** @type {remoting.FallbackSignalStrategy} */
 var strategy = null;
+
+/** @type {remoting.SignalStrategy} */
 var primary = null;
+
+/** @type {remoting.SignalStrategy} */
 var secondary = null;
+
+/** @type {MockLogToServer} */
 var logToServer = null;
 
+/**
+ * @param {remoting.MockSignalStrategy} baseSignalStrategy
+ * @param {remoting.SignalStrategy.State} state
+ * @param {boolean} expectCallback
+ */
 function setState(baseSignalStrategy, state, expectCallback) {
   onStateChange.reset();
   baseSignalStrategy.setStateForTesting(state);

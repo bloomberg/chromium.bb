@@ -2,13 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * TODO(garykac): Create interface for SignalStrategy.
+ * @suppress {checkTypes|checkVars|reportUnknownTypes|visibility}
+ */
+
 (function() {
 
 'use strict';
 
+/** @type {(sinon.Spy|function(remoting.SignalStrategy.State))} */
 var onStateChange = null;
+
+/** @type {(sinon.Spy|function(Element):void)} */
 var onIncomingStanzaCallback = null;
+
+/** @type {remoting.DnsBlackholeChecker} */
 var checker = null;
+
+/** @type {remoting.MockSignalStrategy} */
 var signalStrategy = null;
 var fakeXhrs;
 
@@ -18,7 +31,6 @@ module('dns_blackhole_checker', {
     sinon.useFakeXMLHttpRequest().onCreate = function(xhr) {
       fakeXhrs.push(xhr);
     };
-
 
     onStateChange = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();

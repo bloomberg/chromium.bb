@@ -6,15 +6,25 @@
 
 'use strict';
 
-module('DesktopViewport');
-
+/**
+ * @param {number} width
+ * @param {number} height
+ * @return {{width:number, height:number}}
+ */
 function size(width, height) {
   return {width: width, height: height};
 }
 
+/**
+ * @param {number} x
+ * @param {number} y
+ * @return {{x:number, y:number}}
+ */
 function dpi(x, y) {
   return {x: x, y: y};
 }
+
+module('DesktopViewport');
 
 test('choosePluginSize() handles low-DPI client & host',
   function() {

@@ -22,9 +22,9 @@ var remoting = remoting || {};
 var MIGRATION_KEY_ = 'remoting-v2-migration';
 
 /**
- * @constructor
  * @param {string} email
  * @param {string} fullName
+ * @constructor
  */
 remoting.MigrationSettings = function(email, fullName) {
   this.email = email;
@@ -88,16 +88,14 @@ remoting.AppsV2Migration.saveUserInfo = function() {
   if (base.isAppsV2()) {
     chrome.storage.local.remove(MIGRATION_KEY_);
   } else {
-    /**
-     * @param {string} email
-     * @param {string} fullName
-     */
-    remoting.identity.getUserInfo().then(function(userInfo) {
-      var preference = {};
-      preference[MIGRATION_KEY_] =
-        new remoting.MigrationSettings(userInfo.email, userInfo.name);
-      chrome.storage.local.set(preference);
-    }).catch(base.doNothing);
+    remoting.identity.getUserInfo().then(
+        /** @param {{email:string, name:string}} userInfo */
+        function(userInfo) {
+          var preference = {};
+          preference[MIGRATION_KEY_] =
+              new remoting.MigrationSettings(userInfo.email, userInfo.name);
+          chrome.storage.local.set(preference);
+        }).catch(base.doNothing);
   }
 };
 

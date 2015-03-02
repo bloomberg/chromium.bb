@@ -24,6 +24,7 @@
       'variables': {
         'success_stamp': '<(PRODUCT_DIR)/<(_target_name)_jscompile.stamp',
         'success_stamp_bt': '<(PRODUCT_DIR)/<(_target_name)_bt_jscompile.stamp',
+        'success_stamp_ut': '<(PRODUCT_DIR)/<(_target_name)_ut_jscompile.stamp',
       },
       'actions': [
         {
@@ -49,7 +50,7 @@
           'inputs': [
             '<@(remoting_webapp_crd_js_files)',
             '<@(remoting_webapp_browsertest_all_js_files)',
-            '<@(remoting_webapp_js_proto_files)',
+            '<@(remoting_webapp_browsertest_js_proto_files)',
           ],
           'outputs': [
             '<(success_stamp_bt)',
@@ -61,7 +62,27 @@
             '--success-stamp', '<(success_stamp_bt)',
             '<@(remoting_webapp_crd_js_files)',
             '<@(remoting_webapp_browsertest_all_js_files)',
-            '<@(remoting_webapp_js_proto_files)',
+            '<@(remoting_webapp_browsertest_js_proto_files)',
+          ],
+        },
+        {
+          'action_name': 'Verify remoting webapp unittests',
+          'inputs': [
+            '<@(remoting_webapp_crd_js_files)',
+            '<@(remoting_webapp_unittest_all_js_files)',
+            '<@(remoting_webapp_unittest_js_proto_files)',
+          ],
+          'outputs': [
+            '<(success_stamp_ut)',
+          ],
+          'action': [
+            'python', '../third_party/closure_compiler/checker.py',
+            '--strict',
+            '--no-single-file',
+            '--success-stamp', '<(success_stamp_ut)',
+            '<@(remoting_webapp_crd_js_files)',
+            '<@(remoting_webapp_unittest_all_js_files)',
+            '<@(remoting_webapp_unittest_js_proto_files)',
           ],
         },
       ],  # actions

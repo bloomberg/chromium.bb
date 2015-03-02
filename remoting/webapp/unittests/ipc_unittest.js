@@ -6,6 +6,7 @@
 
 'use strict';
 
+/** @type {base.Ipc} */
 var ipc_;
 
 function pass() {
@@ -62,7 +63,7 @@ QUnit.asyncTest(
   function() {
     var handler = sinon.spy();
     ipc_.register('foo', handler);
-    ipc_.unregister('foo', handler);
+    ipc_.unregister('foo');
     base.Ipc.invoke('foo', 'hello', 'world').then(fail, function(error) {
       sinon.assert.notCalled(handler);
       QUnit.equal(error, base.Ipc.Error.UNSUPPORTED_REQUEST_TYPE);

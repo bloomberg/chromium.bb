@@ -10,37 +10,44 @@ var testUsername = 'testUsername@gmail.com';
 var testToken = 'testToken';
 var socketId = 3;
 
-var onStateChange = null;
+/** @type {(sinon.Spy|function(remoting.SignalStrategy.State):void)} */
+var onStateChange = function() {};
+
 var onStanzaStr = null;
+
+/** @type {remoting.XmppConnection} */
 var connection = null;
 
 module('XmppConnection', {
   setup: function() {
     onStateChange = sinon.spy();
     onStanzaStr = sinon.spy();
+    /** @param {Element} stanza */
     function onStanza(stanza) {
       onStanzaStr(new XMLSerializer().serializeToString(stanza));
     }
 
-    sinon.stub(chrome.socket, 'create');
-    sinon.stub(chrome.socket, 'connect');
-    sinon.stub(chrome.socket, 'write');
-    sinon.stub(chrome.socket, 'read');
-    sinon.stub(chrome.socket, 'destroy');
-    sinon.stub(chrome.socket, 'secure');
+    sinon.$setupStub(chrome.socket, 'create');
+    sinon.$setupStub(chrome.socket, 'connect');
+    sinon.$setupStub(chrome.socket, 'write');
+    sinon.$setupStub(chrome.socket, 'read');
+    sinon.$setupStub(chrome.socket, 'destroy');
+    sinon.$setupStub(chrome.socket, 'secure');
 
     connection = new remoting.XmppConnection();
-    connection.setStateChangedCallback(onStateChange);
+    connection.setStateChangedCallback(
+        /** @type {function(remoting.SignalStrategy.State):void} */
+            (onStateChange));
     connection.setIncomingStanzaCallback(onStanza);
   },
 
   teardown: function() {
-    chrome.socket.create.restore();
-    chrome.socket.connect.restore();
-    chrome.socket.write.restore();
-    chrome.socket.read.restore();
-    chrome.socket.destroy.restore();
-    chrome.socket.secure.restore();
+    chrome.socket.create.$testStub.restore();
+    chrome.socket.connect.$testStub.restore();
+    chrome.socket.write.$testStub.restore();
+    chrome.socket.read.$testStub.restore();
+    chrome.socket.destroy.$testStub.restore();
+    chrome.socket.secure.$testStub.restore();
   }
 });
 
@@ -50,11 +57,11 @@ test('should go to FAILED state when failed to connect', function() {
   sinon.assert.calledWith(onStateChange,
                           remoting.SignalStrategy.State.CONNECTING);
   sinon.assert.calledWith(chrome.socket.create, "tcp", {});
-  chrome.socket.create.getCall(0).args[2]({socketId: socketId});
+  chrome.socket.create.$testStub.getCall(0).args[2]({socketId: socketId});
 
   sinon.assert.calledWith(
       chrome.socket.connect, socketId, "xmpp.example.com", 123);
-  chrome.socket.connect.getCall(0).args[3](-1);
+  chrome.socket.connect.$testStub.getCall(0).args[3](-1);
 
   QUnit.equal(connection.getError(), remoting.Error.NETWORK_FAILURE);
 });
@@ -66,11 +73,11 @@ test('should use XmppLoginHandler to complete handshake and read data',
   sinon.assert.calledWith(onStateChange,
                           remoting.SignalStrategy.State.CONNECTING);
   sinon.assert.calledWith(chrome.socket.create, "tcp", {});
-  chrome.socket.create.getCall(0).args[2]({socketId: socketId});
+  chrome.socket.create.$testStub.getCall(0).args[2]({socketId: socketId});
 
   sinon.assert.calledWith(
       chrome.socket.connect, socketId, "xmpp.example.com", 123);
-  chrome.socket.connect.getCall(0).args[3](0);
+  chrome.socket.connect.$testStub.getCall(0).args[3](0);
 
   sinon.assert.calledWith(onStateChange,
                           remoting.SignalStrategy.State.HANDSHAKE);
@@ -78,8 +85,9 @@ test('should use XmppLoginHandler to complete handshake and read data',
   var parser = new remoting.XmppStreamParser();
   var parserMock = sinon.mock(parser);
   var setCallbacksCalled = parserMock.expects('setCallbacks').once();
-  connection.loginHandler_.onHandshakeDoneCallback_('test@example.com/123123',
-                                                    parser);
+  var handshakeDoneCallback =
+      connection.loginHandler_.getHandshakeDoneCallbackForTesting();
+  handshakeDoneCallback('test@example.com/123123', parser);
   sinon.assert.calledWith(onStateChange,
                           remoting.SignalStrategy.State.CONNECTED);
   setCallbacksCalled.verify();
@@ -88,7 +96,7 @@ test('should use XmppLoginHandler to complete handshake and read data',
   var data = base.encodeUtf8('<iq id="1">hello</iq>');
   sinon.assert.calledWith(chrome.socket.read, socketId);
   var appendDataCalled = parserMock.expects('appendData').once().withArgs(data);
-  chrome.socket.read.getCall(0).args[1]({resultCode: 0, data: data});
+  chrome.socket.read.$testStub.getCall(0).args[1]({resultCode: 0, data: data});
   appendDataCalled.verify();
 });
 
