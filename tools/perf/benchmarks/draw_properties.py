@@ -8,6 +8,7 @@ from measurements import draw_properties
 import page_sets
 
 
+@benchmark.Disabled()  # http://crbug.com/463111
 class DrawPropertiesToughScrolling(benchmark.Benchmark):
   test = draw_properties.DrawProperties
   page_set = page_sets.ToughScrollingCasesPageSet
@@ -15,6 +16,8 @@ class DrawPropertiesToughScrolling(benchmark.Benchmark):
   def Name(cls):
     return 'draw_properties.tough_scrolling'
 
+
+@benchmark.Disabled()  # http://crbug.com/463111
 class DrawPropertiesTop25(benchmark.Benchmark):
   """Measures the relative performance of CalcDrawProperties vs computing draw
   properties from property trees.
