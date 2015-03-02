@@ -1,0 +1,23 @@
+<div id='ce' contenteditable='true' style='height:200px;'>hello<div><br/></div><div><br/></div><div>world</div></div>
+<script>
+    var ce = document.getElementById('ce');
+    var text = ce.firstChild;
+    var range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, 5);
+    var s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(range);
+
+    function insertHTML()
+    {
+        document.execCommand('insertHTML', false, '<a spellcheck="false" href="#">hello</a>');
+    }
+
+    function insertHTMLNested()
+    {
+        document.execCommand('insertHTMLNested', false, '<a spellcheck="false" href="#">hello</a>');
+    }
+
+</script>
+<div><button onclick="insertHTML()">Insert HTML</button></div><div><button onclick="insertHTMLNested()">Insert HTML Nested</button></div>

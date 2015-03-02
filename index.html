@@ -461,6 +461,11 @@ allows the HTML to be nested inside style spans.</p>
 <p>Open <a href="repros/insertHTMLNested.html">this link</a> in Chrome.  With
 this patch, the "Insert HTML Nested" button works to preserve the font setting.
 The default "Insert HTML" button doesn't preserve it.</p>
+<p>Open <a href="repros/insertHTMLNested2.html">this link</a> in Chrome.  The
+word "hello" will be highlighted.  Now press "Insert HTML".  The "hello" text
+will be replaced with a link.  However, we lose one newline between "hello" and
+"world".  With this patch, the "Insert HTML Nested" button does the same thing,
+except that the newlines are preserved.</p>
 
 <h3>
     <a name="feature-listMarkerEnhancements">feature/listMarkerEnhancements</a>
