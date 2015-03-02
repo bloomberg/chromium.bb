@@ -918,10 +918,6 @@ crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ F
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
-crbug.com/446011 fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/446011 virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/446011 virtual/slimmingpaint/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-
 crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
 crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
 
