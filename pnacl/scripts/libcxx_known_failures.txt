@@ -17,17 +17,11 @@ libc++::depr/depr.c.headers/stdbool_h.pass.cpp
 # Newlib doesn't have the C Unicode TR header <uchar.h>.
 libc++::depr/depr.c.headers/uchar_h.pass.cpp
 
-# Newlib doesn't have C11's [at_]quick_exit.
-libc++::language.support/support.start.term/quick_exit.pass.cpp
-
 # Newlib defines clearerr, feof and ferror as macro which shadows the
 # functions it also declares. <cstdio> was patched to undef the macros,
 # but the test includes <stdio.h> instead. Discuss fixing the test with
 # libc++ folks?
 libc++::depr/depr.c.headers/stdio_h.pass.cpp
-
-# Lack of blocking /dev/random support.
-libc++::numerics/rand/rand.device/ctor.pass.cpp
 
 # Need to investigate these.
 libc++::diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp
@@ -39,31 +33,9 @@ libc++::localization/locale.categories/category.numeric/locale.nm.put/facet.num.
 libc++::localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp
 libc++::re/re.traits/isctype.pass.cpp
 libc++::re/re.traits/lookup_classname.pass.cpp
-libc++::strings/c.strings/cuchar.pass.cpp
-libc++::strings/c.strings/version_cuchar.pass.cpp
 libc++::strings/string.conversions/stod.pass.cpp
 libc++::strings/string.conversions/stof.pass.cpp
 libc++::strings/string.conversions/stold.pass.cpp
-libc++::thread/futures/futures.unique_future/copy_assign.fail.cpp
-libc++::utilities/memory/unique.ptr/unique.ptr.runtime/unique.ptr.runtime.ctor/pointer_deleter04.fail.cpp
-libc++::utilities/memory/unique.ptr/unique.ptr.single/unique.ptr.single.asgn/move_convert13.fail.cpp
-libc++::utilities/memory/unique.ptr/unique.ptr.single/unique.ptr.single.ctor/pointer_deleter04.fail.cpp
-
-# There are currently issues with atomics:
-#  - atomic_init of aggregates is broken.
-#  - EmitAtomicExpr calls EmitCall which causes clang to generate an
-#    invalid cast and assert out.
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_strong.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_strong_explicit.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_weak.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_weak_explicit.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_exchange.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_exchange_explicit.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_init.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_load.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_load_explicit.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_store.pass.cpp
-libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_store_explicit.pass.cpp
 
 # terminating with uncaught exception of type std::runtime_error:
 # <some class> failed to construct for <some locale like en_US.UTF-8>
@@ -121,25 +93,6 @@ libc++::re/re.traits/default.pass.cpp
 libc++::re/re.traits/getloc.pass.cpp
 libc++::re/re.traits/imbue.pass.cpp
 libc++::re/re.traits/translate_nocase.pass.cpp
-
-
-# Functions with exception specification for bad_alloc fail ABI verification
-# https://code.google.com/p/nativeclient/issues/detail?id=3962
-libc++::language.support/support.dynamic/new.delete/new.delete.single/new_replace.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_assign.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_rfunction.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_assign.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t_assign.pass.cpp
-libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.mod/swap.pass.cpp
-libc++::utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/make_shared.pass.cpp
-# These also have symbol "has no initializer" ABI verifier fails and may be related
-libc++::input.output/iostream.objects/narrow.stream.objects/cout.pass.cpp
-libc++::input.output/iostream.objects/wide.stream.objects/wcout.pass.cpp
-libc++::input.output/iostream.objects/wide.stream.objects/wclog.pass.cpp
-libc++::input.output/iostream.objects/narrow.stream.objects/clog.pass.cpp
 
 # This relies on sigaction to capture SIGALRM.
 libc++::thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
