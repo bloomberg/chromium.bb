@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.enhanced_bookmarks;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
@@ -61,6 +62,12 @@ public class EnhancedBookmarksModel {
     // TODO(ianwen): remove this constructor.
     public EnhancedBookmarksModel(int cacheSize) {
         this();
+    }
+
+    @VisibleForTesting
+    EnhancedBookmarksModel(Profile profile) {
+        mBookmarksBridge = new BookmarksBridge(profile);
+        mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(profile);
     }
 
     /**
@@ -275,7 +282,8 @@ public class EnhancedBookmarksModel {
     }
 
     /**
-     * @see EnhancedBookmarksBridge#moveBookmark(BookmarkId, BookmarkId)
+     * Calls {@link EnhancedBookmarksBridge#moveBookmark(BookmarkId, BookmarkId)} in a reversed
+     * order of the list, in order to let the last item appear at the top.
      */
     public void moveBookmarks(List<BookmarkId> bookmarkIds, BookmarkId newParentId) {
         for (int i = bookmarkIds.size() - 1; i >= 0; i--) {
@@ -393,5 +401,13 @@ public class EnhancedBookmarksModel {
      */
     public void removeSearchObserver(SearchServiceObserver observer) {
         mEnhancedBookmarksBridge.removeSearchObserver(observer);
+    }
+
+    /**
+     * @see BookmarksBridge#loadEmptyPartnerBookmarkShimForTesting()
+     */
+    @VisibleForTesting
+    public void loadEmptyPartnerBookmarkShimForTesting() {
+        mBookmarksBridge.loadEmptyPartnerBookmarkShimForTesting();
     }
 }
