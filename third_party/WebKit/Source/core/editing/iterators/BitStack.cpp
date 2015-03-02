@@ -33,7 +33,6 @@
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
-
 static const unsigned bitsInWord = sizeof(unsigned) * 8;
 static const unsigned bitInWordMask = bitsInWord - 1;
 
@@ -100,7 +99,8 @@ bool BitStack::top() const
     if (!m_size)
         return false;
     unsigned shift = (m_size - 1) & bitInWordMask;
-    return m_words.last() & (1U << shift);
+    unsigned index = (m_size - 1) / bitsInWord;
+    return m_words[index] & (1U << shift);
 }
 
 unsigned BitStack::size() const

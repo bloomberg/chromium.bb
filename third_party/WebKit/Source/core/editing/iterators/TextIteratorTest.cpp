@@ -136,6 +136,19 @@ PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHT
     return shadowRoot.release();
 }
 
+TEST_F(TextIteratorTest, BitStackOverflow)
+{
+    const unsigned bitsInWord = sizeof(unsigned) * 8;
+    BitStack bs;
+
+    for (unsigned i = 0; i < bitsInWord + 1u; i++)
+        bs.push(true);
+
+    bs.pop();
+
+    EXPECT_TRUE(bs.top());
+}
+
 TEST_F(TextIteratorTest, BasicIteration)
 {
     static const char* input = "<p>Hello, \ntext</p><p>iterator.</p>";
