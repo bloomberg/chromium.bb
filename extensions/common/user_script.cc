@@ -145,6 +145,8 @@ void UserScript::Pickle(::Pickle* pickle) const {
   pickle->WriteBool(is_incognito_enabled());
 
   PickleHostID(pickle, host_id_);
+  pickle->WriteInt(consumer_instance_type());
+  PickleRoutingInfo(pickle, routing_info_);
   PickleGlobs(pickle, globs_);
   PickleGlobs(pickle, exclude_globs_);
   PickleURLPatternSet(pickle, url_set_);
@@ -165,6 +167,12 @@ void UserScript::PickleGlobs(::Pickle* pickle,
 void UserScript::PickleHostID(::Pickle* pickle, const HostID& host_id) const {
   pickle->WriteInt(host_id.type());
   pickle->WriteString(host_id.id());
+}
+
+void UserScript::PickleRoutingInfo(::Pickle* pickle,
+                                   const RoutingInfo& routing_info) const {
+  pickle->WriteInt(routing_info.render_process_id);
+  pickle->WriteInt(routing_info.render_view_id);
 }
 
 void UserScript::PickleURLPatternSet(::Pickle* pickle,
@@ -200,6 +208,13 @@ void UserScript::Unpickle(const ::Pickle& pickle, PickleIterator* iter) {
   CHECK(iter->ReadBool(&incognito_enabled_));
 
   UnpickleHostID(pickle, iter, &host_id_);
+
+  int consumer_instance_type = 0;
+  CHECK(iter->ReadInt(&consumer_instance_type));
+  consumer_instance_type_ =
+      static_cast<ConsumerInstanceType>(consumer_instance_type);
+
+  UnpickleRoutingInfo(pickle, iter, &routing_info_);
   UnpickleGlobs(pickle, iter, &globs_);
   UnpickleGlobs(pickle, iter, &exclude_globs_);
   UnpickleURLPatternSet(pickle, iter, &url_set_);
@@ -228,6 +243,13 @@ void UserScript::UnpickleHostID(const ::Pickle& pickle,
   CHECK(iter->ReadInt(&type));
   CHECK(iter->ReadString(&id));
   *host_id = HostID(static_cast<HostID::HostType>(type), id);
+}
+
+void UserScript::UnpickleRoutingInfo(const ::Pickle& pickle,
+                                     PickleIterator* iter,
+                                     RoutingInfo* routing_info) {
+  CHECK(iter->ReadInt(&routing_info->render_process_id));
+  CHECK(iter->ReadInt(&routing_info->render_view_id));
 }
 
 void UserScript::UnpickleURLPatternSet(const ::Pickle& pickle,

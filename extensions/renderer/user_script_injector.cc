@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/injection_host.h"
@@ -127,15 +128,21 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     blink::WebFrame* web_frame,
     int tab_id,
     const GURL& top_url) const {
-  // If we don't have a tab id, we have no UI surface to ask for user consent.
-  // For now, we treat this as an automatic allow.
-  if (tab_id == -1)
-    return PermissionsData::ACCESS_ALLOWED;
-
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, web_frame->document().url(), script_->match_about_blank());
-  return injection_host->CanExecuteOnFrame(
+  PermissionsData::AccessType can_execute = injection_host->CanExecuteOnFrame(
       effective_document_url, top_url, tab_id, is_declarative_);
+
+  if (script_->consumer_instance_type() !=
+      UserScript::ConsumerInstanceType::WEBVIEW ||
+      can_execute == PermissionsData::ACCESS_DENIED)
+    return can_execute;
+
+  int routing_id = content::RenderView::FromWebView(web_frame->top()->view())
+                      ->GetRoutingID();
+  return script_->routing_info().render_view_id == routing_id
+      ? PermissionsData::ACCESS_ALLOWED
+      : PermissionsData::ACCESS_DENIED;
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(

@@ -444,11 +444,24 @@ void UserScriptLoader::OnScriptsLoaded(
   // We've got scripts ready to go.
   shared_memory_.reset(shared_memory.release());
 
-  for (content::RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd();
-       i.Advance()) {
-    SendUpdate(i.GetCurrentValue(), shared_memory_.get(), changed_hosts_);
+  // If user scripts are comming from a <webview>, will only notify the
+  // RenderProcessHost of that <webview>; otherwise will notify all of the
+  // RenderProcessHosts.
+  if (user_scripts && !user_scripts->empty() &&
+      (*user_scripts)[0].consumer_instance_type() ==
+          UserScript::ConsumerInstanceType::WEBVIEW) {
+    DCHECK_EQ(1u, user_scripts->size());
+    int render_process_id = (*user_scripts)[0].routing_info().render_process_id;
+    content::RenderProcessHost* host =
+        content::RenderProcessHost::FromID(render_process_id);
+    if (host)
+      SendUpdate(host, shared_memory_.get(), changed_hosts_);
+  } else {
+    for (content::RenderProcessHost::iterator i(
+            content::RenderProcessHost::AllHostsIterator());
+        !i.IsAtEnd(); i.Advance()) {
+      SendUpdate(i.GetCurrentValue(), shared_memory_.get(), changed_hosts_);
+    }
   }
   changed_hosts_.clear();
 
