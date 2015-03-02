@@ -24,7 +24,7 @@ function test()
         InspectorTest.dumpSelectedElementStyles(true, true);
 
         var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
-        treeItem.applyStyleText("", true);
+        treeItem.applyStyleText("", false);
 
         InspectorTest.waitForStyleApplied(step3);
     }

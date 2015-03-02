@@ -142,7 +142,7 @@ function test()
             var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
             var treeElement = treeItem.section().addNewBlankProperty(1);
             InspectorTest.waitForStyleApplied(onPropertyInserted);
-            treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
+            treeElement.applyStyleText("PROPERTY: INSERTED;", true);
 
             function onPropertyInserted()
             {
@@ -195,7 +195,7 @@ function test()
             var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("pseudo-property");
             var treeElement = treeItem.section().addNewBlankProperty(1);
             InspectorTest.waitForStyleApplied(onPropertyInserted);
-            treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
+            treeElement.applyStyleText("PROPERTY: INSERTED;", true);
 
             function onPropertyInserted()
             {

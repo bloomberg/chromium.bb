@@ -21,7 +21,7 @@ function test()
         InspectorTest.dumpSelectedElementStyles(true);
 
         var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("font-weight");
-        treeItem.applyStyleText("font-weight: normal", true, false);
+        treeItem.applyStyleText("font-weight: normal", false);
         InspectorTest.waitForStyles("container", step2);
     }
 
@@ -40,7 +40,7 @@ function test()
         InspectorTest.dumpSelectedElementStyles(true);
 
         var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("font-weight");
-        treeItem.applyStyleText("font-weight: normal", true, false);
+        treeItem.applyStyleText("font-weight: normal", false);
         InspectorTest.waitForStyles("container", step4);
     }
 

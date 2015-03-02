@@ -26,7 +26,7 @@ function test()
           InspectorTest.dumpSelectedElementStyles(true, false, true);
     
           var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("padding");
-          treeItem.applyStyleText("padding: 20px", true, false);
+          treeItem.applyStyleText("padding: 20px", false);
           InspectorTest.waitForStyles("container", step2);
       }
     

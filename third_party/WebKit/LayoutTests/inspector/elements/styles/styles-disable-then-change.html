@@ -23,7 +23,7 @@ function test()
         InspectorTest.dumpSelectedElementStyles(true, true);
 
         var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
-        treeItem.applyStyleText("color: green", true);
+        treeItem.applyStyleText("color: green", false);
         InspectorTest.waitForStyles("container", step3);
     }
 
