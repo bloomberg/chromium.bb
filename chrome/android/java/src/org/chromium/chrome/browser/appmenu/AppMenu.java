@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.res.Resources;
@@ -27,6 +28,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 
+import org.chromium.base.AnimationFrameTimeHistogram;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 
@@ -53,6 +55,9 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private AppMenuHandler mHandler;
     private int mCurrentScreenRotation = -1;
     private boolean mIsByHardwareButton;
+    private AnimatorSet mMenuItemEnterAnimator;
+    private AnimatorListener mAnimationHistogramRecorder = AnimationFrameTimeHistogram
+            .getAnimatorRecorder("WrenchMenu.OpeningAnimationFrameTimes");
 
     /**
      * Creates and sets up the App Menu.
@@ -140,6 +145,10 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 if (mPopup.getAnchorView() instanceof ImageButton) {
                     ((ImageButton) mPopup.getAnchorView()).setSelected(false);
                 }
+
+                if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.cancel();
+
+                mHandler.appMenuDismissed();
                 mHandler.onMenuVisibilityChanged(false);
             }
         });
@@ -299,7 +308,6 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      * Dismisses the app menu and cancels the drag-to-scroll if it is taking place.
      */
     void dismiss() {
-        mHandler.appMenuDismissed();
         if (isShowing()) {
             mPopup.dismiss();
         }
@@ -361,7 +369,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     }
 
     private void runMenuItemEnterAnimations() {
-        AnimatorSet animation = new AnimatorSet();
+        mMenuItemEnterAnimator = new AnimatorSet();
         AnimatorSet.Builder builder = null;
 
         ViewGroup list = mPopup.getListView();
@@ -370,13 +378,14 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             Object animatorObject = view.getTag(R.id.menu_item_enter_anim_id);
             if (animatorObject != null) {
                 if (builder == null) {
-                    builder = animation.play((Animator) animatorObject);
+                    builder = mMenuItemEnterAnimator.play((Animator) animatorObject);
                 } else {
                     builder.with((Animator) animatorObject);
                 }
             }
         }
 
-        animation.start();
+        mMenuItemEnterAnimator.addListener(mAnimationHistogramRecorder);
+        mMenuItemEnterAnimator.start();
     }
 }

@@ -43788,6 +43788,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Number of times that each menu item is clicked.</summary>
 </histogram>
 
+<histogram name="WrenchMenu.OpeningAnimationFrameTimes" units="milliseconds">
+  <owner>kkimlabs@chromium.org</owner>
+  <summary>
+    Frame times of Android wrench menu opening animation. For example, if the
+    menu opening animation ran exactly at 60fps for a second, then each frame
+    time is 16ms. Therefore total ~60 number of 16ms value will be recorded. If
+    the anmation was janky, we will see >16ms data points in the histogram.
+  </summary>
+</histogram>
+
 <histogram name="WrenchMenu.RecentTabsSubMenu" enum="RecentTabsAction">
   <owner>rpop@chromium.org</owner>
   <summary>
@@ -43805,7 +43815,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WrenchMenu.TouchDuration" units="milliseconds">
-  <owner>kkimlabs@google.com</owner>
+  <owner>kkimlabs@chromium.org</owner>
   <summary>
     Time difference between touch down and touch up on Android wrench button.
   </summary>
