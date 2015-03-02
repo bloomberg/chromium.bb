@@ -5,7 +5,6 @@
 {
   'targets': [
     {
-      # GN version: //remoting:test_support
       'target_name': 'remoting_test_common',
       'type': 'static_library',
       'dependencies': [
@@ -21,7 +20,6 @@
         'remoting_resources',
       ],
       'sources': [
-        # Note: sources list duplicated in GN build.
         'host/fake_desktop_capturer.cc',
         'host/fake_desktop_capturer.h',
         'host/fake_desktop_environment.cc',
@@ -73,9 +71,6 @@
 
     # Remoting unit tests
     {
-      # GN version: //remoting:remoting_unittests
-      # Note that many of the sources are broken out into subdir-specific unit
-      # test source set targets that then GN version then brings together.
       'target_name': 'remoting_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -112,7 +107,6 @@
         '../testing/gmock/include',
       ],
       'sources': [
-        # Note: sources list duplicated in GN build.
         'base/auto_thread_task_runner_unittest.cc',
         'base/auto_thread_unittest.cc',
         'base/breakpad_win_unittest.cc',

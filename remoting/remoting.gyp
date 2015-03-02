@@ -213,7 +213,7 @@
     },  # end of target 'remoting_resources'
 
     {
-      # GN version: //remoting/base and //remoting/codec
+      # GN version: //remoting/base
       'target_name': 'remoting_base',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -245,7 +245,6 @@
       'hard_dependency': 1,
       'sources': [
         '<@(remoting_base_sources)',
-        '<@(remoting_codec_sources)',
       ],
     },  # end of target 'remoting_base'
 
