@@ -236,7 +236,7 @@ class Config {
     if (name == kTraceAfterDispatchName)
       return TRACE_AFTER_DISPATCH_METHOD;
     if (name == kTraceImplName)
-      return TRACE_AFTER_DISPATCH_METHOD;
+      return TRACE_IMPL_METHOD;
     if (name == kTraceAfterDispatchImplName)
       return TRACE_AFTER_DISPATCH_IMPL_METHOD;
 

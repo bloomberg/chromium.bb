@@ -315,6 +315,20 @@ class CheckDispatchVisitor : public RecursiveASTVisitor<CheckDispatchVisitor> {
     return true;
   }
 
+  bool VisitUnresolvedMemberExpr(UnresolvedMemberExpr* member) {
+    for (Decl* decl : member->decls()) {
+      if (CXXMethodDecl* method = dyn_cast<CXXMethodDecl>(decl)) {
+        if (method->getParent() == receiver_->record() &&
+            Config::GetTraceMethodType(method) ==
+            Config::TRACE_AFTER_DISPATCH_METHOD) {
+          dispatched_to_receiver_ = true;
+          return true;
+        }
+      }
+    }
+    return true;
+  }
+
  private:
   RecordInfo* receiver_;
   bool dispatched_to_receiver_;
@@ -1407,7 +1421,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   // Determine what type of tracing method this is (dispatch or trace).
   void CheckTraceOrDispatchMethod(RecordInfo* parent, CXXMethodDecl* method) {
     Config::TraceMethodType trace_type = Config::GetTraceMethodType(method);
-    if (trace_type != Config::TRACE_METHOD ||
+    if (trace_type == Config::TRACE_AFTER_DISPATCH_METHOD ||
+        trace_type == Config::TRACE_AFTER_DISPATCH_IMPL_METHOD ||
         !parent->GetTraceDispatchMethod()) {
       CheckTraceMethod(parent, method, trace_type);
     }

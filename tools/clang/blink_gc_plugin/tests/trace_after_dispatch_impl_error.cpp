@@ -6,30 +6,48 @@
 
 namespace blink {
 
-void TraceAfterDispatchInlinedBase::trace(Visitor* visitor) {
-  // Implement a simple form of manual dispatching, because BlinkGCPlugin gets
-  // angry if dispatching statements are missing.
+template <typename VisitorDispatcher>
+inline void TraceAfterDispatchInlinedBase::traceImpl(
+    VisitorDispatcher visitor) {
+  // Implement a simple form of manual dispatching, because BlinkGCPlugin
+  // checks if the tracing is dispatched to all derived classes.
   //
   // This function has to be implemented out-of-line, since we need to know the
   // definition of derived classes here.
   if (tag_ == DERIVED) {
-    static_cast<TraceAfterDispatchInlinedDerived*>(this)->traceAfterDispatch(
-        visitor);
+    // Missing dispatch call:
+    // static_cast<TraceAfterDispatchInlinedDerived*>(this)->traceAfterDispatch(
+    //     visitor);
   } else {
     traceAfterDispatch(visitor);
   }
 }
 
 void TraceAfterDispatchExternBase::trace(Visitor* visitor) {
+  traceImpl(visitor);
+}
+
+void TraceAfterDispatchExternBase::trace(InlinedGlobalMarkingVisitor visitor) {
+  traceImpl(visitor);
+}
+
+template <typename VisitorDispatcher>
+inline void TraceAfterDispatchExternBase::traceImpl(VisitorDispatcher visitor) {
   if (tag_ == DERIVED) {
-    static_cast<TraceAfterDispatchExternDerived*>(this)->traceAfterDispatch(
-        visitor);
+    // Missing dispatch call:
+    // static_cast<TraceAfterDispatchExternDerived*>(this)->traceAfterDispatch(
+    //     visitor);
   } else {
     traceAfterDispatch(visitor);
   }
 }
 
 void TraceAfterDispatchExternBase::traceAfterDispatch(Visitor* visitor) {
+  traceAfterDispatchImpl(visitor);
+}
+
+void TraceAfterDispatchExternBase::traceAfterDispatch(
+    InlinedGlobalMarkingVisitor visitor) {
   traceAfterDispatchImpl(visitor);
 }
 
@@ -40,6 +58,11 @@ inline void TraceAfterDispatchExternBase::traceAfterDispatchImpl(
 }
 
 void TraceAfterDispatchExternDerived::traceAfterDispatch(Visitor* visitor) {
+  traceAfterDispatchImpl(visitor);
+}
+
+void TraceAfterDispatchExternDerived::traceAfterDispatch(
+    InlinedGlobalMarkingVisitor visitor) {
   traceAfterDispatchImpl(visitor);
 }
 

@@ -23,11 +23,18 @@ class TraceAfterDispatchInlinedBase
  public:
   explicit TraceAfterDispatchInlinedBase(ClassTag tag) : tag_(tag) {}
 
-  void trace(Visitor* visitor);
+  void trace(Visitor* visitor) { traceImpl(visitor); }
+  void trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); }
 
   void traceAfterDispatch(Visitor* visitor) { traceAfterDispatchImpl(visitor); }
+  void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor) {
+    traceAfterDispatchImpl(visitor);
+  }
 
  private:
+  template <typename VisitorDispatcher>
+  void traceImpl(VisitorDispatcher visitor);
+
   template <typename VisitorDispatcher>
   void traceAfterDispatchImpl(VisitorDispatcher visitor) {
     // No trace call; should get a warning.
@@ -42,6 +49,9 @@ class TraceAfterDispatchInlinedDerived : public TraceAfterDispatchInlinedBase {
   TraceAfterDispatchInlinedDerived() : TraceAfterDispatchInlinedBase(DERIVED) {}
 
   void traceAfterDispatch(Visitor* visitor) { traceAfterDispatchImpl(visitor); }
+  void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor) {
+    traceAfterDispatchImpl(visitor);
+  }
 
  private:
   template <typename VisitorDispatcher>
@@ -58,10 +68,15 @@ class TraceAfterDispatchExternBase
   explicit TraceAfterDispatchExternBase(ClassTag tag) : tag_(tag) {}
 
   void trace(Visitor* visitor);
+  void trace(InlinedGlobalMarkingVisitor visitor);
 
   void traceAfterDispatch(Visitor* visitor);
+  void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor);
 
  private:
+  template <typename VisitorDispatcher>
+  void traceImpl(VisitorDispatcher visitor);
+
   template <typename VisitorDispatcher>
   void traceAfterDispatchImpl(VisitorDispatcher visitor);
 
@@ -74,6 +89,7 @@ class TraceAfterDispatchExternDerived : public TraceAfterDispatchExternBase {
   TraceAfterDispatchExternDerived() : TraceAfterDispatchExternBase(DERIVED) {}
 
   void traceAfterDispatch(Visitor* visitor);
+  void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor);
 
  private:
   template <typename VisitorDispatcher>
