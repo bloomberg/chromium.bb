@@ -76,3 +76,21 @@ disabled_syscall_node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(disabled_syscall_node, ['small_tests'],
                        'run_mmap_prot_exec_disabled_test',
                        is_broken=env.Bit('nacl_glibc'))
+
+if (env.Bit('tests_use_irt') and env.Bit('nacl_static_link') and
+    not env.Bit('bitcode')):
+  nexe = env.ComponentProgram('mmap_code_data_alloc_test',
+                              'mmap_code_data_alloc_test.c')
+  asm_env = env.Clone()
+  if env.Bit('bitcode'):
+    asm_env.PNaClForceNative()
+    asm_env.AddBiasForPNaCl()
+  objfile = asm_env.ComponentObject('exec_data', 'exec_data.S')
+  datafile = asm_env.Command(
+    'exec_data', objfile,
+    '${OBJCOPY} -j .text -O binary ${SOURCES} ${TARGET}')
+  node = env.CommandSelLdrTestNacl('mmap_code_data_alloc_test.out',
+                                   nexe, [datafile],
+                                   sel_ldr_flags=['-a'])
+  env.AddNodeToTestSuite(node, ['small_tests'],
+                         'run_mmap_code_data_alloc_test', is_broken=True)

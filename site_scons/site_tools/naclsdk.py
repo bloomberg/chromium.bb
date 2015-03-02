@@ -55,8 +55,8 @@ def _StubOutEnvToolsForBuiltElsewhere(env):
   assert(env.Bit('built_elsewhere'))
   env.Replace(CC='true', CXX='true', LINK='true', AR='true',
               RANLIB='true', AS='true', ASPP='true', LD='true',
-              STRIP='true', OBJDUMP='true', PNACLOPT='true',
-              PNACLFINALIZE='true')
+              STRIP='true', OBJDUMP='true', OBJCOPY='true',
+              PNACLOPT='true', PNACLFINALIZE='true')
 
 
 def _SetEnvForNativeSdk(env, sdk_path):
@@ -124,6 +124,7 @@ def _SetEnvForNativeSdk(env, sdk_path):
               RANLIB=os.path.join(bin_path, '%s-ranlib' % tool_prefix),
               NM=os.path.join(bin_path, '%s-nm' % tool_prefix),
               OBJDUMP=os.path.join(bin_path, '%s-objdump' % tool_prefix),
+              OBJCOPY=os.path.join(bin_path, '%s-objcopy' % tool_prefix),
               STRIP=os.path.join(bin_path, '%s-strip' % tool_prefix),
               ADDR2LINE=os.path.join(bin_path, '%s-addr2line' % tool_prefix),
               BASE_LINKFLAGS=[cc_mode_flag],
