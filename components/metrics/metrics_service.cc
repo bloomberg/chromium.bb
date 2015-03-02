@@ -248,11 +248,6 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
   }
 }
 
-bool NewInitialMetricsTimingEnabled() {
-  return base::FieldTrialList::FindFullName("UMAInitialMetricsTiming") ==
-      "Enabled";
-}
-
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
@@ -889,30 +884,17 @@ void MetricsService::StageNewLog() {
       return;
 
     case INIT_TASK_DONE:
-      if (NewInitialMetricsTimingEnabled()) {
-        PrepareInitialMetricsLog();
-        // Stage the first log, which could be a stability log (either one
-        // for created in this session or from a previous session) or the
-        // initial metrics log that was just created.
-        log_manager_.StageNextLogForUpload();
-        if (has_initial_stability_log_) {
-          // The initial stability log was just staged.
-          has_initial_stability_log_ = false;
-          state_ = SENDING_INITIAL_STABILITY_LOG;
-        } else {
-          state_ = SENDING_INITIAL_METRICS_LOG;
-        }
+      PrepareInitialMetricsLog();
+      // Stage the first log, which could be a stability log (either one
+      // for created in this session or from a previous session) or the
+      // initial metrics log that was just created.
+      log_manager_.StageNextLogForUpload();
+      if (has_initial_stability_log_) {
+        // The initial stability log was just staged.
+        has_initial_stability_log_ = false;
+        state_ = SENDING_INITIAL_STABILITY_LOG;
       } else {
-        if (has_initial_stability_log_) {
-          // There's an initial stability log, ready to send.
-          log_manager_.StageNextLogForUpload();
-          has_initial_stability_log_ = false;
-          state_ = SENDING_INITIAL_STABILITY_LOG;
-        } else {
-          PrepareInitialMetricsLog();
-          log_manager_.StageNextLogForUpload();
-          state_ = SENDING_INITIAL_METRICS_LOG;
-        }
+        state_ = SENDING_INITIAL_METRICS_LOG;
       }
       break;
 
@@ -1047,8 +1029,6 @@ void MetricsService::OnLogUploadComplete(int response_code) {
                             ResponseCodeToStatus(response_code),
                             NUM_RESPONSE_STATUSES);
 
-  bool suppress_reschedule = false;
-
   bool upload_succeeded = response_code == 200;
 
   // Provide boolean for error recovery (allow us to ignore response_code).
@@ -1074,16 +1054,8 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   if (!log_manager_.has_staged_log()) {
     switch (state_) {
       case SENDING_INITIAL_STABILITY_LOG:
-        if (NewInitialMetricsTimingEnabled()) {
-          // The initial metrics log is already in the queue of unsent logs.
-          state_ = SENDING_OLD_LOGS;
-        } else {
-          PrepareInitialMetricsLog();
-          log_manager_.StageNextLogForUpload();
-          SendStagedLog();
-          state_ = SENDING_INITIAL_METRICS_LOG;
-          suppress_reschedule = true;
-        }
+        // The initial metrics log is already in the queue of unsent logs.
+        state_ = SENDING_OLD_LOGS;
         break;
 
       case SENDING_INITIAL_METRICS_LOG:
@@ -1111,13 +1083,7 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
-  // Don't notify the scheduler that the upload is finished if we've only just
-  // sent the initial stability log, but not yet the initial metrics log (treat
-  // the two as a single unit of work as far as the scheduler is concerned).
-  if (!suppress_reschedule) {
-    scheduler_->UploadFinished(server_is_healthy,
-                               log_manager_.has_unsent_logs());
-  }
+  scheduler_->UploadFinished(server_is_healthy, log_manager_.has_unsent_logs());
 
   if (server_is_healthy)
     client_->OnLogUploadComplete();
