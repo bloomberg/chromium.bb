@@ -2738,18 +2738,6 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     static_cast<NormalPage*>(page)->heapForNormalPage()->shrinkObject(header, quantizedShrunkSize);
 }
 
-bool HeapAllocator::shrinkVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
-{
-    backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
-    return true;
-}
-
-bool HeapAllocator::shrinkInlineVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
-{
-    backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
-    return true;
-}
-
 BasePage* Heap::lookup(Address address)
 {
     ASSERT(ThreadState::current()->isInGC());

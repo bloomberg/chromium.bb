@@ -1573,7 +1573,13 @@ public:
     }
     PLATFORM_EXPORT static void freeVectorBacking(void*);
     PLATFORM_EXPORT static bool expandVectorBacking(void*, size_t);
-    PLATFORM_EXPORT static bool shrinkVectorBacking(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
+    static inline bool shrinkVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+    {
+        // Returns always true, so the inlining in turn enables call site simplifications.
+        backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
+        return true;
+    }
+
     template <typename T>
     static T* allocateInlineVectorBacking(size_t size)
     {
@@ -1582,7 +1588,11 @@ public:
     }
     PLATFORM_EXPORT static void freeInlineVectorBacking(void*);
     PLATFORM_EXPORT static bool expandInlineVectorBacking(void*, size_t);
-    PLATFORM_EXPORT static bool shrinkInlineVectorBacking(void*, size_t quantizedCurrentSize, size_t quantizedShrinkedSize);
+    static inline bool shrinkInlineVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+    {
+        backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
+        return true;
+    }
 
     template <typename T, typename HashTable>
     static T* allocateHashTableBacking(size_t size)
@@ -1688,7 +1698,7 @@ public:
 private:
     static void backingFree(void*);
     static bool backingExpand(void*, size_t);
-    static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
+    PLATFORM_EXPORT static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
