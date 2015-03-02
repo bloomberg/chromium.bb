@@ -140,87 +140,104 @@
   {
     "prefix": "slimmingpaint",
     "base": "fast/block",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/frames",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/forms/file",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/forms/text",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/html",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/inline",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/inline-block",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/images",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/table",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/text",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/overflow",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/borders",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/events",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/text",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/stroke",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/foreignObject",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/filters",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
@@ -230,17 +247,20 @@
   {
     "prefix": "slimmingpaint",
     "base": "svg/masking",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/css",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/multicol",
-    "args": ["--enable-slimming-paint", "--enable-region-based-columns"]
+    "args": ["--enable-slimming-paint", "--enable-region-based-columns"],
+    "reference_args": ["--enable-region-based-columns"]
   },
   {
     "prefix": "rootlayerscrolls",
@@ -250,22 +270,26 @@
   {
     "prefix": "slimmingpaint",
     "base": "fast/canvas",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/backgrounds",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "fast/scrolling",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "css3/filters",
-    "args": ["--enable-slimming-paint"]
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
   },
   {
     "prefix": "scroll_customization",

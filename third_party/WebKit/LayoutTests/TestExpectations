@@ -43,6 +43,12 @@ crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-chang
 crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-color.html [ ImageOnlyFailure ]
 crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ ImageOnlyFailure ]
 
+# Some slimming paint reftest fail when the reference is run with slimming paint disabled.
+crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
+crbug.com/454866 virtual/slimmingpaint/fast/block/float/float-mark-descendants-for-layout-crash.html [ ImageOnlyFailure ]
+crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ ImageOnlyFailure ]
+crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ ImageOnlyFailure ]
+
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
