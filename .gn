@@ -41,7 +41,7 @@ check_targets = [
 
   #"//extensions/*",  # Lots of errors.
   #"//gin/*",  # Easy.
-  #"//google_apis/*",  # Easy.
+  "//google_apis/*",
   "//google_update/*",
 
   #"//gpu/*",  # Lots of errors.
