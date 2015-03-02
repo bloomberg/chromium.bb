@@ -439,6 +439,7 @@
       </if>
       <include name="IDR_WHISPERNET_PROXY_MANIFEST" file="resources\whispernet_proxy\manifest.json" type="BINDATA" />
       <include name="IDR_MD_SETTINGS_UI_HTML" file="resources\md_settings\md_settings.html" type="BINDATA" />
+      <include name="IDR_MD_SETTINGS_UI_CSS" file="resources\md_settings\md_settings.css" type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -6,25 +6,31 @@
   <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
   <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-  <link rel="import"
-      href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
-  <link rel="import"
-      href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
-  <link rel="import"
-      href="chrome://resources/cr_elements/cr_toggle_button/cr_toggle_button.html">
-  <link rel="import"
-      href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_toggle_button/cr_toggle_button.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
+  <link rel="stylesheet" href="md_settings.css">
 </head>
 <body>
   <header>
     <h1>Settings</h1>
   </header>
   <div class="main">
-    <cr-toggle-button checked></cr-toggle-button>
-    <cr-checkbox checked></cr-checkbox>
     <section>
-      <h2>cr-dropdown-menu</h2>
-      <cr-dropdown-menu style="width: 200px">
+      <h3>cr-toggle-button</h3>
+      <cr-toggle-button></cr-toggle-button>
+      <cr-toggle-button checked></cr-toggle-button>
+    </section>
+    <section>
+      <h3>cr-checkbox</h3>
+      <cr-checkbox></cr-checkbox>
+      <cr-checkbox checked></cr-checkbox>
+    </section>
+    <section>
+      <h3>cr-dropdown-menu</h3>
+      <cr-dropdown-menu>
         <core-menu class="menu">
           <paper-item>Chrome</paper-item>
           <paper-item>IE</paper-item>
@@ -40,6 +46,11 @@
       <cr-collapse id="collapse">
         <div>collapsed content</div>
       </cr-collapse>
+    </section>
+    <section>
+      <h3>cr-button</h3>
+      <cr-button>Flat button</cr-button>
+      <cr-button raised>Raised Button</cr-button>
     </section>
   </div>
   <script>

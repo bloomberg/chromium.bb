@@ -19,6 +19,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
 
+  html_source->AddResourcePath("md_settings.css", IDR_MD_SETTINGS_UI_CSS);
   html_source->SetDefaultResource(IDR_MD_SETTINGS_UI_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

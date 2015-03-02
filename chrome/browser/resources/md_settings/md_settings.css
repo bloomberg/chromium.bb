@@ -1,0 +1,23 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Regular'), local('Roboto-Regular'), url(chrome://resources/roboto/roboto.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+20B4, U+2DE0-2DFF, U+A640-A69F;
+}
+
+body {
+  font-family: Roboto;
+}
+
+section {
+  margin-top: 50px;
+}
+
+cr-dropdown-menu {
+  width: 200px;
+}
