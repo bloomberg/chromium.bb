@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
+#include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/notification_observer.h"
@@ -30,7 +31,9 @@
 
 namespace chromeos {
 
-class WallpaperManager : public wallpaper::WallpaperManagerBase {
+class WallpaperManager :
+    public wallpaper::WallpaperManagerBase,
+    public user_manager::UserManager::UserSessionStateObserver {
  public:
   class PendingWallpaper;
 
@@ -114,6 +117,9 @@ class WallpaperManager : public wallpaper::WallpaperManagerBase {
 
   // Returns queue size.
   size_t GetPendingListSizeForTesting() const override;
+
+  // Overridden from user_manager::UserManager::UserSessionStateObserver:
+  void UserChangedChildStatus(user_manager::User* user) override;
 
  private:
   friend class TestApi;
