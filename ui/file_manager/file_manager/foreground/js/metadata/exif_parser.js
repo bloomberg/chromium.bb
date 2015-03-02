@@ -362,6 +362,7 @@ ExifParser.prototype.readTagValue = function(br, tag) {
       } else {
         tag.value = String.fromCharCode.apply(null, tag.value);
       }
+      this.validateAndFixStringTag_(tag);
       break;
 
     case 3: // Short
@@ -397,6 +398,23 @@ ExifParser.prototype.readTagValue = function(br, tag) {
 
   this.vlog('Read tag: 0x' + tag.id.toString(16) + '/' + tag.format + ': ' +
             tag.value);
+};
+
+/**
+ * Validates string tag value, and fix it if necessary.
+ * @param {!ExifEntry} tag A tag to be validated and fixed.
+ * @private
+ */
+ExifParser.prototype.validateAndFixStringTag_ = function(tag) {
+  if (tag.format === 2) { // string
+    // String should end with null character.
+    if (tag.value.charAt(tag.value.length - 1) !== '\0') {
+      tag.value += '\0';
+      tag.componentCount = tag.value.length;
+      this.vlog('Invalid format: 0x' + tag.id.toString(16) + '/' + tag.format +
+          ': Did not end with null character. Null character is appended.');
+    }
+  }
 };
 
 /**
