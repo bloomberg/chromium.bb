@@ -1023,47 +1023,40 @@ void LayoutBlock::makeChildrenNonInline(LayoutObject *insertionPoint)
     setShouldDoFullPaintInvalidation();
 }
 
+void LayoutBlock::promoteAllChildrenAndInsertAfter()
+{
+    LayoutObject* firstPromotee = firstChild();
+    if (!firstPromotee)
+        return;
+    LayoutObject* lastPromotee = lastChild();
+    LayoutBlock* parent = toLayoutBlock(this->parent());
+    LayoutObject* nextSiblingOfPromotees = nextSibling();
+    for (LayoutObject* o = firstPromotee; o; o = o->nextSibling())
+        o->setParent(parent);
+    children()->setFirstChild(nullptr);
+    children()->setLastChild(nullptr);
+    firstPromotee->setPreviousSibling(this);
+    setNextSibling(firstPromotee);
+    lastPromotee->setNextSibling(nextSiblingOfPromotees);
+    if (nextSiblingOfPromotees)
+        nextSiblingOfPromotees->setPreviousSibling(lastPromotee);
+    if (parent->children()->lastChild() == this)
+        parent->children()->setLastChild(lastPromotee);
+}
+
 void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
 {
     ASSERT(child->isAnonymousBlock());
     ASSERT(!child->childrenInline());
+    ASSERT(child->parent() == this);
 
     if (child->continuation() || (child->firstChild() && (child->isAnonymousColumnSpanBlock() || child->isAnonymousColumnsBlock())))
         return;
 
-    LayoutObject* firstAnChild = child->m_children.firstChild();
-    LayoutObject* lastAnChild = child->m_children.lastChild();
-    if (firstAnChild) {
-        LayoutObject* o = firstAnChild;
-        while (o) {
-            o->setParent(this);
-            o = o->nextSibling();
-        }
-        firstAnChild->setPreviousSibling(child->previousSibling());
-        lastAnChild->setNextSibling(child->nextSibling());
-        if (child->previousSibling())
-            child->previousSibling()->setNextSibling(firstAnChild);
-        if (child->nextSibling())
-            child->nextSibling()->setPreviousSibling(lastAnChild);
-
-        if (child == m_children.firstChild())
-            m_children.setFirstChild(firstAnChild);
-        if (child == m_children.lastChild())
-            m_children.setLastChild(lastAnChild);
-    } else {
-        if (child == m_children.firstChild())
-            m_children.setFirstChild(child->nextSibling());
-        if (child == m_children.lastChild())
-            m_children.setLastChild(child->previousSibling());
-
-        if (child->previousSibling())
-            child->previousSibling()->setNextSibling(child->nextSibling());
-        if (child->nextSibling())
-            child->nextSibling()->setPreviousSibling(child->previousSibling());
-    }
-
-    child->children()->setFirstChild(0);
-    child->m_next = nullptr;
+    // Promote all the leftover anonymous block's children (to become children of this block
+    // instead). We still want to keep the leftover block in the tree for a moment, for notification
+    // purposes done further below (flow threads and grids).
+    child->promoteAllChildrenAndInsertAfter();
 
     // Remove all the information in the flow thread associated with the leftover anonymous block.
     child->removeFromLayoutFlowThread();
@@ -1072,10 +1065,10 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
     if (child->parent()->isLayoutGrid())
         toLayoutGrid(child->parent())->dirtyGrid();
 
-    child->setParent(0);
-    child->setPreviousSibling(0);
-    child->setNextSibling(0);
-
+    // Now remove the leftover anonymous block from the tree, and destroy it. We'll rip it out
+    // manually from the tree before destroying it, because we don't want to trigger any tree
+    // adjustments with regards to anonymous blocks (or any other kind of undesired chain-reaction).
+    children()->removeChildNode(this, child, false);
     child->destroy();
 }
 

@@ -332,6 +332,10 @@ private:
     virtual bool isLayoutBlock() const override final { return true; }
 
     void makeChildrenNonInline(LayoutObject* insertionPoint = 0);
+
+    // Promote all children and make them siblings that come right after this block.
+    void promoteAllChildrenAndInsertAfter();
+
     virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
     static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
