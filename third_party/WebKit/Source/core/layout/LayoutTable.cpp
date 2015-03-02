@@ -406,6 +406,7 @@ void LayoutTable::simplifiedNormalFlowLayout()
 
     for (LayoutTableSection* section = topSection(); section; section = sectionBelow(section)) {
         section->layoutIfNeeded();
+        section->layoutRows();
         section->computeOverflowFromCells();
     }
 }
