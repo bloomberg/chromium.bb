@@ -307,12 +307,16 @@ WallpaperManager::WallpaperManager()
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   wallpaper_loader_ = new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC,
                                           task_runner_);
+
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 WallpaperManager::~WallpaperManager() {
   // TODO(bshe): Lifetime of WallpaperManager needs more consideration.
   // http://crbug.com/171694
   DCHECK(!show_user_name_on_signin_subscription_);
+
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 
   ClearObsoleteWallpaperPrefs();
   weak_factory_.InvalidateWeakPtrs();
@@ -964,6 +968,10 @@ void WallpaperManager::OnCustomizedDefaultWallpaperResized(
 
 size_t WallpaperManager::GetPendingListSizeForTesting() const {
   return loading_.size();
+}
+
+void WallpaperManager::UserChangedChildStatus(user_manager::User* user) {
+  SetUserWallpaperNow(user->email());
 }
 
 void WallpaperManager::OnDefaultWallpaperDecoded(
