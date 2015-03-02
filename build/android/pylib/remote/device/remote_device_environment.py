@@ -183,6 +183,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     os.environ['APPURIFY_API_PROTO'] = self._api_protocol
     os.environ['APPURIFY_API_HOST'] = self._api_address
     os.environ['APPURIFY_API_PORT'] = self._api_port
+    os.environ['APPURIFY_STATUS_BASE_URL'] = 'none'
     self._GetAccessToken()
     if self._trigger:
       self._SelectDevice()
