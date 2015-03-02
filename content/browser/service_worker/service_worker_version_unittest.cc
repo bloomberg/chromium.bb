@@ -250,31 +250,31 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
   EXPECT_EQ(SERVICE_WORKER_OK, status3);
 }
 
-TEST_F(ServiceWorkerVersionTest, SendMessage) {
+TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 
-  // Send a message without starting the worker.
+  // Dispatch an event without starting the worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->SendMessage(TestMsg_Message(),
-                        CreateReceiverOnCurrentThread(&status));
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
   // The worker should be now started.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
-  // Stop the worker, and then send the message immediately.
-  ServiceWorkerStatusCode msg_status = SERVICE_WORKER_ERROR_FAILED;
+  // Stop the worker, and then dispatch an event immediately after that.
+  status = SERVICE_WORKER_ERROR_FAILED;
   ServiceWorkerStatusCode stop_status = SERVICE_WORKER_ERROR_FAILED;
   version_->StopWorker(CreateReceiverOnCurrentThread(&stop_status));
-  version_->SendMessage(TestMsg_Message(),
-                       CreateReceiverOnCurrentThread(&msg_status));
+  version_->DispatchInstallEvent(
+      -1, CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, stop_status);
 
-  // SendMessage should return SERVICE_WORKER_OK since the worker should have
-  // been restarted to deliver the message.
-  EXPECT_EQ(SERVICE_WORKER_OK, msg_status);
+  // Dispatch an event should return SERVICE_WORKER_OK since the worker
+  // should have been restarted to dispatch the event.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
 
   // The worker should be now started again.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());

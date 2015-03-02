@@ -426,22 +426,6 @@ void ServiceWorkerVersion::StartUpdate() {
   context_->UpdateServiceWorker(registration);
 }
 
-void ServiceWorkerVersion::SendMessage(
-    const IPC::Message& message, const StatusCallback& callback) {
-  if (running_status() != RUNNING) {
-    // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(&RunTaskAfterStartWorker,
-                           weak_factory_.GetWeakPtr(), callback,
-                           base::Bind(&self::SendMessage,
-                                      weak_factory_.GetWeakPtr(),
-                                      message, callback)));
-    return;
-  }
-
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(message);
-  RunSoon(base::Bind(callback, status));
-}
-
 void ServiceWorkerVersion::DispatchMessageEvent(
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports,

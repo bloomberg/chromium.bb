@@ -166,13 +166,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Starts an update now.
   void StartUpdate();
 
-  // Sends an IPC message to the worker.
-  // If the worker is not running this first tries to start it by
-  // calling StartWorker internally.
-  // |callback| can be null if the sender does not need to know if the
-  // message is successfully sent or not.
-  void SendMessage(const IPC::Message& message, const StatusCallback& callback);
-
   // Sends a message event to the associated embedded worker.
   void DispatchMessageEvent(
       const base::string16& message,
