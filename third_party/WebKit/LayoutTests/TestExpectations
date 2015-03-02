@@ -1902,6 +1902,9 @@ crbug.com/461615 [ XP ] virtual/display_list_2d_canvas/fast/canvas/canvas-ellips
 crbug.com/461615 [ XP ] virtual/gpu/fast/canvas/canvas-ellipse-connecting-line.html [ NeedsRebaseline ]
 crbug.com/461615 [ XP ] virtual/slimmingpaint/fast/canvas/canvas-ellipse-connecting-line.html [ NeedsRebaseline ]
 
+crbug.com/460198 [ XP ] virtual/slimmingpaint/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/460198 [ XP ] virtual/slimmingpaint/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+
 crbug.com/462404 fast/js/function-name.html [ Pass Failure ]
 crbug.com/462404 fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
 crbug.com/462404 fast/js/mozilla/strict/function-name-arity.html [ Pass Failure ]
