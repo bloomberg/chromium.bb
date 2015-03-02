@@ -584,6 +584,14 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
         return mAwSettings.getMixedContentMode();
     }
 
+    public void setOffscreenPreRaster(boolean enabled) {
+        mAwSettings.setOffscreenPreRaster(enabled);
+    }
+
+    public boolean getOffscreenPreRaster() {
+        return mAwSettings.getOffscreenPreRaster();
+    }
+
     @Override
     public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean flag) {
         mAwSettings.setVideoOverlayForEmbeddedVideoEnabled(flag);
