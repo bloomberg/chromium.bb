@@ -154,7 +154,7 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
 };
 
 // Tests that the onscreen keyboard is disabled if an internal keyboard is
-// present.
+// present and maximized mode is disabled.
 TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfInternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(ui::TouchscreenDevice(
@@ -232,6 +232,79 @@ TEST_F(VirtualKeyboardControllerAutoTest, HandleMultipleKeyboardsPresent) {
   keyboards.push_back(
       ui::KeyboardDevice(3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
   UpdateKeyboardDevices(keyboards);
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+}
+
+// Tests maximized mode interaction without disabling the internal keyboard.
+TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringMaximizeMode) {
+  std::vector<ui::TouchscreenDevice> screens;
+  screens.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1024, 768), 0));
+  UpdateTouchscreenDevices(screens);
+  std::vector<ui::KeyboardDevice> keyboards;
+  keyboards.push_back(
+      ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL));
+  UpdateKeyboardDevices(keyboards);
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+  // Toggle maximized mode on.
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  // Toggle maximized mode off.
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+}
+
+// Tests that keyboard gets suppressed in maximized mode.
+TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
+  std::vector<ui::TouchscreenDevice> screens;
+  screens.push_back(ui::TouchscreenDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1024, 768), 0));
+  UpdateTouchscreenDevices(screens);
+  std::vector<ui::KeyboardDevice> keyboards;
+  keyboards.push_back(
+      ui::KeyboardDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL));
+  keyboards.push_back(
+      ui::KeyboardDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
+  UpdateKeyboardDevices(keyboards);
+  // Toggle maximized mode on.
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
+  // Toggle show keyboard. Keyboard should be visible.
+  ResetObserver();
+  Shell::GetInstance()
+      ->virtual_keyboard_controller()
+      ->ToggleIgnoreExternalKeyboard();
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
+  // Toggle show keyboard. Keyboard should be hidden.
+  ResetObserver();
+  Shell::GetInstance()
+      ->virtual_keyboard_controller()
+      ->ToggleIgnoreExternalKeyboard();
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
+  // Remove external keyboard. Should be notified that the keyboard is not
+  // suppressed.
+  ResetObserver();
+  keyboards.pop_back();
+  UpdateKeyboardDevices(keyboards);
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_FALSE(IsVirtualKeyboardSuppressed());
+  // Toggle maximized mode oFF.
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
