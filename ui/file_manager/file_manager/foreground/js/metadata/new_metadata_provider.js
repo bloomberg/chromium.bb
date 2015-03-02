@@ -4,18 +4,11 @@
 
 /**
  * TODO(hirono): Remove 'New' from the name after removing old MetadataProvider.
- * @param {!MetadataProviderCache} cache
  * @param {!Array<string>} validPropertyNames
  * @constructor
  * @struct
  */
-function NewMetadataProvider(cache, validPropertyNames) {
-  /**
-   * @private {!MetadataProviderCache}
-   * @const
-   */
-  this.cache_ = cache;
-
+function NewMetadataProvider(validPropertyNames) {
   /**
    * Set of valid property names. Key is the name of property and value is
    * always true.
@@ -26,6 +19,42 @@ function NewMetadataProvider(cache, validPropertyNames) {
   for (var i = 0; i < validPropertyNames.length; i++) {
     this.validPropertyNames_[validPropertyNames[i]] = true;
   }
+}
+
+NewMetadataProvider.prototype.checkPropertyNames = function(names) {
+  // Check if the property name is correct or not.
+  for (var i = 0; i < names.length; i++) {
+    assert(this.validPropertyNames_[names[i]]);
+  }
+};
+
+/**
+ * Obtains the metadata for the request.
+ * @param {!Array<!MetadataRequest>} requests
+ * @return {!Promise<!Array<!MetadataItem>>} Promise with obtained metadata. It
+ *     should not return rejected promise. Instead it should return undefined
+ *     property for property error, and should return empty MetadataItem for
+ *     entry error.
+ */
+NewMetadataProvider.prototype.get;
+
+/**
+ * @param {!NewMetadataProvider} rawProvider
+ * @constructor
+ * @struct
+ */
+function CachedMetadataProvider(rawProvider) {
+  /**
+   * @private {!NewMetadataProvider}
+   * @const
+   */
+  this.rawProvider_ = rawProvider;
+
+  /**
+   * @private {!MetadataProviderCache}
+   * @const
+   */
+  this.cache_ = new MetadataProviderCache();
 
   /**
    * @private {!Array<!MetadataProviderCallbackRequest<T>>}
@@ -35,15 +64,11 @@ function NewMetadataProvider(cache, validPropertyNames) {
 }
 
 /**
- * Obtains the metadata for the request.
- * @param {!Array<!MetadataRequest>} requests
- * @return {!Promise<!Array<!MetadataItem>>} Promise with obtained metadata. It
- *     should not return rejected promise. Instead it should return undefined
- *     property for property error, and should return empty MetadataItem for
- *     entry error.
- * @protected
+ * @return {!NewMetadataProvider}
  */
-NewMetadataProvider.prototype.getImpl;
+CachedMetadataProvider.prototype.getRawProvider = function() {
+  return this.rawProvider_;
+};
 
 /**
  * Obtains metadata for entries.
@@ -51,11 +76,8 @@ NewMetadataProvider.prototype.getImpl;
  * @param {!Array<string>} names Metadata property names to be obtained.
  * @return {!Promise<!Array<!MetadataItem>>}
  */
-NewMetadataProvider.prototype.get = function(entries, names) {
-  // Check if the property name is correct or not.
-  for (var i = 0; i < names.length; i++) {
-    assert(this.validPropertyNames_[names[i]]);
-  }
+CachedMetadataProvider.prototype.get = function(entries, names) {
+  this.rawProvider_.checkPropertyNames(names);
 
   // Check if the results are cached or not.
   if (this.cache_.hasFreshCache(entries, names))
@@ -77,7 +99,7 @@ NewMetadataProvider.prototype.get = function(entries, names) {
 
   // If the requests are not empty, call the requests.
   if (requests.length) {
-    this.getImpl(requests).then(function(list) {
+    this.rawProvider_.get(requests).then(function(list) {
       // Obtain requested entries and ensure all the requested properties are
       // contained in the result.
       var requestedEntries = [];
@@ -116,12 +138,51 @@ NewMetadataProvider.prototype.get = function(entries, names) {
  * @param {!Array<string>} names Metadata property names to be obtained.
  * @return {!Array<!MetadataItem>}
  */
-NewMetadataProvider.prototype.getCache = function(entries, names) {
+CachedMetadataProvider.prototype.getCache = function(entries, names) {
   // Check if the property name is correct or not.
-  for (var i = 0; i < names.length; i++) {
-    assert(this.validPropertyNames_[names[i]]);
-  }
+  this.rawProvider_.checkPropertyNames(names);
   return this.cache_.get(entries, names);
+};
+
+/**
+ * Clears old metadata for newly created entries.
+ * @param {!Array<!Entry>} entries
+ */
+CachedMetadataProvider.prototype.notifyEntriesCreated = function(entries) {
+  this.cache_.clear(util.entriesToURLs(entries));
+};
+
+/**
+ * Clears metadata for deleted entries.
+ * @param {!Array<string>} urls Note it is not an entry list because we cannot
+ *     obtain entries after removing them from the file system.
+ */
+CachedMetadataProvider.prototype.notifyEntriesRemoved = function(urls) {
+  this.cache_.clear(urls);
+};
+
+/**
+ * Invalidates metadata for updated entries.
+ * @param {!Array<!Entry>} entries
+ */
+CachedMetadataProvider.prototype.notifyEntriesChanged = function(entries) {
+  this.cache_.invalidate(this.cache_.generateRequestId(), entries);
+};
+
+/**
+ * Clears all cache.
+ */
+CachedMetadataProvider.prototype.clearAllCache = function() {
+  this.cache_.clearAll();
+};
+
+/**
+ * Adds event listener to internal cache object.
+ * @param {string} type
+ * @param {function(Event):undefined} callback
+ */
+CachedMetadataProvider.prototype.addEventListener = function(type, callback) {
+  this.cache_.addEventListener(type, callback);
 };
 
 /**

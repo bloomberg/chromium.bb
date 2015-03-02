@@ -5,14 +5,12 @@
 /**
  * Metadata provider for FileEntry#getMetadata.
  *
- * @param {!MetadataProviderCache} cache
  * @constructor
  * @extends {NewMetadataProvider}
  * @struct
  */
-function FileSystemMetadataProvider(cache) {
-  NewMetadataProvider.call(
-      this, cache, FileSystemMetadataProvider.PROPERTY_NAMES);
+function FileSystemMetadataProvider() {
+  NewMetadataProvider.call(this, FileSystemMetadataProvider.PROPERTY_NAMES);
 }
 
 /**
@@ -27,7 +25,9 @@ FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 /**
  * @override
  */
-FileSystemMetadataProvider.prototype.getImpl = function(requests) {
+FileSystemMetadataProvider.prototype.get = function(requests) {
+  if (!requests.length)
+    return Promise.resolve([]);
   return Promise.all(requests.map(function(request) {
     return Promise.all([
         new Promise(function(fulfill, reject) {

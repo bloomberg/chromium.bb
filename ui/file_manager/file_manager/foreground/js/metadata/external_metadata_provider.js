@@ -6,14 +6,12 @@
  * Metadata provider for FileEntry#getMetadata.
  * TODO(hirono): Rename thumbnailUrl with externalThumbnailUrl.
  *
- * @param {!MetadataProviderCache} cache
  * @constructor
  * @extends {NewMetadataProvider}
  * @struct
  */
-function ExternalMetadataProvider(cache) {
-  NewMetadataProvider.call(
-      this, cache, ExternalMetadataProvider.PROPERTY_NAMES);
+function ExternalMetadataProvider() {
+  NewMetadataProvider.call(this, ExternalMetadataProvider.PROPERTY_NAMES);
 }
 
 /**
@@ -44,7 +42,9 @@ ExternalMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 /**
  * @override
  */
-ExternalMetadataProvider.prototype.getImpl = function(requests) {
+ExternalMetadataProvider.prototype.get = function(requests) {
+  if (!requests.length)
+    return Promise.resolve([]);
   return new Promise(function(fulfill) {
     var urls = [];
     for (var i = 0; i < requests.length; i++) {

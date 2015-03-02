@@ -3,17 +3,15 @@
 // found in the LICENSE file.
 
 /**
- * @param {!MetadataProviderCache} cache
  * @param {!MessagePort=} opt_messagePort Message port overriding the default
  *     worker port.
  * @extends {NewMetadataProvider}
  * @constructor
  * @struct
  */
-function ContentMetadataProvider(cache, opt_messagePort) {
+function ContentMetadataProvider(opt_messagePort) {
   NewMetadataProvider.call(
       this,
-      cache,
       ContentMetadataProvider.PROPERTY_NAMES);
 
   /**
@@ -96,11 +94,14 @@ ContentMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 /**
  * @override
  */
-ContentMetadataProvider.prototype.getImpl = function(requests) {
+ContentMetadataProvider.prototype.get = function(requests) {
+  if (!requests.length)
+    return Promise.resolve([]);
+
   var promises = [];
   for (var i = 0; i < requests.length; i++) {
     promises.push(new Promise(function(request, fulfill) {
-      this.fetch(request.entry, request.names, fulfill);
+      this.getImpl_(request.entry, request.names, fulfill);
     }.bind(this, requests[i])));
   }
   return Promise.all(promises);
@@ -112,8 +113,9 @@ ContentMetadataProvider.prototype.getImpl = function(requests) {
  * @param {!Array<string>} names Requested metadata type.
  * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value. This callback is called asynchronously.
+ * @private
  */
-ContentMetadataProvider.prototype.fetch = function(entry, names, callback) {
+ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
   if (entry.isDirectory) {
     setTimeout(callback.bind(null, {}), 0);
     return;

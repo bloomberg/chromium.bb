@@ -6,14 +6,12 @@
  * Controller for list contents update.
  * @param {!ListContainer} listContainer
  * @param {!DirectoryModel} directoryModel
- * @param {!MetadataProviderCache} metadataProviderCache
  * @param {!FileSystemMetadata} fileSystemMetadata
  * @constructor
  * @struct
  */
 function MetadataUpdateController(listContainer,
                                   directoryModel,
-                                  metadataProviderCache,
                                   fileSystemMetadata) {
   /**
    * @private {!DirectoryModel}
@@ -36,7 +34,7 @@ function MetadataUpdateController(listContainer,
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
   this.onPreferencesChanged_();
-  metadataProviderCache.addEventListener(
+  fileSystemMetadata.addEventListener(
       'update', this.onCachedMetadataUpdate_.bind(this));
 
   // Update metadata to change 'Today' and 'Yesterday' dates.

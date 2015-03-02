@@ -31,20 +31,21 @@ function testExternalMetadataProviderBasic(callback) {
     },
     start: function() {}
   };
-  var cache = new MetadataProviderCache();
-  var provider = new ContentMetadataProvider(cache, port);
-  reportPromise(provider.get(
-      [entryA, entryB],
-      ['contentThumbnailUrl', 'contentThumbnailTransform']).then(
-          function(results) {
-            assertEquals(2, results.length);
-            assertEquals('filesystem://A,url', results[0].contentThumbnailUrl);
-            assertEquals(
-                'filesystem://A,transform',
-                results[0].contentThumbnailTransform);
-            assertEquals('filesystem://B,url', results[1].contentThumbnailUrl);
-            assertEquals(
-                'filesystem://B,transform',
-                results[1].contentThumbnailTransform);
-          }), callback);
+  var provider = new ContentMetadataProvider(port);
+  reportPromise(provider.get([
+    new MetadataRequest(
+        entryA, ['contentThumbnailUrl', 'contentThumbnailTransform']),
+    new MetadataRequest(
+        entryB, ['contentThumbnailUrl', 'contentThumbnailTransform'])
+  ]).then(function(results) {
+    assertEquals(2, results.length);
+    assertEquals('filesystem://A,url', results[0].contentThumbnailUrl);
+    assertEquals(
+        'filesystem://A,transform',
+        results[0].contentThumbnailTransform);
+    assertEquals('filesystem://B,url', results[1].contentThumbnailUrl);
+    assertEquals(
+        'filesystem://B,transform',
+        results[1].contentThumbnailTransform);
+  }), callback);
 }

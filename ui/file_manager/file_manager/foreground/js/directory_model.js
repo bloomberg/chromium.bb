@@ -14,7 +14,6 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
  * @param {FileFilter} fileFilter Instance of FileFilter.
- * @param {!MetadataProviderCache} metadataProviderCache Metadata cache.
  * @param {!FileSystemMetadata} fileSystemMetadata Metadata model.
  *     service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
@@ -23,7 +22,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @extends {cr.EventTarget}
  */
 function DirectoryModel(singleSelection, fileFilter,
-                        metadataProviderCache, fileSystemMetadata,
+                        fileSystemMetadata,
                         volumeManager, fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
       new FileListSingleSelectionModel() : new FileListSelectionModel();
@@ -47,7 +46,6 @@ function DirectoryModel(singleSelection, fileFilter,
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
-  this.metadataProviderCache_ = metadataProviderCache;
   this.fileSystemMetadata_ = fileSystemMetadata;
 
   this.volumeManager_ = volumeManager;
@@ -496,7 +494,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
   }.bind(this);
 
   // Clear the table, and start scanning.
-  this.metadataProviderCache_.clearAll();
+  this.fileSystemMetadata_.clearAllCache();
   cr.dispatchSimpleEvent(this, 'scan-started');
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);

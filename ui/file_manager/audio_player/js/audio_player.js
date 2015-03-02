@@ -17,8 +17,7 @@ function AudioPlayer(container) {
   this.container_ = container;
   this.volumeManager_ = new VolumeManagerWrapper(
       VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
-  this.fileSystemMetadata_ = FileSystemMetadata.create(
-      new MetadataProviderCache(), this.volumeManager_);
+  this.fileSystemMetadata_ = new FileSystemMetadata(this.volumeManager_);
   this.selectedEntry_ = null;
 
   this.model_ = new AudioPlayerModel();

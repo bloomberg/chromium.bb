@@ -56,8 +56,7 @@ function Gallery(volumeManager) {
    * @private {!FileSystemMetadata}
    * @const
    */
-  this.fileSystemMetadata_ = FileSystemMetadata.create(
-      new MetadataProviderCache(), volumeManager);
+  this.fileSystemMetadata_ = new FileSystemMetadata(volumeManager);
   this.selectedEntry_ = null;
   this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);

@@ -34,36 +34,37 @@ var volumeManager = {
 };
 
 function testFileSystemMetadataBasic(callback) {
-  var cache = new MetadataProviderCache();
-  var model = new FileSystemMetadata(
-      cache,
+  var model = new MultiMetadataProvider(
       // Mocking FileSystemMetadataProvider.
       {
-        get: function(entries, names) {
-          assertEquals(1, entries.length);
-          assertEquals('filesystem://A', entries[0].toURL());
-          assertArrayEquals(['size', 'modificationTime'], names);
+        get: function(requests) {
+          assertEquals(1, requests.length);
+          assertEquals('filesystem://A', requests[0].entry.toURL());
+          assertArrayEquals(['size', 'modificationTime'], requests[0].names);
           return Promise.resolve(
               [{modificationTime: new Date(2015, 0, 1), size: 1024}]);
         }
       },
       // Mocking ExternalMetadataProvider.
       {
-        get: function(entries, names) {
-          assertEquals(1, entries.length);
-          assertEquals('filesystem://B', entries[0].toURL());
-          assertArrayEquals(['size', 'modificationTime'], names);
+        get: function(requests) {
+          assertEquals(1, requests.length);
+          assertEquals('filesystem://B', requests[0].entry.toURL());
+          assertArrayEquals(['size', 'modificationTime'], requests[0].names);
           return Promise.resolve(
               [{modificationTime: new Date(2015, 1, 2), size: 2048}]);
         }
       },
       // Mocking ContentMetadataProvider.
       {
-        get: function(entries, names) {
-          assertEquals(2, entries.length);
-          assertEquals('filesystem://A', entries[0].toURL());
-          assertEquals('filesystem://B', entries[1].toURL());
-          assertArrayEquals(['contentThumbnailUrl'], names);
+        get: function(requests) {
+          if (requests.length === 0)
+            return Promise.resolve([]);
+          assertEquals(2, requests.length);
+          assertEquals('filesystem://A', requests[0].entry.toURL());
+          assertEquals('filesystem://B', requests[1].entry.toURL());
+          assertArrayEquals(['contentThumbnailUrl'], requests[0].names);
+          assertArrayEquals(['contentThumbnailUrl'], requests[1].names);
           return Promise.resolve([
             {contentThumbnailUrl: 'THUMBNAIL_URL_A'},
             {contentThumbnailUrl: 'THUMBNAIL_URL_B'}
@@ -72,42 +73,43 @@ function testFileSystemMetadataBasic(callback) {
       },
       // Mocking VolumeManagerWrapper.
       volumeManager);
-  reportPromise(
-      model.get(
-          [entryA, entryB],
-          ['size', 'modificationTime', 'contentThumbnailUrl']).then(
-          function(results) {
-            assertEquals(2, results.length);
-            assertEquals(
-                new Date(2015, 0, 1).toString(),
-                results[0].modificationTime.toString());
-            assertEquals(1024, results[0].size);
-            assertEquals('THUMBNAIL_URL_A', results[0].contentThumbnailUrl);
-            assertEquals(
-                new Date(2015, 1, 2).toString(),
-                results[1].modificationTime.toString());
-            assertEquals(2048, results[1].size);
-            assertEquals('THUMBNAIL_URL_B', results[1].contentThumbnailUrl);
-          }), callback);
+  reportPromise(model.get([
+    new MetadataRequest(
+        entryA, ['size', 'modificationTime', 'contentThumbnailUrl']),
+    new MetadataRequest(
+        entryB, ['size', 'modificationTime', 'contentThumbnailUrl'])
+  ]).then(function(results) {
+    assertEquals(2, results.length);
+    assertEquals(
+        new Date(2015, 0, 1).toString(),
+        results[0].modificationTime.toString());
+    assertEquals(1024, results[0].size);
+    assertEquals('THUMBNAIL_URL_A', results[0].contentThumbnailUrl);
+    assertEquals(
+        new Date(2015, 1, 2).toString(),
+        results[1].modificationTime.toString());
+    assertEquals(2048, results[1].size);
+    assertEquals('THUMBNAIL_URL_B', results[1].contentThumbnailUrl);
+  }), callback);
 }
 
 function testFileSystemMetadataExternalAndContentProperty(callback) {
-  var cache = new MetadataProviderCache();
-  var model = new FileSystemMetadata(
-      cache,
+  var model = new MultiMetadataProvider(
       // Mocking FileSystemMetadataProvider.
       {
-        get: function(entries, names) {
-          assertEquals(0, names.length);
-          return Promise.resolve([{}]);
+        get: function(requests) {
+          assertEquals(0, requests.length);
+          return Promise.resolve([]);
         }
       },
       // Mocking ExternalMetadataProvider.
       {
-        get: function(entries, names) {
-          assertEquals(2, entries.length);
-          assertEquals('filesystem://B', entries[0].toURL());
-          assertEquals('filesystem://C', entries[1].toURL());
+        get: function(requests) {
+          assertEquals(2, requests.length);
+          assertEquals('filesystem://B', requests[0].entry.toURL());
+          assertEquals('filesystem://C', requests[1].entry.toURL());
+          assertArrayEquals(['imageWidth', 'dirty'], requests[0].names);
+          assertArrayEquals(['imageWidth', 'dirty'], requests[1].names);
           return Promise.resolve([
             {dirty: false, imageWidth: 200},
             {dirty: true, imageWidth: 400}
@@ -116,26 +118,28 @@ function testFileSystemMetadataExternalAndContentProperty(callback) {
       },
       // Mocking ContentMetadataProvider.
       {
-        get: function(entries, names) {
-          if (names.length == 0)
-            return Promise.resolve(entries.map(function() { return {}; }));
-          assertEquals(2, entries.length);
-          assertEquals('filesystem://A', entries[0].toURL());
-          assertEquals('filesystem://C', entries[1].toURL());
-          assertArrayEquals(['imageWidth'], names);
+        get: function(requests) {
+          assertEquals(1, requests.length);
+          assertTrue(requests[0].entry.toURL() in this.results_);
           return Promise.resolve([
-            {imageWidth: 100},
-            {imageWidth: 300}
+            this.results_[requests[0].entry.toURL()]
           ]);
+        },
+        results_: {
+          'filesystem://A': {imageWidth: 100},
+          'filesystem://C': {imageWidth: 300}
         }
       },
       // Mocking VolumeManagerWrapper.
       volumeManager);
-  reportPromise(model.get([entryA, entryB, entryC], ['imageWidth']).then(
-      function(results) {
-        assertEquals(3, results.length);
-        assertEquals(100, results[0].imageWidth);
-        assertEquals(200, results[1].imageWidth);
-        assertEquals(300, results[2].imageWidth);
-      }), callback);
+  reportPromise(model.get([
+    new MetadataRequest(entryA, ['imageWidth']),
+    new MetadataRequest(entryB, ['imageWidth']),
+    new MetadataRequest(entryC, ['imageWidth'])
+  ]).then(function(results) {
+    assertEquals(3, results.length);
+    assertEquals(100, results[0].imageWidth);
+    assertEquals(200, results[1].imageWidth);
+    assertEquals(300, results[2].imageWidth);
+  }), callback);
 }

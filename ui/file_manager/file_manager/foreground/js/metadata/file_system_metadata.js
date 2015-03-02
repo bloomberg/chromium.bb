@@ -3,25 +3,42 @@
 // found in the LICENSE file.
 
 /**
- * @param {!MetadataProviderCache} cache
+ * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
+ * @constructor
+ * @struct
+ * @extends {CachedMetadataProvider}
+ */
+function FileSystemMetadata(volumeManager) {
+  CachedMetadataProvider.call(
+      this,
+      new MultiMetadataProvider(
+          new FileSystemMetadataProvider(),
+          new ExternalMetadataProvider(),
+          new ContentMetadataProvider(),
+          volumeManager));
+};
+
+FileSystemMetadata.prototype.__proto__ = CachedMetadataProvider.prototype;
+
+/**
  * @param {!FileSystemMetadataProvider} fileSystemMetadataProvider
  * @param {!ExternalMetadataProvider} externalMetadataProvider
  * @param {!ContentMetadataProvider} contentMetadataProvider
  * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
  * @constructor
+ * @extends {NewMetadataProvider}
  * @struct
  */
-function FileSystemMetadata(
-    cache,
+function MultiMetadataProvider(
     fileSystemMetadataProvider,
     externalMetadataProvider,
     contentMetadataProvider,
     volumeManager) {
-  /**
-   * @private {!MetadataProviderCache}
-   * @const
-   */
-  this.cache_ = cache;
+  NewMetadataProvider.call(
+      this,
+      FileSystemMetadataProvider.PROPERTY_NAMES.concat(
+          ExternalMetadataProvider.PROPERTY_NAMES).concat(
+              ContentMetadataProvider.PROPERTY_NAMES));
 
   /**
    * @private {!FileSystemMetadataProvider}
@@ -48,152 +65,124 @@ function FileSystemMetadata(
   this.volumeManager_ = volumeManager;
 }
 
-/**
- * @param {!MetadataProviderCache} cache
- * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
- * @return {!FileSystemMetadata}
- */
-FileSystemMetadata.create = function(cache, volumeManager) {
-  return new FileSystemMetadata(
-      cache,
-      new FileSystemMetadataProvider(cache),
-      new ExternalMetadataProvider(cache),
-      new ContentMetadataProvider(cache),
-      volumeManager);
-};
+MultiMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 
 /**
  * Obtains metadata for entries.
- * @param {!Array<!Entry>} entries Entries.
- * @param {!Array<string>} names Metadata property names to be obtained.
+ * @param {!Array<!MetadataRequest>} requests
  * @return {!Promise<!Array<!MetadataItem>>}
  */
-FileSystemMetadata.prototype.get = function(entries, names) {
-  var localEntries = [];
-  var externalEntries = [];
-  for (var i = 0; i < entries.length; i++) {
-    var volumeInfo = this.volumeManager_.getVolumeInfo(entries[i]);
+MultiMetadataProvider.prototype.get = function(requests) {
+  var fileSystemRequests = [];
+  var externalRequests = [];
+  var contentRequests = [];
+  var fallbackContentRequests = [];
+  requests.forEach(function(request) {
+    // Group property names.
+    var fileSystemPropertyNames = [];
+    var externalPropertyNames = [];
+    var contentPropertyNames = [];
+    var fallbackContentPropertyNames = [];
+    for (var i = 0; i < request.names.length; i++) {
+      var name = request.names[i];
+      var isFileSystemProperty =
+          FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
+      var isExternalProperty =
+          ExternalMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
+      var isContentProperty =
+          ContentMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
+      assert(isFileSystemProperty || isExternalProperty || isContentProperty);
+      assert(!(isFileSystemProperty && isContentProperty));
+      // If the property can be obtained both from ExternalProvider and from
+      // ContentProvider, we can obtain the property from ExternalProvider
+      // without fetching file content. On the other hand, the values from
+      // ExternalProvider may be out of sync if the file is 'dirty'. Thus we
+      // fallback to ContentProvider if the file is dirty. See below.
+      if (isExternalProperty && isContentProperty) {
+        externalPropertyNames.push(name);
+        fallbackContentPropertyNames.push(name);
+        continue;
+      }
+      if (isFileSystemProperty)
+        fileSystemPropertyNames.push(name);
+      if (isExternalProperty)
+        externalPropertyNames.push(name);
+      if (isContentProperty)
+        contentPropertyNames.push(name);
+    }
+    var volumeInfo = this.volumeManager_.getVolumeInfo(request.entry);
+    var addRequests = function(list, names) {
+      if (names.length)
+        list.push(new MetadataRequest(request.entry, names));
+    };
     if (volumeInfo &&
         (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE ||
          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED)) {
-      externalEntries.push(entries[i]);
+      if (fallbackContentPropertyNames.length &&
+          externalPropertyNames.indexOf('dirty') === -1) {
+        externalPropertyNames.push('dirty');
+      }
+      addRequests(externalRequests, externalPropertyNames);
+      addRequests(contentRequests, contentPropertyNames);
+      addRequests(fallbackContentRequests, fallbackContentPropertyNames);
     } else {
-      localEntries.push(entries[i]);
+      addRequests(fileSystemRequests, fileSystemPropertyNames);
+      addRequests(
+          contentRequests,
+          contentPropertyNames.concat(fallbackContentPropertyNames));
     }
-  }
+  }.bind(this));
 
-  // Group property names.
-  var fileSystemPropertyNames = [];
-  var externalPropertyNames = [];
-  var contentPropertyNames = [];
-  var fallbackContentPropertyNames = [];
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
-    var isFileSystemProperty =
-        FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
-    var isExternalProperty =
-        ExternalMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
-    var isContentProperty =
-        ContentMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
-    assert(isFileSystemProperty || isExternalProperty || isContentProperty);
-    assert(!(isFileSystemProperty && isContentProperty));
-    // If the property can be obtained both from ExternalProvider and from
-    // ContentProvider, we can obtain the property from ExternalProvider without
-    // fetching file content. On the other hand, the values from
-    // ExternalProvider may be out of sync if the file is 'dirty'. Thus we
-    // fallback to ContentProvider if the file is dirty. See below.
-    if (isExternalProperty && isContentProperty) {
-      externalPropertyNames.push(name);
-      fallbackContentPropertyNames.push(name);
-      continue;
-    }
-    if (isFileSystemProperty)
-      fileSystemPropertyNames.push(name);
-    if (isExternalProperty)
-      externalPropertyNames.push(name);
-    if (isContentProperty)
-      contentPropertyNames.push(name);
-  }
-
-  // Obtain each group of property names.
-  var resultPromises = [];
-  var get = function(provider, entries, names) {
-    return provider.get(entries, names).then(function(results) {
-      return {entries: entries, results: results};
+  var get = function(provider, inRequests) {
+    return provider.get(inRequests).then(function(results) {
+      return {
+        requests: inRequests,
+        results: results
+      };
     });
   };
-  resultPromises.push(get(
-      this.fileSystemMetadataProvider_, localEntries, fileSystemPropertyNames));
-  resultPromises.push(get(
-      this.externalMetadataProvider_, externalEntries, externalPropertyNames));
-  resultPromises.push(get(
-      this.contentMetadataProvider_, entries, contentPropertyNames));
-  if (fallbackContentPropertyNames.length) {
-    var dirtyEntriesPromise = this.externalMetadataProvider_.get(
-        externalEntries, ['dirty']).then(function(results) {
-          return externalEntries.filter(function(entry, index) {
-            return results[index].dirty;
-          });
-        });
-    resultPromises.push(dirtyEntriesPromise.then(function(dirtyEntries) {
-      return get(
-          this.contentMetadataProvider_,
-          localEntries.concat(dirtyEntries),
-          fallbackContentPropertyNames);
-    }.bind(this)));
-  }
+  var fileSystemPromise = get(
+      this.fileSystemMetadataProvider_, fileSystemRequests);
+  var externalPromise = get(this.externalMetadataProvider_, externalRequests);
+  var contentPromise = get(this.contentMetadataProvider_, contentRequests);
+  var fallbackContentPromise = externalPromise.then(
+      function(requestsAndResults) {
+        var requests = requestsAndResults.requests;
+        var results = requestsAndResults.results;
+        var dirtyMap = [];
+        for (var i = 0; i < results.length; i++) {
+          dirtyMap[requests[i].entry.toURL()] = results[i].dirty;
+        }
+        return get(
+            this.contentMetadataProvider_,
+            fallbackContentRequests.filter(
+                function(request) {
+                  return dirtyMap[request.entry.toURL()];
+                }));
+      }.bind(this));
 
   // Merge results.
-  return Promise.all(resultPromises).then(function(resultsList) {
+  return Promise.all([
+    fileSystemPromise,
+    externalPromise,
+    contentPromise,
+    fallbackContentPromise
+  ]).then(function(resultsList) {
     var integratedResults = {};
     for (var i = 0; i < resultsList.length; i++) {
-      var inEntries = resultsList[i].entries;
+      var inRequests = resultsList[i].requests;
       var results = resultsList[i].results;
-      for (var j = 0; j < inEntries.length; j++) {
-        var url = inEntries[j].toURL();
+      assert(inRequests.length === results.length);
+      for (var j = 0; j < results.length; j++) {
+        var url = inRequests[j].entry.toURL();
         integratedResults[url] = integratedResults[url] || new MetadataItem();
         for (var name in results[j]) {
           integratedResults[url][name] = results[j][name];
         }
       }
     }
-    return entries.map(function(entry) {
-      return integratedResults[entry.toURL()];
+    return requests.map(function(request) {
+      return integratedResults[request.entry.toURL()] || new MetadataItem();
     });
   });
-};
-
-/**
- * Obtains metadata cache for entries.
- * @param {!Array<!Entry>} entries Entries.
- * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Array<!MetadataItem>}
- */
-FileSystemMetadata.prototype.getCache = function(entries, names) {
-  return this.cache_.get(entries, names);
-};
-
-/**
- * Clears old metadata for newly created entries.
- * @param {!Array<!Entry>} entries
- */
-FileSystemMetadata.prototype.notifyEntriesCreated = function(entries) {
-  this.cache_.clear(util.entriesToURLs(entries));
-};
-
-/**
- * Clears metadata for deleted entries.
- * @param {!Array<string>} urls Note it is not an entry list because we cannot
- *     obtain entries after removing them from the file system.
- */
-FileSystemMetadata.prototype.notifyEntriesRemoved = function(urls) {
-  this.cache_.clear(urls);
-};
-
-/**
- * Invalidates metadata for updated entries.
- * @param {!Array<!Entry>} entries
- */
-FileSystemMetadata.prototype.notifyEntriesChanged = function(entries) {
-  this.cache_.invalidate(this.cache_.generateRequestId(), entries);
 };

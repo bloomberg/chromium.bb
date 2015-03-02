@@ -34,20 +34,19 @@ function testExternalMetadataProviderBasic(callback) {
     },
     runtime: {lastError: null}
   };
-  var cache = new MetadataProviderCache();
-  var provider = new ExternalMetadataProvider(cache);
-  reportPromise(provider.get(
-      [entryA, entryB],
-      ['modificationTime', 'size']).then(
-          function(results) {
-            assertEquals(2, results.length);
-            assertEquals(
-                new Date(2015, 0, 1).toString(),
-                results[0].modificationTime.toString());
-            assertEquals(1024, results[0].size);
-            assertEquals(
-                new Date(2015, 1, 2).toString(),
-                results[1].modificationTime.toString());
-            assertEquals(2048, results[1].size);
-          }), callback);
+  var provider = new ExternalMetadataProvider();
+  reportPromise(provider.get([
+    new MetadataRequest(entryA, ['modificationTime', 'size']),
+    new MetadataRequest(entryB, ['modificationTime', 'size']),
+  ]).then(function(results) {
+    assertEquals(2, results.length);
+    assertEquals(
+        new Date(2015, 0, 1).toString(),
+        results[0].modificationTime.toString());
+    assertEquals(1024, results[0].size);
+    assertEquals(
+        new Date(2015, 1, 2).toString(),
+        results[1].modificationTime.toString());
+    assertEquals(2048, results[1].size);
+  }), callback);
 }

@@ -54,12 +54,6 @@ function FileManager() {
   this.mediaImportHandler_ = null;
 
   /**
-   * @private {!MetadataProviderCache}
-   * @const
-   */
-  this.metadataProviderCache_ = new MetadataProviderCache();
-
-  /**
    * @private {FileSystemMetadata}
    */
   this.fileSystemMetadata_ = null;
@@ -694,9 +688,7 @@ FileManager.prototype = /** @struct */ {
 
     // Create the metadata cache.
     assert(this.volumeManager_);
-    this.fileSystemMetadata_ = FileSystemMetadata.create(
-        this.metadataProviderCache_,
-        this.volumeManager_);
+    this.fileSystemMetadata_ = new FileSystemMetadata(this.volumeManager_);
     this.thumbnailModel_ = new ThumbnailModel(this.fileSystemMetadata_);
 
     // Create the root view of FileManager.
@@ -843,7 +835,6 @@ FileManager.prototype = /** @struct */ {
     this.directoryModel_ = new DirectoryModel(
         singleSelection,
         this.fileFilter_,
-        this.metadataProviderCache_,
         this.fileSystemMetadata_,
         this.volumeManager_,
         this.fileOperationManager_);
@@ -887,7 +878,6 @@ FileManager.prototype = /** @struct */ {
     this.metadataUpdateController_ = new MetadataUpdateController(
         this.ui_.listContainer,
         this.directoryModel_,
-        this.metadataProviderCache_,
         this.fileSystemMetadata_);
 
     // Create task controller.
