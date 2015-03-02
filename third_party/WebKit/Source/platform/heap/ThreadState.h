@@ -320,7 +320,7 @@ public:
     }
 
     bool isMainThread() const { return this == mainThreadState(); }
-    inline bool checkThread() const
+    bool checkThread() const
     {
         ASSERT(m_thread == currentThread());
         return true;

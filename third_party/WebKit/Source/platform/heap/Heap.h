@@ -161,23 +161,23 @@ public:
     bool isPromptlyFreed() const { return (m_encoded & headerPromptlyFreedBitMask) == headerPromptlyFreedBitMask; }
     NO_SANITIZE_ADDRESS
     void markPromptlyFreed() { m_encoded |= headerPromptlyFreedBitMask; }
-    inline size_t size() const;
+    size_t size() const;
 
     NO_SANITIZE_ADDRESS
     size_t gcInfoIndex() const { return (m_encoded & headerGCInfoIndexMask) >> headerGCInfoIndexShift; }
     NO_SANITIZE_ADDRESS
     void setSize(size_t size) { m_encoded = size | (m_encoded & ~headerSizeMask); }
-    inline bool isMarked() const;
-    inline void mark();
-    inline void unmark();
-    inline void markDead();
-    inline bool isDead() const;
+    bool isMarked() const;
+    void mark();
+    void unmark();
+    void markDead();
+    bool isDead() const;
 
-    inline Address payload();
-    inline size_t payloadSize();
-    inline Address payloadEnd();
+    Address payload();
+    size_t payloadSize();
+    Address payloadEnd();
 
-    inline void checkHeader() const;
+    void checkHeader() const;
 #if ENABLE(ASSERT)
     // Zap magic number with a new magic number that means there was once an
     // object allocated here, but it was freed because nobody marked it during
@@ -240,8 +240,7 @@ private:
 inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
-    HeapObjectHeader* header =
-        reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
+    HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
     return header;
 }
 
@@ -746,8 +745,8 @@ public:
 
     ThreadState* threadState() { return m_threadState; }
     int heapIndex() const { return m_index; }
-    inline static size_t allocationSizeFromSize(size_t);
-    inline static size_t roundedAllocationSize(size_t size)
+    static size_t allocationSizeFromSize(size_t);
+    static size_t roundedAllocationSize(size_t size)
     {
         return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
     }
@@ -784,8 +783,8 @@ public:
     void snapshotFreeList(TracedValue&) override;
 #endif
 
-    inline Address allocate(size_t payloadSize, size_t gcInfoIndex);
-    inline Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
+    Address allocate(size_t payloadSize, size_t gcInfoIndex);
+    Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
 
     void freePage(NormalPage*);
 
@@ -802,7 +801,7 @@ private:
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
-    inline void setAllocationPoint(Address, size_t);
+    void setAllocationPoint(Address, size_t);
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, size_t gcInfoIndex);
 
@@ -927,7 +926,7 @@ public:
     static bool weakTableRegistered(const void*);
 #endif
 
-    static inline Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
+    static Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocateOnHeapIndex(size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
@@ -1001,7 +1000,7 @@ public:
     static double estimatedMarkingTime();
 
     // On object allocation, register the object's externally allocated memory.
-    static inline void increaseExternallyAllocatedBytes(size_t);
+    static void increaseExternallyAllocatedBytes(size_t);
     static size_t externallyAllocatedBytes() { return acquireLoad(&s_externallyAllocatedBytes); }
 
     // On object tracing, register the object's externally allocated memory (as still live.)
@@ -1077,13 +1076,13 @@ FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
 template<typename T, typename Enabled = void>
 class AllocateObjectTrait {
 public:
-    static inline Address allocate(size_t size)
+    static Address allocate(size_t size)
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
     }
 
-    static inline void constructor()
+    static void constructor()
     {
     }
 };
@@ -1116,7 +1115,7 @@ public:
     //    object is in a state ready for a GC, leaves that GC scope.
     //  - no-GC scope entering/leaving must support nesting.
     //
-    static inline Address allocate(size_t size)
+    static Address allocate(size_t size)
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         Address object = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
@@ -1124,7 +1123,7 @@ public:
         return object;
     }
 
-    static inline void constructor()
+    static void constructor()
     {
         // FIXME: if prompt conservative GCs are needed, forced GCs that
         // were denied while within this scope, could now be performed.
@@ -1368,18 +1367,18 @@ size_t HeapObjectHeader::size() const
     return result;
 }
 
-NO_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::checkHeader() const
 {
     ASSERT(pageFromObject(this)->orphaned() || m_magic == magic);
 }
 
-Address HeapObjectHeader::payload()
+inline Address HeapObjectHeader::payload()
 {
     return reinterpret_cast<Address>(this) + sizeof(HeapObjectHeader);
 }
 
-Address HeapObjectHeader::payloadEnd()
+inline Address HeapObjectHeader::payloadEnd()
 {
     return reinterpret_cast<Address>(this) + size();
 }
@@ -1434,7 +1433,7 @@ void HeapObjectHeader::markDead()
     m_encoded |= headerDeadBitMask;
 }
 
-size_t BaseHeap::allocationSizeFromSize(size_t size)
+inline size_t BaseHeap::allocationSizeFromSize(size_t size)
 {
     // Check the size before computing the actual allocation size.  The
     // allocation size calculation can overflow for large sizes and the check
@@ -1448,7 +1447,7 @@ size_t BaseHeap::allocationSizeFromSize(size_t size)
     return allocationSize;
 }
 
-Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
+inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
 #if ENABLE(GC_PROFILING)
     m_cumulativeAllocationSize += allocationSize;
@@ -1476,12 +1475,12 @@ Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex
     return outOfLineAllocate(allocationSize, gcInfoIndex);
 }
 
-Address NormalPageHeap::allocate(size_t size, size_t gcInfoIndex)
+inline Address NormalPageHeap::allocate(size_t size, size_t gcInfoIndex)
 {
     return allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
-Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
+inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
 {
     ASSERT(state->isAllocationAllowed());
     return static_cast<NormalPageHeap*>(state->heap(heapIndex))->allocate(size, gcInfoIndex);
@@ -1524,7 +1523,7 @@ Address Heap::reallocate(void* previous, size_t size)
     return address;
 }
 
-void Heap::increaseExternallyAllocatedBytes(size_t delta)
+inline void Heap::increaseExternallyAllocatedBytes(size_t delta)
 {
     // Flag GC urgency on a 50% increase in external allocation
     // since the last GC, but not for less than 100M.
@@ -1862,7 +1861,7 @@ public:
     }
 
     // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
-    inline void swap(HeapDeque& other)
+    void swap(HeapDeque& other)
     {
         Deque<T, inlineCapacity, HeapAllocator>::swap(other);
     }
