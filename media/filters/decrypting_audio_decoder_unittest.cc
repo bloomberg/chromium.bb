@@ -63,7 +63,9 @@ class DecryptingAudioDecoderTest : public testing::Test {
             message_loop_.message_loop_proxy(),
             base::Bind(
                 &DecryptingAudioDecoderTest::RequestDecryptorNotification,
-                base::Unretained(this)))),
+                base::Unretained(this)),
+            base::Bind(&DecryptingAudioDecoderTest::OnWaitingForDecryptionKey,
+                       base::Unretained(this)))),
         decryptor_(new StrictMock<MockDecryptor>()),
         num_decrypt_and_decode_calls_(0),
         num_frames_in_decryptor_(0),
@@ -204,6 +206,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     EXPECT_CALL(*decryptor_, DecryptAndDecodeAudio(encrypted_buffer_, _))
         .WillRepeatedly(RunCallback<1>(Decryptor::kNoKey,
                                        Decryptor::AudioFrames()));
+    EXPECT_CALL(*this, OnWaitingForDecryptionKey());
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingAudioDecoderTest::DecodeDone,
                                 base::Unretained(this)));
@@ -251,6 +254,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
   MOCK_METHOD1(DecodeDone, void(AudioDecoder::Status));
 
   MOCK_METHOD1(DecryptorSet, void(bool));
+
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingAudioDecoder> decoder_;

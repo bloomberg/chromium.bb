@@ -43,13 +43,17 @@ class MEDIA_EXPORT Renderer {
   //               be called from any thread.
   // - |ended_cb|: Executed when rendering has reached the end of stream.
   // - |error_cb|: Executed if any error was encountered after initialization.
-  virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                          const PipelineStatusCB& init_cb,
-                          const StatisticsCB& statistics_cb,
-                          const BufferingStateCB& buffering_state_cb,
-                          const PaintCB& paint_cb,
-                          const base::Closure& ended_cb,
-                          const PipelineStatusCB& error_cb) = 0;
+  // - |waiting_for_decryption_key_cb|: Executed whenever the key needed to
+  //                                    decrypt the stream is not available.
+  virtual void Initialize(
+      DemuxerStreamProvider* demuxer_stream_provider,
+      const PipelineStatusCB& init_cb,
+      const StatisticsCB& statistics_cb,
+      const BufferingStateCB& buffering_state_cb,
+      const PaintCB& paint_cb,
+      const base::Closure& ended_cb,
+      const PipelineStatusCB& error_cb,
+      const base::Closure& waiting_for_decryption_key_cb) = 0;
 
   // Associates the |cdm_context| with this Renderer for decryption (and
   // decoding) of media data, then fires |cdm_attached_cb| with the result.

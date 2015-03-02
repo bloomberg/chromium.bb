@@ -152,7 +152,8 @@ void MediaSourceDelegate::InitializeMediaSource(
         encrypted_media_init_data_cb,
     const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
-    const DurationChangeCB& duration_change_cb) {
+    const DurationChangeCB& duration_change_cb,
+    const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!media_source_opened_cb.is_null());
   media_source_opened_cb_ = media_source_opened_cb;
@@ -160,6 +161,7 @@ void MediaSourceDelegate::InitializeMediaSource(
   set_decryptor_ready_cb_ = media::BindToCurrentLoop(set_decryptor_ready_cb);
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
   duration_change_cb_ = duration_change_cb;
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
   access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
@@ -521,7 +523,8 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
-      media_task_runner_, set_decryptor_ready_cb_));
+      media_task_runner_, set_decryptor_ready_cb_,
+      waiting_for_decryption_key_cb_));
   audio_decrypting_demuxer_stream_->Initialize(
       audio_stream_,
       base::Bind(&MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone,
@@ -534,7 +537,8 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
-      media_task_runner_, set_decryptor_ready_cb_));
+      media_task_runner_, set_decryptor_ready_cb_,
+      waiting_for_decryption_key_cb_));
   video_decrypting_demuxer_stream_->Initialize(
       video_stream_,
       base::Bind(&MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone,

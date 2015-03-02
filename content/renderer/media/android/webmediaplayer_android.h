@@ -258,6 +258,10 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnEncryptedMediaInitData(const std::string& init_data_type,
                                 const std::vector<uint8>& init_data);
 
+  // Called when a decoder detects that the key needed to decrypt the stream
+  // is not available.
+  void OnWaitingForDecryptionKey();
+
  protected:
   // Helper method to update the playing state.
   void UpdatePlayingState(bool is_playing_);

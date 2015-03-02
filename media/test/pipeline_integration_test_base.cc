@@ -121,6 +121,10 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
                                 base::Unretained(this)));
   }
 
+  // Should never be called as the required decryption keys for the encrypted
+  // media files are provided in advance.
+  EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+
   pipeline_->Start(
       demuxer_.get(), CreateRenderer(),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
@@ -134,7 +138,9 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
       base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
                  base::Unretained(this)),
       base::Closure(), base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
-                                  base::Unretained(this)));
+                                  base::Unretained(this)),
+      base::Bind(&PipelineIntegrationTestBase::OnWaitingForDecryptionKey,
+                 base::Unretained(this)));
   message_loop_.Run();
   return pipeline_status_;
 }

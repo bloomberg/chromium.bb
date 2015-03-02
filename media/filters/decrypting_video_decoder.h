@@ -28,7 +28,8 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
  public:
   DecryptingVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb);
+      const SetDecryptorReadyCB& set_decryptor_ready_cb,
+      const base::Closure& waiting_for_decryption_key_cb);
   ~DecryptingVideoDecoder() override;
 
   // VideoDecoder implementation.
@@ -88,6 +89,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   OutputCB output_cb_;
   DecodeCB decode_cb_;
   base::Closure reset_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   VideoDecoderConfig config_;
 

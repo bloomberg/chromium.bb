@@ -113,8 +113,10 @@ class AudioRendererImplTest : public ::testing::Test {
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
   MOCK_METHOD1(OnError, void(PipelineStatus));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
+    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     renderer_->Initialize(
         &demuxer_stream_, pipeline_status_cb, SetDecryptorReadyCB(),
         base::Bind(&AudioRendererImplTest::OnStatistics,
@@ -122,7 +124,9 @@ class AudioRendererImplTest : public ::testing::Test {
         base::Bind(&AudioRendererImplTest::OnBufferingStateChange,
                    base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnEnded, base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnError, base::Unretained(this)));
+        base::Bind(&AudioRendererImplTest::OnError, base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnWaitingForDecryptionKey,
+                   base::Unretained(this)));
   }
 
   void Initialize() {

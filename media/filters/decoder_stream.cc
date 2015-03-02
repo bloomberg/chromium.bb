@@ -83,7 +83,8 @@ void DecoderStream<StreamType>::Initialize(
     DemuxerStream* stream,
     const InitCB& init_cb,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
-    const StatisticsCB& statistics_cb) {
+    const StatisticsCB& statistics_cb,
+    const base::Closure& waiting_for_decryption_key_cb) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -92,6 +93,7 @@ void DecoderStream<StreamType>::Initialize(
 
   statistics_cb_ = statistics_cb;
   init_cb_ = init_cb;
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
   stream_ = stream;
 
   state_ = STATE_INITIALIZING;
@@ -212,7 +214,8 @@ void DecoderStream<StreamType>::SelectDecoder(
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      waiting_for_decryption_key_cb_);
 }
 
 template <DemuxerStream::Type StreamType>

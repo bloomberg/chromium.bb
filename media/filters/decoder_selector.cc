@@ -75,13 +75,15 @@ void DecoderSelector<StreamType>::SelectDecoder(
     DemuxerStream* stream,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const SelectDecoderCB& select_decoder_cb,
-    const typename Decoder::OutputCB& output_cb) {
+    const typename Decoder::OutputCB& output_cb,
+    const base::Closure& waiting_for_decryption_key_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
   DCHECK(select_decoder_cb_.is_null());
 
   set_decryptor_ready_cb_ = set_decryptor_ready_cb;
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   // Make sure |select_decoder_cb| runs on a different execution stack.
   select_decoder_cb_ = BindToCurrentLoop(select_decoder_cb);
@@ -107,7 +109,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
   }
 
   decoder_.reset(new typename StreamTraits::DecryptingDecoderType(
-      task_runner_, set_decryptor_ready_cb_));
+      task_runner_, set_decryptor_ready_cb_, waiting_for_decryption_key_cb_));
 
   DecoderStreamTraits<StreamType>::InitializeDecoder(
       decoder_.get(), input_stream_,
@@ -130,8 +132,8 @@ void DecoderSelector<StreamType>::DecryptingDecoderInitDone(
 
   decoder_.reset();
 
-  decrypted_stream_.reset(
-      new DecryptingDemuxerStream(task_runner_, set_decryptor_ready_cb_));
+  decrypted_stream_.reset(new DecryptingDemuxerStream(
+      task_runner_, set_decryptor_ready_cb_, waiting_for_decryption_key_cb_));
 
   decrypted_stream_->Initialize(
       input_stream_,

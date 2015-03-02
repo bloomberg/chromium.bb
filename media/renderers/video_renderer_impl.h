@@ -60,7 +60,8 @@ class MEDIA_EXPORT VideoRendererImpl
                   const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb,
-                  const TimeDeltaCB& get_time_cb) override;
+                  const TimeDeltaCB& get_time_cb,
+                  const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& callback) override;
   void StartPlayingFrom(base::TimeDelta timestamp) override;
 

@@ -120,7 +120,8 @@ void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
       base::Bind(&MojoRendererService::OnBufferingStateChanged, weak_this_),
       base::Bind(&PaintNothing),
       base::Bind(&MojoRendererService::OnRendererEnded, weak_this_),
-      base::Bind(&MojoRendererService::OnError, weak_this_));
+      base::Bind(&MojoRendererService::OnError, weak_this_),
+      base::Bind(base::DoNothing));
 }
 
 void MojoRendererService::OnRendererInitializeDone(

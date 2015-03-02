@@ -57,7 +57,9 @@ class DecryptingVideoDecoderTest : public testing::Test {
             message_loop_.message_loop_proxy(),
             base::Bind(
                 &DecryptingVideoDecoderTest::RequestDecryptorNotification,
-                base::Unretained(this)))),
+                base::Unretained(this)),
+            base::Bind(&DecryptingVideoDecoderTest::OnWaitingForDecryptionKey,
+                       base::Unretained(this)))),
         decryptor_(new StrictMock<MockDecryptor>()),
         num_decrypt_and_decode_calls_(0),
         num_frames_in_decryptor_(0),
@@ -179,6 +181,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void EnterWaitingForKeyState() {
     EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
         .WillRepeatedly(RunCallback<1>(Decryptor::kNoKey, null_video_frame_));
+    EXPECT_CALL(*this, OnWaitingForDecryptionKey());
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
                                 base::Unretained(this)));
@@ -227,6 +230,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
 
   MOCK_METHOD1(DecryptorSet, void(bool));
 
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
@@ -263,6 +268,7 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
       .WillRepeatedly(RunCallback<1>(false));
   EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
       .WillRepeatedly(SaveArg<1>(&key_added_cb_));
+  EXPECT_CALL(*this, RequestDecryptorNotification(_)).Times(2);
 
   InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
                             DECODER_ERROR_NOT_SUPPORTED);
@@ -333,7 +339,7 @@ TEST_F(DecryptingVideoDecoderTest, KeyAdded_DuringWaitingForKey) {
 
 // Test the case where the a key is added when the decryptor is in
 // kPendingDecode state.
-TEST_F(DecryptingVideoDecoderTest, KeyAdded_DruingPendingDecode) {
+TEST_F(DecryptingVideoDecoderTest, KeyAdded_DuringPendingDecode) {
   Initialize();
   EnterPendingDecodeState();
 

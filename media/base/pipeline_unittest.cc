@@ -170,7 +170,7 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetRendererExpectations() {
-    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
+    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
                         SaveArg<5>(&ended_cb_),
                         PostCallback<1>(PIPELINE_OK)));
@@ -187,6 +187,7 @@ class PipelineTest : public ::testing::Test {
   }
 
   void StartPipeline() {
+    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     pipeline_->Start(
         demuxer_.get(), scoped_renderer_.Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
@@ -199,7 +200,9 @@ class PipelineTest : public ::testing::Test {
                    base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)),
-        base::Bind(&PipelineTest::OnAddTextTrack, base::Unretained(this)));
+        base::Bind(&PipelineTest::OnAddTextTrack, base::Unretained(this)),
+        base::Bind(&PipelineTest::OnWaitingForDecryptionKey,
+                   base::Unretained(this)));
   }
 
   // Sets up expectations on the callback and initializes the pipeline. Called
@@ -296,6 +299,7 @@ class PipelineTest : public ::testing::Test {
 
   MOCK_METHOD2(OnAddTextTrack, void(const TextTrackConfig&,
                                     const AddTextTrackDoneCB&));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   void DoOnAddTextTrack(const TextTrackConfig& config,
                         const AddTextTrackDoneCB& done_cb) {
@@ -857,13 +861,13 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
+        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
                             PostCallback<1>(PIPELINE_OK)));
         ExpectPipelineStopAndDestroyPipeline();
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
+        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
             .WillOnce(PostCallback<1>(status));
       }
 
@@ -872,7 +876,7 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
+    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
                         PostCallback<1>(PIPELINE_OK)));
 

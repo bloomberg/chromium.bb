@@ -212,6 +212,10 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   void OnEncryptedMediaInitData(const std::string& init_data_type,
                                 const std::vector<uint8>& init_data);
 
+  // Called when a decoder detects that the key needed to decrypt the stream
+  // is not available.
+  void OnWaitingForDecryptionKey();
+
   void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
   // Called when a CDM has been attached to the |pipeline_|.

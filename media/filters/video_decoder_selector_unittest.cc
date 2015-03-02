@@ -131,6 +131,8 @@ class VideoDecoderSelectorTest : public ::testing::Test {
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::FrameReady,
+                   base::Unretained(this)),
+        base::Bind(&VideoDecoderSelectorTest::OnWaitingForDecryptionKey,
                    base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
@@ -144,6 +146,10 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   }
 
   void FrameReady(const scoped_refptr<VideoFrame>& frame) {
+    NOTREACHED();
+  }
+
+  void OnWaitingForDecryptionKey() {
     NOTREACHED();
   }
 

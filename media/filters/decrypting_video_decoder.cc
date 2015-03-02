@@ -23,14 +23,17 @@ const char DecryptingVideoDecoder::kDecoderName[] = "DecryptingVideoDecoder";
 
 DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb)
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
       state_(kUninitialized),
+      waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
       trace_id_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 std::string DecryptingVideoDecoder::GetDisplayName() const {
   return kDecoderName;
@@ -270,6 +273,7 @@ void DecryptingVideoDecoder::DeliverFrame(
     }
 
     state_ = kWaitingForKey;
+    waiting_for_decryption_key_cb_.Run();
     return;
   }
 

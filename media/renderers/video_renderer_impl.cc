@@ -109,7 +109,8 @@ void VideoRendererImpl::Initialize(
     const PaintCB& paint_cb,
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
-    const TimeDeltaCB& get_time_cb) {
+    const TimeDeltaCB& get_time_cb,
+    const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(stream);
@@ -139,7 +140,7 @@ void VideoRendererImpl::Initialize(
   video_frame_stream_->Initialize(
       stream, base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                          weak_factory_.GetWeakPtr()),
-      set_decryptor_ready_cb, statistics_cb);
+      set_decryptor_ready_cb, statistics_cb, waiting_for_decryption_key_cb);
 }
 
 void VideoRendererImpl::CreateVideoThread() {

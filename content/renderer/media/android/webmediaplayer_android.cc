@@ -313,6 +313,8 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
+                     weak_factory_.GetWeakPtr()),
+          base::Bind(&WebMediaPlayerAndroid::OnWaitingForDecryptionKey,
                      weak_factory_.GetWeakPtr()));
       InitializePlayer(url_, frame_->document().firstPartyForCookies(),
                        true, demuxer_client_id);
@@ -1757,6 +1759,15 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
 
   client_->encrypted(ConvertInitDataType(init_data_type),
                      vector_as_array(&init_data), init_data.size());
+}
+
+void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
+  client_->didBlockPlaybackWaitingForKey();
+
+  // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
+  // when a key has been successfully added (e.g. OnSessionKeysChange() with
+  // |has_additional_usable_key| = true). http://crbug.com/461903
+  client_->didResumePlaybackBlockedForKey();
 }
 
 void WebMediaPlayerAndroid::SetCdmInternal(

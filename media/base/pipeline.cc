@@ -70,7 +70,8 @@ void Pipeline::Start(Demuxer* demuxer,
                      const BufferingStateCB& buffering_state_cb,
                      const PaintCB& paint_cb,
                      const base::Closure& duration_change_cb,
-                     const AddTextTrackCB& add_text_track_cb) {
+                     const AddTextTrackCB& add_text_track_cb,
+                     const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!seek_cb.is_null());
@@ -92,6 +93,7 @@ void Pipeline::Start(Demuxer* demuxer,
   paint_cb_ = paint_cb;
   duration_change_cb_ = duration_change_cb;
   add_text_track_cb_ = add_text_track_cb;
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Pipeline::StartTask, weak_factory_.GetWeakPtr()));
@@ -724,7 +726,8 @@ void Pipeline::InitializeRenderer(const PipelineStatusCB& done_cb) {
       base::Bind(&Pipeline::BufferingStateChanged, weak_this),
       base::ResetAndReturn(&paint_cb_),
       base::Bind(&Pipeline::OnRendererEnded, weak_this),
-      base::Bind(&Pipeline::OnError, weak_this));
+      base::Bind(&Pipeline::OnError, weak_this),
+      waiting_for_decryption_key_cb_);
 }
 
 void Pipeline::ReportMetadata() {

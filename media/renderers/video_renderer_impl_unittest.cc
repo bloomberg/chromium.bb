@@ -94,6 +94,7 @@ class VideoRendererImplTest : public ::testing::Test {
       demuxer_stream_.set_liveness(DemuxerStream::LIVENESS_LIVE);
     EXPECT_CALL(*decoder_, Initialize(_, _, _, _)).WillOnce(
         DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(decoder_status)));
+    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     renderer_->Initialize(
         &demuxer_stream_, status_cb, media::SetDecryptorReadyCB(),
         base::Bind(&VideoRendererImplTest::OnStatisticsUpdate,
@@ -102,7 +103,9 @@ class VideoRendererImplTest : public ::testing::Test {
                    base::Unretained(&mock_cb_)),
         base::Bind(&StrictMock<MockCB>::Display, base::Unretained(&mock_cb_)),
         ended_event_.GetClosure(), error_event_.GetPipelineStatusCB(),
-        base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)));
+        base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)),
+        base::Bind(&VideoRendererImplTest::OnWaitingForDecryptionKey,
+                   base::Unretained(this)));
   }
 
   void StartPlayingFrom(int milliseconds) {
@@ -288,6 +291,8 @@ class VideoRendererImplTest : public ::testing::Test {
   }
 
   void OnStatisticsUpdate(const PipelineStatistics& stats) {}
+
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   base::MessageLoop message_loop_;
 

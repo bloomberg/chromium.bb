@@ -70,7 +70,8 @@ class MEDIA_EXPORT DecoderSelector {
   void SelectDecoder(DemuxerStream* stream,
                      const SetDecryptorReadyCB& set_decryptor_ready_cb,
                      const SelectDecoderCB& select_decoder_cb,
-                     const typename Decoder::OutputCB& output_cb);
+                     const typename Decoder::OutputCB& output_cb,
+                     const base::Closure& waiting_for_decryption_key_cb);
 
  private:
   void DecryptingDecoderInitDone(PipelineStatus status);
@@ -86,6 +87,7 @@ class MEDIA_EXPORT DecoderSelector {
   SetDecryptorReadyCB set_decryptor_ready_cb_;
   SelectDecoderCB select_decoder_cb_;
   typename Decoder::OutputCB output_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;

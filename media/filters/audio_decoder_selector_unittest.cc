@@ -135,7 +135,8 @@ class AudioDecoderSelectorTest : public ::testing::Test {
                    base::Unretained(this)),
         base::Bind(&AudioDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
-        base::Bind(&AudioDecoderSelectorTest::OnDecoderOutput));
+        base::Bind(&AudioDecoderSelectorTest::OnDecoderOutput),
+        base::Bind(&AudioDecoderSelectorTest::OnWaitingForDecryptionKey));
     message_loop_.RunUntilIdle();
   }
 
@@ -148,6 +149,10 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   }
 
   static void OnDecoderOutput(const scoped_refptr<AudioBuffer>& output) {
+    NOTREACHED();
+  }
+
+  static void OnWaitingForDecryptionKey() {
     NOTREACHED();
   }
 

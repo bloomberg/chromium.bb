@@ -140,6 +140,7 @@ class PipelineIntegrationTestBase {
   MOCK_METHOD2(OnAddTextTrack,
                void(const TextTrackConfig& config,
                     const AddTextTrackDoneCB& done_cb));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 };
 
 }  // namespace media

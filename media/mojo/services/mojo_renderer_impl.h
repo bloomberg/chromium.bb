@@ -39,7 +39,8 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
                   const BufferingStateCB& buffering_state_cb,
                   const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
-                  const PipelineStatusCB& error_cb) override;
+                  const PipelineStatusCB& error_cb,
+                  const base::Closure& waiting_for_decryption_key_cb) override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
   void Flush(const base::Closure& flush_cb) override;

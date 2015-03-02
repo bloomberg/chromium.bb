@@ -125,6 +125,7 @@ class VideoFrameStreamTest
   MOCK_METHOD1(OnNewSpliceBuffer, void(base::TimeDelta));
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD1(DecryptorSet, void(bool));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   void OnStatistics(const PipelineStatistics& statistics) {
     num_decoded_bytes_unreported_ -= statistics.video_bytes_decoded;
@@ -155,7 +156,8 @@ class VideoFrameStreamTest
                                           base::Unretained(this)),
         base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
                    base::Unretained(this)),
-        base::Bind(&VideoFrameStreamTest::OnStatistics,
+        base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
+        base::Bind(&VideoFrameStreamTest::OnWaitingForDecryptionKey,
                    base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
@@ -276,6 +278,8 @@ class VideoFrameStreamTest
         break;
 
       case DECRYPTOR_NO_KEY:
+        if (GetParam().is_encrypted)
+          EXPECT_CALL(*this, OnWaitingForDecryptionKey());
         ExpectDecryptorNotification();
         has_no_key_ = true;
         ReadOneFrame();

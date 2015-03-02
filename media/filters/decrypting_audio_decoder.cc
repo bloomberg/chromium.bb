@@ -34,13 +34,16 @@ static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
 
 DecryptingAudioDecoder::DecryptingAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb)
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
       state_(kUninitialized),
+      waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 std::string DecryptingAudioDecoder::GetDisplayName() const {
   return "DecryptingAudioDecoder";
@@ -288,6 +291,7 @@ void DecryptingAudioDecoder::DeliverFrame(
     }
 
     state_ = kWaitingForKey;
+    waiting_for_decryption_key_cb_.Run();
     return;
   }
 

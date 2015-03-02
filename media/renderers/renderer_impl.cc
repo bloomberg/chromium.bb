@@ -56,13 +56,15 @@ RendererImpl::~RendererImpl() {
     base::ResetAndReturn(&flush_cb_).Run();
 }
 
-void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                              const PipelineStatusCB& init_cb,
-                              const StatisticsCB& statistics_cb,
-                              const BufferingStateCB& buffering_state_cb,
-                              const PaintCB& paint_cb,
-                              const base::Closure& ended_cb,
-                              const PipelineStatusCB& error_cb) {
+void RendererImpl::Initialize(
+    DemuxerStreamProvider* demuxer_stream_provider,
+    const PipelineStatusCB& init_cb,
+    const StatisticsCB& statistics_cb,
+    const BufferingStateCB& buffering_state_cb,
+    const PaintCB& paint_cb,
+    const base::Closure& ended_cb,
+    const PipelineStatusCB& error_cb,
+    const base::Closure& waiting_for_decryption_key_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -82,6 +84,7 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   init_cb_ = init_cb;
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   state_ = STATE_INITIALIZING;
   InitializeAudioRenderer();
@@ -258,7 +261,8 @@ void RendererImpl::InitializeAudioRenderer() {
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &audio_buffering_state_),
       base::Bind(&RendererImpl::OnAudioRendererEnded, weak_this_),
-      base::Bind(&RendererImpl::OnError, weak_this_));
+      base::Bind(&RendererImpl::OnError, weak_this_),
+      waiting_for_decryption_key_cb_);
 }
 
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
@@ -307,7 +311,8 @@ void RendererImpl::InitializeVideoRenderer() {
       base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),
       base::Bind(&RendererImpl::OnError, weak_this_),
       base::Bind(&RendererImpl::GetMediaTimeForSyncingVideo,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      waiting_for_decryption_key_cb_);
 }
 
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {

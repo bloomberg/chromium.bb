@@ -121,16 +121,17 @@ class MockVideoRenderer : public VideoRenderer {
   virtual ~MockVideoRenderer();
 
   // VideoRenderer implementation.
-  MOCK_METHOD9(Initialize,
-               void(DemuxerStream* stream,
-                    const PipelineStatusCB& init_cb,
-                    const SetDecryptorReadyCB& set_decryptor_ready_cb,
-                    const StatisticsCB& statistics_cb,
-                    const BufferingStateCB& buffering_state_cb,
-                    const PaintCB& paint_cb,
-                    const base::Closure& ended_cb,
-                    const PipelineStatusCB& error_cb,
-                    const TimeDeltaCB& get_time_cb));
+  MOCK_METHOD10(Initialize,
+                void(DemuxerStream* stream,
+                     const PipelineStatusCB& init_cb,
+                     const SetDecryptorReadyCB& set_decryptor_ready_cb,
+                     const StatisticsCB& statistics_cb,
+                     const BufferingStateCB& buffering_state_cb,
+                     const PaintCB& paint_cb,
+                     const base::Closure& ended_cb,
+                     const PipelineStatusCB& error_cb,
+                     const TimeDeltaCB& get_time_cb,
+                     const base::Closure& waiting_for_decryption_key_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
 
@@ -144,14 +145,15 @@ class MockAudioRenderer : public AudioRenderer {
   virtual ~MockAudioRenderer();
 
   // AudioRenderer implementation.
-  MOCK_METHOD7(Initialize,
+  MOCK_METHOD8(Initialize,
                void(DemuxerStream* stream,
                     const PipelineStatusCB& init_cb,
                     const SetDecryptorReadyCB& set_decryptor_ready_cb,
                     const StatisticsCB& statistics_cb,
                     const BufferingStateCB& buffering_state_cb,
                     const base::Closure& ended_cb,
-                    const PipelineStatusCB& error_cb));
+                    const PipelineStatusCB& error_cb,
+                    const base::Closure& waiting_for_decryption_key_cb));
   MOCK_METHOD0(GetTimeSource, TimeSource*());
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD0(StartPlaying, void());
@@ -167,13 +169,15 @@ class MockRenderer : public Renderer {
   virtual ~MockRenderer();
 
   // Renderer implementation.
-  MOCK_METHOD7(Initialize, void(DemuxerStreamProvider* demuxer_stream_provider,
-                                const PipelineStatusCB& init_cb,
-                                const StatisticsCB& statistics_cb,
-                                const BufferingStateCB& buffering_state_cb,
-                                const PaintCB& paint_cb,
-                                const base::Closure& ended_cb,
-                                const PipelineStatusCB& error_cb));
+  MOCK_METHOD8(Initialize,
+               void(DemuxerStreamProvider* demuxer_stream_provider,
+                    const PipelineStatusCB& init_cb,
+                    const StatisticsCB& statistics_cb,
+                    const BufferingStateCB& buffering_state_cb,
+                    const PaintCB& paint_cb,
+                    const base::Closure& ended_cb,
+                    const PipelineStatusCB& error_cb,
+                    const base::Closure& waiting_for_decryption_key_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));

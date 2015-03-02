@@ -49,7 +49,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                   const BufferingStateCB& buffering_state_cb,
                   const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
-                  const PipelineStatusCB& error_cb) final;
+                  const PipelineStatusCB& error_cb,
+                  const base::Closure& waiting_for_decryption_key_cb) final;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) final;
   void Flush(const base::Closure& flush_cb) final;
@@ -133,6 +134,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   PipelineStatusCB error_cb_;
   BufferingStateCB buffering_state_cb_;
   PaintCB paint_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   // Temporary callback used for Initialize() and Flush().
   PipelineStatusCB init_cb_;

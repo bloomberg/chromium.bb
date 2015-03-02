@@ -149,7 +149,8 @@ void InitPipeline(
                   base::Bind(&OnBufferingStateChanged),
                   paint_cb,
                   base::Bind(&DoNothing),
-                  base::Bind(&OnAddTextTrack));
+                  base::Bind(&OnAddTextTrack),
+                  base::Bind(&DoNothing));
 
   // Wait until the pipeline is fully initialized.
   event.Wait();

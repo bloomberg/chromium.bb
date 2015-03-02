@@ -77,7 +77,9 @@ class DecryptingDemuxerStreamTest : public testing::Test {
             message_loop_.message_loop_proxy(),
             base::Bind(
                 &DecryptingDemuxerStreamTest::RequestDecryptorNotification,
-                base::Unretained(this)))),
+                base::Unretained(this)),
+            base::Bind(&DecryptingDemuxerStreamTest::OnWaitingForDecryptionKey,
+                       base::Unretained(this)))),
         decryptor_(new StrictMock<MockDecryptor>()),
         is_decryptor_set_(false),
         input_audio_stream_(
@@ -225,6 +227,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
         .WillRepeatedly(RunCallback<2>(Decryptor::kNoKey,
                                        scoped_refptr<DecoderBuffer>()));
+    EXPECT_CALL(*this, OnWaitingForDecryptionKey());
     demuxer_stream_->Read(base::Bind(&DecryptingDemuxerStreamTest::BufferReady,
                                      base::Unretained(this)));
     message_loop_.RunUntilIdle();
@@ -259,6 +262,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
                                  const scoped_refptr<DecoderBuffer>&));
 
   MOCK_METHOD1(DecryptorSet, void(bool));
+
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingDemuxerStream> demuxer_stream_;

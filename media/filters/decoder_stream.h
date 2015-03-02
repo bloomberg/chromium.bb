@@ -61,7 +61,8 @@ class MEDIA_EXPORT DecoderStream {
   void Initialize(DemuxerStream* stream,
                   const InitCB& init_cb,
                   const SetDecryptorReadyCB& set_decryptor_ready_cb,
-                  const StatisticsCB& statistics_cb);
+                  const StatisticsCB& statistics_cb,
+                  const base::Closure& waiting_for_decryption_key_cb);
 
   // Reads a decoded Output and returns it via the |read_cb|. Note that
   // |read_cb| is always called asynchronously. This method should only be
@@ -170,6 +171,7 @@ class MEDIA_EXPORT DecoderStream {
 
   StatisticsCB statistics_cb_;
   InitCB init_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   ReadCB read_cb_;
   base::Closure reset_cb_;

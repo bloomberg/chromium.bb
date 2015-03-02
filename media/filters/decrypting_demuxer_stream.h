@@ -30,7 +30,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
  public:
   DecryptingDemuxerStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb);
+      const SetDecryptorReadyCB& set_decryptor_ready_cb,
+      const base::Closure& waiting_for_decryption_key_cb);
 
   // Cancels all pending operations immediately and fires all pending callbacks.
   ~DecryptingDemuxerStream() override;
@@ -104,6 +105,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   PipelineStatusCB init_cb_;
   ReadCB read_cb_;
   base::Closure reset_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   // Pointer to the input demuxer stream that will feed us encrypted buffers.
   DemuxerStream* demuxer_stream_;

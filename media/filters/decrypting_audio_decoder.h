@@ -32,7 +32,8 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
  public:
   DecryptingAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb);
+      const SetDecryptorReadyCB& set_decryptor_ready_cb,
+      const base::Closure& waiting_for_decryption_key_cb);
   ~DecryptingAudioDecoder() override;
 
   // AudioDecoder implementation.
@@ -96,6 +97,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   OutputCB output_cb_;
   DecodeCB decode_cb_;
   base::Closure reset_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   // The current decoder configuration.
   AudioDecoderConfig config_;

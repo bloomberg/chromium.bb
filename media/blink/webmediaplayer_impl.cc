@@ -692,6 +692,15 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
                      base::saturated_cast<unsigned int>(init_data.size()));
 }
 
+void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
+  client_->didBlockPlaybackWaitingForKey();
+
+  // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
+  // when a key has been successfully added (e.g. OnSessionKeysChange() with
+  // |has_additional_usable_key| = true). http://crbug.com/461903
+  client_->didResumePlaybackBlockedForKey();
+}
+
 void WebMediaPlayerImpl::SetCdm(CdmContext* cdm_context,
                                 const CdmAttachedCB& cdm_attached_cb) {
   pipeline_.SetCdm(cdm_context, cdm_attached_cb);
@@ -903,7 +912,8 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
       base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack));
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnWaitingForDecryptionKey));
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
