@@ -246,10 +246,12 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     }
   }
 
-  if (StartupUtils::IsWebviewSigninEnabled()) {
+  if (!command_line->HasSwitch(::switches::kGaiaUrl) &&
+      StartupUtils::IsWebviewSigninEnabled()) {
     // We can't use switch --gaia-url in this case cause we need get
     // auth_code from staging gaia and make all the other auths against prod
     // gaia so user could use all the google services.
+    // TODO(dpolukhin): crbug.com/462204
     const GURL gaia_url = GURL(kStagingGaiaUrl);
     params.SetString("gaiaUrl", gaia_url.spec());
   } else {
