@@ -184,16 +184,18 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
       private_key: privateKey
     };
     var hostOwner = clientBaseJid;
-    var hostOwnerEmail = remoting.identity.getCachedEmail();
-    if (hostOwner != xmppLogin) {
-      hostConfig['host_owner'] = hostOwner;
-      if (hostOwnerEmail != hostOwner) {
-        hostConfig['host_owner_email'] = hostOwnerEmail;
-      }
-    }
-    that.hostDaemonFacade_.startDaemon(
-        hostConfig, consent, onStarted.bind(null, hostName, publicKey),
-        onStartError);
+    remoting.identity.getEmail().then(
+        function(/** string */ hostOwnerEmail) {
+          if (hostOwner != xmppLogin) {
+            hostConfig['host_owner'] = hostOwner;
+            if (hostOwnerEmail != hostOwner) {
+              hostConfig['host_owner_email'] = hostOwnerEmail;
+            }
+          }
+          that.hostDaemonFacade_.startDaemon(
+              hostConfig, consent, onStarted.bind(null, hostName, publicKey),
+              onStartError);
+        });
   }
 
   /**
@@ -248,13 +250,14 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
             onError);
       } else {
         // No authorization code returned, use regular user credential flow.
-        that.hostDaemonFacade_.getPinHash(
-            newHostId, hostPin, startHostWithHash.bind(
-                null, hostName, publicKey, privateKey,
-                remoting.identity.getCachedEmail(),
-                remoting.oauth2.getRefreshToken(),
-                remoting.identity.getCachedEmail()),
-          onError);
+        remoting.identity.getEmail().then(
+            function(/** string */ email) {
+              that.hostDaemonFacade_.getPinHash(
+                  newHostId, hostPin, startHostWithHash.bind(
+                      null, hostName, publicKey, privateKey,
+                      email, remoting.oauth2.getRefreshToken(), email),
+                  onError);
+            });
       }
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +

@@ -448,31 +448,3 @@ remoting.OAuth2.prototype.getUserInfo = function() {
         reject);
   });
 };
-
-/**
- * If the user's email address is cached, return it, otherwise return null.
- *
- * @return {?string} The email address, if it has been cached by a previous call
- *     to getEmail or getUserInfo, otherwise null.
- */
-remoting.OAuth2.prototype.getCachedEmail = function() {
-  var value = window.localStorage.getItem(this.KEY_EMAIL_);
-  if (typeof value == 'string') {
-    return value;
-  }
-  return null;
-};
-
-/**
- * If the user's full name is cached, return it, otherwise return null.
- *
- * @return {?string} The user's full name, if it has been cached by a previous
- * call to getUserInfo, otherwise null.
- */
-remoting.OAuth2.prototype.getCachedUserFullName = function() {
-  var value = window.localStorage.getItem(this.KEY_FULLNAME_);
-  if (typeof value == 'string') {
-    return value;
-  }
-  return null;
-};

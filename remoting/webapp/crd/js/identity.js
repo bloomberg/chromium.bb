@@ -13,9 +13,6 @@
 var remoting = remoting || {};
 
 /**
- * TODO(jamiewalch): Remove remoting.OAuth2 from this type annotation when
- * the Apps v2 work is complete.
- *
  * @type {remoting.Identity}
  */
 remoting.identity = null;
@@ -160,29 +157,6 @@ remoting.Identity.prototype.getEmail = function() {
   return this.getUserInfo().then(function(userInfo) {
     return userInfo.email;
   });
-};
-
-/**
- * Gets the user's email address, or null if no successful call to
- * getUserInfo has been made.
- *
- * @return {?string} The cached email address, if available.
- */
-remoting.Identity.prototype.getCachedEmail = function() {
-  return this.email_;
-};
-
-/**
- * Gets the user's full name.
- *
- * This will return null if either:
- *   No successful call to getUserInfo has been made, or
- *   The webapp doesn't have permission to access this value.
- *
- * @return {?string} The cached user's full name, if available.
- */
-remoting.Identity.prototype.getCachedUserFullName = function() {
-  return this.fullName_;
 };
 
 /**

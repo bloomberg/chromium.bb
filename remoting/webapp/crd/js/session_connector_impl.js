@@ -483,7 +483,10 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       break;
 
     case remoting.ClientSession.State.CONNECTING:
-      console.log('Connecting as ' + remoting.identity.getCachedEmail());
+      remoting.identity.getEmail().then(
+          function(/** string */ email) {
+            console.log('Connecting as ' + email);
+          });
       break;
 
     case remoting.ClientSession.State.INITIALIZING:

@@ -94,10 +94,12 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
 
   base.debug.assert(hostSession_ === null);
   hostSession_ = new remoting.HostSession();
-  var email = /** @type {string} */ (remoting.identity.getCachedEmail());
-  hostSession_.connect(
-      hostFacade, email, token, onHostStateChanged_,
-      onNatTraversalPolicyChanged_, logDebugInfo_, it2meConnectFailed_);
+  remoting.identity.getEmail().then(
+      function(/** string */ email) {
+        hostSession_.connect(
+            hostFacade, email, token, onHostStateChanged_,
+            onNatTraversalPolicyChanged_, logDebugInfo_, it2meConnectFailed_);
+      });
 };
 
 /**
