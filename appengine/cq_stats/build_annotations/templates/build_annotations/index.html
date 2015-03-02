@@ -48,8 +48,8 @@
     <td class="build_list">{{ build_row.build_number }}</td>
     <td class="build_list">{{ build_row.status|truncatechars:20 }}</td>
     <td class="build_list">{{ build_row.summary|truncatechars:50|cut:'\n\r' }}</td>
-    <td class="build_list">{{ build_row.start_time|date }}</td>
-    <td class="build_list">{{ build_row.run_time|time }}</td>
+    <td class="build_list" name="date.datetz">{{ build_row.start_time|date:"D, d M H:i" }} UTC</td>
+    <td class="build_list">{{ build_row.run_time }}</td>
     <td class="build_list">{{ build_row.weekday|yesno }}</td>
     <td class="build_list">{{ build_row.annotation_summary|truncatechars:150 }}</td>
   </tr>

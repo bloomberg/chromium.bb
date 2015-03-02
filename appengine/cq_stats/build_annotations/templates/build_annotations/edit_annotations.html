@@ -27,7 +27,7 @@
   </tr>
   <tr>
     <th class="build_details">Start Time</th>
-    <td class="build_details">{{ build_row.start_time }}</td>
+    <td class="build_details" name="date.datetz">{{ build_row.start_time|date:"D, d M Y H:i" }} UTC</td>
   </tr>
   <tr>
     <th class="build_details">Runtime</th>
