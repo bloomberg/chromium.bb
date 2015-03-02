@@ -79,9 +79,6 @@ Still reading?
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
   <issue id="UnusedResources">
-    <!-- TODO(aurimas): remove suppression once crbug.com/458328 is fixed. -->
-    <ignore path="content/public/android/java/res/layout/validation_message_bubble.xml" />
-
     <!-- These files are used by chrome_shell_apk and chrome_apk targets. -->
     <ignore path="chrome/android/java/res/layout/accessibility_tab_switcher.xml" />
     <ignore path="chrome/android/java/res/drawable/btn_back.xml" />
