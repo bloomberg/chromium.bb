@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
+#include "base/logging.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
@@ -16,7 +16,8 @@ int X11ErrorHandler(Display* display, XErrorEvent* error) {
   g_x11_error_code = error->error_code;
   return 0;
 }
-}
+
+}  // namespace
 
 namespace gfx {
 
