@@ -1828,7 +1828,7 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
 }
 
 bool PepperPluginInstanceImpl::CanRotateView() {
-  if (!LoadPdfInterface())
+  if (!LoadPdfInterface() || module()->is_crashed())
     return false;
 
   return true;
