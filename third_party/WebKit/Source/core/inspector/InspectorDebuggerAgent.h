@@ -295,7 +295,7 @@ private:
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
-    WillBeHeapHashMap<String, String> m_editedScripts;
+    HashMap<String, String> m_editedScripts;
 
     using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;

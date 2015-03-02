@@ -213,7 +213,7 @@ private:
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
     RefPtrWillBeMember<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
-    WillBeHeapHashMap<String, String> m_editedStyleSheets;
+    HashMap<String, String> m_editedStyleSheets;
 
     int m_lastStyleSheetId;
     int m_styleSheetsPendingMutation;
