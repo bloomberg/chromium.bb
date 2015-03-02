@@ -24,7 +24,6 @@
 
 [
     Conditional=WEB_AUDIO,
-    TypeChecking=Unrestricted,
 ] interface AnalyserNode : AudioNode {
     [RaisesException=Setter] attribute unsigned long fftSize;
     readonly attribute unsigned long frequencyBinCount;

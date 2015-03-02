@@ -37,7 +37,6 @@ enum AudioContextState {
     ConstructorCallWith=Document,
     NoInterfaceObject,
     RaisesException=Constructor,
-    TypeChecking=Unrestricted,
 ] interface AudioContext : EventTarget {
     // All rendered audio ultimately connects to destination, which represents the audio hardware.
     readonly attribute AudioDestinationNode destination;

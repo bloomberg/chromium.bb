@@ -5,7 +5,6 @@
 // https://dvcs.w3.org/hg/dap/raw-file/tip/battery/Overview.html#batterymanager-interface
 [
     RuntimeEnabled=BatteryStatus,
-    TypeChecking=Unrestricted,
     ActiveDOMObject
 ] interface BatteryManager : EventTarget {
     readonly attribute boolean charging;

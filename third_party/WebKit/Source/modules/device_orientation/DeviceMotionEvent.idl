@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    TypeChecking=Unrestricted,
-] interface DeviceMotionEvent : Event {
+interface DeviceMotionEvent : Event {
     readonly attribute DeviceAcceleration acceleration;
     readonly attribute DeviceAcceleration accelerationIncludingGravity;
     readonly attribute DeviceRotationRate rotationRate;

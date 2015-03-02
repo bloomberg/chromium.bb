@@ -4,9 +4,7 @@
 
 // http://webaudio.github.io/web-midi-api/#idl-def-MIDIMessageEventInit
 
-[
-    TypeChecking=Unrestricted,
-] dictionary MIDIMessageEventInit : EventInit {
+dictionary MIDIMessageEventInit : EventInit {
     double receivedTime;
     Uint8Array data;
 };
