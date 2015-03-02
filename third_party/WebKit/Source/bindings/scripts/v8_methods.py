@@ -201,10 +201,6 @@ def argument_context(interface, method, argument, index):
          has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
         idl_type.is_wrapper_type)
 
-    restricted_float = (
-        has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
-        has_extended_attribute_value(method, 'TypeChecking', 'Unrestricted'))
-
     if ('ImplementedInPrivateScript' in extended_attributes and
         not idl_type.is_wrapper_type and
         not idl_type.is_basic_type):
@@ -248,7 +244,7 @@ def argument_context(interface, method, argument, index):
         'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in extended_attributes,
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(method, argument, index, restricted_float=restricted_float),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(method, argument, index),
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 

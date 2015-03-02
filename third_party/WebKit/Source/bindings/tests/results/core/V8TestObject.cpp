@@ -425,7 +425,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    double cppValue = toDouble(v8Value, exceptionState);
+    double cppValue = toRestrictedDouble(v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoubleAttribute(cppValue);
@@ -457,7 +457,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    float cppValue = toFloat(v8Value, exceptionState);
+    float cppValue = toRestrictedFloat(v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setFloatAttribute(cppValue);
@@ -4910,7 +4910,7 @@ static void typeCheckingInterfaceFloatAttributeAttributeSetter(v8::Local<v8::Val
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceFloatAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    float cppValue = toFloat(v8Value, exceptionState);
+    float cppValue = toRestrictedFloat(v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setTypeCheckingInterfaceFloatAttribute(cppValue);
@@ -5857,7 +5857,7 @@ static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double doubleArg;
     {
-        doubleArg = toDouble(info[0], exceptionState);
+        doubleArg = toRestrictedDouble(info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -5882,7 +5882,7 @@ static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     float floatArg;
     {
-        floatArg = toFloat(info[0], exceptionState);
+        floatArg = toRestrictedFloat(info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -8056,7 +8056,7 @@ static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::
     double defaultDoubleArg;
     {
         if (!info[0]->IsUndefined()) {
-            defaultDoubleArg = toDouble(info[0], exceptionState);
+            defaultDoubleArg = toRestrictedDouble(info[0], exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         } else {
@@ -8747,7 +8747,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double doubleArg;
     {
-        doubleArg = toDouble(info[0], exceptionState);
+        doubleArg = toRestrictedDouble(info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -8939,7 +8939,7 @@ static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double doubleArg;
     {
-        doubleArg = toDouble(info[0], exceptionState);
+        doubleArg = toRestrictedDouble(info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -9207,7 +9207,7 @@ static void promiseOverloadMethod2MethodPromise(const v8::FunctionCallbackInfo<v
     double arg2;
     {
         arg1 = toDOMWindow(info.GetIsolate(), info[0]);
-        arg2 = toDouble(info[1], exceptionState);
+        arg2 = toRestrictedDouble(info[1], exceptionState);
         if (exceptionState.hadException())
             return;
     }
@@ -9229,7 +9229,7 @@ static void promiseOverloadMethod3MethodPromise(const v8::FunctionCallbackInfo<v
     double arg2;
     {
         arg1 = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        arg2 = toDouble(info[1], exceptionState);
+        arg2 = toRestrictedDouble(info[1], exceptionState);
         if (exceptionState.hadException())
             return;
     }
@@ -11329,7 +11329,7 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
         value1 = toInt16(info[2], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        value2 = toDouble(info[3], exceptionState);
+        value2 = toRestrictedDouble(info[3], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         string = info[4];

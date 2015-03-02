@@ -80,7 +80,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     } else if (doubleOrNullMemberValue->IsNull()) {
         impl.setDoubleOrNullMemberToNull();
     } else {
-        double doubleOrNullMember = toDouble(doubleOrNullMemberValue, exceptionState);
+        double doubleOrNullMember = toRestrictedDouble(doubleOrNullMemberValue, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setDoubleOrNullMember(doubleOrNullMember);

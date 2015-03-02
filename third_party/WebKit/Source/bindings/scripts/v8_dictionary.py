@@ -80,10 +80,6 @@ def member_context(dictionary, member):
     idl_type.add_includes_for_type()
     unwrapped_idl_type = unwrap_nullable_if_needed(idl_type)
 
-    restricted_float = (
-        has_extended_attribute_value(dictionary, 'TypeChecking', 'Unrestricted') or
-        has_extended_attribute_value(member, 'TypeChecking', 'Unrestricted'))
-
     def default_values():
         if not member.default_value:
             return None, None
@@ -120,8 +116,7 @@ def member_context(dictionary, member):
         'v8_default_value': v8_default_value,
         'v8_value_to_local_cpp_value': unwrapped_idl_type.v8_value_to_local_cpp_value(
             member.extended_attributes, member.name + 'Value',
-            member.name, isolate='isolate', use_exception_state=True,
-            restricted_float=restricted_float),
+            member.name, isolate='isolate', use_exception_state=True),
     }
 
 

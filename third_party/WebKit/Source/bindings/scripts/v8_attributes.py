@@ -322,10 +322,6 @@ def setter_context(interface, attribute, context):
         (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
          has_extended_attribute_value(attribute, 'TypeChecking', 'Interface')) and
         idl_type.is_wrapper_type)
-    # [TypeChecking=Unrestricted]
-    restricted_float = (
-        has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
-        has_extended_attribute_value(attribute, 'TypeChecking', 'Unrestricted'))
 
     context.update({
         'has_setter_exception_state':
@@ -339,7 +335,7 @@ def setter_context(interface, attribute, context):
             'cppValue', isolate='scriptState->isolate()',
             creation_context='scriptState->context()->Global()'),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'cppValue', restricted_float=restricted_float),
+            extended_attributes, 'v8Value', 'cppValue'),
     })
 
     # setter_expression() depends on context values we set above.

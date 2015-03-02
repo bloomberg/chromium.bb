@@ -124,7 +124,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
     float floatArg;
     V8StringResource<> stringArg;
     {
-        floatArg = toFloat(info[0], exceptionState);
+        floatArg = toRestrictedFloat(info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         stringArg = info[1];

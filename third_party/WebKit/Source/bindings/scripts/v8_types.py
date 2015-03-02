@@ -551,11 +551,6 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         arguments = v8_value
 
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
-        # FIXME: Once float/double are implemented per-specification (without
-        # [TypeChecking=Unrestricted]) this special handling can be dropped.
-        # http://crbug.com/354298
-        if base_idl_type in ('float', 'double') and not restricted_float:
-            base_idl_type = 'unrestricted ' + base_idl_type
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
     elif idl_type.is_array_buffer_or_view:
         cpp_expression_format = (

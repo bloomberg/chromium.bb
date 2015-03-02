@@ -1274,9 +1274,7 @@ def property_setter(setter, interface):
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
-    restricted_float = (
-        has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
-        has_extended_attribute_value(setter, 'TypeChecking', 'Unrestricted'))
+
     return {
         'has_exception_state': (is_raises_exception or
                                 idl_type.v8_conversion_needs_exception_state),
@@ -1290,7 +1288,7 @@ def property_setter(setter, interface):
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'propertyValue', restricted_float=restricted_float),
+            extended_attributes, 'v8Value', 'propertyValue'),
     }
 
 
