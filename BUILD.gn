@@ -22,33 +22,17 @@ declare_args() {
   root_extra_deps = []
 }
 
-group("gyp_all") {
-  testonly = true
+# The "gn_all" target should list every root target (target that
+# nothing else depends on) built by both GN and GYP. One should
+# be able to run 'ninja gn_all gn_only gn_groups' and then run
+# 'ninja' a second time and have the second ninja invocation do nothing.
+#
+# In addition, the "gn_all" target serves to pull in all of the other
+# build files needed for the build.
+#
+# TODO(GYP): make sure that the above is true and there are scripts run
+# on the bots that enforce this.
 
-  # TODO(GYP): This target should describe everything that is built by a GYP
-  # build but not yet by a GN build, i.e., these are the targets that still
-  # need to be ported to GN. Eventually this target should be identical to
-  # gn_all.
-
-  deps = [
-    ":gn_all",
-    # "//components:components_browsertests", # TODO(GYP)
-    # "//components/nacl:nacl_loader_unittests", # TODO(GYP)
-    # "//google_apis:google_apis_unittests", # TODO(GYP)
-    # "//ui/compositor:compositor_unittests", # TODO(GYP)
-    # "//device:device_unittests", # TODO(GYP)
-    # "//ppapi:ppapi_unittests", # TODO(GYP)
-    # "//remoting:remoting_unittests",  # TODO(GYP)
-  ]
-}
-
-# The "gn_all" target matches the "gn_all" target in build/all.gyp.
-# It is not (yet!) the same as building "all".
-# TODO(GYP): Make it be basically the same as building all, or at least
-# be sure that we don't want any of the stuff listed in gn_all to
-# be built by default.
-
-# In GN, a "group" is a dummy target that just lists other targets.
 group("gn_all") {
   testonly = true
 
@@ -75,51 +59,25 @@ group("gn_all") {
     "//ipc/mojo:ipc_mojo_unittests",
     "//jingle:jingle_unittests",
     "//media:media_unittests",
-    "//media/mojo",  # only builds in mojo
     "//media/cast:cast_unittests",
     "//mojo",
     "//mojo/common:mojo_common_unittests",
-
-    # "//mojo/services/html_viewer:tests",  # TODO(GYP): Do we need this?
     "//net:net_unittests",
     "//ppapi/examples",  # TODO(GYP): What's the GYP equivalent?
     "//printing:printing_unittests",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
     "//sync:sync_unit_tests",
-
-    # TODO(GYP): the Blink test targets should be public, but
-    # currently aren't. all_blink pulls them in, though.
-    # "//third_party/WebKit/Source/platform:heap_unittests",
-    # "//third_party/WebKit/Source/platform:platform_unittests",
-    # "//third_party/WebKit/Source/wtf:wtf_unittests",
-    "//third_party/WebKit/public:all_blink",
+    "//third_party/WebKit/public:blink_tests",
     "//third_party/cacheinvalidation:cacheinvalidation_unittests",
-
-    # TODO(GYP): This is needed only w/ cld_version==1. What configs set that?
-    "//third_party/cld",
     "//third_party/codesighs",
-
-    # TODO(GYP): This is needed only w/ use_system_fontconfig==0.
-    # What configs set that?
-    # "//third_party/fontconfig",
-
-    # TODO(GYP): This will be pulled in automatically when enable_webrtc==true.
-    # For now pull it in manually so that it doesn't regress.
-    "//third_party/libsrtp",
     "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",
     "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
     "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
     "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",
     "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
     "//third_party/pdfium/samples:pdfium_test",
-
-    # TODO(GYP): Verify that this is no longer needed.
     "//third_party/smhasher:pmurhash",
-
-    # TODO(GYP): This will be pulled in automatically when enable_webrtc==true.
-    # For now pull it in manually so that it doesn't regress.
-    "//third_party/usrsctp",
     "//tools/imagediff($host_toolchain)",
     "//tools/gn",
     "//tools/gn:gn_unittests",
@@ -289,7 +247,6 @@ group("gn_all") {
       "//extensions:extensions_browsertests",  # TODO(GYP)
       "//extensions:extensions_unittests",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
-      "//third_party/usrsctp",  # TODO(GYP)
       "//ui/app_list:app_list_unittests",  # TODO(GYP)
       "//ui/gfx:gfx_unittests",  # TODO(GYP)
     ]
@@ -300,6 +257,13 @@ group("gn_all") {
       "//net:net_unittests",  # TODO(GYP)
     ]
   }
+}
+
+group("gn_only") {
+  deps = [
+    "//media/mojo",
+    # "//mojo/services/html_viewer:tests",  # TODO(GYP): Do we need this?
+  ]
 }
 
 if (is_linux) {
