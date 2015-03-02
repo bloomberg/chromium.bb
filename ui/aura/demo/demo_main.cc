@@ -23,6 +23,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(USE_X11)
@@ -63,6 +64,14 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   void OnCaptureLost() override {}
   void OnPaint(gfx::Canvas* canvas) override {
     canvas->DrawColor(color_, SkXfermode::kSrc_Mode);
+    gfx::Rect r;
+    canvas->GetClipBounds(&r);
+    // Fill with a non-solid color so that the compositor will exercise its
+    // texture upload path.
+    while (!r.IsEmpty()) {
+      r.Inset(2, 2);
+      canvas->FillRect(r, color_, SkXfermode::kXor_Mode);
+    }
   }
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
