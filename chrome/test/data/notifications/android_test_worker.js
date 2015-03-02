@@ -8,3 +8,7 @@ addEventListener('message', function(event) {
   messagePort = event.data;
   messagePort.postMessage('ready');
 });
+
+addEventListener('notificationclick', function(event) {
+  event.notification.close();
+});

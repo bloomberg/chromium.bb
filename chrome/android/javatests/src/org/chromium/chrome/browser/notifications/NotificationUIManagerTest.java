@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.SparseArray;
 
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeoutException;
 public class NotificationUIManagerTest extends ChromeShellTestBase {
     private static final String NOTIFICATION_TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/notifications/android_test.html");
-    private static final String PERMISSION_GRANTED = "\"granted\"";
 
     private MockNotificationManagerProxy mMockNotificationManager;
 
@@ -48,7 +48,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     /**
      * Sets the permission to use Web Notifications for the test HTTP server's origin to |setting|.
      */
-    private void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting) {
+    private void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting)
+            throws InterruptedException, TimeoutException {
         final String origin = getOrigin();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -59,6 +60,15 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
                 pushNotificationInfo.setContentSetting(setting);
             }
         });
+
+        String permission = runJavaScriptCodeInCurrentTab("Notification.permission");
+        if (setting == ContentSetting.ALLOW) {
+            assertEquals("\"granted\"", permission);
+        } else if (setting == ContentSetting.BLOCK) {
+            assertEquals("\"denied\"", permission);
+        } else {
+            assertEquals("\"default\"", permission);
+        }
     }
 
     /**
@@ -133,10 +143,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     @Feature({"Browser", "Notifications"})
     public void testDefaultNotificationProperties() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
-        assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
 
         Notification notification = showAndGetNotification("MyNotification", "{ body: 'Hello' }");
-        assertNotNull(notification);
 
         // Validate the contents of the notification.
         assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
@@ -165,10 +173,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     @Feature({"Browser", "Notifications"})
     public void testShowNotificationWithIcon() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
-        assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
 
         Notification notification = showAndGetNotification("MyNotification", "{icon: 'icon.png'}");
-        assertNotNull(notification);
 
         assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertNotNull(notification.largeIcon);
@@ -187,10 +193,8 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     @Feature({"Browser", "Notifications"})
     public void testShowNotificationWithoutIcon() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
-        assertEquals(PERMISSION_GRANTED, runJavaScriptCodeInCurrentTab("Notification.permission"));
 
         Notification notification = showAndGetNotification("NoIconNotification", "{}");
-        assertNotNull(notification);
 
         assertEquals("NoIconNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertNotNull(notification.largeIcon);
@@ -206,5 +210,52 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
 
         assertEquals(generatedIcon.getWidth(), notification.largeIcon.getWidth());
         assertEquals(generatedIcon.getHeight(), notification.largeIcon.getHeight());
+    }
+
+    /*
+     * Verifies that starting the PendingIntent stored as the notification's content intent will
+     * start up the associated Service Worker, where the JavaScript code will close the notification
+     * by calling event.notification.close().
+     */
+    @LargeTest
+    @Feature({"Browser", "Notifications"})
+    public void testNotificationContentIntentClosesNotification() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification = showAndGetNotification("MyNotification", "{}");
+
+        // Sending the PendingIntent resembles activating the notification.
+        assertNotNull(notification.contentIntent);
+        notification.contentIntent.send();
+
+        // The Service Worker will close the notification upon receiving the notificationclick
+        // event. This will eventually bubble up to a call to cancel() in the NotificationManager.
+        assertTrue(waitForNotificationManagerMutation());
+
+        SparseArray<Notification> notifications = mMockNotificationManager.getNotifications();
+        assertEquals(0, notifications.size());
+    }
+
+    /**
+     * Verifies that creating a notification with an associated "tag" will cause any previous
+     * notification with the same tag to be dismissed prior to being shown.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testNotificationTagReplacement() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification = showAndGetNotification("MyNotification", "{tag: 'myTag'}");
+
+        // Show the second notification with the same tag. We can't use showAndGetNotification for
+        // this purpose since a second notification would be shown.
+        runJavaScriptCodeInCurrentTab("showNotification('SecondNotification', {tag: 'myTag'});");
+        assertTrue(waitForNotificationManagerMutation());
+
+        // Verify that the notification was successfully replaced.
+        SparseArray<Notification> notifications = mMockNotificationManager.getNotifications();
+        assertEquals(1, notifications.size());
+        assertEquals("SecondNotification",
+                notifications.valueAt(0).extras.getString(Notification.EXTRA_TITLE));
     }
 }
