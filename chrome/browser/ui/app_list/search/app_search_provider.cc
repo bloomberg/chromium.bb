@@ -112,9 +112,16 @@ void AppSearchProvider::UpdateResults() {
 
       // Use the app list order to tiebreak apps that have never been launched.
       if (app->last_launch_time().is_null()) {
-        result->set_relevance(
-            kUnlaunchedAppRelevanceStepSize *
-            (apps_.size() - id_to_app_list_index[app->app_id()]));
+        auto it = id_to_app_list_index.find(app->app_id());
+        // If it's in a folder, it won't be in |id_to_app_list_index|. Rank
+        // those as if they are at the end of the list.
+        size_t app_list_index =
+            it == id_to_app_list_index.end() ? apps_.size() : (*it).second;
+        if (app_list_index > apps_.size())
+          app_list_index = apps_.size();
+
+        result->set_relevance(kUnlaunchedAppRelevanceStepSize *
+                              (apps_.size() - app_list_index));
       } else {
         result->UpdateFromLastLaunched(clock_->Now(), app->last_launch_time());
       }

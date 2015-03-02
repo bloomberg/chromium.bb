@@ -21,6 +21,7 @@
 #include "extensions/common/extension_set.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_result.h"
@@ -158,6 +159,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
 }
 
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
+  const char kFolderId[] = "folder1";
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile_.get());
 
@@ -174,6 +176,18 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
       model()->FindItem(kPackagedApp2Id),
       model()->FindItem(kPackagedApp1Id)->position().CreateBefore());
   EXPECT_EQ("Hosted App,Packaged App 2,Packaged App 1", RunQuery(""));
+
+  // Moving an app into a folder deprioritizes it.
+  model()->AddItem(scoped_ptr<AppListFolderItem>(
+      new AppListFolderItem(kFolderId, AppListFolderItem::FOLDER_TYPE_NORMAL)));
+  model()->MoveItemToFolder(model()->FindItem(kPackagedApp2Id), kFolderId);
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
+
+  // The position of the folder shouldn't matter.
+  model()->SetItemPosition(
+      model()->FindItem(kFolderId),
+      model()->FindItem(kPackagedApp1Id)->position().CreateBefore());
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 }
 
 }  // namespace test
