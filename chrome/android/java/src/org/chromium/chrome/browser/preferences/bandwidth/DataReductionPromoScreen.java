@@ -19,7 +19,7 @@ import android.widget.LinearLayout.LayoutParams;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
-import org.chromium.chrome.browser.UmaBridge;
+import org.chromium.chrome.browser.metrics.UmaBridge;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 

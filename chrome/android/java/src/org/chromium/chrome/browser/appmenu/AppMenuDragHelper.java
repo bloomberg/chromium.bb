@@ -18,7 +18,7 @@ import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UmaBridge;
+import org.chromium.chrome.browser.metrics.UmaBridge;
 
 import java.util.ArrayList;
 

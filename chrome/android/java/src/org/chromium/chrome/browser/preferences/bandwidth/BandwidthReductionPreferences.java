@@ -16,9 +16,9 @@ import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UmaBridge;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.infobar.DataReductionProxyInfoBar;
+import org.chromium.chrome.browser.metrics.UmaBridge;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;

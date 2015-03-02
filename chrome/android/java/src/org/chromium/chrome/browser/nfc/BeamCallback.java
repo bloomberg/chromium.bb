@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UmaBridge;
+import org.chromium.chrome.browser.metrics.UmaBridge;
 
 import java.net.MalformedURLException;
 import java.net.URL;

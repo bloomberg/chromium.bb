@@ -9,7 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
-import org.chromium.chrome.browser.UmaBridge;
+import org.chromium.chrome.browser.metrics.UmaBridge;
 
 /**
  * A helper class for a menu button to decide when to show the app menu and forward touch

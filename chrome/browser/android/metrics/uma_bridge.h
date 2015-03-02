@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_UMA_UTILS_H_
-#define CHROME_BROWSER_ANDROID_UMA_UTILS_H_
+#ifndef CHROME_BROWSER_ANDROID_METRICS_UMA_BRIDGE_H_
+#define CHROME_BROWSER_ANDROID_METRICS_UMA_BRIDGE_H_
 
 #include <jni.h>
-
-#include "base/time/time.h"
 
 namespace chrome {
 namespace android {
 
-base::Time GetMainEntryPointTime();
-bool RegisterStartupMetricUtils(JNIEnv* env);
+// Registers the native methods through jni
+bool RegisterUmaBridge(JNIEnv* env);
 
 }  // namespace android
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_ANDROID_UMA_UTILS_H_
+#endif  // CHROME_BROWSER_ANDROID_METRICS_UMA_BRIDGE_H_
