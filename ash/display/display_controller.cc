@@ -39,6 +39,7 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_CHROMEOS)
@@ -266,6 +267,7 @@ DisplayController::DisplayController()
       focus_activation_store_(new FocusActivationStore()),
       cursor_window_controller_(new CursorWindowController()),
       mirror_window_controller_(new MirrorWindowController()),
+      cursor_display_id_for_restore_(gfx::Display::kInvalidDisplayID),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS())
@@ -569,18 +571,44 @@ void DisplayController::EnsurePointerInDisplays() {
     if (closest_distance_squared < 0 ||
         closest_distance_squared > distance_squared) {
       aura::Window* root_window = GetRootWindowForDisplayId(display.id());
-      aura::client::ScreenPositionClient* client =
-          aura::client::GetScreenPositionClient(root_window);
-      client->ConvertPointFromScreen(root_window, &center);
+      ::wm::ConvertPointFromScreen(root_window, &center);
       root_window->GetHost()->ConvertPointToNativeScreen(&center);
       dst_root_window = root_window;
       target_location_in_native = center;
       closest_distance_squared = distance_squared;
     }
   }
+
+  gfx::Point target_location_in_root = target_location_in_native;
   dst_root_window->GetHost()->ConvertPointFromNativeScreen(
-      &target_location_in_native);
-  dst_root_window->MoveCursorTo(target_location_in_native);
+      &target_location_in_root);
+
+#if defined(USE_OZONE)
+  gfx::Point target_location_in_screen = target_location_in_root;
+  ::wm::ConvertPointToScreen(dst_root_window, &target_location_in_screen);
+  int64 target_display_id =
+      display_manager->FindDisplayContainingPoint(target_location_in_screen)
+          .id();
+
+  // Do not move the cursor if the cursor's location did not change. This avoids
+  // moving (and showing) the cursor on startup.
+  // - |cursor_location_in_screen_coords_for_restore_| is checked to ensure that
+  //   the cursor is moved when the cursor's native position does not change but
+  //   the scale factor or rotation of the display it is on have changed.
+  // - |cursor_display_id_for_restore_| is checked to ensure that the cursor is
+  //   moved when the cursor's native position and screen position do not change
+  //   but the display that it is on has changed. This occurs when swapping the
+  //   primary display.
+  if (target_location_in_native !=
+          cursor_location_in_native_coords_for_restore_ ||
+      target_location_in_screen !=
+          cursor_location_in_screen_coords_for_restore_ ||
+      target_display_id != cursor_display_id_for_restore_) {
+    dst_root_window->MoveCursorTo(target_location_in_root);
+  }
+#else
+  dst_root_window->MoveCursorTo(target_location_in_root);
+#endif
 }
 
 bool DisplayController::UpdateWorkAreaOfDisplayNearestWindow(
@@ -713,14 +741,16 @@ void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {
   focus_activation_store_->Store(clear_focus);
   gfx::Screen* screen = Shell::GetScreen();
   gfx::Point point_in_screen = screen->GetCursorScreenPoint();
-  gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
-  aura::Window* root_window = GetRootWindowForDisplayId(display.id());
+  cursor_location_in_screen_coords_for_restore_ = point_in_screen;
 
-  aura::client::ScreenPositionClient* client =
-      aura::client::GetScreenPositionClient(root_window);
-  client->ConvertPointFromScreen(root_window, &point_in_screen);
-  root_window->GetHost()->ConvertPointToNativeScreen(&point_in_screen);
-  cursor_location_in_native_coords_for_restore_ = point_in_screen;
+  gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
+  cursor_display_id_for_restore_ = display.id();
+
+  gfx::Point point_in_native = point_in_screen;
+  aura::Window* root_window = GetRootWindowForDisplayId(display.id());
+  ::wm::ConvertPointFromScreen(root_window, &point_in_native);
+  root_window->GetHost()->ConvertPointToNativeScreen(&point_in_native);
+  cursor_location_in_native_coords_for_restore_ = point_in_native;
 }
 
 void DisplayController::PostDisplayConfigurationChange() {
