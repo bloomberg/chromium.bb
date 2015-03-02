@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
-import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 

@@ -40,14 +40,19 @@
         },
         {
           # GN: //components/web_contents_delegate_android:web_contents_delegate_android_java
+          # and //components/web_contents_delegate_android:web_contents_delegate_android_java_resources
           'target_name': 'web_contents_delegate_android_java',
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_java',
+            '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
             'java_in_dir': 'web_contents_delegate_android/android/java',
+            'has_java_resources': 1,
+            'R_package': 'org.chromium.components.web_contents_delegate_android',
+            'R_package_relpath': 'org/chromium/components/web_contents_delegate_android',
           },
           'includes': [ '../build/java.gypi' ],
         },

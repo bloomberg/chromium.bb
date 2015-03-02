@@ -271,6 +271,9 @@ per-file webdata_services.gypi=pkasting@chromium.org
 per-file webp_transcode.gypi=droger@chromium.org
 per-file webp_transcode.gypi=sdefresne@chromium.org
 
+per-file web_contents_delegate_android.gypi=benm@chromium.org
+per-file web_contents_delegate_android.gypi=tedchoc@chromium.org
+
 per-file web_resource.gypi=achuith@chromium.org
 per-file web_resource.gypi=asvitkine@chromium.org
 per-file web_resource.gypi=dbeam@chromium.org

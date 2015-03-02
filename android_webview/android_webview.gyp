@@ -415,6 +415,16 @@
           'includes': ['../android_webview/build/jarjar_resources.gypi'],
         },
         {
+          'target_name': 'android_webview_jarjar_web_contents_delegate_android_resources',
+          'android_unmangled_name': 1,
+          'type': 'none',
+          'variables': {
+            'res_dir': '../components/web_contents_delegate_android/android/java/res',
+            'rules_file': '../android_webview/build/jarjar-rules.txt',
+          },
+          'includes': ['../android_webview/build/jarjar_resources.gypi'],
+        },
+        {
           'target_name': 'android_webview_resources',
           'type': 'none',
           'android_unmangled_name': 1,
@@ -423,6 +433,7 @@
             '../ui/android/ui_android.gyp:ui_strings_grd',
             'android_webview_jarjar_content_resources',
             'android_webview_jarjar_ui_resources',
+            'android_webview_jarjar_web_contents_delegate_android_resources',
             'android_webview_strings_grd',
           ],
         },

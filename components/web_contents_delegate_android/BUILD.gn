@@ -32,8 +32,15 @@ static_library("web_contents_delegate_android") {
 }
 
 # GYP: //components/web_contents_delegate_android:web_contents_delegate_android_java
+android_resources("web_contents_delegate_android_java_resources") {
+  custom_package = "org.chromium.components.web_contents_delegate_android"
+  resource_dirs = [ "android/java/res" ]
+}
+
+# GYP: //components/web_contents_delegate_android:web_contents_delegate_android_java
 android_library("web_contents_delegate_android_java") {
   deps = [
+    ":web_contents_delegate_android_java_resources",
     "//base:base_java",
     "//ui/android:ui_java",
     "//content/public/android:content_java",
