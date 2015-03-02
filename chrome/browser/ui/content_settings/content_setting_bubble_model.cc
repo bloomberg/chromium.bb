@@ -1199,6 +1199,7 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
     return;
   // Reset this embedder's entry to default for each of the requesting
   // origins currently on the page.
+  const GURL& embedder_url = web_contents()->GetURL();
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   const ContentSettingsUsagesState::StateMap& state_map =
@@ -1210,7 +1211,7 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
        state_map.begin(); it != state_map.end(); ++it) {
     settings_map->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(it->first),
-        ContentSettingsPattern::Wildcard(),
+        ContentSettingsPattern::FromURLNoWildcard(embedder_url),
         CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
         std::string(),
         CONTENT_SETTING_DEFAULT);
