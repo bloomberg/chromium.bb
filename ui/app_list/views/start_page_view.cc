@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/start_page_view.h"
 
+#include <string>
+
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"

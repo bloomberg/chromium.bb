@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/search_result_page_view.h"
 
+#include <algorithm>
+
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"

@@ -23,7 +23,7 @@ def CheckChangeLintsClean(input_api, output_api):
   sources = lambda x: input_api.FilterSourceFile(
     x, white_list = INCLUDE_CPP_FILES_ONLY, black_list = black_list)
   return input_api.canned_checks.CheckChangeLintsClean(
-      input_api, output_api, sources, [])
+      input_api, output_api, sources, lint_filters=[], verbose_level=1)
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
