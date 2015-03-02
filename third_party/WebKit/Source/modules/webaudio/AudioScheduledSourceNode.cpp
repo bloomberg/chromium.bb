@@ -153,7 +153,10 @@ void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState
     // dropped when the source has finished playing.
     context()->refNode(this);
 
-    m_startTime = when;
+    // If |when| < currentTime, the source must start now according to the spec.
+    // So just set startTime to currentTime in this case to start the source now.
+    m_startTime = std::max(when, context()->currentTime());
+
     m_playbackState = SCHEDULED_STATE;
 }
 
