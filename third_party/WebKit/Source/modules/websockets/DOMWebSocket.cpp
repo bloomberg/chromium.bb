@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
@@ -242,11 +243,11 @@ void DOMWebSocket::logError(const String& message)
 
 DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
-    Vector<String> protocols;
+    StringOrStringSequence protocols;
     return create(context, url, protocols, exceptionState);
 }
 
-DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
+DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, const StringOrStringSequence& protocols, ExceptionState& exceptionState)
 {
     if (url.isNull()) {
         exceptionState.throwDOMException(SyntaxError, "Failed to create a WebSocket: the provided URL is invalid.");
@@ -256,18 +257,22 @@ DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url,
     DOMWebSocket* webSocket = new DOMWebSocket(context);
     webSocket->suspendIfNeeded();
 
-    webSocket->connect(url, protocols, exceptionState);
+    if (protocols.isNull()) {
+        Vector<String> protocolsVector;
+        webSocket->connect(url, protocolsVector, exceptionState);
+    } else if (protocols.isString()) {
+        Vector<String> protocolsVector;
+        protocolsVector.append(protocols.getAsString());
+        webSocket->connect(url, protocolsVector, exceptionState);
+    } else {
+        ASSERT(protocols.isStringSequence());
+        webSocket->connect(url, protocols.getAsStringSequence(), exceptionState);
+    }
+
     if (exceptionState.hadException())
         return nullptr;
 
     return webSocket;
-}
-
-DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, const String& protocol, ExceptionState& exceptionState)
-{
-    Vector<String> protocols;
-    protocols.append(protocol);
-    return create(context, url, protocols, exceptionState);
 }
 
 void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
@@ -468,7 +473,8 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
             exceptionState.throwDOMException(InvalidAccessError, "The code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither.");
             return;
         }
-        CString utf8 = reason.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
+        // Bindings specify USVString, so unpaired surrogates are already replaced with U+FFFD.
+        CString utf8 = reason.utf8();
         if (utf8.length() > maxReasonSizeInBytes) {
             exceptionState.throwDOMException(SyntaxError, "The message must not be greater than " + String::number(maxReasonSizeInBytes) + " bytes.");
             return;

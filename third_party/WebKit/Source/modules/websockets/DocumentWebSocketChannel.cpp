@@ -268,7 +268,7 @@ void DocumentWebSocketChannel::disconnect()
 
 DocumentWebSocketChannel::Message::Message(const String& text)
     : type(MessageTypeText)
-    , text(text.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD)) { }
+    , text(text.utf8()) { }
 
 DocumentWebSocketChannel::Message::Message(PassRefPtr<BlobDataHandle> blobDataHandle)
     : type(MessageTypeBlob)

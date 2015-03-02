@@ -29,24 +29,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/html5/websockets/#websocket
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/network.html#websocket
+// https://html.spec.whatwg.org/multipage/comms.html#the-websocket-interface
 
 // FIXME: use BinaryType in binaryType
 enum BinaryType { "blob", "arraybuffer" };
 
 [
     ActiveDOMObject,
-    // FIXME: should be optional union type http://crbug.com/240176
-    Constructor(DOMString url, optional DOMString protocol),
-    Constructor(DOMString url, sequence<DOMString> protocols),
+    // FIXME: Spec has DOMString[]. https://www.w3.org/Bugs/Public/show_bug.cgi?id=28102
+    Constructor(DOMString url, optional (DOMString or sequence<DOMString>) protocols),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
+    TypeChecking=Interface,
     RaisesException=Constructor,
     GarbageCollected,
     ImplementedAs=DOMWebSocket,
 ] interface WebSocket : EventTarget {
-    [DeprecateAs=WebSocketURL] readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.
+    // FIXME: Lowercase .url is in the spec, .URL is for compatibility reasons. Remove when possible.
+    [DeprecateAs=WebSocketURL] readonly attribute DOMString URL;
     readonly attribute DOMString url;
 
     // ready state
@@ -58,17 +58,19 @@ enum BinaryType { "blob", "arraybuffer" };
     readonly attribute unsigned long bufferedAmount;
 
     // networking
-             attribute EventHandler onopen;
-             attribute EventHandler onerror;
-             attribute EventHandler onclose;
+    attribute EventHandler onopen;
+    attribute EventHandler onerror;
+    attribute EventHandler onclose;
+    // FIXME: Per spec and impl, should never return undefined. Verify and remove extended attribute.
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString extensions;
+    // FIXME: Per spec and impl, should never return undefined. Verify and remove extended attribute.
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString protocol;
-    [RaisesException] void close([Clamp] optional unsigned short code, optional DOMString reason);
+    [RaisesException] void close([Clamp] optional unsigned short code, optional USVString reason);
 
     // messaging
-             attribute EventHandler onmessage;
-             attribute DOMString binaryType;
-    [RaisesException] void send(DOMString data);
+    attribute EventHandler onmessage;
+    attribute DOMString binaryType;
+    [RaisesException] void send(USVString data);
     [RaisesException] void send(Blob data);
     [RaisesException] void send(ArrayBuffer data);
     [RaisesException] void send(ArrayBufferView data);
