@@ -174,6 +174,7 @@ struct FormFieldData;
 //
 //   id                 String assigned by the server to identify this address.
 //                      This is opaque to the client.
+//   recipient_name     Added in v63.
 //   company_name
 //   street_address     The combined lines of the street address.
 //   address_1          Also known as "administrative area". This is normally
@@ -365,6 +366,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion60AddServerCards();
   bool MigrateToVersion61AddUsageStats();
   bool MigrateToVersion62AddUsageStatsForUnmaskedCards();
+  bool MigrateToVersion63AddServerRecipientName();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;

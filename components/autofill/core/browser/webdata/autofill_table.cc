@@ -469,6 +469,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 62:
       *update_compatible_version = false;
       return MigrateToVersion62AddUsageStatsForUnmaskedCards();
+    case 63:
+      *update_compatible_version = false;
+      return MigrateToVersion63AddServerRecipientName();
   }
   return true;
 }
@@ -899,6 +902,7 @@ bool AutofillTable::GetAutofillServerProfiles(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT "
         "id,"
+        "recipient_name,"
         "company_name,"
         "street_address,"
         "address_1,"  // ADDRESS_HOME_STATE
@@ -916,6 +920,7 @@ bool AutofillTable::GetAutofillServerProfiles(
     scoped_ptr<AutofillProfile> profile(new AutofillProfile(
         AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
 
+    profile->SetRawInfo(NAME_FULL, s.ColumnString16(index++));
     profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
     profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, s.ColumnString16(index++));
     profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(index++));
@@ -944,6 +949,7 @@ void AutofillTable::SetAutofillServerProfiles(
   sql::Statement insert(db_->GetUniqueStatement(
       "INSERT INTO server_addresses("
         "id,"
+        "recipient_name,"
         "company_name,"
         "street_address,"
         "address_1,"  // ADDRESS_HOME_STATE
@@ -954,12 +960,13 @@ void AutofillTable::SetAutofillServerProfiles(
         "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
         "country_code,"  // ADDRESS_HOME_COUNTRY
         "language_code) "
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
   for (const auto& profile : profiles) {
     DCHECK(profile.record_type() == AutofillProfile::SERVER_PROFILE);
 
     int index = 0;
     insert.BindString(index++, profile.server_id());
+    insert.BindString16(index++, profile.GetRawInfo(NAME_FULL));
     insert.BindString16(index++, profile.GetRawInfo(COMPANY_NAME));
     insert.BindString16(index++,
                         profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
@@ -1671,6 +1678,8 @@ bool AutofillTable::InitUnmaskedCreditCardsTable() {
 
 bool AutofillTable::InitServerAddressesTable() {
   if (!db_->DoesTableExist("server_addresses")) {
+    // The space after language_code is necessary to match what sqlite does
+    // when it appends the column in migration.
     if (!db_->Execute("CREATE TABLE server_addresses ("
                       "id VARCHAR,"
                       "company_name VARCHAR,"
@@ -1682,7 +1691,8 @@ bool AutofillTable::InitServerAddressesTable() {
                       "postal_code VARCHAR,"
                       "sorting_code VARCHAR,"
                       "country_code VARCHAR,"
-                      "language_code VARCHAR)")) {
+                      "language_code VARCHAR, "  // Space required.
+                      "recipient_name VARCHAR)")) {
       NOTREACHED();
       return false;
     }
@@ -1964,6 +1974,15 @@ bool AutofillTable::MigrateToVersion62AddUsageStatsForUnmaskedCards() {
   }
 
   return transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion63AddServerRecipientName() {
+  if (!db_->DoesColumnExist("server_addresses", "recipient_name") &&
+      !db_->Execute("ALTER TABLE server_addresses ADD COLUMN "
+                    "recipient_name VARCHAR")) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace autofill
