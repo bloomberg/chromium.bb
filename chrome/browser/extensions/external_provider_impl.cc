@@ -498,7 +498,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                                  oem_extension_creation_flags)));
   }
 #elif defined(OS_LINUX)
-  if (!profile->IsSupervised()) {
+  if (!profile->IsLegacySupervised()) {
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
@@ -514,7 +514,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 #endif
 
-  if (!profile->IsSupervised()) {
+  if (!profile->IsLegacySupervised()) {
 #if defined(OS_WIN)
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
@@ -570,17 +570,17 @@ void ExternalProviderImpl::CreateExternalProviders(
                 Extension::FROM_WEBSTORE |
                     Extension::WAS_INSTALLED_BY_DEFAULT)));
 #endif
-
-    provider_list->push_back(
-      linked_ptr<ExternalProviderInterface>(
-        new ExternalProviderImpl(
-            service,
-            new ExternalComponentLoader(profile),
-            profile,
-            Manifest::INVALID_LOCATION,
-            Manifest::EXTERNAL_COMPONENT,
-            Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT)));
   }
+
+  provider_list->push_back(
+    linked_ptr<ExternalProviderInterface>(
+      new ExternalProviderImpl(
+          service,
+          new ExternalComponentLoader(profile),
+          profile,
+          Manifest::INVALID_LOCATION,
+          Manifest::EXTERNAL_COMPONENT,
+          Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT)));
 }
 
 }  // namespace extensions
