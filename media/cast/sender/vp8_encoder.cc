@@ -80,9 +80,10 @@ void Vp8Encoder::ConfigureForNewFrameSize(const gfx::Size& frame_size) {
                << frame_size.ToString();
       config_.g_w = frame_size.width();
       config_.g_h = frame_size.height();
-      CHECK_EQ(vpx_codec_enc_config_set(&encoder_, &config_), VPX_CODEC_OK)
-          << "Failed to update frame size in encoder config.";
-      return;
+      if (vpx_codec_enc_config_set(&encoder_, &config_) == VPX_CODEC_OK)
+        return;
+      DVLOG(1) << "libvpx rejected the attempt to use a smaller frame size in "
+                  "the current instance.";
     }
 
     DVLOG(1) << "Destroying/Re-Creating encoder for larger frame size: "
