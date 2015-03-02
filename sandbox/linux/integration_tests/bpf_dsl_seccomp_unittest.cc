@@ -651,6 +651,10 @@ ResultExpr RedirectAllSyscallsPolicy::EvaluateSyscall(int sysno) const {
   return UnsafeTrap(AllowRedirectedSyscall, NULL);
 }
 
+#if !defined(ADDRESS_SANITIZER)
+// ASan does not allow changing the signal handler for SIGBUS, and treats it as
+// a fatal signal.
+
 int bus_handler_fd_ = -1;
 
 void SigBusHandler(int, siginfo_t* info, void* void_context) {
@@ -679,6 +683,7 @@ BPF_TEST_C(SandboxBPF, SigBus, RedirectAllSyscallsPolicy) {
   BPF_ASSERT(close(fds[1]) == 0);
   BPF_ASSERT(c == 0x55);
 }
+#endif  // !defined(ADDRESS_SANITIZER)
 
 BPF_TEST_C(SandboxBPF, SigMask, RedirectAllSyscallsPolicy) {
   // Signal masks are potentially tricky to handle. For instance, if we

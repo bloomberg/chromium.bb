@@ -1,6 +1,6 @@
 # This line is read by update.sh and other scripts in tools/clang/scripts
 # Note: The spaces are significant.
-set(LIBRARYNAME BlinkGCPlugin_14)
+set(LIBRARYNAME BlinkGCPlugin)
 
 add_llvm_loadable_module("lib${LIBRARYNAME}"
                          BlinkGCPlugin.cpp
