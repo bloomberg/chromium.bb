@@ -293,7 +293,7 @@ void PopupMenuImpl::updateFromElement()
     }
     PagePopupClient::addString("],\n", data.get());
     PagePopupClient::addString("}\n", data.get());
-    m_popup->postMessage(String(data->data(), data->size()));
+    m_popup->postMessage(String::fromUTF8(data->data(), data->size()));
 }
 
 
