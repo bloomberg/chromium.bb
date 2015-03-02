@@ -67,8 +67,6 @@ void reloadFrameIgnoringCache(WebFrame*);
 // this. Use one of the above helpers.
 void pumpPendingRequestsDoNotUse(WebFrame*);
 
-void runPendingTasks();
-
 // Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
 class WebViewHelper {
     WTF_MAKE_NONCOPYABLE(WebViewHelper);

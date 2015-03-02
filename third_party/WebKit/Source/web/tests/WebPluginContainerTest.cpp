@@ -34,6 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "platform/PlatformEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "public/platform/Platform.h"
@@ -54,11 +55,12 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
+using blink::testing::runPendingTasks;
 using namespace blink;
 
 namespace {
 
-class WebPluginContainerTest : public testing::Test {
+class WebPluginContainerTest : public ::testing::Test {
 public:
     WebPluginContainerTest()
         : m_baseURL("http://www.test.com/")
@@ -111,7 +113,7 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->layout();
-    FrameTestHelpers::runPendingTasks();
+    runPendingTasks();
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
     ASSERT(pluginContainerOne);
@@ -141,7 +143,7 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->layout();
-    FrameTestHelpers::runPendingTasks();
+    runPendingTasks();
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
     ASSERT(pluginContainerOne);
@@ -172,7 +174,7 @@ TEST_F(WebPluginContainerTest, Copy)
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->layout();
-    FrameTestHelpers::runPendingTasks();
+    runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
     EXPECT_TRUE(webView->mainFrame()->executeCommand("Copy",  pluginContainerOneElement));
@@ -192,7 +194,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->layout();
-    FrameTestHelpers::runPendingTasks();
+    runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
     PlatformEvent::Modifiers modifierKey = PlatformEvent::CtrlKey;

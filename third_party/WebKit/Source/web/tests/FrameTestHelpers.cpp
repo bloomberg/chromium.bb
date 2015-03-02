@@ -32,6 +32,7 @@
 #include "web/tests/FrameTestHelpers.h"
 
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebString.h"
@@ -68,23 +69,6 @@ TestWebFrameClient* testClientForFrame(WebFrame* frame)
 {
     return static_cast<TestWebFrameClient*>(toWebLocalFrameImpl(frame)->client());
 }
-
-class QuitTask : public WebThread::Task {
-public:
-    void PostThis(Timer<QuitTask>*)
-    {
-        // We don't just quit here because the SharedTimer may be part-way
-        // through the current queue of tasks when runPendingTasks was called,
-        // and we can't miss the tasks that were behind it.
-        // Takes ownership of |this|.
-        Platform::current()->currentThread()->postTask(FROM_HERE, this);
-    }
-
-    virtual void run()
-    {
-        Platform::current()->currentThread()->exitRunLoop();
-    }
-};
 
 class ServeAsyncRequestsTask : public WebThread::Task {
 public:
@@ -243,15 +227,6 @@ void pumpPendingRequestsDoNotUse(WebFrame* frame)
     pumpPendingRequests(frame);
 }
 
-// FIXME: There's a duplicate implementation in UnitTestHelpers.cpp. Remove one.
-void runPendingTasks()
-{
-    // Pending tasks include Timers that have been scheduled.
-    Timer<QuitTask> quitOnTimeout(new QuitTask, &QuitTask::PostThis);
-    quitOnTimeout.startOneShot(0, FROM_HERE);
-    Platform::current()->currentThread()->enterRunLoop();
-}
-
 WebViewHelper::WebViewHelper()
     : m_webView(0)
 {
@@ -337,7 +312,7 @@ void TestWebFrameClient::waitForLoadToComplete()
         // runPendingTasks may not be enough.
         // runPendingTasks only ensures that main thread task queue is empty,
         // and asynchronous parsing make use of off main thread HTML parser.
-        FrameTestHelpers::runPendingTasks();
+        testing::runPendingTasks();
         if (!isLoading())
             break;
 

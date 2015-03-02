@@ -9,6 +9,7 @@
 #include "core/dom/Node.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
@@ -18,8 +19,8 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using blink::FrameTestHelpers::runPendingTasks;
 using blink::FrameTestHelpers::loadFrame;
+using blink::testing::runPendingTasks;
 using URLTestHelpers::registerMockedURLFromBaseURL;
 
 namespace {
@@ -52,7 +53,7 @@ private:
     int m_imeRequestCount;
 };
 
-class ImeOnFocusTest : public testing::Test {
+class ImeOnFocusTest : public ::testing::Test {
 public:
     ImeOnFocusTest()
         : m_baseURL("http://www.test.com/")
@@ -87,7 +88,7 @@ void ImeOnFocusTest::sendGestureTap(WebView* webView, IntPoint clientPoint)
     webGestureEvent.data.tap.height = 10;
 
     webView->handleInputEvent(webGestureEvent);
-    FrameTestHelpers::runPendingTasks();
+    runPendingTasks();
 }
 
 void ImeOnFocusTest::focus(const WTF::AtomicString& element)

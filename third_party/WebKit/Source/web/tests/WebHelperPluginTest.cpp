@@ -5,6 +5,7 @@
 #include "config.h"
 #include "public/web/WebHelperPlugin.h"
 
+#include "core/testing/UnitTestHelpers.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebLocalFrame.h"
 #include "web/tests/FakeWebPlugin.h"
@@ -42,7 +43,7 @@ private:
     bool m_createPlaceholder;
 };
 
-class WebHelperPluginTest : public testing::Test {
+class WebHelperPluginTest : public ::testing::Test {
 protected:
     virtual void SetUp() override
     {
@@ -54,7 +55,7 @@ protected:
     {
         m_plugin.clear();
         // WebHelperPlugin is destroyed by a task posted to the message loop.
-        FrameTestHelpers::runPendingTasks();
+        testing::runPendingTasks();
     }
 
     FrameTestHelpers::WebViewHelper m_helper;

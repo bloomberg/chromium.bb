@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -51,10 +52,11 @@
 
 using namespace blink;
 using blink::URLTestHelpers::toKURL;
+using blink::testing::runPendingTasks;
 
 namespace {
 
-class AssociatedURLLoaderTest : public testing::Test,
+class AssociatedURLLoaderTest : public ::testing::Test,
                                 public WebURLLoaderClient {
 public:
     AssociatedURLLoaderTest()
@@ -65,7 +67,6 @@ public:
         ,  m_didReceiveCachedMetadata(false)
         ,  m_didFinishLoading(false)
         ,  m_didFail(false)
-        ,  m_runningMessageLoop(false)
     {
         // Reuse one of the test files from WebFrameTest.
         m_baseFilePath = Platform::current()->unitTestSupport()->webKitRootDir();
@@ -179,10 +180,6 @@ public:
     {
         m_didFail = true;
         EXPECT_EQ(m_expectedLoader, loader);
-        if (m_runningMessageLoop) {
-            m_runningMessageLoop = false;
-            Platform::current()->currentThread()->exitRunLoop();
-        }
     }
 
     void CheckMethodFails(const char* unsafeMethod)
@@ -224,8 +221,7 @@ public:
         // Failure should not be reported synchronously.
         EXPECT_FALSE(m_didFail);
         // Allow the loader to return the error.
-        m_runningMessageLoop = true;
-        Platform::current()->currentThread()->enterRunLoop();
+        runPendingTasks();
         EXPECT_TRUE(m_didFail);
         EXPECT_FALSE(m_didReceiveResponse);
     }
@@ -287,7 +283,6 @@ protected:
     bool m_didReceiveCachedMetadata;
     bool m_didFinishLoading;
     bool m_didFail;
-    bool m_runningMessageLoop;
 };
 
 // Test a successful same-origin URL load.

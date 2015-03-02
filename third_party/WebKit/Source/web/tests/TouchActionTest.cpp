@@ -42,6 +42,7 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/page/EventHandler.h"
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
@@ -58,7 +59,7 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using blink::FrameTestHelpers::runPendingTasks;
+using blink::testing::runPendingTasks;
 
 namespace {
 
@@ -101,7 +102,7 @@ private:
 
 const int kfakeTouchId = 7;
 
-class TouchActionTest : public testing::Test {
+class TouchActionTest : public ::testing::Test {
 public:
     TouchActionTest()
         : m_baseURL("http://www.test.com/")

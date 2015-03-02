@@ -72,6 +72,7 @@
 #include "core/page/Page.h"
 #include "core/testing/NullExecutionContext.h"
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/DragImage.h"
@@ -115,17 +116,16 @@
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Forward.h"
 #include "wtf/dtoa/utils.h"
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <map>
 #include <v8.h>
 
-namespace {
-
 using blink::URLTestHelpers::toKURL;
-using blink::FrameTestHelpers::runPendingTasks;
 using blink::FrameTestHelpers::UseMockScrollbarSettings;
-using namespace blink;
+using blink::testing::runPendingTasks;
+using testing::ElementsAre;
+
+namespace blink {
 
 const int touchPointPadding = 32;
 
@@ -149,8 +149,7 @@ const int touchPointPadding = 32;
         EXPECT_FLOAT_EQ(expected.y(), actual.y()); \
     } while (false)
 
-
-class WebFrameTest : public testing::Test {
+class WebFrameTest : public ::testing::Test {
 protected:
     WebFrameTest()
         : m_baseURL("http://internal.test/")
@@ -395,7 +394,7 @@ void CSSCallbackWebFrameClient::didMatchCSS(WebLocalFrame* frame, const WebVecto
     }
 }
 
-class WebFrameCSSCallbackTest : public testing::Test {
+class WebFrameCSSCallbackTest : public ::testing::Test {
 protected:
     WebFrameCSSCallbackTest()
     {
@@ -457,7 +456,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     m_frame->view()->layout();
     runPendingTasks();
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("div.initial_on"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("div.initial_on"));
 
     // Check that adding a watched selector calls back for already-present nodes.
     selectors.push_back(WebString::fromUTF8("div.initial_off"));
@@ -465,14 +464,14 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     m_frame->view()->layout();
     runPendingTasks();
     EXPECT_EQ(2, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("div.initial_off", "div.initial_on"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("div.initial_off", "div.initial_on"));
 
     // Check that we can turn off callbacks for certain selectors.
     doc().watchCSSSelectors(WebVector<WebString>());
     m_frame->view()->layout();
     runPendingTasks();
     EXPECT_EQ(3, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+    EXPECT_THAT(matchedSelectors(), ElementsAre());
 }
 
 TEST_F(WebFrameCSSCallbackTest, SharedLayoutStyle)
@@ -487,7 +486,7 @@ TEST_F(WebFrameCSSCallbackTest, SharedLayoutStyle)
         "i1.id = 'first_span';"
         "document.body.appendChild(i1)");
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
     // Adding a second element that shares a LayoutStyle shouldn't call back.
     // We use <span>s to avoid default style rules that can set
@@ -498,21 +497,21 @@ TEST_F(WebFrameCSSCallbackTest, SharedLayoutStyle)
         "i1 = document.getElementById('first_span');"
         "i1.parentNode.insertBefore(i2, i1.nextSibling);");
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
     // Removing the first element shouldn't call back.
     executeScript(
         "i1 = document.getElementById('first_span');"
         "i1.parentNode.removeChild(i1);");
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
     // But removing the second element *should* call back.
     executeScript(
         "i2 = document.getElementById('second_span');"
         "i2.parentNode.removeChild(i2);");
     EXPECT_EQ(2, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+    EXPECT_THAT(matchedSelectors(), ElementsAre());
 }
 
 TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange)
@@ -525,12 +524,12 @@ TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange)
     runPendingTasks();
 
     EXPECT_EQ(0, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+    EXPECT_THAT(matchedSelectors(), ElementsAre());
 
     executeScript(
         "document.querySelector('span').setAttribute('attr', 'value');");
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span[attr=\"value\"]"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span[attr=\"value\"]"));
 }
 
 TEST_F(WebFrameCSSCallbackTest, DisplayNone)
@@ -548,13 +547,13 @@ TEST_F(WebFrameCSSCallbackTest, DisplayNone)
         "d = document.querySelector('div');"
         "d.style.display = 'block';");
     EXPECT_EQ(1, updateCount()) << "Match elements when they become displayed.";
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
     executeScript(
         "d = document.querySelector('div');"
         "d.style.display = 'none';");
     EXPECT_EQ(2, updateCount()) << "Unmatch elements when they become undisplayed.";
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+    EXPECT_THAT(matchedSelectors(), ElementsAre());
 
     executeScript(
         "s = document.querySelector('span');"
@@ -570,13 +569,13 @@ TEST_F(WebFrameCSSCallbackTest, DisplayNone)
         "s = document.querySelector('span');"
         "s.style.display = 'inline';");
     EXPECT_EQ(3, updateCount()) << "Now the span is visible and produces a callback.";
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
     executeScript(
         "s = document.querySelector('span');"
         "s.style.display = 'none';");
     EXPECT_EQ(4, updateCount()) << "Undisplaying the span directly should produce another callback.";
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+    EXPECT_THAT(matchedSelectors(), ElementsAre());
 }
 
 TEST_F(WebFrameCSSCallbackTest, Reparenting)
@@ -592,14 +591,14 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting)
     runPendingTasks();
 
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 
     executeScript(
         "s = document.querySelector('span');"
         "d2 = document.getElementById('d2');"
         "d2.appendChild(s);");
     EXPECT_EQ(1, updateCount()) << "Just moving an element that continues to match shouldn't send a spurious callback.";
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"));
 }
 
 TEST_F(WebFrameCSSCallbackTest, MultiSelector)
@@ -616,7 +615,7 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector)
     runPendingTasks();
 
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span", "span, p"));
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span", "span, p"));
 }
 
 TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
@@ -633,7 +632,7 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
     runPendingTasks();
 
     EXPECT_EQ(1, updateCount());
-    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"))
+    EXPECT_THAT(matchedSelectors(), ElementsAre("span"))
         << "An invalid selector shouldn't prevent other selectors from matching.";
 }
 
@@ -7357,4 +7356,4 @@ TEST_F(WebFrameTest, NavigationTransitionCallbacks)
     EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
 }
 
-} // namespace
+} // namespace blink

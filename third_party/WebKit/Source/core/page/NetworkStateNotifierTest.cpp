@@ -32,6 +32,7 @@
 #include "core/page/NetworkStateNotifier.h"
 
 #include "core/dom/Document.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
 #include "public/platform/WebThread.h"
@@ -78,23 +79,7 @@ private:
     int m_callbackCount;
 };
 
-class ExitTask
-    : public blink::WebThread::Task {
-public:
-    ExitTask(blink::WebThread* thread)
-        : m_thread(thread)
-    {
-    }
-    virtual void run() override
-    {
-        m_thread->exitRunLoop();
-    }
-
-private:
-    blink::WebThread* m_thread;
-};
-
-class NetworkStateNotifierTest : public testing::Test {
+class NetworkStateNotifierTest : public ::testing::Test {
 public:
     NetworkStateNotifierTest()
         : m_document(Document::create())
@@ -116,10 +101,7 @@ protected:
     void setType(blink::WebConnectionType type)
     {
         m_notifier.setWebConnectionType(type);
-
-        blink::WebThread* thread = blink::Platform::current()->currentThread();
-        thread->postTask(FROM_HERE, new ExitTask(thread));
-        thread->enterRunLoop();
+        testing::runPendingTasks();
     }
 
     void addObserverOnNotification(StateObserver* observer, StateObserver* observerToAdd)

@@ -37,6 +37,7 @@
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -50,18 +51,17 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <vector>
 
 namespace {
 
-using blink::FrameTestHelpers::runPendingTasks;
 using blink::FrameTestHelpers::UseMockScrollbarSettings;
+using blink::testing::runPendingTasks;
 using namespace blink;
 
-class ViewportTest : public testing::Test {
+class ViewportTest : public ::testing::Test {
 protected:
     ViewportTest()
         : m_baseURL("http://www.test.com/")

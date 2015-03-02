@@ -30,6 +30,7 @@
 #include "config.h"
 
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -49,9 +50,9 @@
 
 namespace {
 
-using blink::FrameTestHelpers::runPendingTasks;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
+using blink::testing::runPendingTasks;
 using namespace blink;
 
 class LineReader {
@@ -114,7 +115,7 @@ private:
     WebString* m_serializationData;
 };
 
-class WebPageNewSerializeTest : public testing::Test {
+class WebPageNewSerializeTest : public ::testing::Test {
 public:
     WebPageNewSerializeTest()
         : m_baseURL("http://internal.test/")

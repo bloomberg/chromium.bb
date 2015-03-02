@@ -49,6 +49,7 @@
 #include "core/page/Page.h"
 #include "core/paint/LayerPainter.h"
 #include "core/testing/URLTestHelpers.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
@@ -85,8 +86,8 @@
 
 using namespace blink;
 using blink::FrameTestHelpers::loadFrame;
-using blink::FrameTestHelpers::runPendingTasks;
 using blink::URLTestHelpers::toKURL;
+using blink::testing::runPendingTasks;
 
 namespace {
 
@@ -203,7 +204,7 @@ private:
 
 };
 
-class WebViewTest : public testing::Test {
+class WebViewTest : public ::testing::Test {
 public:
     WebViewTest()
         : m_baseURL("http://www.test.com/")

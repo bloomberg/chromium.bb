@@ -13,6 +13,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/PendingScript.h"
 #include "core/frame/Settings.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "platform/Task.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
@@ -59,7 +60,7 @@ private:
     PendingScript m_pendingScript;
 };
 
-class ScriptStreamingTest : public testing::Test {
+class ScriptStreamingTest : public ::testing::Test {
 public:
     ScriptStreamingTest()
         : m_scope(v8::Isolate::GetCurrent())
@@ -106,15 +107,12 @@ protected:
 
     void processTasksUntilStreamingComplete()
     {
-        WebThread* currentThread = blink::Platform::current()->currentThread();
         while (ScriptStreamerThread::shared()->isRunningTask()) {
-            currentThread->postTask(FROM_HERE, new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
-            currentThread->enterRunLoop();
+            testing::runPendingTasks();
         }
         // Once more, because the "streaming complete" notification might only
         // now be in the task queue.
-        currentThread->postTask(FROM_HERE, new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
-        currentThread->enterRunLoop();
+        testing::runPendingTasks();
     }
 
     V8TestingScope m_scope;
