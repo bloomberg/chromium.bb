@@ -1039,6 +1039,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 #define TRACE_EVENT_PHASE_CREATE_OBJECT ('N')
 #define TRACE_EVENT_PHASE_SNAPSHOT_OBJECT ('O')
 #define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
+#define TRACE_EVENT_PHASE_MEMORY_DUMP ('v')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
 #define TRACE_EVENT_FLAG_NONE         (static_cast<unsigned char>(0))

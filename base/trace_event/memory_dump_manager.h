@@ -43,7 +43,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // Requests a memory dump. The dump might happen or not depending on the
   // filters and categories specified when enabling tracing.
-  void RequestDumpPoint(DumpPointType type);
+  void RequestDumpPoint(DumpPointType dump_point_type);
 
   // TraceLog::EnabledStateObserver implementation.
   void OnTraceLogEnabled() override;
@@ -65,7 +65,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void BroadcastDumpRequest();
 
   // Creates a dump point for the current process and appends it to the trace.
-  void CreateLocalDumpPoint();
+  void CreateLocalDumpPoint(DumpPointType dump_point_type, uint64 guid);
 
   std::vector<MemoryDumpProvider*> dump_providers_registered_;  // Not owned.
   std::vector<MemoryDumpProvider*> dump_providers_enabled_;     // Not owned.

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -15,7 +16,27 @@ namespace base {
 namespace trace_event {
 
 namespace {
+
 MemoryDumpManager* g_instance_for_testing = nullptr;
+const int kTraceEventNumArgs = 1;
+const char* kTraceEventArgNames[] = {"dumps"};
+const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
+StaticAtomicSequenceNumber g_next_guid;
+
+const char* DumpPointTypeToString(const DumpPointType& dump_point_type) {
+  switch (dump_point_type) {
+    case DumpPointType::TASK_BEGIN:
+      return "TASK_BEGIN";
+    case DumpPointType::TASK_END:
+      return "TASK_END";
+    case DumpPointType::PERIODIC_INTERVAL:
+      return "PERIODIC_INTERVAL";
+    case DumpPointType::EXPLICITLY_TRIGGERED:
+      return "EXPLICITLY_TRIGGERED";
+  }
+  NOTREACHED();
+  return "UNKNOWN";
+}
 }
 
 // TODO(primiano): this should be smarter and should do something similar to
@@ -76,13 +97,18 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
     dump_providers_enabled_.erase(it);
 }
 
-void MemoryDumpManager::RequestDumpPoint(DumpPointType type) {
-  // TODO(primiano): this will have more logic, IPC broadcast & co.
+void MemoryDumpManager::RequestDumpPoint(DumpPointType dump_point_type) {
+  // TODO(primiano): this will have more logic to coordinate dump points across
+  // multiple processes via IPC. See crbug.com/462930.
+
   // Bail out immediately if tracing is not enabled at all.
   if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_)))
     return;
 
-  CreateLocalDumpPoint();
+  // TODO(primiano): Make guid actually unique (cross-process) by hashing it
+  // with the PID. See crbug.com/462931 for details.
+  const uint64 guid = g_next_guid.GetNext();
+  CreateLocalDumpPoint(dump_point_type, guid);
 }
 
 void MemoryDumpManager::BroadcastDumpRequest() {
@@ -90,23 +116,28 @@ void MemoryDumpManager::BroadcastDumpRequest() {
 }
 
 // Creates a dump point for the current process and appends it to the trace.
-void MemoryDumpManager::CreateLocalDumpPoint() {
-  AutoLock lock(lock_);
+void MemoryDumpManager::CreateLocalDumpPoint(DumpPointType dump_point_type,
+                                             uint64 guid) {
   bool did_any_provider_dump = false;
   scoped_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump());
 
-  for (auto it = dump_providers_enabled_.begin();
-       it != dump_providers_enabled_.end();) {
-    MemoryDumpProvider* dump_provider = *it;
-    if (!dump_provider->DumpInto(pmd.get())) {
-      LOG(ERROR) << "The memory dumper " << dump_provider->GetFriendlyName()
-                 << " failed, possibly due to sandboxing (crbug.com/461788), "
-                    "disabling it for current process. Try restarting chrome "
-                    "with the --no-sandbox switch.";
-      it = dump_providers_enabled_.erase(it);
-    } else {
-      did_any_provider_dump = true;
-      ++it;
+  // Serialize dump point generation so that memory dump providers don't have to
+  // deal with thread safety.
+  {
+    AutoLock lock(lock_);
+    for (auto it = dump_providers_enabled_.begin();
+         it != dump_providers_enabled_.end();) {
+      MemoryDumpProvider* dump_provider = *it;
+      if (dump_provider->DumpInto(pmd.get())) {
+        did_any_provider_dump = true;
+        ++it;
+      } else {
+        LOG(ERROR) << "The memory dumper " << dump_provider->GetFriendlyName()
+                   << " failed, possibly due to sandboxing (crbug.com/461788), "
+                      "disabling it for current process. Try restarting chrome "
+                      "with the --no-sandbox switch.";
+        it = dump_providers_enabled_.erase(it);
+      }
     }
   }
 
@@ -114,9 +145,15 @@ void MemoryDumpManager::CreateLocalDumpPoint() {
   if (!did_any_provider_dump)
     return;
 
-  scoped_refptr<TracedValue> value(new TracedValue());
-  pmd->AsValueInto(value.get());
-  // TODO(primiano): add the dump point to the trace at this point.
+  scoped_refptr<ConvertableToTraceFormat> event_value(new TracedValue());
+  pmd->AsValueInto(static_cast<TracedValue*>(event_value.get()));
+  const char* const event_name = DumpPointTypeToString(dump_point_type);
+
+  TRACE_EVENT_API_ADD_TRACE_EVENT(
+      TRACE_EVENT_PHASE_MEMORY_DUMP,
+      TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name, guid,
+      kTraceEventNumArgs, kTraceEventArgNames, kTraceEventArgTypes,
+      NULL /* arg_values */, &event_value, TRACE_EVENT_FLAG_HAS_ID);
 }
 
 void MemoryDumpManager::OnTraceLogEnabled() {
