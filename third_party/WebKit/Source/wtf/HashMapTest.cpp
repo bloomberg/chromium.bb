@@ -30,6 +30,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
 namespace {
@@ -257,7 +258,30 @@ TEST(HashMapTest, AddResult)
 
     IntSimpleMap::AddResult result2 = map.add(1, adoptPtr(new SimpleClass(2)));
     EXPECT_FALSE(result2.isNewEntry);
+    EXPECT_EQ(1, result.storedValue->key);
+    EXPECT_EQ(1, result.storedValue->value->v());
     EXPECT_EQ(1, map.get(1)->v());
+}
+
+TEST(HashMapTest, AddResultVectorValue)
+{
+    using IntVectorMap = HashMap<int, Vector<int>>;
+    IntVectorMap map;
+    IntVectorMap::AddResult result = map.add(1, Vector<int>());
+    EXPECT_TRUE(result.isNewEntry);
+    EXPECT_EQ(1, result.storedValue->key);
+    EXPECT_EQ(0u, result.storedValue->value.size());
+
+    result.storedValue->value.append(11);
+    EXPECT_EQ(1u, map.find(1)->value.size());
+    EXPECT_EQ(11, map.find(1)->value.first());
+
+    IntVectorMap::AddResult result2 = map.add(1, Vector<int>());
+    EXPECT_FALSE(result2.isNewEntry);
+    EXPECT_EQ(1, result.storedValue->key);
+    EXPECT_EQ(1u, result.storedValue->value.size());
+    EXPECT_EQ(11, result.storedValue->value.first());
+    EXPECT_EQ(11, map.find(1)->value.first());
 }
 
 } // namespace
