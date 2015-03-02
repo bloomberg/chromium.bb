@@ -23,7 +23,7 @@
 [
     ImplementedAs=SVGAngleTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=(Interface, Unrestricted),
+    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface SVGAngle {
     // Angle Unit Types

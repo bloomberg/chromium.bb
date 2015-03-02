@@ -25,7 +25,7 @@
  */
 
 [
-    TypeChecking=(Interface, Unrestricted),
+    TypeChecking=Interface,
     RuntimeEnabled=SVG1DOM,
     MeasureAs=SVGPathSegDOM,
 ] interface SVGPathSegCurvetoQuadraticRel : SVGPathSeg {

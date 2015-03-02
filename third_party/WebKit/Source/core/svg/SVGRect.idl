@@ -23,7 +23,7 @@
 [
     ImplementedAs=SVGRectTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=(Interface, Unrestricted),
+    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface SVGRect {
     [RaisesException=Setter] attribute unrestricted float x;

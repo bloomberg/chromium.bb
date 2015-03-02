@@ -26,9 +26,7 @@
 
 // http://www.w3.org/TR/SVG2/animate.html#InterfaceSVGAnimationElement
 
-[
-    TypeChecking=Unrestricted,
-] interface SVGAnimationElement : SVGElement {
+interface SVGAnimationElement : SVGElement {
     readonly attribute SVGElement targetElement;
 
     attribute EventHandler onbegin;

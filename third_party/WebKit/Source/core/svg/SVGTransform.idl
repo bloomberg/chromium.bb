@@ -24,7 +24,7 @@
     MeasureAs=SVG1DOM,
     RuntimeEnabled=SVG1DOM,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=(Interface, Unrestricted),
+    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface SVGTransform {
     // Transform Types
