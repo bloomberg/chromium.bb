@@ -595,15 +595,21 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
     const Vector<GridTrackSize>& trackStyles = isForColumns ? style()->gridTemplateColumns() : style()->gridTemplateRows();
     const GridTrackSize& trackSize = (i >= trackStyles.size()) ? (isForColumns ? style()->gridAutoColumns() : style()->gridAutoRows()) : trackStyles[i];
 
+    GridLength minTrackBreadth = trackSize.minTrackBreadth();
+    GridLength maxTrackBreadth = trackSize.maxTrackBreadth();
+
     // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto> (or in
     // the case of minmax() as min-content for the first position and max-content for the second).
-    if (!hasDefiniteLogicalSize(direction)) {
-        const GridLength& oldMinTrackBreadth = trackSize.minTrackBreadth();
-        const GridLength& oldMaxTrackBreadth = trackSize.maxTrackBreadth();
-        return GridTrackSize(oldMinTrackBreadth.isPercentage() ? Length(MinContent) : oldMinTrackBreadth, oldMaxTrackBreadth.isPercentage() ? Length(MaxContent) : oldMaxTrackBreadth);
+    if (minTrackBreadth.isPercentage() || maxTrackBreadth.isPercentage()) {
+        if (!hasDefiniteLogicalSize(direction)) {
+            if (minTrackBreadth.isPercentage())
+                minTrackBreadth = Length(MinContent);
+            if (maxTrackBreadth.isPercentage())
+                maxTrackBreadth = Length(MaxContent);
+        }
     }
 
-    return trackSize;
+    return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
 LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>& columnTracks)
