@@ -16,14 +16,12 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.provider.Settings;
 import android.text.Editable;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.chromium.chrome.R;
@@ -36,6 +34,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 public class AddExceptionPreference extends Preference implements OnPreferenceClickListener {
     // The callback to notify when the user adds a site.
     private SiteAddedCallback mSiteAddedCallback;
+    private int mPrefAccentColor;
 
     /**
      * An interface to implement to get a callback when a site has been added.
@@ -57,20 +56,22 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
 
         setKey(key);
         Resources resources = getContext().getResources();
+        mPrefAccentColor = resources.getColor(R.color.pref_accent_color);
+
         Drawable plusIcon = resources.getDrawable(R.drawable.plus);
         plusIcon.mutate();
-        plusIcon.setColorFilter(
-                resources.getColor(R.color.pref_accent_color),
-                PorterDuff.Mode.SRC_IN);
+        plusIcon.setColorFilter(mPrefAccentColor, PorterDuff.Mode.SRC_IN);
         setIcon(plusIcon);
 
-        SpannableString titleSpan = new SpannableString(
-                resources.getString(
-                        R.string.website_settings_add_site).toUpperCase());
-        titleSpan.setSpan(new ForegroundColorSpan(
-                resources.getColor(R.color.pref_accent_color)), 0, titleSpan.length(),
-                Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-        setTitle(titleSpan);
+        setTitle(resources.getString(R.string.website_settings_add_site));
+    }
+
+    @Override
+    protected void onBindView(View view) {
+        super.onBindView(view);
+        TextView titleView = (TextView) view.findViewById(android.R.id.title);
+        titleView.setAllCaps(true);
+        titleView.setTextColor(mPrefAccentColor);
     }
 
     @Override
@@ -89,6 +90,7 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
         final EditText input = (EditText) view.findViewById(R.id.site);
 
         DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int button) {
                 if (button == AlertDialog.BUTTON_POSITIVE) {
                     String hostname = input.getText().toString().trim();

@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -217,6 +218,7 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
                 mTargetWrapperView.startTransition();
             }
 
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onAnimationEnd(Animator animation) {
                 mTargetWrapperView.finishTransition();

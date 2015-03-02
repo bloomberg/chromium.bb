@@ -42,6 +42,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:contentDescription="@null"
             android:src="?android:attr/listDivider"
             android:scaleType="fitXY" />
 

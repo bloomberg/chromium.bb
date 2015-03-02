@@ -93,6 +93,7 @@
         android:layout_gravity="bottom"
         android:orientation="horizontal" >
 
+        <!--suppress ButtonStyle -->
         <Button
             android:id="@+id/negative_button"
             android:layout_width="0dp"
@@ -107,6 +108,7 @@
             android:textColor="@color/light_normal_color"
             android:textSize="@dimen/fre_button_text_size" />
 
+        <!--suppress ButtonStyle -->
         <Button
             android:id="@+id/positive_button"
             android:layout_width="0dp"

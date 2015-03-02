@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -12,6 +14,7 @@ import android.speech.tts.UtteranceProgressListener;
 /**
  * Subclass of TtsPlatformImpl for Lollipop to make use of newer APIs.
  */
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class LollipopTtsPlatformImpl extends TtsPlatformImpl {
     protected LollipopTtsPlatformImpl(long nativeTtsPlatformImplAndroid, Context context) {
         super(nativeTtsPlatformImplAndroid, context);

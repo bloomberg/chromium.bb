@@ -38,6 +38,7 @@ import org.chromium.chrome.R;
  * Note: To ensure the button's shadow is fully visible, you may need to set
  * android:clipToPadding="false" on the button's parent view.
  */
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ButtonCompat extends Button {
 
     private static final float PRE_L_PRESSED_BRIGHTNESS = 0.85f;
