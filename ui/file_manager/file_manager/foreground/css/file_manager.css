@@ -1247,6 +1247,15 @@ li[renaming=''] .badge {
   }
 }
 
+@-webkit-keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 /* Table splitter element */
 .table-header-splitter {
   background-image: -webkit-image-set(
@@ -1370,24 +1379,32 @@ body.check-select #list-container list li[selected] .detail-checkmark {
 }
 
 #list-container list li .detail-thumbnail {
+  height: 28px;
+  overflow: hidden;
+  position: absolute;
+  width: 28px;
+}
+
+#list-container list li .detail-thumbnail > .thumbnail {
   -webkit-user-drag: none;
   background-color: rgb(245, 245, 245);
   background-position: center;
   background-size: cover;
   border-radius: 14px;
-  height: 28px;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  transition: opacity 220ms ease;
-  width: 28px;
-}
-
-#list-container list li .detail-thumbnail.loaded {
+  height: 100%;
   opacity: 1;
+  position: absolute;
+  width: 100%;
 }
 
-body.check-select #list-container list li[selected] .detail-thumbnail.loaded {
+#list-container list li .detail-thumbnail > .thumbnail.animate {
+  -webkit-animation: fadeIn 220ms ease;
+}
+
+body.check-select #list-container list li[selected] .detail-thumbnail
+> .thumbnail {
+  /* Fade out after checkmark fades in. */
+  -webkit-animation: fadeOut 0ms 220ms ease backwards;
   opacity: 0;
 }
 

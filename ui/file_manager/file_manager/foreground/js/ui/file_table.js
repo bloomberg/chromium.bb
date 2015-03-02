@@ -394,7 +394,8 @@ FileTable.prototype.onThumbnailLoaded_ = function(event) {
     var box = listItem.querySelector('.detail-thumbnail');
     if (box) {
       this.setThumbnailImage_(
-          assertInstanceof(box, HTMLDivElement), event.dataUrl);
+          assertInstanceof(box, HTMLDivElement), event.dataUrl,
+          true /* with animation */);
     }
   }
 };
@@ -814,7 +815,8 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
   if (this.listThumbnailLoader_ &&
       this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
     this.setThumbnailImage_(
-        box, this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl);
+        box, this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl,
+        false /* without animation */);
   }
 
   return box;
@@ -824,12 +826,31 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
  * Sets thumbnail image to the box.
  * @param {!HTMLDivElement} box Detail thumbnail div element.
  * @param {string} dataUrl Data url of thumbnail.
+ * @param {boolean} shouldAnimate Whether the thumbnail is shown with animation
+ *     or not.
  * @private
  */
-FileTable.prototype.setThumbnailImage_ = function(box, dataUrl) {
-  // TODO(yawano): Add transition animation for thumbnail update.
-  box.style.backgroundImage = 'url(' + dataUrl + ')';
-  box.classList.add('loaded');
+FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
+  var oldThumbnails = box.querySelectorAll('.thumbnail');
+
+  var thumbnail = box.ownerDocument.createElement('div');
+  thumbnail.classList.add('thumbnail');
+  thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
+  thumbnail.addEventListener('webkitAnimationEnd', function() {
+    // Remove animation css once animation is completed in order not to animate
+    // again when an item is attached to the dom again.
+    thumbnail.classList.remove('animate');
+
+    for (var i = 0; i < oldThumbnails.length; i++) {
+      if (box.contains(oldThumbnails[i]))
+        box.removeChild(oldThumbnails[i]);
+    }
+  });
+
+  if (shouldAnimate)
+    thumbnail.classList.add('animate');
+
+  box.appendChild(thumbnail);
 };
 
 /**
