@@ -285,6 +285,10 @@ enum {
 - (NSString*)UUIDString;
 @end
 
+@interface NSControl (MountainLionSDK)
+@property BOOL allowsExpansionToolTips;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_8
 
 

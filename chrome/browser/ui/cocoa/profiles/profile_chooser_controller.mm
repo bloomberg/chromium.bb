@@ -701,6 +701,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
           IDS_PROFILES_NEW_AVATAR_MENU_EDIT_NAME_ACCESSIBLE_NAME,
           base::SysNSStringToUTF16(profileName))
                                     forAttribute:NSAccessibilityTitleAttribute];
+
+      NSSize textSize = [profileName sizeWithAttributes:@{
+        NSFontAttributeName : [profileNameTextField_ font]
+      }];
+
+      if (textSize.width > frameRect.size.width - [hoverImage size].width * 2)
+        [self setToolTip:profileName];
     }
 
     [[self cell] accessibilitySetOverrideValue:NSAccessibilityButtonRole
@@ -1804,6 +1811,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [profileButton setTag:itemIndex];
   [profileButton setTarget:self];
   [profileButton setAction:@selector(switchToProfile:)];
+
+  NSSize textSize = [[profileButton title] sizeWithAttributes:@{
+    NSFontAttributeName : [profileButton font]
+  }];
+
+  CGFloat availableWidth = rect.size.width - kSmallImageSide -
+                           kImageTitleSpacing - kHorizontalSpacing;
+
+  if (std::ceil(textSize.width) > availableWidth)
+    [profileButton setToolTip:[profileButton title]];
 
   return profileButton.autorelease();
 }

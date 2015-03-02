@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -159,6 +160,8 @@ const CGFloat kSupervisedUserSpacing = 26.0;
     NSRect frame = [nameField frame];
     frame.size.width = kMaxItemTextWidth;
     [nameField setFrame:frame];
+    if ([nameField respondsToSelector:@selector(setAllowsExpansionToolTips:)])
+      [nameField setAllowsExpansionToolTips:YES];
   }
   *widthAdjust = std::max(*widthAdjust, delta.width);
 
