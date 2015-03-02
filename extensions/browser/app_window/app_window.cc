@@ -238,6 +238,7 @@ AppWindow::AppWindow(BrowserContext* context,
       is_hidden_(false),
       cached_always_on_top_(false),
       requested_alpha_enabled_(false),
+      is_ime_window_(false),
       image_loader_ptr_factory_(this) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
@@ -272,6 +273,8 @@ void AppWindow::Init(const GURL& url,
     new_params.always_on_top = false;
 
   requested_alpha_enabled_ = new_params.alpha_enabled;
+
+  is_ime_window_ = params.is_ime_window;
 
   AppWindowClient* app_window_client = AppWindowClient::Get();
   native_app_window_.reset(

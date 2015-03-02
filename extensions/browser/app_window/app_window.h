@@ -351,6 +351,12 @@ class AppWindow : public content::WebContentsDelegate,
   // Whether the app window wants to be alpha enabled.
   bool requested_alpha_enabled() const { return requested_alpha_enabled_; }
 
+  // Whether the app window is created by IME extensions.
+  // TODO(bshe): rename to hide_app_window_in_launcher if it is not used
+  // anywhere other than app_window_launcher_controller after M45. Otherwise,
+  // remove this TODO.
+  bool is_ime_window() const { return is_ime_window_; }
+
   void SetAppWindowContentsForTesting(scoped_ptr<AppWindowContents> contents) {
     app_window_contents_ = contents.Pass();
   }
@@ -558,6 +564,9 @@ class AppWindow : public content::WebContentsDelegate,
 
   // Whether |alpha_enabled| was set in the CreateParams.
   bool requested_alpha_enabled_;
+
+  // Whether |is_ime_window| was set in the CreateParams.
+  bool is_ime_window_;
 
   base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
 
