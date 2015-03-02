@@ -1708,8 +1708,8 @@ private:
     template<typename T, typename U, typename V, typename W, typename X, typename Y> friend class WTF::HashMap;
 };
 
-template<typename Value>
-static void traceListHashSetValue(Visitor* visitor, Value& value)
+template<typename VisitorDispatcher, typename Value>
+static void traceListHashSetValue(VisitorDispatcher visitor, Value& value)
 {
     // We use the default hash traits for the value in the node, because
     // ListHashSet does not let you specify any specific ones.
@@ -1758,7 +1758,8 @@ public:
         return malloc<void*, Node>(sizeof(Node));
     }
 
-    static void traceValue(Visitor* visitor, Node* node)
+    template<typename VisitorDispatcher>
+    static void traceValue(VisitorDispatcher visitor, Node* node)
     {
         traceListHashSetValue(visitor, node->m_value);
     }

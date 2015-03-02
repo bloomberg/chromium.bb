@@ -185,7 +185,9 @@ namespace WTF {
         ValuePassOutType take(ValuePeekInType);
         ValuePassOutType takeFirst();
 
-        void trace(typename Allocator::Visitor*);
+        typedef int HasInlinedTraceMethodMarker;
+        template<typename VisitorDispatcher>
+        void trace(VisitorDispatcher);
 
     private:
         void unlink(Node*);
@@ -396,11 +398,13 @@ namespace WTF {
             allocator->deallocate(this);
         }
 
+        typedef int HasInlinedTraceMethodMarker;
         // This is not called in normal tracing, but it is called if we find a
         // pointer to a node on the stack using conservative scanning. Since
         // the original ListHashSet may no longer exist we make sure to mark
         // the neighbours in the chain too.
-        void trace(typename NodeAllocator::Visitor* visitor)
+        template<typename VisitorDispatcher>
+        void trace(VisitorDispatcher visitor)
         {
             // The conservative stack scan can find nodes that have been
             // removed from the set and destructed. We don't need to trace
@@ -994,7 +998,8 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    void ListHashSet<T, inlineCapacity, U, V>::trace(typename Allocator::Visitor* visitor)
+    template<typename VisitorDispatcher>
+    void ListHashSet<T, inlineCapacity, U, V>::trace(VisitorDispatcher visitor)
     {
         static_assert(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, "ListHashSet does not support weakness");
         // This marks all the nodes and their contents live that can be
