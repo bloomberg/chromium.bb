@@ -9,6 +9,7 @@ import android.content.ContextWrapper;
 import android.net.Uri;
 import android.test.AndroidTestCase;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 
@@ -47,6 +48,12 @@ public class BasePartnerBrowserCustomizationUnitTest extends AndroidTestCase {
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
         Uri uri = PartnerBrowserCustomizations.buildQueryUri(uriPath);
         getContext().getContentResolver().call(uri, "setUriPathToDelay", uriPath, null);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        CommandLine.init(null);
     }
 
     @Override
