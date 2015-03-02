@@ -6,6 +6,7 @@
 #define NET_DNS_MDNS_CLIENT_IMPL_H_
 
 #include <map>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,11 +22,16 @@
 #include "net/udp/udp_server_socket.h"
 #include "net/udp/udp_socket.h"
 
+namespace base {
+class Clock;
+class Timer;
+}  // namespace base
+
 namespace net {
 
 class MDnsSocketFactoryImpl : public MDnsSocketFactory {
  public:
-  MDnsSocketFactoryImpl() {};
+  MDnsSocketFactoryImpl() {}
   ~MDnsSocketFactoryImpl() override{};
 
   void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) override;
@@ -109,7 +115,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   // invalidate the core.
   class Core : public base::SupportsWeakPtr<Core>, MDnsConnection::Delegate {
    public:
-    Core();
+    Core(base::Clock* clock, base::Timer* timer);
     ~Core() override;
 
     // Initialize the core. Returns true on success.
@@ -132,6 +138,8 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     void OnConnectionError(int error) override;
 
    private:
+    FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
+
     typedef std::pair<std::string, uint16> ListenerKey;
     typedef std::map<ListenerKey, ObserverList<MDnsListenerImpl>* >
     ListenerMap;
@@ -159,7 +167,8 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
 
     MDnsCache cache_;
 
-    base::CancelableClosure cleanup_callback_;
+    base::Clock* clock_;
+    base::Timer* cleanup_timer_;
     base::Time scheduled_cleanup_;
 
     scoped_ptr<MDnsConnection> connection_;
@@ -189,7 +198,15 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   Core* core() { return core_.get(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
+
+  // Test constructor, takes a mock clock and mock timer.
+  MDnsClientImpl(scoped_ptr<base::Clock> clock,
+                 scoped_ptr<base::Timer> cleanup_timer);
+
   scoped_ptr<Core> core_;
+  scoped_ptr<base::Clock> clock_;
+  scoped_ptr<base::Timer> cleanup_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsClientImpl);
 };
@@ -199,6 +216,7 @@ class MDnsListenerImpl : public MDnsListener,
  public:
   MDnsListenerImpl(uint16 rrtype,
                    const std::string& name,
+                   base::Clock* clock,
                    MDnsListener::Delegate* delegate,
                    MDnsClientImpl* client);
 
@@ -229,6 +247,7 @@ class MDnsListenerImpl : public MDnsListener,
 
   uint16 rrtype_;
   std::string name_;
+  base::Clock* clock_;
   MDnsClientImpl* client_;
   MDnsListener::Delegate* delegate_;
 

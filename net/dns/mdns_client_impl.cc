@@ -4,13 +4,16 @@
 
 #include "net/dns/mdns_client_impl.h"
 
+#include <algorithm>
 #include <queue>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
+#include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -80,9 +83,7 @@ int MDnsConnection::SocketHandler::DoLoop(int rv) {
       connection_->OnDatagramReceived(&response_, recv_addr_, rv);
 
     rv = socket_->RecvFrom(
-        response_.io_buffer(),
-        response_.io_buffer()->size(),
-        &recv_addr_,
+        response_.io_buffer(), response_.io_buffer()->size(), &recv_addr_,
         base::Bind(&MDnsConnection::SocketHandler::OnDatagramReceived,
                    base::Unretained(this)));
   } while (rv > 0);
@@ -195,7 +196,10 @@ void MDnsConnection::OnDatagramReceived(
   delegate_->HandlePacket(response, bytes_read);
 }
 
-MDnsClientImpl::Core::Core() : connection_(new MDnsConnection(this)) {
+MDnsClientImpl::Core::Core(base::Clock* clock, base::Timer* timer)
+    : clock_(clock),
+      cleanup_timer_(timer),
+      connection_(new MDnsConnection(this)) {
 }
 
 MDnsClientImpl::Core::~Core() {
@@ -241,8 +245,8 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
 
   for (unsigned i = 0; i < answer_count; i++) {
     offset = parser.GetOffset();
-    scoped_ptr<const RecordParsed> record = RecordParsed::CreateFrom(
-        &parser, base::Time::Now());
+    scoped_ptr<const RecordParsed> record =
+        RecordParsed::CreateFrom(&parser, clock_->Now());
 
     if (!record) {
       DVLOG(1) << "Could not understand an mDNS record.";
@@ -295,8 +299,7 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
   // Remove all cached records matching the nonexistent RR types.
   std::vector<const RecordParsed*> records_to_remove;
 
-  cache_.FindDnsRecords(0, record->name(), &records_to_remove,
-                        base::Time::Now());
+  cache_.FindDnsRecords(0, record->name(), &records_to_remove, clock_->Now());
 
   for (std::vector<const RecordParsed*>::iterator i = records_to_remove.begin();
        i != records_to_remove.end(); i++) {
@@ -380,25 +383,26 @@ void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
 
 void MDnsClientImpl::Core::ScheduleCleanup(base::Time cleanup) {
   // Cleanup is already scheduled, no need to do anything.
-  if (cleanup == scheduled_cleanup_) return;
+  if (cleanup == scheduled_cleanup_) {
+    return;
+  }
   scheduled_cleanup_ = cleanup;
 
   // This cancels the previously scheduled cleanup.
-  cleanup_callback_.Reset(base::Bind(
-      &MDnsClientImpl::Core::DoCleanup, base::Unretained(this)));
+  cleanup_timer_->Stop();
 
   // If |cleanup| is empty, then no cleanup necessary.
   if (cleanup != base::Time()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        cleanup_callback_.callback(),
-        cleanup - base::Time::Now());
+    cleanup_timer_->Start(
+        FROM_HERE, std::max(base::TimeDelta(), cleanup - clock_->Now()),
+        base::Bind(&MDnsClientImpl::Core::DoCleanup, base::Unretained(this)));
   }
 }
 
 void MDnsClientImpl::Core::DoCleanup() {
-  cache_.CleanupRecords(base::Time::Now(), base::Bind(
-      &MDnsClientImpl::Core::OnRecordRemoved, base::Unretained(this)));
+  cache_.CleanupRecords(clock_->Now(),
+                        base::Bind(&MDnsClientImpl::Core::OnRecordRemoved,
+                                   base::Unretained(this)));
 
   ScheduleCleanup(cache_.next_expiration());
 }
@@ -412,10 +416,17 @@ void MDnsClientImpl::Core::OnRecordRemoved(
 void MDnsClientImpl::Core::QueryCache(
     uint16 rrtype, const std::string& name,
     std::vector<const RecordParsed*>* records) const {
-  cache_.FindDnsRecords(rrtype, name, records, base::Time::Now());
+  cache_.FindDnsRecords(rrtype, name, records, clock_->Now());
 }
 
-MDnsClientImpl::MDnsClientImpl() {
+MDnsClientImpl::MDnsClientImpl()
+    : clock_(new base::DefaultClock),
+      cleanup_timer_(new base::Timer(false, false)) {
+}
+
+MDnsClientImpl::MDnsClientImpl(scoped_ptr<base::Clock> clock,
+                               scoped_ptr<base::Timer> timer)
+    : clock_(clock.Pass()), cleanup_timer_(timer.Pass()) {
 }
 
 MDnsClientImpl::~MDnsClientImpl() {
@@ -423,7 +434,7 @@ MDnsClientImpl::~MDnsClientImpl() {
 
 bool MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
-  core_.reset(new Core());
+  core_.reset(new Core(clock_.get(), cleanup_timer_.get()));
   if (!core_->Init(socket_factory)) {
     core_.reset();
     return false;
@@ -444,7 +455,7 @@ scoped_ptr<MDnsListener> MDnsClientImpl::CreateListener(
     const std::string& name,
     MDnsListener::Delegate* delegate) {
   return scoped_ptr<net::MDnsListener>(
-      new MDnsListenerImpl(rrtype, name, delegate, this));
+      new MDnsListenerImpl(rrtype, name, clock_.get(), delegate, this));
 }
 
 scoped_ptr<MDnsTransaction> MDnsClientImpl::CreateTransaction(
@@ -456,13 +467,18 @@ scoped_ptr<MDnsTransaction> MDnsClientImpl::CreateTransaction(
       new MDnsTransactionImpl(rrtype, name, flags, callback, this));
 }
 
-MDnsListenerImpl::MDnsListenerImpl(
-    uint16 rrtype,
-    const std::string& name,
-    MDnsListener::Delegate* delegate,
-    MDnsClientImpl* client)
-    : rrtype_(rrtype), name_(name), client_(client), delegate_(delegate),
-      started_(false), active_refresh_(false) {
+MDnsListenerImpl::MDnsListenerImpl(uint16 rrtype,
+                                   const std::string& name,
+                                   base::Clock* clock,
+                                   MDnsListener::Delegate* delegate,
+                                   MDnsClientImpl* client)
+    : rrtype_(rrtype),
+      name_(name),
+      clock_(clock),
+      client_(client),
+      delegate_(delegate),
+      started_(false),
+      active_refresh_(false) {
 }
 
 MDnsListenerImpl::~MDnsListenerImpl() {
@@ -571,14 +587,10 @@ void MDnsListenerImpl::ScheduleNextRefresh() {
                        kListenerRefreshRatio2 * ttl_));
 
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      next_refresh_.callback(),
-      next_refresh1 - base::Time::Now());
+      FROM_HERE, next_refresh_.callback(), next_refresh1 - clock_->Now());
 
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      next_refresh_.callback(),
-      next_refresh2 - base::Time::Now());
+      FROM_HERE, next_refresh_.callback(), next_refresh2 - clock_->Now());
 }
 
 void MDnsListenerImpl::DoRefresh() {
