@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""cros package: Create and use packages in projects.
+"""cros package: Create and use packages in bricks.
 
-This command can be used for creating basic packages (ebuilds) in user projects
+This command can be used for creating basic packages (ebuilds) in user bricks
 and determining how they are built. The aim is not to contain ebuilds
 management or hide them from the user, rather to help bootstrap and build an
 elementary project more easily.
@@ -16,20 +16,20 @@ import logging
 import os
 
 from chromite import cros
+from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
-from chromite.lib import project
 
 
-# Ebuild template for source packages in user projects.
+# Ebuild template for source packages in user bricks.
 _SOURCE_EBUILD_TEMPLATE = """EAPI="4"
 
 CROS_WORKON_SRCPATH="%(src_path)s"
 
 inherit cros-workon
 
-DESCRIPTION="Package %(package_name)s of project %(project_name)s"
+DESCRIPTION="Package %(package_name)s of brick %(brick_name)s"
 SRC_URI=""
 
 # Please assign a proper license for your package. You may use a standard
@@ -55,7 +55,7 @@ class PackageCommand(cros.CrosCommand):
   """Create and manage packages."""
 
   EPILOG = """
-To create a source package in the current project:
+To create a source package in a brick:
   cros package --create-source path/to/source foo-category/bar-package
 To enable building a package from latest or stable ebuilds:
   cros package --enable latest foo-category/bar-package
@@ -64,18 +64,18 @@ To enable building a package from latest or stable ebuilds:
 
   def __init__(self, options):
     cros.CrosCommand.__init__(self, options)
-    self.project = None
+    self.brick = None
 
   @classmethod
   def AddParser(cls, parser):
     super(cls, PackageCommand).AddParser(parser)
     parser.add_argument('package_name', metavar='package',
                         help='Name of package (category/package).')
-    parser.add_argument('--project',
-                        help='The project to use. Auto-detected by default.')
+    parser.add_argument('--brick',
+                        help='The brick to use. Auto-detected by default.')
     parser.add_argument('--create-source', metavar='src_path',
                         help='Create package from code in specified path. Path '
-                        'is relative to project source root.')
+                        'is relative to the brick\'s source root.')
     parser.add_argument('--enable', '-e', choices=('latest', 'stable'),
                         help='Build package from latest/stable source.')
     parser.add_argument('--force', action='store_true',
@@ -94,11 +94,11 @@ To enable building a package from latest or stable ebuilds:
 
     # Check that the source directory exists.
     if not (self.options.force or
-            os.path.isdir(os.path.join(self.project.SourceDir(), src_path))):
+            os.path.isdir(os.path.join(self.brick.SourceDir(), src_path))):
       cros_build_lib.Die('Package source directory (%s) not found', src_path)
 
     # Do not clobber ebuild unless forced.
-    ebuild_file = os.path.join(self.project.OverlayDir(), pkg_category,
+    ebuild_file = os.path.join(self.brick.OverlayDir(), pkg_category,
                                pkg_name, '%s-9999.ebuild' % pkg_name)
     if not self.options.force and os.path.exists(ebuild_file):
       cros_build_lib.Die('Package ebuild already exists')
@@ -107,7 +107,7 @@ To enable building a package from latest or stable ebuilds:
     ebuild_content = _SOURCE_EBUILD_TEMPLATE % {
         'src_path': src_path,
         'package_name': self.options.package_name,
-        'project_name': self.options.project,
+        'brick_name': self.options.brick,
     }
     try:
       osutils.WriteFile(ebuild_file, ebuild_content, makedirs=True)
@@ -115,7 +115,7 @@ To enable building a package from latest or stable ebuilds:
       cros_build_lib.Die('Failed creating the package ebuild: %s', e)
 
     # Register category as needed.
-    categories_file = os.path.join(self.project.OverlayDir(), 'profiles',
+    categories_file = os.path.join(self.brick.OverlayDir(), 'profiles',
                                    'categories')
     category_line = '%s\n' % pkg_category
     try:
@@ -137,7 +137,7 @@ To enable building a package from latest or stable ebuilds:
     """Enable latest/stable build."""
     cmd = ['cros_workon',
            'start' if latest else 'stop',
-           '--board=%s' % self.options.project,
+           '--board=%s' % self.options.brick,
            self.options.package_name]
     result = cros_build_lib.RunCommand(cmd, quiet=True, error_code_ok=True)
     if (result.returncode and
@@ -150,18 +150,18 @@ To enable building a package from latest or stable ebuilds:
 
   def _ReadOptions(self):
     """Process arguments and set variables, then freeze options."""
-    if not self.options.project:
-      self.options.project = self.curr_project_name
-    self.project = project.FindProjectByName(self.options.project)
-    if not self.project:
-      cros_build_lib.Die('Could not find project')
+    if not self.options.brick:
+      self.options.brick = self.curr_brick_name
+    self.brick = brick_lib.FindBrickByName(self.options.brick)
+    if not self.brick:
+      cros_build_lib.Die('Could not find brick')
 
     self.options.Freeze()
 
   def Run(self):
     """Dispatch the call to the right handler."""
     self._ReadOptions()
-    self.RunInsideChroot(auto_detect_project=True)
+    self.RunInsideChroot(auto_detect_brick=True)
     if self.options.create_source:
       self._CreateSource()
     if self.options.enable:

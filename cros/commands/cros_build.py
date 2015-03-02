@@ -10,9 +10,9 @@ import os
 import logging
 
 from chromite.cbuildbot import constants
+from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
-from chromite.lib import project
 from chromite import cros
 
 if cros_build_lib.IsInsideChroot():
@@ -51,16 +51,16 @@ To just build a single package:
       cros_build_lib.Debug('Skipping chroot update due to --nodeps')
     self.build_pkgs = None
     self.host = self.options.host
-    self.board = (self.options.board or self.curr_project_name or
+    self.board = (self.options.board or self.curr_brick_name or
                   cros_build_lib.GetDefaultBoard())
-    self.project = project.FindProjectByName(self.board)
+    self.brick = brick_lib.FindBrickByName(self.board)
 
   @classmethod
   def AddParser(cls, parser):
     super(cls, BuildCommand).AddParser(parser)
     board = parser.add_mutually_exclusive_group()
-    board.add_argument('--board', '--project',
-                       help='The board or project to build packages for')
+    board.add_argument('--board', '--brick',
+                       help='The board or brick to build packages for')
     board.add_argument('--host', help='Build packages for the chroot itself',
                        default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages",
@@ -75,7 +75,7 @@ To just build a single package:
                       help='Automatically rebuild dependencies')
     parser.add_argument('packages',
                         help='Packages to build. If no packages listed, uses '
-                        'the current project main package.',
+                        'the current brick main package.',
                         nargs='*')
 
     # Advanced options.
@@ -179,7 +179,7 @@ To just build a single package:
   def _SetupBoardIfNeeded(self):
     """Create the board if it's missing."""
     if not self.host:
-      self.project.GeneratePortageConfig()
+      self.brick.GeneratePortageConfig()
 
       self._UpdateChroot()
       cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
@@ -193,16 +193,16 @@ To just build a single package:
     """Run cros build."""
     if not self.host:
       if not self.board:
-        cros_build_lib.Die('You did not specify a board/project to build for. '
-                           'You need to be in a project directory or set '
-                           '--board/--project')
-      if not self.project:
-        cros_build_lib.Die('Could not find project for %s' % self.board)
+        cros_build_lib.Die('You did not specify a board/brick to build for. '
+                           'You need to be in a brick directory or set '
+                           '--board/--brick')
+      if not self.brick:
+        cros_build_lib.Die('Could not find brick for %s' % self.board)
 
-    self.RunInsideChroot(auto_detect_project=True)
+    self.RunInsideChroot(auto_detect_brick=True)
 
-    self.build_pkgs = self.options.packages or (self.project and
-                                                self.project.MainPackages())
+    self.build_pkgs = self.options.packages or (self.brick and
+                                                self.brick.MainPackages())
     if not self.build_pkgs:
       cros_build_lib.Die('No packages found, nothing to build.')
 

@@ -13,9 +13,9 @@ This module contains two important definitions used by all commands.
 
 from __future__ import print_function
 
+from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import project
 
 _commands = dict()
 
@@ -71,32 +71,32 @@ class CrosCommand(object):
 
   def __init__(self, options):
     self.options = options
-    p = project.FindProjectInPath()
-    self.curr_project_name = p.config.get('name') if p else None
+    brick = brick_lib.FindBrickInPath()
+    self.curr_brick_name = brick.config.get('name') if brick else None
 
   @classmethod
   def AddParser(cls, parser):
     """Add arguments for this command to the parser."""
     parser.set_defaults(cros_class=cls)
 
-  def RunInsideChroot(self, auto_detect_project=False):
+  def RunInsideChroot(self, auto_detect_brick=False):
     """Run this command inside the chroot.
 
-    If cwd is in a project, and --board/--host is not explicitly set, set
-    --board explicitly as we might not be able to detect the curr_project_name
+    If cwd is in a brick, and --board/--host is not explicitly set, set
+    --brick explicitly as we might not be able to detect the curr_brick_name
     inside the chroot (cwd will have changed).
 
     Args:
-      auto_detect_project: If true, sets --project explicitly.
+      auto_detect_brick: If true, sets --brick explicitly.
     """
     if cros_build_lib.IsInsideChroot():
       return
 
     target_arg = next((getattr(self.options, arg, None)
-                       for arg in ('board', 'project', 'host')), None)
+                       for arg in ('board', 'brick', 'host')), None)
     extra_args = None
-    if auto_detect_project and not target_arg and self.curr_project_name:
-      extra_args = ['--project', self.curr_project_name]
+    if auto_detect_brick and not target_arg and self.curr_brick_name:
+      extra_args = ['--brick', self.curr_brick_name]
 
     raise commandline.ChrootRequiredError(extra_args=extra_args)
 

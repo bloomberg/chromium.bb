@@ -11,11 +11,11 @@ import os
 
 from chromite.cros.commands import cros_flash
 from chromite.cros.commands import init_unittest
+from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
 from chromite.lib import partial_mock
-from chromite.lib import project
 from chromite.lib import remote_access
 
 
@@ -54,9 +54,9 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
     """Mock out SetupRootfsUpdate."""
 
 
-class ProjectMock(partial_mock.PartialMock):
-  """Mock out project.Project."""
-  TARGET = 'chromite.lib.project.Project'
+class BrickMock(partial_mock.PartialMock):
+  """Mock out brick_lib.Brick."""
+  TARGET = 'chromite.lib.brick_lib.Brick'
   ATTRS = ('Inherits')
 
   def __init__(self):
@@ -96,9 +96,9 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    proj = ProjectMock()
+    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.project.FindProjectByName',
+      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
                       return_value=proj):
         self.cmd_mock.inst.Run()
         self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
@@ -107,9 +107,9 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateStateful(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-rootfs-update', self.DEVICE, self.IMAGE])
-    proj = ProjectMock()
+    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.project.FindProjectByName',
+      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
                       return_value=proj):
         self.cmd_mock.inst.Run()
         self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
@@ -118,9 +118,9 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateRootfs(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-stateful-update', self.DEVICE, self.IMAGE])
-    proj = ProjectMock()
+    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.project.FindProjectByName',
+      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
                       return_value=proj):
         self.cmd_mock.inst.Run()
         self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
@@ -135,9 +135,9 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testProjectSdk(self):
     """Tests that Project SDK flashing invoked as expected."""
     self.SetupCommandMock(['--project-sdk', self.DEVICE, self.IMAGE])
-    proj = ProjectMock()
+    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.project.FindProjectByName',
+      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
                       return_value=proj):
         with mock.patch('chromite.lib.project_sdk.FindVersion',
                         return_value='1.2.3'):
@@ -203,7 +203,7 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
                      return_value='taco-paladin/R36/chromiumos_test_image.bin')
     self.PatchObject(os.path, 'exists', return_value=True)
-    self.PatchObject(project, 'FindProjectInPath', return_value=None)
+    self.PatchObject(brick_lib, 'FindBrickInPath', return_value=None)
 
   def testLocalImagePathCopy(self):
     """Tests that imaging methods are called correctly."""

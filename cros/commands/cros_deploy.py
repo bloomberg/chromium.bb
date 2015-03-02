@@ -12,10 +12,10 @@ import os
 import logging
 
 from chromite import cros
+from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
-from chromite.lib import project
 from chromite.lib import project_sdk
 from chromite.lib import remote_access
 try:
@@ -738,10 +738,10 @@ For more information of cros build usage:
         'packages', help='Packages to install. You can specify '
         '[category/]package[:slot] or the path to the binary package. '
         'Use @installed to update all installed packages (requires --update). '
-        'If no packages listed, uses the current project main package.',
+        'If no packages listed, uses the current brick main package.',
         nargs='*')
     parser.add_argument(
-        '--board', '--project', help='The board to use. By default it is '
+        '--board', '--brick', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option.')
     parser.add_argument(
@@ -901,7 +901,7 @@ For more information of cros build usage:
     self.clean_binpkg = self.options.clean_binpkg
     self.root = self.options.root
     self.ping = self.options.ping
-    self.board = self.options.board or self.curr_project_name
+    self.board = self.options.board or self.curr_brick_name
     self.ssh_hostname = self.options.device.hostname
     self.ssh_username = self.options.device.username
     self.ssh_port = self.options.device.port
@@ -925,7 +925,7 @@ For more information of cros build usage:
   def Run(self):
     """Run cros deploy."""
     self._ReadOptions()
-    self.RunInsideChroot(auto_detect_project=True)
+    self.RunInsideChroot(auto_detect_brick=True)
     try:
       device_connected = False
 
@@ -939,11 +939,11 @@ For more information of cros build usage:
                                              override_board=self.board)
         logging.info('Board is %s', self.board)
 
-        # Make sure that a project is found and compatible with the device.
-        proj = project.FindProjectByName(self.board)
-        if not proj:
-          cros_build_lib.Die('Could not find project for board')
-        if not (self.options.force or proj.Inherits(device.board)):
+        # Make sure that a brick is found and compatible with the device.
+        brick = brick_lib.FindBrickByName(self.board)
+        if not brick:
+          cros_build_lib.Die('Could not find brick for board')
+        if not (self.options.force or brick.Inherits(device.board)):
           cros_build_lib.Die('Device (%s) is incompatible with board',
                              device.board)
 
@@ -957,8 +957,8 @@ For more information of cros build usage:
 
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
-        # If no packages were listed, find the project's main packages.
-        deploy_pkgs = self.options.packages or (proj and proj.MainPackages())
+        # If no packages were listed, find the brick's main packages.
+        deploy_pkgs = self.options.packages or (brick and brick.MainPackages())
         if not deploy_pkgs:
           cros_build_lib.Die('No packages found, nothing to deploy.')
 

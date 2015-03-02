@@ -15,11 +15,11 @@ import time
 
 from chromite import cros
 from chromite.cbuildbot import constants
+from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
-from chromite.lib import project
 from chromite.lib import project_sdk
 from chromite.lib import remote_access
 
@@ -543,11 +543,11 @@ class RemoteDeviceUpdater(object):
           cros_build_lib.Die('No board identified')
         logging.info('Board is %s', self.board)
 
-        # Make sure that a project is found and compatible with the device.
-        proj = project.FindProjectByName(self.board)
-        if not proj:
-          cros_build_lib.Die('Could not find project for board')
-        if not (self.force or proj.Inherits(device.board)):
+        # Make sure that a brick is found and compatible with the device.
+        brick = brick_lib.FindBrickByName(self.board)
+        if not brick:
+          cros_build_lib.Die('Could not find brick for board')
+        if not (self.force or brick.Inherits(device.board)):
           cros_build_lib.Die('Device (%s) is incompatible with board',
                              device.board)
 
@@ -730,7 +730,7 @@ Examples:
 
     update = parser.add_argument_group('Advanced device update options')
     update.add_argument(
-        '--board', '--project', help='The board to use. By default it is '
+        '--board', '--brick', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option')
     update.add_argument(
@@ -821,7 +821,7 @@ Examples:
       image = 'project_sdk'
 
     try:
-      board = self.options.board or self.curr_project_name
+      board = self.options.board or self.curr_brick_name
       if device.scheme == commandline.DEVICE_SCHEME_SSH:
         logging.info('Preparing to update the remote device %s',
                      device.hostname)

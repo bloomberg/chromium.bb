@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This module tests the cros image command."""
+"""This module tests the cros build command."""
 
 from __future__ import print_function
 
 from chromite.cros.commands import cros_build
 from chromite.cros.commands import init_unittest
+from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
-from chromite.lib import project
 
 
 class MockBuildCommand(init_unittest.MockCommand):
@@ -31,8 +31,8 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
 
   def setUp(self):
-    p = project.Project(self.tempdir, initial_config={'name': 'foo'})
-    self.PatchObject(project, 'FindProjectByName', return_value=p)
+    p = brick_lib.Brick(self.tempdir, initial_config={'name': 'foo'})
+    self.PatchObject(brick_lib, 'FindBrickByName', return_value=p)
 
   def testSuccess(self):
     """Test that successful commands work."""
