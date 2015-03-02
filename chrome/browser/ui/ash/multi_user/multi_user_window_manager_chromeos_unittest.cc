@@ -18,12 +18,10 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/user_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -41,9 +39,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
  public:
   MultiUserWindowManagerChromeOSTest()
       : multi_user_window_manager_(NULL),
-        session_state_delegate_(NULL),
-        fake_user_manager_(new user_manager::FakeUserManager),
-        user_manager_enabler_(fake_user_manager_) {}
+        session_state_delegate_(NULL) {}
 
   void SetUp() override;
   void TearDown() override;
@@ -161,10 +157,6 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   // The session state delegate.
   ash::test::TestSessionStateDelegate* session_state_delegate_;
-
-  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
-
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
   // The maximized window manager (if enabled).
   scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
