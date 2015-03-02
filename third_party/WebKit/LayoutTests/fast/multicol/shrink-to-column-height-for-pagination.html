@@ -1,12 +1,19 @@
-<html>
-<body style="margin:0;">
-    <div id="container" style="width:400px; overflow:-webkit-paged-x; -webkit-writing-mode:vertical-rl;">
-        <div style="width:100%; height:100%; margin:8px;">
-            <img src="resources/big-green.png" style="width:100%; height:100%; max-width:100%; max-height:100%;"/>
+<!DOCTYPE html>
+<style>
+    .filler { display:inline-block; height:200px; width:1px; }
+</style>
+<p>Test that a paged container in vertical writing mode shrinks to fit within its containing block.</p>
+<p>There should be a yellow rectangle below, and the word 'PASS' should be seen in the bottom left corner.</p>
+<div style="height:300px; background:yellow;">
+    <div style="width:50%; overflow:-webkit-paged-x; -webkit-writing-mode:vertical-lr; background:yellow;">
+        <div style="float:right; height:1.2em;">
+            <!-- Cannot set writing mode directly on the float, because of crbug.com/461040 -->
+            <div style="-webkit-writing-mode:horizontal-tb;">
+                PASS
+            </div>
         </div>
+        <div class="filler"></div>
+        <div class="filler"></div>
+        <div class="filler"></div>
     </div>
-    <script>
-        document.getElementById("container").scrollLeft = -400;
-    </script>
-</body>
-</html>
+</div>
