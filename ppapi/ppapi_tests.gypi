@@ -498,6 +498,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_video_encode',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/video_encode/video_encode.cc',
+      ],
+    },
+    {
       # GN version: //ppapi/example/video_capture
       'target_name': 'ppapi_example_vc',
       'dependencies': [
