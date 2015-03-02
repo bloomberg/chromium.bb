@@ -106,7 +106,7 @@ LANG_SOURCE =\
  mg.txt\
  mk.txt\
  mn.txt\
- mo.txt\
+ mo.txt ro_MD.txt\
  mt.txt\
  my.txt\
  ne.txt\

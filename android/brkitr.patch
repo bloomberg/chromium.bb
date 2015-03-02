@@ -40,7 +40,7 @@ index c74da4c..c5d6df7 100644
  
  !!safe_reverse;
 diff --git a/source/data/brkitr/brklocal.mk b/source/data/brkitr/brklocal.mk
-index ad36492..1d69c1e 100644
+index c41c85a..5e0641b 100644
 --- a/source/data/brkitr/brklocal.mk
 +++ b/source/data/brkitr/brklocal.mk
 @@ -34,17 +34,17 @@ BRK_RES_ALIAS_SOURCE = $(BRK_RES_SYNTHETIC_ALIAS)
@@ -60,7 +60,7 @@ index ad36492..1d69c1e 100644
  
  # Ordinary resources
  BRK_RES_SOURCE = de.txt el.txt en.txt en_US.txt\
-  en_US_POSIX.txt es.txt fi.txt fr.txt it.txt\
+  es.txt fi.txt fr.txt it.txt\
 - pt.txt ru.txt
 + pt.txt ru.txt ja.txt
  

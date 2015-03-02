@@ -45,6 +45,6 @@ BRK_SOURCE = char.txt line.txt line_fi.txt\
 
 # Ordinary resources
 BRK_RES_SOURCE = de.txt el.txt en.txt en_US.txt\
- en_US_POSIX.txt es.txt fi.txt fr.txt it.txt\
+ es.txt fi.txt fr.txt it.txt\
  pt.txt ru.txt
 
