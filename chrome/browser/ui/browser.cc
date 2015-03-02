@@ -1339,8 +1339,7 @@ void Browser::ShowDownload(content::DownloadItem* download) {
     return;
 
   // GetDownloadShelf creates the download shelf if it was not yet created.
-  DownloadShelf* shelf = window()->GetDownloadShelf();
-  shelf->AddDownload(download);
+  window()->GetDownloadShelf()->AddDownload(download);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

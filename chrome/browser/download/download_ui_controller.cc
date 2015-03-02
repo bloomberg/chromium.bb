@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
@@ -17,6 +16,8 @@
 #include "content/public/browser/android/download_controller_android.h"
 #else
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #endif
 
 namespace {

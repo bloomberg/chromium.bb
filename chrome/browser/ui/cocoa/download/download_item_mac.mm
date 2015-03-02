@@ -30,6 +30,11 @@ DownloadItemMac::~DownloadItemMac() {
 void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
   DCHECK_EQ(download, download_model_.download());
 
+  if (!download_model_.ShouldShowInShelf()) {
+    [item_controller_ remove];  // We're deleted now!
+    return;
+  }
+
   if ([item_controller_ isDangerousMode] && !download_model_.IsDangerous()) {
     // We have been approved.
     [item_controller_ clearDangerousMode];

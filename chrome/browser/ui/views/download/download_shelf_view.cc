@@ -127,8 +127,7 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 }
 
 void DownloadShelfView::DoAddDownload(DownloadItem* download) {
-  DownloadItemView* view = new DownloadItemView(download, this);
-  AddDownloadView(view);
+  AddDownloadView(new DownloadItemView(download, this));
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {

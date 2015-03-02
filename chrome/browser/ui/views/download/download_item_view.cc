@@ -274,6 +274,11 @@ void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
 void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
   DCHECK_EQ(download(), download_item);
 
+  if (!model_.ShouldShowInShelf()) {
+    shelf_->RemoveDownloadView(this);  // This will delete us!
+    return;
+  }
+
   if (IsShowingWarningDialog() && !model_.IsDangerous()) {
     // We have been approved.
     ClearWarningDialog();

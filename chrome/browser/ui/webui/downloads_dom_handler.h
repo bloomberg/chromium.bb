@@ -106,6 +106,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Protected for testing.
   virtual content::DownloadManager* GetMainNotifierManager();
 
+  // Actually remove downloads with an ID in |removals_|. This cannot be undone.
+  void FinalizeRemovals();
+
  private:
   // Shorthand for |observing_items_|, which tracks all items that this is
   // observing so that RemoveObserver will be called for all of them.
@@ -150,7 +153,7 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   scoped_ptr<AllDownloadItemNotifier> original_notifier_;
 
   // IDs of downloads to remove when this handler gets deleted.
-  std::vector<std::set<uint32>> removes_;
+  std::vector<std::set<uint32>> removals_;
 
   // Whether a call to SendCurrentDownloads() is currently scheduled.
   bool update_scheduled_;

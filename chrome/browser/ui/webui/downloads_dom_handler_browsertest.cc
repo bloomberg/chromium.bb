@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
@@ -84,6 +85,8 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   void reset_download_updated() { download_updated_.reset(); }
 
   void set_manager(content::DownloadManager* manager) { manager_ = manager; }
+
+  using DownloadsDOMHandler::FinalizeRemovals;
 
  protected:
   content::WebContents* GetWebUIWebContents() override { return NULL; }
@@ -247,6 +250,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, ClearAllSkipsInProgress) {
       testing::SetArgPointee<0>(items));
 
   mock_handler_->HandleClearAll(NULL);
+  EXPECT_TRUE(DownloadItemModel(&item).ShouldShowInShelf());
 }
 
 // Tests that DownloadsDOMHandler detects new downloads and relays them to the
@@ -270,6 +274,34 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, DownloadsRelayed) {
   EXPECT_EQ(0, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
 }
 
+// Tests that DownloadsDOMHandler actually calls DownloadItem::Remove() when
+// it's closed (and removals can no longer be undone).
+IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveCalledOnPageClose) {
+  content::MockDownloadManager manager;
+  mock_handler_->set_manager(&manager);
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetId()).WillRepeatedly(testing::Return(1));
+  EXPECT_CALL(item, GetState()).WillRepeatedly(
+      testing::Return(content::DownloadItem::COMPLETE));
+
+  DownloadItemModel model(&item);
+  EXPECT_TRUE(model.ShouldShowInShelf());
+
+  EXPECT_CALL(manager, GetDownload(1)).WillRepeatedly(testing::Return(&item));
+
+  base::ListValue remove;
+  remove.AppendString("1");
+  EXPECT_CALL(item, UpdateObservers()).Times(1);
+  mock_handler_->HandleRemove(&remove);
+  EXPECT_FALSE(model.ShouldShowInShelf());
+
+  EXPECT_CALL(item, Remove()).Times(1);
+  // Call |mock_handler_->FinalizeRemovals()| instead of |mock_handler_.reset()|
+  // because the vtable is affected during destruction and the fake manager
+  // rigging doesn't work.
+  mock_handler_->FinalizeRemovals();
+}
 
 // TODO(benjhayden): Test the extension downloads filter for both
 // mock_handler_.downloads_list() and mock_handler_.download_updated().

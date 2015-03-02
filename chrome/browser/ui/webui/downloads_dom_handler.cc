@@ -77,35 +77,6 @@ enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_MAX
 };
 
-static const char kKey[] = "DownloadsDOMHandlerData";
-
-class DownloadsDOMHandlerData : public base::SupportsUserData::Data {
- public:
-  static DownloadsDOMHandlerData* Get(content::DownloadItem* item) {
-    return static_cast<DownloadsDOMHandlerData*>(item->GetUserData(kKey));
-  }
-
-  static const DownloadsDOMHandlerData* Get(const content::DownloadItem* item) {
-    return static_cast<DownloadsDOMHandlerData*>(item->GetUserData(kKey));
-  }
-
-  static void Set(content::DownloadItem* item, DownloadsDOMHandlerData* data) {
-    item->SetUserData(kKey, data);
-  }
-
-  static DownloadsDOMHandlerData* Create(content::DownloadItem* item) {
-    DownloadsDOMHandlerData* data = new DownloadsDOMHandlerData;
-    item->SetUserData(kKey, data);
-    return data;
-  }
-
-  void set_is_removed(bool is_removed) { is_removed_ = is_removed; }
-  bool is_removed() const { return is_removed_; }
-
- private:
-  bool is_removed_;
-};
-
 void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Download.DOMEvent",
                             event,
@@ -267,18 +238,14 @@ base::DictionaryValue* CreateDownloadItemValue(
   return file_value;
 }
 
-bool IsRemoved(const content::DownloadItem& item) {
-  const DownloadsDOMHandlerData* data = DownloadsDOMHandlerData::Get(&item);
-  return data && data->is_removed();
-}
-
 // Filters out extension downloads and downloads that don't have a filename yet.
 bool IsDownloadDisplayable(const content::DownloadItem& item) {
   return !download_crx_util::IsExtensionDownload(item) &&
          !item.IsTemporary() &&
          !item.GetFileNameToReportUser().empty() &&
          !item.GetTargetFilePath().empty() &&
-         !IsRemoved(item);
+         DownloadItemModel(
+             const_cast<content::DownloadItem*>(&item)).ShouldShowInShelf();
 }
 
 }  // namespace
@@ -299,16 +266,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {
-  while (!removes_.empty()) {
-    const std::set<uint32> remove = removes_.back();
-    removes_.pop_back();
-
-    for (const auto id : remove) {
-      content::DownloadItem* download = GetDownloadById(id);
-      if (download)
-        download->Remove();
-    }
-  }
+  FinalizeRemovals();
 }
 
 // DownloadsDOMHandler, public: -----------------------------------------------
@@ -398,7 +356,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(
 void DownloadsDOMHandler::OnDownloadRemoved(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
-  if (IsRemoved(*download_item))
+  if (!DownloadItemModel(download_item).ShouldShowInShelf())
     return;
 
   // This relies on |download_item| being removed from DownloadManager in this
@@ -503,17 +461,17 @@ void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
 
 void DownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   // TODO(dbeam): handle more than removed downloads someday?
-  if (removes_.empty())
+  if (removals_.empty())
     return;
 
-  const std::set<uint32> last_removed_ids = removes_.back();
-  removes_.pop_back();
+  const std::set<uint32> last_removed_ids = removals_.back();
+  removals_.pop_back();
 
   for (auto id : last_removed_ids) {
     content::DownloadItem* download = GetDownloadById(id);
     if (!download)
       continue;
-    DownloadsDOMHandlerData::Set(download, nullptr);
+    DownloadItemModel(download).SetShouldShowInShelf(true);
     download->UpdateObservers();
   }
 }
@@ -543,16 +501,18 @@ void DownloadsDOMHandler::RemoveDownloads(
     const std::vector<content::DownloadItem*>& to_remove) {
   std::set<uint32> ids;
   for (auto* download : to_remove) {
-    if (IsRemoved(*download) ||
+    DownloadItemModel item_model(download);
+    if (!item_model.ShouldShowInShelf() ||
         download->GetState() == content::DownloadItem::IN_PROGRESS) {
       continue;
     }
 
-    DownloadsDOMHandlerData::Create(download)->set_is_removed(true);
+    item_model.SetShouldShowInShelf(false);
     ids.insert(download->GetId());
     download->UpdateObservers();
   }
-  removes_.push_back(ids);
+  if (!ids.empty())
+    removals_.push_back(ids);
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(
@@ -583,6 +543,19 @@ void DownloadsDOMHandler::ScheduleSendCurrentDownloads() {
 
 content::DownloadManager* DownloadsDOMHandler::GetMainNotifierManager() {
   return main_notifier_.GetManager();
+}
+
+void DownloadsDOMHandler::FinalizeRemovals() {
+  while (!removals_.empty()) {
+    const std::set<uint32> remove = removals_.back();
+    removals_.pop_back();
+
+    for (const auto id : remove) {
+      content::DownloadItem* download = GetDownloadById(id);
+      if (download)
+        download->Remove();
+    }
+  }
 }
 
 void DownloadsDOMHandler::SendCurrentDownloads() {
@@ -670,8 +643,8 @@ content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
 
 content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32 id) {
   content::DownloadItem* item = NULL;
-  if (main_notifier_.GetManager())
-    item = main_notifier_.GetManager()->GetDownload(id);
+  if (GetMainNotifierManager())
+    item = GetMainNotifierManager()->GetDownload(id);
   if (!item && original_notifier_.get() && original_notifier_->GetManager())
     item = original_notifier_->GetManager()->GetDownload(id);
   return item;
