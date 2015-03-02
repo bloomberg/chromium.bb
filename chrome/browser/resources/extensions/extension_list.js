@@ -384,8 +384,7 @@ cr.define('extensions', function() {
       // The 'allow file:// access' checkbox.
       row.setupColumn('.file-access-control input', 'localUrls', 'click',
                       function(e) {
-        chrome.send('extensionSettingsAllowFileAccess',
-                    [extension.id, String(e.target.checked)]);
+        chrome.developerPrivate.allowFileAccess(extension.id, e.target.checked);
       });
 
       // The 'Options' button or link, depending on its behaviour.
