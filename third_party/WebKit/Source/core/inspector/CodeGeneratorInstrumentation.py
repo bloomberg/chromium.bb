@@ -128,7 +128,7 @@ public:
         return adoptRefWillBeNoop(new InstrumentingAgents());
     }
     ~InstrumentingAgents() { }
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void reset();
 
 ${accessor_list}
@@ -154,7 +154,7 @@ InstrumentingAgents::InstrumentingAgents()
 {
 }
 
-void InstrumentingAgents::trace(Visitor* visitor)
+DEFINE_TRACE(InstrumentingAgents)
 {
     $trace_list
 }
