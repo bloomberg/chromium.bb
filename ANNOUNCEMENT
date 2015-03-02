@@ -1,7 +1,7 @@
-liblouis 2.6.1 has been released
+liblouis 2.6.2 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-2.6.1 The release is available for download at:
+2.6.2 The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -15,73 +15,41 @@ It plays an important role in an open source accessibility stack and
 is used by screenreaders such as NVDA and Orca. A companion project
 liblouisutdml[2] deals with formatting of braille.
 
-Next release
-============
-
-The next release will be published on March 2nd 2015 so please keep
-those improvements coming.
-
 Changes in this release
 =======================
 
-This release focuses on table and documentation improvements. The
-documentation has been restructured to cater to people starting with
-writing Braille tables. End users will see improvements to Braille for
-Danish, Dutch, Hungarian, Irish and UK English.
+This release, which was mostly pushed out the door by Bert and Mesar,
+fixes a long standing emphasis bug, adds more functionality to the
+harness test suite and improves, as usual, on Braille tables. Notably
+there is a brand new finish table backed by Celia.
 
 New features
 ~~~~~~~~~~~~
 
-New Braille tables
-------------------
-
-- New grade 1 and grade 2 Gaeilge tables implementing the 2014 UIB
-  standard. Including tests, thanks to Ronan McGuirk, Mesar Hameed.
-
-
-Braille table improvements
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- Updates and correction to Hungarian braille tables, thanks to Hammer
-  Attila.
-- Correction to English UK grade 2 braille tables and new tests,
-  thanks to Paul Wood, Mesar Hameed
-- Vastly improved Danish tables thanks to Bue Vester-Andersen
-  - back-translation, both in 6 dots grade 2 and 8 dots grade 2.
-  - Better handling of dash, slash, and other punctuation within words
-    in 8 dots grade 2.
-- New table for Dutch (Netherlands) thanks to Henri Apperloo from CBB
-
+- Harness tests now can test for typeform differences.
 
 Bug fixes
 ~~~~~~~~~
 
-- fix a compiler warning in the logging code. Thanks Peter Lundblad
-  for reporting it and Michael Whapples for fixing the problem.
+- Fix for emphasis bug, thanks to Michael Gray
 
+Braille table improvements
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Documentation updates
-~~~~~~~~~~~~~~~~~~~~~
+- Correction to comments in Norwegian generic tables, thanks to Lars
+  Bjørndal
+- Corrections to dot patterns in no-no-g0.utb thanks to Lars Bjørndal
+- Corrections and additional test cases for Hungarian grade 1, thanks
+  to Hammer Attila.
+- New 6-dot table for Finnish thanks to Jukka Eerikäinen from Celia.
+  The existing tables for Finnish were 8-dot, but there is an official
+  specification only for 6-dot braille in Finnish.
 
-- The documentation has been restructured to be more beginner friendly
-  and a short introduction to translation table writing has been
-  added. Thanks to Joseph Lee and Christian Egli
+Next release
+============
 
-
-Other changes
-~~~~~~~~~~~~~
-
-- When compiling with mingw or cygwin resulting dll is liblouis.dll.
-- runHarness.py: add new output format, compact output mode suitable
-  for grepping.
-
-
-Backwards incompatible changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
-- Nl-Nl-g1.utb has been removed. It is superseded by nl-NL-g1.ctb.
-- nl-be-g1.utb has been removed. It is superseded by nl-BE-g1.ctb.
+The next release will be published on June 1st 2015 so please keep
+those improvements coming.
 
 Share and Enjoy!
 
