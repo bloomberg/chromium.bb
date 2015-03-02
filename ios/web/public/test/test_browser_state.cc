@@ -17,7 +17,7 @@ bool TestBrowserState::IsOffTheRecord() const {
   return false;
 }
 
-base::FilePath TestBrowserState::GetPath() const {
+base::FilePath TestBrowserState::GetStatePath() const {
   return base::FilePath();
 }
 

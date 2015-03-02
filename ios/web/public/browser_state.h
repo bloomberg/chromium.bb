@@ -28,7 +28,9 @@ class BrowserState : public base::SupportsUserData {
   virtual bool IsOffTheRecord() const = 0;
 
   // Returns the path where the BrowserState data is stored.
-  virtual base::FilePath GetPath() const = 0;
+  // Unlike Profile::GetPath(), incognito BrowserState do not share their path
+  // with their original BrowserState.
+  virtual base::FilePath GetStatePath() const = 0;
 
   // Returns the request context information associated with this
   // BrowserState.

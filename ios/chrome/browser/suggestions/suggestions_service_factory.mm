@@ -59,7 +59,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
   base::FilePath database_dir(
-      chrome_browser_state->GetPath().Append(kThumbnailDirectory));
+      chrome_browser_state->GetStatePath().Append(kThumbnailDirectory));
   scoped_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(chrome_browser_state->GetPrefs()));
   scoped_ptr<BlacklistStore> blacklist_store(
