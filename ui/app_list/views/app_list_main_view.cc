@@ -271,7 +271,7 @@ void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {
   if (!custom_page)
     return;
 
-  if (enabled) {
+  if (ShouldShowCustomLauncherPage()) {
     // Make the custom page view visible again.
     custom_page->SetVisible(true);
   } else if (contents_view_->IsStateActive(
