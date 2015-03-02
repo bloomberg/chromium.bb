@@ -1885,6 +1885,13 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailur
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
+crbug.com/450612 [ XP ] svg/text/text-repaint-rects.xhtml [ NeedsRebaseline ]
+crbug.com/450612 [ XP ] virtual/slimmingpaint/fast/css/first-letter-capitalized.html [ NeedsRebaseline ]
+crbug.com/450612 [ XP ] virtual/slimmingpaint/fast/frames/onlyCommentInIFrame.html [ NeedsRebaseline ]
+crbug.com/450612 [ XP ] virtual/slimmingpaint/fast/text/midword-break-hang.html [ NeedsRebaseline ]
+crbug.com/450612 [ XP ] virtual/slimmingpaint/fast/text/wbr-in-pre-crash.html [ NeedsRebaseline ]
+crbug.com/450612 [ XP ] virtual/slimmingpaint/svg/text/text-repaint-rects.xhtml [ NeedsRebaseline ]
+
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
