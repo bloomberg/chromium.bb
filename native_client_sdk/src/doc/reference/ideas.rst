@@ -28,6 +28,18 @@ native-client-discuss_ mailing list so that we can help you find a mentor.
 
 .. _native-client-discuss: https://groups.google.com/group/native-client-discuss
 
+Google Summer of Code
+=====================
+
+PNaCl participates in the `2015 Google Summer of Code`_ (see the `PNaCl GSoC
+page`_). `Student applications`_ are open March 16–27. Discuss project ideas no
+native-client-discuss_, and submit your proposal on the GSoC page by the
+deadline.
+
+.. _PNaCl GSoC page: https://www.google-melange.com/gsoc/org2/google/gsoc2015/pnacl
+.. _2015 Google Summer of Code: https://www.google-melange.com/gsoc/homepage/google/gsoc2015
+.. _Student applications: https://www.google-melange.com/gsoc/document/show/gsoc_program/google/gsoc2015/help_page#4._How_does_a_student_apply
+
 Ideas
 =====
 
