@@ -222,6 +222,8 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
         source_map_[endpoint] = index;
         MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
         AddInputPort(info);
+        MIDIPortConnectSource(
+            coremidi_input_, endpoint, reinterpret_cast<void*>(endpoint));
       } else {
         uint32 index = it->second;
         SetInputPortState(index, MIDI_PORT_OPENED);
