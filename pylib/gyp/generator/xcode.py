@@ -1130,6 +1130,9 @@ exit 1
         # Relative paths are relative to $(SRCROOT).
         dest = '$(SRCROOT)/' + dest
 
+      code_sign = int(copy_group.get('xcode_code_sign', 0))
+      settings = (None, '{ATTRIBUTES = (CodeSignOnCopy, ); }')[code_sign];
+
       # Coalesce multiple "copies" sections in the same target with the same
       # "destination" property into the same PBXCopyFilesBuildPhase, otherwise
       # they'll wind up with ID collisions.
@@ -1148,7 +1151,7 @@ exit 1
         pbxcp_dict[dest] = pbxcp
 
       for file in copy_group['files']:
-        pbxcp.AddFile(file)
+        pbxcp.AddFile(file, settings)
 
     # Excluded files can also go into the project file.
     if not skip_excluded_files:
