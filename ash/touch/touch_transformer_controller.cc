@@ -204,8 +204,8 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       RootWindowController::ForWindow(root)->ash_host()->UpdateDisplayID(
           display1_id, display2_id);
       DisplayInfo source_display =
-          gfx::Display::InternalDisplayId() == display1_id ?
-          display1 : display2;
+          display_controller->GetPrimaryDisplayId() == display1_id ? display1
+                                                                   : display2;
       // Mapping from framebuffer size to the source display's native
       // resolution.
       device_manager->UpdateTouchInfoForDisplay(
