@@ -43,7 +43,6 @@ namespace blink {
 
 ContentLayerDelegate::ContentLayerDelegate(GraphicsContextPainter* painter)
     : m_painter(painter)
-    , m_opaque(false)
 {
 }
 
@@ -61,7 +60,6 @@ void ContentLayerDelegate::paintContents(
 
     GraphicsContext context(canvas, m_painter->displayItemList(),
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
-    context.setCertainlyOpaque(m_opaque);
     if (*annotationsEnabled)
         context.setAnnotationMode(AnnotateAll);
 

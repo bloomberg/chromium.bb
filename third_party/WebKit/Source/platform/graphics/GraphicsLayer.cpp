@@ -852,7 +852,6 @@ void GraphicsLayer::setContentsOpaque(bool opaque)
 {
     m_contentsOpaque = opaque;
     m_layer->layer()->setOpaque(m_contentsOpaque);
-    m_contentLayerDelegate->setOpaque(m_contentsOpaque);
     clearContentsLayerIfUnregistered();
     if (m_contentsLayer)
         m_contentsLayer->setOpaque(opaque);

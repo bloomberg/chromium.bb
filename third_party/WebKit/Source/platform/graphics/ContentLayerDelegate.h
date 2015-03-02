@@ -55,19 +55,12 @@ public:
     explicit ContentLayerDelegate(GraphicsContextPainter*);
     virtual ~ContentLayerDelegate();
 
-    // When we know everything painted through this delegate will be opaque, allow for optimizations to take place.
-    void setOpaque(bool opaque)
-    {
-        m_opaque = opaque;
-    }
-
     // WebContentLayerClient implementation.
     virtual void paintContents(SkCanvas*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
     virtual void paintContents(WebDisplayItemList*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
 
 private:
     GraphicsContextPainter* m_painter;
-    bool m_opaque;
 };
 
 } // namespace blink
