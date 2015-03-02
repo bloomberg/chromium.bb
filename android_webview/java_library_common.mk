@@ -62,6 +62,7 @@ $(call intermediates-dir-for,GYP,shared)/enums/private_key_types_java/org/chromi
 $(call intermediates-dir-for,GYP,shared)/enums/result_codes_java/org/chromium/content_public/common/ResultCode.java \
 $(call intermediates-dir-for,GYP,shared)/enums/screen_orientation_values_java/org/chromium/content_public/common/ScreenOrientationValues.java \
 $(call intermediates-dir-for,GYP,shared)/enums/selection_event_type_java/org/chromium/ui/touch_selection/SelectionEventType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/touch_handle_orientation_java/org/chromium/ui/touch_selection/TouchHandleOrientation.java \
 $(call intermediates-dir-for,GYP,shared)/enums/speech_recognition_error_java/org/chromium/content_public/common/SpeechRecognitionErrorCode.java \
 $(call intermediates-dir-for,GYP,shared)/enums/top_controls_state_java/org/chromium/content_public/common/TopControlsState.java \
 $(call intermediates-dir-for,GYP,shared)/enums/window_open_disposition_java/org/chromium/ui/WindowOpenDisposition.java \

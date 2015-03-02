@@ -26,16 +26,16 @@ gfx::Vector2dF ComputeLineOffsetFromBottom(const SelectionBound& bound) {
 TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
   switch (type) {
     case SelectionBound::LEFT:
-      return TOUCH_HANDLE_LEFT;
+      return TouchHandleOrientation::LEFT;
     case SelectionBound::RIGHT:
-      return TOUCH_HANDLE_RIGHT;
+      return TouchHandleOrientation::RIGHT;
     case SelectionBound::CENTER:
-      return TOUCH_HANDLE_CENTER;
+      return TouchHandleOrientation::CENTER;
     case SelectionBound::EMPTY:
-      return TOUCH_HANDLE_ORIENTATION_UNDEFINED;
+      return TouchHandleOrientation::UNDEFINED;
   }
   NOTREACHED() << "Invalid selection bound type: " << type;
-  return TOUCH_HANDLE_ORIENTATION_UNDEFINED;
+  return TouchHandleOrientation::UNDEFINED;
 }
 
 }  // namespace
@@ -50,8 +50,8 @@ TouchSelectionController::TouchSelectionController(
       tap_slop_(tap_slop),
       show_on_tap_for_empty_editable_(show_on_tap_for_empty_editable),
       response_pending_input_event_(INPUT_EVENT_TYPE_NONE),
-      start_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
-      end_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
+      start_orientation_(TouchHandleOrientation::UNDEFINED),
+      end_orientation_(TouchHandleOrientation::UNDEFINED),
       is_insertion_active_(false),
       activate_insertion_automatically_(false),
       is_selection_active_(false),
@@ -102,21 +102,22 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   // Instead, prevent selection -> insertion transitions without an intervening
   // action or selection clearing of some sort, crbug.com/392696.
   if (is_selection_dragging) {
-    if (start_orientation_ == TOUCH_HANDLE_CENTER)
+    if (start_orientation_ == TouchHandleOrientation::CENTER)
       start_orientation_ = start_selection_handle_->orientation();
-    if (end_orientation_ == TOUCH_HANDLE_CENTER)
+    if (end_orientation_ == TouchHandleOrientation::CENTER)
       end_orientation_ = end_selection_handle_->orientation();
   }
 
   if (GetStartPosition() != GetEndPosition() ||
       (is_selection_dragging &&
-       start_orientation_ != TOUCH_HANDLE_ORIENTATION_UNDEFINED &&
-       end_orientation_ != TOUCH_HANDLE_ORIENTATION_UNDEFINED)) {
+       start_orientation_ != TouchHandleOrientation::UNDEFINED &&
+       end_orientation_ != TouchHandleOrientation::UNDEFINED)) {
     OnSelectionChanged();
     return;
   }
 
-  if (start_orientation_ == TOUCH_HANDLE_CENTER && selection_editable_) {
+  if (start_orientation_ == TouchHandleOrientation::CENTER &&
+      selection_editable_) {
     OnInsertionChanged();
     return;
   }
@@ -165,7 +166,8 @@ void TouchSelectionController::AllowShowingFromCurrentSelection() {
   activate_insertion_automatically_ = true;
   if (GetStartPosition() != GetEndPosition())
     OnSelectionChanged();
-  else if (start_orientation_ == TOUCH_HANDLE_CENTER && selection_editable_)
+  else if (start_orientation_ == TouchHandleOrientation::CENTER &&
+           selection_editable_)
     OnInsertionChanged();
 }
 
@@ -353,7 +355,8 @@ void TouchSelectionController::ActivateInsertion() {
   DCHECK(!is_selection_active_);
 
   if (!insertion_handle_)
-    insertion_handle_.reset(new TouchHandle(this, TOUCH_HANDLE_CENTER));
+    insertion_handle_.reset(
+        new TouchHandle(this, TouchHandleOrientation::CENTER));
 
   if (!is_insertion_active_) {
     is_insertion_active_ = true;
@@ -421,8 +424,8 @@ void TouchSelectionController::ResetCachedValuesIfInactive() {
     return;
   start_ = SelectionBound();
   end_ = SelectionBound();
-  start_orientation_ = TOUCH_HANDLE_ORIENTATION_UNDEFINED;
-  end_orientation_ = TOUCH_HANDLE_ORIENTATION_UNDEFINED;
+  start_orientation_ = TouchHandleOrientation::UNDEFINED;
+  end_orientation_ = TouchHandleOrientation::UNDEFINED;
 }
 
 const gfx::PointF& TouchSelectionController::GetStartPosition() const {

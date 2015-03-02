@@ -12,18 +12,12 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/touch_selection/touch_handle_orientation.h"
 #include "ui/touch_selection/ui_touch_selection_export.h"
 
 namespace ui {
 
 class TouchHandle;
-
-enum TouchHandleOrientation {
-  TOUCH_HANDLE_LEFT,
-  TOUCH_HANDLE_CENTER,
-  TOUCH_HANDLE_RIGHT,
-  TOUCH_HANDLE_ORIENTATION_UNDEFINED,
-};
 
 // Interface through which |TouchHandle| delegates rendering-specific duties.
 class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawable {

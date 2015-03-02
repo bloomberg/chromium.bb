@@ -50,6 +50,7 @@ android_library("content_java") {
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",
     "//ui/touch_selection:ui_touch_selection_enums_srcjar",
+    "//ui/touch_selection:ui_touch_handle_orientation_srcjar",
   ]
 
   DEPRECATED_java_in_dir = "java/src"

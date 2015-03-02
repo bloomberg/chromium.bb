@@ -17,6 +17,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.PositionObserver;
+import org.chromium.ui.touch_selection.TouchHandleOrientation;
 
 import java.lang.ref.WeakReference;
 
@@ -58,12 +59,7 @@ public class PopupTouchHandleDrawable extends View {
 
     private final int[] mTempScreenCoords = new int[2];
 
-    @SuppressLint("RtlHardcoded")
-    static final int LEFT = 0;
-    static final int CENTER = 1;
-    @SuppressLint("RtlHardcoded")
-    static final int RIGHT = 2;
-    private int mOrientation = -1;
+    private int mOrientation = TouchHandleOrientation.UNDEFINED;
 
     // Length of the delay before fading in after the last page movement.
     private static final int FADE_IN_DELAY_MS = 300;
@@ -146,35 +142,40 @@ public class PopupTouchHandleDrawable extends View {
         return handled;
     }
 
+    @CalledByNative
     private void setOrientation(int orientation) {
-        assert orientation >= LEFT && orientation <= RIGHT;
+        assert (orientation >= TouchHandleOrientation.LEFT
+                && orientation <= TouchHandleOrientation.UNDEFINED);
         if (mOrientation == orientation) return;
 
-        final boolean hadValidOrientation = mOrientation != -1;
+        final boolean hadValidOrientation = mOrientation != TouchHandleOrientation.UNDEFINED;
         mOrientation = orientation;
 
         final int oldAdjustedPositionX = getAdjustedPositionX();
         final int oldAdjustedPositionY = getAdjustedPositionY();
 
         switch (orientation) {
-            case LEFT: {
+            case TouchHandleOrientation.LEFT: {
                 mDrawable = HandleViewResources.getLeftHandleDrawable(mContext);
                 mHotspotX = (mDrawable.getIntrinsicWidth() * 3) / 4f;
                 break;
             }
 
-            case RIGHT: {
+            case TouchHandleOrientation.RIGHT: {
                 mDrawable = HandleViewResources.getRightHandleDrawable(mContext);
                 mHotspotX = mDrawable.getIntrinsicWidth() / 4f;
                 break;
             }
 
-            case CENTER:
-            default: {
+            case TouchHandleOrientation.CENTER: {
                 mDrawable = HandleViewResources.getCenterHandleDrawable(mContext);
                 mHotspotX = mDrawable.getIntrinsicWidth() / 2f;
                 break;
             }
+
+            case TouchHandleOrientation.UNDEFINED:
+            default:
+                break;
         }
         mHotspotY = 0;
 
@@ -344,21 +345,6 @@ public class PopupTouchHandleDrawable extends View {
             // Clear the strong reference to allow garbage collection.
             mParentPositionObserver = null;
         }
-    }
-
-    @CalledByNative
-    private void setRightOrientation() {
-        setOrientation(RIGHT);
-    }
-
-    @CalledByNative
-    private void setLeftOrientation() {
-        setOrientation(LEFT);
-    }
-
-    @CalledByNative
-    private void setCenterOrientation() {
-        setOrientation(CENTER);
     }
 
     @CalledByNative

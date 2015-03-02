@@ -44,20 +44,37 @@ bool RectIntersectsCircle(const gfx::RectF& rect,
 
 }  // namespace
 
+// TODO(AviD): Remove this once logging(DCHECK) supports enum class.
+static std::ostream& operator<<(std::ostream& os,
+                                const TouchHandleOrientation& orientation) {
+  switch (orientation) {
+    case TouchHandleOrientation::LEFT:
+      return os << "LEFT";
+    case TouchHandleOrientation::RIGHT:
+      return os << "RIGHT";
+    case TouchHandleOrientation::CENTER:
+      return os << "CENTER";
+    case TouchHandleOrientation::UNDEFINED:
+      return os << "UNDEFINED";
+    default:
+      return os << "INVALID: " << static_cast<int>(orientation);
+  }
+}
+
 // Responsible for rendering a selection or insertion handle for text editing.
 TouchHandle::TouchHandle(TouchHandleClient* client,
                          TouchHandleOrientation orientation)
     : drawable_(client->CreateDrawable()),
       client_(client),
       orientation_(orientation),
-      deferred_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
+      deferred_orientation_(TouchHandleOrientation::UNDEFINED),
       alpha_(0.f),
       animate_deferred_fade_(false),
       enabled_(true),
       is_visible_(false),
       is_dragging_(false),
       is_drag_within_tap_region_(false) {
-  DCHECK_NE(orientation, TOUCH_HANDLE_ORIENTATION_UNDEFINED);
+  DCHECK_NE(orientation, TouchHandleOrientation::UNDEFINED);
   drawable_->SetEnabled(enabled_);
   drawable_->SetOrientation(orientation_);
   drawable_->SetAlpha(alpha_);
@@ -115,12 +132,12 @@ void TouchHandle::SetPosition(const gfx::PointF& position) {
 
 void TouchHandle::SetOrientation(TouchHandleOrientation orientation) {
   DCHECK(enabled_);
-  DCHECK_NE(orientation, TOUCH_HANDLE_ORIENTATION_UNDEFINED);
+  DCHECK_NE(orientation, TouchHandleOrientation::UNDEFINED);
   if (is_dragging_) {
     deferred_orientation_ = orientation;
     return;
   }
-  DCHECK_EQ(deferred_orientation_, TOUCH_HANDLE_ORIENTATION_UNDEFINED);
+  DCHECK_EQ(deferred_orientation_, TouchHandleOrientation::UNDEFINED);
   if (orientation_ == orientation)
     return;
 
@@ -230,9 +247,9 @@ void TouchHandle::EndDrag() {
   is_drag_within_tap_region_ = false;
   client_->OnHandleDragEnd(*this);
 
-  if (deferred_orientation_ != TOUCH_HANDLE_ORIENTATION_UNDEFINED) {
+  if (deferred_orientation_ != TouchHandleOrientation::UNDEFINED) {
     TouchHandleOrientation deferred_orientation = deferred_orientation_;
-    deferred_orientation_ = TOUCH_HANDLE_ORIENTATION_UNDEFINED;
+    deferred_orientation_ = TouchHandleOrientation::UNDEFINED;
     SetOrientation(deferred_orientation);
   }
 

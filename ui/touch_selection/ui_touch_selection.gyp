@@ -24,6 +24,7 @@
         'selection_event_type.h',
         'touch_handle.cc',
         'touch_handle.h',
+        'touch_handle_orientation.h',
         'touch_selection_controller.cc',
         'touch_selection_controller.h',
         'ui_touch_selection_export.h',
@@ -71,6 +72,14 @@
           'type': 'none',
           'variables': {
             'source_file': 'selection_event_type.h',
+          },
+          'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'touch_handle_orientation_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'touch_handle_orientation.h',
           },
           'includes': [ '../../build/android/java_cpp_enum.gypi' ],
         },

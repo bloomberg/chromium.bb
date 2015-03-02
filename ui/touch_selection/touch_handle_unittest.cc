@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/touch_selection/touch_handle_orientation.h"
 
 using ui::test::MockMotionEvent;
 
@@ -19,7 +20,7 @@ const float kDefaultDrawableSize = 10.f;
 
 struct MockDrawableData {
   MockDrawableData()
-      : orientation(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
+      : orientation(TouchHandleOrientation::UNDEFINED),
         alpha(0.f),
         enabled(false),
         visible(false),
@@ -143,7 +144,7 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
 };
 
 TEST_F(TouchHandleTest, Visibility) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   EXPECT_FALSE(drawable().visible);
 
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
@@ -159,7 +160,7 @@ TEST_F(TouchHandleTest, Visibility) {
 }
 
 TEST_F(TouchHandleTest, VisibilityAnimation) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   ASSERT_FALSE(NeedsAnimate());
   ASSERT_FALSE(drawable().visible);
   ASSERT_EQ(0.f, drawable().alpha);
@@ -195,21 +196,21 @@ TEST_F(TouchHandleTest, VisibilityAnimation) {
 }
 
 TEST_F(TouchHandleTest, Orientation) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
-  EXPECT_EQ(TOUCH_HANDLE_CENTER, drawable().orientation);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  EXPECT_EQ(TouchHandleOrientation::CENTER, drawable().orientation);
 
-  handle.SetOrientation(TOUCH_HANDLE_LEFT);
-  EXPECT_EQ(TOUCH_HANDLE_LEFT, drawable().orientation);
+  handle.SetOrientation(TouchHandleOrientation::LEFT);
+  EXPECT_EQ(TouchHandleOrientation::LEFT, drawable().orientation);
 
-  handle.SetOrientation(TOUCH_HANDLE_RIGHT);
-  EXPECT_EQ(TOUCH_HANDLE_RIGHT, drawable().orientation);
+  handle.SetOrientation(TouchHandleOrientation::RIGHT);
+  EXPECT_EQ(TouchHandleOrientation::RIGHT, drawable().orientation);
 
-  handle.SetOrientation(TOUCH_HANDLE_CENTER);
-  EXPECT_EQ(TOUCH_HANDLE_CENTER, drawable().orientation);
+  handle.SetOrientation(TouchHandleOrientation::CENTER);
+  EXPECT_EQ(TouchHandleOrientation::CENTER, drawable().orientation);
 }
 
 TEST_F(TouchHandleTest, Position) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
 
   gfx::PointF position;
@@ -225,7 +226,7 @@ TEST_F(TouchHandleTest, Position) {
 }
 
 TEST_F(TouchHandleTest, PositionNotUpdatedWhileFadingOrInvisible) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
 
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
   ASSERT_TRUE(drawable().visible);
@@ -260,7 +261,7 @@ TEST_F(TouchHandleTest, PositionNotUpdatedWhileFadingOrInvisible) {
 
 TEST_F(TouchHandleTest, Enabled) {
   // A newly created handle defaults to enabled.
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   EXPECT_TRUE(drawable().enabled);
 
   handle.SetVisible(true, TouchHandle::ANIMATION_SMOOTH);
@@ -297,7 +298,7 @@ TEST_F(TouchHandleTest, Enabled) {
 }
 
 TEST_F(TouchHandleTest, Drag) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
   const float kOffset = kDefaultDrawableSize / 2.f;
@@ -351,8 +352,8 @@ TEST_F(TouchHandleTest, Drag) {
 }
 
 TEST_F(TouchHandleTest, DragDefersOrientationChange) {
-  TouchHandle handle(this, TOUCH_HANDLE_RIGHT);
-  ASSERT_EQ(drawable().orientation, TOUCH_HANDLE_RIGHT);
+  TouchHandle handle(this, TouchHandleOrientation::RIGHT);
+  ASSERT_EQ(drawable().orientation, TouchHandleOrientation::RIGHT);
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN);
@@ -360,24 +361,24 @@ TEST_F(TouchHandleTest, DragDefersOrientationChange) {
   EXPECT_TRUE(IsDragging());
 
   // Orientation changes will be deferred until the drag ends.
-  handle.SetOrientation(TOUCH_HANDLE_LEFT);
-  EXPECT_EQ(TOUCH_HANDLE_RIGHT, drawable().orientation);
+  handle.SetOrientation(TouchHandleOrientation::LEFT);
+  EXPECT_EQ(TouchHandleOrientation::RIGHT, drawable().orientation);
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetHandleDragged());
   EXPECT_TRUE(IsDragging());
-  EXPECT_EQ(TOUCH_HANDLE_RIGHT, drawable().orientation);
+  EXPECT_EQ(TouchHandleOrientation::RIGHT, drawable().orientation);
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_FALSE(GetAndResetHandleDragged());
   EXPECT_FALSE(IsDragging());
-  EXPECT_EQ(TOUCH_HANDLE_LEFT, drawable().orientation);
+  EXPECT_EQ(TouchHandleOrientation::LEFT, drawable().orientation);
 }
 
 TEST_F(TouchHandleTest, DragDefersFade) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN);
@@ -406,7 +407,7 @@ TEST_F(TouchHandleTest, DragDefersFade) {
 }
 
 TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
@@ -457,7 +458,7 @@ TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
 }
 
 TEST_F(TouchHandleTest, Tap) {
-  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER);
   handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
 
   base::TimeTicks event_time = base::TimeTicks::Now();

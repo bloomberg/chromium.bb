@@ -45,6 +45,7 @@
         '../ui/android/ui_android.gyp:window_open_disposition_java',
         '../ui/android/ui_android.gyp:text_input_type_java',
         '../ui/touch_selection/ui_touch_selection.gyp:selection_event_type_java',
+        '../ui/touch_selection/ui_touch_selection.gyp:touch_handle_orientation_java',
         # We also need to depend on the Java bindings generated from the .mojom files.
         '../device/battery/battery.gyp:device_battery_mojo_bindings_for_webview',
       ],
