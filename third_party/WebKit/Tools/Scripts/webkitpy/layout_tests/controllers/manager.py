@@ -79,7 +79,6 @@ class Manager(object):
         self._expectations = None
 
         self.HTTP_SUBDIR = 'http' + port.TEST_PATH_SEPARATOR
-        self.INSPECTOR_SUBDIR = 'inspector' + port.TEST_PATH_SEPARATOR
         self.PERF_SUBDIR = 'perf'
         self.WEBSOCKET_SUBDIR = 'websocket' + port.TEST_PATH_SEPARATOR
         self.LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
@@ -96,9 +95,6 @@ class Manager(object):
 
     def _is_http_test(self, test):
         return self.HTTP_SUBDIR in test or self._is_websocket_test(test)
-
-    def _is_inspector_test(self, test):
-        return self.INSPECTOR_SUBDIR in test
 
     def _is_websocket_test(self, test):
         return self.WEBSOCKET_SUBDIR in test
@@ -332,7 +328,7 @@ class Manager(object):
         return self._runner.run_tests(self._expectations, test_inputs, tests_to_skip, num_workers, retrying)
 
     def _start_servers(self, tests_to_run):
-        if self._port.requires_http_server() or any((self._is_http_test(test) or self._is_inspector_test(test)) for test in tests_to_run):
+        if self._port.requires_http_server() or any(self._is_http_test(test) for test in tests_to_run):
             self._printer.write_update('Starting HTTP server ...')
             self._port.start_http_server(additional_dirs={}, number_of_drivers=self._options.max_locked_shards)
             self._http_server_started = True
