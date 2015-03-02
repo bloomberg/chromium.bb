@@ -205,6 +205,8 @@ void InspectorController::initializeDeferredAgents()
     m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
 
     m_agents.append(InspectorInputAgent::create(m_pageAgent, m_inspectorClient));
+
+    m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
 }
 
 void InspectorController::willBeDestroyed()

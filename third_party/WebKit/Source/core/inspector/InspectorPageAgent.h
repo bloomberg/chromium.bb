@@ -48,6 +48,8 @@ class GraphicsContext;
 class GraphicsLayer;
 class InjectedScriptManager;
 class InspectorClient;
+class InspectorCSSAgent;
+class InspectorDebuggerAgent;
 class InspectorOverlay;
 class InspectorResourceContentLoader;
 class KURL;
@@ -78,6 +80,7 @@ public:
     };
 
     static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
+    void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     // Settings overrides.
     void setTextAutosizingEnabled(bool);
@@ -171,9 +174,6 @@ public:
     bool screencastEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
-    void clearEditedResourcesContent();
-    void addEditedResourceContent(const String& url, const String& content);
-    bool getEditedResourceContent(const String& url, String* content);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -197,6 +197,8 @@ private:
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     RawPtrWillBeMember<Page> m_page;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     InspectorClient* m_client;
     InspectorFrontend::Page* m_frontend;
     InspectorOverlay* m_overlay;
@@ -222,7 +224,6 @@ private:
     bool m_embedderPreferCompositingToLCDTextEnabled;
 
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
-    HashMap<String, String> m_editedResourceContent;
 };
 
 

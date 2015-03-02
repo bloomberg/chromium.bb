@@ -331,6 +331,11 @@ void InspectorDebuggerAgent::pageDidCommitLoad()
     }
 }
 
+void InspectorDebuggerAgent::didCommitLoadForMainFrame()
+{
+    m_editedScripts.clear();
+}
+
 bool InspectorDebuggerAgent::isPaused()
 {
     return scriptDebugServer().isPaused();
@@ -630,8 +635,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
     String url = it->value.url();
     if (url.isEmpty())
         return;
-    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
-        pageAgent->addEditedResourceContent(url, newContent);
+    m_editedScripts.set(url, newContent);
 }
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
@@ -661,13 +665,8 @@ void InspectorDebuggerAgent::getScriptSource(ErrorString* error, const String& s
     }
 
     String url = it->value.url();
-    if (!url.isEmpty()) {
-        if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent()) {
-            bool success = pageAgent->getEditedResourceContent(url, scriptSource);
-            if (success)
-                return;
-        }
-    }
+    if (!url.isEmpty() && getEditedScript(url, scriptSource))
+        return;
     *scriptSource = it->value.source();
 }
 
@@ -1373,6 +1372,14 @@ void InspectorDebuggerAgent::changeJavaScriptRecursionLevel(int step)
                 m_skipNextDebuggerStepOut = true;
         }
     }
+}
+
+bool InspectorDebuggerAgent::getEditedScript(const String& url, String* content)
+{
+    if (!m_editedScripts.contains(url))
+        return false;
+    *content = m_editedScripts.get(url);
+    return true;
 }
 
 PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()

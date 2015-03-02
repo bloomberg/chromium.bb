@@ -541,7 +541,7 @@ void InspectorCSSAgent::disable(ErrorString*)
 void InspectorCSSAgent::didCommitLoadForMainFrame()
 {
     reset();
-    m_pageAgent->clearEditedResourcesContent();
+    m_editedStyleSheets.clear();
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()
@@ -654,6 +654,19 @@ void InspectorCSSAgent::documentDetached(Document* document)
 {
     m_invalidatedDocuments.remove(document);
     setActiveStyleSheets(document, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >(), ExistingFrontendRefresh);
+}
+
+void InspectorCSSAgent::addEditedStyleSheet(const String& url, const String& content)
+{
+    m_editedStyleSheets.set(url, content);
+}
+
+bool InspectorCSSAgent::getEditedStyleSheet(const String& url, String* content)
+{
+    if (!m_editedStyleSheets.contains(url))
+        return false;
+    *content = m_editedStyleSheets.get(url);
+    return true;
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)

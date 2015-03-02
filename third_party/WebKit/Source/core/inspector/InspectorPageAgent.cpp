@@ -61,7 +61,9 @@
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
@@ -333,6 +335,13 @@ PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page
     return adoptPtrWillBeNoop(new InspectorPageAgent(page, injectedScriptManager, client, overlay));
 }
 
+void InspectorPageAgent::setDeferredAgents(InspectorDebuggerAgent* debuggerAgent, InspectorCSSAgent* cssAgent)
+{
+    ASSERT(!m_debuggerAgent && !m_cssAgent);
+    m_debuggerAgent = debuggerAgent;
+    m_cssAgent = cssAgent;
+}
+
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
 {
     Document* document = frame->document();
@@ -415,6 +424,8 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     : InspectorBaseAgent<InspectorPageAgent>("Page")
     , m_page(page)
     , m_injectedScriptManager(injectedScriptManager)
+    , m_debuggerAgent(nullptr)
+    , m_cssAgent(nullptr)
     , m_client(client)
     , m_frontend(0)
     , m_overlay(overlay)
@@ -752,7 +763,7 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
 void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
 {
     String content;
-    if (getEditedResourceContent(url, &content)) {
+    if (m_debuggerAgent->getEditedScript(url, &content) || m_cssAgent->getEditedStyleSheet(url, &content)) {
         callback->sendSuccess(content, false);
         return;
     }
@@ -1473,24 +1484,6 @@ void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, co
 void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
 {
     m_overlay->setPausedInDebuggerMessage(message);
-}
-
-void InspectorPageAgent::clearEditedResourcesContent()
-{
-    m_editedResourceContent.clear();
-}
-
-void InspectorPageAgent::addEditedResourceContent(const String& url, const String& content)
-{
-    m_editedResourceContent.set(url, content);
-}
-
-bool InspectorPageAgent::getEditedResourceContent(const String& url, String* content)
-{
-    if (!m_editedResourceContent.contains(url))
-        return false;
-    *content = m_editedResourceContent.get(url);
-    return true;
 }
 
 DEFINE_TRACE(InspectorPageAgent)

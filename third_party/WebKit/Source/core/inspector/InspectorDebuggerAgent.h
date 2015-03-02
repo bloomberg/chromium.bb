@@ -154,6 +154,7 @@ public:
     void didCallFunction();
     void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
     void didEvaluateScript();
+    bool getEditedScript(const String& url, String* content);
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:
@@ -211,7 +212,9 @@ protected:
     SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
     void didContinue() final;
     void reset();
+    // FIXME: remove methods related to page load events.
     void pageDidCommitLoad();
+    void didCommitLoadForMainFrame() final;
 
 private:
     SkipPauseRequest shouldSkipExceptionPause();
@@ -292,6 +295,7 @@ private:
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
+    WillBeHeapHashMap<String, String> m_editedScripts;
 
     using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;

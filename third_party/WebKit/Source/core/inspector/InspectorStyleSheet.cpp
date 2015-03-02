@@ -979,13 +979,14 @@ bool InspectorStyleSheetBase::findPropertyByRange(const SourceRange& sourceRange
     return false;
 }
 
-PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
+PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
 {
-    return adoptRefWillBeNoop(new InspectorStyleSheet(pageAgent, resourceAgent, id, pageStyleSheet, origin, documentURL, listener));
+    return adoptRefWillBeNoop(new InspectorStyleSheet(pageAgent, resourceAgent, id, pageStyleSheet, origin, documentURL, cssAgent));
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
-    : InspectorStyleSheetBase(id, listener)
+InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+    : InspectorStyleSheetBase(id, cssAgent)
+    , m_cssAgent(cssAgent)
     , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
     , m_pageStyleSheet(pageStyleSheet)
@@ -1001,6 +1002,7 @@ InspectorStyleSheet::~InspectorStyleSheet()
 
 DEFINE_TRACE(InspectorStyleSheet)
 {
+    visitor->trace(m_cssAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_pageStyleSheet);
@@ -1376,7 +1378,7 @@ void InspectorStyleSheet::updateText(const String& newText)
 {
     Element* element = ownerStyleElement();
     if (!element)
-        m_pageAgent->addEditedResourceContent(finalURL(), newText);
+        m_cssAgent->addEditedStyleSheet(finalURL(), newText);
     m_parsedStyleSheet->setText(newText);
 }
 
@@ -1831,7 +1833,7 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result) const
         return false;
 
     KURL url(ParsedURLString, m_pageStyleSheet->href());
-    if (m_pageAgent->getEditedResourceContent(url, result))
+    if (m_cssAgent->getEditedStyleSheet(url, result))
         return true;
 
     bool base64Encoded;

@@ -123,6 +123,9 @@ public:
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);
 
+    void addEditedStyleSheet(const String& url, const String& content);
+    bool getEditedStyleSheet(const String& url, String* content);
+
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&) override;
     virtual void getPlatformFontsForNode(ErrorString*, int nodeId, String* cssFamilyName, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >&) override;
     virtual void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes) override;
@@ -210,6 +213,7 @@ private:
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
     RefPtrWillBeMember<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
+    WillBeHeapHashMap<String, String> m_editedStyleSheets;
 
     int m_lastStyleSheetId;
     int m_styleSheetsPendingMutation;
