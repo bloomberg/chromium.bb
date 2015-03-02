@@ -5,11 +5,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f27cf7c2830d7b82165147b8f728b33cfbf4bd97",
+          "hash": "72e28cdc99b019aa6a4bf7aa78b4e9ab0a4a7cd1",
           "log_url": null,
           "name": "core_sdk.tgz",
           "tar_src_dir": "core_sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/4eb57343aef5fbe6f55868f195e46a3e02b19243/core_sdk_linux_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/0810cf21ea576fa3b49f9076f60ed882598f22be/core_sdk_linux_x86.tgz"
         },
         {
           "extract_dir": "",
@@ -21,11 +21,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "dc12211eaa7e8eb8f77b221352e660fd12fae6d3",
+          "hash": "3c43713719674ac91c1dea24d8e2e9f134564b35",
           "log_url": null,
           "name": "naclsdk.tgz",
           "tar_src_dir": "sdk/nacl-sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/4eb57343aef5fbe6f55868f195e46a3e02b19243/naclsdk_linux_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/0810cf21ea576fa3b49f9076f60ed882598f22be/naclsdk_linux_x86.tgz"
         }
       ],
       "version": 1
@@ -34,11 +34,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "26b7f42b7ec14edd33a9baf37d75e0a5fa8523d4",
+          "hash": "486124a9fcd127f232b25b5db44dd275175d949b",
           "log_url": null,
           "name": "core_sdk.tgz",
           "tar_src_dir": "core_sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/4eb57343aef5fbe6f55868f195e46a3e02b19243/core_sdk_mac_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/0810cf21ea576fa3b49f9076f60ed882598f22be/core_sdk_mac_x86.tgz"
         },
         {
           "extract_dir": "",
@@ -50,11 +50,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "ec9841364167f6715a4e0a1b5ad22c0cd79d8014",
+          "hash": "942ddde9a4cf5ada6e4bef49992b063af07042b0",
           "log_url": null,
           "name": "naclsdk.tgz",
           "tar_src_dir": "sdk/nacl-sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/4eb57343aef5fbe6f55868f195e46a3e02b19243/naclsdk_mac_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/0810cf21ea576fa3b49f9076f60ed882598f22be/naclsdk_mac_x86.tgz"
         }
       ],
       "version": 1
@@ -63,11 +63,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "7ee1543fe33f3b83f3ded3e09194236c3ea08a6b",
+          "hash": "eae13720aaf2fb1b5e2c2ebb5dcf2dfbffd18ca9",
           "log_url": null,
           "name": "core_sdk.tgz",
           "tar_src_dir": "core_sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/4eb57343aef5fbe6f55868f195e46a3e02b19243/core_sdk_win_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/0810cf21ea576fa3b49f9076f60ed882598f22be/core_sdk_win_x86.tgz"
         },
         {
           "extract_dir": "",
@@ -79,16 +79,16 @@
         },
         {
           "extract_dir": "",
-          "hash": "e23eb0c0293e461811541d1f60d1eb26ab88ce8b",
+          "hash": "32a1f1526ddf7cf1833a99a6a9be9947a1d920c2",
           "log_url": null,
           "name": "naclsdk.tgz",
           "tar_src_dir": "sdk/nacl-sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/4eb57343aef5fbe6f55868f195e46a3e02b19243/naclsdk_win_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/0810cf21ea576fa3b49f9076f60ed882598f22be/naclsdk_win_x86.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": "4eb57343aef5fbe6f55868f195e46a3e02b19243",
-  "revision_hash": "077a42b6027afdc59d44776af1a5936601de9133"
+  "revision": "0810cf21ea576fa3b49f9076f60ed882598f22be",
+  "revision_hash": "572036a7a9900b1a3340de2e35f4b95011970557"
 }
