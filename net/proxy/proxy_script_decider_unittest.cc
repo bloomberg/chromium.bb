@@ -428,6 +428,16 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, ExplicitPacUrl) {
   EXPECT_EQ(rule.url, decider_->effective_config().pac_url());
 }
 
+// Regression test for http://crbug.com/409698.
+// This test lets the state machine get into state QUICK_CHECK_COMPLETE, then
+// destroys the decider, causing a cancel.
+TEST_F(ProxyScriptDeciderQuickCheckTest, CancelPartway) {
+  resolver_.set_synchronous_mode(false);
+  resolver_.set_ondemand_mode(true);
+  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  decider_.reset(NULL);
+}
+
 // Fails at WPAD (downloading), but succeeds in choosing the custom PAC.
 TEST(ProxyScriptDeciderTest, AutodetectFailCustomSuccess1) {
   Rules rules;

@@ -476,7 +476,6 @@ void ProxyScriptDecider::Cancel() {
       proxy_script_fetcher_->Cancel();
       break;
     default:
-      NOTREACHED();
       break;
   }
 
