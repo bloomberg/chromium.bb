@@ -391,8 +391,13 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 new Website.StoredDataClearedCallback() {
                     @Override
                     public void onStoredDataCleared() {
-                        getPreferenceScreen().removePreference(
-                                getPreferenceScreen().findPreference(PREF_CLEAR_DATA));
+                        PreferenceScreen preferenceScreen = getPreferenceScreen();
+                        preferenceScreen.removePreference(
+                                preferenceScreen.findPreference(PREF_CLEAR_DATA));
+                        if (!hasUsagePreferences()) {
+                            preferenceScreen.removePreference(
+                                    preferenceScreen.findPreference(PREF_USAGE));
+                        }
                         popBackIfNoSettings();
                     }
                 });
