@@ -677,7 +677,9 @@ def HostTools(host, options):
                   'PNACL_BROWSER_TRANSLATOR=0',
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
                   'all']),
-              command.Command(MAKE_DESTDIR_CMD + ['install'])] +
+              command.Command(MAKE_DESTDIR_CMD + [
+                  'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
+                  'install'])] +
               cleanup_static_libs + [
               command.Remove(*[os.path.join('%(output)s', 'bin', f) for f in
                                Exe('clang-format'), Exe('clang-check'),
