@@ -286,16 +286,18 @@ void MidiManagerMac::ReadMidi(MIDIEndpointRef source,
   uint32 port_index = source_map_[source];
 
   // Go through each packet and process separately.
+  const MIDIPacket* packet = &packet_list->packet[0];
   for (size_t i = 0; i < packet_list->numPackets; i++) {
     // Each packet contains MIDI data for one or more messages (like note-on).
-    const MIDIPacket &packet = packet_list->packet[i];
-    double timestamp_seconds = MIDITimeStampToSeconds(packet.timeStamp);
+    double timestamp_seconds = MIDITimeStampToSeconds(packet->timeStamp);
 
     ReceiveMidiData(
         port_index,
-        packet.data,
-        packet.length,
+        packet->data,
+        packet->length,
         timestamp_seconds);
+
+    packet = MIDIPacketNext(packet);
   }
 }
 
