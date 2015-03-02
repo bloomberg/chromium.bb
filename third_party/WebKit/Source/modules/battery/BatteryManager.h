@@ -48,7 +48,6 @@ public:
     virtual bool hasLastData() override;
 
     // ActiveDOMObject implementation.
-    virtual bool canSuspend() const { return true; }
     virtual void suspend() override;
     virtual void resume() override;
     virtual void stop() override;
