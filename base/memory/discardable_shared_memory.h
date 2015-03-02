@@ -74,7 +74,7 @@ class BASE_EXPORT DiscardableSharedMemory {
   // must have been mapped via Map().
   void* memory() const;
 
-  // Returns the last know usage time for DiscardableSharedMemory object. This
+  // Returns the last known usage time for DiscardableSharedMemory object. This
   // may be earlier than the "true" usage time when memory has been used by a
   // different process. Returns NULL time if purged.
   Time last_known_usage() const { return last_known_usage_; }
@@ -84,7 +84,7 @@ class BASE_EXPORT DiscardableSharedMemory {
   // for two reasons; object might be locked or our last known usage timestamp
   // might be out of date. Last known usage time is updated to |current_time|
   // if locked or the actual last usage timestamp if unlocked. It is often
-  // neccesary to call this function twice for the object to successfully be
+  // necessary to call this function twice for the object to successfully be
   // purged. First call, updates |last_known_usage_|. Second call, successfully
   // purges the object using the updated |last_known_usage_|.
   // Note: there is no guarantee that multiple calls to this function will
