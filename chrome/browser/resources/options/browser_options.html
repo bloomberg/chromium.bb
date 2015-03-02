@@ -306,11 +306,6 @@
         </div>
       </div>
       <div class="checkbox settings-row">
-        <label>
-          <input id="use-24hour-clock" pref="settings.clock.use_24hour_clock"
-              metric="Options_Use24HourClockCheckbox" type="checkbox">
-          <span i18n-content="use24HourClock"></span>
-        </label>
         <div id="resolve-timezone-by-geolocation-selection" hidden>
           <label>
             <input id="resolve-timezone-by-geolocation"
@@ -319,9 +314,12 @@
             <span i18n-content="resolveTimezoneByGeoLocation"></span>
           </label>
         </div>
+        <label>
+          <input id="use-24hour-clock" pref="settings.clock.use_24hour_clock"
+              metric="Options_Use24HourClockCheckbox" type="checkbox">
+          <span i18n-content="use24HourClock"></span>
+        </label>
       </div>
-      <div id="time-synced-explanation" class="settings-row"
-          i18n-content="timeSyncedExplanation"></div>
       <div id="set-time" class="settings-row" hidden>
         <button id="set-time-button"
             i18n-content="setTimeButton"></button>

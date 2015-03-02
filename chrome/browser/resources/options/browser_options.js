@@ -407,6 +407,8 @@ cr.define('options', function() {
         if (loadTimeData.getBoolean('enableTimeZoneTrackingOption')) {
           $('resolve-timezone-by-geolocation-selection').hidden = false;
           this.setSystemTimezoneManaged_(false);
+          $('timezone-value-select').disabled = loadTimeData.getBoolean(
+              'resolveTimezoneByGeolocationInitialValue');
         }
       }
 
@@ -2113,7 +2115,6 @@ cr.define('options', function() {
      */
     setCanSetTime_: function(canSetTime) {
       // If the time has been network-synced, it cannot be set manually.
-      $('time-synced-explanation').hidden = canSetTime;
       $('set-time').hidden = !canSetTime;
     },
 
@@ -2192,6 +2193,7 @@ cr.define('options', function() {
     'setMetricsReportingSettingVisibility',
     'setProfilesInfo',
     'setSpokenFeedbackCheckboxState',
+    'setSystemTimezoneManaged',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',
     'setupPageZoomSelector',

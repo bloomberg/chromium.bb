@@ -118,11 +118,17 @@ class SharedOptionsTest : public LoginManagerTest {
         browser->tab_strip_model()->GetActiveWebContents();
 
     for (size_t i = 0; i < sizeof(kPrefTests) / sizeof(kPrefTests[0]); i++) {
-      CheckPreference(contents,
-                      kPrefTests[i].pref_name,
-                      !is_owner && kPrefTests[i].owner_only,
-                      !is_owner && kPrefTests[i].indicator ? "owner" :
-                                                             std::string());
+      bool disabled = !is_owner && kPrefTests[i].owner_only;
+      if (strcmp(kPrefTests[i].pref_name, kSystemTimezone) == 0) {
+        disabled = ProfileHelper::Get()
+                       ->GetProfileByUserUnsafe(user)
+                       ->GetPrefs()
+                       ->GetBoolean(prefs::kResolveTimezoneByGeolocation);
+      }
+
+      CheckPreference(
+          contents, kPrefTests[i].pref_name, disabled,
+          !is_owner && kPrefTests[i].indicator ? "owner" : std::string());
     }
     CheckBanner(contents, is_primary);
     CheckSharedSections(contents, is_primary);

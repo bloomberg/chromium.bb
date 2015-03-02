@@ -33,9 +33,6 @@ void DateTimeOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "setTimeButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON));
-  localized_strings->SetString(
-      "timeSyncedExplanation",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TIME_SYNCED_EXPLANATION));
 }
 
 void DateTimeOptionsHandler::InitializeHandler() {

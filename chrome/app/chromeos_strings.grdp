@@ -1985,9 +1985,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_DESCRIPTION" desc="The 'Storage' button on the chrome://settings page.">
     Stored data...
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_TIME_SYNCED_EXPLANATION" desc="In the settings tab, the text indicating that the date and time are set automatically.">
-    Date and time are set automatically.
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON" desc="In the settings tab, the prompt on the button to open a dialog to set date and time.">
     Set date and time
   </message>

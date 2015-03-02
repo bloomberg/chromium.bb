@@ -26,14 +26,12 @@ DateTimeOptionsWebUITest.prototype = {
 TEST_F('DateTimeOptionsWebUITest', 'testShowSetTimeButton', function() {
   assertEquals(this.browsePreload, document.location.href);
 
-  // Hide label and show button.
+  // Show button.
   BrowserOptions.setCanSetTime(true);
-  expectTrue($('time-synced-explanation').hidden);
   expectFalse($('set-time').hidden);
 
-  // Show label and hide button.
+  // Hide button.
   BrowserOptions.setCanSetTime(false);
-  expectFalse($('time-synced-explanation').hidden);
   expectTrue($('set-time').hidden);
 });
 

@@ -681,6 +681,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("enableTimeZoneTrackingOption",
                      !have_disable_time_zone_tracking_option_switch &&
                          !chromeos::system::HasSystemTimezonePolicy());
+  values->SetBoolean("resolveTimezoneByGeolocationInitialValue",
+                     Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+                         prefs::kResolveTimezoneByGeolocation));
 #endif
 }
 
