@@ -2645,7 +2645,8 @@ class BisectOptions(object):
                             '(default), Release_x64 or "Debug".')
     group.add_argument('--builder_type', default=fetch_build.PERF_BUILDER,
                        choices=[fetch_build.PERF_BUILDER,
-                                fetch_build.FULL_BUILDER, ''],
+                                fetch_build.FULL_BUILDER,
+                                fetch_build.ANDROID_CHROME_PERF_BUILDER, ''],
                        help='Type of builder to get build from. This '
                             'determines both the bot that builds and the '
                             'place where archived builds are downloaded from. '
