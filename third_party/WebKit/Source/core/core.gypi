@@ -1331,6 +1331,7 @@
             'editing/InsertTextCommand.h',
             'editing/iterators/BackwardsCharacterIterator.cpp',
             'editing/iterators/BitStack.cpp',
+            'editing/iterators/FullyClippedStateStack.cpp',
             'editing/iterators/TextIterator.cpp',
             'editing/iterators/CharacterIterator.cpp',
             'editing/iterators/SimplifiedBackwardsTextIterator.cpp',

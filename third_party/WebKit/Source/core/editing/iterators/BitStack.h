@@ -43,9 +43,6 @@ public:
     bool top() const;
     unsigned size() const;
 
-    void pushFullyClippedState(Node*);
-    void setUpFullyClippedStack(Node*);
-
 private:
     unsigned m_size;
     Vector<unsigned, 1> m_words;

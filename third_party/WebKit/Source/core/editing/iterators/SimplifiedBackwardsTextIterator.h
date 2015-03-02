@@ -27,7 +27,7 @@
 #define SimplifiedBackwardsTextIterator_h
 
 #include "core/dom/Range.h"
-#include "core/editing/iterators/BitStack.h"
+#include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorFlags.h"
 #include "platform/heap/Heap.h"
 
@@ -84,7 +84,7 @@ private:
     int m_offset;
     bool m_handledNode;
     bool m_handledChildren;
-    BitStack m_fullyClippedStack;
+    FullyClippedStateStack m_fullyClippedStack;
 
     // End of the range.
     RawPtrWillBeMember<Node> m_startNode;

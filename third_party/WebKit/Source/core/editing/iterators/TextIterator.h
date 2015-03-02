@@ -28,7 +28,7 @@
 
 #include "core/dom/Range.h"
 #include "core/editing/FindOptions.h"
-#include "core/editing/iterators/BitStack.h"
+#include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorFlags.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -143,7 +143,7 @@ private:
     RawPtrWillBeMember<Node> m_node;
     int m_offset;
     IterationProgress m_iterationProgress;
-    BitStack m_fullyClippedStack;
+    FullyClippedStateStack m_fullyClippedStack;
     int m_shadowDepth;
 
     // The range.
