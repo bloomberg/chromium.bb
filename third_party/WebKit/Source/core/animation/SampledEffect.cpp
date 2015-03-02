@@ -29,6 +29,7 @@ void SampledEffect::clear()
 DEFINE_TRACE(SampledEffect)
 {
     visitor->trace(m_animation);
+    visitor->trace(m_player);
 #if ENABLE(OILPAN)
     visitor->trace(m_interpolations);
 #endif
