@@ -251,9 +251,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/364006
 "race:gfx::ImageFamily::~ImageFamily\n"
 
-// http://crbug.com/364014
-"race:WTF::Latin1Encoding()::globalLatin1Encoding\n"
-
 // https://code.google.com/p/v8/issues/detail?id=3143
 "race:v8::internal::FLAG_track_double_fields\n"
 
