@@ -449,9 +449,9 @@ bool StartPageService::HotwordEnabled() {
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
     HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
     return state_ != SPEECH_RECOGNITION_OFF &&
-        HotwordServiceFactory::IsServiceAvailable(profile_) &&
         service &&
-        (service->IsSometimesOnEnabled() || service->IsAlwaysOnEnabled());
+        (service->IsSometimesOnEnabled() || service->IsAlwaysOnEnabled()) &&
+        service->IsServiceAvailable();
   }
   return HotwordServiceFactory::IsServiceAvailable(profile_) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);
