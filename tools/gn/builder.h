@@ -23,7 +23,7 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
  public:
   typedef base::Callback<void(const BuilderRecord*)> ResolvedCallback;
 
-  Builder(Loader* loader);
+  explicit Builder(Loader* loader);
 
   // The resolved callback is called whenever a target has been resolved. This
   // will be executed only on the main thread.

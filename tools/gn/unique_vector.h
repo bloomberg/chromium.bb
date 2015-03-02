@@ -33,7 +33,7 @@ class UniquifyRef {
   }
 
   // Initialize with a pointer to a value.
-  UniquifyRef(const T* v)
+  explicit UniquifyRef(const T* v)
       : value_(v),
         vect_(nullptr),
         index_(static_cast<size_t>(-1)) {

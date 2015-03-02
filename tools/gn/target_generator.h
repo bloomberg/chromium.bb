@@ -30,7 +30,7 @@ class TargetGenerator {
                   Scope* scope,
                   const FunctionCallNode* function_call,
                   Err* err);
-  ~TargetGenerator();
+  virtual ~TargetGenerator();
 
   void Run();
 

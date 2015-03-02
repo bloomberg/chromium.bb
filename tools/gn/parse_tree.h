@@ -331,7 +331,7 @@ class FunctionCallNode : public ParseNode {
 class IdentifierNode : public ParseNode {
  public:
   IdentifierNode();
-  IdentifierNode(const Token& token);
+  explicit IdentifierNode(const Token& token);
   ~IdentifierNode() override;
 
   const IdentifierNode* AsIdentifier() const override;
@@ -413,7 +413,7 @@ class ListNode : public ParseNode {
 class LiteralNode : public ParseNode {
  public:
   LiteralNode();
-  LiteralNode(const Token& token);
+  explicit LiteralNode(const Token& token);
   ~LiteralNode() override;
 
   const LiteralNode* AsLiteral() const override;
@@ -502,7 +502,7 @@ class BlockCommentNode : public ParseNode {
 // comments can be attached.
 class EndNode : public ParseNode {
  public:
-  EndNode(const Token& token);
+  explicit EndNode(const Token& token);
   ~EndNode() override;
 
   const EndNode* AsEnd() const override;

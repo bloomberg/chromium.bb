@@ -48,12 +48,10 @@ class Scope {
   // destruction.
   class ProgrammaticProvider {
    public:
-    ProgrammaticProvider(Scope* scope) : scope_(scope) {
+    explicit ProgrammaticProvider(Scope* scope) : scope_(scope) {
       scope_->AddProvider(this);
     }
-    ~ProgrammaticProvider() {
-      scope_->RemoveProvider(this);
-    }
+    virtual ~ProgrammaticProvider();
 
     // Returns a non-null value if the given value can be programmatically
     // generated, or NULL if there is none.
@@ -96,11 +94,11 @@ class Scope {
   };
 
   // Creates an empty toplevel scope.
-  Scope(const Settings* settings);
+  explicit Scope(const Settings* settings);
 
   // Creates a dependent scope.
-  Scope(Scope* parent);
-  Scope(const Scope* parent);
+  explicit Scope(Scope* parent);
+  explicit Scope(const Scope* parent);
 
   ~Scope();
 
@@ -298,7 +296,7 @@ class Scope {
 
   struct Record {
     Record() : used(false) {}
-    Record(const Value& v) : used(false), value(v) {}
+    explicit Record(const Value& v) : used(false), value(v) {}
 
     bool used;  // Set to true when the variable is used.
     Value value;

@@ -25,6 +25,11 @@ bool IsPrivateVar(const base::StringPiece& name) {
 
 }  // namespace
 
+
+Scope::ProgrammaticProvider::~ProgrammaticProvider() {
+  scope_->RemoveProvider(this);
+}
+
 Scope::Scope(const Settings* settings)
     : const_containing_(nullptr),
       mutable_containing_(nullptr),

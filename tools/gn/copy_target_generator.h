@@ -15,7 +15,7 @@ class CopyTargetGenerator : public TargetGenerator {
                       Scope* scope,
                       const FunctionCallNode* function_call,
                       Err* err);
-  virtual ~CopyTargetGenerator();
+  ~CopyTargetGenerator() override;
 
  protected:
   void DoRun() override;

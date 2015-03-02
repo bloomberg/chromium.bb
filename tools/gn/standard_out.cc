@@ -95,7 +95,7 @@ void OutputString(const std::string& output, TextDecoration dec) {
 
   DWORD written = 0;
   ::WriteFile(hstdout, output.c_str(), static_cast<DWORD>(output.size()),
-              &written, NULL);
+              &written, nullptr);
 
   if (is_console)
     ::SetConsoleTextAttribute(hstdout, default_attributes);

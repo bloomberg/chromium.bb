@@ -15,7 +15,7 @@ class GroupTargetGenerator : public TargetGenerator {
                         Scope* scope,
                         const FunctionCallNode* function_call,
                         Err* err);
-  virtual ~GroupTargetGenerator();
+  ~GroupTargetGenerator() override;
 
  protected:
   void DoRun() override;

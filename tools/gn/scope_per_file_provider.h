@@ -18,7 +18,7 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   // When allow_target_vars is unset, the target-related values will be
   // undefined to GN script.
   ScopePerFileProvider(Scope* scope, bool allow_target_vars);
-  virtual ~ScopePerFileProvider();
+  ~ScopePerFileProvider() override;
 
   // ProgrammaticProvider implementation.
   const Value* GetProgrammaticValue(const base::StringPiece& ident) override;

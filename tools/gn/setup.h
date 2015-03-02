@@ -210,8 +210,8 @@ class DependentSetup : public CommonSetup {
   // Note: this could be one function that takes a CommonSetup*, but then
   // the compiler can get confused what to call, since it also matches the
   // default copy constructor.
-  DependentSetup(Setup* derive_from);
-  DependentSetup(DependentSetup* derive_from);
+  explicit DependentSetup(Setup* derive_from);
+  explicit DependentSetup(DependentSetup* derive_from);
   ~DependentSetup() override;
 
   // These are the two parts of Run() in the regular setup, not including the

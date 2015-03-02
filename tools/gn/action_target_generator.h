@@ -16,7 +16,7 @@ class ActionTargetGenerator : public TargetGenerator {
                         const FunctionCallNode* function_call,
                         Target::OutputType type,
                         Err* err);
-  virtual ~ActionTargetGenerator();
+  ~ActionTargetGenerator() override;
 
  protected:
   void DoRun() override;

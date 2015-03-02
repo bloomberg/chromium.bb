@@ -47,7 +47,7 @@ struct DefineWriter {
 };
 
 struct IncludeWriter {
-  IncludeWriter(PathOutput& path_output) : path_output_(path_output) {
+  explicit IncludeWriter(PathOutput& path_output) : path_output_(path_output) {
   }
   ~IncludeWriter() {
   }

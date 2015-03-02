@@ -10,7 +10,7 @@ namespace {
 
 class EscapedStringWriter {
  public:
-  EscapedStringWriter(const EscapeOptions& escape_options)
+  explicit EscapedStringWriter(const EscapeOptions& escape_options)
       : escape_options_(escape_options) {
   }
 

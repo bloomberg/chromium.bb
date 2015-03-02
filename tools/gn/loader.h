@@ -79,7 +79,7 @@ class LoaderImpl : public Loader {
                               const base::Callback<void(const ParseNode*)>&,
                               Err*)> AsyncLoadFileCallback;
 
-  LoaderImpl(const BuildSettings* build_settings);
+  explicit LoaderImpl(const BuildSettings* build_settings);
 
   // Loader implementation.
   void Load(const SourceFile& file,

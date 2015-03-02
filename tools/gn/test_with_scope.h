@@ -60,7 +60,7 @@ class TestWithScope {
 // then you can execute the ParseNode or whatever.
 class TestParseInput {
  public:
-  TestParseInput(const std::string& input);
+  explicit TestParseInput(const std::string& input);
   ~TestParseInput();
 
   // Indicates whether and what error occurred during tokenizing and parsing.

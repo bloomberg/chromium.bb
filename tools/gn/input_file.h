@@ -15,7 +15,7 @@
 
 class InputFile {
  public:
-  InputFile(const SourceFile& name);
+  explicit InputFile(const SourceFile& name);
 
   ~InputFile();
 

@@ -94,7 +94,7 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
   friend class base::RefCountedThreadSafe<InputFileManager>;
 
   struct InputFileData {
-    InputFileData(const SourceFile& file_name);
+    explicit InputFileData(const SourceFile& file_name);
     ~InputFileData();
 
     // Don't touch this outside the lock until it's marked loaded.

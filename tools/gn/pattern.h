@@ -19,7 +19,7 @@ class Pattern {
       PATH_BOUNDARY  // '/' or beginning of string.
     };
 
-    Subrange(Type t, const std::string& l = std::string())
+    explicit Subrange(Type t, const std::string& l = std::string())
         : type(t),
           literal(l) {
     }
@@ -44,7 +44,7 @@ class Pattern {
     std::string literal;
   };
 
-  Pattern(const std::string& s);
+  explicit Pattern(const std::string& s);
   ~Pattern();
 
   // Returns true if the current pattern matches the given string.

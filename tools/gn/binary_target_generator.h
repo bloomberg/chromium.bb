@@ -17,7 +17,7 @@ class BinaryTargetGenerator : public TargetGenerator {
                         const FunctionCallNode* function_call,
                         Target::OutputType type,
                         Err* err);
-  virtual ~BinaryTargetGenerator();
+  ~BinaryTargetGenerator() override;
 
  protected:
   void DoRun() override;
