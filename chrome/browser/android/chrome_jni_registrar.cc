@@ -32,6 +32,7 @@
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/logo_bridge.h"
+#include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/omnibox/answers_image_bridge.h"
@@ -229,6 +230,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaBridge", RegisterUmaBridge},
+    {"UmaSessionStats", RegisterUmaSessionStats},
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},
     {"VoiceSearchTabHelper", RegisterVoiceSearchTabHelper},

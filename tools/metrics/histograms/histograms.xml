@@ -33448,6 +33448,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Session.TotalDuration" units="milliseconds">
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>fqian@chromium.org</owner>
+  <summary>
+    The length of a session (launch/foregrounding to backgrounding) on mobile.
+  </summary>
+</histogram>
+
 <histogram name="SessionCrashed.Bubble" enum="SessionCrashedBubbleUserAction">
   <owner>yiyaoliu@chromium.org</owner>
   <summary>How did the user interact with the SessionCrashed Bubble?</summary>
