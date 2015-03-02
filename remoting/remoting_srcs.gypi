@@ -41,6 +41,8 @@
       'base/util.h',
       'base/vlog_net_log.cc',
       'base/vlog_net_log.h',
+    ],
+    'remoting_codec_sources': [
       'codec/audio_decoder.cc',
       'codec/audio_decoder.h',
       'codec/audio_decoder_opus.cc',
