@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/extensions-test.js"></script>
+<script type="text/javascript">
+function initialize_multipleExtensionsTest()
+{
+
+var pendingTestCount = 2;
+InspectorTest.extensionTestComplete = function()
+{
+    if (--pendingTestCount)
+        InspectorTest.runExtensionTests();
+    else
+        InspectorTest.completeTest();
+}
+
+}
+
+function extension_testCreatePanel(nextTest)
+{
+    function onPanelCreated(panel)
+    {
+        output("Panel created");
+        dumpObject(panel);
+        nextTest();
+    }
+    var basePath = location.pathname.replace(/\/[^/]*$/, "/");
+    webInspector.panels.create("Test Panel", basePath + "extension-panel.png", basePath + "extension-panel.html", onPanelCreated);
+}
+
+function extension_onTestsDone()
+{
+    evaluateOnFrontend("InspectorTest.extensionTestComplete();");
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests co-existance of multiple DevTools extensions</p>
+</body>
+</html>

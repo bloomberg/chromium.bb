@@ -81,13 +81,13 @@ function runTests()
             tests.push(symbol);
     }
     tests = tests.sort();
-    var testChain = onTestsDone;
+    var testChain = extension_onTestsDone;
     for (var test = tests.pop(); test; test = tests.pop())
         testChain = bind(runTest, this, bind(this[test], this, testChain), test);
     testChain();
 }
 
-function onTestsDone()
+function extension_onTestsDone()
 {
     output("All tests done.");
     evaluateOnFrontend("InspectorTest.completeTest();");

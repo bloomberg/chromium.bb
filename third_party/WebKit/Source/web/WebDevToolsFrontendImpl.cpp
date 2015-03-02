@@ -93,8 +93,15 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)
 
     String origin = frame->securityOrigin().toString();
     String script = m_injectedScriptForOrigin.get(origin);
-    if (!script.isEmpty())
-        frame->frame()->script().executeScriptInMainWorld(script + "()");
+    if (script.isEmpty())
+        return;
+    static int s_lastScriptId = 0;
+    StringBuilder scriptWithId;
+    scriptWithId.append(script);
+    scriptWithId.append('(');
+    scriptWithId.appendNumber(++s_lastScriptId);
+    scriptWithId.append(')');
+    frame->frame()->script().executeScriptInMainWorld(scriptWithId.toString());
 }
 
 void WebDevToolsFrontendImpl::sendMessageToBackend(const String& message)
