@@ -81,30 +81,6 @@ private:
     WorkerThread* m_workerThread;
 };
 
-// We need to postpone V8 Isolate destruction until the very end of
-// worker thread finalization when all objects on the worker heap
-// are destroyed.
-class IsolateCleanupTask final : public ThreadState::CleanupTask {
-public:
-    static PassOwnPtr<IsolateCleanupTask> create(v8::Isolate* isolate, WebThread& thread)
-    {
-        return adoptPtr(new IsolateCleanupTask(isolate, thread));
-    }
-
-    virtual void postCleanup()
-    {
-        ALLOW_UNUSED_LOCAL(m_thread);
-        ASSERT(m_thread.isCurrentThread());
-        V8PerIsolateData::destroy(m_isolate);
-    }
-
-private:
-    IsolateCleanupTask(v8::Isolate* isolate, WebThread& thread) : m_isolate(isolate), m_thread(thread)  { }
-
-    v8::Isolate* m_isolate;
-    WebThread& m_thread;
-};
-
 } // namespace
 
 static Mutex& threadSetMutex()
@@ -397,6 +373,7 @@ void WorkerThread::cleanup()
     m_workerGlobalScope = nullptr;
 
     m_thread->detachGC();
+    destroyIsolate();
 
     m_thread->removeTaskObserver(m_microtaskRunner.get());
     m_microtaskRunner = nullptr;
@@ -425,7 +402,7 @@ public:
         // It's not safe to call clearScript until all the cleanup tasks posted by functions initiated by WorkerThreadShutdownStartTask have completed.
         workerGlobalScope->clearScript();
         WorkerThread* workerThread = workerGlobalScope->thread();
-        workerThread->cleanupIsolate();
+        workerThread->willDestroyIsolate();
         workerThread->m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerThread)));
     }
 
@@ -518,16 +495,6 @@ void WorkerThread::didStopRunLoop()
     blink::Platform::current()->didStopWorkerRunLoop();
 }
 
-void WorkerThread::cleanupIsolate()
-{
-    ASSERT(isCurrentThread());
-    ASSERT(m_isolate);
-    V8PerIsolateData::willBeDestroyed(m_isolate);
-    ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolate, m_thread->platformThread()));
-    m_isolate = nullptr;
-    ThreadState::current()->removeInterruptor(m_interruptor.get());
-}
-
 void WorkerThread::terminateAndWaitForAllWorkers()
 {
     // Keep this lock to prevent WorkerThread instances from being destroyed.
@@ -585,8 +552,24 @@ v8::Isolate* WorkerThread::initializeIsolate()
     return isolate;
 }
 
+void WorkerThread::willDestroyIsolate()
+{
+    ASSERT(isCurrentThread());
+    ASSERT(m_isolate);
+    V8PerIsolateData::willBeDestroyed(m_isolate);
+    ThreadState::current()->removeInterruptor(m_interruptor.get());
+}
+
+void WorkerThread::destroyIsolate()
+{
+    ASSERT(isCurrentThread());
+    V8PerIsolateData::destroy(m_isolate);
+    m_isolate = nullptr;
+}
+
 void WorkerThread::terminateV8Execution()
 {
+    ASSERT(isMainThread());
     m_workerGlobalScope->script()->willScheduleExecutionTermination();
     v8::V8::TerminateExecution(m_isolate);
 }

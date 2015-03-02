@@ -451,21 +451,6 @@ public:
     void addInterruptor(Interruptor*);
     void removeInterruptor(Interruptor*);
 
-    // CleanupTasks are executed when ThreadState performs
-    // cleanup before detaching.
-    class CleanupTask {
-    public:
-        virtual ~CleanupTask() { }
-
-        // Executed after the final GC. Thread heap is empty at this point.
-        virtual void postCleanup() { }
-    };
-
-    void addCleanupTask(PassOwnPtr<CleanupTask> cleanupTask)
-    {
-        m_cleanupTasks.append(cleanupTask);
-    }
-
     // Should only be called under protection of threadAttachMutex().
     const Vector<Interruptor*>& interruptors() const { return m_interruptors; }
 
@@ -681,7 +666,6 @@ private:
     size_t m_allocatedObjectSizeBeforeGC;
     BaseHeap* m_heaps[NumberOfHeaps];
 
-    Vector<OwnPtr<CleanupTask>> m_cleanupTasks;
     bool m_isTerminating;
 
     bool m_shouldFlushHeapDoesNotContainCache;

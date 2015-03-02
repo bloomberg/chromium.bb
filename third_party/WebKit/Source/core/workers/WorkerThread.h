@@ -68,7 +68,6 @@ public:
     void didStopRunLoop();
 
     v8::Isolate* isolate() const { return m_isolate; }
-    void cleanupIsolate();
 
     // Can be used to wait for this worker thread to shut down.
     // (This is signalled on the main thread, so it's assumed to be waited on the worker context thread)
@@ -129,7 +128,10 @@ private:
     void idleHandler();
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
+
     v8::Isolate* initializeIsolate();
+    void willDestroyIsolate();
+    void destroyIsolate();
     void terminateV8Execution();
 
     bool m_terminated;

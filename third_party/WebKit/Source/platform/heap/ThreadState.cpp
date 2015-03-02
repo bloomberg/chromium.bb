@@ -404,10 +404,6 @@ void ThreadState::cleanup()
         ASSERT(attachedThreads().contains(this));
         attachedThreads().remove(this);
     }
-
-    for (auto& task : m_cleanupTasks)
-        task->postCleanup();
-    m_cleanupTasks.clear();
 }
 
 void ThreadState::detach()
