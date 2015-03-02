@@ -6488,6 +6488,80 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.AuthProximity.RemoteDeviceModelHash"
+    enum="EasyUnlockDeviceModelHash">
+  <owner>tengs@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    The hash of the phone model used to successfully sign in or unlock using
+    Smart Lock.
+  </summary>
+  <details>
+    This hash is calculated by taking the first 4 bytes of the MD5 hash of the
+    device model.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.AuthProximity.RollingRssi" units="dBm">
+  <owner>tengs@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Measures the exponentially weighted rolling average of the received signal
+    strength indicator (RSSI) of the phone when the user successfully unlocks or
+    signs in using Smart Lock.
+  </summary>
+  <details>
+    The exponentially weighted averaging formula is:
+
+      rollingRssi = (1 - weight) * rollingRssi + weight * currentRssi;
+
+    RSSI readings are inherently noisy, so this averaging gives a smoothed RSSI
+    value to work with as a heuristic for proximity.
+
+    If no RSSI was read, then a sentinel value of 127 will be recorded.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.AuthProximity.TimeSinceLastZeroRssi"
+    units="milliseconds">
+  <owner>tengs@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Measures the time delta in milliseconds since the last zero RSSI value was
+    read to when the user successfully unlocks or signs in using Smart Lock.
+  </summary>
+  <details>
+    A zero RSSI value is special because both Bluetooth devices in a connection
+    attempt to maintain by adjusting their transmit power levels. This time
+    delta can be used as a possible heuristic to determine that the phone is
+    close to the local device.
+
+    If no RSSI was read, then an overflow value will be recorded.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.AuthProximity.TransmitPowerDelta" units="dBm">
+  <owner>tengs@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Measures the difference between the current transmit power and the maximum
+    transmit power of the local device when the user successfully unlocks or
+    signs in using Smart Lock.
+  </summary>
+  <details>
+    Devices connected using classic Bluetooth adjust their transmit power
+    dynamically to optimize power and signal strength. The difference between
+    the current transmit power and maximum transmit power can be used as a
+    heurstic to determine if the phone is close to the local device.
+
+    According to the Bluetooth specs, there are three classes of devices, with a
+    maximum transmit power of 20, 4, and 0 dBm respectively.
+
+    If no transmit power was read, then a sentinel value of 127 will be
+    recorded.
+  </details>
+</histogram>
+
 <histogram name="EasyUnlock.ClickedButton" enum="EasyUnlockButton">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -41153,8 +41227,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>ulan@chromium.org</owner>
   <summary>
     Number of garbage collections that a detached global context survives,
-    recorded after each major garbage collection.
-    Values greater than 7 indicate a memory leak.
+    recorded after each major garbage collection. Values greater than 7 indicate
+    a memory leak.
   </summary>
 </histogram>
 
@@ -46621,6 +46695,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="Invalid credentials"/>
   <int value="8" label="Device offline"/>
   <int value="9" label="No recent updates"/>
+</enum>
+
+<enum name="EasyUnlockDeviceModelHash" type="int">
+  <int value="-1168032746" label="Motorola Nexus 6"/>
+  <int value="-617422855" label="LGE Nexus 4"/>
+  <int value="1286382027" label="Motorola XT1095"/>
+  <int value="1881443083" label="LGE Nexus 5"/>
 </enum>
 
 <enum name="EasyUnlockHasSecureScreenLock" type="int">
