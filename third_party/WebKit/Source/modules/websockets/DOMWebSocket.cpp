@@ -459,6 +459,7 @@ void DOMWebSocket::close(unsigned short code, ExceptionState& exceptionState)
 
 void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState& exceptionState)
 {
+    String cleansedReason = reason;
     if (code == WebSocketChannel::CloseEventCodeNotSpecified) {
         WTF_LOG(Network, "WebSocket %p close() without code and reason", this);
     } else {
@@ -472,6 +473,12 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
             exceptionState.throwDOMException(SyntaxError, "The message must not be greater than " + String::number(maxReasonSizeInBytes) + " bytes.");
             return;
         }
+        if (!reason.isEmpty() && !reason.is8Bit()) {
+            ASSERT(utf8.length() > 0);
+            // reason might contain unpaired surrogates. Reconstruct it from
+            // utf8.
+            cleansedReason = String::fromUTF8(utf8.data(), utf8.length());
+        }
     }
 
     if (m_state == CLOSING || m_state == CLOSED)
@@ -483,7 +490,7 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
     }
     m_state = CLOSING;
     if (m_channel)
-        m_channel->close(code, reason);
+        m_channel->close(code, cleansedReason);
 }
 
 const KURL& DOMWebSocket::url() const
