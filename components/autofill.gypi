@@ -459,5 +459,26 @@
         },
       ],
     }],
+    ['OS == "ios"', {
+      'targets': [
+        {
+          'target_name': 'autofill_ios_browser',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            'autofill_core_browser',
+            '../ios/provider/ios_provider_web.gyp:ios_provider_web',
+            '../ios/web/ios_web.gyp:ios_web',
+          ],
+          'sources': [
+            'autofill/ios/browser/autofill_driver_ios.h',
+            'autofill/ios/browser/autofill_driver_ios.mm',
+            'autofill/ios/browser/autofill_driver_ios_bridge.h',
+          ],
+        },
+      ],
+    }],
   ],
 }
