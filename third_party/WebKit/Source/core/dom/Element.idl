@@ -25,6 +25,7 @@
 ] interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
+    // FIXME: localName/tagName should not be nullable.
     readonly attribute DOMString? localName;
     readonly attribute DOMString? tagName;
 
@@ -33,26 +34,26 @@
     [PerWorldBindings] readonly attribute DOMTokenList classList;
 
     [MeasureAs=HasAttributes] boolean hasAttributes();
-    [PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap     attributes;
+    [PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
     DOMString? getAttribute(DOMString name);
     DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
-    [RaisesException, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString value);
+    [RaisesException, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString name, DOMString value);
     [CustomElementCallbacks] void removeAttribute(DOMString name);
     [CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
     boolean hasAttribute(DOMString name);
     boolean hasAttributeNS(DOMString? namespaceURI, DOMString localName);
 
-    [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode(DOMString name);
-    [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode(Attr newAttr);
-    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNodeNS] Attr setAttributeNodeNS(Attr newAttr);
-    [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode(Attr oldAttr);
+    [MeasureAs=ElementGetAttributeNode] Attr? getAttributeNode(DOMString name);
+    [MeasureAs=ElementGetAttributeNodeNS] Attr? getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr? setAttributeNode(Attr attr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNodeNS] Attr? setAttributeNodeNS(Attr attr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode(Attr attr);
 
-    [RaisesException] Element closest(DOMString selectors);
+    [RaisesException] Element? closest(DOMString selectors);
     [RaisesException] boolean matches(DOMString selectors);
 
-    HTMLCollection getElementsByTagName(DOMString name);
+    HTMLCollection getElementsByTagName(DOMString localName);
     HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
     HTMLCollection getElementsByClassName(DOMString classNames);
 
@@ -60,13 +61,13 @@
     // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-element-interface
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, ExposeJSAccessors] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
-    [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString where, DOMString html);
+    [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString position, DOMString text);
 
     // Shadow DOM
     // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-element-interface
     [RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     NodeList getDestinationInsertionPoints();
-    [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
+    [PerWorldBindings] readonly attribute ShadowRoot? shadowRoot;
 
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-element-interface
@@ -74,14 +75,17 @@
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
+    // FIXME: getClientRect() and getBoundingClientRect() should
+    // return DOMRectList and DOMRect respectively.
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
+    // FIXME: scrollIntoView() should have a ScrollIntoViewOptions dictionary argument.
     void scrollIntoView(optional boolean alignWithTop);
-    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(optional ScrollToOptions options);
     [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions options);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions options);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(unrestricted double x, unrestricted double y);
     attribute unrestricted double scrollTop;
     attribute unrestricted double scrollLeft;
@@ -93,7 +97,7 @@
     readonly attribute long clientHeight;
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
     // FIXME: offset* should be on HTMLElement.
-    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element offsetParent;
+    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element? offsetParent;
     readonly attribute long offsetTop;
     readonly attribute long offsetLeft;
     readonly attribute long offsetWidth;
@@ -102,6 +106,7 @@
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
     // FIXME: style should be on HTMLElement and SVGElement.
+    // FIXME: style should have [PutForwards=cssText].
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // HTML
