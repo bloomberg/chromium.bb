@@ -255,7 +255,6 @@ config("skia_library_config") {
       "/wd4554",  # 'operator' : check operator precedence for possible error
       "/wd4748",  # compiler will disable optimizations if a function has inline
                   # assembly code contains flow control(jmp or jcc) statements.
-
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
     ]
   }
@@ -343,7 +342,6 @@ component("skia") {
     "//third_party/skia/include/utils/SkLayer.h",
     "//third_party/skia/include/utils/SkMeshUtils.h",
     "//third_party/skia/include/utils/SkNinePatch.h",
-    "//third_party/skia/include/utils/SkParse.h",
     "//third_party/skia/include/utils/SkParsePaint.h",
     "//third_party/skia/include/utils/SkParsePath.h",
     "//third_party/skia/include/utils/SkRandom.h",
@@ -364,8 +362,6 @@ component("skia") {
     "//third_party/skia/src/utils/SkMeshUtils.cpp",
     "//third_party/skia/src/utils/SkNinePatch.cpp",
     "//third_party/skia/src/utils/SkOSFile.cpp",
-    "//third_party/skia/src/utils/SkParse.cpp",
-    "//third_party/skia/src/utils/SkParseColor.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",
     "//third_party/skia/src/utils/SkPathUtils.cpp",
     "//third_party/skia/src/utils/SkSHA1.cpp",

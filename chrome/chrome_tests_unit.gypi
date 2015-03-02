@@ -541,6 +541,7 @@
       'common/chrome_paths_unittest.cc',
       'common/cloud_print/cloud_print_helpers_unittest.cc',
       'common/crash_keys_unittest.cc',
+      'common/favicon/fallback_icon_url_parser_unittest.cc',
       'common/favicon/favicon_url_parser_unittest.cc',
       'common/ini_parser_unittest.cc',
       'common/instant_types_unittest.cc',
