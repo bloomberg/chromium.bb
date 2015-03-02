@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TOOLS_GN_SUBSTUTITION_LIST_H
-#define TOOLS_GN_SUBSTUTITION_LIST_H
+#ifndef TOOLS_GN_SUBSTITUTION_LIST_H_
+#define TOOLS_GN_SUBSTITUTION_LIST_H_
 
 #include <string>
 #include <vector>
@@ -43,4 +43,4 @@ class SubstitutionList {
   std::vector<SubstitutionType> required_types_;
 };
 
-#endif  // TOOLS_GN_SUBSTUTITION_LIST_H
+#endif  // TOOLS_GN_SUBSTITUTION_LIST_H_

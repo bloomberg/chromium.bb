@@ -58,5 +58,5 @@ class NinjaBuildWriter {
   DISALLOW_COPY_AND_ASSIGN(NinjaBuildWriter);
 };
 
-#endif  // TOOLS_GN_NINJA_BUILD_GENERATOR_H_
+#endif  // TOOLS_GN_NINJA_BUILD_WRITER_H_
 

@@ -52,4 +52,4 @@ class CIncludeIterator {
   DISALLOW_COPY_AND_ASSIGN(CIncludeIterator);
 };
 
-#endif  // TOOLS_GN_INCLUDE_ITERATOR_H_
+#endif  // TOOLS_GN_C_INCLUDE_ITERATOR_H_

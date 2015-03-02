@@ -173,4 +173,4 @@ void FilterAndPrintTargetSet(bool indent,
 
 }  // namespace commands
 
-#endif  // TOOLS_GN_COMMANDS_H
+#endif  // TOOLS_GN_COMMANDS_H_
