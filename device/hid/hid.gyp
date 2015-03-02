@@ -21,6 +21,8 @@
       'sources': [
         'device_monitor_linux.cc',
         'device_monitor_linux.h',
+        'fake_input_service_linux.cc',
+        'fake_input_service_linux.h',
         'hid_collection_info.cc',
         'hid_collection_info.h',
         'hid_connection.cc',
@@ -66,6 +68,8 @@
             'device_monitor_linux.h',
             'hid_service_linux.cc',
             'hid_service_linux.h',
+            'fake_input_service_linux.cc',
+            'fake_input_service_linux.h',
             'input_service_linux.cc',
             'input_service_linux.h',
           ],

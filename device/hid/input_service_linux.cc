@@ -90,6 +90,9 @@ class InputServiceLinuxImpl : public InputServiceLinux,
 };
 
 InputServiceLinuxImpl::InputServiceLinuxImpl() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  base::MessageLoop::current()->AddDestructionObserver(this);
+
   DeviceMonitorLinux::GetInstance()->AddObserver(this);
   DeviceMonitorLinux::GetInstance()->Enumerate(base::Bind(
       &InputServiceLinuxImpl::OnDeviceAdded, base::Unretained(this)));
@@ -98,6 +101,7 @@ InputServiceLinuxImpl::InputServiceLinuxImpl() {
 InputServiceLinuxImpl::~InputServiceLinuxImpl() {
   if (DeviceMonitorLinux::HasInstance())
     DeviceMonitorLinux::GetInstance()->RemoveObserver(this);
+  base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
@@ -162,13 +166,10 @@ InputServiceLinux::InputDeviceInfo::InputDeviceInfo()
       is_touchscreen(false) {}
 
 InputServiceLinux::InputServiceLinux() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
 InputServiceLinux::~InputServiceLinux() {
   DCHECK(CalledOnValidThread());
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 // static

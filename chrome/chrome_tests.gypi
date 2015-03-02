@@ -657,6 +657,7 @@
       'browser/chromeos/login/enrollment/mock_enrollment_screen.cc',
       'browser/chromeos/login/enrollment/mock_enrollment_screen.h',
       'browser/chromeos/login/existing_user_controller_browsertest.cc',
+      'browser/chromeos/login/hid_detection_browsertest.cc',
       'browser/chromeos/login/kiosk_browsertest.cc',
       'browser/chromeos/login/lock/screen_locker_tester.cc',
       'browser/chromeos/login/lock/screen_locker_tester.h',
