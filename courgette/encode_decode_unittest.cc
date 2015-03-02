@@ -82,3 +82,8 @@ TEST_F(EncodeDecodeTest, Elf_Small) {
   std::string file = FileContents("elf-32-1");
   TestAssembleToStreamDisassemble(file, 135988);
 }
+
+TEST_F(EncodeDecodeTest, Elf_HighBSS) {
+  std::string file = FileContents("elf-32-high-bss");
+  TestAssembleToStreamDisassemble(file, 7308);
+}

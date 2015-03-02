@@ -262,6 +262,9 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
 
     const Elf32_Shdr *section_header = SectionHeader(section_id);
 
+    if (section_header->sh_type == SHT_NOBITS)
+      continue;
+
     if (!ParseSimpleRegion(file_offset,
                            section_header->sh_offset,
                            program))
@@ -282,8 +285,6 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
           return false;
         file_offset = section_header->sh_offset + section_header->sh_size;
         break;
-      case SHT_NOBITS:
-        // Fall through
       case SHT_INIT_ARRAY:
         // Fall through
       case SHT_FINI_ARRAY:

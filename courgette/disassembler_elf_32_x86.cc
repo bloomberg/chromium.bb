@@ -91,6 +91,9 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
   uint32 section_relocs_count = section_header->sh_size /
                                 section_header->sh_entsize;
 
+  if (abs32_locations_.empty())
+    match = false;
+
   if (abs32_locations_.size() > section_relocs_count)
     match = false;
 
