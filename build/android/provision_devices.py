@@ -125,7 +125,7 @@ def WriteAdbKeysFile(device, adb_keys_string):
                          as_root=True)
 
 
-def WipeDeviceData(device):
+def WipeDeviceData(device, options):
   """Wipes data from device, keeping only the adb_keys for authorization.
 
   After wiping data on a device that has been authorized, adb can still
@@ -139,16 +139,22 @@ def WipeDeviceData(device):
   """
   device_authorized = device.FileExists(constants.ADB_KEYS_FILE)
   if device_authorized:
-    adb_keys = device.ReadFile(constants.ADB_KEYS_FILE, as_root=True)
+    adb_keys = device.ReadFile(constants.ADB_KEYS_FILE,
+                               as_root=True).splitlines()
   device.RunShellCommand('wipe data', as_root=True)
   if device_authorized:
-    WriteAdbKeysFile(device, adb_keys)
+    adb_keys_set = set(adb_keys)
+    for adb_key_file in options.adb_key_files or []:
+      with open(adb_key_file, 'r') as f:
+        adb_public_keys = f.readlines()
+      adb_keys_set.update(adb_public_keys)
+    WriteAdbKeysFile(device, '\n'.join(adb_keys_set))
 
 
-def WipeDeviceIfPossible(device, timeout):
+def WipeDeviceIfPossible(device, timeout, options):
   try:
     device.EnableRoot()
-    WipeDeviceData(device)
+    WipeDeviceData(device, options)
     device.Reboot(True, timeout=timeout, retries=0)
   except (errors.DeviceUnresponsiveError, device_errors.CommandFailedError):
     pass
@@ -177,17 +183,9 @@ def ProvisionDevice(device, options):
   else:
     reboot_timeout = _DEFAULT_TIMEOUTS.PRE_LOLLIPOP
 
-  if options.adb_key_files:
-    adb_keys = set()
-    for adb_key_file in options.adb_key_files:
-      with open(adb_key_file, 'r') as f:
-        adb_public_keys = f.readlines()
-      adb_keys.update(adb_public_keys)
-    WriteAdbKeysFile(device, '\n'.join(adb_keys))
-
   try:
     if not options.skip_wipe:
-      WipeDeviceIfPossible(device, reboot_timeout)
+      WipeDeviceIfPossible(device, reboot_timeout, options)
     try:
       device.EnableRoot()
     except device_errors.CommandFailedError as e:
