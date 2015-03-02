@@ -178,7 +178,7 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
       NSMaxX([anchor bounds]) - kMenuXOffsetAdjust :
       NSMidX([anchor bounds]);
   NSPoint point = NSMakePoint(anchorX,
-                              NSMaxY([anchor bounds]) - kMenuYOffsetAdjust);
+                              NSMaxY([anchor bounds]) + kMenuYOffsetAdjust);
   point = [anchor convertPoint:point toView:nil];
   point = [[anchor window] convertBaseToScreen:point];
 
