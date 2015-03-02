@@ -1011,7 +1011,7 @@ const CertificateNameVerifyTestData kNameVerifyTestData[] = {
     // be present.
     { true, "www.test.example", "*.test.example" },
     { true, "test.example.co.uk", "*.example.co.uk" },
-    { false, "test.example", "*.exmaple" },
+    { false, "test.example", "*.example" },
     { false, "example.co.uk", "*.co.uk" },
     { false, "foo.com", "*.com" },
     { false, "foo.us", "*.us" },
