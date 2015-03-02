@@ -18,6 +18,7 @@
 	  'function_parallel.js',
 	],
 	'externs': [
+          '../../../../externs/exif_entry.js',
           '../../../../externs/platform_worker.js',
 	]
       },
