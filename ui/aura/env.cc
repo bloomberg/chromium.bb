@@ -43,6 +43,11 @@ Env* Env::GetInstance() {
 }
 
 // static
+Env* Env::GetInstanceDontCreate() {
+  return lazy_tls_ptr.Pointer()->Get();
+}
+
+// static
 void Env::DeleteInstance() {
   delete lazy_tls_ptr.Pointer()->Get();
 }

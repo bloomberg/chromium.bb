@@ -37,6 +37,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   // nativeviewportservice lives in the same process as the viewmanager.
   static void CreateInstance(bool create_event_source);
   static Env* GetInstance();
+  static Env* GetInstanceDontCreate();
   static void DeleteInstance();
 
   void AddObserver(EnvObserver* observer);

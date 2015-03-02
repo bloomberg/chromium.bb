@@ -11,83 +11,12 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_renderer_host.h"
-#include "content/public/test/web_contents_tester.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 namespace {
-
-// A helper class to create test web contents (tabs) for unit tests, without
-// inheriting from RenderViewTestHarness. Can create web contents, and will
-// clean up after itself upon destruction. Owns all created web contents.
-// A few notes:
-// - Works well allocated on the stack, because it should be destroyed before
-//   associated browser context.
-// - Doesn't play nice with web contents created any other way (because of
-//   the implementation of RenderViewHostTestEnabler). But if you are creating
-//   web contents already, what do you need this for? ;)
-// TODO(devlin): Look around and see if this class is needed elsewhere; if so,
-// move it there and expand the API a bit (methods to, e.g., delete/close a
-// web contents, access existing web contents, etc).
-class TestWebContentsFactory {
- public:
-  // |init_aura| initializes the aura environment (and cleans it up at
-  // shutdown, which is necessary for web contents. Since this method should
-  // only be called once, this should only be true if no other part of the test
-  // has initialized the environment.
-  explicit TestWebContentsFactory(bool init_aura);
-  ~TestWebContentsFactory();
-
-  // Creates a new WebContents with the given |context|, and returns it.
-  content::WebContents* CreateWebContents(content::BrowserContext* context);
- private:
-  // The test factory (and friends) for creating test web contents.
-  scoped_ptr<content::RenderViewHostTestEnabler> rvh_enabler_;
-  // The vector of web contents that this class created.
-  ScopedVector<content::WebContents> web_contents_;
-
-  // True if the factory initialized aura (and should thus tear it down).
-  bool init_aura_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebContentsFactory);
-};
-
-TestWebContentsFactory::TestWebContentsFactory(bool init_aura)
-    : rvh_enabler_(new content::RenderViewHostTestEnabler()),
-      init_aura_(init_aura) {
-#if defined(USE_AURA)
-  if (init_aura)
-    aura::Env::CreateInstance(true);
-#endif
-}
-
-TestWebContentsFactory::~TestWebContentsFactory() {
-  web_contents_.clear();
-  // Let any posted tasks for web contents deletion run.
-  base::RunLoop().RunUntilIdle();
-  rvh_enabler_.reset();
-  // Let any posted tasks for RenderProcess/ViewHost deletion run.
-  base::RunLoop().RunUntilIdle();
-#if defined(USE_AURA)
-  if (init_aura_)
-    aura::Env::DeleteInstance();
-#endif
-}
-
-content::WebContents* TestWebContentsFactory::CreateWebContents(
-    content::BrowserContext* context) {
-  scoped_ptr<content::WebContents> web_contents(
-      content::WebContentsTester::CreateTestWebContents(context, nullptr));
-  DCHECK(web_contents);
-  web_contents_.push_back(web_contents.release());
-  return web_contents_.back();
-}
 
 // A test delegate for a toolbar action view.
 class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
@@ -181,7 +110,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   TestingProfile profile;
 
   // ViewsTestBase initializees the aura environment, so the factory shouldn't.
-  TestWebContentsFactory web_contents_factory(false);
+  content::TestWebContentsFactory web_contents_factory;
 
   TestToolbarActionViewController controller("fake controller");
   TestToolbarActionViewDelegate action_view_delegate;
