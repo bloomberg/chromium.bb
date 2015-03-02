@@ -67,3 +67,7 @@ GinBrowserTest.GinAndGarbageCollection
 
 # http://crbug.com/343604
 MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo/0
+
+# http://crbug.com/463041
+ScreenOrientationBrowserTest.ScreenOrientationChange
+ScreenOrientationBrowserTest.WindowOrientationCange
