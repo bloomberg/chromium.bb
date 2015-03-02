@@ -26,7 +26,7 @@ function DirectoryModel(singleSelection, fileFilter,
                         metadataProviderCache, fileSystemMetadata,
                         volumeManager, fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
-      new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
+      new FileListSingleSelectionModel() : new FileListSelectionModel();
 
   this.runningScan_ = null;
   this.pendingScan_ = null;

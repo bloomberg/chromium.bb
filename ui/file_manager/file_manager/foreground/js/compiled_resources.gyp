@@ -117,6 +117,7 @@
           './ui/drag_selector.js',
           './ui/error_dialog.js',
           './ui/file_grid.js',
+          './ui/file_list_selection_model.js',
           './ui/file_manager_ui.js',
           './ui/file_table.js',
           './ui/file_table_list.js',

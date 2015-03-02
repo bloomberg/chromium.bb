@@ -39,3 +39,35 @@ FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
 
   this.table.updateHighPriorityRange(beginIndex, endIndex);
 }
+
+/** @override */
+FileTableList.prototype.createSelectionController = function(sm) {
+  return new FileListSelectionController(assert(sm));
+}
+
+/**
+ * Selection controller for the file table list.
+ * @param {!cr.ui.ListSelectionModel} selectionModel The selection model to
+ *     interact with.
+ * @constructor
+ * @extends {cr.ui.ListSelectionController}
+ * @struct
+ * @suppress {checkStructDictInheritance}
+ */
+function FileListSelectionController(selectionModel) {
+  cr.ui.ListSelectionController.call(this, selectionModel);
+}
+
+FileListSelectionController.prototype = /** @struct */ {
+  __proto__: cr.ui.ListSelectionController.prototype
+};
+
+/** @override */
+FileListSelectionController.prototype.handlePointerDownUp = function(e, index) {
+  filelist.handlePointerDownUp.call(this, e, index);
+};
+
+/** @override */
+FileListSelectionController.prototype.handleKeyDown = function(e) {
+  filelist.handleKeyDown.call(this, e);
+};

@@ -157,6 +157,7 @@
       <script src="foreground/js/ui/error_dialog.js"></script>
       <script src="foreground/js/ui/file_grid.js"></script>
       <script src="foreground/js/ui/file_manager_ui.js"></script>
+      <script src="foreground/js/ui/file_list_selection_model.js"></script>
       <script src="foreground/js/ui/file_table.js"></script>
       <script src="foreground/js/ui/file_table_list.js"></script>
       <script src="foreground/js/ui/gear_menu.js"></script>
@@ -333,27 +334,27 @@
               i18n-values="aria-label:TASKS_BUTTON_LABEL">
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="search-button" class="icon-button" tabindex="10"
+      <button id="share-button" class="icon-button" command="#share"
+              tabindex="10"
+              i18n-values="aria-label:SHARE_BUTTON_LABEL"
+              visibleif="full-page">
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
+      </button>
+      <button id="delete-button" class="icon-button" tabindex="11"
+              i18n-values="aria-label:DELETE_BUTTON_LABEL"
+              visibleif="full-page">
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
+      </button>
+      <button id="search-button" class="icon-button" tabindex="12"
               i18n-values="aria-label:SEARCH_TEXT_LABEL">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <div id="search-box">
         <paper-input-decorator i18n-values="label:SEARCH_TEXT_LABEL">
-          <input is="core-input" type="search" tabindex="11"
+          <input is="core-input" type="search" tabindex="13"
                  i18n-values="aria-label:SEARCH_TEXT_LABEL">
         </paper-input-decorator>
       </div>
-      <button id="share-button" class="icon-button" command="#share"
-              tabindex="12"
-              i18n-values="aria-label:SHARE_BUTTON_LABEL"
-              visibleif="full-page">
-        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
-      </button>
-      <button id="delete-button" class="icon-button" tabindex="13"
-              i18n-values="aria-label:DELETE_BUTTON_LABEL"
-              visibleif="full-page">
-        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
-      </button>
       <button id="cloud-import-button"
               class="icon-button manual-display"
               tabindex="14"

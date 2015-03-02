@@ -1037,24 +1037,3 @@ util.addEventListenerToBackgroundComponent = function(target, type, handler) {
     target.removeEventListener(type, handler);
   });
 };
-
-/**
- * Repeats a given event to a given target with event.ctrlKey set true.
- * @param {!EventTarget} target Event target which receives the repeated event.
- * @param {!Event} event Original mouse event.
- */
-util.repeatMouseEventWithCtrlKey = function(target, event) {
-  event.stopPropagation();
-  event.preventDefault();
-  event = assertInstanceof(event, MouseEvent);
-  var eventWithCtrl = new MouseEvent(event.type, {
-    bubbles: event.bubbles,
-    button: event.button,
-    clientX: event.clientX,
-    clientY: event.clientY,
-    ctrlKey: true,
-    shiftKey: event.shiftKey,
-    target: event.target
-  });
-  target.dispatchEvent(eventWithCtrl);
-};

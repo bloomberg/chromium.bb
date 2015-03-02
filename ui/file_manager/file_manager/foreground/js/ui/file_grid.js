@@ -115,6 +115,13 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
 };
 
 /**
+ * @override
+ */
+FileGrid.prototype.createSelectionController = function(sm) {
+  return new FileGridSelectionController(assert(sm), this);
+};
+
+/**
  * Updates items to reflect metadata changes.
  * @param {string} type Type of metadata changed.
  * @param {Array.<Entry>} entries Entries whose metadata changed.
@@ -195,10 +202,6 @@ FileGrid.decorateThumbnail_ = function(
 
   var checkmark = li.ownerDocument.createElement('div');
   checkmark.className = 'checkmark';
-  checkmark.addEventListener(
-      'mouseup', util.repeatMouseEventWithCtrlKey.bind(null, li));
-  checkmark.addEventListener(
-      'mousedown', util.repeatMouseEventWithCtrlKey.bind(null, li));
   frame.appendChild(checkmark);
 
   var bottom = li.ownerDocument.createElement('div');
@@ -438,4 +441,32 @@ FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
     }
   }
   return currentSelection;
+};
+
+/**
+ * Selection controller for the file grid.
+ * @param {!cr.ui.ListSelectionModel} selectionModel The selection model to
+ *     interact with.
+ * @param {!cr.ui.Grid} grid The grid to interact with.
+ * @constructor
+ * @extends {cr.ui.GridSelectionController}
+ * @struct
+ * @suppress {checkStructDictInheritance}
+ */
+function FileGridSelectionController(selectionModel, grid) {
+  cr.ui.GridSelectionController.call(this, selectionModel, grid);
+}
+
+FileGridSelectionController.prototype = /** @struct */ {
+  __proto__: cr.ui.GridSelectionController.prototype
+};
+
+/** @override */
+FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
+  filelist.handlePointerDownUp.call(this, e, index);
+};
+
+/** @override */
+FileGridSelectionController.prototype.handleKeyDown = function(e) {
+  filelist.handleKeyDown.call(this, e);
 };

@@ -121,8 +121,13 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
   // update the checkmark visibility on grid view. This should be moved to a
   // controller which controls whole app window. Or, both toolbar and FileGrid
   // should listen to the FileSelectionHandler.
-  this.filesSelectedLabel_.ownerDocument.body.classList.toggle(
-      'selecting', selection.totalCount > 0);
+  if (this.directoryModel_.getFileListSelection().multiple) {
+    this.filesSelectedLabel_.ownerDocument.body.classList.toggle(
+        'selecting', selection.totalCount > 0);
+    this.filesSelectedLabel_.ownerDocument.body.classList.toggle(
+        'check-select',
+        this.directoryModel_.getFileListSelection().getCheckSelectMode());
+  }
 }
 
 /**
