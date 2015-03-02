@@ -361,14 +361,6 @@ const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
 // window when the user is attempting to quit. Mac only.
 const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
 
-// OBSOLETE.  Enum that specifies whether to enforce a third-party cookie
-// blocking policy.  This has been superseded by kDefaultContentSettings +
-// kBlockThirdPartyCookies.
-// 0 - allow all cookies.
-// 1 - block third-party cookies
-// 2 - block all cookies
-const char kCookieBehavior[] = "security.cookie_behavior";
-
 // Boolean which specifies whether we should ask the user if we should download
 // a file (true) or just download it automatically.
 const char kPromptForDownload[] = "download.prompt_for_download";
@@ -376,17 +368,9 @@ const char kPromptForDownload[] = "download.prompt_for_download";
 // A boolean pref set to true if we're using Link Doctor error pages.
 const char kAlternateErrorPagesEnabled[] = "alternate_error_pages.enabled";
 
-// OBSOLETE: new pref now stored with user prefs instead of profile, as
-// kDnsPrefetchingStartupList.
-const char kDnsStartupPrefetchList[] = "StartupDNSPrefetchList";
-
 // An adaptively identified list of domain names to be pre-fetched during the
 // next startup, based on what was actually needed during this startup.
 const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
-
-// OBSOLETE: new pref now stored with user prefs instead of profile, as
-// kDnsPrefetchingHostReferralList.
-const char kDnsHostReferralList[] = "HostReferralList";
 
 // A list of host names used to fetch web pages, and their commonly used
 // sub-resource hostnames (and expected latency benefits from pre-resolving, or
@@ -420,16 +404,6 @@ const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
 // Prefix URL for the experimental Instant ZeroSuggest provider.
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";
-
-// Used to migrate preferences from local state to user preferences to
-// enable multiple profiles.
-// BITMASK with possible values (see browser_prefs.cc for enum):
-// 0: No preferences migrated.
-// 1: DNS preferences migrated: kDnsPrefetchingStartupList and HostReferralList
-// 2: Browser window preferences migrated: kDevToolsSplitLocation and
-//    kBrowserWindowPlacement
-const char kMultipleProfilePrefMigration[] =
-    "local_state.multiple_profile_prefs_version";
 
 // A boolean pref set to true if prediction of network actions is allowed.
 // Actions include DNS prefetching, TCP and SSL preconnection, prerendering

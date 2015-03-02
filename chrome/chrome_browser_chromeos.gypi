@@ -421,8 +421,6 @@
         'browser/chromeos/login/auth/chrome_login_performer.h',
         'browser/chromeos/login/chrome_restart_request.cc',
         'browser/chromeos/login/chrome_restart_request.h',
-        'browser/chromeos/login/default_pinned_apps_field_trial.cc',
-        'browser/chromeos/login/default_pinned_apps_field_trial.h',
         'browser/chromeos/login/demo_mode/demo_app_launcher.cc',
         'browser/chromeos/login/demo_mode/demo_app_launcher.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_create_keys_operation.cc',

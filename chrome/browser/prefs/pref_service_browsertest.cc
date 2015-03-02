@@ -52,41 +52,29 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, MAYBE_Test) {
 
 class PreferenceServiceTest : public InProcessBrowserTest {
  public:
-  explicit PreferenceServiceTest(bool new_profile) : new_profile_(new_profile) {
-  }
-
   bool SetUpUserDataDirectory() override {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
 
-    if (new_profile_) {
-      original_pref_file_ = ui_test_utils::GetTestFilePath(
-          base::FilePath().AppendASCII("profiles").
-                     AppendASCII("window_placement").
-                     AppendASCII("Default"),
-          base::FilePath().Append(chrome::kPreferencesFilename));
-      tmp_pref_file_ =
-          user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
-      CHECK(base::CreateDirectory(tmp_pref_file_));
-      tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
-    } else {
-      original_pref_file_ = ui_test_utils::GetTestFilePath(
-          base::FilePath().AppendASCII("profiles").
-                     AppendASCII("window_placement"),
-          base::FilePath().Append(chrome::kLocalStateFilename));
-      tmp_pref_file_ = user_data_directory.Append(chrome::kLocalStateFilename);
-    }
+    original_pref_file_ = ui_test_utils::GetTestFilePath(
+        base::FilePath()
+            .AppendASCII("profiles")
+            .AppendASCII("window_placement")
+            .AppendASCII("Default"),
+        base::FilePath().Append(chrome::kPreferencesFilename));
+    tmp_pref_file_ =
+        user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
+    EXPECT_TRUE(base::CreateDirectory(tmp_pref_file_));
+    tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
 
-    CHECK(base::PathExists(original_pref_file_));
-    // Copy only the Preferences file if |new_profile_|, or Local State if not,
-    // and the rest will be automatically created.
-    CHECK(base::CopyFile(original_pref_file_, tmp_pref_file_));
+    EXPECT_TRUE(base::PathExists(original_pref_file_));
+    EXPECT_TRUE(base::CopyFile(original_pref_file_, tmp_pref_file_));
 
 #if defined(OS_WIN)
     // Make the copy writable.  On POSIX we assume the umask allows files
     // we create to be writable.
-    CHECK(::SetFileAttributesW(tmp_pref_file_.value().c_str(),
-        FILE_ATTRIBUTE_NORMAL));
+    EXPECT_TRUE(::SetFileAttributesW(tmp_pref_file_.value().c_str(),
+                                     FILE_ATTRIBUTE_NORMAL));
 #endif
     return true;
   }
@@ -94,9 +82,6 @@ class PreferenceServiceTest : public InProcessBrowserTest {
  protected:
   base::FilePath original_pref_file_;
   base::FilePath tmp_pref_file_;
-
- private:
-  bool new_profile_;
 };
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -106,13 +91,7 @@ class PreferenceServiceTest : public InProcessBrowserTest {
 // might be able to make this work on buildbots.
 // TODO(port): revisit this.
 
-class PreservedWindowPlacementIsLoaded : public PreferenceServiceTest {
- public:
-  PreservedWindowPlacementIsLoaded() : PreferenceServiceTest(true) {
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
+IN_PROC_BROWSER_TEST_F(PreferenceServiceTest, Test) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -135,72 +114,6 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
   gfx::Rect bounds = browser()->window()->GetRestoredBounds();
 
   // Retrieve the expected rect values from "Preferences"
-  int bottom = 0;
-  std::string kBrowserWindowPlacement(prefs::kBrowserWindowPlacement);
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".bottom",
-      &bottom));
-  EXPECT_EQ(bottom, bounds.y() + bounds.height());
-
-  int top = 0;
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".top",
-      &top));
-  EXPECT_EQ(top, bounds.y());
-
-  int left = 0;
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".left",
-      &left));
-  EXPECT_EQ(left, bounds.x());
-
-  int right = 0;
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".right",
-      &right));
-  EXPECT_EQ(right, bounds.x() + bounds.width());
-
-  // Find if launched window is maximized.
-  bool is_window_maximized = browser()->window()->IsMaximized();
-  bool is_maximized = false;
-  EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
-      &is_maximized));
-  EXPECT_EQ(is_maximized, is_window_maximized);
-}
-#endif
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-
-class PreservedWindowPlacementIsMigrated : public PreferenceServiceTest {
- public:
-  PreservedWindowPlacementIsMigrated() : PreferenceServiceTest(false) {
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-  // The window should open with the old reference profile, with window
-  // placement values stored in Local State.
-
-  JSONFileValueSerializer deserializer(original_pref_file_);
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
-
-  ASSERT_TRUE(root.get());
-  ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
-
-  // Retrieve the screen rect for the launched window
-  gfx::Rect bounds = browser()->window()->GetRestoredBounds();
-
-  // Values from old reference profile in Local State should have been
-  // correctly migrated to the user's Preferences -- if so, the window
-  // should be set to values taken from the user's Local State.
-  base::DictionaryValue* root_dict =
-      static_cast<base::DictionaryValue*>(root.get());
-
-  // Retrieve the expected rect values from User Preferences, where they
-  // should have been migrated from Local State.
   int bottom = 0;
   std::string kBrowserWindowPlacement(prefs::kBrowserWindowPlacement);
   EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".bottom",

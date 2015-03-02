@@ -851,11 +851,10 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
     return;
   }
 
-  // TODO(mirandac): remove migration code after 6 months (crbug.com/69995).
+  // Migrate obsolete prefs.
   if (g_browser_process->local_state())
-    chrome::MigrateBrowserPrefs(this, g_browser_process->local_state());
-  // TODO(ivankr): remove cleanup code eventually (crbug.com/165672).
-  chrome::MigrateUserPrefs(this);
+    chrome::MigrateObsoleteBrowserPrefs(this, g_browser_process->local_state());
+  chrome::MigrateObsoleteProfilePrefs(this);
 
   // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref
   // value is empty fallback to checking for |kSessionExitedCleanly|.

@@ -30,11 +30,17 @@ void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #endif
 
-// Migrates prefs from |local_state| to |profile|'s pref store.
-void MigrateBrowserPrefs(Profile* profile, PrefService* local_state);
+// Migrate/cleanup deprecated prefs in |local_state|. Over time, long deprecated
+// prefs should be removed as new ones are added, but this call should never go
+// away (even if it becomes an empty call for some time) as it should remain
+// *the* place to drop deprecated browser prefs at.
+void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state);
 
-// Migrates prefs in |profile|'s pref store.
-void MigrateUserPrefs(Profile* profile);
+// Migrate/cleanup deprecated prefs in |profile|'s pref store. Over time, long
+// deprecated prefs should be removed as new ones are added, but this call
+// should never go away (even if it becomes an empty call for some time) as it
+// should remain *the* place to drop deprecated profile prefs at.
+void MigrateObsoleteProfilePrefs(Profile* profile);
 
 // Migrates zoom level prefs in |profile|'s pref store to a per-StoragePartition
 // set of prefs.

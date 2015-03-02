@@ -149,12 +149,9 @@ extern const char kSearchSuggestEnabled[];
 extern const char kContextualSearchEnabled[];
 #endif
 extern const char kConfirmToQuitEnabled[];
-extern const char kCookieBehavior[];  // OBSOLETE
 extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
-extern const char kDnsStartupPrefetchList[];  // OBSOLETE
 extern const char kDnsPrefetchingStartupList[];
-extern const char kDnsHostReferralList[];  // OBSOLETE
 extern const char kDnsPrefetchingHostReferralList[];
 extern const char kDisableSpdy[];
 extern const char kHttpServerProperties[];
@@ -165,7 +162,6 @@ extern const char kDisabledSchemes[];
 extern const char kLastPolicyCheckTime[];
 #endif
 extern const char kInstantUIZeroSuggestUrlPrefix[];
-extern const char kMultipleProfilePrefMigration[];
 extern const char kNetworkPredictionEnabled[];
 extern const char kNetworkPredictionOptions[];
 extern const char kDefaultAppsInstallState[];
