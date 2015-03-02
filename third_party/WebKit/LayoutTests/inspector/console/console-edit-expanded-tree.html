@@ -35,9 +35,9 @@ function test()
 
     function onTreeElement(treeElement)
     {
-        treeElement.startEditing();
+        treeElement._startEditing();
         WebInspector.ConsolePanel._view()._viewport.refresh();
-        InspectorTest.addResult("After viewport refresh tree element remains in editing mode: " + treeElement.isEditing());
+        InspectorTest.addResult("After viewport refresh tree element remains in editing mode: " + !!treeElement._prompt);
         InspectorTest.completeTest();
     }
 }
