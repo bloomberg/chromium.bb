@@ -2740,7 +2740,52 @@ class PBXProject(XCContainerPortal):
 
     self._SetUpProductReferences(other_pbxproject, product_group, project_ref)
 
+    inherit_unique_symroot = self._AllSymrootsUnique(other_pbxproject, False)
+    targets = other_pbxproject.GetProperty('targets')
+    if all(self._AllSymrootsUnique(t, inherit_unique_symroot) for t in targets):
+      dir_path = project_ref._properties['path']
+      product_group._hashables.extend(dir_path)
+
     return [product_group, project_ref]
+
+  def _AllSymrootsUnique(self, target, inherit_unique_symroot):
+    # Returns True if all configurations have a unique 'SYMROOT' attribute.
+    # The value of inherit_unique_symroot decides, if a configuration is assumed
+    # to inherit a unique 'SYMROOT' attribute from its parent, if it doesn't
+    # define an explicit value for 'SYMROOT'.
+    symroots = self._DefinedSymroots(target)
+    for s in self._DefinedSymroots(target):
+      if (s is not None and not self._IsUniqueSymrootForTarget(s) or
+          s is None and not inherit_unique_symroot):
+        return False
+    return True if symroots else return inherit_unique_symroot
+
+  def _DefinedSymroots(self, target):
+    # Returns all values for the 'SYMROOT' attribute defined in all
+    # configurations for this target. If any configuration doesn't define the
+    # 'SYMROOT' attribute, None is added to the returned set. If all
+    # configurations don't define the 'SYMROOT' attribute, an empty set is
+    # returned.
+    config_list = target.GetProperty('buildConfigurationList')
+    symroots = set()
+    for config in config_list.GetProperty('buildConfigurations'):
+      setting = config.GetProperty('buildSettings')
+      if 'SYMROOT' in setting:
+        symroots.add(setting['SYMROOT'])
+      else:
+        symroots.add(None)
+    if len(symroots) == 1 and None in symroots:
+      return set()
+    return symroots
+
+  def _IsUniqueSymrootForTarget(self, symroot):
+    # This method returns True if all configurations in target contain a
+    # 'SYMROOT' attribute that is unique for the given target. A value is
+    # unique, if the Xcode macro '$SRCROOT' appears in it in any form.
+    uniquifier = ['$SRCROOT', '$(SRCROOT)']
+    if any(x in symroot for x in uniquifier):
+      return True
+    return False
 
   def _SetUpProductReferences(self, other_pbxproject, product_group,
                               project_ref):
