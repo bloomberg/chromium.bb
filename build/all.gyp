@@ -467,12 +467,6 @@
     }, # target_name: chromium_builder_tests
   ],
   'conditions': [
-    # TODO(GYP): make gn_migration.gypi work unconditionally.
-    ['OS=="linux" and target_arch=="x64" and chromeos==0', {
-      'includes': [
-        'gn_migration.gypi',
-      ],
-    }],
     ['OS!="ios"', {
       'targets': [
         {
@@ -521,6 +515,156 @@
     }], # OS!=ios
     ['OS!="ios" and OS!="android"', {
       'targets': [
+        {
+          # TODO(GYP) - make gyp_all and gn_all work on iOS and Android also.
+          'target_name': 'gyp_all',
+          'type': 'none',
+          'dependencies': [
+            ':gn_all',
+            '../chrome/chrome.gyp:chromedriver_unittests',
+            '../components/components_tests.gyp:components_browsertests',
+            # '../components/nacl.gyp:nacl_loader_unittests',  # TODO(GYP)
+            # '../remoting/remoting.gyp:remoting_unittests',  # TODO(GYP)
+            '../ui/compositor/compositor.gyp:compositor_unittests',
+          ],
+          'conditions': [
+            ['OS!="android"', {
+              'dependencies': [
+                # '../device/device_tests.gyp:device_unittests',  # TODO(GYP)
+                # '../google_apis/google_apis.gyp:google_apis_unittests',  # TODO(GYP)
+              ],
+            }],
+          ],
+        },
+        {
+          'target_name': 'gn_all',
+          'type': 'none',
+
+          'dependencies': [
+            '../base/base.gyp:base_unittests',
+            '../cc/cc_tests.gyp:cc_unittests',
+            '../chrome/chrome.gyp:chrome',
+            '../chrome/chrome.gyp:browser_tests',
+            '../chrome/chrome.gyp:interactive_ui_tests',
+            '../chrome/chrome.gyp:sync_integration_tests',
+            '../chrome/chrome.gyp:unit_tests',
+            '../components/components_tests.gyp:components_unittests',
+            '../content/content_shell_and_tests.gyp:content_shell',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_perftests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
+            '../crypto/crypto.gyp:crypto_unittests',
+            '../extensions/extensions_tests.gyp:extensions_browsertests',
+            '../extensions/extensions_tests.gyp:extensions_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
+            '../gpu/gpu.gyp:gpu_unittests',
+            '../ipc/ipc.gyp:ipc_tests',
+            '../ipc/mojo/ipc_mojo.gyp:ipc_mojo_unittests',
+            '../jingle/jingle.gyp:jingle_unittests',
+            '../media/media.gyp:media_unittests',
+            '../media/cast/cast.gyp:cast_unittests',
+            '../mojo/mojo.gyp:mojo',
+            '../mojo/mojo_base.gyp:mojo_common_unittests',
+            '../net/net.gyp:net_unittests',
+            '../ppapi/ppapi_internal.gyp:ppapi_tests',
+            '../printing/printing.gyp:printing_unittests',
+            '../sql/sql.gyp:sql_unittests',
+            '../skia/skia_tests.gyp:skia_unittests',
+            '../sync/sync.gyp:sync_unit_tests',
+
+            # TODO(GYP): the Blink test targets should be public, but
+            # currently aren't. all_blink puls them in, though
+            # "//third_party/WebKit/Source/platform:heap_unittests",
+            # "//third_party/WebKit/Source/platform:platform_unittests",
+            # "//third_party/WebKit/Source/wtf:wtf_unittests",
+            '../third_party/WebKit/public/all.gyp:all_blink',
+
+            '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
+
+            # TODO(GYP): Needed only w/ cld_version==1. What configs set that?
+            '../third_party/cld/cld.gyp:cld',
+
+            # TODO(GYP): This is needed only w/ use_system_fontconfig==0. What configs set that?
+            #'../third_party/fontconfig/fontconfig.gyp:fontconfig',
+
+            # TODO(GYP): This will be pulled in automatically when enable_webrtc==true.
+            # For now pull it in manually so that it doesn't regress.
+            '../third_party/libsrtp/libsrtp.gyp:libsrtp',
+
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_system_unittests',
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_environment_unittests',
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_perftests',
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_utility_unittests',
+            '../third_party/pdfium/samples/samples.gyp:pdfium_test',
+
+            # TODO(GYP): Verify that this is no longer needed.
+            '../third_party/smhasher/smhasher.gyp:pmurhash',
+
+            # TODO(GYP): This will be pulled in automatically when enable_webrtc==true.
+            # For now pull it in manually so that it doesn't regress.
+            '../third_party/usrsctp/usrsctp.gyp:usrsctplib',
+
+            '../tools/gn/gn.gyp:gn',
+            '../tools/gn/gn.gyp:gn_unittests',
+            '../ui/accessibility/accessibility.gyp:accessibility_unittests',
+            '../ui/app_list/app_list.gyp:app_list_unittests',
+            '../ui/base/ui_base_tests.gyp:ui_base_unittests',
+            '../ui/display/display.gyp:display_unittests',
+            '../ui/events/events.gyp:events_unittests',
+            '../ui/gfx/gfx_tests.gyp:gfx_unittests',
+            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
+            '../url/url.gyp:url_unittests',
+          ],
+          'conditions': [
+            ['OS!="win"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:symupload',
+              ],
+            }],
+            ['use_x11==1', {
+              'dependencies': [
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+            ['toolkit_views==1', {
+              'dependencies': [
+                '../ui/views/views.gyp:views_unittests',
+              ],
+            }],
+            ['use_aura==1', {
+              'dependencies': [
+                '../ui/wm/wm.gyp:wm_unittests',
+              ],
+            }],
+            ['use_ozone==1', {
+              'dependencies': [
+                '../ui/ozone/ozone.gyp:ozone',
+              ],
+            }],
+            ['OS=="win" or OS=="mac" or OS=="android"', {
+              'dependencies': [
+                '../rlz/rlz.gyp:rlz_lib',
+              ],
+            }],
+            ['OS=="android"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:chrome_shell_apk',
+                '../content/content_shell_and_tests.gyp:content_shell_apk',
+              ],
+              'dependencies!': [
+                '../url/url.gyp:url_unittests',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../dbus/dbus.gyp:dbus_unittests',
+                '../sandbox/sandbox.gyp:sandbox_linux_unittests',
+              ],
+            }],
+          ],
+        },
         {
           'target_name': 'chromium_builder_nacl_win_integration',
           'type': 'none',
