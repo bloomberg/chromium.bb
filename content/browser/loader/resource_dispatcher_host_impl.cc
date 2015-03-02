@@ -2149,6 +2149,10 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
   // thread where they can be passed along to the respective RVHs.
   scoped_ptr<LoadInfoMap> info_map(new LoadInfoMap());
 
+  tracked_objects::ScopedTracker tracking_profile0(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes0"));
+
   for (const auto& loader : pending_loaders_) {
     // Also poll for upload progress on this timer and send upload progress ipc
     // messages to the plugin process.
@@ -2219,6 +2223,10 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
 
   if (info_map->empty())
     return;
+
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455952 ResourceDispatcherHostImpl::UpdateLoadInfo2"));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
