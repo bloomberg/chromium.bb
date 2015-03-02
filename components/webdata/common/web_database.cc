@@ -16,6 +16,8 @@
 // static
 const int WebDatabase::kCurrentVersionNumber = 62;
 
+const int WebDatabase::kDeprecatedVersionNumber = 51;
+
 namespace {
 
 const int kCompatibleVersionNumber = 61;
@@ -87,7 +89,13 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   if (!db_.Open(db_name))
     return sql::INIT_FAILURE;
 
-  // Initialize various tables
+  // Clobber really old databases.
+  static_assert(kDeprecatedVersionNumber < kCurrentVersionNumber,
+                "Deprecation version must be less than current");
+  sql::MetaTable::RazeIfDeprecated(&db_, kDeprecatedVersionNumber);
+
+  // Scope initialization in a transaction so we can't be partially
+  // initialized.
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
     return sql::INIT_FAILURE;
@@ -135,22 +143,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
   if (current_version > meta_table_.GetVersionNumber())
     ChangeVersion(&meta_table_, current_version, false);
 
-  if (current_version < 20) {
-    // Versions 1 - 19 are unhandled.  Version numbers greater than
-    // kCurrentVersionNumber should have already been weeded out by the caller.
-    //
-    // When the version is too old, we return failure error code.  The schema
-    // is too out of date to migrate.
-    //
-    // There should not be a released product that makes a database too old to
-    // migrate. If we do encounter such a legacy database, we will need a
-    // better solution to handle it (i.e., pop up a dialog to tell the user,
-    // erase all their prefs and start over, etc.).
-    LOG(WARNING) << "Web database version " << current_version
-                 << " is too old to handle.";
-    NOTREACHED();
-    return sql::INIT_FAILURE;
-  }
+  DCHECK_GT(current_version, kDeprecatedVersionNumber);
 
   for (int next_version = current_version + 1;
        next_version <= kCurrentVersionNumber;

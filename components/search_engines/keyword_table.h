@@ -126,19 +126,6 @@ class KeywordTable : public WebDatabaseTable {
   static std::string GetKeywordColumns();
 
   // Table migration functions.
-  bool MigrateToVersion21AutoGenerateKeywordColumn();
-  bool MigrateToVersion25AddLogoIDColumn();
-  bool MigrateToVersion26AddCreatedByPolicyColumn();
-  bool MigrateToVersion28SupportsInstantColumn();
-  bool MigrateToVersion29InstantURLToSupportsInstant();
-  bool MigrateToVersion38AddLastModifiedColumn();
-  bool MigrateToVersion39AddSyncGUIDColumn();
-  bool MigrateToVersion44AddDefaultSearchProviderBackup();
-  bool MigrateToVersion45RemoveLogoIDAndAutogenerateColumns();
-  bool MigrateToVersion47AddAlternateURLsColumn();
-  bool MigrateToVersion48RemoveKeywordsBackup();
-  bool MigrateToVersion49AddSearchTermsReplacementKeyColumn();
-  bool MigrateToVersion52AddImageSearchAndPOSTSupport();
   bool MigrateToVersion53AddNewTabURLColumn();
   bool MigrateToVersion59RemoveExtensionKeywords();
 

@@ -358,20 +358,6 @@ class AutofillTable : public WebDatabaseTable {
   bool ClearAutofillProfiles();
 
   // Table migration functions.
-  // Removes empty values for autofill that were incorrectly stored in the DB
-  // See bug http://crbug.com/6111
-  bool MigrateToVersion22ClearAutofillEmptyValueElements();
-  bool MigrateToVersion23AddCardNumberEncryptedColumn();
-  bool MigrateToVersion24CleanupOversizedStringFields();
-  bool MigrateToVersion27UpdateLegacyCreditCards();
-  bool MigrateToVersion30AddDateModifed();
-  bool MigrateToVersion31AddGUIDToCreditCardsAndProfiles();
-  bool MigrateToVersion32UpdateProfilesAndCreditCards();
-  bool MigrateToVersion33ProfilesBasedOnFirstName();
-  bool MigrateToVersion34ProfilesBasedOnCountryCode();
-  bool MigrateToVersion35GreatBritainCountryCodes();
-  bool MigrateToVersion37MergeAndCullOlderProfiles();
-  bool MigrateToVersion51AddOriginColumn();
   bool MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
   bool MigrateToVersion55MergeAutofillDatesTable();
   bool MigrateToVersion56AddProfileLanguageCodeForFormatting();

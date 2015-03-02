@@ -27,6 +27,8 @@ class WEBDATA_EXPORT WebDatabase {
   };
   // Exposed publicly so the keyword table can access it.
   static const int kCurrentVersionNumber;
+  // The newest version of the database Chrome will NOT try to migrate.
+  static const int kDeprecatedVersionNumber;
 
   WebDatabase();
   virtual ~WebDatabase();
