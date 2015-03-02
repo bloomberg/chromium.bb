@@ -13,9 +13,13 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     const gfx::GLSurfaceHandle& handle) {
   DCHECK(handle.handle);
   DCHECK(handle.transport_type == gfx::NATIVE_DIRECT);
-  scoped_refptr<gfx::GLSurface> surface =
-      gfx::GLSurface::CreateViewGLSurface(handle.handle);
-  if (!surface.get())
+  scoped_refptr<gfx::GLSurface> surface;
+#if defined(USE_OZONE)
+  surface = gfx::GLSurface::CreateSurfacelessViewGLSurface(handle.handle);
+#endif
+  if (!surface)
+    surface = gfx::GLSurface::CreateViewGLSurface(handle.handle);
+  if (!surface)
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
       manager, stub, surface.get()));

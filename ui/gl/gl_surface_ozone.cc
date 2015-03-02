@@ -4,16 +4,20 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
+#include "ui/gl/gl_image_linux_dma_buffer.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
+#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
@@ -157,7 +161,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     return SwapBuffersAsync(callback);
   }
 
- private:
+ protected:
   ~GLSurfaceOzoneSurfaceless() override {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
@@ -196,6 +200,155 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneSurfaceless);
 };
 
+// This provides surface-like semantics implemented through surfaceless.
+// A framebuffer is bound automatically.
+class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
+    : public GLSurfaceOzoneSurfaceless {
+ public:
+  GLSurfaceOzoneSurfacelessSurfaceImpl(
+      scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+      AcceleratedWidget widget)
+      : GLSurfaceOzoneSurfaceless(ozone_surface.Pass(), widget),
+        fbo_(0),
+        current_surface_(0) {
+    for (auto& texture : textures_)
+      texture = 0;
+  }
+
+  unsigned int GetBackingFrameBufferObject() override { return fbo_; }
+
+  bool OnMakeCurrent(GLContext* context) override {
+    if (!fbo_) {
+      glGenFramebuffersEXT(1, &fbo_);
+      if (!fbo_)
+        return false;
+      glGenTextures(arraysize(textures_), textures_);
+      if (!CreatePixmaps())
+        return false;
+    }
+    BindFramebuffer();
+    glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_);
+    return SurfacelessEGL::OnMakeCurrent(context);
+  }
+
+  bool Resize(const gfx::Size& size) override {
+    if (size == GetSize())
+      return true;
+    return GLSurfaceOzoneSurfaceless::Resize(size) && CreatePixmaps();
+  }
+
+  bool SupportsPostSubBuffer() override { return false; }
+
+  bool SwapBuffers() override {
+    if (!images_[current_surface_]->ScheduleOverlayPlane(
+            widget_, 0, OverlayTransform::OVERLAY_TRANSFORM_NONE,
+            gfx::Rect(GetSize()), gfx::RectF(1, 1)))
+      return false;
+    if (!GLSurfaceOzoneSurfaceless::SwapBuffers())
+      return false;
+    current_surface_ ^= 1;
+    BindFramebuffer();
+    return true;
+  }
+
+  bool SwapBuffersAsync(const SwapCompletionCallback& callback) override {
+    if (!images_[current_surface_]->ScheduleOverlayPlane(
+            widget_, 0, OverlayTransform::OVERLAY_TRANSFORM_NONE,
+            gfx::Rect(GetSize()), gfx::RectF(1, 1)))
+      return false;
+    if (!GLSurfaceOzoneSurfaceless::SwapBuffersAsync(callback))
+      return false;
+    current_surface_ ^= 1;
+    BindFramebuffer();
+    return true;
+  }
+
+  void Destroy() override {
+    GLContext* current_context = GLContext::GetCurrent();
+    DCHECK(current_context && current_context->IsCurrent(this));
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    if (fbo_) {
+      glDeleteTextures(arraysize(textures_), textures_);
+      for (auto& texture : textures_)
+        texture = 0;
+      glDeleteFramebuffersEXT(1, &fbo_);
+      fbo_ = 0;
+    }
+    for (auto image : images_) {
+      if (image)
+        image->Destroy(true);
+    }
+  }
+
+ private:
+  class SurfaceImage : public GLImageLinuxDMABuffer {
+   public:
+    SurfaceImage(const gfx::Size& size, unsigned internalformat)
+        : GLImageLinuxDMABuffer(size, internalformat) {}
+
+    bool Initialize(scoped_refptr<ui::NativePixmap> pixmap,
+                    gfx::GpuMemoryBuffer::Format format) {
+      base::FileDescriptor handle(pixmap->GetDmaBufFd(), false);
+      if (!GLImageLinuxDMABuffer::Initialize(handle, format,
+                                             pixmap->GetDmaBufPitch()))
+        return false;
+      pixmap_ = pixmap;
+      return true;
+    }
+    bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                              int z_order,
+                              gfx::OverlayTransform transform,
+                              const gfx::Rect& bounds_rect,
+                              const gfx::RectF& crop_rect) override {
+      return ui::SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
+          widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
+    }
+
+   private:
+    scoped_refptr<ui::NativePixmap> pixmap_;
+  };
+
+  ~GLSurfaceOzoneSurfacelessSurfaceImpl() override {
+    DCHECK(!fbo_);
+    for (size_t i = 0; i < arraysize(textures_); i++)
+      DCHECK(!textures_[i]) << "texture " << i << " not released";
+  }
+
+  void BindFramebuffer() {
+    ScopedFrameBufferBinder fb(fbo_);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, textures_[current_surface_], 0);
+  }
+
+  bool CreatePixmaps() {
+    if (!fbo_)
+      return true;
+    for (size_t i = 0; i < arraysize(textures_); i++) {
+      scoped_refptr<ui::NativePixmap> pixmap =
+          ui::SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
+              widget_, GetSize(), ui::SurfaceFactoryOzone::RGBA_8888,
+              ui::SurfaceFactoryOzone::SCANOUT);
+      if (!pixmap)
+        return false;
+      scoped_refptr<SurfaceImage> image = new SurfaceImage(GetSize(), GL_RGBA);
+      if (!image->Initialize(pixmap, gfx::GpuMemoryBuffer::Format::BGRA_8888))
+        return false;
+      images_[i] = image;
+      // Bind image to texture.
+      ScopedTextureBinder binder(GL_TEXTURE_2D, textures_[i]);
+      if (!images_[i]->BindTexImage(GL_TEXTURE_2D))
+        return false;
+    }
+    return true;
+  }
+
+  GLuint fbo_;
+  GLuint textures_[2];
+  scoped_refptr<GLImage> images_[2];
+  int current_surface_;
+  DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneSurfacelessSurfaceImpl);
+};
+
 }  // namespace
 
 // static
@@ -214,6 +367,27 @@ bool GLSurface::InitializeOneOffInternal() {
     default:
       return false;
   }
+}
+
+// static
+scoped_refptr<GLSurface> GLSurface::CreateSurfacelessViewGLSurface(
+    gfx::AcceleratedWidget window) {
+  if (GetGLImplementation() == kGLImplementationEGLGLES2 &&
+      window != kNullAcceleratedWidget &&
+      GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
+      ui::SurfaceFactoryOzone::GetInstance()->CanShowPrimaryPlaneAsOverlay()) {
+    scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+        ui::SurfaceFactoryOzone::GetInstance()
+            ->CreateSurfacelessEGLSurfaceForWidget(window);
+    if (!surface_ozone)
+      return nullptr;
+    scoped_refptr<GLSurface> surface;
+    surface = new GLSurfaceOzoneSurfaceless(surface_ozone.Pass(), window);
+    if (surface->Initialize())
+      return surface;
+  }
+
+  return nullptr;
 }
 
 // static
@@ -236,7 +410,8 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
               ->CreateSurfacelessEGLSurfaceForWidget(window);
       if (!surface_ozone)
         return NULL;
-      surface = new GLSurfaceOzoneSurfaceless(surface_ozone.Pass(), window);
+      surface = new GLSurfaceOzoneSurfacelessSurfaceImpl(surface_ozone.Pass(),
+                                                         window);
     } else {
       scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
           ui::SurfaceFactoryOzone::GetInstance()->CreateEGLSurfaceForWidget(

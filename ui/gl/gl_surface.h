@@ -156,6 +156,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   static scoped_refptr<GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window);
 
+#if defined(USE_OZONE)
+  // Create a GL surface that renders directly into a window with surfaceless
+  // semantics - there is no default framebuffer and the primary surface must
+  // be presented as an overlay. If surfaceless mode is not supported or
+  // enabled it will return a null pointer.
+  static scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
+      gfx::AcceleratedWidget window);
+#endif  // defined(USE_OZONE)
+
   // Create a GL surface used for offscreen rendering.
   static scoped_refptr<GLSurface> CreateOffscreenGLSurface(
       const gfx::Size& size);

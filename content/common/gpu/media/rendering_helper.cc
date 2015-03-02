@@ -314,6 +314,9 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   message_loop_ = base::MessageLoop::current();
 
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
+#if defined(USE_OZONE)
+  gl_surface_->Resize(platform_window_delegate_->GetSize());
+#endif  // defined(USE_OZONE)
   screen_size_ = gl_surface_->GetSize();
 
   gl_context_ = gfx::GLContext::CreateGLContext(
@@ -364,7 +367,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     CHECK(fb_status == GL_FRAMEBUFFER_COMPLETE) << fb_status;
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER,
+                         gl_surface_->GetBackingFrameBufferObject());
   }
 
   // These vertices and texture coords. map (0,0) in the texture to the
@@ -504,6 +508,7 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
   }
 
+  gl_surface_->Destroy();
   gl_context_->ReleaseCurrent(gl_surface_.get());
   gl_context_ = NULL;
   gl_surface_ = NULL;
@@ -570,7 +575,8 @@ void RenderingHelper::RenderThumbnail(uint32 texture_target,
   glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
   GLSetViewPort(area);
   RenderTexture(texture_target, texture_id);
-  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  glBindFramebufferEXT(GL_FRAMEBUFFER,
+                       gl_surface_->GetBackingFrameBufferObject());
 
   // Need to flush the GL commands before we return the tnumbnail texture to
   // the decoder.
@@ -661,7 +667,8 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                &rgba[0]);
-  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  glBindFramebufferEXT(GL_FRAMEBUFFER,
+                       gl_surface_->GetBackingFrameBufferObject());
   rgb->resize(num_pixels * 3);
   // Drop the alpha channel, but check as we go that it is all 0xff.
   bool solid = true;
@@ -698,7 +705,13 @@ void RenderingHelper::RenderContent() {
         static_cast<base::WaitableEvent*>(NULL)));
   }
 
-  glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
+  int tex_flip = 1;
+#if defined(USE_OZONE)
+  // Ozone surfaceless renders flipped from normal GL, so there's no need to
+  // do an extra flip.
+  tex_flip = 0;
+#endif  // defined(USE_OZONE)
+  glUniform1i(glGetUniformLocation(program_, "tex_flip"), tex_flip);
 
   // Frames that will be returned to the client (via the no_longer_needed_cb)
   // after this vector falls out of scope at the end of this method. We need
