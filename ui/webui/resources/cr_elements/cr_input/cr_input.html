@@ -1,0 +1,23 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
+<link rel="import" href="chrome://resources/polymer/core-input/core-input.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_events/cr_events.html">
+
+<polymer-element name="cr-input">
+  <template>
+    <link rel="stylesheet" href="cr_input.css">
+    <cr-events id="events"></cr-events>
+
+    <!-- TODO(jlklein): Use 'autoValidate' instead of isInvalid binding when
+         updated to 0.5.4. -->
+    <paper-input-decorator id="decorator" label="{{label}}"
+        floatingLabel="{{floatingLabel}}" value="{{value}}"
+        disabled?="{{disabled}}" error="{{error}}"
+        isInvalid="{{!$.input.validity.valid}}">
+      <input is="core-input" id="input" value="{{value}}"
+          committedValue="{{committedValue}}" disabled?="{{disabled}}"
+          required?="{{required}}" type="{{type}}">
+    </paper-input-decorator>
+  </template>
+  <script src="cr_input.js"></script>
+</polymer-element>
