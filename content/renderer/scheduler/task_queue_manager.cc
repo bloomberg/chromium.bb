@@ -43,7 +43,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   void PumpQueue();
 
   bool UpdateWorkQueue(base::TimeTicks* next_pending_delayed_task,
-                       TaskQueueManager::WorkQueueUpdateEventType event_type);
+                       const base::PendingTask* previous_task);
   base::PendingTask TakeTaskFromWorkQueue();
 
   void WillDeleteTaskQueueManager();
@@ -73,8 +73,8 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   void EnqueueTask(const base::PendingTask& pending_task);
 
   void PumpQueueLocked();
-  bool ShouldAutoPumpQueueLocked(
-      TaskQueueManager::WorkQueueUpdateEventType event_type);
+  bool TaskIsOlderThanQueuedTasks(const base::PendingTask* task);
+  bool ShouldAutoPumpQueueLocked(const base::PendingTask* previous_task);
   void EnqueueTaskLocked(const base::PendingTask& pending_task);
 
   void TraceQueueSize(bool is_locked) const;
@@ -153,13 +153,35 @@ bool TaskQueue::IsQueueEmpty() const {
   }
 }
 
+bool TaskQueue::TaskIsOlderThanQueuedTasks(const base::PendingTask* task) {
+  lock_.AssertAcquired();
+  // A null task is passed when UpdateQueue is called before any task is run.
+  // In this case we don't want to pump an after_wakeup queue, so return true
+  // here.
+  if (!task)
+    return true;
+
+  // Return false if there are no task in the incoming queue.
+  if (incoming_queue_.empty())
+    return false;
+
+  base::PendingTask oldest_queued_task = incoming_queue_.front();
+  DCHECK(oldest_queued_task.delayed_run_time.is_null());
+  DCHECK(task->delayed_run_time.is_null());
+
+  // Note: the comparison is correct due to the fact that the PendingTask
+  // operator inverts its comparison operation in order to work well in a heap
+  // based priority queue.
+  return oldest_queued_task < *task;
+}
+
 bool TaskQueue::ShouldAutoPumpQueueLocked(
-    TaskQueueManager::WorkQueueUpdateEventType event_type) {
+    const base::PendingTask* previous_task) {
   lock_.AssertAcquired();
   if (pump_policy_ == TaskQueueManager::PumpPolicy::MANUAL)
     return false;
   if (pump_policy_ == TaskQueueManager::PumpPolicy::AFTER_WAKEUP &&
-      event_type != TaskQueueManager::WorkQueueUpdateEventType::AFTER_WAKEUP)
+      TaskIsOlderThanQueuedTasks(previous_task))
     return false;
   if (incoming_queue_.empty())
     return false;
@@ -168,7 +190,7 @@ bool TaskQueue::ShouldAutoPumpQueueLocked(
 
 bool TaskQueue::UpdateWorkQueue(
     base::TimeTicks* next_pending_delayed_task,
-    TaskQueueManager::WorkQueueUpdateEventType event_type) {
+    const base::PendingTask* previous_task) {
   if (!work_queue_.empty())
     return true;
 
@@ -178,7 +200,7 @@ bool TaskQueue::UpdateWorkQueue(
       *next_pending_delayed_task =
           std::min(*next_pending_delayed_task, delayed_task_run_times_.top());
     }
-    if (!ShouldAutoPumpQueueLocked(event_type))
+    if (!ShouldAutoPumpQueueLocked(previous_task))
       return false;
     work_queue_.Swap(&incoming_queue_);
     TraceQueueSize(true);
@@ -383,14 +405,15 @@ void TaskQueueManager::PumpQueue(size_t queue_index) {
 
 bool TaskQueueManager::UpdateWorkQueues(
     base::TimeTicks* next_pending_delayed_task,
-    WorkQueueUpdateEventType event_type) {
+    const base::PendingTask* previous_task) {
   // TODO(skyostil): This is not efficient when the number of queues grows very
   // large due to the number of locks taken. Consider optimizing when we get
   // there.
   DCHECK(main_thread_checker_.CalledOnValidThread());
   bool has_work = false;
   for (auto& queue : queues_) {
-    has_work |= queue->UpdateWorkQueue(next_pending_delayed_task, event_type);
+    has_work |= queue->UpdateWorkQueue(next_pending_delayed_task,
+                                       previous_task);
     if (!queue->work_queue().empty()) {
       // Currently we should not be getting tasks with delayed run times in any
       // of the work queues.
@@ -426,8 +449,9 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
   base::TimeTicks next_pending_delayed_task(
       base::TimeTicks::FromInternalValue(kMaxTimeTicks));
 
-  if (!UpdateWorkQueues(&next_pending_delayed_task,
-                        WorkQueueUpdateEventType::BEFORE_WAKEUP))
+  // Pass nullptr to UpdateWorkQueues here to prevent waking up an
+  // pump-after-wakeup queue.
+  if (!UpdateWorkQueues(&next_pending_delayed_task, nullptr))
     return;
 
   base::PendingTask previous_task((tracked_objects::Location()),
@@ -446,8 +470,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     MaybePostDoWorkOnMainRunner();
     ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task);
 
-    if (!UpdateWorkQueues(&next_pending_delayed_task,
-                          WorkQueueUpdateEventType::AFTER_WAKEUP))
+    if (!UpdateWorkQueues(&next_pending_delayed_task, &previous_task))
       return;
   }
 }

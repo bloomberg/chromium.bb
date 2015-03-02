@@ -338,9 +338,9 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTaskAfterWakeupWhileAwake) {
   base::TimeTicks deadline_in_task;
   int run_count = 0;
 
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
   idle_task_runner_->PostIdleTaskAfterWakeup(
       FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
 
   RunUntilIdle();
   EnableIdleTasks();  // Must start a new idle period before idle task runs.

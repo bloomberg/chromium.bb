@@ -116,8 +116,6 @@ class CONTENT_EXPORT TaskQueueManager {
  private:
   friend class internal::TaskQueue;
 
-  enum class WorkQueueUpdateEventType { BEFORE_WAKEUP, AFTER_WAKEUP };
-
   // Called by the task queue to register a new pending task and allocate a
   // sequence number for it.
   void DidQueueTask(base::PendingTask* pending_task);
@@ -131,12 +129,13 @@ class CONTENT_EXPORT TaskQueueManager {
   void DoWork(bool posted_from_main_thread);
 
   // Reloads any empty work queues which have automatic pumping enabled and
-  // which are eligible to be auto pumped at the given |event_type|.
-  // Returns true if any work queue has tasks after doing this.
+  // which are eligible to be auto pumped based on the |previous_task| which was
+  // run. Call with an empty |previous_task| if no task was just run. Returns
+  // true if any work queue has tasks after doing this.
   // |next_pending_delayed_task| should be the time of the next known delayed
   // task. It is updated if any task is found which should run earlier.
   bool UpdateWorkQueues(base::TimeTicks* next_pending_delayed_task,
-                        WorkQueueUpdateEventType event_type);
+                        const base::PendingTask* previous_task);
 
   // Chooses the next work queue to service. Returns true if |out_queue_index|
   // indicates the queue from which the next task should be run, false to

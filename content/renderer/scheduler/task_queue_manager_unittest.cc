@@ -58,6 +58,7 @@ class TaskQueueManagerTest : public testing::Test {
     selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(
         new TaskQueueManager(num_queues, test_task_runner_, selector_.get()));
+    EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
 
   void InitializeWithRealMessageLoop(size_t num_queues) {
@@ -65,6 +66,7 @@ class TaskQueueManagerTest : public testing::Test {
     selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, message_loop_->task_runner(), selector_.get()));
+    EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
@@ -93,7 +95,6 @@ void TestTask(int value, std::vector<int>* out_result) {
 
 TEST_F(TaskQueueManagerTest, SingleQueuePosting) {
   Initialize(1u);
-  EXPECT_EQ(1u, selector_->work_queues().size());
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -113,7 +114,6 @@ TEST_F(TaskQueueManagerTest, SingleQueuePosting) {
 
 TEST_F(TaskQueueManagerTest, MultiQueuePosting) {
   Initialize(3u);
-  EXPECT_EQ(3u, selector_->work_queues().size());
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runners[3] = {
@@ -141,7 +141,6 @@ TEST_F(TaskQueueManagerTest, MultiQueuePosting) {
 
 TEST_F(TaskQueueManagerTest, NonNestableTaskPosting) {
   InitializeWithRealMessageLoop(1u);
-  EXPECT_EQ(1u, selector_->work_queues().size());
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -157,7 +156,6 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskPosting) {
 
 TEST_F(TaskQueueManagerTest, NonNestableTaskExecutesInExpectedOrder) {
   InitializeWithRealMessageLoop(1u);
-  EXPECT_EQ(1u, selector_->work_queues().size());
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -181,7 +179,6 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskExecutesInExpectedOrder) {
 
 TEST_F(TaskQueueManagerTest, NonNestableTaskDoesntExecuteInNestedLoop) {
   InitializeWithRealMessageLoop(1u);
-  EXPECT_EQ(1u, selector_->work_queues().size());
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -402,7 +399,6 @@ void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
 
 TEST_F(TaskQueueManagerTest, ReentrantPosting) {
   Initialize(1u);
-  EXPECT_EQ(1u, selector_->work_queues().size());
 
   std::vector<int> run_order;
   scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -457,18 +453,22 @@ TEST_F(TaskQueueManagerTest, PostFromThread) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
-void RePostingTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner) {
+void RePostingTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
+                       int* run_count) {
+  (*run_count)++;
   runner->PostTask(
-      FROM_HERE, Bind(&RePostingTestTask, base::Unretained(runner.get())));
+      FROM_HERE,
+      Bind(&RePostingTestTask, base::Unretained(runner.get()), run_count));
 }
 
 TEST_F(TaskQueueManagerTest, DoWorkCantPostItselfMultipleTimes) {
   Initialize(1u);
-
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       manager_->TaskRunnerForQueue(0);
 
-  runner->PostTask(FROM_HERE, base::Bind(&RePostingTestTask, runner));
+  int run_count = 0;
+  runner->PostTask(FROM_HERE,
+                   base::Bind(&RePostingTestTask, runner, &run_count));
 
   selector_->AppendQueueToService(0);
   selector_->AppendQueueToService(0);
@@ -478,6 +478,7 @@ TEST_F(TaskQueueManagerTest, DoWorkCantPostItselfMultipleTimes) {
   // NOTE without the executing_task_ check in MaybePostDoWorkOnMainRunner there
   // will be two tasks here.
   EXPECT_EQ(1u, test_task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1, run_count);
 }
 
 TEST_F(TaskQueueManagerTest, PostFromNestedRunloop) {
@@ -583,9 +584,8 @@ TEST_F(TaskQueueManagerTest, InterruptWorkBatchForDelayedTask) {
   EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
 }
 
-TEST_F(TaskQueueManagerTest, AutoPumpOnWakeup) {
+TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeup) {
   Initialize(2u);
-  EXPECT_EQ(2u, selector_->work_queues().size());
   manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
 
   std::vector<int> run_order;
@@ -610,9 +610,8 @@ TEST_F(TaskQueueManagerTest, AutoPumpOnWakeup) {
   EXPECT_THAT(run_order, ElementsAre(3, 1, 2));
 }
 
-TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupWhenAlreadyAwake) {
+TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupWhenAlreadyAwake) {
   Initialize(2u);
-  EXPECT_EQ(2u, selector_->work_queues().size());
   manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
 
   std::vector<int> run_order;
@@ -622,15 +621,15 @@ TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupWhenAlreadyAwake) {
   selector_->AppendQueueToService(1);
   selector_->AppendQueueToService(0);
 
-  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
   test_task_runner_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));  // TQM was already awake.
+  EXPECT_THAT(run_order, ElementsAre(2, 1));  // TQM was already awake.
 }
 
-TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupTriggeredByManuallyPumpedQueue) {
+TEST_F(TaskQueueManagerTest,
+       AutoPumpAfterWakeupTriggeredByManuallyPumpedQueue) {
   Initialize(2u);
-  EXPECT_EQ(2u, selector_->work_queues().size());
   manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
   manager_->SetPumpPolicy(1, TaskQueueManager::PumpPolicy::MANUAL);
 
@@ -654,6 +653,104 @@ TEST_F(TaskQueueManagerTest, AutoPumpOnWakeupTriggeredByManuallyPumpedQueue) {
   test_task_runner_->RunUntilIdle();
   // Executing a task on an auto pumped queue should wake the TQM.
   EXPECT_THAT(run_order, ElementsAre(2, 1));
+}
+
+void TestPostingTask(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                     base::Closure task) {
+  task_runner->PostTask(FROM_HERE, task);
+}
+
+TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupFromTask) {
+  Initialize(2u);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(0);
+
+  // Check that a task which posts a task to an auto pump after wakeup queue
+  // doesn't cause the queue to wake up.
+  base::Closure after_wakeup_task = base::Bind(&TestTask, 1, &run_order);
+  runners[1]->PostTask(
+      FROM_HERE,
+      base::Bind(&TestPostingTask, runners[0], after_wakeup_task));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  // Wake up the queue.
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(2, 1));
+}
+
+TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupFromMultipleTasks) {
+  Initialize(2u);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+
+  // Check that a task which posts a task to an auto pump after wakeup queue
+  // doesn't cause the queue to wake up.
+  base::Closure after_wakeup_task_1 = base::Bind(&TestTask, 1, &run_order);
+  base::Closure after_wakeup_task_2 = base::Bind(&TestTask, 2, &run_order);
+  runners[1]->PostTask(
+      FROM_HERE,
+      base::Bind(&TestPostingTask, runners[0], after_wakeup_task_1));
+  runners[1]->PostTask(
+      FROM_HERE,
+      base::Bind(&TestPostingTask, runners[0], after_wakeup_task_2));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  // Wake up the queue.
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(3, 1, 2));
+}
+
+void NullTestTask() {
+}
+
+TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupBecomesQuiescent) {
+  Initialize(2u);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
+
+  int run_count = 0;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+  // Append extra service queue '0' entries to the selector otherwise test will
+  // finish even if the RePostingTestTask woke each other up.
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+
+  // Check that if multiple tasks reposts themselves onto a pump-after-wakeup
+  // queue they don't wake each other and will eventually stop when no other
+  // tasks execute.
+  runners[0]->PostTask(FROM_HERE,
+                       base::Bind(&RePostingTestTask, runners[0], &run_count));
+  runners[0]->PostTask(FROM_HERE,
+                       base::Bind(&RePostingTestTask, runners[0], &run_count));
+  runners[1]->PostTask(FROM_HERE, base::Bind(&NullTestTask));
+  test_task_runner_->RunUntilIdle();
+  // The reposting tasks posted to the after wakeup queue shouldn't have woken
+  // each other up.
+  EXPECT_EQ(2, run_count);
 }
 
 class MockTaskObserver : public base::MessageLoop::TaskObserver {
