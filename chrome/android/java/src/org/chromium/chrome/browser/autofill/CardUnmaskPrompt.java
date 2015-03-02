@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Build;
 import android.os.Handler;
+import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -101,8 +102,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                           .setView(v)
                           .setNegativeButton(R.string.cancel, null)
                           .setPositiveButton(R.string.card_unmask_confirm_button, null)
-                          .setOnDismissListener(this)
                           .create();
+        mDialog.setOnDismissListener(this);
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -168,6 +169,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
             mVerificationView.setText("Your card is verified");
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
+                @Override
                 public void run() {
                     dismiss();
                 }
@@ -223,7 +225,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mMonthInput.setEnabled(enabled);
         mYearInput.setEnabled(enabled);
         mMainContents.setAlpha(enabled ? 1.0f : 0.15f);
-        mMainContents.setImportantForAccessibility(
+        ViewCompat.setImportantForAccessibility(mMainContents,
                 enabled ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
                         : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         ((ViewGroup) mMainContents).setDescendantFocusability(

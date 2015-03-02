@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -107,9 +108,9 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
         }
 
         // Hide uninteresting views from accessibility.
-        ratingView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        ViewCompat.setImportantForAccessibility(ratingView, View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         if (mIconView != null) {
-            mIconView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            ViewCompat.setImportantForAccessibility(mIconView, View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         }
 
         // Set up clicking on the controls to bring up the app details.
