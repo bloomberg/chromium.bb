@@ -93,7 +93,7 @@ class Top25SmoothPageSet(page_set_module.PageSet):
   def __init__(self):
     super(Top25SmoothPageSet, self).__init__(
         user_agent_type='desktop',
-        archive_data_file='data/top_25.json',
+        archive_data_file='data/top_25_smooth.json',
         bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
