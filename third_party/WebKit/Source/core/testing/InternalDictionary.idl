@@ -4,9 +4,7 @@
 
 enum InternalEnum { "foo", "bar", "baz" };
 
-[
-    TypeChecking=Unrestricted,
-] dictionary InternalDictionary {
+dictionary InternalDictionary {
     long longMember;
     [Clamp] long longMemberWithClamp;
     [EnforceRange] long longMemberWithEnforceRange;

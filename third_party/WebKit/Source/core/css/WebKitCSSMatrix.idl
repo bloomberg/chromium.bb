@@ -29,7 +29,6 @@
     ConstructorCallWith=ExecutionContext,
     ImplementedAs=CSSMatrix,
     RaisesException=Constructor,
-    TypeChecking=Unrestricted,
     WillBeGarbageCollected
 ] interface WebKitCSSMatrix {
 

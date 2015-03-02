@@ -28,9 +28,7 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 // https://dom.spec.whatwg.org/#interface-document
 
 // FIXME: Document should have a constructor.
-[
-    TypeChecking=Unrestricted,
-] interface Document : Node {
+interface Document : Node {
     readonly attribute DOMImplementation implementation;
     readonly attribute DOMString URL;
     // FIXME: documentURI should not be nullable.

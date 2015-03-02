@@ -5,7 +5,6 @@
 [
     ImplementedAs=AnimationNodeTiming,
     RuntimeEnabled=WebAnimationsAPI,
-    TypeChecking=Unrestricted,
     WillBeGarbageCollected,
 ] interface Timing {
     attribute double delay;

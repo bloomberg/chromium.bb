@@ -24,7 +24,6 @@
  */
 
 [
-    TypeChecking=Unrestricted,
     WillBeGarbageCollected,
 ] interface InternalSettings : InternalSettingsGenerated {
     // All methods which access Page::settings() can raise an exception

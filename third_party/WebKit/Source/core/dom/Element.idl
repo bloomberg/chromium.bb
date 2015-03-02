@@ -20,9 +20,7 @@
 
 // https://dom.spec.whatwg.org/#interface-element
 
-[
-    TypeChecking=Unrestricted,
-] interface Element : Node {
+interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
     // FIXME: localName/tagName should not be nullable.

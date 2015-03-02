@@ -4,7 +4,6 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-    TypeChecking=Unrestricted,
     WillBeGarbageCollected,
 ] interface AnimationTimeline {
     attribute double? currentTime;

@@ -26,7 +26,6 @@
 [
     ActiveDOMObject,
     RuntimeEnabled=Media,
-    TypeChecking=Unrestricted,
 ] interface HTMLMediaElement : HTMLElement {
 
     // error state

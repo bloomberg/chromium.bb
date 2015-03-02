@@ -4,9 +4,7 @@
 
 // http://www.w3.org/TR/web-animations/#the-animationplayerevent-interface
 
-[
-    TypeChecking=Unrestricted,
-] dictionary AnimationPlayerEventInit : EventInit {
+dictionary AnimationPlayerEventInit : EventInit {
     double? currentTime = null;
     double? timelineTime = null;
 };
