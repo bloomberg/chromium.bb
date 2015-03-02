@@ -7116,6 +7116,19 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
     WebFrame* targetFrame = mainFrame()->firstChild()->nextSibling();
     targetFrame->swap(remoteFrame);
+    // FIXME: This cleanup should be unnecessary, but the interaction between frame detach
+    // and swap is completely broken atm. swap() calls detachChildren() on the frame being
+    // swapped out, and frame B has a child. When the child of B is detached, it schedules a
+    // FrameLoader timer to check for load completion in its parent.
+    // Other tests end up spinning the message loop (e.g. to wait for load completion of
+    // another test page, so this timer callback is processed before FrameHost and Page are
+    // destroyed by the reset() at the end of the test case. However, this test does not spin
+    // the event loop in its body, so the timer task remains in the queue and ends up running
+    // in the setup for the following test. Since the FrameHost/Page for the associated
+    // FrameLoader have already been destroyed, this leads to crashes/use-after-frees. To
+    // prevent that, manually call detach() on the Frame to release its resources and cancel
+    // pending callbacks.
+    toCoreFrame(targetFrame)->detach();
     remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
     v8::Local<v8::Value> remoteWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
         "document.querySelector('#frame2').contentWindow;"));
@@ -7141,6 +7154,21 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     // TestWebFrameClient.
     reset();
     remoteFrame->close();
+}
+
+TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    mainFrame()->lastChild()->swap(remoteFrame);
+    remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+    v8::Local<v8::Value> remoteWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2]"));
+    EXPECT_TRUE(remoteWindow->IsObject());
+    v8::Local<v8::Value> windowLength = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window.length"));
+    ASSERT_TRUE(windowLength->IsNumber());
+    v8::Local<v8::Integer> windowLengthInteger = windowLength->ToInteger();
+    EXPECT_EQ(3, windowLengthInteger->Value());
 }
 
 class RemoteToLocalSwapWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
