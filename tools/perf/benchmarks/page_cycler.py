@@ -195,7 +195,7 @@ class PageCyclerToughLayoutCases(_PageCycler):
     return 'page_cycler.tough_layout_cases'
 
 
-# crbug.com/273986: This test is really flakey on xp.
+# crbug.com/273986: This test is flakey on Windows.
 @benchmark.Disabled('win')
 class PageCyclerTypical25(_PageCycler):
   """Page load time benchmark for a 25 typical web pages.
@@ -211,6 +211,21 @@ class PageCyclerTypical25(_PageCycler):
   def CreatePageSet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
+# crbug.com/273986: This test is flakey on Windows.
+@benchmark.Disabled('win')
+class PageCyclerOopifTypical25(_PageCycler):
+  """ A varation of the benchmark above, but running in --site-per-process
+  to allow measuring performance of out-of-process iframes.
+  """
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_oopif.typical_25'
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--site-per-process'])
+
+  def CreatePageSet(self, options):
+    return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 @benchmark.Disabled # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
@@ -218,4 +233,3 @@ class PageCyclerBigJs(_PageCycler):
   @classmethod
   def Name(cls):
     return 'page_cycler.big_js'
-
