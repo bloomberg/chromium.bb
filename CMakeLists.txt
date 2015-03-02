@@ -11,13 +11,8 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
 
 set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(LIBWEBM_LIBRARY_NAME "webm")
-if(WIN32)
-  set(LIBWEBM_LIBRARY_NAME "libwebm")
-endif(WIN32)
-
 # Libwebm section.
-add_library("${LIBWEBM_LIBRARY_NAME}" STATIC
+add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/mkvmuxer.cpp"
             "${LIBWEBM_SRC_DIR}/mkvmuxer.hpp"
             "${LIBWEBM_SRC_DIR}/mkvmuxertypes.hpp"
@@ -30,13 +25,19 @@ add_library("${LIBWEBM_LIBRARY_NAME}" STATIC
             "${LIBWEBM_SRC_DIR}/mkvwriter.cpp"
             "${LIBWEBM_SRC_DIR}/mkvwriter.hpp"
             "${LIBWEBM_SRC_DIR}/webmids.hpp")
+if(WIN32)
+  # Use libwebm and libwebm.lib for project and library name on Windows (instead
+  # webm and webm.lib).
+  set_target_properties(webm PROPERTIES PROJECT_LABEL libwebm)
+  set_target_properties(webm PROPERTIES PREFIX lib)
+endif(WIN32)
 
 include_directories("${LIBWEBM_SRC_DIR}")
 
 # Sample section.
 add_executable(sample
                "${LIBWEBM_SRC_DIR}/sample.cpp")
-target_link_libraries(sample LINK_PUBLIC "${LIBWEBM_LIBRARY_NAME}")
+target_link_libraries(sample LINK_PUBLIC webm)
 
 # Sample muxer section.
 add_executable(sample_muxer
@@ -47,11 +48,11 @@ add_executable(sample_muxer
                "${LIBWEBM_SRC_DIR}/vttreader.h"
                "${LIBWEBM_SRC_DIR}/webvttparser.cc"
                "${LIBWEBM_SRC_DIR}/webvttparser.h")
-target_link_libraries(sample_muxer LINK_PUBLIC "${LIBWEBM_LIBRARY_NAME}")
+target_link_libraries(sample_muxer LINK_PUBLIC webm)
 
 # Vttdemux section.
 add_executable(vttdemux
                "${LIBWEBM_SRC_DIR}/vttdemux.cc"
                "${LIBWEBM_SRC_DIR}/webvttparser.cc"
                "${LIBWEBM_SRC_DIR}/webvttparser.h")
-target_link_libraries(vttdemux LINK_PUBLIC "${LIBWEBM_LIBRARY_NAME}")
+target_link_libraries(vttdemux LINK_PUBLIC webm)
