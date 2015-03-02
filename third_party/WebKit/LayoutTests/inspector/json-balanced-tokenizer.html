@@ -1,0 +1,102 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+
+<script>
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testMatchQuotes(next)
+        {
+            var testStrings = [
+                {"odd back slashes with text around":"tes\\\"t"},
+                {"escaped double quotes":"\"test\""},
+                {"escaped back slash before double quote":"test\\"},
+                {1:2},
+                {"":""},
+                {"nested brackets":{}},
+                {"nested brackets with double quotes":{"":""}},
+                {"etc":{"\\":"\""}},
+                {"etc":{"\\\\":"\\"}},
+                {"etc":{"\\\\\"":"\\\\\""}}
+            ];
+
+            for (var i = 0; i < testStrings.length; ++i) {
+                var string = JSON.stringify(testStrings[i]);
+                InspectorTest.addResult("\nParsing " + string);
+                var tokenizer = new WebInspector.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest));
+                tokenizer.write(string);
+            }
+            next();
+        },
+
+        function testMatchSequenceUsingOneShot(next)
+        {
+            var testData = [
+                {"one":"one"},
+                [{"one":"one"}, {"two":"two"}],
+                [{"one":"one"}, {"two":"two"}, {"three":"three"}],
+            ];
+
+            for (var i = 0; i < testData.length; ++i) {
+                var string = JSON.stringify(testData[i]);
+                InspectorTest.addResult("\nParsing " + string);
+                var tokenizer = new WebInspector.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest));
+                tokenizer.write(string);
+            }
+            next();
+        },
+
+        function testMatchSequenceUsingMultiple(next)
+        {
+            var testData = [
+                {"one":"one"},
+                [{"one":"one"}, {"two":"two"}],
+                [{"one":"one"}, {"two":"two"}, {"three":"three"}],
+            ];
+
+            for (var i = 0; i < testData.length; ++i) {
+                var string = JSON.stringify(testData[i]);
+                InspectorTest.addResult("\nParsing " + string);
+                var tokenizer = new WebInspector.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
+                tokenizer.write(string);
+            }
+            next();
+        },
+
+        function testIncrementalWrites(next)
+        {
+            var testStrings = [
+                {"odd back slashes with text around":"tes\\\"t"},
+                {"escaped double quotes":"\"test\""},
+                {"escaped back slash before double quote":"test\\"},
+                {1:2},
+                {"":""},
+                {"nested brackets":{}},
+                {"nested brackets with double quotes":{"":""}},
+                {"etc":{"\\":"\""}},
+                {"etc":{"\\\\":"\\"}},
+                {"etc":{"\\\\\"":"\\\\\""}}
+            ];
+            var string = JSON.stringify(testStrings);
+            var tokenizer = new WebInspector.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
+            InspectorTest.addResult("\nRunning at once:");
+            tokenizer.write(string);
+
+            for (var sample of [3, 15, 50]) {
+                tokenizer = new WebInspector.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
+                InspectorTest.addResult("\nRunning by " + sample + ":");
+                for (var i = 0; i < string.length; i += sample)
+                    tokenizer.write(string.substring(i, i + sample));
+            }
+            next();
+        }
+    ]);
+}
+</script>
+
+<body onload="runTest()">
+Test WebInspector.TextUtils.BalancedJSONTokenizer.
+</p>
+</body>
+</html>
