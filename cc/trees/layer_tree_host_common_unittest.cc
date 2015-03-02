@@ -8812,5 +8812,43 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
   EXPECT_FALSE(grandchild->FilterIsAnimating());
 }
 
+// Ensures that the property tree code accounts for offsets between fixed
+// position layers and their respective containers.
+TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> grandchild =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+  root->AddChild(child);
+  child->AddChild(grandchild);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(1000, 1000), gfx::Size(50, 50), true,
+                               false);
+  SetLayerPropertiesForTesting(grandchild.get(), identity_transform,
+                               gfx::Point3F(), gfx::PointF(-1000, -1000),
+                               gfx::Size(50, 50), true, false);
+
+  root->SetMasksToBounds(true);
+  root->SetIsContainerForFixedPositionLayers(true);
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  grandchild->SetPositionConstraint(constraint);
+
+  root->SetIsContainerForFixedPositionLayers(true);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50),
+            grandchild->visible_rect_from_property_trees());
+}
+
 }  // namespace
 }  // namespace cc

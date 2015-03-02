@@ -139,8 +139,21 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   gfx::Vector2dF parent_offset;
   if (transform_parent) {
     // TODO(vollick): This is to mimic existing bugs (crbug.com/441447).
-    if (!is_fixed)
+    if (!is_fixed) {
       parent_offset = transform_parent->offset_to_transform_parent();
+    } else if (data_from_ancestor.transform_tree_parent !=
+               data_from_ancestor.transform_fixed_parent) {
+      gfx::Vector2dF fixed_offset = data_from_ancestor.transform_tree_parent
+                                        ->offset_to_transform_parent();
+      gfx::Transform parent_to_parent;
+      data_from_ancestor.transform_tree->ComputeTransform(
+          data_from_ancestor.transform_tree_parent->transform_tree_index(),
+          data_from_ancestor.transform_fixed_parent->transform_tree_index(),
+          &parent_to_parent);
+
+      fixed_offset += parent_to_parent.To2dTranslation();
+      parent_offset += fixed_offset;
+    }
 
     gfx::Transform to_parent;
     Layer* source = data_from_ancestor.transform_tree_parent;
