@@ -347,6 +347,7 @@ interface TestObject {
     void voidMethodArrayLongArg(long[] arrayLongArg);
     void voidMethodArrayStringArg(DOMString[] arrayStringArg);
     void voidMethodArrayTestInterfaceEmptyArg(TestInterfaceEmpty[] arrayTestInterfaceEmptyArg);
+    void voidMethodNullableArrayLongArg(long[]? arrayLongArg);
     // Sequences
     sequence<long> longSequenceMethod();
     sequence<DOMString> stringSequenceMethod();
@@ -355,6 +356,7 @@ interface TestObject {
     void voidMethodSequenceStringArg(sequence<DOMString> stringSequenceArg);
     void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> testInterfaceEmptySequenceArg);
     void voidMethodSequenceSequenceDOMStringArg(sequence<sequence<DOMString>> stringSequenceSequenceArg);
+    void voidMethodNullableSequenceLongArg(sequence<long>? longSequenceArg);
     // Nullable types
     long? nullableLongMethod();
     DOMString? nullableStringMethod();

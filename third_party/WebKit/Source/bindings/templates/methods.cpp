@@ -178,6 +178,10 @@ if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 }
 {% endif %}{# not argument.use_permissive_dictionary_conversion #}
 {{v8_value_to_local_cpp_value(argument)}}
+{% elif argument.is_explicit_nullable %}
+if (!isUndefinedOrNull(info[{{argument.index}}])) {
+    {{v8_value_to_local_cpp_value(argument) | indent}}
+}
 {% else %}{# argument.is_nullable #}
 {{v8_value_to_local_cpp_value(argument)}}
 {% endif %}{# argument.is_nullable #}

@@ -211,10 +211,14 @@ def argument_context(interface, method, argument, index):
         raise Exception('Private scripts supports only primitive types and DOM wrappers.')
 
     set_default_value = argument.set_default_value
-    return {
-        'cpp_type': idl_type.cpp_type_args(extended_attributes=extended_attributes,
+    this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes,
                                            raw_type=True,
-                                           used_as_variadic_argument=argument.is_variadic),
+                                           used_as_variadic_argument=argument.is_variadic)
+    return {
+        'cpp_type': (
+            v8_types.cpp_template_type('Nullable', this_cpp_type)
+            if idl_type.is_explicit_nullable and not argument.is_variadic
+            else this_cpp_type),
         'cpp_value': this_cpp_value,
         # FIXME: check that the default value's type is compatible with the argument's
         'set_default_value': set_default_value,
@@ -231,6 +235,7 @@ def argument_context(interface, method, argument, index):
         'is_callback_interface': idl_type.is_callback_interface,
         # FIXME: Remove generic 'Dictionary' special-casing
         'is_dictionary': idl_type.is_dictionary or idl_type.base_type == 'Dictionary',
+        'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,
         'is_variadic': argument.is_variadic,
