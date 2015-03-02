@@ -793,6 +793,11 @@ Runner.updateCanvasScaling = function(canvas, opt_width, opt_height) {
     // our canvas element.
     context.scale(ratio, ratio);
     return true;
+  } else if (devicePixelRatio == 1) {
+    // Reset the canvas width / height. Fixes scaling bug when the page is
+    // zoomed and the devicePixelRatio changes accordingly.
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
   }
   return false;
 };

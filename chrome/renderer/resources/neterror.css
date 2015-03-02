@@ -58,6 +58,10 @@ a {
   position: relative;
 }
 
+.error-code {
+  display: block;
+}
+
 #content-top {
   margin: 20px;
 }
@@ -130,6 +134,12 @@ a {
   margin: auto;
 }
 
+.secondary-button {
+  -webkit-margin-end: 16px;
+  background: #d9d9d9;
+  color: #696969;
+}
+
 .hidden {
   display: none;
 }
@@ -145,12 +155,6 @@ a {
 
 .suggestion-body {
   color: #777;
-}
-
-.error-code {
-  color: #A0A0A0;
-  font-size: .825em;
-  margin-top: 15px;
 }
 
 /* Increase line height at higher resolutions. */
@@ -240,24 +244,26 @@ html[subframe] body {
 
 /* details-button is special; it's a <button> element that looks like a link. */
 #details-button {
-  background-color: inherit;
-  background-image: none;
-  border: none;
   box-shadow: none;
   min-width: 0;
-  padding: 0;
-  text-decoration: underline;
 }
 
 /* Styles for platform dependent separation of controls and details button. */
 .suggested-left > #control-buttons,
-.suggested-right > #details-button  {
+.suggested-left #stale-load-button,
+.suggested-right > #details-button {
   float: left;
 }
 
 .suggested-right > #control-buttons,
-.suggested-left > #details-button  {
+.suggested-right #stale-load-button,
+.suggested-left > #details-button {
   float: right;
+}
+
+.suggested-left .secondary-button {
+  -webkit-margin-end: 0px;
+  -webkit-margin-start: 16px;
 }
 
 #details-button.singular {

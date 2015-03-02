@@ -12,8 +12,13 @@ function toggleHelpBox() {
     detailsButton.innerText = detailsButton.hideDetailsText;
 
   // Details appears over the main content on small screens.
-  if (mobileNav)
+  if (mobileNav) {
     document.getElementById('main-content').classList.toggle('hidden');
+    var runnerContainer = document.querySelector('.runner-container');
+    if (runnerContainer) {
+      runnerContainer.classList.toggle('hidden');
+    }
+  }
 }
 
 function diagnoseErrors() {
@@ -142,7 +147,6 @@ function onDocumentLoad() {
   if (loadTimeData.valueExists('summary') &&
           !loadTimeData.getValue('summary').msg) {
     detailsButton.style.display = 'none';
-    document.getElementById('details').style.display = 'block';
   }
 </if>
 

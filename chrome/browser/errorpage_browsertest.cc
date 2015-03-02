@@ -941,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   EXPECT_EQ(2, interceptor()->requests());
 
   ToggleHelpBox(browser());
-  EXPECT_TRUE(IsDisplayingNetError(browser(), net::ERR_CONNECTION_RESET));
+  EXPECT_TRUE(IsDisplayingText(browser(), "error.page.auto.reload"));
 
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer.Wait();
-  EXPECT_FALSE(IsDisplayingNetError(browser(), net::ERR_CONNECTION_RESET));
+  EXPECT_FALSE(IsDisplayingText(browser(), "error.page.auto.reload"));
 }
 
 // Interceptor that fails all requests with net::ERR_ADDRESS_UNREACHABLE.

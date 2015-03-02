@@ -15,6 +15,7 @@ function onResize() {
       '(orientation: portrait), (max-width: 736px) and ' +
       '(max-height: 420px) and (orientation: landscape)';
   var detailsHidden = helpOuterBox.classList.contains('hidden');
+  var runnerContainer = document.querySelector('.runner-container');
 
   // Check for change in nav status.
   if (mobileNav != window.matchMedia(mediaQuery).matches) {
@@ -24,10 +25,16 @@ function onResize() {
     if (mobileNav) {
       mainContent.classList.toggle('hidden', !detailsHidden);
       helpOuterBox.classList.toggle('hidden', detailsHidden);
+      if (runnerContainer) {
+        runnerContainer.classList.toggle('hidden', !detailsHidden);
+      }
     } else if (!detailsHidden) {
       // Non mobile nav with visible details.
       mainContent.classList.remove('hidden');
       helpOuterBox.classList.remove('hidden');
+      if (runnerContainer) {
+        runnerContainer.classList.remove('hidden');
+      }
     }
   }
 }

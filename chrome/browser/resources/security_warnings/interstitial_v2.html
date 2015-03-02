@@ -20,6 +20,10 @@
       <div id="main-message">
         <h1 i18n-content="heading"></h1>
         <p i18n-values=".innerHTML:primaryParagraph"></p>
+        <div id="debugging">
+          <div id="error-code" class="error-code"></div>
+          <div id="error-debugging-info" class="hidden"></div>
+        </div>
       </div>
       <div id="malware-opt-in" class="hidden">
         <div class="styled-checkbox">
@@ -39,10 +43,6 @@
     <div id="details" class="hidden">
       <p i18n-values=".innerHTML:explanationParagraph"></p>
       <p i18n-values=".innerHTML:finalParagraph" id="final-paragraph"></p>
-      <div id="debugging">
-        <p id="error-code"></p>
-        <div id="error-debugging-info" class="hidden"></div>
-      </div>
     </div>
   </div>
 </body>

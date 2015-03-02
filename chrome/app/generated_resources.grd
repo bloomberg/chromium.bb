@@ -9383,7 +9383,7 @@ I don't think this site should be blocked!
       </message>
 
       <message name="IDS_ERRORPAGES_ERROR_CODE" desc="At the bottom of error pages, a non-internationalized string or numeric code is displayed for debugging purposes">
-        Error code: <ph name="ERROR_NAME">$1<ex>ERR_FILE_NOT_FOUND</ex></ph>
+        <ph name="ERROR_NAME">$1<ex>ERR_FILE_NOT_FOUND</ex></ph>
       </message>
 
       <message name="IDS_ERRORPAGES_DETAILS_TIMED_OUT" desc="The error message displayed when a page takes too long to load.">
