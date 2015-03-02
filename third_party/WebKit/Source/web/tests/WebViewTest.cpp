@@ -2253,31 +2253,31 @@ TEST_F(WebViewTest, PreferredSize)
 
 class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
-    virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool domChanged) override
+    virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override
     {
         m_wasCalled = true;
         m_tappedPosition = tappedPosition;
         m_tappedNode = tappedNode;
-        m_domChanged = domChanged;
+        m_pageChanged = pageChanged;
     }
     bool getWasCalled() const { return m_wasCalled; }
     int getTappedXPos() const { return m_tappedPosition.x(); }
     int getTappedYPos() const { return m_tappedPosition.y(); }
     bool isTappedNodeNull() const { return m_tappedNode.isNull(); }
     const WebNode& getWebNode() const { return m_tappedNode; }
-    bool getDomChanged() const { return m_domChanged; }
+    bool getPageChanged() const { return m_pageChanged; }
     void reset()
     {
         m_wasCalled = false;
         m_tappedPosition = IntPoint();
         m_tappedNode = WebNode();
-        m_domChanged = false;
+        m_pageChanged = false;
     }
 private:
     bool m_wasCalled = false;
     IntPoint m_tappedPosition;
     WebNode m_tappedNode;
-    bool m_domChanged = false;
+    bool m_pageChanged = false;
 };
 
 TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
@@ -2304,7 +2304,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_TRUE(client.getWasCalled());
     EXPECT_EQ(144, client.getTappedXPos());
-    EXPECT_EQ(98, client.getTappedYPos());
+    EXPECT_EQ(82, client.getTappedYPos());
     EXPECT_FALSE(client.isTappedNodeNull());
     EXPECT_TRUE(client.getWebNode().isTextNode());
     // Make sure the returned text node has the parent element that was our target.
@@ -2312,6 +2312,23 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
 }
+
+#define TEST_EACH_MOUSEEVENT(handler, EXPECT) \
+frame->executeScript(WebScriptSource("setTest('mousedown-" handler "');")); \
+EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_##EXPECT(client.getPageChanged()); \
+client.reset(); \
+frame->executeScript(WebScriptSource("setTest('mouseup-" handler "');")); \
+EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_##EXPECT(client.getPageChanged()); \
+client.reset(); \
+frame->executeScript(WebScriptSource("setTest('mousemove-" handler "');")); \
+EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_##EXPECT(client.getPageChanged()); \
+client.reset(); \
+frame->executeScript(WebScriptSource("setTest('click-" handler "');")); \
+EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_##EXPECT(client.getPageChanged());
 
 TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom)
 {
@@ -2325,34 +2342,46 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom)
     runPendingTasks();
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
 
-    // Test mouse-down mutating.
-    frame->executeScript(WebScriptSource("setTest('mousedown-mutateDom');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_TRUE(client.getDomChanged());
-
-    // Test mouse-up mutating.
-    client.reset();
-    frame->executeScript(WebScriptSource("setTest('mouseup-mutateDom');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_TRUE(client.getDomChanged());
-
-    // Test mouse-move mutating.
-    client.reset();
-    frame->executeScript(WebScriptSource("setTest('mousemove-mutateDom');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_TRUE(client.getDomChanged());
-
-    // Test click mutating.
-    client.reset();
-    frame->executeScript(WebScriptSource("setTest('click-mutateDom');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_TRUE(client.getDomChanged());
+    // Test dom mutation.
+    TEST_EACH_MOUSEEVENT("mutateDom", TRUE);
 
     // Test without any DOM mutation.
     client.reset();
     frame->executeScript(WebScriptSource("setTest('none');"));
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_FALSE(client.getDomChanged());
+    EXPECT_FALSE(client.getPageChanged());
+
+    m_webViewHelper.reset(); // Remove dependency on locally scoped client.
+}
+
+TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle)
+{
+    std::string testFile = "show_unhandled_tap.html";
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(testFile));
+    UnhandledTapWebViewClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + testFile, true, 0, &client);
+    webView->resize(WebSize(500, 300));
+    webView->layout();
+    runPendingTasks();
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+
+    // Test style mutation.
+    TEST_EACH_MOUSEEVENT("mutateStyle", TRUE);
+
+    // Test checkbox:indeterminate style mutation.
+    TEST_EACH_MOUSEEVENT("mutateIndeterminate", TRUE);
+
+    // Test click div with :active style but it is not covered for now.
+    client.reset();
+    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("style_active")));
+    EXPECT_FALSE(client.getPageChanged());
+
+    // Test without any style mutation.
+    client.reset();
+    frame->executeScript(WebScriptSource("setTest('none');"));
+    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_FALSE(client.getPageChanged());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
 }
@@ -2369,22 +2398,8 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithPreventDefault)
     runPendingTasks();
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
 
-    // Test mouse-down swallowing.
-    frame->executeScript(WebScriptSource("setTest('mousedown-preventDefault');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_FALSE(client.getWasCalled());
-
-    // Test mouse-up swallowing.
-    client.reset();
-    frame->executeScript(WebScriptSource("setTest('mouseup-preventDefault');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_FALSE(client.getWasCalled());
-
-    // Test click swallowing.
-    client.reset();
-    frame->executeScript(WebScriptSource("setTest('click-preventDefault');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
-    EXPECT_FALSE(client.getWasCalled());
+    // Testswallowing.
+    TEST_EACH_MOUSEEVENT("preventDefault", FALSE);
 
     // Test without any preventDefault.
     client.reset();

@@ -422,6 +422,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_hasAutofocused(false)
     , m_clearFocusedElementTimer(this, &Document::clearFocusedElementTimerFired)
     , m_domTreeVersion(++s_globalTreeVersion)
+    , m_styleVersion(0)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
     , m_visitedLinkState(VisitedLinkState::create(*this))

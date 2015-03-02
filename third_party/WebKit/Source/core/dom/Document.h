@@ -825,6 +825,9 @@ public:
     void incDOMTreeVersion() { ASSERT(m_lifecycle.stateAllowsTreeMutations()); m_domTreeVersion = ++s_globalTreeVersion; }
     uint64_t domTreeVersion() const { return m_domTreeVersion; }
 
+    void incStyleVersion() { ++m_styleVersion; }
+    uint64_t styleVersion() const { return m_styleVersion; }
+
     enum PendingSheetLayout { NoLayoutWithPendingSheets, DidLayoutWithPendingSheets, IgnoreLayoutWithPendingSheets };
 
     bool didLayoutWithPendingStylesheets() const { return m_pendingSheetLayout == DidLayoutWithPendingSheets; }
@@ -1226,6 +1229,8 @@ private:
 
     uint64_t m_domTreeVersion;
     static uint64_t s_globalTreeVersion;
+
+    uint64_t m_styleVersion;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator>> m_nodeIterators;
     using AttachedRangeSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Range>>;

@@ -2,38 +2,37 @@
 <html>
 <head>
 <style>
-    @font-face {
-        font-family: ahem;
-        src: url(Ahem.ttf);
-    }
-    * {
-        font-family: ahem;
-        font-size: 16px;
-    }
+@font-face {
+  font-family: ahem;
+  src: url(Ahem.ttf);
+}
+* {
+  font-family: ahem;
+  font-size: 16px;
+}
+#style_active:active {
+  background-color: blue;
+}
+:indeterminate + span {
+  background-color: blue;
+}
 </style>
 </head>
 <body>
-<p id="contenteditable" contenteditable="true">This is an editable paragraph.</p>
-<p id="target-container" style="position: absolute; left: 8px; top: 66px; width: 400px; height: 30px;">
-<span id="target">
-This has multiple listeners.
-</span>
-</p>
+<div style="position: absolute; left: 8px; top: 66px; width: 400px; height: 30px;">
+<span id="target">This has multiple listeners.</span>
 <div id="mutate">This block gets mutated to change the DOM.</div>
-<p style="position: absolute; left: 8px; top: 400px; width: 400px; height: 30px;">
-<span id="bottom">Bottom.
-</span>
-</p>
+<div id="style_active">This block gets red if active</div>
+<input id="checkbox" type="checkbox"><span>indeterminate checkbox</span>
+</div>
+
+<p style="position: absolute; left: 8px; top: 400px; width: 400px; height: 30px;"><span id="bottom">Bottom.</span></p>
+
 <script>
 var test;
 var mutations = 0;
 function setTest(whichTest) {
   test = whichTest;
-}
-function mutateDom() {
-  var mutate = document.getElementById('mutate');
-  mutations++;
-  mutate.textContent = 'This block HAS BEEN mutated ' + mutations + ' times!';
 }
 function hasTest(operation, handler) {
   var candidate = operation + '-' + handler;
@@ -43,7 +42,12 @@ function hasTest(operation, handler) {
 function handle(event) {
   var operation = event.type;
   if (hasTest(operation, 'mutateDom')) {
-    mutateDom();
+    mutations++;
+    mutate.textContent = 'This block HAS BEEN mutated ' + mutations + ' times!';
+  } else if (hasTest(operation, 'mutateStyle')) {
+    mutate.style.color = mutate.style.color == "red" ? "blue" : "red";
+  } else if (hasTest(operation, 'mutateIndeterminate')) {
+    checkbox.indeterminate ^= true;
   } else if (hasTest(operation, 'preventDefault')) {
     event.preventDefault();
   }

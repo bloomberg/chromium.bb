@@ -2247,6 +2247,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     HitTestRequest::HitTestRequestType hitType = getHitTypeForGestureType(gestureEvent.type());
     uint64_t preDispatchDomTreeVersion = m_frame->document()->domTreeVersion();
+    uint64_t preDispatchStyleVersion = m_frame->document()->styleVersion();
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
@@ -2331,8 +2332,9 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 
     bool swallowed = swallowMouseDownEvent | swallowMouseUpEvent | swallowClickEvent;
     if (!swallowed && tappedNode) {
-        bool pageChanged = preDispatchDomTreeVersion != m_frame->document()->domTreeVersion();
-        m_frame->chromeClient().showUnhandledTapUIIfNeeded(tappedPosition, tappedNode.get(), pageChanged);
+        bool domTreeChanged = preDispatchDomTreeVersion != m_frame->document()->domTreeVersion();
+        bool styleChanged = preDispatchStyleVersion != m_frame->document()->styleVersion();
+        m_frame->chromeClient().showUnhandledTapUIIfNeeded(tappedPosition, tappedNode.get(), domTreeChanged || styleChanged);
     }
     return swallowed;
 }
