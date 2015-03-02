@@ -112,16 +112,10 @@ remoting.FallbackSignalStrategy = function(primary,
 
   /**
    * @type {Array<{strategyType: remoting.SignalStrategy.Type,
-                    progress: remoting.FallbackSignalStrategy.Progress,
-   *                elapsed: number}>}
+                    progress: remoting.FallbackSignalStrategy.Progress}>}
    */
   this.connectionSetupResults_ = [];
 
-  /**
-   * @type {number}
-   * @private
-   */
-  this.startTime_ = 0;
 };
 
 /**
@@ -178,7 +172,6 @@ remoting.FallbackSignalStrategy.prototype.connect =
   this.username_ = username;
   this.authToken_ = authToken;
   this.state_ = this.State.PRIMARY_PENDING;
-  this.startTime_ = new Date().getTime();
   this.primary_.setIncomingStanzaCallback(this.onIncomingStanzaCallback_);
   this.primary_.connect(server, username, authToken);
   this.primaryConnectTimerId_ =
@@ -211,8 +204,7 @@ remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResultsInternal_ =
   for (var i = 0; i < this.connectionSetupResults_.length; ++i) {
     var result = this.connectionSetupResults_[i];
     this.logToServer_.logSignalStrategyProgress(result.strategyType,
-                                                result.progress,
-                                                result.elapsed);
+                                                result.progress);
   }
   this.connectionSetupResults_ = [];
 };
@@ -391,8 +383,7 @@ remoting.FallbackSignalStrategy.prototype.updateProgress_ = function(
       progress);
   this.connectionSetupResults_.push({
     'strategyType': strategy.getType(),
-    'progress': progress,
-    'elapsed': new Date().getTime() - this.startTime_
+    'progress': progress
   });
   if (this.logToServer_) {
     this.sendConnectionSetupResultsInternal_();
