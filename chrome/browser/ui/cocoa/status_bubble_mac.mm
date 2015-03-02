@@ -177,16 +177,18 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   url_ = url;
   languages_ = languages;
 
-  NSRect frame = [window_ frame];
+  CGFloat bubble_width = NSWidth([window_ frame]);
 
   // Reset frame size when bubble is hidden.
   if (state_ == kBubbleHidden) {
     is_expanded_ = false;
-    frame.size.width = NSWidth(CalculateWindowFrame(/*expand=*/false));
+    NSRect frame = [window_ frame];
+    frame.size = ui::kWindowSizeDeterminedLater.size;
     [window_ setFrame:frame display:NO];
+    bubble_width = NSWidth(CalculateWindowFrame(/*expand=*/false));
   }
 
-  int text_width = static_cast<int>(NSWidth(frame) -
+  int text_width = static_cast<int>(bubble_width -
                                     kBubbleViewTextPositionX -
                                     kTextPadding);
 
@@ -260,8 +262,10 @@ void StatusBubbleMac::SetText(const base::string16& text, bool is_url) {
     show = false;
 
   if (show) {
-    UpdateSizeAndPosition();
+    // Call StartShowing() first to update the current bubble state before
+    // calculating a new size.
     StartShowing();
+    UpdateSizeAndPosition();
   } else {
     StartHiding();
   }
@@ -284,21 +288,22 @@ void StatusBubbleMac::Hide() {
     }
   }
 
+  NSRect frame = CalculateWindowFrame(/*expand=*/false);
   if (!fade_out) {
     // No animation is in progress, so the opacity can be set directly.
     [window_ setAlphaValue:0.0];
     SetState(kBubbleHidden);
+    frame.size = ui::kWindowSizeDeterminedLater.size;
   }
 
   // Stop any width animation and reset the bubble size.
   if (!immediate_) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
-    [[window_ animator] setFrame:CalculateWindowFrame(/*expand=*/false)
-                         display:NO];
+    [[window_ animator] setFrame:frame display:NO];
     [NSAnimationContext endGrouping];
   } else {
-    [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
+    [window_ setFrame:frame display:NO];
   }
 
   [status_text_ release];
@@ -716,6 +721,14 @@ void StatusBubbleMac::ExpandBubble() {
 void StatusBubbleMac::UpdateSizeAndPosition() {
   if (!window_)
     return;
+
+  // Hidden bubbles always have size equal to ui::kWindowSizeDeterminedLater.
+  if (state_ == kBubbleHidden) {
+    NSRect frame = [window_ frame];
+    frame.size = ui::kWindowSizeDeterminedLater.size;
+    [window_ setFrame:frame display:YES];
+    return;
+  }
 
   SetFrameAvoidingMouse(CalculateWindowFrame(/*expand=*/false),
                         GetMouseLocation());
