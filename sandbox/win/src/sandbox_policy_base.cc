@@ -98,7 +98,8 @@ PolicyBase::PolicyBase()
       mitigations_(0),
       delayed_mitigations_(0),
       policy_maker_(NULL),
-      policy_(NULL) {
+      policy_(NULL),
+      lowbox_sid_(NULL) {
   ::InitializeCriticalSection(&lock_);
   // Initialize the IPC dispatcher array.
   memset(&ipc_targets_, NULL, sizeof(ipc_targets_));
@@ -152,6 +153,10 @@ PolicyBase::~PolicyBase() {
   delete ipc_targets_[IPC_DUPLICATEHANDLEPROXY_TAG];
   delete policy_maker_;
   delete policy_;
+
+  if (lowbox_sid_)
+    ::LocalFree(lowbox_sid_);
+
   ::DeleteCriticalSection(&lock_);
 }
 
@@ -310,6 +315,10 @@ ResultCode PolicyBase::SetAppContainer(const wchar_t* sid) {
   if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
     return SBOX_ALL_OK;
 
+  // SetLowBox and SetAppContainer are mutually exclusive.
+  if (lowbox_sid_)
+    return SBOX_ERROR_UNSUPPORTED;
+
   // Windows refuses to work with an impersonation token for a process inside
   // an AppContainer. If the caller wants to use a more privileged initial
   // token, or if the lockdown level will prevent the process from starting,
@@ -328,6 +337,25 @@ ResultCode PolicyBase::SetAppContainer(const wchar_t* sid) {
 
 ResultCode PolicyBase::SetCapability(const wchar_t* sid) {
   capabilities_.push_back(sid);
+  return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
+  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
+    return SBOX_ERROR_UNSUPPORTED;
+
+  // SetLowBox and SetAppContainer are mutually exclusive.
+  if (appcontainer_list_.get())
+    return SBOX_ERROR_UNSUPPORTED;
+
+  DCHECK(sid);
+
+  if (lowbox_sid_)
+    return SBOX_ERROR_BAD_PARAMS;
+
+  if (!ConvertStringSidToSid(sid, &lowbox_sid_))
+    return SBOX_ERROR_GENERIC;
+
   return SBOX_ALL_OK;
 }
 
@@ -448,6 +476,11 @@ ResultCode PolicyBase::MakeJobObject(HANDLE* job) {
 }
 
 ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
+  if (appcontainer_list_.get() && appcontainer_list_->HasAppContainer() &&
+      lowbox_sid_) {
+    return SBOX_ERROR_BAD_PARAMS;
+  }
+
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
   DWORD result = CreateRestrictedToken(lockdown, lockdown_level_,
@@ -476,6 +509,9 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
     alternate_desktop_integrity_level_label_ = integrity_level_;
   }
 
+  // We are maintaining two mutually exclusive approaches. One is to start an
+  // AppContainer process through StartupInfoEx and other is replacing
+  // existing token with LowBox token after process creation.
   if (appcontainer_list_.get() && appcontainer_list_->HasAppContainer()) {
     // Windows refuses to work with an impersonation token. See SetAppContainer
     // implementation for more details.
@@ -484,6 +520,21 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
 
     *initial = INVALID_HANDLE_VALUE;
     return SBOX_ALL_OK;
+  } else if (lowbox_sid_) {
+    NtCreateLowBoxToken CreateLowBoxToken = NULL;
+    ResolveNTFunctionPtr("NtCreateLowBoxToken", &CreateLowBoxToken);
+    OBJECT_ATTRIBUTES obj_attr;
+    InitializeObjectAttributes(&obj_attr, NULL, 0, NULL, NULL);
+    HANDLE token_lowbox = NULL;
+    NTSTATUS status = CreateLowBoxToken(&token_lowbox, *lockdown,
+                                        TOKEN_ALL_ACCESS, &obj_attr,
+                                        lowbox_sid_, 0, NULL, 0, NULL);
+    if (!NT_SUCCESS(status))
+      return SBOX_ERROR_GENERIC;
+
+    DCHECK(token_lowbox);
+    ::CloseHandle(*lockdown);
+    *lockdown = token_lowbox;
   }
 
   // Create the 'better' token. We use this token as the one that the main
@@ -503,6 +554,10 @@ const AppContainerAttributes* PolicyBase::GetAppContainer() const {
     return NULL;
 
   return appcontainer_list_.get();
+}
+
+const PSID PolicyBase::GetLowBoxSid() const {
+  return lowbox_sid_;
 }
 
 bool PolicyBase::AddTarget(TargetProcess* target) {

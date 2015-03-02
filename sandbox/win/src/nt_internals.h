@@ -656,5 +656,29 @@ typedef NTSTATUS (WINAPI* NtOpenSymbolicLinkObjectFunction) (
 #define DIRECTORY_CREATE_SUBDIRECTORY 0x0008
 #define DIRECTORY_ALL_ACCESS          0x000F
 
+typedef NTSTATUS (WINAPI* NtCreateLowBoxToken)(
+    OUT PHANDLE token,
+    IN HANDLE original_handle,
+    IN ACCESS_MASK access,
+    IN POBJECT_ATTRIBUTES object_attribute,
+    IN PSID appcontainer_sid,
+    IN DWORD capabilityCount,
+    IN PSID_AND_ATTRIBUTES capabilities,
+    IN DWORD handle_count,
+    IN PHANDLE handles);
+
+typedef NTSTATUS(WINAPI *NtSetInformationProcess)(
+    IN HANDLE process_handle,
+    IN ULONG info_class,
+    IN PVOID process_information,
+    IN ULONG information_length);
+
+struct PROCESS_ACCESS_TOKEN {
+  HANDLE token;
+  HANDLE thread;
+};
+
+const unsigned int NtProcessInformationAccessToken = 9;
+
 #endif  // SANDBOX_WIN_SRC_NT_INTERNALS_H__
 

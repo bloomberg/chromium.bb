@@ -45,9 +45,12 @@ class TargetProcess {
   void Release() {}
 
   // Creates the new target process. The process is created suspended.
+  // When |set_lockdown_token_after_create| is set, the lockdown token
+  // is replaced after the process is created
   DWORD Create(const wchar_t* exe_path,
                const wchar_t* command_line,
                bool inherit_handles,
+               bool set_lockdown_token_after_create,
                const base::win::StartupInformation& startup_info,
                base::win::ScopedProcessInformation* target_info);
 

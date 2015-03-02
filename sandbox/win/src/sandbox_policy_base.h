@@ -56,6 +56,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
       IntegrityLevel integrity_level) override;
   virtual ResultCode SetAppContainer(const wchar_t* sid) override;
   virtual ResultCode SetCapability(const wchar_t* sid) override;
+  virtual ResultCode SetLowBox(const wchar_t* sid) override;
   virtual ResultCode SetProcessMitigations(MitigationFlags flags) override;
   virtual MitigationFlags GetProcessMitigations() override;
   virtual ResultCode SetDelayedProcessMitigations(
@@ -85,6 +86,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   ResultCode MakeTokens(HANDLE* initial, HANDLE* lockdown);
 
   const AppContainerAttributes* GetAppContainer() const;
+
+  const PSID GetLowBoxSid() const;
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
@@ -158,6 +161,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   HandleCloser handle_closer_;
   std::vector<base::string16> capabilities_;
   scoped_ptr<AppContainerAttributes> appcontainer_list_;
+  PSID lowbox_sid_;
 
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;

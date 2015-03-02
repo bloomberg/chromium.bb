@@ -183,6 +183,10 @@ class TargetPolicy {
   // Sets a capability to be enabled for the sandboxed process' AppContainer.
   virtual ResultCode SetCapability(const wchar_t* sid) = 0;
 
+  // Sets the LowBox token for sandboxed process. This is mutually exclusive
+  // with SetAppContainer method.
+  virtual ResultCode SetLowBox(const wchar_t* sid) = 0;
+
   // Sets the mitigations enabled when the process is created. Most of these
   // are implemented as attributes passed via STARTUPINFOEX. So they take
   // effect before any thread in the target executes. The declaration of
