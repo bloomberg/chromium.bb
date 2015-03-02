@@ -94,7 +94,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->common_params = CommonNavigationParams(
       entry.GetURL(), entry.GetReferrer(), entry.GetTransitionType(),
       GetNavigationType(controller->GetBrowserContext(), entry, reload_type),
-      !entry.IsViewSourceMode(), ui_timestamp, report_type);
+      !entry.IsViewSourceMode(), ui_timestamp, report_type,
+      entry.GetBaseURLForDataURL(), entry.GetHistoryURLForDataURL());
   params->commit_params = CommitNavigationParams(
       entry.GetPageState(), entry.GetIsOverridingUserAgent(), navigation_start);
   params->is_post = entry.GetHasPostData();
@@ -106,10 +107,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
             entry.GetBrowserInitiatedPostData()->size());
   }
 
-  if (!entry.GetBaseURLForDataURL().is_empty()) {
-    params->base_url_for_data_url = entry.GetBaseURLForDataURL();
-    params->history_url_for_data_url = entry.GetVirtualURL();
-  }
   params->should_replace_current_entry = entry.should_replace_entry();
   // This is used by the old performance infrastructure to set up DocumentState
   // associated with the RenderView.
@@ -733,18 +730,21 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
 
+  NavigationRequest* navigation_request =
+      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  DCHECK(navigation_request);
+  DCHECK(response ||
+         !NavigationRequest::ShouldMakeNetworkRequest(
+             navigation_request->common_params().url));
+
   // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
   // commit; they leave the frame showing the previous page.
-  if (response->head.headers.get() &&
+  if (response && response->head.headers.get() &&
       (response->head.headers->response_code() == 204 ||
        response->head.headers->response_code() == 205)) {
     CancelNavigation(frame_tree_node);
     return;
   }
-
-  NavigationRequest* navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
-  DCHECK(navigation_request);
 
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host =
@@ -864,12 +864,13 @@ void NavigatorImpl::BeginNavigation(FrameTreeNode* frame_tree_node) {
   if (!navigation_request)
     return;
 
-  // First start the request on the IO thread.
-  navigation_request->BeginNavigation();
-
-  // Then notify the RenderFrameHostManager so it can speculatively create a
-  // RenderFrameHost (and potentially a new renderer process) in parallel.
-  frame_tree_node->render_manager()->BeginNavigation(*navigation_request);
+  // Start the request.
+   if (navigation_request->BeginNavigation()) {
+    // If the request was sent to the IO thread, notify the
+    // RenderFrameHostManager so it can speculatively create a RenderFrameHost
+    // (and potentially a new renderer process) in parallel.
+    frame_tree_node->render_manager()->BeginNavigation(*navigation_request);
+  }
 }
 
 void NavigatorImpl::RecordNavigationMetrics(

@@ -50,6 +50,13 @@ int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
 }  // namespace
 
 // static
+bool NavigationRequest::ShouldMakeNetworkRequest(const GURL& url) {
+  // Data urls should not make network requests.
+  // TODO(clamy): same document navigations should not make network requests.
+  return !url.SchemeIs(url::kDataScheme);
+}
+
+// static
 scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
     const NavigationEntryImpl& entry,
@@ -90,7 +97,8 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       CommonNavigationParams(entry.GetURL(), entry.GetReferrer(),
                              entry.GetTransitionType(), navigation_type,
                              !entry.IsViewSourceMode(),ui_timestamp,
-                             report_type),
+                             report_type, entry.GetBaseURLForDataURL(),
+                             entry.GetHistoryURLForDataURL()),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type),
                             false),
@@ -158,13 +166,24 @@ NavigationRequest::NavigationRequest(
 NavigationRequest::~NavigationRequest() {
 }
 
-void NavigationRequest::BeginNavigation() {
+bool NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   state_ = STARTED;
-  loader_ = NavigationURLLoader::Create(
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      frame_tree_node_->frame_tree_node_id(), info_.Pass(), this);
+
+  if (ShouldMakeNetworkRequest(common_params_.url)) {
+    loader_ = NavigationURLLoader::Create(
+        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+        frame_tree_node_->frame_tree_node_id(), info_.Pass(), this);
+    return true;
+  }
+
+  // There is no need to make a network request for this navigation, so commit
+  // it immediately.
+  state_ = RESPONSE_STARTED;
+  frame_tree_node_->navigator()->CommitNavigation(
+      frame_tree_node_, nullptr, scoped_ptr<StreamHandle>());
+  return false;
 
   // TODO(davidben): Fire (and add as necessary) observer methods such as
   // DidStartProvisionalLoadForFrame for the navigation.

@@ -1093,22 +1093,8 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
       CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
       render_view_->history_controller()->GoToEntry(entry.Pass(), cache_policy);
     }
-  } else if (!params.base_url_for_data_url.is_empty()) {
-    // A loadData request with a specified base URL.
-    std::string mime_type, charset, data;
-    if (net::DataURL::Parse(
-            params.common_params.url, &mime_type, &charset, &data)) {
-      frame->loadData(
-          WebData(data.c_str(), data.length()),
-          WebString::fromUTF8(mime_type),
-          WebString::fromUTF8(charset),
-          params.base_url_for_data_url,
-          params.history_url_for_data_url,
-          false);
-    } else {
-      CHECK(false) << "Invalid URL passed: "
-                   << params.common_params.url.possibly_invalid_spec();
-    }
+  } else if (!params.common_params.base_url_for_data_url.is_empty()) {
+    LoadDataURL(params.common_params, frame);
   } else {
     // Navigate to the given URL.
     WebURLRequest request =
@@ -3884,6 +3870,12 @@ void RenderFrameImpl::OnCommitNavigation(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
+  if (!common_params.base_url_for_data_url.is_empty() ||
+      common_params.url.SchemeIs(url::kDataScheme)) {
+    LoadDataURL(common_params, frame_);
+    return;
+  }
+
   // Create a WebURLRequest that blink can use to get access to the body of the
   // response through a stream in the browser. Blink will then commit the
   // navigation.
@@ -4377,6 +4369,26 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
                               GetLoadFlagsForWebURLRequest(*request),
                               request->hasUserGesture()),
         GetRequestBodyForWebURLRequest(*request)));
+}
+
+void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
+                                  WebFrame* frame) {
+  // A loadData request with a specified base URL.
+  std::string mime_type, charset, data;
+  if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
+    const GURL base_url = params.base_url_for_data_url.is_empty() ?
+        params.url : params.base_url_for_data_url;
+    frame->loadData(
+        WebData(data.c_str(), data.length()),
+        WebString::fromUTF8(mime_type),
+        WebString::fromUTF8(charset),
+        base_url,
+        params.history_url_for_data_url,
+        false);
+  } else {
+    CHECK(false) << "Invalid URL passed: "
+                 << params.url.possibly_invalid_spec();
+  }
 }
 
 GURL RenderFrameImpl::GetLoadingUrl() const {

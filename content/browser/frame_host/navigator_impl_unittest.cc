@@ -941,4 +941,50 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_FALSE(rfhm->IsOnSwappedOutList(rfh1));
 }
 
+// PlzNavigate: Verify that data urls are properly handled.
+TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
+  const GURL kUrl1("http://wikipedia.org/");
+  const GURL kUrl2("data:text/html,test");
+
+  // Navigate to an initial site.
+  contents()->NavigateAndCommit(kUrl1);
+  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  // Navigate to a data url.
+  RequestNavigation(node, kUrl2);
+  NavigationRequest* navigation_request =
+      GetNavigationRequestForFrameTreeNode(node);
+  ASSERT_TRUE(navigation_request);
+  EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
+            navigation_request->state());
+  main_test_rfh()->SendBeforeUnloadACK(true);
+
+  // The request should not have been sent to the IO thread but committed
+  // immediately.
+  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED,
+            navigation_request->state());
+  EXPECT_FALSE(navigation_request->loader_for_testing());
+  TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
+  ASSERT_TRUE(speculative_rfh);
+  speculative_rfh->SendNavigate(0, kUrl2);
+  EXPECT_EQ(main_test_rfh(), speculative_rfh);
+
+  // Go back to the initial site.
+  contents()->NavigateAndCommit(kUrl1);
+
+  // Do a renderer-initiated navigation to a data url. The request should not be
+  // sent to the IO thread, nor committed.
+  TestRenderFrameHost* main_rfh = main_test_rfh();
+  main_rfh->SendBeginNavigationWithURL(kUrl2, true);
+  navigation_request = GetNavigationRequestForFrameTreeNode(node);
+  ASSERT_TRUE(navigation_request);
+  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED,
+            navigation_request->state());
+  EXPECT_FALSE(navigation_request->loader_for_testing());
+  speculative_rfh = GetSpeculativeRenderFrameHost(node);
+  ASSERT_TRUE(speculative_rfh);
+  speculative_rfh->SendNavigate(0, kUrl2);
+  EXPECT_EQ(main_test_rfh(), speculative_rfh);
+}
+
 }  // namespace content

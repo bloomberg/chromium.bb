@@ -710,6 +710,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // of the WebURLRequest.
   void BeginNavigation(blink::WebURLRequest* request);
 
+  // Loads a data url.
+  void LoadDataURL(const CommonNavigationParams& params,
+                   blink::WebFrame* frame);
+
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;
 

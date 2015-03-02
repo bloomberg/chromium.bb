@@ -225,6 +225,9 @@ class CONTENT_EXPORT NavigationEntryImpl
     frame_tree_node_id_ = frame_tree_node_id;
   }
 
+  // Returns the history URL for a data URL to use in Blink.
+  GURL GetHistoryURLForDataURL() const;
+
 #if defined(OS_ANDROID)
   base::TimeTicks intent_received_timestamp() const {
     return intent_received_timestamp_;

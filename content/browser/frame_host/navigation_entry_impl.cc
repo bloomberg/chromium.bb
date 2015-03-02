@@ -351,4 +351,8 @@ void NavigationEntryImpl::SetScreenshotPNGData(
     UMA_HISTOGRAM_MEMORY_KB("Overscroll.ScreenshotSize", screenshot_->size());
 }
 
+GURL NavigationEntryImpl::GetHistoryURLForDataURL() const {
+  return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
+}
+
 }  // namespace content

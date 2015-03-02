@@ -212,6 +212,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(allow_download)
   IPC_STRUCT_TRAITS_MEMBER(ui_timestamp)
   IPC_STRUCT_TRAITS_MEMBER(report_type)
+  IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
+  IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
@@ -283,14 +285,6 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // case, the RenderView needs to notify the browser that the clearing was
   // succesful when the navigation commits.
   IPC_STRUCT_MEMBER(bool, should_clear_history_list)
-
-  // Base URL for use in WebKit's SubstituteData.
-  // Is only used with data: URLs.
-  IPC_STRUCT_MEMBER(GURL, base_url_for_data_url)
-
-  // History URL for use in WebKit's SubstituteData.
-  // Is only used with data: URLs.
-  IPC_STRUCT_MEMBER(GURL, history_url_for_data_url)
 
   // Any redirect URLs that occurred before |url|. Useful for cross-process
   // navigations; defaults to empty.

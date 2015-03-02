@@ -38,7 +38,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          FrameMsg_Navigate_Type::Value navigation_type,
                          bool allow_download,
                          base::TimeTicks ui_timestamp,
-                         FrameMsg_UILoadMetricsReportType::Value report_type);
+                         FrameMsg_UILoadMetricsReportType::Value report_type,
+                         const GURL& base_url_for_data_url,
+                         const GURL& history_url_for_data_url);
   ~CommonNavigationParams();
 
   // The URL to navigate to.
@@ -66,6 +68,14 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // The report type to be used when recording the metric using |ui_timestamp|.
   FrameMsg_UILoadMetricsReportType::Value report_type;
+
+  // Base URL for use in Blink's SubstituteData.
+  // Is only used with data: URLs.
+  GURL base_url_for_data_url;
+
+  // History URL for use in Blink's SubstituteData.
+  // Is only used with data: URLs.
+  GURL history_url_for_data_url;
 };
 
 // PlzNavigate: parameters needed to start a navigation on the IO thread.

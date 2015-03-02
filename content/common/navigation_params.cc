@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 
 namespace content {
+
 CommonNavigationParams::CommonNavigationParams()
     : transition(ui::PAGE_TRANSITION_LINK),
       navigation_type(FrameMsg_Navigate_Type::NORMAL),
@@ -21,14 +22,18 @@ CommonNavigationParams::CommonNavigationParams(
     FrameMsg_Navigate_Type::Value navigation_type,
     bool allow_download,
     base::TimeTicks ui_timestamp,
-    FrameMsg_UILoadMetricsReportType::Value report_type)
+    FrameMsg_UILoadMetricsReportType::Value report_type,
+    const GURL& base_url_for_data_url,
+    const GURL& history_url_for_data_url)
     : url(url),
       referrer(referrer),
       transition(transition),
       navigation_type(navigation_type),
       allow_download(allow_download),
       ui_timestamp(ui_timestamp),
-      report_type(report_type) {
+      report_type(report_type),
+      base_url_for_data_url(base_url_for_data_url),
+      history_url_for_data_url(history_url_for_data_url) {
 }
 
 CommonNavigationParams::~CommonNavigationParams() {

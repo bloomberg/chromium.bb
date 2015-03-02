@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/frame_accessibility.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
@@ -1495,11 +1496,11 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
         GetProcess()->GetID(), params.common_params.url);
     if (params.common_params.url.SchemeIs(url::kDataScheme) &&
-        params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
+        params.common_params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
       // If 'data:' is used, and we have a 'file:' base url, grant access to
       // local files.
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-          GetProcess()->GetID(), params.base_url_for_data_url);
+          GetProcess()->GetID(), params.common_params.base_url_for_data_url);
     }
   }
 
@@ -1666,6 +1667,8 @@ void RenderFrameHostImpl::CommitNavigation(
     scoped_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params) {
+  DCHECK((response && body.get()) ||
+          !NavigationRequest::ShouldMakeNetworkRequest(common_params.url));
   // TODO(clamy): Check if we have to add security checks for the browser plugin
   // guests.
 
@@ -1673,9 +1676,11 @@ void RenderFrameHostImpl::CommitNavigation(
   // completing a RFH swap or unload handler.
   SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
+  const GURL body_url = body.get() ? body->GetURL() : GURL();
+  const ResourceResponseHead head = response ?
+      response->head : ResourceResponseHead();
   Send(new FrameMsg_CommitNavigation(
-      routing_id_, response->head, body->GetURL(),
-      common_params, commit_params));
+      routing_id_, head, body_url, common_params, commit_params));
   // TODO(clamy): Check if we should start the throbber for non javascript urls
   // here.
 

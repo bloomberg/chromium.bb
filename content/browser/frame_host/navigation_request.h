@@ -52,6 +52,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     FAILED,
   };
 
+  // Helper function to determine if the navigation request to |url| should be
+  // sent to the network stack.
+  static bool ShouldMakeNetworkRequest(const GURL& url);
+
   // Creates a request for a browser-intiated navigation.
   static scoped_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
@@ -70,11 +74,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   ~NavigationRequest() override;
 
-  // Called on the UI thread by the Navigator to start the navigation on the IO
-  // thread.
+  // Called on the UI thread by the Navigator to start the navigation. Returns
+  // whether a request was made on the IO thread.
   // TODO(clamy): see if ResourceRequestBody could be un-refcounted to avoid
   // threading subtleties.
-  void BeginNavigation();
+  bool BeginNavigation();
 
   const CommonNavigationParams& common_params() const { return common_params_; }
 
