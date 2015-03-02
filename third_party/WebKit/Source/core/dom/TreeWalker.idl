@@ -18,21 +18,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2
+// https://dom.spec.whatwg.org/#interface-treewalker
+
 [
     SetWrapperReferenceTo(NodeFilter filter),
     WillBeGarbageCollected,
 ] interface TreeWalker {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
-    readonly attribute NodeFilter filter;
+    readonly attribute NodeFilter? filter;
     [RaisesException=Setter] attribute Node currentNode;
 
-    [RaisesException] Node parentNode();
-    [RaisesException] Node firstChild();
-    [RaisesException] Node lastChild();
-    [RaisesException] Node previousSibling();
-    [RaisesException] Node nextSibling();
-    [RaisesException] Node previousNode();
-    [RaisesException] Node nextNode();
+    [RaisesException] Node? parentNode();
+    [RaisesException] Node? firstChild();
+    [RaisesException] Node? lastChild();
+    [RaisesException] Node? previousSibling();
+    [RaisesException] Node? nextSibling();
+    [RaisesException] Node? previousNode();
+    [RaisesException] Node? nextNode();
 };
