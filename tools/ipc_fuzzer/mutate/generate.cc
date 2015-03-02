@@ -1009,10 +1009,9 @@ struct GenerateTraits<content::SyntheticGesturePacket> {
         gesture_params.reset(params);
         break;
       }
-      case content::SyntheticGestureParams::GestureType::
-          SMOOTH_MOUSE_DRAG_GESTURE: {
-        content::SyntheticSmoothMouseDragGestureParams* params =
-            new content::SyntheticSmoothMouseDragGestureParams();
+      case content::SyntheticGestureParams::GestureType::SMOOTH_DRAG_GESTURE: {
+        content::SyntheticSmoothDragGestureParams* params =
+            new content::SyntheticSmoothDragGestureParams();
         if (!GenerateParam(&params->start_point, generator))
           return false;
         if (!GenerateParam(&params->distances, generator))
