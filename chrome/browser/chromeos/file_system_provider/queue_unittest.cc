@@ -282,6 +282,26 @@ TEST_F(FileSystemProviderQueueTest, InvalidUsage_AbortTwice) {
   EXPECT_DEATH(queue.Abort(first_token), "");
 }
 
+TEST_F(FileSystemProviderQueueTest, InvalidUsage_IsAbortedWhileNotInQueue) {
+  Queue queue(1);
+  EXPECT_DEATH(queue.IsAborted(1234), "");
+}
+
+TEST_F(FileSystemProviderQueueTest, InvalidUsage_IsAbortedAfterRemoved) {
+  Queue queue(1);
+  const size_t first_token = queue.NewToken();
+  int first_counter = 0;
+  int first_abort_counter = 0;
+  queue.Enqueue(first_token,
+                base::Bind(&OnRun, &first_counter, &first_abort_counter));
+
+  base::RunLoop().RunUntilIdle();
+
+  queue.Abort(first_token);
+  queue.Remove(first_token);
+  EXPECT_DEATH(queue.IsAborted(first_token), "");
+}
+
 TEST_F(FileSystemProviderQueueTest, InvalidUsage_RemoveTwice) {
   Queue queue(1);
   const size_t first_token = queue.NewToken();
@@ -363,12 +383,16 @@ TEST_F(FileSystemProviderQueueTest, Enqueue_Abort) {
   EXPECT_EQ(0, second_abort_counter);
 
   // Abort the first task while it's being executed.
+  EXPECT_FALSE(queue.IsAborted(first_token));
   queue.Abort(first_token);
+  EXPECT_TRUE(queue.IsAborted(first_token));
   queue.Remove(first_token);
 
   // Abort the second task, before it's started.
   EXPECT_EQ(0, second_counter);
+  EXPECT_FALSE(queue.IsAborted(second_token));
   queue.Abort(second_token);
+  EXPECT_TRUE(queue.IsAborted(second_token));
   queue.Remove(second_token);
 
   base::RunLoop().RunUntilIdle();

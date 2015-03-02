@@ -125,5 +125,21 @@ void Queue::Abort(size_t token) {
   NOTREACHED();
 }
 
+bool Queue::IsAborted(size_t token) {
+#if !NDEBUG
+  bool in_queue = executed_.find(token) != executed_.end() ||
+                  completed_.find(token) != completed_.end() ||
+                  aborted_.find(token) != aborted_.end();
+  for (auto& task : pending_) {
+    if (token == task.token) {
+      in_queue = true;
+      break;
+    }
+  }
+  DCHECK(in_queue);
+#endif
+  return aborted_.find(token) != aborted_.end();
+}
+
 }  // namespace file_system_provider
 }  // namespace chromeos

@@ -195,7 +195,11 @@ void ThrottledFileSystem::OnOpenFileCompleted(int queue_token,
                                               const OpenFileCallback& callback,
                                               int file_handle,
                                               base::File::Error result) {
-  if (result != base::File::FILE_ERROR_ABORT)
+  // The task may be aborted either via the callback, or by the operation, eg.
+  // because of destroying the request manager or unmounting the file system
+  // during the operation. Mark the task as completed only if it hasn't been
+  // aborted before.
+  if (!open_queue_->IsAborted(queue_token))
     open_queue_->Complete(queue_token);
 
   // If the file is opened successfully then hold the queue token until the file

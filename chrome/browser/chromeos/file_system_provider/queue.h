@@ -63,6 +63,11 @@ class Queue {
   // abort callback is NULL).
   void Abort(size_t token);
 
+  // Returns true if the task which is in the queue with |token| has been
+  // aborted. This method must not be called for tasks which are not in the
+  // queue.
+  bool IsAborted(size_t token);
+
   // Marks the previously enqueued task as complete. Must be called for each
   // enqueued task (unless aborted). Note, that Remove() must be called in order
   // to remove the task from the queue if it hasn't been aborted earlier.
