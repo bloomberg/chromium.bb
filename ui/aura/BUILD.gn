@@ -243,63 +243,61 @@ executable("demo") {
   }
 }
 
-if (!is_win || link_chrome_on_windows) {
-  executable("bench") {
-    output_name = "aura_bench"
-    testonly = true
+executable("bench") {
+  output_name = "aura_bench"
+  testonly = true
 
-    sources = [
-      "bench/bench_main.cc",
-    ]
+  sources = [
+    "bench/bench_main.cc",
+  ]
 
-    deps = [
-      ":test_support",
-      "//base",
-      "//base:i18n",
-      "//cc",
-      "//gpu/command_buffer/client:gles2_interface",
-      "//skia",
-      "//third_party/icu",
-      "//ui/base",
-      "//ui/compositor",
-      "//ui/compositor:test_support",
-      "//ui/events",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-    ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//cc",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//skia",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
 
-    if (use_x11) {
-      deps += [ "//ui/gfx/x" ]
-    }
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
   }
+}
 
-  test("aura_unittests") {
-    sources = [
-      "gestures/gesture_recognizer_unittest.cc",
-      "test/run_all_unittests.cc",
-      "window_event_dispatcher_unittest.cc",
-      "window_targeter_unittest.cc",
-      "window_unittest.cc",
-    ]
+test("aura_unittests") {
+  sources = [
+    "gestures/gesture_recognizer_unittest.cc",
+    "test/run_all_unittests.cc",
+    "window_event_dispatcher_unittest.cc",
+    "window_targeter_unittest.cc",
+    "window_unittest.cc",
+  ]
 
-    deps = [
-      ":test_support",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gtest",
-      "//ui/base:test_support",
-      "//ui/compositor:test_support",
-      "//ui/events:test_support",
-      "//ui/events:gesture_detection",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-    ]
+  deps = [
+    ":test_support",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/events:test_support",
+    "//ui/events:gesture_detection",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
 
-    if (is_linux) {
-      deps += [ "//third_party/mesa" ]
-    }
+  if (is_linux) {
+    deps += [ "//third_party/mesa" ]
   }
 }

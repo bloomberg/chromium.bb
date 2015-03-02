@@ -113,11 +113,6 @@ declare_args() {
     # toolchains.
     cros_use_custom_toolchain = false
   }
-
-  # TODO(brettw) remove this flag (and therefore enable linking all targets) on
-  # Windows when we have sufficient bot capacity. In the meantime, you can
-  # enable linking for local compiles.
-  link_chrome_on_windows = true
 }
 
 # TODO(dpranke): Remove these asserts when os and cpu_arch are removed.

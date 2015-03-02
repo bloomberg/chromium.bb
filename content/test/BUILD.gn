@@ -247,7 +247,7 @@ if (!is_ios) {
 }  # !is_ios
 
 # TODO(GYP) enable content_browsertests on Mac when it links.
-if (!is_mac && (!is_win || link_chrome_on_windows)) {
+if (!is_mac) {
   test("content_browsertests") {
     sources =
         rebase_path(content_tests_gypi_values.content_browsertests_sources,
@@ -439,7 +439,7 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {
   }
 }
 
-if (!is_mac && (!is_win || link_chrome_on_windows)) {  # TODO(GYP) enable on Mac once it links.
+if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
   test("content_unittests") {
     sources = rebase_path(content_tests_gypi_values.content_unittests_sources,
                           ".",
@@ -631,7 +631,7 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {  # TODO(GYP) enable on Mac
   }
 }
 
-if (!is_mac && (!is_win || link_chrome_on_windows)) {  # TODO(GYP) enable on Mac once it links.
+if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
   test("content_perftests") {
     sources = [
       "../browser/net/sqlite_persistent_cookie_store_perftest.cc",

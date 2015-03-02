@@ -127,7 +127,7 @@ source_set("app_shell_lib") {
   }
 }
 
-if (!(is_chromeos && !use_ozone) && (!is_win || link_chrome_on_windows)) {
+if (!(is_chromeos && !use_ozone)) {
   executable("app_shell") {
     # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
     testonly = true

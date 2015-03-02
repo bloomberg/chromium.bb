@@ -88,35 +88,33 @@ component("views_examples_lib") {
   }
 }
 
-if (!is_win || link_chrome_on_windows) {
-  executable("views_examples_exe") {
-    testonly = true
+executable("views_examples_exe") {
+  testonly = true
 
-    sources = [
-      "examples_main.cc",
-    ]
+  sources = [
+    "examples_main.cc",
+  ]
 
-    deps = [
-      ":views_examples_lib",
-      "//base",
-      "//base:i18n",
-      "//ui/base",
-      "//ui/compositor",
-      "//ui/compositor:test_support",
-      "//ui/gfx",
-      "//ui/gl",
-      "//ui/resources:ui_test_pak",
-      "//ui/views",
-      "//ui/views:test_support",
-      "//ui/wm",
-    ]
+  deps = [
+    ":views_examples_lib",
+    "//base",
+    "//base:i18n",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/gfx",
+    "//ui/gl",
+    "//ui/resources:ui_test_pak",
+    "//ui/views",
+    "//ui/views:test_support",
+    "//ui/wm",
+  ]
 
-    if (use_aura) {
-      deps += [ "//ui/aura" ]
-    }
-    if (use_x11) {
-      deps += [ "//ui/gfx/x" ]
-    }
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
+  }
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
   }
 }
 

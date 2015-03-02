@@ -83,7 +83,7 @@ component("blink") {
   }
 }
 
-if (!is_mac && (!is_win || link_chrome_on_windows)) {
+if (!is_mac) {
   # TODO(GYP): Make linking this work on the mac.
   test("media_blink_unittests") {
     deps = [

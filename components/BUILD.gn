@@ -221,89 +221,87 @@ group("all_components") {
 # component (it's important to use a source_set instead of a static library or
 # no tests will run) and add a reference here. You can add more than one unit
 # test target if convenient.
-if (!is_win || link_chrome_on_windows) {
-  test("components_unittests") {
-    sources = [
-      "test/run_all_unittests.cc",
-    ]
+test("components_unittests") {
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
 
-    # Add only ":unit_tests" dependencies here. If your tests have dependencies
-    # (this would at least include the component itself), they should be on the
-    # test source set and not here.
-    deps = [
-      "//components/auto_login_parser:unit_tests",
-      "//components/autofill/content/browser:unit_tests",
-      "//components/autofill/core/browser:unit_tests",
-      "//components/autofill/core/common:unit_tests",
-      "//components/bookmarks/browser:unit_tests",
-      "//components/captive_portal:unit_tests",
-      "//components/cloud_devices/common:unit_tests",
-      "//components/content_settings/core/browser:unit_tests",
-      "//components/content_settings/core/common:unit_tests",
-      "//components/crx_file:unit_tests",
-      "//components/data_reduction_proxy/core/browser:unit_tests",
-      "//components/data_reduction_proxy/core/common:unit_tests",
-      "//components/device_event_log:unit_tests",
-      "//components/dom_distiller/core:unit_tests",
-      "//components/domain_reliability:unit_tests",
-      "//components/favicon_base:unit_tests",
-      "//components/google/core/browser:unit_tests",
-      "//components/invalidation:unittests",
-      "//components/login:unit_tests",
-      "//components/metrics:unit_tests",
-      "//components/omnibox:unit_tests",
-      "//components/ownership:unit_tests",
-      "//components/packed_ct_ev_whitelist:unit_tests",
-      "//components/proximity_auth:unit_tests",
-      "//components/update_client:unit_tests",
-      "//components/variations:unit_tests",
-      "//components/web_resource:unit_tests",
-      "//components/webdata/common:unit_tests",
+  # Add only ":unit_tests" dependencies here. If your tests have dependencies
+  # (this would at least include the component itself), they should be on the
+  # test source set and not here.
+  deps = [
+    "//components/auto_login_parser:unit_tests",
+    "//components/autofill/content/browser:unit_tests",
+    "//components/autofill/core/browser:unit_tests",
+    "//components/autofill/core/common:unit_tests",
+    "//components/bookmarks/browser:unit_tests",
+    "//components/captive_portal:unit_tests",
+    "//components/cloud_devices/common:unit_tests",
+    "//components/content_settings/core/browser:unit_tests",
+    "//components/content_settings/core/common:unit_tests",
+    "//components/crx_file:unit_tests",
+    "//components/data_reduction_proxy/core/browser:unit_tests",
+    "//components/data_reduction_proxy/core/common:unit_tests",
+    "//components/device_event_log:unit_tests",
+    "//components/dom_distiller/core:unit_tests",
+    "//components/domain_reliability:unit_tests",
+    "//components/favicon_base:unit_tests",
+    "//components/google/core/browser:unit_tests",
+    "//components/invalidation:unittests",
+    "//components/login:unit_tests",
+    "//components/metrics:unit_tests",
+    "//components/omnibox:unit_tests",
+    "//components/ownership:unit_tests",
+    "//components/packed_ct_ev_whitelist:unit_tests",
+    "//components/proximity_auth:unit_tests",
+    "//components/update_client:unit_tests",
+    "//components/variations:unit_tests",
+    "//components/web_resource:unit_tests",
+    "//components/webdata/common:unit_tests",
 
-      # These are the deps required by the code in this target.
-      "//base",
-      "//base/test:test_support",
-      "//content/test:test_support",
-      "//ui/base",
-    ]
-    data_deps = [ ":components_tests_pak" ]
+    # These are the deps required by the code in this target.
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//ui/base",
+  ]
+  data_deps = [ ":components_tests_pak" ]
 
-    if (is_android) {
-      deps += [ "//components/data_reduction_proxy/content/browser:unit_tests" ]
-    }
-
-    # TODO(GYP) need this target.
-    #'breakpad/app/crash_keys_win_unittest.cc',
-
-    # Precache tests need these defines.
-    #configs += [ "//components/precache/core:precache_config" ]
-
-    if (toolkit_views) {
-      # TODO(GYP) enable this as above.
-      #deps += [ "//components/constrained_window:unit_tests" ]
-    }
-    if (is_win) {
-      deps += [ "//components/browser_watcher:unit_tests" ]
-    }
+  if (is_android) {
+    deps += [ "//components/data_reduction_proxy/content/browser:unit_tests" ]
   }
 
-  repack("components_tests_pak") {
-    sources = [
-      "$root_gen_dir/components/components_resources.pak",
-      "$root_gen_dir/components/strings/components_strings_en-US.pak",
-      "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-      "$root_gen_dir/ui/resources/webui_resources.pak",
-      "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
-      "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-    ]
+  # TODO(GYP) need this target.
+  #'breakpad/app/crash_keys_win_unittest.cc',
 
-    output = "$root_out_dir/components_tests_resources.pak"
+  # Precache tests need these defines.
+  #configs += [ "//components/precache/core:precache_config" ]
 
-    deps = [
-      "//components/resources",
-      "//components/strings",
-      "//ui/resources",
-      "//ui/strings",
-    ]
+  if (toolkit_views) {
+    # TODO(GYP) enable this as above.
+    #deps += [ "//components/constrained_window:unit_tests" ]
   }
+  if (is_win) {
+    deps += [ "//components/browser_watcher:unit_tests" ]
+  }
+}
+
+repack("components_tests_pak") {
+  sources = [
+    "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/strings/components_strings_en-US.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+  ]
+
+  output = "$root_out_dir/components_tests_resources.pak"
+
+  deps = [
+    "//components/resources",
+    "//components/strings",
+    "//ui/resources",
+    "//ui/strings",
+  ]
 }

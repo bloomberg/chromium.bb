@@ -482,7 +482,7 @@ repack("pak") {
 
 # TODO(GYP): Figure out what this should be on android
 # and make linking this work on the Mac.
-if (!is_android && !is_mac && (!is_win || link_chrome_on_windows)) {
+if (!is_android && !is_mac) {
   executable("content_shell") {
     testonly = true
 

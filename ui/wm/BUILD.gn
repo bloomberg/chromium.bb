@@ -115,39 +115,37 @@ static_library("test_support") {
   ]
 }
 
-if (!is_win || link_chrome_on_windows) {
-  test("wm_unittests") {
-    sources = [
-      "core/capture_controller_unittest.cc",
-      "core/compound_event_filter_unittest.cc",
-      "core/cursor_manager_unittest.cc",
-      "core/focus_controller_unittest.cc",
-      "core/image_grid_unittest.cc",
-      "core/input_method_event_filter_unittest.cc",
-      "core/nested_accelerator_controller_unittest.cc",
-      "core/shadow_controller_unittest.cc",
-      "core/transient_window_manager_unittest.cc",
-      "core/transient_window_stacking_client_unittest.cc",
-      "core/visibility_controller_unittest.cc",
-      "core/window_animations_unittest.cc",
-      "test/run_all_unittests.cc",
-    ]
+test("wm_unittests") {
+  sources = [
+    "core/capture_controller_unittest.cc",
+    "core/compound_event_filter_unittest.cc",
+    "core/cursor_manager_unittest.cc",
+    "core/focus_controller_unittest.cc",
+    "core/image_grid_unittest.cc",
+    "core/input_method_event_filter_unittest.cc",
+    "core/nested_accelerator_controller_unittest.cc",
+    "core/shadow_controller_unittest.cc",
+    "core/transient_window_manager_unittest.cc",
+    "core/transient_window_stacking_client_unittest.cc",
+    "core/visibility_controller_unittest.cc",
+    "core/window_animations_unittest.cc",
+    "test/run_all_unittests.cc",
+  ]
 
-    deps = [
-      ":test_support",
-      ":wm",
-      "//base",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gtest",
-      "//ui/aura:test_support",
-      "//ui/base:test_support",
-      "//ui/compositor:test_support",
-      "//ui/events:test_support",
-      "//ui/events/platform",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-    ]
-  }
+  deps = [
+    ":test_support",
+    ":wm",
+    "//base",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura:test_support",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/events:test_support",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
 }

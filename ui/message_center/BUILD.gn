@@ -176,65 +176,63 @@ static_library("test_support") {
   ]
 }
 
-if (!is_win || link_chrome_on_windows) {
-  test("message_center_unittests") {
-    sources = [
-      "test/run_all_unittests.cc",
+test("message_center_unittests") {
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":message_center",
+    ":test_support",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
+    "//url",
+  ]
+
+  if (enable_notifications && !is_android) {
+    sources += [
+      "cocoa/notification_controller_unittest.mm",
+      "cocoa/popup_collection_unittest.mm",
+      "cocoa/popup_controller_unittest.mm",
+      "cocoa/settings_controller_unittest.mm",
+      "cocoa/status_item_view_unittest.mm",
+      "cocoa/tray_controller_unittest.mm",
+      "cocoa/tray_view_controller_unittest.mm",
+      "message_center_impl_unittest.cc",
+      "message_center_tray_unittest.cc",
+      "notification_delegate_unittest.cc",
+      "notification_list_unittest.cc",
     ]
 
-    deps = [
-      ":message_center",
-      ":test_support",
-      "//base",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gtest",
-      "//ui/base",
-      "//ui/events",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-      "//ui/resources",
-      "//ui/resources:ui_test_pak",
-      "//url",
-    ]
+    if (is_mac) {
+      deps += [ "//ui/gfx:test_support" ]
+    }
 
-    if (enable_notifications && !is_android) {
+    if (toolkit_views && !is_mac) {
       sources += [
-        "cocoa/notification_controller_unittest.mm",
-        "cocoa/popup_collection_unittest.mm",
-        "cocoa/popup_controller_unittest.mm",
-        "cocoa/settings_controller_unittest.mm",
-        "cocoa/status_item_view_unittest.mm",
-        "cocoa/tray_controller_unittest.mm",
-        "cocoa/tray_view_controller_unittest.mm",
-        "message_center_impl_unittest.cc",
-        "message_center_tray_unittest.cc",
-        "notification_delegate_unittest.cc",
-        "notification_list_unittest.cc",
+        "views/bounded_label_unittest.cc",
+        "views/message_center_view_unittest.cc",
+        "views/message_popup_collection_unittest.cc",
+        "views/notification_view_unittest.cc",
+        "views/notifier_settings_view_unittest.cc",
       ]
-
-      if (is_mac) {
-        deps += [ "//ui/gfx:test_support" ]
-      }
-
-      if (toolkit_views && !is_mac) {
-        sources += [
-          "views/bounded_label_unittest.cc",
-          "views/message_center_view_unittest.cc",
-          "views/message_popup_collection_unittest.cc",
-          "views/notification_view_unittest.cc",
-          "views/notifier_settings_view_unittest.cc",
-        ]
-        deps += [
-          # Compositor is needed by message_center_view_unittest.cc and for the
-          # fonts used by bounded_label_unittest.cc.
-          "//ui/compositor",
-          "//ui/views",
-          "//ui/views:test_support",
-        ]
-      }
-    }  # enable_notifications && !is_android
-  }
+      deps += [
+        # Compositor is needed by message_center_view_unittest.cc and for the
+        # fonts used by bounded_label_unittest.cc.
+        "//ui/compositor",
+        "//ui/views",
+        "//ui/views:test_support",
+      ]
+    }
+  }  # enable_notifications && !is_android
 }

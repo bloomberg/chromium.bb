@@ -93,33 +93,31 @@ build_closure("inputview") {
   path = rebase_path("//third_party/google_input_tools")
 }
 
-if (!is_win || link_chrome_on_windows) {
-  test("keyboard_unittests") {
-    sources = [
-      "keyboard_controller_unittest.cc",
-      "test/run_all_unittests.cc",
-    ]
+test("keyboard_unittests") {
+  sources = [
+    "keyboard_controller_unittest.cc",
+    "test/run_all_unittests.cc",
+  ]
 
-    deps = [
-      ":keyboard",
-      "//base",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//content",
-      "//skia",
-      "//testing/gtest",
-      "//ui/aura:test_support",
-      "//ui/base",
-      "//ui/base/ime",
-      "//ui/base:test_support",
-      "//ui/compositor:test_support",
-      "//ui/events:test_support",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-      "//ui/resources:ui_test_pak",
-      "//ui/wm",
-      "//url",
-    ]
-  }
+  deps = [
+    ":keyboard",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//content",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/base/ime",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/events:test_support",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/resources:ui_test_pak",
+    "//ui/wm",
+    "//url",
+  ]
 }

@@ -56,37 +56,35 @@ component("snapshot") {
   }
 }
 
-if (!is_win || link_chrome_on_windows) {
-  test("snapshot_unittests") {
-    sources = [
-      "snapshot_aura_unittest.cc",
-      "snapshot_mac_unittest.mm",
-      "test/run_all_unittests.cc",
-    ]
+test("snapshot_unittests") {
+  sources = [
+    "snapshot_aura_unittest.cc",
+    "snapshot_mac_unittest.mm",
+    "test/run_all_unittests.cc",
+  ]
 
-    deps = [
-      ":snapshot",
-      "//base",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gtest",
-      "//ui/base",
+  deps = [
+    ":snapshot",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/compositor:test_support",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura:test_support",
+      "//ui/compositor",
       "//ui/compositor:test_support",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
+      "//ui/wm",
     ]
-
-    if (use_aura) {
-      deps += [
-        "//ui/aura:test_support",
-        "//ui/compositor",
-        "//ui/compositor:test_support",
-        "//ui/wm",
-      ]
-    } else {
-      sources -= [ "snapshot_aura_unittest.cc" ]
-    }
+  } else {
+    sources -= [ "snapshot_aura_unittest.cc" ]
   }
 }

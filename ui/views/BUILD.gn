@@ -162,104 +162,102 @@ static_library("test_support") {
   }
 }
 
-if (!is_win || link_chrome_on_windows) {
-  test("views_unittests") {
-    sources = gypi_values.views_unittests_sources
+test("views_unittests") {
+  sources = gypi_values.views_unittests_sources
 
-    deps = [
-      ":test_support",
-      "//base",
-      "//base:i18n",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gtest",
-      "//third_party/icu",
-      "//ui/accessibility",
-      "//ui/aura",
-      "//ui/base",
-      "//ui/base/ime",
-      "//ui/base:test_support",
-      "//ui/compositor:test_support",
-      "//ui/events:test_support",
-      "//ui/events:events_base",
-      "//ui/events/platform",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-      "//ui/resources",
-      "//ui/strings",
-      "//ui/wm",
-      "//url",
+  deps = [
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/base/ime",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/events:test_support",
+    "//ui/events:events_base",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/wm",
+    "//url",
+  ]
+
+  if (is_win) {
+    deps += [
+      "//third_party/iaccessible2",
+      "//third_party/wtl",
+    ]
+    libs = [
+      "imm32.lib",
+      "oleacc.lib",
+      "comctl32.lib",
     ]
 
-    if (is_win) {
-      deps += [
-        "//third_party/iaccessible2",
-        "//third_party/wtl",
-      ]
-      libs = [
-        "imm32.lib",
-        "oleacc.lib",
-        "comctl32.lib",
-      ]
+    # TOOD(GYP)
+    #'msvs_settings': {
+    #  'VCManifestTool': {
+    #    'AdditionalManifestFiles': [
+    #      '$(ProjectDir)\\test\\views_unittest.manifest',
+    #    ],
+    #  },
+    #},
+  }
 
-      # TOOD(GYP)
-      #'msvs_settings': {
-      #  'VCManifestTool': {
-      #    'AdditionalManifestFiles': [
-      #      '$(ProjectDir)\\test\\views_unittest.manifest',
-      #    ],
-      #  },
-      #},
-    }
+  if (use_x11) {
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xext",
+    ]
+    deps += [
+      "//ui/events/devices",
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
+  }
 
-    if (use_x11) {
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xext",
-      ]
-      deps += [
-        "//ui/events/devices",
-        "//ui/events/platform/x11",
-        "//ui/gfx/x",
-      ]
-    }
-
-    if (use_aura) {
-      sources += gypi_values.views_unittests_aura_sources
-      deps += [ "//ui/aura:test_support" ]
-      if (!is_chromeos) {
-        sources += gypi_values.views_unittests_desktop_aura_sources
-        if (use_x11) {
-          sources += gypi_values.views_unittests_desktop_aurax11_sources
-        }
+  if (use_aura) {
+    sources += gypi_values.views_unittests_aura_sources
+    deps += [ "//ui/aura:test_support" ]
+    if (!is_chromeos) {
+      sources += gypi_values.views_unittests_desktop_aura_sources
+      if (use_x11) {
+        sources += gypi_values.views_unittests_desktop_aurax11_sources
       }
     }
-    if (!is_chromeos) {
-      sources += gypi_values.views_unittests_desktop_sources
-    }
-    if (use_x11) {
-      deps += [
-        "//ui/events/platform/x11",
-        "//ui/gfx/x",
-      ]
-    }
+  }
+  if (!is_chromeos) {
+    sources += gypi_values.views_unittests_desktop_sources
+  }
+  if (use_x11) {
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
+  }
 
-    if (is_mac) {
-      # views_unittests not yet compiling on Mac. http://crbug.com/378134
-      sources -= [
-        "bubble/bubble_window_targeter_unittest.cc",
-        "controls/button/custom_button_unittest.cc",
-        "controls/button/menu_button_unittest.cc",
-        "controls/menu/menu_controller_unittest.cc",
-        "controls/native/native_view_host_unittest.cc",
-        "focus/focus_manager_unittest.cc",
-        "ime/input_method_bridge_unittest.cc",
-        "widget/widget_unittest.cc",
-        "widget/window_reorderer_unittest.cc",
-      ]
-    }
+  if (is_mac) {
+    # views_unittests not yet compiling on Mac. http://crbug.com/378134
+    sources -= [
+      "bubble/bubble_window_targeter_unittest.cc",
+      "controls/button/custom_button_unittest.cc",
+      "controls/button/menu_button_unittest.cc",
+      "controls/menu/menu_controller_unittest.cc",
+      "controls/native/native_view_host_unittest.cc",
+      "focus/focus_manager_unittest.cc",
+      "ime/input_method_bridge_unittest.cc",
+      "widget/widget_unittest.cc",
+      "widget/window_reorderer_unittest.cc",
+    ]
   }
 }
 

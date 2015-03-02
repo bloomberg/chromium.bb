@@ -218,69 +218,67 @@ static_library("test_support") {
   ]
 }
 
-if (!is_win || link_chrome_on_windows) {
-  test("app_list_unittests") {
-    sources = [
-      "app_list_item_list_unittest.cc",
-      "app_list_model_unittest.cc",
-      "folder_image_unittest.cc",
-      "pagination_model_unittest.cc",
-      "search/history_data_store_unittest.cc",
-      "search/mixer_unittest.cc",
-      "search/term_break_iterator_unittest.cc",
-      "search/tokenized_string_char_iterator_unittest.cc",
-      "search/tokenized_string_match_unittest.cc",
-      "search/tokenized_string_unittest.cc",
-      "test/run_all_unittests.cc",
+test("app_list_unittests") {
+  sources = [
+    "app_list_item_list_unittest.cc",
+    "app_list_model_unittest.cc",
+    "folder_image_unittest.cc",
+    "pagination_model_unittest.cc",
+    "search/history_data_store_unittest.cc",
+    "search/mixer_unittest.cc",
+    "search/term_break_iterator_unittest.cc",
+    "search/tokenized_string_char_iterator_unittest.cc",
+    "search/tokenized_string_match_unittest.cc",
+    "search/tokenized_string_unittest.cc",
+    "test/run_all_unittests.cc",
+  ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    ":app_list",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:test_support",
+    "//ui/gl",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
+  ]
+
+  if (toolkit_views) {
+    sources += [
+      "views/app_list_main_view_unittest.cc",
+      "views/app_list_view_unittest.cc",
+      "views/apps_grid_view_unittest.cc",
+      "views/contents_view_unittest.cc",
+      "views/folder_header_view_unittest.cc",
+      "views/search_box_view_unittest.cc",
+      "views/search_result_list_view_unittest.cc",
+      "views/speech_view_unittest.cc",
+      "views/test/apps_grid_view_test_api.cc",
+      "views/test/apps_grid_view_test_api.h",
     ]
-
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-    deps = [
-      ":app_list",
-      ":test_support",
-      "//base",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gtest",
-      "//ui/base",
-      "//ui/compositor",
-      "//ui/events",
-      "//ui/events:test_support",
-      "//ui/gl",
-      "//ui/resources",
-      "//ui/resources:ui_test_pak",
+    deps += [
+      "//ui/views",
+      "//ui/views:test_support",
     ]
+  }
 
-    if (toolkit_views) {
-      sources += [
-        "views/app_list_main_view_unittest.cc",
-        "views/app_list_view_unittest.cc",
-        "views/apps_grid_view_unittest.cc",
-        "views/contents_view_unittest.cc",
-        "views/folder_header_view_unittest.cc",
-        "views/search_box_view_unittest.cc",
-        "views/search_result_list_view_unittest.cc",
-        "views/speech_view_unittest.cc",
-        "views/test/apps_grid_view_test_api.cc",
-        "views/test/apps_grid_view_test_api.h",
-      ]
-      deps += [
-        "//ui/views",
-        "//ui/views:test_support",
-      ]
-    }
-
-    if (is_mac) {
-      sources += [
-        "cocoa/app_list_view_controller_unittest.mm",
-        "cocoa/app_list_window_controller_unittest.mm",
-        "cocoa/apps_grid_controller_unittest.mm",
-        "cocoa/apps_search_box_controller_unittest.mm",
-        "cocoa/apps_search_results_controller_unittest.mm",
-        "cocoa/test/apps_grid_controller_test_helper.h",
-        "cocoa/test/apps_grid_controller_test_helper.mm",
-      ]
-    }
+  if (is_mac) {
+    sources += [
+      "cocoa/app_list_view_controller_unittest.mm",
+      "cocoa/app_list_window_controller_unittest.mm",
+      "cocoa/apps_grid_controller_unittest.mm",
+      "cocoa/apps_search_box_controller_unittest.mm",
+      "cocoa/apps_search_results_controller_unittest.mm",
+      "cocoa/test/apps_grid_controller_test_helper.h",
+      "cocoa/test/apps_grid_controller_test_helper.mm",
+    ]
   }
 }

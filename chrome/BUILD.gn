@@ -12,16 +12,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-if (is_win && !link_chrome_on_windows) {
-  # When linking is disabled on Windows, create a dummy Chrome target to
-  # make targets work that depend on Chrome.
-  group("chrome") {
-  }
-  group("main_dll") {
-  }
-}
-
-if (!is_android && (!is_win || link_chrome_on_windows)) {
+if (!is_android) {
   # TODO(GYP) for Windows need to the the reorder-imports step which probably
   # means adding another target and renaming this to chrome_initial like in GYP.
   executable("chrome") {
@@ -153,89 +144,87 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
   }
 }  # !is_android
 
-if (!is_win || link_chrome_on_windows) {
-  shared_library("main_dll") {
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+shared_library("main_dll") {
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-    deps = [
-      ":browser_dependencies",
-      "//base/allocator",
+  deps = [
+    ":browser_dependencies",
+    "//base/allocator",
+  ]
+  if (is_win) {
+    output_name = "chrome"
+
+    sources = [
+      "//base/win/dllmain.cc",
+      "app/chrome_command_ids.h",
+      "app/chrome_dll.rc",
+      "app/chrome_dll_resource.h",
+      "app/chrome_main.cc",
+      "app/chrome_main_delegate.cc",
+      "app/chrome_main_delegate.h",
+      "app/close_handle_hook_win.cc",
+      "app/close_handle_hook_win.h",
+      "app/delay_load_hook_win.cc",
+      "app/delay_load_hook_win.h",
     ]
-    if (is_win) {
-      output_name = "chrome"
 
-      sources = [
-        "//base/win/dllmain.cc",
-        "app/chrome_command_ids.h",
-        "app/chrome_dll.rc",
-        "app/chrome_dll_resource.h",
-        "app/chrome_main.cc",
-        "app/chrome_main_delegate.cc",
-        "app/chrome_main_delegate.h",
-        "app/close_handle_hook_win.cc",
-        "app/close_handle_hook_win.h",
-        "app/delay_load_hook_win.cc",
-        "app/delay_load_hook_win.h",
-      ]
-
-      deps += [
-        # On Windows, link the dependencies (libraries) that make up actual
-        # Chromium functionality into this .dll.
-        ":chrome_version_resources",
-        "//chrome/app/theme:chrome_unscaled_resources",
-        "//chrome_elf",
-        "//content/app/resources",
-        "//crypto",
-        "//net:net_resources",
-        "//third_party/wtl",
-        "//ui/views",
-      ]
-      if (enable_configuration_policy) {
-        deps += [ "//components/policy" ]
-      }
-      if (current_cpu == "x86") {
-        # Add a dependency to custom import library for user32 delay imports only
-        # in x86 builds.
-        #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
-      }
-
-      # TODO(GYP) incremental linking flags in debug builds
-      #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-
-      # TODO(GYP) Lots of VCLinkerTool stuff on Windows.
-
-      # TODO(GYP) chrome_pgo_phase on Windows.
+    deps += [
+      # On Windows, link the dependencies (libraries) that make up actual
+      # Chromium functionality into this .dll.
+      ":chrome_version_resources",
+      "//chrome/app/theme:chrome_unscaled_resources",
+      "//chrome_elf",
+      "//content/app/resources",
+      "//crypto",
+      "//net:net_resources",
+      "//third_party/wtl",
+      "//ui/views",
+    ]
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy" ]
+    }
+    if (current_cpu == "x86") {
+      # Add a dependency to custom import library for user32 delay imports only
+      # in x86 builds.
+      #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
     }
 
-    if (use_aura) {
-      deps += [ "//ui/compositor" ]
-    }
+    # TODO(GYP) incremental linking flags in debug builds
+    #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
 
-    #TODO(GYP) add chrome_multiple_dll support
-    if (false) {  #chrome_multiple_dll) {
-      defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-      deps += [ "//content/public/app:browser" ]
-    } else {
-      deps += [
-        ":child_dependencies",
-        "//content/public/app:both",
-      ]
-    }
+    # TODO(GYP) Lots of VCLinkerTool stuff on Windows.
 
-    if (cld_version == 0 || cld_version == 2) {
-      deps += [ "//third_party/cld_2" ]
-    }
+    # TODO(GYP) chrome_pgo_phase on Windows.
+  }
 
-    if (is_mac) {
-      #['OS=="mac" and component!="shared_library"', {  TODO(GYP)
-      #  'includes': [ 'chrome_dll_bundle.gypi' ],
-      #}],
-      # TODO(GYP) Lots of other stuff in the OS=="mac" block.
-    }
+  if (use_aura) {
+    deps += [ "//ui/compositor" ]
+  }
 
-    if (enable_plugins) {
-      deps += [ "//pdf" ]
-    }
+  #TODO(GYP) add chrome_multiple_dll support
+  if (false) {  #chrome_multiple_dll) {
+    defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    deps += [ "//content/public/app:browser" ]
+  } else {
+    deps += [
+      ":child_dependencies",
+      "//content/public/app:both",
+    ]
+  }
+
+  if (cld_version == 0 || cld_version == 2) {
+    deps += [ "//third_party/cld_2" ]
+  }
+
+  if (is_mac) {
+    #['OS=="mac" and component!="shared_library"', {  TODO(GYP)
+    #  'includes': [ 'chrome_dll_bundle.gypi' ],
+    #}],
+    # TODO(GYP) Lots of other stuff in the OS=="mac" block.
+  }
+
+  if (enable_plugins) {
+    deps += [ "//pdf" ]
   }
 }
 

@@ -72,7 +72,7 @@ component("blink") {
 
 # GYP version: //cc/blink/cc_blink_tests.gyp:cc_blink_unittests
 # TODO(GYP): make linking work on the mac.
-if (!is_mac && (!is_win || link_chrome_on_windows)) {
+if (!is_mac) {
   test("cc_blink_unittests") {
     sources = [
       "web_animation_unittest.cc",
