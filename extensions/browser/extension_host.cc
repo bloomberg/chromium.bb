@@ -13,8 +13,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -25,6 +23,7 @@
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/extension_host_queue.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/load_monitoring_extension_host_queue.h"
@@ -77,15 +76,15 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<BrowserContext>(browser_context_));
+  ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 
   // Set up web contents observers and pref observers.
   delegate_->OnExtensionHostCreated(host_contents());
 }
 
 ExtensionHost::~ExtensionHost() {
+  ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
+
   if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
       extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_) &&
       load_start_.get()) {
@@ -210,23 +209,15 @@ bool ExtensionHost::IsBackgroundPage() const {
   return true;
 }
 
-void ExtensionHost::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      // The extension object will be deleted after this notification has been
-      // sent. Null it out so that dirty pointer issues don't arise in cases
-      // when multiple ExtensionHost objects pointing to the same Extension are
-      // present.
-      if (extension_ == content::Details<UnloadedExtensionInfo>(details)->
-          extension) {
-        extension_ = nullptr;
-      }
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
+void ExtensionHost::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  // The extension object will be deleted after this notification has been sent.
+  // Null it out so that dirty pointer issues don't arise in cases when multiple
+  // ExtensionHost objects pointing to the same Extension are present.
+  if (extension_ == extension) {
+    extension_ = nullptr;
   }
 }
 

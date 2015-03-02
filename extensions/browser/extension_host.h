@@ -7,18 +7,16 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/deferred_start_render_host.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
 
@@ -49,7 +47,7 @@ class ExtensionHost : public DeferredStartRenderHost,
                       public content::WebContentsDelegate,
                       public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
-                      public content::NotificationObserver {
+                      public ExtensionRegistryObserver {
  public:
   ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
@@ -127,14 +125,12 @@ class ExtensionHost : public DeferredStartRenderHost,
                                   content::MediaStreamType type) override;
   bool IsNeverVisible(content::WebContents* web_contents) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ExtensionRegistryObserver:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
  protected:
-  content::NotificationRegistrar* registrar() { return &registrar_; }
-
   // Called after the extension page finishes loading but before the
   // EXTENSION_HOST_DID_STOP_LOADING notification is sent.
   virtual void OnDidStopLoading();
@@ -190,8 +186,6 @@ class ExtensionHost : public DeferredStartRenderHost,
 
   // Messages sent out to the renderer that have not been acknowledged yet.
   std::set<int> unacked_messages_;
-
-  content::NotificationRegistrar registrar_;
 
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 

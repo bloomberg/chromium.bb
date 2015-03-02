@@ -9,6 +9,8 @@
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_host.h"
 
 class Browser;
@@ -29,7 +31,8 @@ class ExtensionView;
 class ExtensionViewHost
     : public ExtensionHost,
       public web_modal::WebContentsModalDialogManagerDelegate,
-      public web_modal::WebContentsModalDialogHost {
+      public web_modal::WebContentsModalDialogHost,
+      public content::NotificationObserver {
  public:
   ExtensionViewHost(const Extension* extension,
                     content::SiteInstance* site_instance,
@@ -126,6 +129,8 @@ class ExtensionViewHost
   // window's popup manager. Should only be used when the EVH is created without
   // a parent window.
   scoped_ptr<web_modal::PopupManager> popup_manager_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewHost);
 };

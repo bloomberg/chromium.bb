@@ -107,9 +107,9 @@ void ExtensionViewHost::LoadInitialURL() {
   if (!ExtensionSystem::Get(browser_context())->
           runtime_data()->IsBackgroundPageReady(extension())) {
     // Make sure the background page loads before any others.
-    registrar()->Add(this,
-                     extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-                     content::Source<Extension>(extension()));
+    registrar_.Add(this,
+                   extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+                   content::Source<Extension>(extension()));
     return;
   }
 
@@ -296,13 +296,11 @@ WebContents* ExtensionViewHost::GetVisibleWebContents() const {
 void ExtensionViewHost::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY) {
-    DCHECK(ExtensionSystem::Get(browser_context())->
-               runtime_data()->IsBackgroundPageReady(extension()));
-    LoadInitialURL();
-    return;
-  }
-  ExtensionHost::Observe(type, source, details);
+  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY);
+  DCHECK(ExtensionSystem::Get(browser_context())
+             ->runtime_data()
+             ->IsBackgroundPageReady(extension()));
+  LoadInitialURL();
 }
 
 }  // namespace extensions
