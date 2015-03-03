@@ -44,7 +44,6 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
-#include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/Assertions.h"
@@ -465,7 +464,7 @@ bool Bridge::waitForMethodCompletion(PassOwnPtr<ExecutionContextTask> task)
 
     // We wait for the syncHelper event even if a shutdown event is fired.
     // See https://codereview.chromium.org/267323004/#msg43 for why we need to wait this.
-    SafePointScope scope(ThreadState::HeapPointersOnStack);
+    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
     m_syncHelper->wait();
     // This is checking whether a shutdown event is fired or not.
     return !m_workerGlobalScope->thread()->terminated();

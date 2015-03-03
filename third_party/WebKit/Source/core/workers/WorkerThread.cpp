@@ -41,7 +41,6 @@
 #include "platform/PlatformThreadData.h"
 #include "platform/Task.h"
 #include "platform/ThreadTimers.h"
-#include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
@@ -438,7 +437,7 @@ public:
 void WorkerThread::stop()
 {
     // Prevent the deadlock between GC and an attempt to stop a thread.
-    SafePointScope safePointScope(ThreadState::HeapPointersOnStack);
+    ThreadState::SafePointScope safePointScope(ThreadState::HeapPointersOnStack);
     stopInternal();
 }
 
@@ -590,7 +589,7 @@ MessageQueueWaitResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     {
         if (waitMode == DontWaitForMessage)
             absoluteTime = 0.0;
-        SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
+        ThreadState::SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
         task = m_debuggerMessageQueue.waitForMessageWithTimeout(result, absoluteTime);
     }
 

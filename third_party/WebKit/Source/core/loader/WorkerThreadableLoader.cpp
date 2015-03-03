@@ -39,7 +39,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/heap/SafePoint.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -86,7 +85,7 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
 
     blink::WebWaitableEvent* signalled;
     {
-        SafePointScope scope(ThreadState::HeapPointersOnStack);
+        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
         signalled = blink::Platform::current()->waitMultipleEvents(events);
     }
     if (signalled == shutdownEvent) {

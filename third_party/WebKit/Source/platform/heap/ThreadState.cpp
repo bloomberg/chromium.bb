@@ -37,7 +37,6 @@
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/SafePoint.h"
 #include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -80,6 +79,150 @@ static Mutex& threadAttachMutex()
     AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
     return mutex;
 }
+
+static double lockingTimeout()
+{
+    // Wait time for parking all threads is at most 100 MS.
+    return 0.100;
+}
+
+
+using PushAllRegistersCallback = void (*)(SafePointBarrier*, ThreadState*, intptr_t*);
+extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback);
+
+class SafePointBarrier {
+public:
+    SafePointBarrier() : m_canResume(1), m_unparkedThreadCount(0) { }
+    ~SafePointBarrier() { }
+
+    // Request other attached threads that are not at safe points to park themselves on safepoints.
+    bool parkOthers()
+    {
+        ASSERT(ThreadState::current()->isAtSafePoint());
+
+        // Lock threadAttachMutex() to prevent threads from attaching.
+        threadAttachMutex().lock();
+
+        ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+
+        MutexLocker locker(m_mutex);
+        atomicAdd(&m_unparkedThreadCount, threads.size());
+        releaseStore(&m_canResume, 0);
+
+        ThreadState* current = ThreadState::current();
+        for (ThreadState* state : threads) {
+            if (state == current)
+                continue;
+
+            for (ThreadState::Interruptor* interruptor : state->interruptors())
+                interruptor->requestInterrupt();
+        }
+
+        while (acquireLoad(&m_unparkedThreadCount) > 0) {
+            double expirationTime = currentTime() + lockingTimeout();
+            if (!m_parked.timedWait(m_mutex, expirationTime)) {
+                // One of the other threads did not return to a safepoint within the maximum
+                // time we allow for threads to be parked. Abandon the GC and resume the
+                // currently parked threads.
+                resumeOthers(true);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void resumeOthers(bool barrierLocked = false)
+    {
+        ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+        atomicSubtract(&m_unparkedThreadCount, threads.size());
+        releaseStore(&m_canResume, 1);
+
+        if (UNLIKELY(barrierLocked)) {
+            m_resume.broadcast();
+        } else {
+            // FIXME: Resumed threads will all contend for m_mutex just
+            // to unlock it later which is a waste of resources.
+            MutexLocker locker(m_mutex);
+            m_resume.broadcast();
+        }
+
+        threadAttachMutex().unlock();
+        ASSERT(ThreadState::current()->isAtSafePoint());
+    }
+
+    void checkAndPark(ThreadState* state, SafePointAwareMutexLocker* locker = nullptr)
+    {
+        ASSERT(!state->sweepForbidden());
+        if (!acquireLoad(&m_canResume)) {
+            // If we are leaving the safepoint from a SafePointAwareMutexLocker
+            // call out to release the lock before going to sleep. This enables the
+            // lock to be acquired in the sweep phase, e.g. during weak processing
+            // or finalization. The SafePointAwareLocker will reenter the safepoint
+            // and reacquire the lock after leaving this safepoint.
+            if (locker)
+                locker->reset();
+            pushAllRegisters(this, state, parkAfterPushRegisters);
+        }
+    }
+
+    void enterSafePoint(ThreadState* state)
+    {
+        ASSERT(!state->sweepForbidden());
+        pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
+    }
+
+    void leaveSafePoint(ThreadState* state, SafePointAwareMutexLocker* locker = nullptr)
+    {
+        if (atomicIncrement(&m_unparkedThreadCount) > 0)
+            checkAndPark(state, locker);
+    }
+
+private:
+    void doPark(ThreadState* state, intptr_t* stackEnd)
+    {
+        state->recordStackEnd(stackEnd);
+        MutexLocker locker(m_mutex);
+        if (!atomicDecrement(&m_unparkedThreadCount))
+            m_parked.signal();
+        while (!acquireLoad(&m_canResume))
+            m_resume.wait(m_mutex);
+        atomicIncrement(&m_unparkedThreadCount);
+    }
+
+    static void parkAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
+    {
+        barrier->doPark(state, stackEnd);
+    }
+
+    void doEnterSafePoint(ThreadState* state, intptr_t* stackEnd)
+    {
+        state->recordStackEnd(stackEnd);
+        state->copyStackUntilSafePointScope();
+        // m_unparkedThreadCount tracks amount of unparked threads. It is
+        // positive if and only if we have requested other threads to park
+        // at safe-points in preparation for GC. The last thread to park
+        // itself will make the counter hit zero and should notify GC thread
+        // that it is safe to proceed.
+        // If no other thread is waiting for other threads to park then
+        // this counter can be negative: if N threads are at safe-points
+        // the counter will be -N.
+        if (!atomicDecrement(&m_unparkedThreadCount)) {
+            MutexLocker locker(m_mutex);
+            m_parked.signal(); // Safe point reached.
+        }
+    }
+
+    static void enterSafePointAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
+    {
+        barrier->doEnterSafePoint(state, stackEnd);
+    }
+
+    volatile int m_canResume;
+    volatile int m_unparkedThreadCount;
+    Mutex m_mutex;
+    ThreadCondition m_parked;
+    ThreadCondition m_resume;
+};
 
 ThreadState::ThreadState()
     : m_thread(currentThread())
@@ -1026,16 +1169,6 @@ ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
 {
     DEFINE_STATIC_LOCAL(AttachedThreadStateSet, threads, ());
     return threads;
-}
-
-void ThreadState::lockThreadAttachMutex()
-{
-    threadAttachMutex().lock();
-}
-
-void ThreadState::unlockThreadAttachMutex()
-{
-    threadAttachMutex().unlock();
 }
 
 void ThreadState::unregisterPreFinalizerInternal(void* target)

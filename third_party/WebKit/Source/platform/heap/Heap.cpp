@@ -36,7 +36,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/MarkingVisitorImpl.h"
-#include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
 #include "wtf/AddressSpaceRandomization.h"
@@ -474,7 +473,7 @@ public:
 
 private:
     ThreadState* m_state;
-    SafePointScope m_safePointScope;
+    ThreadState::SafePointScope m_safePointScope;
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
