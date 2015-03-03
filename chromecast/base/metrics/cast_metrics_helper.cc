@@ -149,6 +149,8 @@ void CastMetricsHelper::LogMediaPause() {
 
 void CastMetricsHelper::LogTimeToFirstPaint() {
   MAKE_SURE_THREAD(LogTimeToFirstPaint);
+  if (app_id_.empty())
+    return;
   base::TimeDelta launch_time = base::TimeTicks::Now() - app_start_time_;
   const std::string uma_name(GetMetricsNameWithAppName("Startup",
                                                        "TimeToFirstPaint"));
