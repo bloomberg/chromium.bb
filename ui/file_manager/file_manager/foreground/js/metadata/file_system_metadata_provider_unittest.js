@@ -67,8 +67,7 @@ function testFileSystemMetadataProviderBasic(callback) {
 }
 
 function testFileSystemMetadataProviderPartialRequest(callback) {
-  var cache = new MetadataProviderCache();
-  var provider = new FileSystemMetadataProvider(cache);
+  var provider = new FileSystemMetadataProvider();
   reportPromise(provider.get(
       [new MetadataRequest(entryA, ['modificationTime', 'size'])]).then(
       function(results) {

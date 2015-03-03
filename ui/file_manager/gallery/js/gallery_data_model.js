@@ -6,12 +6,12 @@
  * Data model for gallery.
  *
  * @param {!MetadataCache} metadataCache Metadata cache.
- * @param {!FileSystemMetadata} fileSystemMetadata
+ * @param {!MetadataModel} metadataModel
  * @param {!EntryListWatcher=} opt_watcher Entry list watcher.
  * @constructor
  * @extends {cr.ui.ArrayDataModel}
  */
-function GalleryDataModel(metadataCache, fileSystemMetadata, opt_watcher) {
+function GalleryDataModel(metadataCache, metadataModel, opt_watcher) {
   cr.ui.ArrayDataModel.call(this, []);
 
   /**
@@ -23,10 +23,10 @@ function GalleryDataModel(metadataCache, fileSystemMetadata, opt_watcher) {
 
   /**
    * File system metadata.
-   * @private {!FileSystemMetadata}
+   * @private {!MetadataModel}
    * @const
    */
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   /**
    * Directory where the image is saved if the image is located in a read-only
@@ -102,7 +102,7 @@ GalleryDataModel.prototype.saveItem = function(
                 oldLocationInfo,
                 oldMetadata,
                 this.metadataCache_,
-                this.fileSystemMetadata_,
+                this.metadataModel_,
                 item.isOriginal());
             // The item must be added behind the existing item so that it does
             // not change the index of the existing item.

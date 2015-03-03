@@ -396,8 +396,8 @@ SubDirectoryItem.prototype.setContextMenu = function(menu) {
  */
 SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
   var icon = this.querySelector('.icon');
-  this.parentTree_.fileSystemMetadata.notifyEntriesChanged([this.dirEntry_]);
-  this.parentTree_.fileSystemMetadata.get([this.dirEntry_], ['shared']).then(
+  this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
+  this.parentTree_.metadataModel.get([this.dirEntry_], ['shared']).then(
       function(metadata) {
         icon.classList.toggle('shared', metadata[0] && metadata[0].shared);
       });
@@ -792,15 +792,14 @@ function DirectoryTree() {}
  * @param {HTMLElement} el Element to be DirectoryTree.
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
  * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
- * @param {!FileSystemMetadata} fileSystemMetadata Shared MetadataCache
- *     instance.
+ * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.decorate = function(
-    el, directoryModel, volumeManager, fileSystemMetadata, fakeEntriesVisible) {
+    el, directoryModel, volumeManager, metadataModel, fakeEntriesVisible) {
   el.__proto__ = DirectoryTree.prototype;
   /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
-      directoryModel, volumeManager, fileSystemMetadata, fakeEntriesVisible);
+      directoryModel, volumeManager, metadataModel, fakeEntriesVisible);
 };
 
 DirectoryTree.prototype = {
@@ -839,11 +838,11 @@ DirectoryTree.prototype = {
   },
 
   /**
-   * The reference to shared FileSystemMetadata instance.
-   * @type {!FileSystemMetadata}
+   * The reference to shared MetadataModel instance.
+   * @type {!MetadataModel}
    */
-  get fileSystemMetadata() {
-    return this.fileSystemMetadata_;
+  get metadataModel() {
+    return this.metadataModel_;
   },
 
   set dataModel(dataModel) {
@@ -959,18 +958,17 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
  * Decorates an element.
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
  * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
- * @param {!FileSystemMetadata} fileSystemMetadata Shared MetadataCache
- *     instance.
+ * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.prototype.decorateDirectoryTree = function(
-    directoryModel, volumeManager, fileSystemMetadata, fakeEntriesVisible) {
+    directoryModel, volumeManager, metadataModel, fakeEntriesVisible) {
   cr.ui.Tree.prototype.decorate.call(this);
 
   this.sequence_ = 0;
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
   this.models_ = [];
 
   this.fileFilter_ = this.directoryModel_.getFileFilter();

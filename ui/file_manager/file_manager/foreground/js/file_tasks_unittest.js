@@ -55,7 +55,7 @@ function getMockFileManager() {
       openSuggestAppsDialog: function(
           entry, onSuccess, onCancelled, onFailure) {}
     },
-    getFileSystemMetadata: function() {}
+    getMetadataModel: function() {}
   };
 }
 

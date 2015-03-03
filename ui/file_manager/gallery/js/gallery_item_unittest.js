@@ -63,7 +63,7 @@ function testSaveToFile(callback) {
       {isReadOnly: false},
       {name: 'oldMetadata'},
       metadataCache,
-      // Mock of FileSystemMetadata.
+      // Mock of MetadataModel.
       {
         get: function() {
           return Promise.resolve([{}]);

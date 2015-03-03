@@ -124,9 +124,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheSet) {
       "foreground/js/metadata/metadata_cache_set_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NewMetadataProvider) {
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMetadataProvider) {
   RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/new_metadata_provider_unittest.html")));
+      "foreground/js/metadata/multi_metadata_provider_unittest.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListThumbnailLoader) {
@@ -149,9 +149,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
       "foreground/js/metadata/content_metadata_provider_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileSystemMetadata) {
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataModel) {
   RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/file_system_metadata_unittest.html")));
+      "foreground/js/metadata/metadata_model_unittest.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {

@@ -109,11 +109,12 @@
 //<include src="launch_param.js">
 //<include src="metadata/content_metadata_provider.js">
 //<include src="metadata/external_metadata_provider.js">
-//<include src="metadata/file_system_metadata.js">
 //<include src="metadata/file_system_metadata_provider.js">
 //<include src="metadata/metadata_cache.js">
 //<include src="metadata/metadata_cache_item.js">
 //<include src="metadata/metadata_item.js">
+//<include src="metadata/metadata_model.js">
+//<include src="metadata/multi_metadata_provider.js">
 //<include src="metadata/thumbnail_model.js">
 //<include src="metadata_update_controller.js">
 //<include src="naming_controller.js">

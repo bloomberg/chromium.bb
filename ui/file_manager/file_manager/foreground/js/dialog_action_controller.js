@@ -9,7 +9,7 @@
  * @param {DialogType} dialogType Dialog type.
  * @param {!DialogFooter} dialogFooter Dialog footer.
  * @param {!DirectoryModel} directoryModel Directory model.
- * @param {!FileSystemMetadata} fileSystemMetadata Metadata cache.
+ * @param {!MetadataModel} metadataModel Metadata cache.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {!FileFilter} fileFilter File filter model.
  * @param {!NamingController} namingController Naming controller.
@@ -23,7 +23,7 @@ function DialogActionController(
     dialogType,
     dialogFooter,
     directoryModel,
-    fileSystemMetadata,
+    metadataModel,
     volumeManager,
     fileFilter,
     namingController,
@@ -51,11 +51,11 @@ function DialogActionController(
   this.directoryModel_ = directoryModel;
 
   /**
-   * @type {!FileSystemMetadata}
+   * @type {!MetadataModel}
    * @const
    * @private
    */
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   /**
    * @type {!VolumeManagerWrapper}
@@ -369,7 +369,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
 
   // TODO(mtomasz): Use Entry instead of URLs, if possible.
   util.URLsToEntries(selection.urls, function(entries) {
-    this.fileSystemMetadata_.get(entries, ['present']).then(onProperties);
+    this.metadataModel_.get(entries, ['present']).then(onProperties);
   }.bind(this));
 };
 

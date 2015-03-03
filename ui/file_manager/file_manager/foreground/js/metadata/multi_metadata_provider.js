@@ -3,24 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
- * @constructor
- * @struct
- * @extends {CachedMetadataProvider}
- */
-function FileSystemMetadata(volumeManager) {
-  CachedMetadataProvider.call(
-      this,
-      new MultiMetadataProvider(
-          new FileSystemMetadataProvider(),
-          new ExternalMetadataProvider(),
-          new ContentMetadataProvider(),
-          volumeManager));
-};
-
-FileSystemMetadata.prototype.__proto__ = CachedMetadataProvider.prototype;
-
-/**
  * @param {!FileSystemMetadataProvider} fileSystemMetadataProvider
  * @param {!ExternalMetadataProvider} externalMetadataProvider
  * @param {!ContentMetadataProvider} contentMetadataProvider

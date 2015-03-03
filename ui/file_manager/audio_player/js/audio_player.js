@@ -17,7 +17,7 @@ function AudioPlayer(container) {
   this.container_ = container;
   this.volumeManager_ = new VolumeManagerWrapper(
       VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
-  this.fileSystemMetadata_ = new FileSystemMetadata(this.volumeManager_);
+  this.metadataModel_ = new MetadataModel.create(this.volumeManager_);
   this.selectedEntry_ = null;
 
   this.model_ = new AudioPlayerModel();
@@ -237,7 +237,7 @@ AudioPlayer.prototype.select_ = function(newTrack, time) {
  * @private
  */
 AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
-  this.fileSystemMetadata_.get(
+  this.metadataModel_.get(
       [entry], ['mediaTitle', 'mediaArtist', 'present']).then(
       function(generation, metadata) {
         // Do nothing if another load happened since the metadata request.

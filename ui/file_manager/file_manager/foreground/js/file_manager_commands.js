@@ -133,7 +133,7 @@ CommandUtil.getPinTargetEntries = function() {
     hasDirectory = hasDirectory || entry.isDirectory;
     if (!entry || hasDirectory)
       return false;
-    var metadata = fileManager.getFileSystemMetadata().getCache(
+    var metadata = fileManager.getMetadataModel().getCache(
         [entry], ['hosted', 'pinned'])[0];
     if (metadata.hosted)
       return false;
@@ -892,7 +892,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
       return;
     var currentEntry;
     var error = false;
-    var fileSystemMetadata = fileManager.getFileSystemMetadata();
+    var metadataModel = fileManager.getMetadataModel();
     var steps = {
       // Pick an entry and pin it.
       start: function() {
@@ -911,14 +911,14 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
         // Convert to boolean.
         error = !!chrome.runtime.lastError;
         if (error && pin) {
-          fileSystemMetadata.get([currentEntry], ['size']).then(
+          metadataModel.get([currentEntry], ['size']).then(
               function(results) {
                 steps.showError(results[0].size);
               });
           return;
         }
-        fileSystemMetadata.notifyEntriesChanged([currentEntry]);
-        fileSystemMetadata.get([currentEntry], ['pinned']).then(steps.updateUI);
+        metadataModel.notifyEntriesChanged([currentEntry]);
+        metadataModel.get([currentEntry], ['pinned']).then(steps.updateUI);
       },
 
       // Update the user interface according to the cache state.

@@ -56,38 +56,38 @@ var entryB = {
   toURL: function() { return "filesystem://B"; }
 };
 
-function testNewMetadataProviderBasic(callback) {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
-  reportPromise(provider.get([entryA, entryB], ['property']).then(
+function testMetadataModelBasic(callback) {
+  var model = new MetadataModel(new TestMetadataProvider());
+  reportPromise(model.get([entryA, entryB], ['property']).then(
       function(results) {
-        assertEquals(1, provider.getRawProvider().requestCount);
+        assertEquals(1, model.getProvider().requestCount);
         assertEquals('filesystem://A:property', results[0].property);
         assertEquals('filesystem://B:property', results[1].property);
       }), callback);
 }
 
-function testNewMetadataProviderRequestForCachedProperty(callback) {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
-  reportPromise(provider.get([entryA, entryB], ['property']).then(
+function testMetadataModelRequestForCachedProperty(callback) {
+  var model = new MetadataModel(new TestMetadataProvider());
+  reportPromise(model.get([entryA, entryB], ['property']).then(
       function() {
         // All the result should be cached here.
-        return provider.get([entryA, entryB], ['property']);
+        return model.get([entryA, entryB], ['property']);
       }).then(function(results) {
-        assertEquals(1, provider.getRawProvider().requestCount);
+        assertEquals(1, model.getProvider().requestCount);
         assertEquals('filesystem://A:property', results[0].property);
         assertEquals('filesystem://B:property', results[1].property);
       }), callback);
 }
 
-function testNewMetadataProviderRequestForCachedAndNonCachedProperty(callback) {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
-  reportPromise(provider.get([entryA, entryB], ['propertyA']).then(
+function testMetadataModelRequestForCachedAndNonCachedProperty(callback) {
+  var model = new MetadataModel(new TestMetadataProvider());
+  reportPromise(model.get([entryA, entryB], ['propertyA']).then(
       function() {
-        assertEquals(1, provider.getRawProvider().requestCount);
+        assertEquals(1, model.getProvider().requestCount);
         // propertyB has not been cached here.
-        return provider.get([entryA, entryB], ['propertyA', 'propertyB']);
+        return model.get([entryA, entryB], ['propertyA', 'propertyB']);
       }).then(function(results) {
-        assertEquals(2, provider.getRawProvider().requestCount);
+        assertEquals(2, model.getProvider().requestCount);
         assertEquals('filesystem://A:propertyA', results[0].propertyA);
         assertEquals('filesystem://A:propertyB', results[0].propertyB);
         assertEquals('filesystem://B:propertyA', results[1].propertyA);
@@ -95,46 +95,46 @@ function testNewMetadataProviderRequestForCachedAndNonCachedProperty(callback) {
       }), callback);
 }
 
-function testNewMetadataProviderRequestForCachedAndNonCachedEntry(callback) {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
-  reportPromise(provider.get([entryA], ['property']).then(
+function testMetadataModelRequestForCachedAndNonCachedEntry(callback) {
+  var model = new MetadataModel(new TestMetadataProvider());
+  reportPromise(model.get([entryA], ['property']).then(
       function() {
-        assertEquals(1, provider.getRawProvider().requestCount);
+        assertEquals(1, model.getProvider().requestCount);
         // entryB has not been cached here.
-        return provider.get([entryA, entryB], ['property']);
+        return model.get([entryA, entryB], ['property']);
       }).then(function(results) {
-        assertEquals(2, provider.getRawProvider().requestCount);
+        assertEquals(2, model.getProvider().requestCount);
         assertEquals('filesystem://A:property', results[0].property);
         assertEquals('filesystem://B:property', results[1].property);
       }), callback);
 }
 
-function testNewMetadataProviderRequestBeforeCompletingPreviousRequest(
+function testMetadataModelRequestBeforeCompletingPreviousRequest(
     callback) {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
-  provider.get([entryA], ['property']);
-  assertEquals(1, provider.getRawProvider().requestCount);
+  var model = new MetadataModel(new TestMetadataProvider());
+  model.get([entryA], ['property']);
+  assertEquals(1, model.getProvider().requestCount);
   // The result of first call has not been fetched yet.
-  reportPromise(provider.get([entryA], ['property']).then(
+  reportPromise(model.get([entryA], ['property']).then(
       function(results) {
-        assertEquals(1, provider.getRawProvider().requestCount);
+        assertEquals(1, model.getProvider().requestCount);
         assertEquals('filesystem://A:property', results[0].property);
       }), callback);
 }
 
-function testNewMetadataProviderNotUpdateCachedResultAfterRequest(
+function testMetadataModelNotUpdateCachedResultAfterRequest(
     callback) {
-  var provider = new CachedMetadataProvider(new ManualTestMetadataProvider());
-  var promise = provider.get([entryA], ['propertyA']);
-  provider.getRawProvider().callback[0]([{propertyA: 'valueA1'}]);
+  var model = new MetadataModel(new ManualTestMetadataProvider());
+  var promise = model.get([entryA], ['propertyA']);
+  model.getProvider().callback[0]([{propertyA: 'valueA1'}]);
   reportPromise(promise.then(function() {
     // 'propertyA' is cached here.
-    var promise1 = provider.get([entryA], ['propertyA', 'propertyB']);
-    var promise2 = provider.get([entryA], ['propertyC']);
+    var promise1 = model.get([entryA], ['propertyA', 'propertyB']);
+    var promise2 = model.get([entryA], ['propertyC']);
     // Returns propertyC.
-    provider.getRawProvider().callback[2](
+    model.getProvider().callback[2](
         [{propertyA: 'valueA2', propertyC: 'valueC'}]);
-    provider.getRawProvider().callback[1]([{propertyB: 'valueB'}]);
+    model.getProvider().callback[1]([{propertyB: 'valueB'}]);
     return Promise.all([promise1, promise2]);
   }).then(function(results) {
     // The result should be cached value at the time when get was called.
@@ -144,29 +144,29 @@ function testNewMetadataProviderNotUpdateCachedResultAfterRequest(
   }), callback);
 }
 
-function testNewMetadataProviderGetCache(callback) {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
-  var promise = provider.get([entryA], ['property']);
-  var cache = provider.getCache([entryA], ['property']);
+function testMetadataModelGetCache(callback) {
+  var model = new MetadataModel(new TestMetadataProvider());
+  var promise = model.get([entryA], ['property']);
+  var cache = model.getCache([entryA], ['property']);
   assertEquals(null, cache[0].property);
   reportPromise(promise.then(function() {
-    var cache = provider.getCache([entryA], ['property']);
-    assertEquals(1, provider.getRawProvider().requestCount);
+    var cache = model.getCache([entryA], ['property']);
+    assertEquals(1, model.getProvider().requestCount);
     assertEquals('filesystem://A:property', cache[0].property);
   }), callback);
 }
 
-function testNewMetadataProviderUnknownProperty() {
-  var provider = new CachedMetadataProvider(new TestMetadataProvider());
+function testMetadataModelUnknownProperty() {
+  var model = new MetadataModel(new TestMetadataProvider());
   assertThrows(function() {
-    provider.get([entryA], ['unknown']);
+    model.get([entryA], ['unknown']);
   });
 }
 
-function testNewMetadataProviderEmptyResult(callback) {
-  var provider = new CachedMetadataProvider(new TestEmptyMetadataProvider());
+function testMetadataModelEmptyResult(callback) {
+  var model = new MetadataModel(new TestEmptyMetadataProvider());
   // getImpl returns empty result.
-  reportPromise(provider.get([entryA], ['property']).then(function(results) {
+  reportPromise(model.get([entryA], ['property']).then(function(results) {
     assertEquals(undefined, results[0].property);
   }), callback);
 }

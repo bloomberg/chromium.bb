@@ -6,13 +6,13 @@
  * Controller for list contents update.
  * @param {!ListContainer} listContainer
  * @param {!DirectoryModel} directoryModel
- * @param {!FileSystemMetadata} fileSystemMetadata
+ * @param {!MetadataModel} metadataModel
  * @constructor
  * @struct
  */
 function MetadataUpdateController(listContainer,
                                   directoryModel,
-                                  fileSystemMetadata) {
+                                  metadataModel) {
   /**
    * @private {!DirectoryModel}
    * @const
@@ -20,10 +20,10 @@ function MetadataUpdateController(listContainer,
   this.directoryModel_ = directoryModel;
 
   /**
-   * @private {!FileSystemMetadata}
+   * @private {!MetadataModel}
    * @const
    */
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   /**
    * @private {!ListContainer}
@@ -34,7 +34,7 @@ function MetadataUpdateController(listContainer,
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
   this.onPreferencesChanged_();
-  fileSystemMetadata.addEventListener(
+  metadataModel.addEventListener(
       'update', this.onCachedMetadataUpdate_.bind(this));
 
   // Update metadata to change 'Today' and 'Yesterday' dates.
@@ -68,11 +68,11 @@ MetadataUpdateController.prototype.refreshCurrentDirectoryMetadata =
   // changed.
   var isFakeEntry = util.isFakeEntry(directoryEntry);
   var changedEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
-  this.fileSystemMetadata_.notifyEntriesChanged(changedEntries);
+  this.metadataModel_.notifyEntriesChanged(changedEntries);
 
   // We don't pass callback here. When new metadata arrives, we have an
   // observer registered to update the UI.
-  this.fileSystemMetadata_.get(
+  this.metadataModel_.get(
       changedEntries, this.directoryModel_.getPrefetchPropertyNames());
 };
 
@@ -95,7 +95,7 @@ MetadataUpdateController.prototype.onCachedMetadataUpdate_ = function(event) {
 MetadataUpdateController.prototype.dailyUpdateModificationTime_ = function() {
   var entries = /** @type {!Array<!Entry>} */(
       this.directoryModel_.getFileList().slice());
-  this.fileSystemMetadata_.get(entries, ['modificationTime']).then(function() {
+  this.metadataModel_.get(entries, ['modificationTime']).then(function() {
     this.listContainer_.currentView.updateListItemsMetadata(
         'filesystem', entries);
   }.bind(this));

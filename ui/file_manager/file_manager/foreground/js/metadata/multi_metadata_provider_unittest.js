@@ -33,7 +33,7 @@ var volumeManager = {
   }
 };
 
-function testFileSystemMetadataBasic(callback) {
+function testMultiMetadataProviderBasic(callback) {
   var model = new MultiMetadataProvider(
       // Mocking FileSystemMetadataProvider.
       {
@@ -93,7 +93,7 @@ function testFileSystemMetadataBasic(callback) {
   }), callback);
 }
 
-function testFileSystemMetadataExternalAndContentProperty(callback) {
+function testMultiMetadataProviderExternalAndContentProperty(callback) {
   var model = new MultiMetadataProvider(
       // Mocking FileSystemMetadataProvider.
       {

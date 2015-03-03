@@ -5,7 +5,7 @@
 /**
  * @param {DialogType} dialogType
  * @param {!FileManagerUI} ui
- * @param {!FileSystemMetadata} fileSystemMetadata
+ * @param {!MetadataModel} metadataModel
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!MetadataUpdateController} metadataUpdateController
  * @param {function():!FileTasks} createTask
@@ -13,7 +13,7 @@
  * @struct
  */
 function TaskController(
-    dialogType, ui, fileSystemMetadata, selectionHandler,
+    dialogType, ui, metadataModel, selectionHandler,
     metadataUpdateController, createTask) {
   /**
    * @type {DialogType}
@@ -30,11 +30,11 @@ function TaskController(
   this.ui_ = ui;
 
   /**
-   * @type {!FileSystemMetadata}
+   * @type {!MetadataModel}
    * @const
    * @private
    */
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   /**
    * @type {!FileSelectionHandler}
@@ -263,7 +263,7 @@ TaskController.prototype.openSuggestAppsDialog =
  * @private
  */
 TaskController.prototype.getMimeType_ = function(entry) {
-  return this.fileSystemMetadata_.get([entry], ['contentMimeType']).then(
+  return this.metadataModel_.get([entry], ['contentMimeType']).then(
       function(properties) {
         if (properties[0].contentMimeType)
           return properties[0].contentMimeType;
@@ -367,7 +367,7 @@ TaskController.prototype.updateContextMenuActionItems_ = function(items) {
  */
 TaskController.prototype.doEntryAction = function(entry) {
   if (this.dialogType_ == DialogType.FULL_PAGE) {
-    this.fileSystemMetadata_.get([entry], ['contentMimeType']).then(
+    this.metadataModel_.get([entry], ['contentMimeType']).then(
         function(props) {
           var tasks = this.createTask_();
           tasks.init([entry], [props[0].contentMimeType || '']);

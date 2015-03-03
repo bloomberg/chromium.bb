@@ -109,7 +109,7 @@ function FileSelection(fileManager, indexes) {
  */
 FileSelection.prototype.completeInit = function() {
   if (!this.asyncInitPromise_) {
-    this.asyncInitPromise_ = this.fileManager_.getFileSystemMetadata().get(
+    this.asyncInitPromise_ = this.fileManager_.getMetadataModel().get(
         this.entries, ['availableOffline', 'contentMimeType']
     ).then(function(props) {
       var present = props.filter(function(p) { return p.availableOffline; });

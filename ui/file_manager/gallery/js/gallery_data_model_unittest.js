@@ -11,7 +11,7 @@ function setUp() {
   var metadataCache = new MockMetadataCache();
   model = new GalleryDataModel(
       metadataCache,
-      /* Mock FileSystemMetadata */{},
+      /* Mock MetadataModel */{},
       /* Mock EntryListWatcher */{});
   fileSystem = new MockFileSystem('volumeId');
   item = new Gallery.Item(

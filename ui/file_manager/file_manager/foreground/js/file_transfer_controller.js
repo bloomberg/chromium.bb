@@ -24,7 +24,7 @@ var FileAsyncData;
  * @param {!ProgressCenter} progressCenter To notify starting copy operation.
  * @param {!FileOperationManager} fileOperationManager File operation manager
  *     instance.
- * @param {!FileSystemMetadata} fileSystemMetadata Metadata cache service.
+ * @param {!MetadataModel} metadataModel Metadata cache service.
  * @param {!ThumbnailModel} thumbnailModel
  * @param {!DirectoryModel} directoryModel Directory model instance.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
@@ -38,7 +38,7 @@ function FileTransferController(doc,
                                 multiProfileShareDialog,
                                 progressCenter,
                                 fileOperationManager,
-                                fileSystemMetadata,
+                                metadataModel,
                                 thumbnailModel,
                                 directoryModel,
                                 volumeManager,
@@ -65,11 +65,11 @@ function FileTransferController(doc,
   this.fileOperationManager_ = fileOperationManager;
 
   /**
-   * @type {!FileSystemMetadata}
+   * @type {!MetadataModel}
    * @private
    * @const
    */
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   /**
    * @type {!ThumbnailModel}
@@ -1106,7 +1106,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
     this.preloadThumbnailImage_(entries[0]);
   }
 
-  this.fileSystemMetadata_.get(entries, ['externalFileUrl']).then(
+  this.metadataModel_.get(entries, ['externalFileUrl']).then(
       function(metadataList) {
         // |Copy| is the only menu item affected by allDriveFilesAvailable_.
         // It could be open right now, update its UI.

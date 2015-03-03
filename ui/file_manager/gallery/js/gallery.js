@@ -53,10 +53,10 @@ function Gallery(volumeManager) {
   this.metadataCache_ = this.context_.metadataCache;
   this.volumeManager_ = volumeManager;
   /**
-   * @private {!FileSystemMetadata}
+   * @private {!MetadataModel}
    * @const
    */
-  this.fileSystemMetadata_ = new FileSystemMetadata(volumeManager);
+  this.metadataModel_ = MetadataModel.create(volumeManager);
   this.selectedEntry_ = null;
   this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
@@ -64,7 +64,7 @@ function Gallery(volumeManager) {
 
   this.dataModel_ = new GalleryDataModel(
       this.context_.metadataCache,
-      this.fileSystemMetadata_);
+      this.metadataModel_);
   var downloadVolumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS);
   downloadVolumeInfo.resolveDisplayRoot().then(function(entry) {
@@ -392,7 +392,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
             locationInfo,
             clonedMetadata,
             self.metadataCache_,
-            self.fileSystemMetadata_,
+            self.metadataModel_,
             /* original */ true));
       });
       self.dataModel_.push.apply(self.dataModel_, items);

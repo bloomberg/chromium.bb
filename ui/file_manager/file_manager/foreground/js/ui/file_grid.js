@@ -22,15 +22,15 @@ FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
 /**
  * Decorates an HTML element to be a FileGrid.
  * @param {!Element} self The grid to decorate.
- * @param {!FileSystemMetadata} fileSystemMetadata File system metadata.
+ * @param {!MetadataModel} metadataModel File system metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  */
 FileGrid.decorate = function(
-    self, fileSystemMetadata, volumeManager, historyLoader) {
+    self, metadataModel, volumeManager, historyLoader) {
   cr.ui.Grid.decorate(self);
   self.__proto__ = FileGrid.prototype;
-  self.fileSystemMetadata_ = fileSystemMetadata;
+  self.metadataModel_ = metadataModel;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
 
@@ -138,7 +138,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
 
     FileGrid.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement),
                                    entry,
-                                   this.fileSystemMetadata_,
+                                   this.metadataModel_,
                                    this.volumeManager_,
                                    this.historyLoader_,
                                    this.listThumbnailLoader_);
@@ -168,7 +168,7 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  * Decorates thumbnail.
  * @param {cr.ui.ListItem} li List item.
  * @param {!Entry} entry Entry to render a thumbnail for.
- * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
+ * @param {!MetadataModel} metadataModel To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  * @private
@@ -176,13 +176,13 @@ FileGrid.prototype.relayoutImmediately_ = function() {
 FileGrid.decorateThumbnail_ = function(
     li,
     entry,
-    fileSystemMetadata,
+    metadataModel,
     volumeManager,
     historyLoader,
     listThumbnailLoader) {
   li.className = 'thumbnail-item';
   if (entry)
-    filelist.decorateListItem(li, entry, fileSystemMetadata);
+    filelist.decorateListItem(li, entry, metadataModel);
 
   var frame = li.ownerDocument.createElement('div');
   frame.className = 'thumbnail-frame';
@@ -193,7 +193,7 @@ FileGrid.decorateThumbnail_ = function(
     FileGrid.decorateThumbnailBox_(
         assertInstanceof(box, HTMLDivElement),
         entry,
-        fileSystemMetadata,
+        metadataModel,
         volumeManager,
         historyLoader,
         listThumbnailLoader);
@@ -219,7 +219,7 @@ FileGrid.decorateThumbnail_ = function(
  *
  * @param {!HTMLDivElement} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
- * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
+ * @param {!MetadataModel} metadataModel To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
@@ -227,7 +227,7 @@ FileGrid.decorateThumbnail_ = function(
  * @private
  */
 FileGrid.decorateThumbnailBox_ = function(
-    box, entry, fileSystemMetadata, volumeManager, historyLoader,
+    box, entry, metadataModel, volumeManager, historyLoader,
     listThumbnailLoader, opt_imageLoadCallback) {
   box.className = 'img-container';
 
@@ -242,7 +242,7 @@ FileGrid.decorateThumbnailBox_ = function(
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
 
-    var shared = !!fileSystemMetadata.getCache([entry], ['shared'])[0].shared;
+    var shared = !!metadataModel.getCache([entry], ['shared'])[0].shared;
     box.classList.toggle('shared', shared);
 
     if (opt_imageLoadCallback)
@@ -366,7 +366,7 @@ FileGrid.Item.decorate = function(li, entry, grid) {
   FileGrid.decorateThumbnail_(
       li,
       entry,
-      grid.fileSystemMetadata_,
+      grid.metadataModel_,
       grid.volumeManager_,
       grid.historyLoader_,
       grid.listThumbnailLoader_);

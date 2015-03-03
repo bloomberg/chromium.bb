@@ -54,9 +54,9 @@ function FileManager() {
   this.mediaImportHandler_ = null;
 
   /**
-   * @private {FileSystemMetadata}
+   * @private {MetadataModel}
    */
-  this.fileSystemMetadata_ = null;
+  this.metadataModel_ = null;
 
   /**
    * @private {ThumbnailModel}
@@ -484,7 +484,7 @@ FileManager.prototype = /** @struct */ {
         this.ui_.multiProfileShareDialog,
         assert(this.backgroundPage_.background.progressCenter),
         assert(this.fileOperationManager_),
-        assert(this.fileSystemMetadata_),
+        assert(this.metadataModel_),
         assert(this.thumbnailModel_),
         assert(this.directoryModel_),
         assert(this.volumeManager_),
@@ -688,8 +688,8 @@ FileManager.prototype = /** @struct */ {
 
     // Create the metadata cache.
     assert(this.volumeManager_);
-    this.fileSystemMetadata_ = new FileSystemMetadata(this.volumeManager_);
-    this.thumbnailModel_ = new ThumbnailModel(this.fileSystemMetadata_);
+    this.metadataModel_ = MetadataModel.create(this.volumeManager_);
+    this.thumbnailModel_ = new ThumbnailModel(this.metadataModel_);
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
@@ -714,11 +714,11 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initAdditionalUI_ = function(callback) {
-    assert(this.fileSystemMetadata_);
+    assert(this.metadataModel_);
     assert(this.volumeManager_);
     assert(this.historyLoader_);
     assert(this.dialogDom_);
-    assert(this.fileSystemMetadata_);
+    assert(this.metadataModel_);
 
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
@@ -733,14 +733,14 @@ FileManager.prototype = /** @struct */ {
     table.importEnabled = false;
     FileTable.decorate(
         table,
-        this.fileSystemMetadata_,
+        this.metadataModel_,
         this.volumeManager_,
         this.historyLoader_,
         this.dialogType == DialogType.FULL_PAGE);
     var grid = queryRequiredElement(dom, '.thumbnail-grid');
     FileGrid.decorate(
         grid,
-        this.fileSystemMetadata_,
+        this.metadataModel_,
         this.volumeManager_,
         this.historyLoader_);
 
@@ -831,11 +831,11 @@ FileManager.prototype = /** @struct */ {
 
     assert(this.volumeManager_);
     assert(this.fileOperationManager_);
-    assert(this.fileSystemMetadata_);
+    assert(this.metadataModel_);
     this.directoryModel_ = new DirectoryModel(
         singleSelection,
         this.fileFilter_,
-        this.fileSystemMetadata_,
+        this.metadataModel_,
         this.volumeManager_,
         this.fileOperationManager_);
 
@@ -878,13 +878,13 @@ FileManager.prototype = /** @struct */ {
     this.metadataUpdateController_ = new MetadataUpdateController(
         this.ui_.listContainer,
         this.directoryModel_,
-        this.fileSystemMetadata_);
+        this.metadataModel_);
 
     // Create task controller.
     this.taskController_ = new TaskController(
         this.dialogType,
         this.ui_,
-        this.fileSystemMetadata_,
+        this.metadataModel_,
         this.selectionHandler_,
         this.metadataUpdateController_,
         function() { return new FileTasks(this); }.bind(this));
@@ -919,7 +919,7 @@ FileManager.prototype = /** @struct */ {
         this.dialogType,
         this.ui_.dialogFooter,
         this.directoryModel_,
-        this.fileSystemMetadata_,
+        this.metadataModel_,
         this.volumeManager_,
         this.fileFilter_,
         this.namingController_,
@@ -938,7 +938,7 @@ FileManager.prototype = /** @struct */ {
     DirectoryTree.decorate(directoryTree,
                            assert(this.directoryModel_),
                            assert(this.volumeManager_),
-                           assert(this.fileSystemMetadata_),
+                           assert(this.metadataModel_),
                            fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
         this.volumeManager_, this.folderShortcutsModel_);
@@ -1272,10 +1272,10 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * @return {!FileSystemMetadata}
+   * @return {!MetadataModel}
    */
-  FileManager.prototype.getFileSystemMetadata = function() {
-    return assert(this.fileSystemMetadata_);
+  FileManager.prototype.getMetadataModel = function() {
+    return assert(this.metadataModel_);
   };
 
   /**

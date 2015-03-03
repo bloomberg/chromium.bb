@@ -6,11 +6,11 @@ window.metrics = {
   recordEnum: function() {}
 };
 
-function MockFileSystemMetadata(properties) {
+function MockMetadataModel(properties) {
   this.properties_ = properties;
 }
 
-MockFileSystemMetadata.prototype.get = function() {
+MockMetadataModel.prototype.get = function() {
   return Promise.resolve([this.properties_]);
 };
 
@@ -48,7 +48,7 @@ function testDoEntryAction(callback) {
           defaultActionMenuItem: document.createElement('div')
         }
       },
-      new MockFileSystemMetadata({}),
+      new MockMetadataModel({}),
       new cr.EventTarget(),
       null,
       function() {
@@ -61,7 +61,7 @@ function testDoEntryAction(callback) {
           isOnDrive: function() {
             return true;
           },
-          getFileSystemMetadata: function() {}
+          getMetadataModel: function() {}
         });
       });
 
@@ -98,7 +98,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
             }
           }
         },
-        new MockFileSystemMetadata({contentMimeType: 'application/rtf'}),
+        new MockMetadataModel({contentMimeType: 'application/rtf'}),
         new cr.EventTarget(),
         null,
         null);
@@ -141,7 +141,7 @@ function testOpenSuggestAppsDialogWithoutMetadata(callback) {
             }
           }
         },
-        new MockFileSystemMetadata({}),
+        new MockMetadataModel({}),
         new cr.EventTarget(),
         null,
         null);
@@ -171,7 +171,7 @@ function testOpenSuggestAppsDialogFailure(callback) {
             defaultActionMenuItem: document.createElement('div')
           }
         },
-        new MockFileSystemMetadata({contentMimeType: 'image/png'}),
+        new MockMetadataModel({contentMimeType: 'image/png'}),
         new cr.EventTarget(),
         null,
         null);

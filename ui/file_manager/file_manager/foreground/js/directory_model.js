@@ -14,7 +14,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
  * @param {FileFilter} fileFilter Instance of FileFilter.
- * @param {!FileSystemMetadata} fileSystemMetadata Metadata model.
+ * @param {!MetadataModel} metadataModel Metadata model.
  *     service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
@@ -22,7 +22,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @extends {cr.EventTarget}
  */
 function DirectoryModel(singleSelection, fileFilter,
-                        fileSystemMetadata,
+                        metadataModel,
                         volumeManager, fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
       new FileListSingleSelectionModel() : new FileListSelectionModel();
@@ -42,11 +42,11 @@ function DirectoryModel(singleSelection, fileFilter,
                                     this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ =
-      new FileListContext(fileFilter,  fileSystemMetadata);
+      new FileListContext(fileFilter,  metadataModel);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   this.volumeManager_ = volumeManager;
   this.volumeManager_.volumeInfoList.addEventListener(
@@ -494,7 +494,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
   }.bind(this);
 
   // Clear the table, and start scanning.
-  this.fileSystemMetadata_.clearAllCache();
+  this.metadataModel_.clearAllCache();
   cr.dispatchSimpleEvent(this, 'scan-started');
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);
@@ -844,7 +844,7 @@ DirectoryModel.prototype.createDirectory = function(name,
 
       then(function(newEntry) {
         // Refresh the cache.
-        this.fileSystemMetadata_.notifyEntriesCreated([newEntry]);
+        this.metadataModel_.notifyEntriesCreated([newEntry]);
         return new Promise(function(onFulfilled, onRejected) {
           dirContents.prefetchMetadata(
               [newEntry], false, onFulfilled.bind(null, newEntry));

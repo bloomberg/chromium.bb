@@ -393,18 +393,18 @@ FileFilter.prototype.filter = function(entry) {
 
 /**
  * File list.
- * @param {!FileSystemMetadata} fileSystemMetadata
+ * @param {!MetadataModel} metadataModel
  * @constructor
  * @extends {cr.ui.ArrayDataModel}
  */
-function FileListModel(fileSystemMetadata) {
+function FileListModel(metadataModel) {
   cr.ui.ArrayDataModel.call(this, []);
 
   /**
-   * @private {!FileSystemMetadata}
+   * @private {!MetadataModel}
    * @const
    */
-  this.fileSystemMetadata_ = fileSystemMetadata;
+  this.metadataModel_ = metadataModel;
 
   // Initialize compare functions.
   this.setCompareFunction('name',
@@ -483,7 +483,7 @@ FileListModel.prototype.compareMtime_ = function(a, b) {
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
   var properties =
-      this.fileSystemMetadata_.getCache([a, b], ['modificationTime']);
+      this.metadataModel_.getCache([a, b], ['modificationTime']);
   var aTime = properties[0].modificationTime || 0;
   var bTime = properties[1].modificationTime || 0;
 
@@ -508,7 +508,7 @@ FileListModel.prototype.compareSize_ = function(a, b) {
   if (a.isDirectory !== b.isDirectory)
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
-  var properties = this.fileSystemMetadata_.getCache([a, b], ['size']);
+  var properties = this.metadataModel_.getCache([a, b], ['size']);
   var aSize = properties[0].size || 0;
   var bSize = properties[1].size || 0;
 
@@ -539,20 +539,20 @@ FileListModel.prototype.compareType_ = function(a, b) {
  * TODO(yoshiki): remove this. crbug.com/224869.
  *
  * @param {FileFilter} fileFilter The file-filter context.
- * @param {!FileSystemMetadata} fileSystemMetadata
+ * @param {!MetadataModel} metadataModel
  * @constructor
  */
-function FileListContext(fileFilter, fileSystemMetadata) {
+function FileListContext(fileFilter, metadataModel) {
   /**
    * @type {FileListModel}
    */
-  this.fileList = new FileListModel(fileSystemMetadata);
+  this.fileList = new FileListModel(metadataModel);
 
   /**
-   * @public {!FileSystemMetadata}
+   * @public {!MetadataModel}
    * @const
    */
-  this.fileSystemMetadata = fileSystemMetadata;
+  this.metadataModel = metadataModel;
 
   /**
    * @type {FileFilter}
@@ -656,7 +656,7 @@ DirectoryContents.prototype.setFileList = function(fileList) {
 DirectoryContents.prototype.createMetadataSnapshot = function() {
   var snapshot = {};
   var entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
-  var metadata = this.context_.fileSystemMetadata.getCache(
+  var metadata = this.context_.metadataModel.getCache(
       entries, ['modificationTime']);
   for (var i = 0; i < entries.length; i++) {
     snapshot[entries[i].toURL()] = metadata[i];
@@ -693,7 +693,7 @@ DirectoryContents.prototype.replaceContextFileList = function() {
     if (this.metadataSnapshot_) {
       var updatedIndexes = [];
       var entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
-      var newMetadatas = this.context_.fileSystemMetadata.getCache(
+      var newMetadatas = this.context_.metadataModel.getCache(
           entries, ['modificationTime']);
 
       for (var i = 0; i < entries.length; i++) {
@@ -810,7 +810,7 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
   }
 
   if (removedUrls.length > 0)
-    this.context_.fileSystemMetadata.notifyEntriesRemoved(removedUrls);
+    this.context_.metadataModel.notifyEntriesRemoved(removedUrls);
 
   this.prefetchMetadata(updatedList, true, function() {
     this.onNewEntries_(true, addedList);
@@ -975,8 +975,8 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
 DirectoryContents.prototype.prefetchMetadata =
     function(entries, refresh, callback) {
   if (refresh)
-    this.context_.fileSystemMetadata.notifyEntriesChanged(entries);
-  this.context_.fileSystemMetadata.get(
+    this.context_.metadataModel.notifyEntriesChanged(entries);
+  this.context_.metadataModel.get(
       entries, this.context_.prefetchPropertyNames).then(callback);
 };
 

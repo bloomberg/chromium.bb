@@ -224,7 +224,7 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
 /**
  * Decorates the element.
  * @param {!Element} self Table to decorate.
- * @param {!FileSystemMetadata} fileSystemMetadata To retrieve
+ * @param {!MetadataModel} metadataModel To retrieve
  *     metadata.
  * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
  * @param {!importer.HistoryLoader} historyLoader
@@ -232,11 +232,11 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  *                           False if a file open/save dialog.
  */
 FileTable.decorate = function(
-    self, fileSystemMetadata, volumeManager, historyLoader, fullPage) {
+    self, metadataModel, volumeManager, historyLoader, fullPage) {
   cr.ui.Table.decorate(self);
   FileTableList.decorate(self.list);
   self.__proto__ = FileTable.prototype;
-  self.fileSystemMetadata_ = fileSystemMetadata;
+  self.metadataModel_ = metadataModel;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
 
@@ -565,7 +565,7 @@ FileTable.prototype.renderSize_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateSize_ = function(div, entry) {
-  var metadata = this.fileSystemMetadata_.getCache(
+  var metadata = this.metadataModel_.getCache(
       [entry], ['size', 'hosted'])[0];
   var size = metadata.size;
   if (size === null || size === undefined) {
@@ -695,7 +695,7 @@ FileTable.prototype.renderDate_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateDate_ = function(div, entry) {
-  var modTime = this.fileSystemMetadata_.getCache(
+  var modTime = this.metadataModel_.getCache(
       [entry], ['modificationTime'])[0].modificationTime;
 
   if (!modTime) {
@@ -777,7 +777,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
     forEachCell('.table-row-cell > .date', function(item, entry, listItem) {
       filelist.updateListItemExternalProps(
           listItem,
-          this.fileSystemMetadata_.getCache(
+          this.metadataModel_.getCache(
               [entry], ['availableOffline', 'customIconUrl', 'shared'])[0]);
     });
   } else if (type === 'import-history') {
@@ -796,7 +796,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
  */
 FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
   var item = baseRenderFunction(entry, this);
-  filelist.decorateListItem(item, entry, this.fileSystemMetadata_);
+  filelist.decorateListItem(item, entry, this.metadataModel_);
   return item;
 };
 
@@ -887,15 +887,15 @@ FileTable.prototype.relayoutImmediately_ = function() {
  * Common item decoration for table's and grid's items.
  * @param {cr.ui.ListItem} li List item.
  * @param {Entry} entry The entry.
- * @param {!FileSystemMetadata} fileSystemMetadata Cache to
+ * @param {!MetadataModel} metadataModel Cache to
  *     retrieve metadada.
  */
-filelist.decorateListItem = function(li, entry, fileSystemMetadata) {
+filelist.decorateListItem = function(li, entry, metadataModel) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
   // not on an external backend, externalProps is not available.
-  var externalProps = fileSystemMetadata.getCache(
+  var externalProps = metadataModel.getCache(
       [entry], ['hosted', 'availableOffline', 'customIconUrl', 'shared'])[0];
   filelist.updateListItemExternalProps(li, externalProps);
 

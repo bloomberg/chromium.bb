@@ -46,14 +46,15 @@
 //<include src="../../file_manager/common/js/util.js">
 //<include src="../../file_manager/common/js/volume_manager_common.js">
 //<include src="../../file_manager/foreground/js/metadata/content_metadata_provider.js">
+//<include src="../../file_manager/foreground/js/metadata/exif_constants.js">
 //<include src="../../file_manager/foreground/js/metadata/external_metadata_provider.js">
-//<include src="../../file_manager/foreground/js/metadata/file_system_metadata.js">
 //<include src="../../file_manager/foreground/js/metadata/file_system_metadata_provider.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache_item.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_item.js">
+//<include src="../../file_manager/foreground/js/metadata/metadata_model.js">
+//<include src="../../file_manager/foreground/js/metadata/multi_metadata_provider.js">
 //<include src="../../file_manager/foreground/js/metadata/thumbnail_model.js">
-//<include src="../../file_manager/foreground/js/metadata/exif_constants.js">
 //<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js">
 //<include src="../../file_manager/foreground/js/share_client.js">
 //<include src="../../file_manager/foreground/js/thumbnail_loader.js">
