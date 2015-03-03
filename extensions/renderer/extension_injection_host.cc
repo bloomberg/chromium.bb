@@ -29,15 +29,10 @@ const std::string& ExtensionInjectionHost::name() const {
 }
 
 PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
-    const GURL& document_url,
-    const GURL& top_frame_url,
-    int tab_id,
-    bool is_declarative) const {
-  // If we don't have a tab id, we have no UI surface to ask for user consent.
-  // For now, we treat this as an automatic allow.
-  if (tab_id == -1)
-    return PermissionsData::ACCESS_ALLOWED;
-
+      const GURL& document_url,
+      const GURL& top_frame_url,
+      int tab_id,
+      bool is_declarative) const {
   // Declarative user scripts use "page access" (from "permissions" section in
   // manifest) whereas non-declarative user scripts use custom
   // "content script access" logic.
