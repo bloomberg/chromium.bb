@@ -52,6 +52,10 @@ class UdevLoader {
   virtual udev_device* udev_device_new_from_devnum(udev* udev,
                                                    char type,
                                                    dev_t devnum) = 0;
+  virtual udev_device* udev_device_new_from_subsystem_sysname(
+      udev* udev,
+      const char* subsystem,
+      const char* sysname) = 0;
   virtual udev_device* udev_device_new_from_syspath(udev* udev,
                                                     const char* syspath) = 0;
   virtual void udev_device_unref(udev_device* udev_device) = 0;

@@ -54,6 +54,14 @@ udev_device* udev_device_new_from_devnum(udev* udev, char type, dev_t devnum) {
   return UdevLoader::Get()->udev_device_new_from_devnum(udev, type, devnum);
 }
 
+udev_device* udev_device_new_from_subsystem_sysname(
+    udev* udev,
+    const char* subsystem,
+    const char* sysname) {
+  return UdevLoader::Get()->udev_device_new_from_subsystem_sysname(
+      udev, subsystem, sysname);
+}
+
 udev_device* udev_device_new_from_syspath(udev* udev, const char* syspath) {
   return UdevLoader::Get()->udev_device_new_from_syspath(udev, syspath);
 }

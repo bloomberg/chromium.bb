@@ -36,6 +36,10 @@ class Udev0Loader : public UdevLoader {
   udev_device* udev_device_new_from_devnum(udev* udev,
                                            char type,
                                            dev_t devnum) override;
+  udev_device* udev_device_new_from_subsystem_sysname(
+      udev* udev,
+      const char* subsystem,
+      const char* sysname) override;
   udev_device* udev_device_new_from_syspath(udev* udev,
                                             const char* syspath) override;
   void udev_device_unref(udev_device* udev_device) override;

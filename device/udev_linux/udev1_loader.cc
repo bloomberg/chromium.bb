@@ -70,6 +70,14 @@ udev_device* Udev1Loader::udev_device_new_from_devnum(udev* udev,
   return lib_loader_->udev_device_new_from_devnum(udev, type, devnum);
 }
 
+udev_device* Udev1Loader::udev_device_new_from_subsystem_sysname(
+    udev* udev,
+    const char* subsystem,
+    const char* sysname) {
+  return lib_loader_->udev_device_new_from_subsystem_sysname(
+      udev, subsystem, sysname);
+}
+
 udev_device* Udev1Loader::udev_device_new_from_syspath(udev* udev,
                                                        const char* syspath) {
   return lib_loader_->udev_device_new_from_syspath(udev, syspath);

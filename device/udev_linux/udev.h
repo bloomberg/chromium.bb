@@ -42,6 +42,10 @@ const char* udev_device_get_sysattr_value(udev_device* udev_device,
 const char* udev_device_get_sysname(udev_device* udev_device);
 const char* udev_device_get_syspath(udev_device* udev_device);
 udev_device* udev_device_new_from_devnum(udev* udev, char type, dev_t devnum);
+udev_device* udev_device_new_from_subsystem_sysname(
+    udev* udev,
+    const char* subsystem,
+    const char* sysname);
 udev_device* udev_device_new_from_syspath(udev* udev, const char* syspath);
 void udev_device_unref(udev_device* udev_device);
 int udev_enumerate_add_match_subsystem(udev_enumerate* udev_enumerate,

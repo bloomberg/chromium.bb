@@ -63,6 +63,7 @@
       'udev_device_get_sysname',
       'udev_device_get_syspath',
       'udev_device_new_from_devnum',
+      'udev_device_new_from_subsystem_sysname',
       'udev_device_new_from_syspath',
       'udev_device_unref',
       'udev_enumerate_add_match_subsystem',
