@@ -168,14 +168,13 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual int domEnumFromCodeString(const blink::WebString& codeString);
 
  private:
-  static void DestroyCurrentThread(void*);
-
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
       shared_timer_func_();
   }
 
   void InternalInit();
+  void UpdateWebThreadTLS(blink::WebThread* thread);
 
   scoped_refptr<base::SingleThreadTaskRunner> MainTaskRunnerForCurrentThread();
 

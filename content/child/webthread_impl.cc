@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -119,12 +118,14 @@ void WebThreadBase::postDelayedTask(const blink::WebTraceLocation& web_location,
 
 void WebThreadBase::enterRunLoop() {
   CHECK(isCurrentThread());
+  CHECK(MessageLoop());
   CHECK(!MessageLoop()->is_running());  // We don't support nesting.
   MessageLoop()->Run();
 }
 
 void WebThreadBase::exitRunLoop() {
   CHECK(isCurrentThread());
+  CHECK(MessageLoop());
   CHECK(MessageLoop()->is_running());
   MessageLoop()->Quit();
 }
@@ -147,33 +148,11 @@ WebThreadImpl::~WebThreadImpl() {
 }
 
 base::MessageLoop* WebThreadImpl::MessageLoop() const {
-  return thread_->message_loop();
+  return nullptr;
 }
 
 base::SingleThreadTaskRunner* WebThreadImpl::TaskRunner() const {
   return thread_->message_loop_proxy().get();
-}
-
-WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
-    scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
-    : owning_thread_task_runner_(owning_thread_task_runner),
-      thread_id_(base::PlatformThread::CurrentId()) {
-}
-
-blink::PlatformThreadId WebThreadImplForMessageLoop::threadId() const {
-  return thread_id_;
-}
-
-WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {
-}
-
-base::MessageLoop* WebThreadImplForMessageLoop::MessageLoop() const {
-  DCHECK(isCurrentThread());
-  return base::MessageLoop::current();
-}
-
-base::SingleThreadTaskRunner* WebThreadImplForMessageLoop::TaskRunner() const {
-  return owning_thread_task_runner_.get();
 }
 
 }  // namespace content

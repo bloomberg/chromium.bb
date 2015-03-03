@@ -80,25 +80,6 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
   scoped_ptr<base::Thread> thread_;
 };
 
-class WebThreadImplForMessageLoop : public WebThreadBase {
- public:
-  CONTENT_EXPORT explicit WebThreadImplForMessageLoop(
-      scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner);
-  CONTENT_EXPORT virtual ~WebThreadImplForMessageLoop();
-
-  // blink::WebThread implementation.
-  blink::PlatformThreadId threadId() const override;
-
-  // WebThreadBase implementation.
-  base::MessageLoop* MessageLoop() const override;
-
- private:
-  base::SingleThreadTaskRunner* TaskRunner() const override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
-  blink::PlatformThreadId thread_id_;
-};
-
 } // namespace content
 
 #endif  // CONTENT_CHILD_WEBTHREAD_IMPL_H_

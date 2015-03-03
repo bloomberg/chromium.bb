@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/process/process_metrics.h"
@@ -417,8 +416,7 @@ BlinkPlatformImpl::BlinkPlatformImpl()
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0),
-      current_thread_slot_(&DestroyCurrentThread) {
+      shared_timer_suspended_(0) {
   InternalInit();
 }
 
@@ -428,8 +426,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0),
-      current_thread_slot_(&DestroyCurrentThread) {
+      shared_timer_suspended_(0) {
   // TODO(alexclarke): Use c++11 delegated constructors when allowed.
   InternalInit();
 }
@@ -450,6 +447,11 @@ void BlinkPlatformImpl::InternalInit() {
   if (main_thread_task_runner_.get()) {
     shared_timer_.SetTaskRunner(main_thread_task_runner_);
   }
+}
+
+void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread) {
+  DCHECK(!current_thread_slot_.Get());
+  current_thread_slot_.Set(thread);
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -499,23 +501,15 @@ bool BlinkPlatformImpl::isReservedIPAddress(
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  return new WebThreadImpl(name);
+  WebThreadImpl* thread = new WebThreadImpl(name);
+  thread->TaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS,
+                            base::Unretained(this), thread));
+  return thread;
 }
 
 blink::WebThread* BlinkPlatformImpl::currentThread() {
-  WebThreadImplForMessageLoop* thread =
-      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
-  if (thread)
-    return (thread);
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      MainTaskRunnerForCurrentThread();
-  if (!task_runner.get())
-    return NULL;
-
-  thread = new WebThreadImplForMessageLoop(task_runner);
-  current_thread_slot_.Set(thread);
-  return thread;
+  return static_cast<blink::WebThread*>(current_thread_slot_.Get());
 }
 
 void BlinkPlatformImpl::yieldCurrentThread() {
@@ -1242,13 +1236,6 @@ BlinkPlatformImpl::MainTaskRunnerForCurrentThread() {
   } else {
     return base::MessageLoopProxy::current();
   }
-}
-
-// static
-void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
-  WebThreadImplForMessageLoop* impl =
-      static_cast<WebThreadImplForMessageLoop*>(thread);
-  delete impl;
 }
 
 WebString BlinkPlatformImpl::domCodeStringFromEnum(int dom_code) {

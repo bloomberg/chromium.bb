@@ -86,6 +86,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual bool getBlobItems(const blink::WebString& uuid,
                             blink::WebVector<blink::WebBlobData::Item*>* items);
   virtual blink::WebScheduler* scheduler();
+  virtual blink::WebThread* currentThread();
 
  private:
   MockWebBlobRegistryImpl blob_registry_;
@@ -97,6 +98,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   cc_blink::WebCompositorSupportImpl compositor_support_;
   scoped_ptr<RendererScheduler> renderer_scheduler_;
   scoped_ptr<WebSchedulerImpl> web_scheduler_;
+  scoped_ptr<blink::WebThread> web_thread_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_;
