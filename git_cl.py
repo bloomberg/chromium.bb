@@ -56,6 +56,10 @@ POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingGit'
 CHANGE_ID = 'Change-Id:'
+REFS_THAT_ALIAS_TO_OTHER_REFS = {
+    'refs/remotes/origin/lkgr': 'refs/remotes/origin/master',
+    'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
+}
 
 # Valid extensions for files we want to lint.
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
@@ -1790,10 +1794,9 @@ def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
       if not match:
         # This is a branch path but not one we recognize; use as-is.
         remote_branch = target_branch
-  elif (not remote_branch.startswith('refs/remotes/branch-heads') and
-        not remote_branch.startswith('refs/remotes/%s/refs' % remote)):
-    # Default to master for refs that are not branches.
-    remote_branch = 'refs/remotes/%s/master' % remote
+  elif remote_branch in REFS_THAT_ALIAS_TO_OTHER_REFS:
+    # Handle the refs that need to land in different refs.
+    remote_branch = REFS_THAT_ALIAS_TO_OTHER_REFS[remote_branch]
 
   # Create the true path to the remote branch.
   # Does the following translation:

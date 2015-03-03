@@ -822,6 +822,10 @@ class TestGitCl(TestCase):
                      git_cl.GetTargetRef('origin',
                                          'refs/remotes/origin/refs/diff/test',
                                          None, None))
+    self.assertEqual('refs/heads/chrome/m42',
+                     git_cl.GetTargetRef('origin',
+                                         'refs/remotes/origin/chrome/m42',
+                                         None, None))
 
     # Check target refs for user-specified target branch.
     for branch in ('branch-heads/123', 'remotes/branch-heads/123',
