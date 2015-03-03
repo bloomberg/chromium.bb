@@ -9,8 +9,6 @@ import optparse
 import logging
 import unittest
 
-from measurements import rasterize_and_record_micro
-
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
 from telemetry.page import page_test
@@ -66,8 +64,6 @@ class MeasurementSmokeTest(unittest.TestCase):
   def testNoNewActionNameToRunUsed(self):
     invalid_tests = []
     for test in _GetAllPossiblePageTestInstances():
-      if isinstance(test, rasterize_and_record_micro.RasterizeAndRecordMicro):
-        continue
       if not hasattr(test, 'action_name_to_run'):
         invalid_tests.append(test)
         logging.error('Test %s missing action_name_to_run attribute.',

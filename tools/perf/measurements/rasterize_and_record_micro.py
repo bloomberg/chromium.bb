@@ -13,7 +13,8 @@ from telemetry.value import scalar
 class RasterizeAndRecordMicro(page_test.PageTest):
   def __init__(self, start_wait_time=2, rasterize_repeat=100, record_repeat=100,
                timeout=120, report_detailed_results=False):
-    super(RasterizeAndRecordMicro, self).__init__('')
+    super(RasterizeAndRecordMicro, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._chrome_branch_number = None
     self._start_wait_time = start_wait_time
     self._rasterize_repeat = rasterize_repeat
