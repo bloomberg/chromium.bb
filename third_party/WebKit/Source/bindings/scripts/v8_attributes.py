@@ -133,7 +133,6 @@ def attribute_context(interface, attribute):
         'reflect_missing': extended_attributes.get('ReflectMissing'),
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
-        'setter_callback': setter_callback_name(interface, attribute),
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'world_suffixes': ['', 'ForMainWorld']
                           if 'PerWorldBindings' in extended_attributes
@@ -142,7 +141,6 @@ def attribute_context(interface, attribute):
 
     if is_constructor_attribute(attribute):
         constructor_getter_context(interface, attribute, context)
-        return context
     if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
     if not has_custom_setter(attribute) and has_setter(attribute):
@@ -306,7 +304,8 @@ def setter_context(interface, attribute, context):
                             'Attribute "%s" is not present in interface "%s"' %
                             (target_attribute_name, target_interface_name))
 
-    if 'Replaceable' in attribute.extended_attributes:
+    if ('Replaceable' in attribute.extended_attributes or
+            is_constructor_attribute(attribute)):
         context['cpp_setter'] = '%sForceSetAttributeOnThis(propertyName, v8Value, info)' % cpp_name(interface)
         return
 
@@ -424,18 +423,6 @@ def scoped_content_attribute_name(interface, attribute):
 ################################################################################
 # Attribute configuration
 ################################################################################
-
-def setter_callback_name(interface, attribute):
-    cpp_class_name = cpp_name(interface)
-    cpp_class_name_or_partial = cpp_name_or_partial(interface)
-
-    if not has_setter(attribute):
-        return '0'
-    if (is_constructor_attribute(attribute)):
-        return '%sV8Internal::%sForceSetAttributeOnThisCallback' % (
-            cpp_class_name_or_partial, cpp_class_name)
-    return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name_or_partial, attribute.name)
-
 
 # [PutForwards], [Replaceable]
 def has_setter(attribute):

@@ -104,11 +104,6 @@ static void TestObjectForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Lo
     v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
-static void TestObjectForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObjectV8Internal::TestObjectForceSetAttributeOnThis(name, v8Value, info);
-}
-
 static void stringifierAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -2443,6 +2438,47 @@ static void conditionalLongAttributeAttributeSetterCallback(v8::Local<v8::String
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 #endif // ENABLE(CONDITION)
+
+static void testInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceEmptyConstructorAttribute");
+    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+}
+
+static void testInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::testInterfaceEmptyConstructorAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void testInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceEmptyConstructorAttribute");
+    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+}
+
+static void testInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::deprecatedTestInterfaceEmptyConstructorAttribute);
+    TestObjectV8Internal::testInterfaceEmptyConstructorAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "measureAsFeatureNameTestInterfaceEmptyConstructorAttribute");
+    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+}
+
+static void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::FeatureName);
+    TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
 
 static void customObjectAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -5422,21 +5458,11 @@ static void enumForPrivateScriptAttributeSetterCallback(v8::Local<v8::String>, v
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void TestObjectConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> data = info.Data();
-    ASSERT(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
-}
-
 static void testInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::deprecatedTestInterfaceEmptyConstructorAttribute);
-    TestObjectV8Internal::TestObjectConstructorGetter(property, info);
+    v8ConstructorAttributeGetterAsProperty(property, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -5444,7 +5470,7 @@ static void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructo
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::FeatureName);
-    TestObjectV8Internal::TestObjectConstructorGetter(property, info);
+    v8ConstructorAttributeGetterAsProperty(property, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -11734,9 +11760,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
 #if ENABLE(CONDITION)
     {"conditionalLongAttribute", TestObjectV8Internal::conditionalLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 #endif // ENABLE(CONDITION)
-    {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::TestObjectConstructorGetter, TestObjectV8Internal::TestObjectForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::testInterfaceEmptyConstructorAttributeConstructorGetterCallback, TestObjectV8Internal::TestObjectForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"measureAsFeatureNameTestInterfaceEmptyConstructorAttribute", TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback, TestObjectV8Internal::TestObjectForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"testInterfaceEmptyConstructorAttribute", v8ConstructorAttributeGetterAsProperty, TestObjectV8Internal::testInterfaceEmptyConstructorAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::testInterfaceEmptyConstructorAttributeConstructorGetterCallback, TestObjectV8Internal::testInterfaceEmptyConstructorAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"measureAsFeatureNameTestInterfaceEmptyConstructorAttribute", TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback, TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"customObjectAttribute", TestObjectV8Internal::customObjectAttributeAttributeGetterCallback, TestObjectV8Internal::customObjectAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"customGetterLongAttribute", TestObjectV8Internal::customGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"customGetterReadonlyObjectAttribute", TestObjectV8Internal::customGetterReadonlyObjectAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},

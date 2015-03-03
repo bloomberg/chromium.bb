@@ -70,13 +70,6 @@ static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8:
 }
 
 {% endif %}
-{% if has_constructor_attributes %}
-static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    {{cpp_class_or_partial}}V8Internal::{{cpp_class}}ForceSetAttributeOnThis(name, v8Value, info);
-}
-
-{% endif %}
 {% endblock %}
 {##############################################################################}
 {% from 'attributes.cpp' import constructor_getter_callback,
@@ -85,13 +78,14 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
        attribute_getter_implemented_in_private_script,
        attribute_setter_implemented_in_private_script
        with context %}
-{% for attribute in attributes if not attribute.constructor_type %}
-{% if attribute.should_be_exposed_to_script %}
+{% for attribute in attributes if attribute.should_be_exposed_to_script %}
 {% for world_suffix in attribute.world_suffixes %}
+{% if not attribute.constructor_type %}
 {% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
+{% endif %}
 {% if attribute.has_setter %}
 {% if not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
@@ -99,23 +93,7 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}
-{% endif %}
 {% endfor %}
-{##############################################################################}
-{% block constructor_getter %}
-{% if has_constructor_attributes %}
-static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> data = info.Data();
-    ASSERT(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
-}
-
-{% endif %}
-{% endblock %}
 {##############################################################################}
 {% for attribute in attributes if attribute.needs_constructor_getter_callback %}
 {% for world_suffix in attribute.world_suffixes %}
@@ -447,9 +425,12 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
-           (cpp_class, attribute.name) %}
+               (cpp_class, attribute.name) %}
+    {% set setter_callback = '%sV8Internal::%sAttributeSetterCallback' %
+               (cpp_class, attribute.name)
+           if attribute.has_setter else '0' %}
     {% filter conditional(attribute.conditional_string) %}
-    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfilter %}
     {% endfor %}
     {# Special interfaces #}

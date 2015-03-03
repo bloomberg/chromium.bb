@@ -41,11 +41,6 @@ static void TestTypedefsForceSetAttributeOnThis(v8::Local<v8::String> name, v8::
     v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
-static void TestTypedefsForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestTypedefsV8Internal::TestTypedefsForceSetAttributeOnThis(name, v8Value, info);
-}
-
 static void uLongLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -78,14 +73,17 @@ static void uLongLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8:
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void TestTypedefsConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void tAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Local<v8::Value> data = info.Data();
-    ASSERT(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "tAttribute");
+    TestTypedefsForceSetAttributeOnThis(propertyName, v8Value, info);
+}
+
+static void tAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestTypedefsV8Internal::tAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -293,7 +291,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
     {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"tAttribute", TestTypedefsV8Internal::TestTypedefsConstructorGetter, TestTypedefsV8Internal::TestTypedefsForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"tAttribute", v8ConstructorAttributeGetterAsProperty, TestTypedefsV8Internal::tAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {

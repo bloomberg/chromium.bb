@@ -1008,6 +1008,10 @@ private:
     v8::TryCatch& m_block;
 };
 
+// Callback functions used by generated code.
+void v8ConstructorAttributeGetterAsProperty(v8::Local<v8::String> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
+void v8ConstructorAttributeGetterAsAccessor(const v8::FunctionCallbackInfo<v8::Value>&);
+
 typedef void (*InstallTemplateFunction)(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
 
 } // namespace blink

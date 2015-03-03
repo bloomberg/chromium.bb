@@ -183,7 +183,12 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(
+{%- if attribute.is_expose_js_accessors %}
+const v8::FunctionCallbackInfo<v8::Value>& info
+{%- else %}
+v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info
+{%- endif %})
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if attribute.deprecate_as %}
@@ -192,7 +197,11 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
     {% endif %}
-    {{cpp_class_or_partial}}V8Internal::{{cpp_class}}ConstructorGetter{{world_suffix}}(property, info);
+    {% if attribute.is_expose_js_accessors %}
+    v8ConstructorAttributeGetterAsAccessor(info);
+    {% else %}
+    v8ConstructorAttributeGetterAsProperty(property, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endfilter %}
@@ -214,11 +223,17 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
     {# Local variables #}
-    {% if not attribute.is_static and not attribute.is_replaceable %}
+    {% if not attribute.is_static and
+          not attribute.is_replaceable and
+          not attribute.constructor_type %}
     v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
+    {% endif %}
+    {% if attribute.is_replaceable or
+          attribute.constructor_type %}
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {% endif %}
     {# impl #}
     {% if attribute.is_put_forwards %}
@@ -226,9 +241,9 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {{attribute.cpp_type}} impl = WTF::getPtr(proxyImpl->{{attribute.name}}());
     if (!impl)
         return;
-    {% elif attribute.is_replaceable %}
-    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
-    {% elif not attribute.is_static %}
+    {% elif not attribute.is_static and
+            not attribute.is_replaceable and
+            not attribute.constructor_type %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     {% endif %}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
@@ -392,16 +407,21 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 {% set getter_callback =
        '%sV8Internal::%sAttributeGetterCallback' %
            (cpp_class_or_partial, attribute.name)
-       if not attribute.constructor_type else
-       ('%sV8Internal::%sConstructorGetterCallback' %
+       if not attribute.constructor_type else (
+       '%sV8Internal::%sConstructorGetterCallback' %
            (cpp_class_or_partial, attribute.name)
-        if attribute.needs_constructor_getter_callback else
-        '%sV8Internal::%sConstructorGetter' % (cpp_class_or_partial, cpp_class)) %}
+       if attribute.needs_constructor_getter_callback else (
+       'v8ConstructorAttributeGetterAsAccessor'
+       if attribute.is_expose_js_accessors else (
+       'v8ConstructorAttributeGetterAsProperty'))) %}
 {% set getter_callback_for_main_world =
        '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
            (cpp_class_or_partial, attribute.name)
        if attribute.is_per_world_bindings else '0' %}
-{% set setter_callback = attribute.setter_callback %}
+{% set setter_callback =
+       '%sV8Internal::%sAttributeSetterCallback' %
+           (cpp_class_or_partial, attribute.name)
+       if attribute.has_setter else '0' %}
 {% set setter_callback_for_main_world =
        '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
            (cpp_class_or_partial, attribute.name)

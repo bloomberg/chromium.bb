@@ -62,11 +62,6 @@ static void TestInterfaceImplementationForceSetAttributeOnThis(v8::Local<v8::Str
     v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
-static void TestInterfaceImplementationForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestInterfaceImplementationV8Internal::TestInterfaceImplementationForceSetAttributeOnThis(name, v8Value, info);
-}
-
 static void testInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -99,6 +94,19 @@ static void testInterfaceAttributeAttributeSetterCallback(v8::Local<v8::String>,
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void testInterfaceConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceConstructorAttribute");
+    TestInterfaceImplementationForceSetAttributeOnThis(propertyName, v8Value, info);
+}
+
+static void testInterfaceConstructorAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestInterfaceImplementationV8Internal::testInterfaceConstructorAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -1017,16 +1025,6 @@ static void partial2StaticLongAttributeAttributeSetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void TestInterfaceImplementationConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> data = info.Data();
-    ASSERT(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
 }
 
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -2053,7 +2051,7 @@ void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scr
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
     {"testInterfaceAttribute", TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"testInterfaceConstructorAttribute", TestInterfaceImplementationV8Internal::TestInterfaceImplementationConstructorGetter, TestInterfaceImplementationV8Internal::TestInterfaceImplementationForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"testInterfaceConstructorAttribute", v8ConstructorAttributeGetterAsProperty, TestInterfaceImplementationV8Internal::testInterfaceConstructorAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"doubleAttribute", TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::doubleAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"floatAttribute", TestInterfaceImplementationV8Internal::floatAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::floatAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"unrestrictedDoubleAttribute", TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},

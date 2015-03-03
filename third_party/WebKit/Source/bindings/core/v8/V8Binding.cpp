@@ -74,6 +74,21 @@
 
 namespace blink {
 
+namespace {
+
+template<class Callback>
+void v8ConstructorAttributeGetter(const Callback& info)
+{
+    v8::Local<v8::Value> data = info.Data();
+    ASSERT(data->IsExternal());
+    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
+    if (!perContextData)
+        return;
+    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+}
+
+} // namespace
+
 void setArityTypeError(ExceptionState& exceptionState, const char* valid, unsigned provided)
 {
     exceptionState.throwTypeError(ExceptionMessages::invalidArity(valid, provided));
@@ -1038,6 +1053,16 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isol
 {
     DevToolsFunctionInfo info(function);
     return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());
+}
+
+void v8ConstructorAttributeGetterAsProperty(v8::Local<v8::String> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8ConstructorAttributeGetter(info);
+}
+
+void v8ConstructorAttributeGetterAsAccessor(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8ConstructorAttributeGetter(info);
 }
 
 } // namespace blink

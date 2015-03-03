@@ -37,25 +37,23 @@ static void TestInterfaceNamedConstructorForceSetAttributeOnThis(v8::Local<v8::S
     v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
-static void TestInterfaceNamedConstructorForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void testNamedConstructorConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorForceSetAttributeOnThis(name, v8Value, info);
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testNamedConstructorConstructorAttribute");
+    TestInterfaceNamedConstructorForceSetAttributeOnThis(propertyName, v8Value, info);
 }
 
-static void TestInterfaceNamedConstructorConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void testNamedConstructorConstructorAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Local<v8::Value> data = info.Data();
-    ASSERT(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestInterfaceNamedConstructorV8Internal::testNamedConstructorConstructorAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 } // namespace TestInterfaceNamedConstructorV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorAttributes[] = {
-    {"testNamedConstructorConstructorAttribute", TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorConstructorGetter, TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"testNamedConstructorConstructorAttribute", v8ConstructorAttributeGetterAsProperty, TestInterfaceNamedConstructorV8Internal::testNamedConstructorConstructorAttributeAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 };
 
 const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructorConstructor::domTemplate, V8TestInterfaceNamedConstructor::refObject, V8TestInterfaceNamedConstructor::derefObject, V8TestInterfaceNamedConstructor::trace, V8TestInterfaceNamedConstructor::toActiveDOMObject, 0, V8TestInterfaceNamedConstructor::installConditionallyEnabledMethods, V8TestInterfaceNamedConstructor::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
