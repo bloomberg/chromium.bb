@@ -54,7 +54,7 @@ class WebEmbeddedWorkerImpl final
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
-    WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
+    WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerPermissionClientProxy>);
     virtual ~WebEmbeddedWorkerImpl();
 
     // Terminate all WebEmbeddedWorkerImpl for testing purposes.
@@ -102,7 +102,7 @@ private:
 
     // This is kept until startWorkerContext is called, and then passed on
     // to WorkerContext.
-    OwnPtr<WebWorkerContentSettingsClientProxy> m_contentSettingsClient;
+    OwnPtr<WebWorkerPermissionClientProxy> m_permissionClient;
 
     // We retain ownership of this one which is for use on the
     // main thread only.

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerContentSettingsClient_h
-#define WorkerContentSettingsClient_h
+#ifndef WorkerPermissionClient_h
+#define WorkerPermissionClient_h
 
 #include "core/workers/WorkerClients.h"
 #include "wtf/Forward.h"
@@ -38,30 +38,30 @@ namespace blink {
 
 class ExecutionContext;
 class WebString;
-class WebWorkerContentSettingsClientProxy;
+class WebWorkerPermissionClientProxy;
 
-class WorkerContentSettingsClient final : public NoBaseWillBeGarbageCollectedFinalized<WorkerContentSettingsClient>, public WillBeHeapSupplement<WorkerClients> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
+class WorkerPermissionClient final : public NoBaseWillBeGarbageCollectedFinalized<WorkerPermissionClient>, public WillBeHeapSupplement<WorkerClients> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerPermissionClient);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerContentSettingsClient> create(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
-    virtual ~WorkerContentSettingsClient();
+    static PassOwnPtrWillBeRawPtr<WorkerPermissionClient> create(PassOwnPtr<WebWorkerPermissionClientProxy>);
+    virtual ~WorkerPermissionClient();
 
     bool requestFileSystemAccessSync();
     bool allowIndexedDB(const WebString& name);
 
     static const char* supplementName();
-    static WorkerContentSettingsClient* from(ExecutionContext&);
+    static WorkerPermissionClient* from(ExecutionContext&);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<WorkerClients>::trace(visitor); }
 
 private:
-    explicit WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
+    explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);
 
-    OwnPtr<WebWorkerContentSettingsClientProxy> m_proxy;
+    OwnPtr<WebWorkerPermissionClientProxy> m_proxy;
 };
 
-void provideContentSettingsClientToWorker(WorkerClients*, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
+void providePermissionClientToWorker(WorkerClients*, PassOwnPtr<WebWorkerPermissionClientProxy>);
 
 } // namespace blink
 
-#endif // WorkerContentSettingsClient_h
+#endif // WorkerPermissionClient_h

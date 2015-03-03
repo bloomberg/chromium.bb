@@ -39,11 +39,11 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebWorkerContentSettingsClientProxy.h"
+#include "public/web/WebWorkerPermissionClientProxy.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "web/WorkerContentSettingsClient.h"
+#include "web/WorkerPermissionClient.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalSc
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
-        provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerContentSettingsClientProxy(webFrame)));
+        providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
         // FIXME: call provideServiceWorkerContainerClientToWorker here when we
         // support ServiceWorker in dedicated workers (http://crbug.com/371690)
         return new WorkerMessagingProxy(worker, workerClients.release());

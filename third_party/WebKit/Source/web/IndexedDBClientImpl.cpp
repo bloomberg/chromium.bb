@@ -37,7 +37,7 @@
 #include "public/web/WebKit.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WorkerContentSettingsClient.h"
+#include "web/WorkerPermissionClient.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String
     }
 
     WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);
-    return WorkerContentSettingsClient::from(workerGlobalScope)->allowIndexedDB(name);
+    return WorkerPermissionClient::from(workerGlobalScope)->allowIndexedDB(name);
 }
 
 } // namespace blink

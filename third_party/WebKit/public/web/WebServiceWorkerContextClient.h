@@ -31,6 +31,7 @@
 #ifndef WebServiceWorkerContextClient_h
 #define WebServiceWorkerContextClient_h
 
+#include "WebWorkerPermissionClientProxy.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"

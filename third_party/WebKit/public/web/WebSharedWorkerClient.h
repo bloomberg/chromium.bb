@@ -31,8 +31,7 @@
 #ifndef WebSharedWorkerClient_h
 #define WebSharedWorkerClient_h
 
-#include "public/platform/WebMessagePortChannel.h"
-#include "public/web/WebWorkerPermissionClientProxy.h"
+#include "../platform/WebMessagePortChannel.h"
 
 namespace blink {
 
@@ -44,7 +43,7 @@ class WebSecurityOrigin;
 class WebServiceWorkerNetworkProvider;
 class WebString;
 class WebWorker;
-class WebWorkerContentSettingsClientProxy;
+class WebWorkerPermissionClientProxy;
 
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
@@ -67,14 +66,9 @@ public:
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
 
     // Called on the main thread during initialization.
-    // WebWorkerContentSettingsClientProxy should not retain the given
+    // WebWorkerPermissionClientProxy should not retain the given
     // WebSecurityOrigin, as the proxy instance is passed to worker thread
     // while WebSecurityOrigin is not thread safe.
-    virtual WebWorkerContentSettingsClientProxy* createWorkerContentSettingsClientProxy(const WebSecurityOrigin& origin)
-    {
-        return createWorkerPermissionClientProxy(origin);
-    }
-    // Deprecated call required by embedder.
     virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(const WebSecurityOrigin&) { return nullptr; }
 
     // Called on the main thread during initialization.
