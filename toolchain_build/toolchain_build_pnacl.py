@@ -66,7 +66,7 @@ GIT_REPOS = {
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
-GIT_PUSH_URL = 'ssh://gerrit.chromium.org/native_client/'
+GIT_PUSH_URL = 'https://chromium.googlesource.com/native_client/'
 GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 
 ALT_GIT_BASE_URL = 'https://chromium.googlesource.com/a/native_client/'
@@ -74,7 +74,8 @@ ALT_GIT_BASE_URL = 'https://chromium.googlesource.com/a/native_client/'
 KNOWN_MIRRORS = [('http://git.chromium.org/native_client/', GIT_BASE_URL)]
 PUSH_MIRRORS = [('http://git.chromium.org/native_client/', GIT_PUSH_URL),
                 (ALT_GIT_BASE_URL, GIT_PUSH_URL),
-                (GIT_BASE_URL, GIT_PUSH_URL)]
+                (GIT_BASE_URL, GIT_PUSH_URL),
+                ('ssh://gerrit.chromium.org/native_client/', GIT_PUSH_URL)]
 
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
 BUG_URL = 'http://gonacl.com/reportissue'
