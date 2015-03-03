@@ -38,9 +38,9 @@ class TestingObserver;
 
 class DummyContext final : public NoBaseWillBeGarbageCollectedFinalized<DummyContext>, public LifecycleNotifier<DummyContext, TestingObserver> {
 public:
-    DummyContext()
-        : LifecycleNotifier<DummyContext, TestingObserver>(this)
+    static PassOwnPtrWillBeRawPtr<DummyContext> create()
     {
+        return adoptPtrWillBeNoop(new DummyContext());
     }
 
     void addObserver(TestingObserver* observer)
@@ -57,11 +57,50 @@ public:
     {
         LifecycleNotifier<DummyContext, TestingObserver>::trace(visitor);
     }
+
+private:
+    DummyContext()
+        : LifecycleNotifier<DummyContext, TestingObserver>(this)
+    {
+    }
 };
 
 class TestingObserver final : public NoBaseWillBeGarbageCollectedFinalized<TestingObserver>, public LifecycleObserver<DummyContext, TestingObserver, DummyContext> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TestingObserver);
 public:
+    static PassOwnPtrWillBeRawPtr<TestingObserver> create(DummyContext* context)
+    {
+        return adoptPtrWillBeNoop(new TestingObserver(context));
+    }
+
+    virtual void contextDestroyed() override
+    {
+        LifecycleObserver<DummyContext, TestingObserver, DummyContext>::contextDestroyed();
+        if (m_observerToRemoveOnDestruct) {
+            lifecycleContext()->removeObserver(m_observerToRemoveOnDestruct.get());
+            m_observerToRemoveOnDestruct.clear();
+        }
+        m_contextDestroyedCalled = true;
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_observerToRemoveOnDestruct);
+        LifecycleObserver<DummyContext, TestingObserver, DummyContext>::trace(visitor);
+    }
+
+    void unobserve() { setContext(nullptr); }
+
+    void setObserverToRemoveAndDestroy(PassOwnPtrWillBeRawPtr<TestingObserver> observerToRemoveOnDestruct)
+    {
+        ASSERT(!m_observerToRemoveOnDestruct);
+        m_observerToRemoveOnDestruct = observerToRemoveOnDestruct;
+    }
+
+    TestingObserver* innerObserver() const { return m_observerToRemoveOnDestruct.get(); }
+    bool contextDestroyedCalled() const { return m_contextDestroyedCalled; }
+
+private:
     explicit TestingObserver(DummyContext* context)
         : LifecycleObserver<DummyContext, TestingObserver, DummyContext>(context)
         , m_contextDestroyedCalled(false)
@@ -69,46 +108,58 @@ public:
         setContext(context);
     }
 
-    virtual void contextDestroyed() override
-    {
-        LifecycleObserver<DummyContext, TestingObserver, DummyContext>::contextDestroyed();
-        m_contextDestroyedCalled = true;
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-        LifecycleObserver<DummyContext, TestingObserver, DummyContext>::trace(visitor);
-    }
-
+    OwnPtrWillBeMember<TestingObserver> m_observerToRemoveOnDestruct;
     bool m_contextDestroyedCalled;
-
-    void unobserve() { setContext(nullptr); }
 };
 
 TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 {
-    OwnPtrWillBeRawPtr<DummyContext> context = adoptPtrWillBeNoop(new DummyContext());
-    OwnPtrWillBePersistent<TestingObserver> observer = adoptPtrWillBeNoop(new TestingObserver(context.get()));
+    OwnPtrWillBeRawPtr<DummyContext> context = DummyContext::create();
+    OwnPtrWillBePersistent<TestingObserver> observer = TestingObserver::create(context.get());
 
     EXPECT_EQ(observer->lifecycleContext(), context.get());
-    EXPECT_FALSE(observer->m_contextDestroyedCalled);
+    EXPECT_FALSE(observer->contextDestroyedCalled());
     context->notifyContextDestroyed();
     context = nullptr;
     Heap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
-    EXPECT_TRUE(observer->m_contextDestroyedCalled);
+    EXPECT_TRUE(observer->contextDestroyedCalled());
 }
 
 TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
 {
-    OwnPtrWillBeRawPtr<DummyContext> context = adoptPtrWillBeNoop(new DummyContext());
-    OwnPtrWillBePersistent<TestingObserver> observer = adoptPtrWillBeNoop(new TestingObserver(context.get()));
+    OwnPtrWillBeRawPtr<DummyContext> context = DummyContext::create();
+    OwnPtrWillBePersistent<TestingObserver> observer = TestingObserver::create(context.get());
     observer->unobserve();
     context->notifyContextDestroyed();
     context = nullptr;
     Heap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
-    EXPECT_FALSE(observer->m_contextDestroyedCalled);
+    EXPECT_FALSE(observer->contextDestroyedCalled());
 }
 
+TEST(LifecycleContextTest, observerRemovedDuringNotifyDestroyed)
+{
+    // FIXME: Oilpan: this test can be removed when the LifecycleNotifier<T>::m_observers
+    // hash set is on the heap and membership is handled implicitly by the garbage collector.
+    OwnPtrWillBeRawPtr<DummyContext> context = DummyContext::create();
+    OwnPtrWillBePersistent<TestingObserver> observer = TestingObserver::create(context.get());
+    OwnPtrWillBeRawPtr<TestingObserver> innerObserver = TestingObserver::create(context.get());
+    // Attach the observer to the other. When 'observer' is notified
+    // of destruction, it will remove & destroy 'innerObserver'.
+    observer->setObserverToRemoveAndDestroy(innerObserver.release());
+
+    EXPECT_EQ(observer->lifecycleContext(), context.get());
+    EXPECT_EQ(observer->innerObserver()->lifecycleContext(), context.get());
+    EXPECT_FALSE(observer->contextDestroyedCalled());
+    EXPECT_FALSE(observer->innerObserver()->contextDestroyedCalled());
+
+    context->notifyContextDestroyed();
+    EXPECT_EQ(observer->innerObserver(), nullptr);
+    context = nullptr;
+    Heap::collectAllGarbage();
+    EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
+    EXPECT_TRUE(observer->contextDestroyedCalled());
 }
+
+} // namespace blink
