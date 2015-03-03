@@ -93,12 +93,10 @@ void FontLoader::LoadFont(const FontDescriptor& font,
   result->font_id = 0;
 
   NSFont* font_to_encode = font.ToNSFont();
-  // Used only for logging.
-  std::string font_name([[font_to_encode fontName] UTF8String]);
 
   // Load appropriate NSFont.
   if (!font_to_encode) {
-    DLOG(ERROR) << "Failed to load font " << font_name;
+    DLOG(ERROR) << "Failed to load font " << font.font_name;
     return;
   }
 
@@ -115,7 +113,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
       base::mac::CFToNSCast(base::mac::CFCastStrict<CFURLRef>(
           CTFontCopyAttribute(ct_font_to_encode, kCTFontURLAttribute))));
   if (![font_url isFileURL]) {
-    DLOG(ERROR) << "Failed to find font file for " << font_name;
+    DLOG(ERROR) << "Failed to find font file for " << font.font_name;
     return;
   }
 
@@ -135,7 +133,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
 
   int32 font_file_size_32 = static_cast<int32>(font_file_size_64);
   if (!result->font_data.CreateAndMapAnonymous(font_file_size_32)) {
-    DLOG(ERROR) << "Failed to create shmem area for " << font_name;
+    DLOG(ERROR) << "Failed to create shmem area for " << font.font_name;
     return;
   }
 
