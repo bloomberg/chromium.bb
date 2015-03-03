@@ -176,4 +176,5 @@ class OilpanGCTimesForInternals(_OilpanGCTimesBase):
   def CustomizeBrowserOptions(cls, options):
     # 'expose-internals-for-testing' can be enabled on content shell.
     assert 'content-shell' in options.browser_type
-    options.AppendExtraBrowserArgs('--expose-internals-for-testing')
+    options.AppendExtraBrowserArgs(['--expose-internals-for-testing',
+                                    '--js-flags=--expose-gc'])
