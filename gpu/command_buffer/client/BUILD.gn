@@ -140,6 +140,27 @@ component("gles2_implementation") {
   ]
 }
 
+# Library emulates GLES2 using command_buffers.
+component("gles2_implementation_no_check") {
+  sources = gles2_implementation_source_files
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  defines = [
+    "GLES2_IMPL_IMPLEMENTATION",
+    "GLES2_CONFORMANCE_TESTS=1",
+  ]
+
+  deps = [
+    ":gles2_cmd_helper",
+    "//base",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+}
+
 component("gl_in_process_context") {
   sources = [
     "gl_in_process_context.cc",
