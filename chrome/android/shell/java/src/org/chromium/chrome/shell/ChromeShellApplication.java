@@ -11,10 +11,10 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
-import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.preferences.ChromeShellPreferences;
 

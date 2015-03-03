@@ -1,4 +1,3 @@
-H B Nm: The class name org.chromium.chrome.browser.UmaUtils shadows the simple name of the superclass org.chromium.chrome.browser.metrics.UmaUtils  At UmaUtils.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.download.DownloadManagerService.sDownloadManagerService in org.chromium.chrome.browser.download.DownloadManagerService.getDownloadManagerService(Context)  At DownloadManagerService.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.extraHeaders  At DocumentTabModelSelector.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.postData  At DocumentTabModelSelector.java
