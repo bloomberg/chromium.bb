@@ -1635,13 +1635,13 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.h
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ ImageOnlyFailure ]
 crbug.com/417782 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Pass Timeout ]
 
-# These tests require manual rebaseline after ICU update to 54.1.
-crbug.com/428145 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/428145 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/428145 [ Linux Android ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/428145 fast/text/international/thai-line-breaks.html [ NeedsManualRebaseline ]
-crbug.com/428145 virtual/slimmingpaint/fast/text/international/thai-line-breaks.html [ NeedsManualRebaseline ]
-crbug.com/428145 [ Win Mac ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsManualRebaseline ]
+# These tests require rebaseline after ICU update to 54.1.
+crbug.com/428145 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/428145 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/428145 [ Linux Android ] fast/forms/month/month-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/428145 fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
+crbug.com/428145 virtual/slimmingpaint/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
+crbug.com/428145 [ Win Mac ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
 
 crbug.com/448442 [ XP ] virtual/slimmingpaint/fast/borders/border-image-side-reduction.html [ ImageOnlyFailure ]
 
@@ -1864,8 +1864,6 @@ crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline
 crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
-
-crbug.com/460374 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ ImageOnlyFailure ]
 
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]

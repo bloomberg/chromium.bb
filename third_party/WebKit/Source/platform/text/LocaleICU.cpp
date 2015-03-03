@@ -32,6 +32,7 @@
 #include "platform/text/LocaleICU.h"
 
 #include <unicode/udatpg.h>
+#include <unicode/udisplaycontext.h>
 #include <unicode/uloc.h>
 #include <limits>
 #include "wtf/DateMath.h"
@@ -148,6 +149,21 @@ UDateFormat* LocaleICU::openDateFormat(UDateFormatStyle timeStyle, UDateFormatSt
     return udat_open(timeStyle, dateStyle, m_locale.data(), gmtTimezone, WTF_ARRAY_LENGTH(gmtTimezone), 0, -1, &status);
 }
 
+// We cannot use udat_*Symbols API to get standalone month names to use in
+// calendar headers for Russian and potentially other languages. Instead,
+// we have to format dates with patterns "LLLL" or "LLL" and set the
+// display context to 'standalone'. See
+// http://bugs.icu-project.org/trac/ticket/11552
+UDateFormat* LocaleICU::openDateFormatForStandAloneMonthLabels(bool isShort)  const
+{
+    const UChar monthPattern[4] = {'L', 'L', 'L', 'L'};
+    UErrorCode status = U_ZERO_ERROR;
+    UDateFormat* formatter = udat_open(UDAT_PATTERN, UDAT_PATTERN, m_locale.data(), 0, -1, monthPattern, isShort ? 3 : 4, &status);
+    udat_setContext(formatter, UDISPCTX_CAPITALIZATION_FOR_STANDALONE, &status);
+    ASSERT(U_SUCCESS(status));
+    return formatter;
+}
+
 static String getDateFormatPattern(const UDateFormat* dateFormat)
 {
     if (!dateFormat)
@@ -174,14 +190,26 @@ PassOwnPtr<Vector<String>> LocaleICU::createLabelVector(const UDateFormat* dateF
 
     OwnPtr<Vector<String>> labels = adoptPtr(new Vector<String>());
     labels->reserveCapacity(size);
+    bool isStandAloneMonth = (type == UDAT_STANDALONE_MONTHS) || (type == UDAT_STANDALONE_SHORT_MONTHS);
     for (int32_t i = 0; i < size; ++i) {
         UErrorCode status = U_ZERO_ERROR;
-        int32_t length = udat_getSymbols(dateFormat, type, startIndex + i, 0, 0, &status);
+        int32_t length;
+        static const UDate kEpoch = U_MILLIS_PER_DAY * 15u; // 1970-01-15
+        static const UDate kMonth = U_MILLIS_PER_DAY * 30u; // 30 days in ms
+        if (isStandAloneMonth) {
+            length = udat_format(dateFormat, kEpoch + i * kMonth, 0, 0, 0, &status);
+        } else  {
+            length = udat_getSymbols(dateFormat, type, startIndex + i, 0, 0, &status);
+        }
         if (status != U_BUFFER_OVERFLOW_ERROR)
             return PassOwnPtr<Vector<String>>();
         StringBuffer<UChar> buffer(length);
         status = U_ZERO_ERROR;
-        udat_getSymbols(dateFormat, type, startIndex + i, buffer.characters(), length, &status);
+        if (isStandAloneMonth) {
+            udat_format(dateFormat, kEpoch + i * kMonth, buffer.characters(), length, 0, &status);
+        } else {
+            udat_getSymbols(dateFormat, type, startIndex + i, buffer.characters(), length, &status);
+        }
         if (U_FAILURE(status))
             return PassOwnPtr<Vector<String>>();
         labels->append(String::adopt(buffer));
@@ -393,11 +421,14 @@ const Vector<String>& LocaleICU::standAloneMonthLabels()
 {
     if (!m_standAloneMonthLabels.isEmpty())
         return m_standAloneMonthLabels;
-    if (initializeShortDateFormat()) {
-        if (OwnPtr<Vector<String>> labels = createLabelVector(m_shortDateFormat, UDAT_STANDALONE_MONTHS, UCAL_JANUARY, 12)) {
+    UDateFormat* monthFormatter = openDateFormatForStandAloneMonthLabels(false);
+    if (monthFormatter) {
+        if (OwnPtr<Vector<String>> labels = createLabelVector(monthFormatter, UDAT_STANDALONE_MONTHS, UCAL_JANUARY, 12)) {
             m_standAloneMonthLabels = *labels;
+            udat_close(monthFormatter);
             return m_standAloneMonthLabels;
         }
+        udat_close(monthFormatter);
     }
     m_standAloneMonthLabels = monthLabels();
     return m_standAloneMonthLabels;
@@ -407,11 +438,14 @@ const Vector<String>& LocaleICU::shortStandAloneMonthLabels()
 {
     if (!m_shortStandAloneMonthLabels.isEmpty())
         return m_shortStandAloneMonthLabels;
-    if (initializeShortDateFormat()) {
-        if (OwnPtr<Vector<String>> labels = createLabelVector(m_shortDateFormat, UDAT_STANDALONE_SHORT_MONTHS, UCAL_JANUARY, 12)) {
+    UDateFormat* monthFormatter = openDateFormatForStandAloneMonthLabels(true);
+    if (monthFormatter) {
+        if (OwnPtr<Vector<String>> labels = createLabelVector(monthFormatter, UDAT_STANDALONE_SHORT_MONTHS, UCAL_JANUARY, 12)) {
             m_shortStandAloneMonthLabels = *labels;
+            udat_close(monthFormatter);
             return m_shortStandAloneMonthLabels;
         }
+        udat_close(monthFormatter);
     }
     m_shortStandAloneMonthLabels = shortMonthLabels();
     return m_shortStandAloneMonthLabels;

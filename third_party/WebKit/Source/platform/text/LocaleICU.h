@@ -76,6 +76,7 @@ private:
 
     bool initializeShortDateFormat();
     UDateFormat* openDateFormat(UDateFormatStyle timeStyle, UDateFormatStyle dateStyle) const;
+    UDateFormat* openDateFormatForStandAloneMonthLabels(bool isShort) const;
 
     void initializeCalendar();
 
