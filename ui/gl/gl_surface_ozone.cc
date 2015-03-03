@@ -305,6 +305,8 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
     }
 
    private:
+    ~SurfaceImage() override {}
+
     scoped_refptr<ui::NativePixmap> pixmap_;
   };
 
