@@ -96,20 +96,10 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
-  "browser": [
-    {
-      "channel": "dev",
-      "extension_types": ["platform_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["platform_app"],
-      "whitelist": [
-        // hotword_audio_verification
-        "B6356EFF4047BC5F868C7D91868B6F5C01951A8A"
-      ]
-    }
-  ],
+  "browser": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "browsingData": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
