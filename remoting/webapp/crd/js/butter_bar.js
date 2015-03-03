@@ -19,20 +19,9 @@ var remoting = remoting || {};
 remoting.ButterBar = function() {
   this.storageKey_ = '';
 
-  /** @type{remoting.ButterBar} */
-  var that = this;
-
-  /** @param {Object} syncValues */
-  var onSyncDataLoaded = function(syncValues) {
-    chrome.storage.local.get(
-        remoting.kIT2MeVisitedStorageKey,
-        that.onStateLoaded_.bind(that, syncValues));
-  };
-
   chrome.storage.sync.get(
-      [remoting.ButterBar.kSurveyStorageKey_,
-       remoting.ButterBar.kHangoutsStorageKey_],
-      onSyncDataLoaded);
+      [remoting.ButterBar.kSurveyStorageKey_],
+      this.onStateLoaded_.bind(this));
 }
 
 /**
@@ -63,42 +52,16 @@ remoting.ButterBar.prototype.show_ =
 
 /**
   * @param {Object} syncValues
-  * @param {Object} localValues
   * @private
   */
-remoting.ButterBar.prototype.onStateLoaded_ =
-    function(syncValues, localValues) {
+remoting.ButterBar.prototype.onStateLoaded_ = function(syncValues) {
   /** @type {boolean} */
   var surveyDismissed = !!syncValues[remoting.ButterBar.kSurveyStorageKey_];
-  /** @type {boolean} */
-  var hangoutsDismissed =
-      !!syncValues[remoting.ButterBar.kHangoutsStorageKey_];
-  /** @type {boolean} */
-  var it2meExpanded = !!localValues[remoting.kIT2MeVisitedStorageKey];
 
-  var showSurvey = !surveyDismissed;
-  var showHangouts = it2meExpanded && !hangoutsDismissed;
-
-  // If both messages can be shown choose only one randomly.
-  if (showSurvey && showHangouts) {
-    if (Math.random() > 0.5) {
-      showSurvey = false;
-    } else {
-      showHangouts = false;
-    }
-  }
-
-  if (showSurvey) {
+  if (!surveyDismissed) {
     this.show_(/*i18n-content*/'SURVEY_INVITATION',
                ['<a href="http://goo.gl/njH2q" target="_blank">', '</a>'],
                remoting.ButterBar.kSurveyStorageKey_);
-  } else if (showHangouts) {
-    this.show_(/*i18n-content*/'HANGOUTS_INVITATION',
-               ['<a id="hangouts-accept" ' +
-                'href="https://plus.google.com/hangouts/_?gid=818572447316" ' +
-                'target="_blank">',
-                '</a>'],
-               remoting.ButterBar.kHangoutsStorageKey_);
   }
 };
 
@@ -112,8 +75,6 @@ remoting.ButterBar.kDismissId_ = 'butter-bar-dismiss';
 
 /** @const @private */
 remoting.ButterBar.kSurveyStorageKey_ = 'feedback-survey-dismissed';
-/** @const @private */
-remoting.ButterBar.kHangoutsStorageKey_ = 'hangouts-notice-dismissed';
 
 /**
  * Hide the butter bar request and record some basic information about the

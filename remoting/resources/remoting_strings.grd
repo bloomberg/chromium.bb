@@ -996,9 +996,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Check-box displayed when the user enters their PIN to connect to a host allowing them to 'pair' the client and host, avoiding the need to enter the PIN each time." name="IDS_REMEMBER_PIN" formatter_data="android_java">
         Don't ask for a PIN again when connecting to this host from this device.
       </message>
-      <message name="IDS_HANGOUTS_INVITATION" desc="Text for the invitation to try Remote Desktop app in Hangouts.">
-        Want to help someone while having a video chat with them too? Try <ph name="LINK_BEGIN">$1<ex>&lt;a href=https://plus.google.com/hangouts&gt;</ex></ph> Remote Desktop in Google Hangouts<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
-      </message>
       <message name="IDS_REMOTING_CORE_DESCRIPTION" desc="The file description specified in the version information of remoting_core.dll.">
         Core Library
       </message>

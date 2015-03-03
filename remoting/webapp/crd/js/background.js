@@ -9,7 +9,7 @@ var remoting = remoting || {};
 
 'use strict';
 
-var ENABLE_HANGOUT_REMOTE_ASSISTANCE = true;
+var ENABLE_HANGOUT_REMOTE_ASSISTANCE = false;
 
 /**
  * @constructor
