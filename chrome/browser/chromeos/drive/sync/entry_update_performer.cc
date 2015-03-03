@@ -254,7 +254,7 @@ void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
   DCHECK(!callback.is_null());
 
   scoped_ptr<LocalState> local_state(new LocalState);
-  LocalState* local_state_ptr = local_state.get();
+  LocalState* const local_state_ptr = local_state.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -327,11 +327,13 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       options.modified_date = last_modified;
       options.last_viewed_by_me_date = last_accessed;
       options.properties = properties;
+      LocalState* const local_state_ptr = local_state.get();
       scheduler_->UploadNewFile(
-          local_state->parent_entry.resource_id(), local_state->drive_file_path,
-          local_state->cache_file_path, local_state->entry.title(),
-          local_state->entry.file_specific_info().content_mime_type(), options,
-          context,
+          local_state_ptr->parent_entry.resource_id(),
+          local_state_ptr->drive_file_path, local_state_ptr->cache_file_path,
+          local_state_ptr->entry.title(),
+          local_state_ptr->entry.file_specific_info().content_mime_type(),
+          options, context,
           base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                      weak_ptr_factory_.GetWeakPtr(), context, callback,
                      base::Passed(&local_state),
@@ -343,11 +345,12 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       options.modified_date = last_modified;
       options.last_viewed_by_me_date = last_accessed;
       options.properties = properties;
+      LocalState* const local_state_ptr = local_state.get();
       scheduler_->UploadExistingFile(
-          local_state->entry.resource_id(), local_state->drive_file_path,
-          local_state->cache_file_path,
-          local_state->entry.file_specific_info().content_mime_type(), options,
-          context,
+          local_state_ptr->entry.resource_id(),
+          local_state_ptr->drive_file_path, local_state_ptr->cache_file_path,
+          local_state_ptr->entry.file_specific_info().content_mime_type(),
+          options, context,
           base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                      weak_ptr_factory_.GetWeakPtr(), context, callback,
                      base::Passed(&local_state),
@@ -367,9 +370,10 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     options.modified_date = last_modified;
     options.last_viewed_by_me_date = last_accessed;
     options.properties = properties;
+    LocalState* const local_state_ptr = local_state.get();
     scheduler_->AddNewDirectory(
-        local_state->parent_entry.resource_id(), local_state->entry.title(),
-        options, context,
+        local_state_ptr->parent_entry.resource_id(),
+        local_state_ptr->entry.title(), options, context,
         base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                    weak_ptr_factory_.GetWeakPtr(), context, callback,
                    base::Passed(&local_state), base::Passed(&loader_lock)));
@@ -384,9 +388,11 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   }
 
   // Perform metadata update.
+  LocalState* const local_state_ptr = local_state.get();
   scheduler_->UpdateResource(
-      local_state->entry.resource_id(), local_state->parent_entry.resource_id(),
-      local_state->entry.title(), last_modified, last_accessed, properties,
+      local_state_ptr->entry.resource_id(),
+      local_state_ptr->parent_entry.resource_id(),
+      local_state_ptr->entry.title(), last_modified, last_accessed, properties,
       context,
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                  weak_ptr_factory_.GetWeakPtr(), context, callback,
