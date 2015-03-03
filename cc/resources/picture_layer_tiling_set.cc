@@ -53,48 +53,53 @@ PictureLayerTilingSet::PictureLayerTilingSet(
 PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
 
+void PictureLayerTilingSet::CopyTilingsFromPendingTwin(
+    const PictureLayerTilingSet* pending_twin_set,
+    const scoped_refptr<RasterSource>& raster_source) {
+  if (pending_twin_set->tilings_.empty()) {
+    // If the twin (pending) tiling set is empty, it was not updated for the
+    // current frame. So we drop tilings from our set as well, instead of
+    // leaving behind unshared tilings that are all non-ideal.
+    RemoveAllTilings();
+  }
+
+  for (PictureLayerTiling* pending_twin_tiling : pending_twin_set->tilings_) {
+    float contents_scale = pending_twin_tiling->contents_scale();
+    PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
+    if (!this_tiling) {
+      scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
+          contents_scale, raster_source, client_, max_tiles_for_interest_area_,
+          skewport_target_time_in_seconds_,
+          skewport_extrapolation_limit_in_content_pixels_);
+      tilings_.push_back(new_tiling.Pass());
+      this_tiling = tilings_.back();
+    }
+    this_tiling->CloneTilesAndPropertiesFrom(*pending_twin_tiling);
+  }
+}
+
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     scoped_refptr<RasterSource> raster_source,
-    const PictureLayerTilingSet* twin_set,
+    const PictureLayerTilingSet* pending_twin_set,
     const Region& layer_invalidation,
     float minimum_contents_scale,
     float maximum_contents_scale) {
   RemoveTilingsBelowScale(minimum_contents_scale);
   RemoveTilingsAboveScale(maximum_contents_scale);
 
-  // Copy over tilings that are shared with the |twin_set| tiling set (if it
-  // exists).
-  if (twin_set) {
-    if (twin_set->tilings_.empty()) {
-      // If the twin (pending) tiling set is empty, it was not updated for the
-      // current frame. So we drop tilings from our set as well, instead of
-      // leaving behind unshared tilings that are all non-ideal.
-      RemoveAllTilings();
-    }
+  // Copy over tilings that are shared with the |pending_twin_set| tiling set
+  // (if it exists).
+  if (pending_twin_set)
+    CopyTilingsFromPendingTwin(pending_twin_set, raster_source);
 
-    for (PictureLayerTiling* twin_tiling : twin_set->tilings_) {
-      float contents_scale = twin_tiling->contents_scale();
-      DCHECK_GE(contents_scale, minimum_contents_scale);
-      DCHECK_LE(contents_scale, maximum_contents_scale);
-
-      PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
-      if (!this_tiling) {
-        scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
-            contents_scale, raster_source, client_,
-            max_tiles_for_interest_area_, skewport_target_time_in_seconds_,
-            skewport_extrapolation_limit_in_content_pixels_);
-        tilings_.push_back(new_tiling.Pass());
-        this_tiling = tilings_.back();
-      }
-      this_tiling->CloneTilesAndPropertiesFrom(*twin_tiling);
-    }
-  }
-
-  // For unshared tilings, invalidate tiles and update them to the new raster
-  // source.
+  // If the tiling is not shared (FindTilingWithScale returns nullptr) or if
+  // |this| is the sync set (pending_twin_set is nullptr), then invalidate
+  // tiles and update them to the new raster source.
   for (PictureLayerTiling* tiling : tilings_) {
-    if (twin_set && twin_set->FindTilingWithScale(tiling->contents_scale()))
+    if (pending_twin_set &&
+        pending_twin_set->FindTilingWithScale(tiling->contents_scale())) {
       continue;
+    }
 
     tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
@@ -104,9 +109,9 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     // raster source.
     tiling->CreateMissingTilesInLiveTilesRect();
 
-    // If |twin_set| is present, use the resolutions from there. Otherwise leave
-    // all resolutions as they are.
-    if (twin_set)
+    // If |pending_twin_set| is present, then |this| is active and |tiling| is
+    // not in the pending set, which means it is now NON_IDEAL_RESOLUTION.
+    if (pending_twin_set)
       tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
 
@@ -126,11 +131,12 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     DCHECK_LE(NumHighResTilings(), 1);
     // When commiting from the main thread the high res tiling may get dropped,
     // but when cloning to the active tree, there should always be one.
-    if (twin_set) {
+    if (pending_twin_set) {
       DCHECK_EQ(1, NumHighResTilings())
           << " num tilings on active: " << tilings_.size()
-          << " num tilings on pending: " << twin_set->tilings_.size()
-          << " num high res on pending: " << twin_set->NumHighResTilings()
+          << " num tilings on pending: " << pending_twin_set->tilings_.size()
+          << " num high res on pending: "
+          << pending_twin_set->NumHighResTilings()
           << " are on active tree: " << (client_->GetTree() == ACTIVE_TREE);
     }
   }
