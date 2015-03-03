@@ -423,9 +423,8 @@ void MediaStreamDevicesController::Deny(
   DLOG(WARNING) << "MediaStreamDevicesController::Deny: " << result;
   NotifyUIRequestDenied();
 
-  if (update_content_setting && request_.all_ancestors_have_same_origin) {
-    // Store sticky permissions if |update_content_setting| and the request
-    // is not done from an iframe where the ancestor has a different origin.
+  if (update_content_setting) {
+    // Store sticky permissions if |update_content_setting|.
     CHECK_EQ(content::MEDIA_DEVICE_PERMISSION_DENIED, result);
     StorePermission(false);
   }
@@ -500,11 +499,6 @@ void MediaStreamDevicesController::RequestFinished() {
 }
 
 bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
-  // If not all ancestors of the requesting frame have the same origin, do not
-  // allow the request per default.
-  if (!request_.all_ancestors_have_same_origin)
-    return false;
-
   // The request from internal objects like chrome://URLs is always allowed.
   if (CheckAllowAllMediaStreamContentForOrigin(profile_,
                                                request_.security_origin)) {
