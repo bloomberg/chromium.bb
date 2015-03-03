@@ -108,6 +108,32 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, BubbleAtDefaultZoom) {
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }
 
+// Regression test for https://crbug.com/462482.
+IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, IconRemainsVisibleAfterBubble) {
+  ZoomDecoration* zoom_decoration = GetZoomDecoration();
+
+  // See comment in BubbleAtDefaultZoom regarding this next line.
+  ui_zoom::ZoomController::FromWebContents(
+      GetLocationBar()->GetWebContents())->SetShowsNotificationBubble(false);
+
+  // Zoom in to turn on decoration icon.
+  EXPECT_FALSE(zoom_decoration->IsVisible());
+  Zoom(content::PAGE_ZOOM_IN);
+  EXPECT_TRUE(zoom_decoration->IsVisible());
+
+  // Show zoom bubble, verify decoration icon remains visible.
+  zoom_decoration->ShowBubble(/* auto_close = */false);
+  EXPECT_TRUE(zoom_decoration->IsVisible());
+
+  // Close bubble and verify the decoration is still visible.
+  zoom_decoration->CloseBubble();
+  EXPECT_TRUE(zoom_decoration->IsVisible());
+
+  // Verify the decoration does go away when we expect it to.
+  Zoom(content::PAGE_ZOOM_RESET);
+  EXPECT_FALSE(zoom_decoration->IsVisible());
+}
+
 IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   ZoomDecoration* zoom_decoration = GetZoomDecoration();
 
