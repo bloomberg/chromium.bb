@@ -190,7 +190,7 @@ remoting.AppRemoting.prototype.init = function(connector) {
       method: 'POST',
       url: that.runApplicationUrl(),
       onDone: parseAppHostResponse,
-      oauthToken: token,
+      oauthToken: token
     });
   };
 
