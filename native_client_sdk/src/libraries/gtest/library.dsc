@@ -13,7 +13,6 @@
         'gtest.cc',
         'gtest-death-test.cc',
         'gtest-filepath.cc',
-        'gtest_main.cc',
         'gtest-port.cc',
         'gtest-printers.cc',
         'gtest-test-part.cc',
