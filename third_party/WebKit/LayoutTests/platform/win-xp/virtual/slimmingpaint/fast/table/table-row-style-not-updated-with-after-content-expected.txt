@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
                   text run at (0,0) width 512: "ABCD"
               LayoutTable at (0,128) size 512x128
                 LayoutTableSection (anonymous) at (0,0) size 512x128
-                  LayoutTableRow (anonymous) {<pseudo:after>} at (0,0) size 512x128 [color=#FFFF00]
+                  LayoutTableRow {<pseudo:after>} at (0,0) size 512x128 [color=#FFFF00]
                     LayoutTableCell (anonymous) at (0,0) size 512x128 [r=0 c=0 rs=1 cs=1]
                       LayoutTextFragment at (0,0) size 512x128
                         text run at (0,0) width 512: "4578"

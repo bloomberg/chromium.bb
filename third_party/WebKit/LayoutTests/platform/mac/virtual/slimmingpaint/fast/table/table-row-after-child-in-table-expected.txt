@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               LayoutInline {SPAN} at (0,0) size 75x18
                 LayoutText {#text} at (0,0) size 75x18
                   text run at (0,0) width 75: "CONTENT"
-          LayoutTableRow (anonymous) {<pseudo:after>} at (0,18) size 75x18 [border: (3px solid #0000FF)]
+          LayoutTableRow {<pseudo:after>} at (0,18) size 75x18 [border: (3px solid #0000FF)]
             LayoutTableCell (anonymous) at (0,18) size 75x18 [r=1 c=0 rs=1 cs=1]
               LayoutTextFragment at (0,0) size 51x18
                 text run at (0,0) width 51: "AFTER"

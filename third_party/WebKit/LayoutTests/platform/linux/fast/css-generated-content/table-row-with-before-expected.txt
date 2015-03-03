@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
             LayoutListMarker at (-18,0) size 7x19: bullet
           LayoutTable at (0,20) size 28x20
             LayoutTableSection (anonymous) at (0,0) size 28x20
-              LayoutTableRow (anonymous) {<pseudo:before>} at (0,0) size 28x20
+              LayoutTableRow {<pseudo:before>} at (0,0) size 28x20
                 LayoutTableCell (anonymous) at (0,0) size 28x20 [r=0 c=0 rs=1 cs=1]
                   LayoutTextFragment at (0,0) size 28x19
                     text run at (0,0) width 28: "hello"

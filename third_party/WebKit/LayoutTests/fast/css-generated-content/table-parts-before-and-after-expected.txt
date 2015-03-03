@@ -16,7 +16,7 @@ layer at (0,0) size 785x736 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTable at (0,80) size 120x40
           LayoutTableSection (anonymous) at (0,0) size 120x40
             LayoutTableRow (anonymous) at (0,0) size 120x40
-              LayoutTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       LayoutBlockFlow {DIV} at (0,120) size 769x120 [color=#0000FF]
@@ -32,12 +32,12 @@ layer at (0,0) size 785x736 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTable at (0,80) size 120x40
           LayoutTableSection (anonymous) at (0,0) size 120x40
             LayoutTableRow (anonymous) at (0,0) size 120x40
-              LayoutTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       LayoutBlockFlow {DIV} at (0,240) size 769x120
         LayoutTable at (0,0) size 40x40
-          LayoutTableSection (anonymous) {<pseudo:before>} at (0,0) size 40x40
+          LayoutTableSection {<pseudo:before>} at (0,0) size 40x40
             LayoutTableRow (anonymous) at (0,0) size 40x40
               LayoutTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 40x40
@@ -48,12 +48,12 @@ layer at (0,0) size 785x736 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTable at (0,80) size 120x40
           LayoutTableSection (anonymous) at (0,0) size 120x40
             LayoutTableRow (anonymous) at (0,0) size 120x40
-              LayoutTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       LayoutBlockFlow {DIV} at (0,360) size 769x120 [color=#0000FF]
         LayoutTable at (0,0) size 40x40
-          LayoutTableSection (anonymous) {<pseudo:before>} at (0,0) size 40x40
+          LayoutTableSection {<pseudo:before>} at (0,0) size 40x40
             LayoutTableRow (anonymous) at (0,0) size 40x40
               LayoutTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 40x40
@@ -64,13 +64,13 @@ layer at (0,0) size 785x736 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTable at (0,80) size 120x40
           LayoutTableSection (anonymous) at (0,0) size 120x40
             LayoutTableRow (anonymous) at (0,0) size 120x40
-              LayoutTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       LayoutBlockFlow {DIV} at (0,480) size 769x120
         LayoutTable at (0,0) size 40x40
           LayoutTableSection (anonymous) at (0,0) size 40x40
-            LayoutTableRow (anonymous) {<pseudo:before>} at (0,0) size 40x40
+            LayoutTableRow {<pseudo:before>} at (0,0) size 40x40
               LayoutTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 40x40
                   text run at (0,0) width 40: "1"
@@ -80,13 +80,13 @@ layer at (0,0) size 785x736 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTable at (0,80) size 120x40
           LayoutTableSection (anonymous) at (0,0) size 120x40
             LayoutTableRow (anonymous) at (0,0) size 120x40
-              LayoutTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       LayoutBlockFlow {DIV} at (0,600) size 769x120 [color=#0000FF]
         LayoutTable at (0,0) size 40x40
           LayoutTableSection (anonymous) at (0,0) size 40x40
-            LayoutTableRow (anonymous) {<pseudo:before>} at (0,0) size 40x40
+            LayoutTableRow {<pseudo:before>} at (0,0) size 40x40
               LayoutTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 40x40
                   text run at (0,0) width 40: "1"
@@ -96,6 +96,6 @@ layer at (0,0) size 785x736 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTable at (0,80) size 120x40
           LayoutTableSection (anonymous) at (0,0) size 120x40
             LayoutTableRow (anonymous) at (0,0) size 120x40
-              LayoutTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 LayoutTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"

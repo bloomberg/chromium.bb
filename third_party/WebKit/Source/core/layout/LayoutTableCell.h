@@ -215,7 +215,7 @@ public:
     }
 #endif
 
-    virtual const char* name() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
+    virtual const char* name() const override { return isAnonymous() ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
 
 protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
@@ -224,7 +224,6 @@ protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
 
 private:
-
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || LayoutBlockFlow::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
