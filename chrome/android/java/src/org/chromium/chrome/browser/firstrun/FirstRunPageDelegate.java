@@ -90,9 +90,14 @@ public interface FirstRunPageDelegate {
     void openAccountAdder(Fragment fragment);
 
     /**
-     * Opens Chrome Preferences on a given page.
-     * @param fragment A fragment that requested the service.
-     * @param pageClassName The preferences fragment class name.
+     * Show an EmbedContentViewActivity with a given title and a URL.
+     * @param title Resource id for the title of the EmbedContentViewActivity.
+     * @param url Resource id for the URL of the EmbedContentViewActivity.
      */
-    void openChromePreferencesPage(Fragment fragment, String pageClassName);
+    void showEmbedContentViewActivity(int title, int url);
+
+    /**
+     * Opens Chrome preferences for document mode.
+     */
+    void openDocumentModeSettings();
 }
