@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/rtc_video_decoder.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 
 namespace content {
 

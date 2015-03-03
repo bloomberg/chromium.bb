@@ -8,7 +8,7 @@
 #include "base/threading/thread.h"
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/filters/mock_gpu_video_accelerator_factories.h"
+#include "media/renderers/mock_gpu_video_accelerator_factories.h"
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

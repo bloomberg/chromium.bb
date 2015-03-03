@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {

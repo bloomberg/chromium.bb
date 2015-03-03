@@ -10,10 +10,10 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #endif
-#include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
 #include "media/renderers/audio_renderer_impl.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #if !defined(MEDIA_DISABLE_LIBVPX)

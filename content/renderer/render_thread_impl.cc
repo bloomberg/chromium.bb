@@ -116,7 +116,7 @@
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/common/common_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"

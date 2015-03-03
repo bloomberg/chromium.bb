@@ -17,10 +17,10 @@
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/cdm/default_cdm_factory.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
 

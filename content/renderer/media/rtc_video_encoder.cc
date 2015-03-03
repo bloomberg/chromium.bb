@@ -15,8 +15,8 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/filters/h264_parser.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/webrtc/system_wrappers/interface/tick_util.h"
 

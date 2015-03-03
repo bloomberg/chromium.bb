@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
-#define MEDIA_FILTERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#ifndef MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#define MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,4 +58,4 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#endif  // MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_

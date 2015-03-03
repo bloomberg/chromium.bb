@@ -14,7 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_errors.h"
