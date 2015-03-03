@@ -92,5 +92,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, Nocompile) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ApiEnums) {
+  ASSERT_TRUE(RunExtensionTest("bindings/api_enums")) << message_;
+};
+
 }  // namespace
 }  // namespace extensions
