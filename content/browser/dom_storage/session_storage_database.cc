@@ -236,9 +236,14 @@ bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id,
 }
 
 bool SessionStorageDatabase::DeleteNamespace(const std::string& namespace_id) {
-  if (!LazyOpen(false)) {
-    // No need to create the database if it doesn't exist.
-    return true;
+  {
+    // The caller should have called other methods to open the DB before this
+    // function. Otherwise, DB stores nothing interesting related to the
+    // specified namespace.
+    // Do nothing if the DB is not open (or we know it has failed already),
+    base::AutoLock auto_lock(db_lock_);
+    if (!IsOpen() || db_error_ || is_inconsistent_)
+      return false;
   }
   DBOperation operation(this);
   // Itereate through the areas in the namespace.
