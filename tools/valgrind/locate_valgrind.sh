@@ -36,32 +36,24 @@ then
     PLATFORM="mac_10.7"
     ;;
   *)
-    echo "Unknown platform:" >&2
-    uname -a >&2
-    echo "We'll try to search for valgrind binaries installed in /usr/local" >&2
-    PLATFORM=
+    (echo "Sorry, your platform is not supported:" &&
+     uname -a
+     echo
+     echo "If you're on Mac OS X, please see http://crbug.com/441425") >&2
+    exit 42
   esac
 
-  if [ "$PLATFORM" != "" ]
+  # The binaries should be in third_party/valgrind
+  # (checked out from deps/third_party/valgrind/binaries).
+  CHROME_VALGRIND="$THISDIR/../../third_party/valgrind/$PLATFORM"
+
+  # TODO(timurrrr): readlink -f is not present on Mac...
+  if [ "$PLATFORM" != "mac" ] && \
+    [ "$PLATFORM" != "mac_10.6" ] && \
+    [ "$PLATFORM" != "mac_10.7" ]
   then
-    # The binaries should be in third_party/valgrind
-    # (checked out from deps/third_party/valgrind/binaries).
-    CHROME_VALGRIND="$THISDIR/../../third_party/valgrind/$PLATFORM"
-
-    # TODO(timurrrr): readlink -f is not present on Mac...
-    if [ "$PLATFORM" != "mac" ] && \
-      [ "$PLATFORM" != "mac_10.6" ] && \
-      [ "$PLATFORM" != "mac_10.7" ]
-    then
-      # Get rid of all "../" dirs
-      CHROME_VALGRIND=`readlink -f $CHROME_VALGRIND`
-    fi
-
-    if ! test -x $CHROME_VALGRIND/bin/valgrind
-    then
-      # We couldn't find the binaries in third_party/valgrind
-      CHROME_VALGRIND=""
-    fi
+    # Get rid of all "../" dirs
+    CHROME_VALGRIND=$(readlink -f $CHROME_VALGRIND)
   fi
 fi
 
