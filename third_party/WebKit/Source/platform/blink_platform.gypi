@@ -326,6 +326,7 @@
       'exported/WebSpeechSynthesizerClientImpl.h',
       'exported/WebStorageQuotaCallbacks.cpp',
       'exported/WebThreadSafeData.cpp',
+      'exported/WebThreadedDataReceiver.cpp',
       'exported/WebTraceLocation.cpp',
       'exported/WebTransformKeyframe.cpp',
       'exported/WebURL.cpp',

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "public/platform/WebThreadedDataReceiver.h"
 
-#include "core/html/parser/ThreadedDataReceiver.h"
+#include "platform/ThreadedDataReceiver.h"
 
 namespace blink {
 

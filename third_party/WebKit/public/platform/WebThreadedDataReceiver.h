@@ -5,6 +5,7 @@
 #ifndef WebThreadedDataReceiver_h
 #define WebThreadedDataReceiver_h
 
+#include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 
 namespace blink {
@@ -24,20 +25,20 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebThreadedDataReceiver&);
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebThreadedDataReceiver&);
 
     bool isNull() const { return m_private.isNull(); }
 
-#if BLINK_IMPLEMENTATION
-    explicit WebThreadedDataReceiver(const PassRefPtrWillBeRawPtr<ThreadedDataReceiver>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT explicit WebThreadedDataReceiver(const PassRefPtrWillBeRawPtr<ThreadedDataReceiver>&);
 #endif
 
-    BLINK_EXPORT void acceptData(const char* data, int dataLength);
-    BLINK_EXPORT WebThread* backgroundThread();
+    BLINK_PLATFORM_EXPORT void acceptData(const char* data, int dataLength);
+    BLINK_PLATFORM_EXPORT WebThread* backgroundThread();
 
-    BLINK_EXPORT bool needsMainthreadDataCopy();
-    BLINK_EXPORT void acceptMainthreadDataNotification(const char* data, int dataLength, int encodedDataLength);
+    BLINK_PLATFORM_EXPORT bool needsMainthreadDataCopy();
+    BLINK_PLATFORM_EXPORT void acceptMainthreadDataNotification(const char* data, int dataLength, int encodedDataLength);
 
 private:
     WebPrivatePtr<ThreadedDataReceiver> m_private;
