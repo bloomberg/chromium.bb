@@ -754,9 +754,21 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   double element_width = 0.0;
   params.GetDouble(guestview::kElementHeight, &element_height);
   params.GetDouble(guestview::kElementWidth, &element_width);
-  // Convert the element size from logical pixels to physical pixels.
-  int normal_height = LogicalPixelsToPhysicalPixels(element_height);
-  int normal_width = LogicalPixelsToPhysicalPixels(element_width);
+
+  // If the element size was provided in logical units (versus physical), then
+  // it will be converted to physical units.
+  bool element_size_is_logical = false;
+  params.GetBoolean(guestview::kElementSizeIsLogical, &element_size_is_logical);
+  int normal_height = 0;
+  int normal_width = 0;
+  if (element_size_is_logical) {
+    // Convert the element size from logical pixels to physical pixels.
+    normal_height = LogicalPixelsToPhysicalPixels(element_height);
+    normal_width = LogicalPixelsToPhysicalPixels(element_width);
+  } else {
+    normal_height = lround(element_height);
+    normal_width = lround(element_width);
+  }
 
   SetSizeParams set_size_params;
   set_size_params.enable_auto_size.reset(new bool(auto_size_enabled));

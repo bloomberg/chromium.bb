@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
@@ -73,6 +74,10 @@ void GuestViewInternalCustomBindings::AttachGuest(
     params.reset(
         static_cast<base::DictionaryValue*>(params_as_value.release()));
   }
+
+  // Add flag to |params| to indicate that the element size is specified in
+  // logical units.
+  params->SetBoolean(guestview::kElementSizeIsLogical, true);
 
   linked_ptr<ExtensionsGuestViewContainer::Request> request(
       new ExtensionsGuestViewContainer::AttachRequest(
