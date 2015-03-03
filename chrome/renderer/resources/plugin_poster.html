@@ -8,6 +8,13 @@ function notifyDidFinishLoading() {
   if (plugin.didFinishLoading)
     plugin.didFinishLoading();
 }
+
+document.onkeydown = function(e) {
+  if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+    plugin.load();
+    e.preventDefault();
+  }
+};
 </script>
 <link rel="stylesheet" href="plugin_placeholders.css"></link>
 <style>
