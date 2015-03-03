@@ -745,11 +745,6 @@ public:
 
     ThreadState* threadState() { return m_threadState; }
     int heapIndex() const { return m_index; }
-    static size_t allocationSizeFromSize(size_t);
-    static size_t roundedAllocationSize(size_t size)
-    {
-        return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
-    }
 
 protected:
     BasePage* m_firstPage;
@@ -783,7 +778,6 @@ public:
     void snapshotFreeList(TracedValue&) override;
 #endif
 
-    Address allocate(size_t payloadSize, size_t gcInfoIndex);
     Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
 
     void freePage(NormalPage*);
@@ -926,8 +920,24 @@ public:
     static bool weakTableRegistered(const void*);
 #endif
 
+    static inline size_t allocationSizeFromSize(size_t size)
+    {
+        // Check the size before computing the actual allocation size.  The
+        // allocation size calculation can overflow for large sizes and the check
+        // therefore has to happen before any calculation on the size.
+        RELEASE_ASSERT(size < maxHeapObjectSize);
+
+        // Add space for header.
+        size_t allocationSize = size + sizeof(HeapObjectHeader);
+        // Align size with allocation granularity.
+        allocationSize = (allocationSize + allocationMask) & ~allocationMask;
+        return allocationSize;
+    }
+    static inline size_t roundedAllocationSize(size_t size)
+    {
+        return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
+    }
     static Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
-    template<typename T> static Address allocateOnHeapIndex(size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
 
@@ -1433,20 +1443,6 @@ void HeapObjectHeader::markDead()
     m_encoded |= headerDeadBitMask;
 }
 
-inline size_t BaseHeap::allocationSizeFromSize(size_t size)
-{
-    // Check the size before computing the actual allocation size.  The
-    // allocation size calculation can overflow for large sizes and the check
-    // therefore has to happen before any calculation on the size.
-    RELEASE_ASSERT(size < maxHeapObjectSize);
-
-    // Add space for header.
-    size_t allocationSize = size + sizeof(HeapObjectHeader);
-    // Align size with allocation granularity.
-    allocationSize = (allocationSize + allocationMask) & ~allocationMask;
-    return allocationSize;
-}
-
 inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
 #if ENABLE(GC_PROFILING)
@@ -1475,22 +1471,12 @@ inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcIn
     return outOfLineAllocate(allocationSize, gcInfoIndex);
 }
 
-inline Address NormalPageHeap::allocate(size_t size, size_t gcInfoIndex)
-{
-    return allocateObject(allocationSizeFromSize(size), gcInfoIndex);
-}
-
 inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
 {
     ASSERT(state->isAllocationAllowed());
-    return static_cast<NormalPageHeap*>(state->heap(heapIndex))->allocate(size, gcInfoIndex);
-}
-
-template<typename T>
-Address Heap::allocateOnHeapIndex(size_t size, int heapIndex, size_t gcInfoIndex)
-{
-    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return allocateOnHeapIndex(state, size, heapIndex, gcInfoIndex);
+    ASSERT(heapIndex != LargeObjectHeapIndex);
+    NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->heap(heapIndex));
+    return heap->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
 template<typename T>
@@ -1507,7 +1493,8 @@ Address Heap::reallocate(void* previous, size_t size)
         // malloc(0).  In both cases we do nothing and return nullptr.
         return nullptr;
     }
-    Address address = Heap::allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+    Address address = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
@@ -1551,7 +1538,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return BaseHeap::roundedAllocationSize(count * sizeof(T));
+        return Heap::roundedAllocationSize(count * sizeof(T));
     }
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
@@ -1568,7 +1555,8 @@ public:
     static T* allocateVectorBacking(size_t size)
     {
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, VectorHeapIndex, gcInfoIndex));
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, VectorHeapIndex, gcInfoIndex));
     }
     PLATFORM_EXPORT static void freeVectorBacking(void*);
     PLATFORM_EXPORT static bool expandVectorBacking(void*, size_t);
@@ -1583,7 +1571,8 @@ public:
     static T* allocateInlineVectorBacking(size_t size)
     {
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, InlineVectorHeapIndex, gcInfoIndex));
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, InlineVectorHeapIndex, gcInfoIndex));
     }
     PLATFORM_EXPORT static void freeInlineVectorBacking(void*);
     PLATFORM_EXPORT static bool expandInlineVectorBacking(void*, size_t);
@@ -1597,7 +1586,8 @@ public:
     static T* allocateHashTableBacking(size_t size)
     {
         size_t gcInfoIndex = GCInfoTrait<HeapHashTableBacking<HashTable>>::index();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, HashTableHeapIndex, gcInfoIndex));
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, HashTableHeapIndex, gcInfoIndex));
     }
     template <typename T, typename HashTable>
     static T* allocateZeroedHashTableBacking(size_t size)

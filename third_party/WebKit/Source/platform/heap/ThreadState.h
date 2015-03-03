@@ -464,7 +464,12 @@ public:
     // The heap is split into multiple heap parts based on object
     // types. To get the index for a given type, use
     // HeapIndexTrait<Type>::index.
-    BaseHeap* heap(int heapIndex) const { return m_heaps[heapIndex]; }
+    BaseHeap* heap(int heapIndex) const
+    {
+        ASSERT(0 <= heapIndex);
+        ASSERT(heapIndex < NumberOfHeaps);
+        return m_heaps[heapIndex];
+    }
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Infrastructure to determine if an address is within one of the

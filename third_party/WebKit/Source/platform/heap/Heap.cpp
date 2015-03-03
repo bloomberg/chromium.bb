@@ -951,7 +951,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
     // size.
     if (header->payloadSize() >= newSize)
         return true;
-    size_t allocationSize = allocationSizeFromSize(newSize);
+    size_t allocationSize = Heap::allocationSizeFromSize(newSize);
     ASSERT(allocationSize > header->size());
     size_t expandSize = allocationSize - header->size();
     if (header->payloadEnd() == m_currentAllocationPoint && expandSize <= m_remainingAllocationSize) {
@@ -971,7 +971,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
 void NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
 {
     ASSERT(header->payloadSize() > newSize);
-    size_t allocationSize = allocationSizeFromSize(newSize);
+    size_t allocationSize = Heap::allocationSizeFromSize(newSize);
     ASSERT(header->size() > allocationSize);
     size_t shrinkSize = header->size() - allocationSize;
     if (header->payloadEnd() == m_currentAllocationPoint) {
