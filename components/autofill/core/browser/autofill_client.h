@@ -55,6 +55,21 @@ class AutofillClient {
     AutocompleteResultErrorInvalid,
   };
 
+  enum GetRealPanResult {
+    // Request succeeded.
+    SUCCESS,
+
+    // Request failed; try again.
+    TRY_AGAIN_FAILURE,
+
+    // Request failed; don't try again.
+    PERMANENT_FAILURE,
+
+    // Unable to connect to Wallet servers. Prompt user to check internet
+    // connection.
+    NETWORK_ERROR,
+  };
+
   typedef base::Callback<void(RequestAutocompleteResult,
                               const base::string16&,
                               const FormStructure*)> ResultCallback;
@@ -87,7 +102,7 @@ class AutofillClient {
   // information to proceed.
   virtual void ShowUnmaskPrompt(const CreditCard& card,
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
-  virtual void OnUnmaskVerificationResult(bool success) = 0;
+  virtual void OnUnmaskVerificationResult(GetRealPanResult result) = 0;
 
   // Run |save_card_callback| if the credit card should be imported as personal
   // data. |metric_logger| can be used to log user actions.

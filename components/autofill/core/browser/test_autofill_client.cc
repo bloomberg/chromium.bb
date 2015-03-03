@@ -42,7 +42,7 @@ void TestAutofillClient::ShowUnmaskPrompt(
     base::WeakPtr<CardUnmaskDelegate> delegate) {
 }
 
-void TestAutofillClient::OnUnmaskVerificationResult(bool success) {
+void TestAutofillClient::OnUnmaskVerificationResult(GetRealPanResult result) {
 }
 
 void TestAutofillClient::ConfirmSaveCreditCard(

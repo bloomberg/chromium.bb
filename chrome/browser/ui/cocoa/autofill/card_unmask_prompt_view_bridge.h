@@ -27,7 +27,8 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
   // CardUnmaskPromptView implementation:
   void ControllerGone() override;
   void DisableAndWaitForVerification() override;
-  void GotVerificationResult(bool success) override;
+  void GotVerificationResult(const base::string16& error_message,
+                             bool allow_retry) override;
 
   // ConstrainedWindowMacDelegate implementation:
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;

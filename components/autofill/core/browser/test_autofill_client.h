@@ -30,7 +30,7 @@ class TestAutofillClient : public AutofillClient {
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
-  void OnUnmaskVerificationResult(bool success) override;
+  void OnUnmaskVerificationResult(GetRealPanResult result) override;
   void ConfirmSaveCreditCard(const base::Closure& save_card_callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;

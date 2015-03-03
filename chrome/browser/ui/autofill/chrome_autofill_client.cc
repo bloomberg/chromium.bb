@@ -136,8 +136,8 @@ void ChromeAutofillClient::ShowUnmaskPrompt(
   unmask_controller_.ShowPrompt(card, delegate);
 }
 
-void ChromeAutofillClient::OnUnmaskVerificationResult(bool success) {
-  unmask_controller_.OnVerificationResult(success);
+void ChromeAutofillClient::OnUnmaskVerificationResult(GetRealPanResult result) {
+  unmask_controller_.OnVerificationResult(result);
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCard(

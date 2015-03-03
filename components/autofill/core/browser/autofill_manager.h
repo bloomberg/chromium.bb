@@ -237,7 +237,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // wallet::RealPanWalletClient::Delegate:
   IdentityProvider* GetIdentityProvider() override;
-  void OnDidGetRealPan(const std::string& real_pan) override;
+  void OnDidGetRealPan(AutofillClient::GetRealPanResult result,
+                       const std::string& real_pan) override;
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels();

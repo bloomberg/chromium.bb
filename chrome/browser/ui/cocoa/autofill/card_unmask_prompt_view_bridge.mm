@@ -49,7 +49,9 @@ void CardUnmaskPromptViewBridge::ControllerGone() {
 void CardUnmaskPromptViewBridge::DisableAndWaitForVerification() {
 }
 
-void CardUnmaskPromptViewBridge::GotVerificationResult(bool success) {
+void CardUnmaskPromptViewBridge::GotVerificationResult(
+    const base::string16& error_message,
+    bool allow_retry) {
 }
 
 void CardUnmaskPromptViewBridge::OnConstrainedWindowClosed(

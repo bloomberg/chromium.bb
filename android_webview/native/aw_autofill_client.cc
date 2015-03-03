@@ -199,7 +199,7 @@ void AwAutofillClient::ShowUnmaskPrompt(
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::OnUnmaskVerificationResult(bool success) {
+void AwAutofillClient::OnUnmaskVerificationResult(GetRealPanResult result) {
   NOTIMPLEMENTED();
 }
 

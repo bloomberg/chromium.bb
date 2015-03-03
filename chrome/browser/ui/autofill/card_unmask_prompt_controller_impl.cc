@@ -44,9 +44,39 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   card_unmask_view_ = CardUnmaskPromptView::CreateAndShow(this);
 }
 
-void CardUnmaskPromptControllerImpl::OnVerificationResult(bool success) {
-  if (card_unmask_view_)
-    card_unmask_view_->GotVerificationResult(success);
+void CardUnmaskPromptControllerImpl::OnVerificationResult(
+    AutofillClient::GetRealPanResult result) {
+  if (!card_unmask_view_)
+    return;
+
+  base::string16 error_message;
+  bool allow_retry = true;
+  switch (result) {
+    case AutofillClient::SUCCESS:
+      break;
+
+    case AutofillClient::TRY_AGAIN_FAILURE: {
+      error_message = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN);
+      break;
+    }
+
+    case AutofillClient::PERMANENT_FAILURE: {
+      error_message = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT);
+      allow_retry = false;
+      break;
+    }
+
+    case AutofillClient::NETWORK_ERROR: {
+      error_message = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_NETWORK);
+      allow_retry = false;
+      break;
+    }
+  }
+
+  card_unmask_view_->GotVerificationResult(error_message, allow_retry);
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {

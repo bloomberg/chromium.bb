@@ -19,7 +19,8 @@ class CardUnmaskPromptView {
 
   virtual void ControllerGone() = 0;
   virtual void DisableAndWaitForVerification() = 0;
-  virtual void GotVerificationResult(bool success) = 0;
+  virtual void GotVerificationResult(const base::string16& error_message,
+                                     bool allow_retry) = 0;
 
  protected:
   CardUnmaskPromptView() {}

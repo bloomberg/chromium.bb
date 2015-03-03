@@ -11,6 +11,9 @@
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -70,43 +73,53 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     Layout();
   }
 
-  void GotVerificationResult(bool success) override {
-    if (success) {
+  void GotVerificationResult(const base::string16& error_message,
+                             bool allow_retry) override {
+    if (!error_message.empty()) {
       progress_label_->SetText(base::ASCIIToUTF16("Success!"));
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
                                 base::Unretained(this)),
           base::TimeDelta::FromSeconds(1));
     } else {
-      SetInputsEnabled(true);
-      SetInputsInvalid(true);
+      SetInputsEnabled(allow_retry);
+
+      // If there is more than one input showing, don't mark anything as invalid
+      // since we don't know the location of the problem.
+      if (controller_->ShouldRequestExpirationDate())
+        cvc_input_->SetInvalid(true);
+
       // TODO(estade): it's somewhat jarring when the error comes back too
       // quickly.
       progress_overlay_->SetVisible(false);
       // TODO(estade): When do we hide |error_label_|?
-      error_label_->SetText(
-          base::ASCIIToUTF16("Verification error. Please try again."));
+      error_label_->SetMultiLine(true);
+      error_label_->SetText(error_message);
+
+      // Update the dialog's size, which may change depending on
+      // |error_message|.
+      if (GetWidget() && controller_->GetWebContents()) {
+        constrained_window::UpdateWebContentsModalDialogPosition(
+            GetWidget(),
+            web_modal::WebContentsModalDialogManager::FromWebContents(
+                controller_->GetWebContents())
+                ->delegate()
+                ->GetWebContentsModalDialogHost());
+      }
       GetDialogClientView()->UpdateDialogButtons();
     }
+
     Layout();
   }
 
   void SetInputsEnabled(bool enabled) {
     cvc_input_->SetEnabled(enabled);
+    storage_checkbox_->SetEnabled(enabled);
 
     if (month_input_)
       month_input_->SetEnabled(enabled);
     if (year_input_)
       year_input_->SetEnabled(enabled);
-  }
-
-  void SetInputsInvalid(bool invalid) {
-    cvc_input_->SetInvalid(invalid);
-
-    if (month_input_)
-      month_input_->SetInvalid(invalid);
-    if (year_input_)
-      year_input_->SetInvalid(invalid);
   }
 
   // views::DialogDelegateView
@@ -120,7 +133,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     // Must hardcode a width so the label knows where to wrap. TODO(estade):
     // This can lead to a weird looking dialog if we end up getting allocated
     // more width than we ask for, e.g. if the title is super long.
-    const int kWidth = 250;
+    const int kWidth = 450;
     return gfx::Size(kWidth, GetHeightForWidth(kWidth));
   }
 
@@ -209,17 +222,13 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override {
-    // Sets all inputs back to valid since we don't know which one was
-    // actually invalid to begin with.
-    SetInputsInvalid(false);
+    cvc_input_->SetInvalid(false);
     GetDialogClientView()->UpdateDialogButtons();
   }
 
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override {
-    // Sets all inputs back to valid since we don't know which one was
-    // actually invalid to begin with.
-    SetInputsInvalid(false);
+    combobox->SetInvalid(false);
     GetDialogClientView()->UpdateDialogButtons();
   }
 
@@ -268,7 +277,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
     input_row->AddChildView(cvc_image);
 
-    // Reserve vertical space.
+    // Reserve vertical space for the error label, assuming it's one line.
     error_label_ = new views::Label(base::ASCIIToUTF16(" "));
     error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     error_label_->SetEnabledColor(kWarningColor);

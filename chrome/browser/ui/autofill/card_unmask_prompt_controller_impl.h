@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
 
@@ -24,7 +25,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   void ShowPrompt(const CreditCard& card,
                   base::WeakPtr<CardUnmaskDelegate> delegate);
   // The CVC the user entered went through validation.
-  void OnVerificationResult(bool success);
+  void OnVerificationResult(AutofillClient::GetRealPanResult result);
 
   // CardUnmaskPromptController implementation.
   void OnUnmaskDialogClosed() override;

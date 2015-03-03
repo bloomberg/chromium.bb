@@ -129,8 +129,8 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
 
-  // TODO(estade): OAuth2 may fail due to an expired access token, in which case
-  // we should invalidate the token and try again. How is that failure reported?
+  std::string real_pan;
+  AutofillClient::GetRealPanResult result = AutofillClient::SUCCESS;
 
   switch (response_code) {
     // Valid response.
@@ -140,24 +140,19 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(
             static_cast<base::DictionaryValue*>(message_value.release()));
+        response_dict->GetString("pan", &real_pan);
+        if (real_pan.empty())
+          result = AutofillClient::TRY_AGAIN_FAILURE;
+        // TODO(estade): check response for allow_retry.
       }
       break;
     }
 
-    // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
-    case net::HTTP_BAD_REQUEST: {
-      break;
-    }
-
-    // Response contains an error to show the user.
-    case net::HTTP_FORBIDDEN:
-    case net::HTTP_INTERNAL_SERVER_ERROR: {
-      break;
-    }
-
     case net::HTTP_UNAUTHORIZED: {
-      if (has_retried_authorization_)
+      if (has_retried_authorization_) {
+        result = AutofillClient::PERMANENT_FAILURE;
         break;
+      }
       has_retried_authorization_ = true;
 
       CreateRequest();
@@ -165,21 +160,27 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
       return;
     }
 
-    // Handle anything else as a generic error.
-    default:
+    // TODO(estade): is this actually how network connectivity issues are
+    // reported?
+    case net::HTTP_REQUEST_TIMEOUT: {
+      result = AutofillClient::NETWORK_ERROR;
       break;
-  }
+    }
 
-  std::string real_pan;
-  if (response_dict)
-    response_dict->GetString("pan", &real_pan);
+    // Handle anything else as a generic (permanent) failure.
+    default: {
+      result = AutofillClient::PERMANENT_FAILURE;
+      break;
+    }
+  }
 
   if (real_pan.empty()) {
-    NOTIMPLEMENTED() << "Unhandled error: " << response_code
-                     << " with data: " << data;
+    LOG(ERROR) << "Wallet returned error: " << response_code
+               << " with data: " << data;
   }
 
-  delegate_->OnDidGetRealPan(real_pan);
+  DCHECK_EQ(result != AutofillClient::SUCCESS, real_pan.empty());
+  delegate_->OnDidGetRealPan(result, real_pan);
 }
 
 void RealPanWalletClient::OnGetTokenSuccess(
@@ -198,13 +199,12 @@ void RealPanWalletClient::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(request, access_token_request_.get());
+  LOG(ERROR) << "Unhandled OAuth2 error: " << error.ToString();
   if (request_) {
     request_.reset();
-    delegate_->OnDidGetRealPan(std::string());
+    delegate_->OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE,
+                               std::string());
   }
-  // TODO(estade): what do we do in the failure case?
-  NOTIMPLEMENTED() << "Unhandled OAuth2 error: " << error.ToString();
-
   access_token_request_.reset();
 }
 
@@ -257,7 +257,7 @@ void RealPanWalletClient::StartTokenFetch(bool invalidate_old) {
 
 void RealPanWalletClient::SetOAuth2TokenAndStartRequest() {
   request_->AddExtraRequestHeader(net::HttpRequestHeaders::kAuthorization +
-      std::string(": Bearer ") + access_token_);
+                                  std::string(": Bearer ") + access_token_);
 
   request_->Start();
 }

@@ -1186,7 +1186,8 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
-    autofill_manager_->OnDidGetRealPan("6011000990139424");
+    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                       "6011000990139424");
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, 1);
@@ -1348,7 +1349,8 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
-    autofill_manager_->OnDidGetRealPan("6011000990139424");
+    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                       "6011000990139424");
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, 1);

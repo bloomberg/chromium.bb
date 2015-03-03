@@ -778,8 +778,10 @@ IdentityProvider* AutofillManager::GetIdentityProvider() {
   return client()->GetIdentityProvider();
 }
 
-void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
+void AutofillManager::OnDidGetRealPan(AutofillClient::GetRealPanResult result,
+                                      const std::string& real_pan) {
   if (!real_pan.empty()) {
+    DCHECK_EQ(AutofillClient::SUCCESS, result);
     credit_card_form_event_logger_->OnDidFillSuggestion(unmasking_card_);
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     unmasking_card_.SetNumber(base::UTF8ToUTF16(real_pan));
@@ -790,7 +792,7 @@ void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
                        unmasking_card_);
   }
 
-  client()->OnUnmaskVerificationResult(!real_pan.empty());
+  client()->OnUnmaskVerificationResult(result);
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {

@@ -88,9 +88,13 @@ void CardUnmaskPromptViewAndroid::DisableAndWaitForVerification() {
   Java_CardUnmaskBridge_disableAndWaitForVerification(env, java_object_.obj());
 }
 
-void CardUnmaskPromptViewAndroid::GotVerificationResult(bool success) {
+void CardUnmaskPromptViewAndroid::GotVerificationResult(
+    const base::string16& error_message,
+    bool allow_retry) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CardUnmaskBridge_verificationFinished(env, java_object_.obj(), success);
+  // TODO(estade): pass |error_message| and |allow_retry|.
+  Java_CardUnmaskBridge_verificationFinished(env, java_object_.obj(),
+                                             error_message.empty());
 }
 
 // static

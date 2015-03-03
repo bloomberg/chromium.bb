@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -36,7 +37,8 @@ class RealPanWalletClient : public net::URLFetcherDelegate,
 
     // Returns the real PAN retrieved from Wallet. |real_pan| will be empty
     // on failure.
-    virtual void OnDidGetRealPan(const std::string& real_pan) = 0;
+    virtual void OnDidGetRealPan(AutofillClient::GetRealPanResult result,
+                                 const std::string& real_pan) = 0;
   };
 
   // |context_getter| is reference counted so it has no lifetime or ownership
