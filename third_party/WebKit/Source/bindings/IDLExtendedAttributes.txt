@@ -63,6 +63,7 @@ ImplementedAs=*
 ImplementedInPrivateScript
 InitializedByEventConstructor
 Iterable
+LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds

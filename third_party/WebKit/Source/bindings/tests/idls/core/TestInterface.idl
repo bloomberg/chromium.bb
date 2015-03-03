@@ -58,6 +58,7 @@
     attribute TestEnum testEnumAttribute;
     attribute DOMStringOrDouble stringOrDoubleAttribute;
     static attribute DOMString staticStringAttribute;
+    [LegacyInterfaceTypeChecking] attribute TestInterfaceEmpty legacyInterfaceTypeCheckingAttribute;
 
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodDoubleArgFloatArg(double doubleArg, float floatArg);
@@ -106,6 +107,8 @@
     Promise promiseMethodPartialOverload();
     Promise promiseMethodPartialOverload(Window window);
     static Promise staticPromiseMethodPartialOverload();
+
+    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingMethod(TestInterfaceEmpty testInterfaceEmptyArg);
 };
 
 TestInterface implements TestImplements;

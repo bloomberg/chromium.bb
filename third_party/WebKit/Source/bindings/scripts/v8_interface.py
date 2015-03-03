@@ -48,7 +48,7 @@ from v8_types import cpp_ptr_type, cpp_template_type
 import v8_utilities
 from v8_utilities import (cpp_name_or_partial, capitalize, conditional_string, cpp_name, gc_type,
                           has_extended_attribute_value, runtime_enabled_function_name,
-                          extended_attribute_value_as_list)
+                          extended_attribute_value_as_list, is_legacy_interface_type_checking)
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -1275,13 +1275,15 @@ def property_setter(setter, interface):
     extended_attributes = setter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
 
+    # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
+    has_type_checking_interface = (
+        not is_legacy_interface_type_checking(interface, setter) and
+        idl_type.is_wrapper_type)
+
     return {
         'has_exception_state': (is_raises_exception or
                                 idl_type.v8_conversion_needs_exception_state),
-        'has_type_checking_interface':
-            (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
-             has_extended_attribute_value(setter, 'TypeChecking', 'Interface')) and
-            idl_type.is_wrapper_type,
+        'has_type_checking_interface': has_type_checking_interface,
         'idl_type': idl_type.base_type,
         'is_custom': 'Custom' in extended_attributes,
         'is_nullable': idl_type.is_nullable,

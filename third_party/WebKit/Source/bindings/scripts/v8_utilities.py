@@ -407,6 +407,15 @@ def is_unforgeable(interface, member):
             'Unforgeable' in member.extended_attributes)
 
 
+# [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
+def is_legacy_interface_type_checking(interface, member):
+    if not ('TypeChecking' in interface.extended_attributes or
+            'TypeChecking' in member.extended_attributes):
+        return True
+    if 'LegacyInterfaceTypeChecking' in member.extended_attributes:
+        return True
+    return False
+
 ################################################################################
 # Indexed properties
 # http://heycam.github.io/webidl/#idl-indexed-properties

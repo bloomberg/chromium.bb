@@ -39,7 +39,8 @@ from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
 import v8_utilities
-from v8_utilities import has_extended_attribute_value, is_unforgeable
+from v8_utilities import (has_extended_attribute_value, is_unforgeable,
+                          is_legacy_interface_type_checking)
 
 
 # Methods with any of these require custom method registration code in the
@@ -196,9 +197,9 @@ def argument_context(interface, method, argument, index):
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 
-    type_checking_interface = (
-        (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
-         has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
+    # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
+    has_type_checking_interface = (
+        not is_legacy_interface_type_checking(interface, method) and
         idl_type.is_wrapper_type)
 
     if ('ImplementedInPrivateScript' in extended_attributes and
@@ -222,7 +223,7 @@ def argument_context(interface, method, argument, index):
         'handle': '%sHandle' % argument.name,
         # FIXME: remove once [Default] removed and just use argument.default_value
         'has_default': 'Default' in extended_attributes or set_default_value,
-        'has_type_checking_interface': type_checking_interface,
+        'has_type_checking_interface': has_type_checking_interface,
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': idl_type.base_type,
         'idl_type_object': idl_type,
