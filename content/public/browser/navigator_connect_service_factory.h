@@ -24,7 +24,11 @@ class NavigatorConnectServiceFactory {
   // remains with the factory. It is assumed that for the passed
   // MessagePortDelegate implementation the route_id and message_port_id of a
   // connection are the same.
-  using ConnectCallback = base::Callback<void(MessagePortDelegate*)>;
+  // Pass true to |data_as_values| if the delegate expects to receive messages
+  // from the client encoded as base::Value instead of the normal serialization
+  // format.
+  using ConnectCallback =
+      base::Callback<void(MessagePortDelegate*, bool data_as_values)>;
 
   virtual ~NavigatorConnectServiceFactory() {}
 

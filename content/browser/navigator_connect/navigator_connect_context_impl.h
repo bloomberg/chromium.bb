@@ -53,7 +53,8 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
                        int client_message_port_id,
                        int client_port_route_id,
                        const ConnectCallback& callback,
-                       MessagePortDelegate* delegate);
+                       MessagePortDelegate* delegate,
+                       bool data_as_values);
 
   // List of factories to try to handle URLs.
   ScopedVector<NavigatorConnectServiceFactory> service_factories_;

@@ -185,14 +185,17 @@ void NavigatorConnectServiceWorkerServiceFactory::OnConnectResult(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != SERVICE_WORKER_OK || !accept_connection) {
-    callback.Run(nullptr);
+    callback.Run(nullptr, false);
     return;
   }
 
-  // TODO(mek): Keep track of NavigatorConnectServiceWorkerService instances and
-  // clean them up when a service worker registration is deleted.
-  callback.Run(new NavigatorConnectServiceWorkerService(
-      service_worker_context_, client, service_worker_registration));
+  // TODO(mek): http://crbug.com/462744 Keep track of these
+  // NavigatorConnectServiceWorkerService instances and clean them up when a
+  // service worker registration is deleted.
+  callback.Run(
+      new NavigatorConnectServiceWorkerService(service_worker_context_, client,
+                                               service_worker_registration),
+      false);
 }
 
 }  // namespace content

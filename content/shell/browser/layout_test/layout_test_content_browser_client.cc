@@ -6,10 +6,12 @@
 
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigator_connect_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_message_filter.h"
+#include "content/shell/browser/layout_test/layout_test_navigator_connect_service_factory.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/common/shell_messages.h"
@@ -107,6 +109,12 @@ void LayoutTestContentBrowserClient::RequestPermission(
 PlatformNotificationService*
 LayoutTestContentBrowserClient::GetPlatformNotificationService() {
   return layout_test_notification_manager_.get();
+}
+
+void LayoutTestContentBrowserClient::GetAdditionalNavigatorConnectServices(
+    const scoped_refptr<NavigatorConnectContext>& context) {
+  context->AddFactory(
+      make_scoped_ptr(new LayoutTestNavigatorConnectServiceFactory));
 }
 
 }  // namespace content

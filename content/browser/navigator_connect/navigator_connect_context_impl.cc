@@ -68,8 +68,8 @@ void NavigatorConnectContextImpl::Connect(
 
   if (!factory) {
     // No factories found.
-    OnConnectResult(client, client_port, client_port_route_id,
-                    callback, nullptr);
+    OnConnectResult(client, client_port, client_port_route_id, callback,
+                    nullptr, false);
     return;
   }
 
@@ -84,7 +84,8 @@ void NavigatorConnectContextImpl::OnConnectResult(
     int client_message_port_id,
     int client_port_route_id,
     const ConnectCallback& callback,
-    MessagePortDelegate* delegate) {
+    MessagePortDelegate* delegate,
+    bool data_as_values) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (delegate) {
     // Update service side port with delegate.
@@ -92,7 +93,7 @@ void NavigatorConnectContextImpl::OnConnectResult(
         client.message_port_id, delegate, client.message_port_id);
     TransferredMessagePort port;
     port.id = client_message_port_id;
-    // TODO(mek): Set port.send_value_as_messages depending on connect result.
+    port.send_messages_as_values = data_as_values;
     callback.Run(port, client_port_route_id, true);
   } else {
     // Destroy ports since connection failed.

@@ -112,6 +112,8 @@
         'shell/browser/layout_test/layout_test_javascript_dialog_manager.h',
         'shell/browser/layout_test/layout_test_message_filter.cc',
         'shell/browser/layout_test/layout_test_message_filter.h',
+        'shell/browser/layout_test/layout_test_navigator_connect_service_factory.cc',
+        'shell/browser/layout_test/layout_test_navigator_connect_service_factory.h',
         'shell/browser/layout_test/layout_test_notification_manager.cc',
         'shell/browser/layout_test/layout_test_notification_manager.h',
         'shell/browser/layout_test/layout_test_push_messaging_service.cc',
