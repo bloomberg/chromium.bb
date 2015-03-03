@@ -13,18 +13,13 @@ TOPLEVEL_CATEGORIES = ['disabled-by-default-gpu.device',
                        'disabled-by-default-gpu.service']
 
 
-def _GetGPUTimelineMetric(_):
-      return [gpu_timeline.GPUTimelineMetric()]
-
-
 class _GPUTimes(benchmark.Benchmark):
   def CreateTimelineBasedMeasurementOptions(self):
     cat_string = ','.join(TOPLEVEL_CATEGORIES)
     cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
 
     return timeline_based_measurement.Options(
-        overhead_level=cat_filter,
-        get_metrics_from_flags_callback=_GetGPUTimelineMetric)
+        overhead_level=cat_filter)
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value):
