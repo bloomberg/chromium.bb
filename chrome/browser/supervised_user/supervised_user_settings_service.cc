@@ -50,10 +50,7 @@ bool SettingShouldApplyToPrefs(const std::string& name) {
 }  // namespace
 
 SupervisedUserSettingsService::SupervisedUserSettingsService()
-    : active_(false),
-      initialization_failed_(false),
-      local_settings_(new base::DictionaryValue) {
-}
+    : active_(false), local_settings_(new base::DictionaryValue) {}
 
 SupervisedUserSettingsService::~SupervisedUserSettingsService() {}
 
@@ -100,9 +97,7 @@ void SupervisedUserSettingsService::SetActive(bool active) {
 }
 
 bool SupervisedUserSettingsService::IsReady() {
-  // Initialization cannot be complete but have failed at the same time.
-  DCHECK(!(store_->IsInitializationComplete() && initialization_failed_));
-  return initialization_failed_ || store_->IsInitializationComplete();
+  return store_->IsInitializationComplete();
 }
 
 void SupervisedUserSettingsService::Clear() {
@@ -304,16 +299,9 @@ void SupervisedUserSettingsService::OnPrefValueChanged(const std::string& key) {
 }
 
 void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {
-  if (!success) {
-    // If this happens, it means the profile directory was not found. There is
-    // not much we can do, but the whole profile will probably be useless
-    // anyway. Just mark initialization as failed and continue otherwise,
-    // because subscribers might still expect to be called back.
-    initialization_failed_ = true;
-  }
-
   // TODO(bauerb): Temporary CHECK while investigating https://crbug.com/425785.
   // Remove (or change back to DCHECK) once the bug is fixed.
+  CHECK(success);
   CHECK(IsReady());
   InformSubscribers();
 }
@@ -366,7 +354,7 @@ base::DictionaryValue* SupervisedUserSettingsService::GetDictionaryAndSplitKey(
 
 scoped_ptr<base::DictionaryValue> SupervisedUserSettingsService::GetSettings() {
   DCHECK(IsReady());
-  if (!active_ || initialization_failed_)
+  if (!active_)
     return scoped_ptr<base::DictionaryValue>();
 
   scoped_ptr<base::DictionaryValue> settings(local_settings_->DeepCopy());
