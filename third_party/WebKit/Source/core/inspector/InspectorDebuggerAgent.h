@@ -212,8 +212,6 @@ protected:
     SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
     void didContinue() final;
     void reset();
-    // FIXME: remove methods related to page load events.
-    void didCommitLoadForMainFrame() final;
 
 private:
     SkipPauseRequest shouldSkipExceptionPause();

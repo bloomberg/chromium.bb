@@ -317,11 +317,6 @@ void InspectorDebuggerAgent::setSkipAllPauses(ErrorString*, bool skipped)
     m_state->setBoolean(DebuggerAgentState::skipAllPauses, m_skipAllPauses);
 }
 
-void InspectorDebuggerAgent::didCommitLoadForMainFrame()
-{
-    m_editedScripts.clear();
-}
-
 bool InspectorDebuggerAgent::isPaused()
 {
     return scriptDebugServer().isPaused();
@@ -1659,6 +1654,7 @@ void InspectorDebuggerAgent::reset()
 {
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
+    m_editedScripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
     resetAsyncCallTracker();
     promiseTracker().clear();
