@@ -48,13 +48,6 @@ declare_args() {
   # http://gcc.gnu.org/wiki/DebugFission
   use_debug_fission =
       !is_win && use_gold && linux_use_bundled_binutils && !use_ccache
-
-  if (is_win) {
-    # Whether the VS xtree header has been patched to disable warning 4702. If
-    # it has, then we don't need to disable 4702 (unreachable code warning).
-    # The patch is preapplied to the internal toolchain and hence all bots.
-    msvs_xtree_patched = false
-  }
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -795,17 +788,6 @@ config("default_warnings") {
       "/wd4610",  # Class can never be instantiated, constructor required.
       "/wd4996",  # Deprecated function warning.
     ]
-
-    # VS xtree header file needs to be patched or 4702 (unreachable code
-    # warning) is reported if _HAS_EXCEPTIONS=0. Disable the warning if xtree is
-    # not patched.
-    if (!msvs_xtree_patched) {
-      if (exec_script("../../win_is_xtree_patched.py", [], "value") == 1) {
-        msvs_xtree_patched = true
-      } else {
-        cflags += [ "/wd4702" ]  # Unreachable code.
-      }
-    }
   } else {
     # Common GCC warning setup.
     cflags = [
