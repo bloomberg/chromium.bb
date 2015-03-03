@@ -100,11 +100,6 @@ void ExecutionContext::stopActiveDOMObjects()
     notifyStoppingActiveDOMObjects();
 }
 
-unsigned ExecutionContext::activeDOMObjectCount()
-{
-    return activeDOMObjects().size();
-}
-
 void ExecutionContext::suspendScheduledTasks()
 {
     suspendActiveDOMObjects();

@@ -29,7 +29,6 @@
 #define ContextLifecycleNotifier_h
 
 #include "platform/LifecycleNotifier.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 
@@ -46,17 +45,15 @@ public:
     void notifySuspendingActiveDOMObjects();
     void notifyStoppingActiveDOMObjects();
 
-    using ActiveDOMObjectSet = HashSet<ActiveDOMObject*>;
-
-    const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
-    bool contains(ActiveDOMObject* object) const { return m_activeDOMObjects.contains(object); }
+    unsigned activeDOMObjectCount() const;
     bool hasPendingActivity() const;
 
 protected:
     explicit ContextLifecycleNotifier(ExecutionContext*);
 
-private:
-    ActiveDOMObjectSet m_activeDOMObjects;
+#if ENABLE(ASSERT)
+    bool contains(ActiveDOMObject*) const;
+#endif
 };
 
 } // namespace blink

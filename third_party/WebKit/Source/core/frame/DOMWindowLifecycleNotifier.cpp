@@ -57,14 +57,14 @@ void DOMWindowLifecycleNotifier::notifyRemoveEventListener(LocalDOMWindow* windo
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     for (DOMWindowLifecycleObserver* observer : m_observers)
-        static_cast<DOMWindowLifecycleObserver*>(observer)->didRemoveEventListener(window, eventType);
+        observer->didRemoveEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* window)
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     for (DOMWindowLifecycleObserver* observer : m_observers)
-        static_cast<DOMWindowLifecycleObserver*>(observer)->didRemoveAllEventListeners(window);
+        observer->didRemoveAllEventListeners(window);
 }
 
 } // namespace blink
