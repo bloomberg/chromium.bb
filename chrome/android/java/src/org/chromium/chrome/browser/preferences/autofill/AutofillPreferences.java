@@ -37,6 +37,8 @@ public class AutofillPreferences extends PreferenceFragment
     private static final String PREF_AUTOFILL_CREDIT_CARDS = "autofill_credit_cards";
     private static final String PREF_AUTOFILL_WALLET = "autofill_wallet";
 
+    ChromeBasePreference mWalletPref;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,23 +59,13 @@ public class AutofillPreferences extends PreferenceFragment
             }
         });
 
-        ChromeBasePreference walletPref =
-                (ChromeBasePreference) findPreference(PREF_AUTOFILL_WALLET);
-        if (!PersonalDataManager.isWalletImportFeatureAvailable()) {
-            getPreferenceScreen().removePreference(walletPref);
-            autofillSwitch.setDrawDivider(true);
-        } else {
-            walletPref.setSummary(getResources().getString(
-                    PersonalDataManager.isWalletImportEnabled() ? R.string.text_on
-                                                                : R.string.text_off));
-        }
-
+        mWalletPref = (ChromeBasePreference) findPreference(PREF_AUTOFILL_WALLET);
         setPreferenceCategoryIcons();
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        rebuildLists();
+        refreshState();
         return true;
     }
 
@@ -92,9 +84,10 @@ public class AutofillPreferences extends PreferenceFragment
     }
 
     /**
-     * Rebuild all the profile and credit card lists.
+     * Refresh state (profile and credit card lists, preference summaries, etc.).
      */
-    private void rebuildLists() {
+    private void refreshState() {
+        updateSummaries();
         rebuildProfileList();
         rebuildCreditCardList();
     }
@@ -140,6 +133,24 @@ public class AutofillPreferences extends PreferenceFragment
         }
     }
 
+    private void updateSummaries() {
+        ChromeSwitchPreference autofillSwitch =
+                (ChromeSwitchPreference) findPreference(PREF_AUTOFILL_SWITCH);
+        if (!PersonalDataManager.isWalletImportFeatureAvailable()) {
+            getPreferenceScreen().removePreference(mWalletPref);
+            autofillSwitch.setDrawDivider(true);
+        } else {
+            if (getPreferenceScreen().findPreference(PREF_AUTOFILL_WALLET) == null) {
+                getPreferenceScreen().addPreference(mWalletPref);
+            }
+
+            mWalletPref.setSummary(getResources().getString(
+                    PersonalDataManager.isWalletImportEnabled() ? R.string.text_on
+                                                                : R.string.text_off));
+            autofillSwitch.setDrawDivider(false);
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -147,12 +158,12 @@ public class AutofillPreferences extends PreferenceFragment
         // detect if profiles are added or deleted (GUID list
         // changes), the profile summary (name+addr) might be
         // different.  To be safe, we update all.
-        rebuildLists();
+        refreshState();
     }
 
     @Override
     public void onPersonalDataChanged() {
-        rebuildLists();
+        refreshState();
     }
 
     @Override
