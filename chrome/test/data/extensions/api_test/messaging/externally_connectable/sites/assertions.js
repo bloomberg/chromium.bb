@@ -25,16 +25,19 @@ function clobber(obj, name, qualifiedName) {
   // Clobbering constructors would break everything.
   // Clobbering toString is annoying.
   // Clobbering __proto__ breaks in ways that grep can't find.
+  // Clobbering function name will break because
+  // SafeBuiltins does not support getters yet. See crbug.com/463526.
   // Clobbering Function.call would make it impossible to implement these tests.
   // Clobbering Object.valueOf breaks v8.
   if (name == 'constructor' ||
       name == 'toString' ||
       name == '__proto__' ||
+      name == 'name' && typeof obj == 'function' ||
       qualifiedName == 'Function.call' ||
       qualifiedName == 'Object.valueOf') {
     return;
   }
-  if (typeof(obj[name]) == 'function') {
+  if (typeof obj[name] == 'function') {
     obj[name] = function() {
       throw new Error('Clobbered ' + qualifiedName + ' function');
     };
