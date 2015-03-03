@@ -2758,7 +2758,7 @@ class PBXProject(XCContainerPortal):
       if (s is not None and not self._IsUniqueSymrootForTarget(s) or
           s is None and not inherit_unique_symroot):
         return False
-    return True if symroots else return inherit_unique_symroot
+    return True if symroots else inherit_unique_symroot
 
   def _DefinedSymroots(self, target):
     # Returns all values for the 'SYMROOT' attribute defined in all
