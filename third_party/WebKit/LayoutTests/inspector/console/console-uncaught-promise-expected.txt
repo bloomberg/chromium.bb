@@ -6,6 +6,7 @@ CONSOLE ERROR: line 73: Uncaught (in promise) 1e+100
 CONSOLE ERROR: line 78: Uncaught (in promise) foo
 CONSOLE ERROR: line 83: Uncaught (in promise) #<Object>
 CONSOLE ERROR: line 88: Uncaught (in promise) undefined
+CONSOLE ERROR: line 93: Uncaught (in promise) SecurityError: Failed to register a ServiceWorker: The URL protocol of the current origin ('') is not supported.
 Tests that uncaught promise rejections are logged into console.
 
     console-uncaught-promise.html:23 Uncaught (in promise) Error: err1
@@ -29,5 +30,8 @@ console-uncaught-promise.html:1 Uncaught (in promise) 42
         timeout @ console-uncaught-promise.html:16
     console-uncaught-promise.html:88 Uncaught (in promise) undefined
         promiseTest8 @ console-uncaught-promise.html:88
+        timeout @ console-uncaught-promise.html:16
+    console-uncaught-promise.html:93 Uncaught (in promise) DOMException: Failed to register a ServiceWorker: The URL protocol of the current origin ('file://') is not supported.
+        promiseTest9 @ console-uncaught-promise.html:93
         timeout @ console-uncaught-promise.html:16
 

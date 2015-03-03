@@ -1167,15 +1167,13 @@ InjectedScript.prototype = {
         if (InjectedScriptHost.subtype(obj) === "error") {
             try {
                 var stack = obj.stack;
-                var message = obj.message;
-                var stackMessageEnd = indexOf(stack, "\n");
+                var message = obj.message && obj.message.length ? ": " + obj.message : "";
+                var stackMessageEnd = stack ? indexOf(stack, "\n") : -1;
                 if (stackMessageEnd !== -1) {
-                    if (message)
-                        return className + ": " + message + "\n" + stack.substr(stackMessageEnd + 1);
-                    return className + "\n" + stack.substr(stackMessageEnd + 1);
+                    var stackTrace = stack.substr(stackMessageEnd + 1);
+                    return className + message + "\n" + stackTrace;
                 }
-                if (message)
-                    return className + ": " + message;
+                return className + message;
             } catch(e) {
             }
         }

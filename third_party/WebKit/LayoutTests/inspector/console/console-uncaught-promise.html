@@ -88,6 +88,11 @@ function promiseTest8()
     Promise.reject();
 }
 
+function promiseTest9()
+{
+    navigator.serviceWorker.register('404');
+}
+
 function test()
 {
     InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
