@@ -1898,10 +1898,6 @@ crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-
 crbug.com/461371 [ Mac ] virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
 crbug.com/461371 [ Mac ] virtual/slimmingpaint/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
 
-crbug.com/461615 [ XP ] virtual/display_list_2d_canvas/fast/canvas/canvas-ellipse-connecting-line.html [ NeedsRebaseline ]
-crbug.com/461615 [ XP ] virtual/gpu/fast/canvas/canvas-ellipse-connecting-line.html [ NeedsRebaseline ]
-crbug.com/461615 [ XP ] virtual/slimmingpaint/fast/canvas/canvas-ellipse-connecting-line.html [ NeedsRebaseline ]
-
 crbug.com/460198 [ XP ] virtual/slimmingpaint/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
 crbug.com/460198 [ XP ] virtual/slimmingpaint/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
 
