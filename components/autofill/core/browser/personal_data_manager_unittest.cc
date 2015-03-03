@@ -185,6 +185,45 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
+TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
+  EnableWalletCardImport();
+
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, "a123"));
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
+                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                       "77401", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  server_profiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  autofill_table_->SetServerProfiles(server_profiles);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+
+  // Add profile with identical values.  Duplicates should not get saved.
+  AutofillProfile scraped_profile(base::GenerateGUID(),
+                                  "https://www.example.com");
+  test::SetProfileInfo(&scraped_profile, "John", "", "Doe", "", "ACME Corp",
+                       "500 Oak View", "Apt 8", "Houston", "TX", "77401", "US",
+                       "");
+  EXPECT_TRUE(scraped_profile.IsSubsetOf(server_profiles.back(), "en-US"));
+  std::string saved_guid = personal_data_->SaveImportedProfile(scraped_profile);
+  EXPECT_NE(scraped_profile.guid(), saved_guid);
+
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Verify the non-addition.
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(0U, personal_data_->web_profiles().size());
+}
+
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile0,

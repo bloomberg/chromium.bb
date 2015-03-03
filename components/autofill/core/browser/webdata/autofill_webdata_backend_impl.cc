@@ -245,11 +245,11 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
               base::Unretained(this))));
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillServerProfiles(
+scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<AutofillProfile*> profiles;
-  AutofillTable::FromWebDatabase(db)->GetAutofillServerProfiles(&profiles);
+  AutofillTable::FromWebDatabase(db)->GetServerProfiles(&profiles);
   return scoped_ptr<WDTypedResult>(
       new WDDestroyableResult<std::vector<AutofillProfile*> >(
           AUTOFILL_PROFILES_RESULT,

@@ -281,12 +281,11 @@ class AutofillTable : public WebDatabaseTable {
   // Retrieves local/server profiles in the database. Caller owns the returned
   // profiles.
   virtual bool GetAutofillProfiles(std::vector<AutofillProfile*>* profiles);
-  virtual bool GetAutofillServerProfiles(
-      std::vector<AutofillProfile*>* profiles);
+  virtual bool GetServerProfiles(std::vector<AutofillProfile*>* profiles);
 
   // Sets the server profiles. All old profiles are deleted and replaced with
   // the given ones.
-  void SetAutofillServerProfiles(const std::vector<AutofillProfile>& profiles);
+  void SetServerProfiles(const std::vector<AutofillProfile>& profiles);
 
   // Records a single credit card in the credit_cards table.
   bool AddCreditCard(const CreditCard& credit_card);

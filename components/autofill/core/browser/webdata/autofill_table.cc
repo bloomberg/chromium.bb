@@ -895,8 +895,7 @@ bool AutofillTable::GetAutofillProfiles(
   return s.Succeeded();
 }
 
-bool AutofillTable::GetAutofillServerProfiles(
-    std::vector<AutofillProfile*>* profiles) {
+bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
   profiles->clear();
 
   sql::Statement s(db_->GetUniqueStatement(
@@ -920,7 +919,7 @@ bool AutofillTable::GetAutofillServerProfiles(
     scoped_ptr<AutofillProfile> profile(new AutofillProfile(
         AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
 
-    profile->SetRawInfo(NAME_FULL, s.ColumnString16(index++));
+    base::string16 recipient_name = s.ColumnString16(index++);
     profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
     profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, s.ColumnString16(index++));
     profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(index++));
@@ -933,13 +932,18 @@ bool AutofillTable::GetAutofillServerProfiles(
     profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
     profile->set_language_code(s.ColumnString(index++));
 
+    // SetInfo instead of SetRawInfo on the name so the constituent pieces will
+    // be parsed.
+    profile->SetInfo(AutofillType(NAME_FULL), recipient_name,
+                     profile->language_code());
+
     profiles->push_back(profile.release());
   }
 
   return s.Succeeded();
 }
 
-void AutofillTable::SetAutofillServerProfiles(
+void AutofillTable::SetServerProfiles(
     const std::vector<AutofillProfile>& profiles) {
   // Delete all old ones first.
   sql::Statement delete_old(db_->GetUniqueStatement(

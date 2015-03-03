@@ -567,28 +567,26 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
   ServerFieldTypeSet types;
   GetNonEmptyTypes(app_locale, &types);
 
-  for (ServerFieldTypeSet::const_iterator it = types.begin(); it != types.end();
-       ++it) {
-    if (*it == NAME_FULL || *it == ADDRESS_HOME_STREET_ADDRESS) {
+  for (ServerFieldType type : types) {
+    if (type == NAME_FULL || type == ADDRESS_HOME_STREET_ADDRESS) {
       // Ignore the compound "full name" field type.  We are only interested in
       // comparing the constituent parts.  For example, if |this| has a middle
       // name saved, but |profile| lacks one, |profile| could still be a subset
       // of |this|.  Likewise, ignore the compound "street address" type, as we
       // are only interested in matching line-by-line.
       continue;
-    } else if (AutofillType(*it).group() == PHONE_HOME) {
+    } else if (AutofillType(type).group() == PHONE_HOME) {
       // Phone numbers should be canonicalized prior to being compared.
-      if (*it != PHONE_HOME_WHOLE_NUMBER) {
+      if (type != PHONE_HOME_WHOLE_NUMBER) {
         continue;
       } else if (!i18n::PhoneNumbersMatch(
-            GetRawInfo(*it),
-            profile.GetRawInfo(*it),
-            base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
-            app_locale)) {
+                     GetRawInfo(type), profile.GetRawInfo(type),
+                     base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
+                     app_locale)) {
         return false;
       }
-    } else if (base::StringToLowerASCII(GetRawInfo(*it)) !=
-                   base::StringToLowerASCII(profile.GetRawInfo(*it))) {
+    } else if (base::StringToLowerASCII(GetRawInfo(type)) !=
+               base::StringToLowerASCII(profile.GetRawInfo(type))) {
       return false;
     }
   }

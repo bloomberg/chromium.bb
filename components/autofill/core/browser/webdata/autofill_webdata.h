@@ -75,7 +75,7 @@ class AutofillWebData {
   // consumer owns the profiles.
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) = 0;
-  virtual WebDataServiceBase::Handle GetAutofillServerProfiles(
+  virtual WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer) = 0;
 
   // Schedules a task to update autofill entries in the web database.

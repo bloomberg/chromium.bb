@@ -1768,10 +1768,10 @@ TEST_F(AutofillTableTest, SetServerProfile) {
   AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
   std::vector<AutofillProfile> inputs;
   inputs.push_back(one);
-  table_->SetAutofillServerProfiles(inputs);
+  table_->SetServerProfiles(inputs);
 
   std::vector<AutofillProfile*> outputs;
-  table_->GetAutofillServerProfiles(&outputs);
+  table_->GetServerProfiles(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());
 
@@ -1781,10 +1781,10 @@ TEST_F(AutofillTableTest, SetServerProfile) {
   // Set a different profile.
   AutofillProfile two(AutofillProfile::SERVER_PROFILE, "b456");
   inputs[0] = two;
-  table_->SetAutofillServerProfiles(inputs);
+  table_->SetServerProfiles(inputs);
 
   // The original one should have been replaced.
-  table_->GetAutofillServerProfiles(&outputs);
+  table_->GetServerProfiles(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(two.server_id(), outputs[0]->server_id());
 

@@ -1123,7 +1123,7 @@ void PersonalDataManager::LoadProfiles() {
   CancelPendingQuery(&pending_server_profiles_query_);
 
   pending_profiles_query_ = database_->GetAutofillProfiles(this);
-  pending_server_profiles_query_ = database_->GetAutofillServerProfiles(this);
+  pending_server_profiles_query_ = database_->GetServerProfiles(this);
 }
 
 // Win, Linux, Android and iOS implementations do nothing. Mac implementation
@@ -1164,12 +1164,16 @@ std::string PersonalDataManager::SaveImportedProfile(
     return std::string();
 
   // Don't save a web profile if the data in the profile is a subset of an
-  // auxiliary profile.
-  for (std::vector<AutofillProfile*>::const_iterator iter =
-           auxiliary_profiles_.begin();
-       iter != auxiliary_profiles_.end(); ++iter) {
-    if (imported_profile.IsSubsetOf(**iter, app_locale_))
-      return (*iter)->guid();
+  // auxiliary profile...
+  for (AutofillProfile* profile : auxiliary_profiles_) {
+    if (imported_profile.IsSubsetOf(*profile, app_locale_))
+      return profile->guid();
+  }
+
+  // ...or server profile.
+  for (AutofillProfile* profile : server_profiles_) {
+    if (imported_profile.IsSubsetOf(*profile, app_locale_))
+      return profile->guid();
   }
 
   std::vector<AutofillProfile> profiles;

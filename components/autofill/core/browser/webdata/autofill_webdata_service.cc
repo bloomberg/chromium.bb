@@ -129,11 +129,11 @@ WebDataServiceBase::Handle AutofillWebDataService::GetAutofillProfiles(
       consumer);
 }
 
-WebDataServiceBase::Handle AutofillWebDataService::GetAutofillServerProfiles(
+WebDataServiceBase::Handle AutofillWebDataService::GetServerProfiles(
     WebDataServiceConsumer* consumer) {
-  return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::GetAutofillServerProfiles,
-           autofill_backend_),
+  return wdbs_->ScheduleDBTaskWithResult(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::GetServerProfiles, autofill_backend_),
       consumer);
 }
 

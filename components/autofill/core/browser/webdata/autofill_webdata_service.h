@@ -72,7 +72,7 @@ class AutofillWebDataService : public AutofillWebData,
       WebDataServiceConsumer* consumer) override;
 
   // Server profiles.
-  WebDataServiceBase::Handle GetAutofillServerProfiles(
+  WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer) override;
 
   void UpdateAutofillEntries(

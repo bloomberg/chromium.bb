@@ -260,10 +260,8 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
       &AutofillTable::SetServerCreditCards,
       &prev_card_count);
   bool changed_addresses = SetDataIfChanged(
-      table, wallet_addresses,
-      &AutofillTable::GetAutofillServerProfiles,
-      &AutofillTable::SetAutofillServerProfiles,
-      &prev_address_count);
+      table, wallet_addresses, &AutofillTable::GetServerProfiles,
+      &AutofillTable::SetServerProfiles, &prev_address_count);
 
   syncer::SyncMergeResult merge_result(syncer::AUTOFILL_WALLET_DATA);
   merge_result.set_num_items_before_association(

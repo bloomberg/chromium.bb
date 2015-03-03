@@ -112,7 +112,7 @@ class AutofillWebDataBackendImpl
 
   // Returns the local/server Autofill profiles from the web database.
   scoped_ptr<WDTypedResult> GetAutofillProfiles(WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetAutofillServerProfiles(WebDatabase* db);
+  scoped_ptr<WDTypedResult> GetServerProfiles(WebDatabase* db);
 
   // Updates Autofill entries in the web database.
   WebDatabase::State UpdateAutofillEntries(
