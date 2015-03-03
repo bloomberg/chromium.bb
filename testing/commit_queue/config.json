@@ -44,6 +44,7 @@
             "trybots": {
                 "launched": {
                     "tryserver.chromium.linux": {
+                        "android_rel_tests_recipe": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
                     }
@@ -66,7 +67,6 @@
               "linux_chromium_gn_dbg": ["defaulttests"],
               "linux_chromium_gn_rel": ["defaulttests"],
               "linux_chromium_rel_ng": ["defaulttests"],
-              "android_rel_tests_recipe": ["defaulttests"],
               "android_arm64_dbg_recipe": ["defaulttests"],
               "android_clang_dbg_recipe": ["defaulttests"],
               "android_aosp": ["compile"],
