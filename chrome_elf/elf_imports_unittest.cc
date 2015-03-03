@@ -66,6 +66,9 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
 #if defined(SYZYASAN)
     "syzyasan_rtl.dll",
 #endif
+#if defined(ADDRESS_SANITIZER) && defined(COMPONENT_BUILD)
+    "clang_rt.asan_dynamic-i386.dll",
+#endif
     "ADVAPI32.dll"
   };
 
@@ -76,7 +79,7 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
       if (MatchPattern(*it, kValidFilePatterns[i]))
         match = true;
     }
-    ASSERT_TRUE(match) << "Illegal import in chrome_elf.dll.";
+    ASSERT_TRUE(match) << "Illegal import in chrome_elf.dll: " << *it;
   }
 }
 
