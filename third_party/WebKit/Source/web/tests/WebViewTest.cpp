@@ -1433,6 +1433,55 @@ TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange)
     frame->setAutofillClient(0);
 }
 
+static void verifySelectionAndComposition(WebView* webView, int selectionStart, int selectionEnd, int compositionStart, int compositionEnd, const char* failMessage)
+{
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ(selectionStart, info.selectionStart) << failMessage;
+    EXPECT_EQ(selectionEnd, info.selectionEnd) << failMessage;
+    EXPECT_EQ(compositionStart, info.compositionStart) << failMessage;
+    EXPECT_EQ(compositionEnd, info.compositionEnd) << failMessage;
+}
+
+TEST_F(WebViewTest, CompositionNotCancelledByBackspace)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("composition_not_cancelled_by_backspace.html"));
+    MockAutofillClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "composition_not_cancelled_by_backspace.html");
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+    frame->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    // Test both input elements.
+    for (int i = 0; i < 2; ++i) {
+        // Select composition and do sanity check.
+        WebVector<WebCompositionUnderline> emptyUnderlines;
+        frame->setEditableSelectionOffsets(6, 6);
+        EXPECT_TRUE(webView->setComposition("fghij", emptyUnderlines, 0, 5));
+        frame->setEditableSelectionOffsets(11, 11);
+        verifySelectionAndComposition(webView, 11, 11, 6, 11, "initial case");
+
+        // Press Backspace and verify composition didn't get cancelled. This is to verify the fix
+        // for crbug.com/429916.
+        WebKeyboardEvent keyEvent;
+        keyEvent.windowsKeyCode = VKEY_BACK;
+        keyEvent.setKeyIdentifierFromWindowsKeyCode();
+        keyEvent.type = WebInputEvent::RawKeyDown;
+        webView->handleInputEvent(keyEvent);
+
+        frame->setEditableSelectionOffsets(6, 6);
+        EXPECT_TRUE(webView->setComposition("fghi", emptyUnderlines, 0, 4));
+        frame->setEditableSelectionOffsets(10, 10);
+        verifySelectionAndComposition(webView, 10, 10, 6, 10, "after pressing Backspace");
+
+        keyEvent.type = WebInputEvent::KeyUp;
+        webView->handleInputEvent(keyEvent);
+
+        webView->advanceFocus(false);
+    }
+
+    frame->setAutofillClient(0);
+}
+
 TEST_F(WebViewTest, ConfirmCompositionTriggersAutofillTextChange)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));

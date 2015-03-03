@@ -2304,18 +2304,13 @@ bool WebViewImpl::setComposition(
             return false;
     }
 
-    // If we're not going to fire a keypress event, then the keydown event was
-    // canceled.  In that case, cancel any existing composition.
-    if (text.isEmpty() || m_suppressNextKeypressEvent) {
-        // A browser process sent an IPC message which does not contain a valid
-        // string, which means an ongoing composition has been canceled.
-        // If the ongoing composition has been canceled, replace the ongoing
-        // composition string with an empty string and complete it.
-        String emptyString;
-        Vector<CompositionUnderline> emptyUnderlines;
-        inputMethodController.setComposition(emptyString, emptyUnderlines, 0, 0);
+    // A keypress event is canceled. If an ongoing composition exists, then the
+    // keydown event should have arisen from a handled key (e.g., backspace).
+    // In this case we ignore the cancellation and continue; otherwise (no
+    // ongoing composition) we exit and signal success only for attempts to
+    // clear the composition.
+    if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
         return text.isEmpty();
-    }
 
     // When the range of composition underlines overlap with the range between
     // selectionStart and selectionEnd, WebKit somehow won't paint the selection
@@ -2325,7 +2320,7 @@ bool WebViewImpl::setComposition(
                            CompositionUnderlineVectorBuilder(underlines),
                            selectionStart, selectionEnd);
 
-    return inputMethodController.hasComposition();
+    return text.isEmpty() || inputMethodController.hasComposition();
 }
 
 bool WebViewImpl::confirmComposition()
