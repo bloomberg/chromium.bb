@@ -253,8 +253,14 @@ test(function() {
   }, 'Request method name throw test');
 
 test(function() {
-    ['same-origin', 'cors'].forEach(function(mode) {
-        var request = new Request(URL, {mode: mode});
+    // Tests for set()/append()/delete() with "request" guard.
+    var requests = [
+      new Request(URL, {mode: 'same-origin'}),
+      (new Request(URL, {mode: 'same-origin'})).clone(),
+      new Request(URL, {mode: 'cors'}),
+      (new Request(URL, {mode: 'cors'})).clone()];
+    requests.forEach(function(request) {
+        // Test that forbidden headers are ignored.
         FORBIDDEN_HEADERS.forEach(function(header) {
             // append, Step 3:
             // Otherwise, if guard is request and name is a forbidden header
@@ -279,7 +285,8 @@ test(function() {
             // Test that calling delete() for a forbidden header name
             // does not crash nor throw exception.
           });
-        var request = new Request(URL, {mode: mode});
+
+        // Test that non-simple headers are accepted by append()/delete().
         assert_equals(size(request.headers), 0);
         NON_SIMPLE_HEADERS.forEach(function(header) {
             request.headers.append(header[0], header[1]);
@@ -288,7 +295,10 @@ test(function() {
         NON_SIMPLE_HEADERS.forEach(function(header) {
             assert_equals(request.headers.get(header[0]), header[1]);
           });
-        request = new Request(URL, {mode: mode});
+        NON_SIMPLE_HEADERS.forEach(function(header) {
+            request.headers.delete(header[0]);
+          });
+        // Test that non-simple headers are accepted by set().
         assert_equals(size(request.headers), 0);
         NON_SIMPLE_HEADERS.forEach(function(header) {
             request.headers.set(header[0], header[1]);
@@ -298,53 +308,60 @@ test(function() {
             assert_equals(request.headers.get(header[0]), header[1]);
           });
       });
-    request = new Request(URL, {mode: 'no-cors'});
-    // set/append, Step 4:
-    // Otherwise, if guard is request-no-CORS and name/value is not a simple
-    // header, return.
-    FORBIDDEN_HEADERS.forEach(function(header) {
-        request.headers.set(header, 'test');
-        request.headers.append(header, 'test');
-      });
-    NON_SIMPLE_HEADERS.forEach(function(header) {
-        request.headers.set(header[0], header[1]);
-        request.headers.append(header[0], header[1]);
-      });
-    assert_equals(size(request.headers), 0,
-                  'no-cors request should only accept simple headers');
-    // delete, Step 4:
-    // Otherwise, if guard is request-no-CORS and name/`invalid` is not
-    // a simple header, return.
-    NON_SIMPLE_HEADERS.forEach(function(header) {
-        request.headers.delete(header[0]);
-      });
-    assert_equals(size(request.headers), 0,
-                  'delete() should silently fail for no-cors request and ' +
-                  'non-simple headers');
+    // Tests for set()/append()/delete() with "request-no-cors" guard.
+    var createNewRequests = [
+      function() {return new Request(URL, {mode: 'no-cors'})},
+      function() {return (new Request(URL, {mode: 'no-cors'})).clone();}];
+    createNewRequests.forEach(function(createNewRequest) {
+        var request = createNewRequest();
+        // set/append, Step 4:
+        // Otherwise, if guard is request-no-CORS and name/value is not a simple
+        // header, return.
+        FORBIDDEN_HEADERS.forEach(function(header) {
+            request.headers.set(header, 'test');
+            request.headers.append(header, 'test');
+          });
+        NON_SIMPLE_HEADERS.forEach(function(header) {
+            request.headers.set(header[0], header[1]);
+            request.headers.append(header[0], header[1]);
+          });
+        assert_equals(size(request.headers), 0,
+                      'no-cors request should only accept simple headers');
+        // delete(), Step 4:
+        // Otherwise, if guard is "request-no-cors" and name/`invalid` is
+        // not a simple header, return.
+        NON_SIMPLE_HEADERS.forEach(function(header) {
+            request.headers.delete(header[0]);
+          });
+        assert_equals(size(request.headers), 0,
+                      'delete() should silently fail for no-cors request and ' +
+                      'non-simple headers');
 
-    SIMPLE_HEADERS.forEach(function(header) {
-        request = new Request(URL, {mode: 'no-cors'});
-        request.headers.append(header[0], header[1]);
-        assert_equals(size(request.headers), 1,
-                      'no-cors request should accept simple headers');
-        request = new Request(URL, {mode: 'no-cors'});
-        request.headers.set(header[0], header[1]);
-        assert_equals(size(request.headers), 1,
-                      'no-cors request should accept simple headers');
+        SIMPLE_HEADERS.forEach(function(header) {
+            request = createNewRequest();
+            request.headers.append(header[0], header[1]);
+            assert_equals(size(request.headers), 1,
+                          'no-cors request should accept simple headers');
+            request = createNewRequest();
+            request.headers.set(header[0], header[1]);
+            assert_equals(size(request.headers), 1,
+                          'no-cors request should accept simple headers');
 
-        // delete, Step 4:
-        // Otherwise, if guard is request-no-CORS and name/`invalid` is not
-        // a simple header, return.
-        request.headers.delete(header[0]);
-        if (header[0] == 'Content-Type') {
-          assert_equals(
-            size(request.headers), 1,
-            'Content-Type header of no-cors request shouldn\'t be deleted');
-        } else {
-          assert_equals(size(request.headers), 0);
-        }
+            // delete(), Step 4:
+            // Otherwise, if guard is "request-no-cors" and name/`invalid` is
+            // not a simple header, return.
+            request.headers.delete(header[0]);
+            if (header[0] == 'Content-Type') {
+              assert_equals(
+                size(request.headers), 1,
+                'Content-Type header of no-cors request shouldn\'t be deleted');
+            } else {
+              assert_equals(size(request.headers), 0);
+            }
+          });
       });
 
+    // Tests for RequestInit.headers with guard.
     SIMPLE_HEADERS.forEach(function(header) {
         var headers = {};
         NON_SIMPLE_HEADERS.forEach(function(header2) {

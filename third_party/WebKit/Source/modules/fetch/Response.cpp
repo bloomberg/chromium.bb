@@ -335,6 +335,7 @@ Response::Response(const Response& clone_from)
     , m_response(clone_from.m_response->clone())
     , m_headers(Headers::create(m_response->headerList()))
 {
+    m_headers->setGuard(clone_from.headers()->guard());
 }
 
 Response::Response(ExecutionContext* context, FetchResponseData* response)

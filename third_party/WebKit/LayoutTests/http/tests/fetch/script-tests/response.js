@@ -73,6 +73,8 @@ test(function() {
                                  ['Set-Cookie', 'response test set-cookie'],
                                  ['Set-Cookie2', 'response test set-cookie2']]
                      })];
+    responses = responses.concat(
+      responses.map(function(r) {return r.clone();}));
     responses.forEach(function(response) {
         assert_equals(response.status, 303, 'Response.status should match');
         assert_false(response.ok, 'Response.ok must be false for 303');

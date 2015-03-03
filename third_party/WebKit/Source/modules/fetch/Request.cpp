@@ -269,6 +269,7 @@ Request::Request(const Request& cloneFrom)
     , m_request(cloneFrom.m_request->createCopy())
     , m_headers(Headers::create(m_request->headerList()))
 {
+    m_headers->setGuard(cloneFrom.headers()->guard());
 }
 
 String Request::method() const
