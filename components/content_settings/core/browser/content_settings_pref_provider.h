@@ -68,9 +68,8 @@ class PrefProvider : public ObservableProvider {
  private:
   friend class DeadlockCheckerThread;  // For testing.
   // Reads all content settings exceptions from the preference and load them
-  // into the |value_map_|. The |value_map_| is cleared first if |overwrite| is
-  // true.
-  void ReadContentSettingsFromPref(bool overwrite);
+  // into the |value_map_|. The |value_map_| is cleared first.
+  void ReadContentSettingsFromPref();
 
   // Callback for changes in the pref with the same name.
   void OnContentSettingsPatternPairsChanged();

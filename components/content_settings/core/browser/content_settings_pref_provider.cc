@@ -96,7 +96,7 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
   }
 
   // Read content settings exceptions.
-  ReadContentSettingsFromPref(false);
+  ReadContentSettingsFromPref();
 
   if (!is_incognito_) {
     UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfExceptions",
@@ -352,7 +352,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
   }
 }
 
-void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
+void PrefProvider::ReadContentSettingsFromPref() {
   // |DictionaryPrefUpdate| sends out notifications when destructed. This
   // construction order ensures |AutoLock| gets destroyed first and |lock_| is
   // not held when the notifications are sent. Also, |auto_reset| must be still
@@ -365,8 +365,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
   const base::DictionaryValue* all_settings_dictionary =
       prefs_->GetDictionary(prefs::kContentSettingsPatternPairs);
 
-  if (overwrite)
-    value_map_.clear();
+  value_map_.clear();
 
   // Careful: The returned value could be NULL if the pref has never been set.
   if (!all_settings_dictionary)
@@ -491,7 +490,7 @@ void PrefProvider::OnContentSettingsPatternPairsChanged() {
   if (updating_preferences_)
     return;
 
-  ReadContentSettingsFromPref(true);
+  ReadContentSettingsFromPref();
 
   NotifyObservers(ContentSettingsPattern(),
                   ContentSettingsPattern(),
