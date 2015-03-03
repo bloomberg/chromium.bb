@@ -62,6 +62,29 @@
               '<@(remoting_webapp_js_proto_files)',
             ],
           },
+          {
+            'action_name': 'Verify >(ar_app_name) feedback_consent.html',
+            'variables': {
+              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_feedback_consent_jscompile.stamp',
+            },
+            'inputs': [
+              '<@(ar_feedback_consent_js_files)',
+              '<@(remoting_webapp_js_proto_files)',
+              # Include zip as input so that this action is run after the build.
+              '<(zip_path)',
+            ],
+            'outputs': [
+              '<(success_stamp)',
+            ],
+            'action': [
+              'python', '../third_party/closure_compiler/checker.py',
+              '--strict',
+              '--no-single-file',
+              '--success-stamp', '<(success_stamp)',
+              '<@(ar_feedback_consent_js_files)',
+              '<@(remoting_webapp_js_proto_files)',
+            ],
+          },
         ],  # actions
       }],
     ],  # conditions

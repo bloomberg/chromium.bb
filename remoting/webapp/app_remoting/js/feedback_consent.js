@@ -15,7 +15,7 @@ var hostId = '@pending';
  * @type {string} The network stats at the time the feedback consent dialog
  *     was shown.
  */
-var connectionStats = null;
+var connectionStats = '';
 
 /**
  * @type {string} "no" => user did not request a VM reset; "yes" => VM was
@@ -102,8 +102,8 @@ function showError() {
  */
 function generateId() {
   var idArray = new Uint8Array(20);
-  crypto.getRandomValues(idArray);
-  return btoa(String.fromCharCode.apply(null, idArray));
+  window.crypto.getRandomValues(idArray);
+  return window.btoa(String.fromCharCode.apply(null, idArray));
 }
 
 /**
@@ -123,10 +123,6 @@ function onToken(token) {
         'abandonHost': 'true',
         'crashServiceReportId': crashServiceReportId
       };
-      var headers = {
-        'Authorization': 'OAuth ' + token,
-        'Content-type': 'application/json'
-      };
       var uri = remoting.settings.APP_REMOTING_API_BASE_URL +
           '/applications/' + remoting.settings.getAppRemotingApplicationId() +
           '/hosts/'  + hostId +
@@ -139,7 +135,13 @@ function onToken(token) {
           showError();
         }
       };
-      remoting.xhr.post(uri, onDone, JSON.stringify(body), headers);
+      remoting.xhr.start({
+        method: 'POST',
+        url: uri,
+        onDone: onDone,
+        jsonContent: body,
+        oauthToken: token
+      });
     } else {
       getUserInfo();
     }
@@ -184,6 +186,7 @@ function onToggleLogs() {
   }
 }
 
+/** @param {Event} event */
 function onLearnMore(event) {
   event.preventDefault();  // Clicking the link should not tick the checkbox.
   var learnMoreLink = document.getElementById('learn-more');

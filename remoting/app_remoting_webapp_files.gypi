@@ -7,10 +7,25 @@
     'ar_shared_resource_files': [
       'webapp/app_remoting/html/ar_dialog.css',
       'webapp/app_remoting/html/feedback_consent.css',
-      'webapp/app_remoting/html/feedback_consent.html',
       'webapp/app_remoting/html/context_menu.css',
       'resources/drag.webp',
       '<@(remoting_webapp_resource_files)',
+    ],
+
+    # Variables for feedback_consent.html.
+    'ar_feedback_consent_template':
+      '<(DEPTH)/remoting/webapp/app_remoting/html/template_feedback_consent.html',
+    'ar_feedback_consent_template_files': [
+    ],
+    'ar_feedback_consent_js_files': [
+      'webapp/app_remoting/js/feedback_consent.js',
+      'webapp/base/js/base.js',
+      'webapp/crd/js/error.js',
+      'webapp/crd/js/oauth2_api.js',
+      'webapp/crd/js/oauth2_api_impl.js',
+      'webapp/crd/js/plugin_settings.js',
+      'webapp/crd/js/l10n.js',
+      'webapp/crd/js/xhr.js',
     ],
 
     # Variables for main.html.
@@ -74,7 +89,7 @@
     'app_remoting_webapp_localizable_files': [
       '<(ar_main_template)',
       '<@(ar_main_template_files)',
-      'webapp/app_remoting/html/feedback_consent.html',
+      '<(ar_feedback_consent_template)',
       '<@(ar_all_js_files)',
     ],
 
