@@ -54,5 +54,5 @@ layer at (0,0) size 800x164
           text run at (0,72) width 268: "all of the text in the SVG is drawn correctly. "
           text run at (268,72) width 300: "You should see all of A-L (and half of M) above. "
           text run at (568,72) width 152: "The code was incorrectly"
-          text run at (0,92) width 762: "calculating the PaintInfo::rect (damage rect) when passing it through LayoutBlockFlow and render block was (correctly) clipping out"
-          text run at (0,112) width 208: "some of the lineboxes during paint."
+          text run at (0,92) width 768: "calculating the PaintInfo::rect (damage rect) when passing it through LayoutBlockFlow and render block was (correctly) clipping"
+          text run at (0,112) width 231: "out some of the lineboxes during paint."
