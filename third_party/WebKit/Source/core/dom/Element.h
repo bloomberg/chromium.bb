@@ -472,7 +472,7 @@ public:
 
     bool isSpellCheckingEnabled() const;
 
-    // FIXME: public for RenderTreeBuilder, we shouldn't expose this though.
+    // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
     PassRefPtr<LayoutStyle> styleForRenderer();
 
     bool hasID() const;

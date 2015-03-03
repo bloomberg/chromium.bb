@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/dom/RenderTreeBuilder.h"
+#include "core/dom/LayoutTreeBuilder.h"
 
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
@@ -43,8 +43,8 @@
 
 namespace blink {
 
-RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element& element, LayoutStyle* style)
-    : RenderTreeBuilder(element, nullptr)
+LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, LayoutStyle* style)
+    : LayoutTreeBuilder(element, nullptr)
     , m_style(style)
 {
     if (element.isFirstLetterPseudoElement()) {
@@ -55,7 +55,7 @@ RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element& element, Layou
     }
 }
 
-LayoutObject* RenderTreeBuilderForElement::nextRenderer() const
+LayoutObject* LayoutTreeBuilderForElement::nextRenderer() const
 {
     ASSERT(m_renderingParent);
 
@@ -65,12 +65,12 @@ LayoutObject* RenderTreeBuilderForElement::nextRenderer() const
     if (m_node->isFirstLetterPseudoElement())
         return FirstLetterPseudoElement::firstLetterTextRenderer(*m_node);
 
-    return RenderTreeBuilder::nextRenderer();
+    return LayoutTreeBuilder::nextRenderer();
 }
 
-LayoutObject* RenderTreeBuilderForElement::parentRenderer() const
+LayoutObject* LayoutTreeBuilderForElement::parentRenderer() const
 {
-    LayoutObject* parentRenderer = RenderTreeBuilder::parentRenderer();
+    LayoutObject* parentRenderer = LayoutTreeBuilder::parentRenderer();
 
     if (parentRenderer) {
         // FIXME: Guarding this by parentRenderer isn't quite right as the spec for
@@ -83,7 +83,7 @@ LayoutObject* RenderTreeBuilderForElement::parentRenderer() const
     return parentRenderer;
 }
 
-bool RenderTreeBuilderForElement::shouldCreateRenderer() const
+bool LayoutTreeBuilderForElement::shouldCreateRenderer() const
 {
     if (!m_renderingParent)
         return false;
@@ -106,14 +106,14 @@ bool RenderTreeBuilderForElement::shouldCreateRenderer() const
     return m_node->rendererIsNeeded(style());
 }
 
-LayoutStyle& RenderTreeBuilderForElement::style() const
+LayoutStyle& LayoutTreeBuilderForElement::style() const
 {
     if (!m_style)
         m_style = m_node->styleForRenderer();
     return *m_style;
 }
 
-void RenderTreeBuilderForElement::createRenderer()
+void LayoutTreeBuilderForElement::createRenderer()
 {
     LayoutStyle& style = this->style();
 
@@ -146,7 +146,7 @@ void RenderTreeBuilderForElement::createRenderer()
     parentRenderer->addChild(newRenderer, nextRenderer);
 }
 
-void RenderTreeBuilderForText::createRenderer()
+void LayoutTreeBuilderForText::createRenderer()
 {
     LayoutObject* parentRenderer = this->parentRenderer();
     LayoutStyle* style = parentRenderer->style();

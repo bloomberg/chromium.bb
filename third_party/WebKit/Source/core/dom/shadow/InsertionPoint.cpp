@@ -104,7 +104,7 @@ void InsertionPoint::setDistribution(ContentDistribution& distribution)
 void InsertionPoint::attach(const AttachContext& context)
 {
     // We need to attach the distribution here so that they're inserted in the right order
-    // otherwise the n^2 protection inside RenderTreeBuilder will cause them to be
+    // otherwise the n^2 protection inside LayoutTreeBuilder will cause them to be
     // inserted in the wrong place later. This also lets distributed nodes benefit from
     // the n^2 protection.
     for (size_t i = 0; i < m_distribution.size(); ++i) {

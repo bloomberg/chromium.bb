@@ -58,13 +58,13 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/LayoutTreeBuilder.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/PresentationAttributeStyle.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
 #include "core/dom/StyleChangeReason.h"
@@ -1425,7 +1425,7 @@ void Element::attach(const AttachContext& context)
         data->clearComputedStyle();
     }
 
-    RenderTreeBuilderForElement(*this, context.resolvedStyle).createRendererIfNeeded();
+    LayoutTreeBuilderForElement(*this, context.resolvedStyle).createRendererIfNeeded();
 
     addCallbackSelectors();
 

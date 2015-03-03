@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef RenderTreeBuilder_h
-#define RenderTreeBuilder_h
+#ifndef LayoutTreeBuilder_h
+#define LayoutTreeBuilder_h
 
 #include "core/dom/Document.h"
 #include "core/dom/FirstLetterPseudoElement.h"
@@ -40,10 +40,10 @@ class LayoutObject;
 class LayoutStyle;
 
 template <typename NodeType>
-class RenderTreeBuilder {
+class LayoutTreeBuilder {
     STACK_ALLOCATED();
 protected:
-    RenderTreeBuilder(NodeType& node, LayoutObject* renderingParent)
+    LayoutTreeBuilder(NodeType& node, LayoutObject* renderingParent)
         : m_node(node)
         , m_renderingParent(renderingParent)
     {
@@ -75,9 +75,9 @@ protected:
     RawPtrWillBeMember<LayoutObject> m_renderingParent;
 };
 
-class RenderTreeBuilderForElement : public RenderTreeBuilder<Element> {
+class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
 public:
-    RenderTreeBuilderForElement(Element&, LayoutStyle*);
+    LayoutTreeBuilderForElement(Element&, LayoutStyle*);
 
     void createRendererIfNeeded()
     {
@@ -95,10 +95,10 @@ private:
     mutable RefPtr<LayoutStyle> m_style;
 };
 
-class RenderTreeBuilderForText : public RenderTreeBuilder<Text> {
+class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
 public:
-    RenderTreeBuilderForText(Text& text, LayoutObject* renderingParent)
-        : RenderTreeBuilder(text, renderingParent) { }
+    LayoutTreeBuilderForText(Text& text, LayoutObject* renderingParent)
+        : LayoutTreeBuilder(text, renderingParent) { }
 
     void createRenderer();
 };

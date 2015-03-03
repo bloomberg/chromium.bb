@@ -27,10 +27,10 @@
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/LayoutTreeBuilder.h"
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/layout/LayoutText.h"
@@ -366,7 +366,7 @@ void Text::attach(const AttachContext& context)
     if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
         if (LayoutObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
-                RenderTreeBuilderForText(*this, parentRenderer).createRenderer();
+                LayoutTreeBuilderForText(*this, parentRenderer).createRenderer();
         }
     }
     CharacterData::attach(context);
@@ -394,7 +394,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
     if (styleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     if (rendererIsNeeded)
-        RenderTreeBuilderForText(*this, renderingParent->renderer()).createRenderer();
+        LayoutTreeBuilderForText(*this, renderingParent->renderer()).createRenderer();
     CharacterData::attach(reattachContext);
 }
 
