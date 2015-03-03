@@ -72,9 +72,7 @@ class ConstrainedWebDialogDelegateViewMac :
   void ReleaseWebContentsOnDialogClose() override {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  NativeWebContentsModalDialog GetNativeDialog() override {
-    return constrained_window_->GetNativeDialog();
-  }
+  NativeWebContentsModalDialog GetNativeDialog() override { return window_; }
   WebContents* GetWebContents() override { return impl_->GetWebContents(); }
   gfx::Size GetMinimumSize() const override {
     NOTIMPLEMENTED();

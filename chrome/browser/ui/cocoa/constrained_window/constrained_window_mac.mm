@@ -4,89 +4,46 @@
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/logging.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
-#include "components/web_modal/popup_manager.h"
+#import "chrome/browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 
 using web_modal::WebContentsModalDialogManager;
-using web_modal::NativeWebContentsModalDialog;
 
 ConstrainedWindowMac::ConstrainedWindowMac(
     ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet)
-    : delegate_(delegate),
-      web_contents_(NULL),
-      sheet_([sheet retain]),
-      shown_(false) {
-  DCHECK(web_contents);
+    : delegate_(delegate) {
+  DCHECK(sheet);
   extensions::GuestViewBase* guest_view =
       extensions::GuestViewBase::FromWebContents(web_contents);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
-  web_contents_ = guest_view && guest_view->embedder_web_contents() ?
-                      guest_view->embedder_web_contents() : web_contents;
-  DCHECK(sheet_.get());
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(web_contents_);
-  if (popup_manager)
-    popup_manager->ShowModalDialog(this, web_contents_);
+  web_contents = guest_view && guest_view->embedder_web_contents() ?
+                    guest_view->embedder_web_contents() : web_contents;
+
+  auto manager = WebContentsModalDialogManager::FromWebContents(web_contents);
+  scoped_ptr<SingleWebContentsDialogManagerCocoa> native_manager(
+      new SingleWebContentsDialogManagerCocoa(this, sheet, manager));
+  manager->ShowDialogWithManager([sheet sheetWindow], native_manager.Pass());
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-}
-
-void ConstrainedWindowMac::ShowWebContentsModalDialog() {
-  if (shown_)
-    return;
-
-  NSWindow* parent_window = web_contents_->GetTopLevelNativeWindow();
-  NSView* parent_view = GetSheetParentViewForWebContents(web_contents_);
-  if (!parent_window || !parent_view)
-    return;
-
-  shown_ = true;
-  ConstrainedWindowSheetController* controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:parent_window];
-  [controller showSheet:sheet_ forParentView:parent_view];
+  DCHECK(!manager_);
 }
 
 void ConstrainedWindowMac::CloseWebContentsModalDialog() {
-  [[ConstrainedWindowSheetController controllerForSheet:sheet_]
-      closeSheet:sheet_];
-  // TODO(gbillock): get this object in config, not from a global.
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  if (manager_)
+    manager_->Close();
+}
 
-  // Will result in the delegate being deleted.
+void ConstrainedWindowMac::OnDialogClosing() {
   if (delegate_)
     delegate_->OnConstrainedWindowClosed(this);
-
-  // Will cause this object to be deleted.
-  web_contents_modal_dialog_manager->WillClose(this);
-}
-
-void ConstrainedWindowMac::FocusWebContentsModalDialog() {
-}
-
-void ConstrainedWindowMac::PulseWebContentsModalDialog() {
-  [[ConstrainedWindowSheetController controllerForSheet:sheet_]
-      pulseSheet:sheet_];
-}
-
-NativeWebContentsModalDialog ConstrainedWindowMac::GetNativeDialog() {
-  // TODO(wittman): Ultimately this should be changed to the
-  // ConstrainedWindowSheet pointer, in conjunction with the corresponding
-  // changes to NativeWebContentsModalDialogManagerCocoa.
-  return this;
 }
