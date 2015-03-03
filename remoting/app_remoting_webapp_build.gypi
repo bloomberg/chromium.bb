@@ -6,15 +6,12 @@
   'includes': [
     'remoting_version.gypi',
     'remoting_locales.gypi',
+    'remoting_options.gypi',
     'remoting_webapp_files.gypi',
     'app_remoting_webapp_files.gypi',
   ],
 
   'variables': {
-    'chromium_code': 1,
-
-    'run_jscompile%': 0,
-
     # The ar_service_environment variable is used to define the target
     # environment for the app being built.
     # The allowed values are dev, test, staging, and prod.
