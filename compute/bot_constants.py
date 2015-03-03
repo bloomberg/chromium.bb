@@ -15,8 +15,8 @@ BUILDBOT_USER = 'chrome-bot'
 CHROMITE_URL = 'https://chromium.googlesource.com/chromiumos/chromite'
 DEPOT_TOOLS_URL = ('https://chromium.googlesource.com/chromium/tools/'
                    'depot_tools.git')
-BUILDBOT_SVN_REPO = ('svn://svn.chromium.org/chrome-internal/trunk/tools/build/'
-                     'internal.DEPS')
+BUILDBOT_GIT_REPO = ('https://chrome-internal.googlesource.com/chrome/tools/'
+                     'build/internal.DEPS')
 CHROMIUM_BUILD_URL = 'https://chromium.googlesource.com/chromium/src/build'
 GCOMPUTE_TOOLS_URL = 'https://gerrit.googlesource.com/gcompute-tools'
 

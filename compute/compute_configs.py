@@ -29,6 +29,12 @@ DRIVES = ('sda1',)
 
 configs = {}
 
+configs['image-creation'] = dict(
+    zone=DEFAULT_ZONE,
+    scopes=DEFAULT_SCOPES,
+)
+IMAGE_CREATION_CONFIG = configs['image-creation']
+
 # The default config for Chrome OS builders.
 configs['cros-bot'] = dict(
     machine_type='n1-highmem-16',

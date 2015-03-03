@@ -100,10 +100,9 @@ def _SetupGoB():
   rc_local_path = os.path.join(os.path.sep, 'etc', 'rc.local')
   daemon_path = os.path.join(HOME_DIR, 'gcompute-tools',
                              'git-cookie-authdaemon')
-  daemon_cmd = 'su %s -c %s\n' % (bot_constants.BUILDBOT_USER,
-                                  daemon_path)
+  daemon_cmd = ['su', bot_constants.BUILDBOT_USER, '-c', daemon_path]
   content = osutils.ReadFile(rc_local_path).replace('exit 0', '')
-  content += daemon_cmd
+  content += (' '.join(daemon_cmd) + '\n')
   content += 'exit 0\n'
 
   with osutils.TempDir() as tempdir:
@@ -111,6 +110,11 @@ def _SetupGoB():
     osutils.WriteFile(tmp_file, content)
     os.chmod(tmp_file, 755)
     SudoRunCommand(['mv', tmp_file, rc_local_path])
+  # Also run the daemon now so that subsequent setup steps get credentials.
+  # NB: It's important to redirect all pipes because the daemonize code here is
+  # broken, it leaves open fds behind, causing ssh to hang.
+  SudoRunCommand(daemon_cmd,
+                 mute_output=True, combine_stdout_stderr=True)
 
 
 def _SetupCIDB():
@@ -161,7 +165,7 @@ def SetupBuildbotEnvironment():
     # `gclient` relies on depot_tools in $PATH, pass the extra
     # envinornment variable.
     path_env = '%s:%s' % (os.getenv('PATH'), tmp_depot_tools_path)
-    RunCommand(['gclient', 'config', bot_constants.BUILDBOT_SVN_REPO],
+    RunCommand(['gclient', 'config', bot_constants.BUILDBOT_GIT_REPO],
                cwd=bot_constants.BUILDBOT_DIR, extra_env={'PATH': path_env})
     RunCommand(['gclient', 'sync', '--jobs', '5'],
                cwd=bot_constants.BUILDBOT_DIR,

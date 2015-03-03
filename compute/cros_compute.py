@@ -191,7 +191,7 @@ def CreateImageForCrosBots(project, zone, address=None, testing=False):
   instance = ('chromeos-temp-%s'
               % cros_build_lib.GetRandomString())
   gcctx.CreateInstance(instance, image=compute_configs.DEFAULT_BASE_IMAGE,
-                       address=address)
+                       address=address, **compute_configs.IMAGE_CREATION_CONFIG)
   try:
     BotifyInstance(instance, project, zone, testing=testing)
   except:
