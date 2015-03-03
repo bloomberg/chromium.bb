@@ -600,18 +600,6 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  return copyVideoTextureToPlatformTexture(web_graphics_context, texture,
-                                           internal_format, type,
-                                           premultiply_alpha, flip_y);
-}
-
-bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
-    blink::WebGraphicsContext3D* web_graphics_context,
-    unsigned int texture,
-    unsigned int internal_format,
-    unsigned int type,
-    bool premultiply_alpha,
-    bool flip_y) {
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
   scoped_refptr<VideoFrame> video_frame =
@@ -628,8 +616,8 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
       static_cast<gpu_blink::WebGraphicsContext3DImpl*>(web_graphics_context)
           ->GetGLInterface();
   SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
-      gl, video_frame.get(), texture, internal_format, type, premultiply_alpha,
-      flip_y);
+      gl, video_frame.get(), texture, level, internal_format, type,
+      premultiply_alpha, flip_y);
   return true;
 }
 

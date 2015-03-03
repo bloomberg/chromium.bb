@@ -2107,11 +2107,15 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   }
   DCHECK(!dest_resource->image_id);
   dest_resource->allocated = true;
-  gl->CopySubTextureCHROMIUM(dest_resource->target, source_resource->gl_id,
-                             dest_resource->gl_id, 0, 0);
+  gl->CopyTextureCHROMIUM(dest_resource->target,
+                          source_resource->gl_id,
+                          dest_resource->gl_id,
+                          0,
+                          GLInternalFormat(dest_resource->format),
+                          GLDataType(dest_resource->format));
   if (source_resource->gl_read_lock_query_id) {
     // End query and create a read lock fence that will prevent access to
-// source resource until CopySubTextureCHROMIUM command has completed.
+    // source resource until CopyTextureCHROMIUM command has completed.
 #if defined(OS_CHROMEOS)
     gl->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 #else

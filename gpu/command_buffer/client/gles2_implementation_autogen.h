@@ -873,14 +873,9 @@ void TexImageIOSurface2DCHROMIUM(GLenum target,
 void CopyTextureCHROMIUM(GLenum target,
                          GLenum source_id,
                          GLenum dest_id,
+                         GLint level,
                          GLint internalformat,
                          GLenum dest_type) override;
-
-void CopySubTextureCHROMIUM(GLenum target,
-                            GLenum source_id,
-                            GLenum dest_id,
-                            GLint xoffset,
-                            GLint yoffset) override;
 
 void DrawArraysInstancedANGLE(GLenum mode,
                               GLint first,

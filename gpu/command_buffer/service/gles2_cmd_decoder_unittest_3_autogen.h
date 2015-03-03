@@ -235,7 +235,6 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): PostSubBufferCHROMIUM
 // TODO(gman): TexImageIOSurface2DCHROMIUM
 // TODO(gman): CopyTextureCHROMIUM
-// TODO(gman): CopySubTextureCHROMIUM
 // TODO(gman): DrawArraysInstancedANGLE
 // TODO(gman): DrawElementsInstancedANGLE
 // TODO(gman): VertexAttribDivisorANGLE

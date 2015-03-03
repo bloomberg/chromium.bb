@@ -809,39 +809,8 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
-void WebGraphicsContext3DImpl::copyTextureCHROMIUM(WGC3Denum target,
-                                                   WebGLId source_id,
-                                                   WebGLId dest_id,
-                                                   WGC3Dint level,
-                                                   WGC3Denum internal_format,
-                                                   WGC3Denum dest_type) {
-  copyTextureCHROMIUM(target, source_id, dest_id, internal_format, dest_type);
-}
-
-void WebGraphicsContext3DImpl::copySubTextureCHROMIUM(WGC3Denum target,
-                                                      WebGLId source_id,
-                                                      WebGLId dest_id,
-                                                      WGC3Dint level,
-                                                      WGC3Dint xoffset,
-                                                      WGC3Dint yoffset) {
-  copySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset);
-}
-
-DELEGATE_TO_GL_5(copyTextureCHROMIUM,
-                 CopyTextureCHROMIUM,
-                 WGC3Denum,
-                 WebGLId,
-                 WebGLId,
-                 WGC3Denum,
-                 WGC3Denum);
-
-DELEGATE_TO_GL_5(copySubTextureCHROMIUM,
-                 CopySubTextureCHROMIUM,
-                 WGC3Denum,
-                 WebGLId,
-                 WebGLId,
-                 WGC3Dint,
-                 WGC3Dint);
+DELEGATE_TO_GL_6(copyTextureCHROMIUM, CopyTextureCHROMIUM,  WGC3Denum,
+                 WebGLId, WebGLId, WGC3Dint, WGC3Denum, WGC3Denum);
 
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)

@@ -1158,18 +1158,11 @@ void GLES2TexImageIOSurface2DCHROMIUM(GLenum target,
 void GLES2CopyTextureCHROMIUM(GLenum target,
                               GLenum source_id,
                               GLenum dest_id,
+                              GLint level,
                               GLint internalformat,
                               GLenum dest_type) {
-  gles2::GetGLContext()->CopyTextureCHROMIUM(target, source_id, dest_id,
+  gles2::GetGLContext()->CopyTextureCHROMIUM(target, source_id, dest_id, level,
                                              internalformat, dest_type);
-}
-void GLES2CopySubTextureCHROMIUM(GLenum target,
-                                 GLenum source_id,
-                                 GLenum dest_id,
-                                 GLint xoffset,
-                                 GLint yoffset) {
-  gles2::GetGLContext()->CopySubTextureCHROMIUM(target, source_id, dest_id,
-                                                xoffset, yoffset);
 }
 void GLES2DrawArraysInstancedANGLE(GLenum mode,
                                    GLint first,
@@ -2366,10 +2359,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glCopyTextureCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glCopyTextureCHROMIUM),
-    },
-    {
-     "glCopySubTextureCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glCopySubTextureCHROMIUM),
     },
     {
      "glDrawArraysInstancedANGLE",

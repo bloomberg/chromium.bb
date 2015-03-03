@@ -109,6 +109,7 @@ TEST_F(GpuMemoryBufferTest, Lifecycle) {
   glCopyTextureCHROMIUM(GL_TEXTURE_2D,
                         texture_ids_[0],
                         texture_ids_[1],
+                        0,
                         GL_RGBA,
                         GL_UNSIGNED_BYTE);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);

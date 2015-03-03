@@ -11375,12 +11375,14 @@ struct CopyTextureCHROMIUM {
   void Init(GLenum _target,
             GLenum _source_id,
             GLenum _dest_id,
+            GLint _level,
             GLint _internalformat,
             GLenum _dest_type) {
     SetHeader();
     target = _target;
     source_id = _source_id;
     dest_id = _dest_id;
+    level = _level;
     internalformat = _internalformat;
     dest_type = _dest_type;
   }
@@ -11389,10 +11391,11 @@ struct CopyTextureCHROMIUM {
             GLenum _target,
             GLenum _source_id,
             GLenum _dest_id,
+            GLint _level,
             GLint _internalformat,
             GLenum _dest_type) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_target, _source_id, _dest_id, _internalformat, _dest_type);
+    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id, _level,
+                                       _internalformat, _dest_type);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -11400,12 +11403,13 @@ struct CopyTextureCHROMIUM {
   uint32_t target;
   uint32_t source_id;
   uint32_t dest_id;
+  int32_t level;
   int32_t internalformat;
   uint32_t dest_type;
 };
 
-static_assert(sizeof(CopyTextureCHROMIUM) == 24,
-              "size of CopyTextureCHROMIUM should be 24");
+static_assert(sizeof(CopyTextureCHROMIUM) == 28,
+              "size of CopyTextureCHROMIUM should be 28");
 static_assert(offsetof(CopyTextureCHROMIUM, header) == 0,
               "offset of CopyTextureCHROMIUM header should be 0");
 static_assert(offsetof(CopyTextureCHROMIUM, target) == 4,
@@ -11414,69 +11418,12 @@ static_assert(offsetof(CopyTextureCHROMIUM, source_id) == 8,
               "offset of CopyTextureCHROMIUM source_id should be 8");
 static_assert(offsetof(CopyTextureCHROMIUM, dest_id) == 12,
               "offset of CopyTextureCHROMIUM dest_id should be 12");
-static_assert(offsetof(CopyTextureCHROMIUM, internalformat) == 16,
-              "offset of CopyTextureCHROMIUM internalformat should be 16");
-static_assert(offsetof(CopyTextureCHROMIUM, dest_type) == 20,
-              "offset of CopyTextureCHROMIUM dest_type should be 20");
-
-struct CopySubTextureCHROMIUM {
-  typedef CopySubTextureCHROMIUM ValueType;
-  static const CommandId kCmdId = kCopySubTextureCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target,
-            GLenum _source_id,
-            GLenum _dest_id,
-            GLint _xoffset,
-            GLint _yoffset) {
-    SetHeader();
-    target = _target;
-    source_id = _source_id;
-    dest_id = _dest_id;
-    xoffset = _xoffset;
-    yoffset = _yoffset;
-  }
-
-  void* Set(void* cmd,
-            GLenum _target,
-            GLenum _source_id,
-            GLenum _dest_id,
-            GLint _xoffset,
-            GLint _yoffset) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_target, _source_id, _dest_id, _xoffset, _yoffset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  uint32_t source_id;
-  uint32_t dest_id;
-  int32_t xoffset;
-  int32_t yoffset;
-};
-
-static_assert(sizeof(CopySubTextureCHROMIUM) == 24,
-              "size of CopySubTextureCHROMIUM should be 24");
-static_assert(offsetof(CopySubTextureCHROMIUM, header) == 0,
-              "offset of CopySubTextureCHROMIUM header should be 0");
-static_assert(offsetof(CopySubTextureCHROMIUM, target) == 4,
-              "offset of CopySubTextureCHROMIUM target should be 4");
-static_assert(offsetof(CopySubTextureCHROMIUM, source_id) == 8,
-              "offset of CopySubTextureCHROMIUM source_id should be 8");
-static_assert(offsetof(CopySubTextureCHROMIUM, dest_id) == 12,
-              "offset of CopySubTextureCHROMIUM dest_id should be 12");
-static_assert(offsetof(CopySubTextureCHROMIUM, xoffset) == 16,
-              "offset of CopySubTextureCHROMIUM xoffset should be 16");
-static_assert(offsetof(CopySubTextureCHROMIUM, yoffset) == 20,
-              "offset of CopySubTextureCHROMIUM yoffset should be 20");
+static_assert(offsetof(CopyTextureCHROMIUM, level) == 16,
+              "offset of CopyTextureCHROMIUM level should be 16");
+static_assert(offsetof(CopyTextureCHROMIUM, internalformat) == 20,
+              "offset of CopyTextureCHROMIUM internalformat should be 20");
+static_assert(offsetof(CopyTextureCHROMIUM, dest_type) == 24,
+              "offset of CopyTextureCHROMIUM dest_type should be 24");
 
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;

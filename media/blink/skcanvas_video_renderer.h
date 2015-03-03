@@ -64,6 +64,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   static void CopyVideoFrameTextureToGLTexture(gpu::gles2::GLES2Interface* gl,
                                                VideoFrame* video_frame,
                                                unsigned int texture,
+                                               unsigned int level,
                                                unsigned int internal_format,
                                                unsigned int type,
                                                bool premultiply_alpha,

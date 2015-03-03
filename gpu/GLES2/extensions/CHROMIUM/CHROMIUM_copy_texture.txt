@@ -36,18 +36,15 @@ Overview
 
 New Procedures and Functions
 
-    The command
+    void glCopyTextureCHROMIUM (GLenum target, GLenum source_id,
+                                GLenum dest_id, GLint level,
+                                GLint internal_format, GLenum dest_type)
 
-        void glCopyTextureCHROMIUM (GLenum target, GLenum source_id,
-                                    GLenum dest_id,
-                                    GLint internal_format, GLenum dest_type)
+    Copies the contents of texture referred to by <source_id> to texture
+    <dest_id>.
 
-    Copies the contents of texture referred to by <source_id> to <dest_id>
-    texture. If <source_id> texture is not defined or has different dimension
-    to <dest_id> texture, define <source_id> texture same to <dest_id> texture.
-
-    Texture level 0 is copied from the source image to level 0 of the
-    destination texture.
+    Texture level 0 is copied from the source image to level <level> of the
+    destination texture. The level parameter must be 0 at present.
 
     The internal format of the destination texture is converted to that
     specified by <internal_format>. Must be one of the following symbolic
@@ -90,37 +87,8 @@ New Procedures and Functions
     been bound as GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB or
     GL_TEXTURE_EXTERNAL_OES objects.
 
-    INVALID_VALUE is generated if level 0 of the source texture is not defined.
-
-    The command
-
-        void glCopySubTextureCHROMIUM (GLenum target, GLenum source_id,
-                                       GLenum dest_id,
-                                       GLint xoffset, GLint yoffset)
-
-    Copies the sub contents of texture referred to by <source_id> to <dest_id>
-    texture without redefining <dest_id> texture.
-
-    See CopyTextureCHROMIUM for the interpretation of the <target> arguments.
-
-    <xoffset> and <yoffset> specify a texel offset in the x and y direction
-    respectively within the destination texture.
-
-    INVALID_OPERATION is generated if source internal_format and destination
-    internal_format are not one of the valid formats described above.
-
-    INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D.
-
-    INVALID_OPERATION is generated if the destination texture has not been
-    defined.
-
-    INVALID_VALUE is generated if level 0 of the source texture or
-    the destination texture is not defined.
-
-    INVALID_VALUE is generated if <xoffset> < 0 , or <yoffset> < 0.
-
-    INVALID_VALUE is generated if (<xoffset> + source_width) > dest_width,
-    or (<yoffset> + source_height) > dest_height.
+    INVALID_VALUE is generated if <level> is not a valid level of the
+    destination texture, or if level 0 of the source texture is not defined.
 
 Errors
 

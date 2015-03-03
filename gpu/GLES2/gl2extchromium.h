@@ -394,29 +394,13 @@ typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERCHROMIUMPROC) (GLint srcX0, GLint
 #define GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM 0x9241
 #endif
 #ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL void GL_APIENTRY glCopyTextureCHROMIUM(GLenum target,
-                                                  GLenum source_id,
-                                                  GLenum dest_id,
-                                                  GLint internalformat,
-                                                  GLenum dest_type);
-
-GL_APICALL void GL_APIENTRY glCopySubTextureCHROMIUM(GLenum target,
-                                                     GLenum source_id,
-                                                     GLenum dest_id,
-                                                     GLint xoffset,
-                                                     GLint yoffset);
+GL_APICALL void GL_APIENTRY glCopyTextureCHROMIUM(
+    GLenum target, GLenum source_id, GLenum dest_id, GLint level,
+    GLint internalformat, GLenum dest_type);
 #endif
-typedef void(GL_APIENTRYP PFNGLCOPYTEXTURECHROMIUMPROC)(GLenum target,
-                                                        GLenum source_id,
-                                                        GLenum dest_id,
-                                                        GLint internalformat,
-                                                        GLenum dest_type);
-
-typedef void(GL_APIENTRYP PFNGLCOPYSUBTEXTURECHROMIUMPROC)(GLenum target,
-                                                           GLenum source_id,
-                                                           GLenum dest_id,
-                                                           GLint xoffset,
-                                                           GLint yoffset);
+typedef void (GL_APIENTRYP PFNGLCOPYTEXTURECHROMIUMPROC) (
+    GLenum target, GLenum source_id, GLenum dest_id, GLint level,
+    GLint internalformat, GLenum dest_type);
 #endif  /* GL_CHROMIUM_copy_texture */
 
 /* GL_CHROMIUM_lose_context */

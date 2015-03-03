@@ -3914,34 +3914,19 @@ TEST_F(GLES2FormatTest, TexImageIOSurface2DCHROMIUM) {
 
 TEST_F(GLES2FormatTest, CopyTextureCHROMIUM) {
   cmds::CopyTextureCHROMIUM& cmd = *GetBufferAs<cmds::CopyTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
-                           static_cast<GLenum>(12), static_cast<GLenum>(13),
-                           static_cast<GLint>(14), static_cast<GLenum>(15));
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
+              static_cast<GLenum>(13), static_cast<GLint>(14),
+              static_cast<GLint>(15), static_cast<GLenum>(16));
   EXPECT_EQ(static_cast<uint32_t>(cmds::CopyTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   EXPECT_EQ(static_cast<GLenum>(12), cmd.source_id);
   EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_id);
-  EXPECT_EQ(static_cast<GLint>(14), cmd.internalformat);
-  EXPECT_EQ(static_cast<GLenum>(15), cmd.dest_type);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, CopySubTextureCHROMIUM) {
-  cmds::CopySubTextureCHROMIUM& cmd =
-      *GetBufferAs<cmds::CopySubTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
-                           static_cast<GLenum>(12), static_cast<GLenum>(13),
-                           static_cast<GLint>(14), static_cast<GLint>(15));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CopySubTextureCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.source_id);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_id);
-  EXPECT_EQ(static_cast<GLint>(14), cmd.xoffset);
-  EXPECT_EQ(static_cast<GLint>(15), cmd.yoffset);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLenum>(16), cmd.dest_type);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

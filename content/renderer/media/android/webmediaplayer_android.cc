@@ -643,18 +643,6 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  return copyVideoTextureToPlatformTexture(web_graphics_context, texture,
-                                           internal_format, type,
-                                           premultiply_alpha, flip_y);
-}
-
-bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
-    blink::WebGraphicsContext3D* web_graphics_context,
-    unsigned int texture,
-    unsigned int internal_format,
-    unsigned int type,
-    bool premultiply_alpha,
-    bool flip_y) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Don't allow clients to copy an encrypted video frame.
   if (needs_external_surface_)
@@ -691,8 +679,9 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, src_texture, texture,
-                                            0, internal_format, type);
+  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, src_texture,
+                                            texture, level, internal_format,
+                                            type);
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);

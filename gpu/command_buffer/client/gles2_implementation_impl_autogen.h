@@ -3108,32 +3108,18 @@ void GLES2Implementation::TexImageIOSurface2DCHROMIUM(GLenum target,
 void GLES2Implementation::CopyTextureCHROMIUM(GLenum target,
                                               GLenum source_id,
                                               GLenum dest_id,
+                                              GLint level,
                                               GLint internalformat,
                                               GLenum dest_type) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopyTextureCHROMIUM("
                      << GLES2Util::GetStringEnum(target) << ", "
                      << GLES2Util::GetStringEnum(source_id) << ", "
-                     << GLES2Util::GetStringEnum(dest_id) << ", "
-                     << internalformat << ", "
+                     << GLES2Util::GetStringEnum(dest_id) << ", " << level
+                     << ", " << internalformat << ", "
                      << GLES2Util::GetStringPixelType(dest_type) << ")");
-  helper_->CopyTextureCHROMIUM(target, source_id, dest_id, internalformat,
-                               dest_type);
-  CheckGLError();
-}
-
-void GLES2Implementation::CopySubTextureCHROMIUM(GLenum target,
-                                                 GLenum source_id,
-                                                 GLenum dest_id,
-                                                 GLint xoffset,
-                                                 GLint yoffset) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTextureCHROMIUM("
-                     << GLES2Util::GetStringEnum(target) << ", "
-                     << GLES2Util::GetStringEnum(source_id) << ", "
-                     << GLES2Util::GetStringEnum(dest_id) << ", " << xoffset
-                     << ", " << yoffset << ")");
-  helper_->CopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset);
+  helper_->CopyTextureCHROMIUM(target, source_id, dest_id, level,
+                               internalformat, dest_type);
   CheckGLError();
 }
 
