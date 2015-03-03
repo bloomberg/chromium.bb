@@ -1127,6 +1127,13 @@ filelist.handleKeyDown = function(e) {
     return;
   }
 
+  // Esc
+  if (e.keyCode === 27 && !e.ctrlKey && !e.shiftKey) {
+    sm.unselectAll();
+    e.preventDefault();
+    return;
+  }
+
   // Space
   if (e.keyCode == SPACE_KEY_CODE) {
     if (leadIndex != -1) {
