@@ -1635,14 +1635,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.h
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ ImageOnlyFailure ]
 crbug.com/417782 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Pass Timeout ]
 
-# These tests require rebaseline after ICU update to 54.1.
-crbug.com/428145 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/428145 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/428145 [ Linux Android ] fast/forms/month/month-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/428145 fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
-crbug.com/428145 virtual/slimmingpaint/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
-crbug.com/428145 [ Win Mac ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
-
 crbug.com/448442 [ XP ] virtual/slimmingpaint/fast/borders/border-image-side-reduction.html [ ImageOnlyFailure ]
 
 crbug.com/438888 http/tests/misc/acid3.html [ NeedsManualRebaseline ]
