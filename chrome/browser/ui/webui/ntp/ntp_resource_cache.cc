@@ -76,9 +76,9 @@ namespace {
 // The URL for the the Learn More page shown on incognito new tab.
 const char kLearnMoreIncognitoUrl[] =
 #if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=95464";
+    "https://support.google.com/chromebook/?p=incognito";
 #else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=95464";
+    "https://support.google.com/chrome/?p=incognito";
 #endif
 
 // The URL for the Learn More page shown on guest session new tab.
