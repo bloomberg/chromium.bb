@@ -75,7 +75,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                       const base::TimeDelta& current_time) override {}
   void OnError(int player_id, int error) override {}
   void OnVideoSizeChanged(int player_id, int width, int height) override {}
-  void OnAudibleStateChanged(int player_id, bool is_audible_now) override {}
   MediaPlayerAndroid* GetFullscreenPlayer() override { return NULL; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
   void RequestFullScreen(int player_id) override {}

@@ -52,13 +52,7 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
     WebContentsImpl* web_contents = reinterpret_cast<WebContentsImpl*>(
         RenderViewHostTestHarness::web_contents());
     web_contents->SetDelegate(&mock_web_contents_delegate_);
-
-    AudioStateProvider* provider =  web_contents->audio_state_provider();
-    ASSERT_TRUE(provider);
-
-    monitor_ = provider->audio_stream_monitor();
-    ASSERT_TRUE(monitor_);
-
+    monitor_ = web_contents->audio_stream_monitor();
     const_cast<base::TickClock*&>(monitor_->clock_) = &clock_;
   }
 

@@ -108,7 +108,6 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/date_time_chooser_android.h"
-#include "content/browser/android/media_players_observer.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #endif
@@ -359,6 +358,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       geolocation_service_context_(new GeolocationServiceContext()),
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
+      audio_stream_monitor_(this),
       virtual_keyboard_requested_(false),
       loading_weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
@@ -366,12 +366,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
                  base::Unretained(this)));
 #if defined(ENABLE_BROWSER_CDMS)
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
-#endif
-
-#if defined(OS_ANDROID)
-  audio_state_provider_.reset(new MediaPlayersObserver(this));
-#else
-  audio_state_provider_.reset(new AudioStreamMonitor(this));
 #endif
 }
 
@@ -1047,7 +1041,7 @@ void WebContentsImpl::NotifyNavigationStateChanged(
   // Create and release the audio power save blocker depending on whether the
   // tab is actively producing audio or not.
   if ((changed_flags & INVALIDATE_TYPE_TAB) &&
-      audio_state_provider_->IsAudioStateAvailable()) {
+      AudioStreamMonitor::monitoring_available()) {
     if (WasRecentlyAudible()) {
       if (!audio_power_save_blocker_)
         CreateAudioPowerSaveBlocker();
@@ -2529,7 +2523,7 @@ void WebContentsImpl::InsertCSS(const std::string& css) {
 }
 
 bool WebContentsImpl::WasRecentlyAudible() {
-  return audio_state_provider_->WasRecentlyAudible();
+  return audio_stream_monitor_.WasRecentlyAudible();
 }
 
 void WebContentsImpl::GetManifest(const GetManifestCallback& callback) {
@@ -3216,7 +3210,7 @@ void WebContentsImpl::MaybeReleasePowerSaveBlockers() {
   // monitoring, release the audio power save blocker here instead of during
   // NotifyNavigationStateChanged().
   if (active_audio_players_.empty() &&
-      !audio_state_provider_->IsAudioStateAvailable()) {
+      !AudioStreamMonitor::monitoring_available()) {
     audio_power_save_blocker_.reset();
   }
 
@@ -3239,7 +3233,7 @@ void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
     // If we don't have audio stream monitoring, allocate the audio power save
     // blocker here instead of during NotifyNavigationStateChanged().
     if (!audio_power_save_blocker_ &&
-        !audio_state_provider_->IsAudioStateAvailable()) {
+        !AudioStreamMonitor::monitoring_available()) {
       CreateAudioPowerSaveBlocker();
     }
   }

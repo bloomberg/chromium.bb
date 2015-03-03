@@ -7,15 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-
-#if defined(OS_ANDROID)
-class MediaPlayersObserver;
-#endif  // defined(OS_ANDROID)
 
 class BrowserCdmManager;
 class BrowserMediaPlayerManager;
@@ -49,8 +44,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
       RenderFrameHost* render_frame_host);
 
   void OnSetCdm(RenderFrameHost* render_frame_host, int player_id, int cdm_id);
-
-  MediaPlayersObserver* GetMediaPlayersObserver() const;
 
 #if defined(VIDEO_HOLE)
   void OnFrameInfoUpdated();
