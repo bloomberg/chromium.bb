@@ -26,6 +26,10 @@ SearchResultTileItemView::~SearchResultTileItemView() {
 }
 
 void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
+  // Handle the case where this may be called from a nested run loop while its
+  // context menu is showing. This cancels the menu (it's for the old item).
+  context_menu_runner_.reset();
+
   SetVisible(item != NULL);
 
   SearchResult* old_item = item_;
