@@ -27,11 +27,13 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/paint/SVGPaintContext.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -173,14 +175,25 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(LayoutObject* re
     GraphicsContext* context = builder->context();
     if (!context)
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
-    FloatRect bounds(FloatPoint(), dstRect.size());
-    context->save();
-    context->beginRecording(bounds);
-    context->concatCTM(transform);
-    SVGPaintContext::paintSubtree(context, renderer);
-    RefPtr<const SkPicture> picture = context->endRecording();
-    context->restore();
-    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(picture.get(), dstRect));
+
+    OwnPtr<DisplayItemList> displayItemList;
+    OwnPtr<GraphicsContext> recordingContext;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        displayItemList = DisplayItemList::create();
+        recordingContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get()));
+        context = recordingContext.get();
+    }
+
+    context->beginRecording(FloatRect(FloatPoint(), dstRect.size()));
+    {
+        TransformRecorder transformRecorder(*context, renderer->displayItemClient(), transform);
+        SVGPaintContext::paintSubtree(context, renderer);
+    }
+    if (displayItemList)
+        displayItemList->replay(context);
+
+    RefPtr<const SkPicture> recording = context->endRecording();
+    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(recording.get(), dstRect));
     return result.release();
 }
 
