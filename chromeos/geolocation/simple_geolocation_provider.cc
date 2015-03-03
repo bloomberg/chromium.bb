@@ -62,10 +62,13 @@ void SimpleGeolocationProvider::OnGeolocationResponse(
 
   callback.Run(geoposition, server_error, elapsed);
 
-  ScopedVector<SimpleGeolocationRequest>::iterator new_end =
-      std::remove(requests_.begin(), requests_.end(), request);
-  DCHECK_EQ(std::distance(new_end, requests_.end()), 1);
-  requests_.erase(new_end, requests_.end());
+  ScopedVector<SimpleGeolocationRequest>::iterator position =
+      std::find(requests_.begin(), requests_.end(), request);
+  DCHECK(position != requests_.end());
+  if (position != requests_.end()) {
+    std::swap(*position, *requests_.rbegin());
+    requests_.resize(requests_.size() - 1);
+  }
 }
 
 }  // namespace chromeos
