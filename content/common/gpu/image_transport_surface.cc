@@ -191,8 +191,12 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
-  for (auto& latency : latency_info_)
-    latency.AddLatencyNumber(ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0);
+
+  base::TimeTicks swap_time = base::TimeTicks::Now();
+  for (auto& latency : latency_info_) {
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
+  }
 
   // We use WeakPtr here to avoid manual management of life time of an instance
   // of this class. Callback will not be called once the instance of this class
@@ -206,6 +210,13 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
 bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   SendVSyncUpdateIfAvailable();
+
+  base::TimeTicks swap_time = base::TimeTicks::Now();
+  for (auto& latency : latency_info_) {
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
+  }
+
   // We use WeakPtr here to avoid manual management of life time of an instance
   // of this class. Callback will not be called once the instance of this class
   // is destroyed. However, this also means that the callback can be run on
@@ -216,9 +227,11 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
 }
 
 void PassThroughImageTransportSurface::SwapBuffersCallBack() {
-  for (size_t i = 0; i < latency_info_.size(); i++) {
-    latency_info_[i].AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+  base::TimeTicks swap_ack_time = base::TimeTicks::Now();
+  for (auto& latency : latency_info_) {
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
+        swap_ack_time, 1);
   }
 
   helper_->stub()->SendSwapBuffersCompleted(latency_info_);
