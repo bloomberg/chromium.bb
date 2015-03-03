@@ -404,7 +404,7 @@ void ExtensionFunction::SendResponseImpl(bool success) {
   if (!results_)
     results_.reset(new base::ListValue());
 
-  response_callback_.Run(type, *results_, GetError());
+  response_callback_.Run(type, *results_, GetError(), histogram_value());
 }
 
 void ExtensionFunction::OnRespondingLater(ResponseValue value) {

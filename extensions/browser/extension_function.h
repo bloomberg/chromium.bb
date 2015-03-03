@@ -100,9 +100,11 @@ class ExtensionFunction
     BAD_MESSAGE
   };
 
-  typedef base::Callback<void(ResponseType type,
-                              const base::ListValue& results,
-                              const std::string& error)> ResponseCallback;
+  using ResponseCallback = base::Callback<void(
+      ResponseType type,
+      const base::ListValue& results,
+      const std::string& error,
+      extensions::functions::HistogramValue histogram_value)>;
 
   ExtensionFunction();
 

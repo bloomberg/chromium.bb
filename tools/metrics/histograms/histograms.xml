@@ -8442,6 +8442,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BadMessageFunctionName" enum="ExtensionFunctions">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The number of times each Extension function call sends a bad message,
+    killing the renderer. This may indicate a bug in that API's implementation
+    on the renderer. Note a similar, aggregate metric is BadMessageTerminate_EFD
+    which counts the number of bad messages that are sent overall.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CheckForExternalUpdatesTime">
   <owner>rkaplow@chromium.org</owner>
   <summary>
