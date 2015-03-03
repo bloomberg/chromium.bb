@@ -1393,7 +1393,7 @@ inline Address HeapObjectHeader::payloadEnd()
     return reinterpret_cast<Address>(this) + size();
 }
 
-NO_SANITIZE_ADDRESS inline
+NO_SANITIZE_ADDRESS ALWAYS_INLINE
 size_t HeapObjectHeader::payloadSize()
 {
     size_t size = m_encoded & headerSizeMask;
