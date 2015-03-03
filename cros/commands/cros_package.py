@@ -12,6 +12,7 @@ elementary project more easily.
 
 from __future__ import print_function
 
+import logging
 import os
 
 from chromite import cros
@@ -56,6 +57,9 @@ class PackageCommand(cros.CrosCommand):
   EPILOG = """
 To create a source package in the current project:
   cros package --create-source path/to/source foo-category/bar-package
+To enable building a package from latest or stable ebuilds:
+  cros package --enable latest foo-category/bar-package
+  cros package --enable stable foo-category/bar-package
 """
 
   def __init__(self, options):
@@ -72,6 +76,8 @@ To create a source package in the current project:
     parser.add_argument('--create-source', metavar='src_path',
                         help='Create package from code in specified path. Path '
                         'is relative to project source root.')
+    parser.add_argument('--enable', '-e', choices=('latest', 'stable'),
+                        help='Build package from latest/stable source.')
     parser.add_argument('--force', action='store_true',
                         help='Ignore checks, clobber everything.')
 
@@ -121,6 +127,27 @@ To create a source package in the current project:
       osutils.WriteFile(categories_file, category_line, mode='a',
                         makedirs=True)
 
+  def _CrosWorkonAlreadyStarted(self, output):
+    return 'Already working on %s' % self.options.package_name in output
+
+  def _CrosWorkonAlreadyStopped(self, output):
+    return 'Not working on %s' % self.options.package_name in output
+
+  def _EnableBuild(self, latest):
+    """Enable latest/stable build."""
+    cmd = ['cros_workon',
+           'start' if latest else 'stop',
+           '--board=%s' % self.options.project,
+           self.options.package_name]
+    result = cros_build_lib.RunCommand(cmd, quiet=True, error_code_ok=True)
+    if (result.returncode and
+        not ((latest and self._CrosWorkonAlreadyStarted(result.output)) or
+             (not latest and self._CrosWorkonAlreadyStopped(result.output)))):
+      msg = ('Failed to %s latest build for package %s' %
+             ('enable' if latest else 'disable', self.options.package_name))
+      logging.error(msg)
+      raise RuntimeError(msg)
+
   def _ReadOptions(self):
     """Process arguments and set variables, then freeze options."""
     if not self.options.project:
@@ -137,3 +164,5 @@ To create a source package in the current project:
     self.RunInsideChroot(auto_detect_project=True)
     if self.options.create_source:
       self._CreateSource()
+    if self.options.enable:
+      self._EnableBuild(self.options.enable == 'latest')
