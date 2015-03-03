@@ -14,6 +14,7 @@
 #include "gin/interceptor.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "v8/include/v8-util.h"
 
 namespace blink {
 class WebFrame;
@@ -55,6 +56,8 @@ class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
                       GinJavaBridgeDispatcher::ObjectID object_id);
   ~GinJavaBridgeObject() override;
 
+  v8::Local<v8::FunctionTemplate> GetFunctionTemplate(v8::Isolate* isolate,
+                                                      const std::string& name);
   v8::Handle<v8::Value> InvokeMethod(const std::string& name,
                                      gin::Arguments* args);
 
@@ -62,6 +65,7 @@ class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
   GinJavaBridgeDispatcher::ObjectID object_id_;
   scoped_ptr<GinJavaBridgeValueConverter> converter_;
   std::map<std::string, bool> known_methods_;
+  v8::StdPersistentValueMap<std::string, v8::FunctionTemplate> template_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(GinJavaBridgeObject);
 };

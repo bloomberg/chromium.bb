@@ -66,7 +66,8 @@ GinJavaBridgeObject::GinJavaBridgeObject(
     : gin::NamedPropertyInterceptor(isolate, this),
       dispatcher_(dispatcher),
       object_id_(object_id),
-      converter_(new GinJavaBridgeValueConverter()) {
+      converter_(new GinJavaBridgeValueConverter()),
+      template_cache_(isolate) {
 }
 
 GinJavaBridgeObject::~GinJavaBridgeObject() {
@@ -91,15 +92,10 @@ v8::Local<v8::Value> GinJavaBridgeObject::GetNamedProperty(
     }
     known_methods_[property] = dispatcher_->HasJavaMethod(object_id_, property);
   }
-  if (known_methods_[property]) {
-    return gin::CreateFunctionTemplate(
-               isolate,
-               base::Bind(&GinJavaBridgeObject::InvokeMethod,
-                          base::Unretained(this),
-                          property))->GetFunction();
-  } else {
+  if (known_methods_[property])
+    return GetFunctionTemplate(isolate, property)->GetFunction();
+  else
     return v8::Local<v8::Value>();
-  }
 }
 
 std::vector<std::string> GinJavaBridgeObject::EnumerateNamedProperties(
@@ -108,6 +104,19 @@ std::vector<std::string> GinJavaBridgeObject::EnumerateNamedProperties(
   if (dispatcher_)
     dispatcher_->GetJavaMethods(object_id_, &method_names);
   return std::vector<std::string> (method_names.begin(), method_names.end());
+}
+
+v8::Local<v8::FunctionTemplate> GinJavaBridgeObject::GetFunctionTemplate(
+    v8::Isolate* isolate,
+    const std::string& name) {
+  v8::Local<v8::FunctionTemplate> function_template = template_cache_.Get(name);
+  if (!function_template.IsEmpty())
+    return function_template;
+  function_template = gin::CreateFunctionTemplate(
+      isolate, base::Bind(&GinJavaBridgeObject::InvokeMethod,
+                          base::Unretained(this), name));
+  template_cache_.Set(name, function_template);
+  return function_template;
 }
 
 v8::Handle<v8::Value> GinJavaBridgeObject::InvokeMethod(
