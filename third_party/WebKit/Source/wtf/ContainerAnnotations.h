@@ -5,7 +5,6 @@
 #ifndef WTF_ContainerAnnotations_h
 #define WTF_ContainerAnnotations_h
 
-#include "wtf/Alignment.h"
 #include "wtf/CPU.h"
 
 // TODO(ochang): Remove the CPU(X86_64) condition to enable this for X86 once
@@ -28,13 +27,11 @@
     ANNOTATE_DELETE_BUFFER(buffer, oldCapacity, bufferSize); \
     ANNOTATE_NEW_BUFFER(buffer, newCapacity, bufferSize);
 // Annotations require buffers to begin on an 8-byte boundary.
-#define WTF_CONTAINER_BUFFER_ALIGNMENT(T) (8 > WTF_ALIGN_OF(T) ? 8 : WTF_ALIGN_OF(T))
 #else // defined(ADDRESS_SANITIZER) && OS(LINUX) && CPU(X86_64)
 #define ANNOTATE_NEW_BUFFER(buffer, capacity, newSize)
 #define ANNOTATE_DELETE_BUFFER(buffer, capacity, oldSize)
 #define ANNOTATE_CHANGE_SIZE(buffer, capacity, oldSize, newSize)
 #define ANNOTATE_CHANGE_CAPACITY(buffer, oldCapacity, bufferSize, newCapacity)
-#define WTF_CONTAINER_BUFFER_ALIGNMENT(T) WTF_ALIGN_OF(T)
 #endif // defined(ADDRESS_SANITIZER) && OS(LINUX) && CPU(X86_64)
 
 #endif // WTF_ContainerAnnotations_h

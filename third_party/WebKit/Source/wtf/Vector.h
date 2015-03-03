@@ -33,6 +33,13 @@
 #include <string.h>
 #include <utility>
 
+// For ASAN builds, disable inline buffers completely as they cause various issues.
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+#define INLINE_CAPACITY 0
+#else
+#define INLINE_CAPACITY inlineCapacity
+#endif
+
 namespace WTF {
 
 #if defined(MEMORY_SANITIZER_INITIAL_SIZE)
@@ -559,7 +566,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         T* inlineBuffer() { return reinterpret_cast_ptr<T*>(m_inlineBuffer.buffer); }
         const T* inlineBuffer() const { return reinterpret_cast_ptr<const T*>(m_inlineBuffer.buffer); }
 
-        AlignedBuffer<m_inlineBufferSize, WTF_CONTAINER_BUFFER_ALIGNMENT(T)> m_inlineBuffer;
+        AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
         template<typename U, size_t inlineBuffer, typename V>
         friend class Deque;
     };
@@ -587,10 +594,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     class VectorDestructorBase<Derived, false, true> { };
 
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
-    class Vector : private VectorBuffer<T, inlineCapacity, Allocator>, public VectorDestructorBase<Vector<T, inlineCapacity, Allocator>, (inlineCapacity > 0), Allocator::isGarbageCollected> {
+    class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public VectorDestructorBase<Vector<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY > 0), Allocator::isGarbageCollected> {
         WTF_USE_ALLOCATOR(Vector, Allocator);
     private:
-        typedef VectorBuffer<T, inlineCapacity, Allocator> Base;
+        typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Base;
         typedef VectorTypeOperations<T> TypeOperations;
 
     public:
@@ -632,7 +639,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         // it is managed by the traced GC heap.
         void finalize()
         {
-            if (!inlineCapacity) {
+            if (!INLINE_CAPACITY) {
                 if (LIKELY(!Base::buffer()))
                     return;
             }
@@ -928,7 +935,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         // We use a more aggressive expansion strategy for Vectors with inline storage.
         // This is because they are more likely to be on the stack, so the risk of heap bloat is minimized.
         // Furthermore, exceeding the inline capacity limit is not supposed to happen in the common case and may indicate a pathological condition or microbenchmark.
-        if (inlineCapacity) {
+        if (INLINE_CAPACITY) {
             expandedCapacity *= 2;
             // Check for integer overflow, which could happen in the 32-bit build.
             RELEASE_ASSERT(expandedCapacity > oldCapacity);
@@ -1026,8 +1033,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     inline void Vector<T, inlineCapacity, Allocator>::reserveInitialCapacity(size_t initialCapacity)
     {
         ASSERT(!m_size);
-        ASSERT(capacity() == inlineCapacity);
-        if (initialCapacity > inlineCapacity) {
+        ASSERT(capacity() == INLINE_CAPACITY);
+        if (initialCapacity > INLINE_CAPACITY) {
             ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
             Base::allocateBuffer(initialCapacity);
             ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
@@ -1127,11 +1134,16 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
     ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(const U& val)
     {
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+        // Vectors in ASAN builds don't have inlineCapacity.
+        append(val);
+#else
         ASSERT(size() < capacity());
         ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
         const U* ptr = &val;
         new (NotNull, end()) T(*ptr);
         ++m_size;
+#endif
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U, size_t otherCapacity, typename OtherAllocator>
