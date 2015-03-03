@@ -1024,12 +1024,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_always_require_handshake_confirmation);
   globals.quic_disable_connection_pooling.CopyToIfSet(
       &params->quic_disable_connection_pooling);
-  globals.quic_load_server_info_timeout_ms.CopyToIfSet(
-      &params->quic_load_server_info_timeout_ms);
   globals.quic_load_server_info_timeout_srtt_multiplier.CopyToIfSet(
       &params->quic_load_server_info_timeout_srtt_multiplier);
-  globals.quic_enable_truncated_connection_ids.CopyToIfSet(
-      &params->quic_enable_truncated_connection_ids);
   globals.quic_enable_connection_racing.CopyToIfSet(
       &params->quic_enable_connection_racing);
   globals.quic_enable_non_blocking_io.CopyToIfSet(
@@ -1156,16 +1152,6 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
     globals->quic_disable_connection_pooling.set(
         ShouldQuicDisableConnectionPooling(quic_trial_params));
-    int load_server_info_timeout_ms =
-        GetQuicLoadServerInfoTimeout(quic_trial_params);
-    if (load_server_info_timeout_ms != 0) {
-      globals->quic_load_server_info_timeout_ms.set(
-          load_server_info_timeout_ms);
-    }
-    globals->quic_enable_truncated_connection_ids.set(
-        ShouldQuicEnableTruncatedConnectionIds(quic_trial_params));
-    globals->quic_enable_connection_racing.set(
-        ShouldQuicEnableConnectionRacing(quic_trial_params));
     int receive_buffer_size = GetQuicSocketReceiveBufferSize(quic_trial_params);
     if (receive_buffer_size != 0) {
       globals->quic_socket_receive_buffer_size.set(receive_buffer_size);
@@ -1176,8 +1162,6 @@ void IOThread::ConfigureQuicGlobals(
       globals->quic_load_server_info_timeout_srtt_multiplier.set(
           load_server_info_timeout_srtt_multiplier);
     }
-    globals->quic_enable_truncated_connection_ids.set(
-        ShouldQuicEnableTruncatedConnectionIds(quic_trial_params));
     globals->quic_enable_connection_racing.set(
         ShouldQuicEnableConnectionRacing(quic_trial_params));
     globals->quic_enable_non_blocking_io.set(
@@ -1349,18 +1333,6 @@ bool IOThread::ShouldQuicDisableConnectionPooling(
 }
 
 // static
-int IOThread::GetQuicLoadServerInfoTimeout(
-    const VariationParameters& quic_trial_params) {
-  int value;
-  if (base::StringToInt(GetVariationParam(quic_trial_params,
-                                          "load_server_info_timeout"),
-                        &value)) {
-    return value;
-  }
-  return 0;
-}
-
-// static
 float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
     const VariationParameters& quic_trial_params) {
   double value;
@@ -1370,14 +1342,6 @@ float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
     return (float)value;
   }
   return 0.0f;
-}
-
-// static
-bool IOThread::ShouldQuicEnableTruncatedConnectionIds(
-    const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_truncated_connection_ids"),
-      "true");
 }
 
 // static

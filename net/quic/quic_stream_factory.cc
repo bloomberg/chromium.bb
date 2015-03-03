@@ -395,20 +395,18 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 
   // To mitigate the effects of disk cache taking too long to load QUIC server
   // information, set up a timer to cancel WaitForDataReady's callback.
-  int64 load_server_info_timeout_ms = factory_->load_server_info_timeout_ms_;
   if (factory_->load_server_info_timeout_srtt_multiplier_ > 0) {
-    DCHECK_EQ(0, load_server_info_timeout_ms);
-    load_server_info_timeout_ms =
+    int64 load_server_info_timeout_ms =
         (factory_->load_server_info_timeout_srtt_multiplier_ *
          factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(server_id_)) /
         1000;
-  }
-  if (load_server_info_timeout_ms > 0) {
-    factory_->task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&QuicStreamFactory::Job::CancelWaitForDataReadyCallback,
-                   GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(load_server_info_timeout_ms));
+    if (load_server_info_timeout_ms > 0) {
+      factory_->task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&QuicStreamFactory::Job::CancelWaitForDataReadyCallback,
+                     GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(load_server_info_timeout_ms));
+    }
   }
 
   int rv = server_info_->WaitForDataReady(
@@ -594,9 +592,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_port_selection,
     bool always_require_handshake_confirmation,
     bool disable_connection_pooling,
-    int load_server_info_timeout,
     float load_server_info_timeout_srtt_multiplier,
-    bool enable_truncated_connection_ids,
     bool enable_connection_racing,
     bool enable_non_blocking_io,
     bool disable_disk_cache,
@@ -618,10 +614,8 @@ QuicStreamFactory::QuicStreamFactory(
       always_require_handshake_confirmation_(
           always_require_handshake_confirmation),
       disable_connection_pooling_(disable_connection_pooling),
-      load_server_info_timeout_ms_(load_server_info_timeout),
       load_server_info_timeout_srtt_multiplier_(
           load_server_info_timeout_srtt_multiplier),
-      enable_truncated_connection_ids_(enable_truncated_connection_ids),
       enable_connection_racing_(enable_connection_racing),
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
@@ -1153,8 +1147,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 QuicStreamFactory::CreateSession57"));
 
-  if (enable_truncated_connection_ids_)
-    config.SetBytesForConnectionIdToSend(0);
+  config.SetBytesForConnectionIdToSend(0);
 
   if (quic_server_info_factory_ && !server_info) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.

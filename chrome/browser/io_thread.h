@@ -186,9 +186,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_quic_port_selection;
     Optional<bool> quic_always_require_handshake_confirmation;
     Optional<bool> quic_disable_connection_pooling;
-    Optional<int> quic_load_server_info_timeout_ms;
     Optional<float> quic_load_server_info_timeout_srtt_multiplier;
-    Optional<bool> quic_enable_truncated_connection_ids;
     Optional<bool> quic_enable_connection_racing;
     Optional<bool> quic_enable_non_blocking_io;
     Optional<bool> quic_disable_disk_cache;
@@ -366,20 +364,10 @@ class IOThread : public content::BrowserThreadDelegate {
   static bool ShouldQuicDisableConnectionPooling(
       const VariationParameters& quic_trial_params);
 
-  // Returns the timeout value for loading of QUIC sever information from disk
-  // cache based on field trial. Returns 0 if there is an error parsing the
-  // field trial params, or if the default value should be used.
-  static int GetQuicLoadServerInfoTimeout(
-      const VariationParameters& quic_trial_params);
-
   // Returns the ratio of time to load QUIC sever information from disk cache to
   // 'smoothed RTT' based on field trial. Returns 0 if there is an error parsing
   // the field trial params, or if the default value should be used.
   static float GetQuicLoadServerInfoTimeoutSrttMultiplier(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC's TruncatedConnectionIds should be enabled.
-  static bool ShouldQuicEnableTruncatedConnectionIds(
       const VariationParameters& quic_trial_params);
 
   // Returns true if QUIC's connection racing should be enabled.

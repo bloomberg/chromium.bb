@@ -117,9 +117,7 @@ class NET_EXPORT HttpNetworkSession
     bool enable_quic_port_selection;
     bool quic_always_require_handshake_confirmation;
     bool quic_disable_connection_pooling;
-    int quic_load_server_info_timeout_ms;
     float quic_load_server_info_timeout_srtt_multiplier;
-    bool quic_enable_truncated_connection_ids;
     bool quic_enable_connection_racing;
     bool quic_enable_non_blocking_io;
     bool quic_disable_disk_cache;

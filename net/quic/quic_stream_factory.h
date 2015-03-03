@@ -105,9 +105,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_port_selection,
       bool always_require_handshake_confirmation,
       bool disable_connection_pooling,
-      int load_server_info_timeout,
       float load_server_info_timeout_srtt_multiplier,
-      bool enable_truncated_connection_ids,
       bool enable_connection_racing,
       bool enable_non_blocking_io,
       bool disable_disk_cache,
@@ -313,19 +311,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if we do not want connection pooling.
   bool disable_connection_pooling_;
 
-  // Specifies the timeout in milliseconds to wait for loading of QUIC server
-  // information. If we don't want to timeout, set
-  // |load_server_info_timeout_ms_| to 0.
-  int load_server_info_timeout_ms_;
-
   // Specifies the ratio between time to load QUIC server information from disk
   // cache to 'smoothed RTT'. This ratio is used to calculate the timeout in
   // milliseconds to wait for loading of QUIC server information. If we don't
   // want to timeout, set |load_server_info_timeout_srtt_multiplier_| to 0.
   float load_server_info_timeout_srtt_multiplier_;
-
-  // Set this for setting config's BytesForConnectionIdToSend (TCID param) to 0.
-  bool enable_truncated_connection_ids_;
 
   // Set if we want to race connections - one connection that sends
   // INCHOATE_HELLO and another connection that sends CHLO after loading server

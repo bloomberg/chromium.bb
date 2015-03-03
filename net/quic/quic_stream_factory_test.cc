@@ -125,11 +125,6 @@ class QuicStreamFactoryPeer {
     factory->task_runner_ = task_runner;
   }
 
-  static void SetLoadServerInfoTimeout(QuicStreamFactory* factory,
-                                       size_t load_server_info_timeout) {
-    factory->load_server_info_timeout_ms_ = load_server_info_timeout;
-  }
-
   static void SetEnableConnectionRacing(QuicStreamFactory* factory,
                                         bool enable_connection_racing) {
     factory->enable_connection_racing_ = enable_connection_racing;
@@ -207,9 +202,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*enable_port_selection=*/true,
                  /*always_require_handshake_confirmation=*/false,
                  /*disable_connection_pooling=*/false,
-                 /*load_server_info_timeout=*/0u,
                  /*load_server_info_timeout_srtt_multiplier=*/0.0f,
-                 /*enable_truncated_connection_ids=*/true,
                  /*enable_connection_racing=*/false,
                  /*enable_non_blocking_io=*/true,
                  /*disable_disk_cache=*/false,
@@ -1613,62 +1606,11 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
   }
 }
 
-TEST_P(QuicStreamFactoryTest, CancelWaitForDataReady) {
-  // Don't race quic connections when testing cancel reading of server config
-  // from disk cache.
-  if (GetParam().enable_connection_racing)
-    return;
-  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
-  QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
-  const size_t kLoadServerInfoTimeoutMs = 50;
-  QuicStreamFactoryPeer::SetLoadServerInfoTimeout(
-      &factory_, kLoadServerInfoTimeoutMs);
-
-  MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
-  };
-  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
-  socket_data.StopAfter(1);
-
-  crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                           "192.168.0.1", "");
-
-  QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_,
-                            is_https_,
-                            privacy_mode_,
-                            "GET",
-                            net_log_,
-                            callback_.callback()));
-
-  // Verify that the CancelWaitForDataReady task has been posted.
-  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(kLoadServerInfoTimeoutMs),
-            runner_->GetPostedTasks()[0].delay);
-
-  runner_->RunNextTask();
-  ASSERT_EQ(0u, runner_->GetPostedTasks().size());
-
-  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
-  EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-}
-
 TEST_P(QuicStreamFactoryTest, RacingConnections) {
   if (!GetParam().enable_connection_racing)
     return;
   factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
-  const size_t kLoadServerInfoTimeoutMs = 50;
-  QuicStreamFactoryPeer::SetLoadServerInfoTimeout(&factory_,
-                                                  kLoadServerInfoTimeoutMs);
-
   MockRead reads[] = {
       MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -1710,9 +1652,6 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   factory_.set_quic_server_info_factory(&quic_server_info_factory_);
   QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
-  const size_t kLoadServerInfoTimeoutMs = 50;
-  QuicStreamFactoryPeer::SetLoadServerInfoTimeout(&factory_,
-                                                  kLoadServerInfoTimeoutMs);
   QuicStreamFactoryPeer::SetDisableDiskCache(&factory_, true);
 
   MockRead reads[] = {
