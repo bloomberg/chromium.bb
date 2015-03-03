@@ -72,8 +72,6 @@ class Dispatcher : public content::RenderProcessObserver,
     return function_names_;
   }
 
-  bool is_extension_process() const { return is_extension_process_; }
-
   const ExtensionSet* extensions() const { return &extensions_; }
 
   const ScriptContextSet& script_context_set() const {
@@ -267,8 +265,8 @@ class Dispatcher : public content::RenderProcessObserver,
   // Dispatcher's own lifetime.
   DispatcherDelegate* delegate_;
 
-  // True if this renderer is running extensions.
-  bool is_extension_process_;
+  // True if the IdleNotification timer should be set.
+  bool set_idle_notifications_;
 
   // Contains all loaded extensions.  This is essentially the renderer
   // counterpart to ExtensionService in the browser. It contains information

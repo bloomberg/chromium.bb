@@ -194,11 +194,11 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       webrequest_used_(false) {
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
-  is_extension_process_ =
+  set_idle_notifications_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
       command_line.HasSwitch(::switches::kSingleProcess);
 
-  if (is_extension_process_) {
+  if (set_idle_notifications_) {
     RenderThread::Get()->SetIdleNotificationDelayInMs(
         kInitialExtensionIdleHandlerDelayMs);
   }
@@ -528,7 +528,7 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderView* render_view,
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch, for which Invoke is the chokepoint.
-  if (is_extension_process_) {
+  if (set_idle_notifications_) {
     RenderThread::Get()->ScheduleIdleHandler(
         kInitialExtensionIdleHandlerDelayMs);
   }
@@ -830,7 +830,7 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
 void Dispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
-  if (is_extension_process_) {
+  if (set_idle_notifications_) {
     forced_idle_timer_.reset(new base::RepeatingTimer<content::RenderThread>);
     forced_idle_timer_->Start(
         FROM_HERE,
@@ -856,7 +856,7 @@ void Dispatcher::WebKitInitialized() {
 }
 
 void Dispatcher::IdleNotification() {
-  if (is_extension_process_ && forced_idle_timer_) {
+  if (set_idle_notifications_ && forced_idle_timer_) {
     // Dampen the forced delay as well if the extension stays idle for long
     // periods of time. (forced_idle_timer_ can be NULL after
     // OnRenderProcessShutdown has been called.)

@@ -328,6 +328,12 @@ GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
 }
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+bool IsStandaloneExtensionProcess() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      extensions::switches::kExtensionProcess);
+}
+#endif
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
@@ -1206,7 +1212,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 #if defined(ENABLE_EXTENSIONS)
-  return !extension_dispatcher_->is_extension_process();
+  return !IsStandaloneExtensionProcess();
 #else
   return true;
 #endif
@@ -1321,7 +1327,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // in a normal process, or if it's a process for an extension that has been
   // uninstalled.
   if (frame->top()->document().url() == url) {
-    if (is_extension_url != extension_dispatcher_->is_extension_process())
+    if (is_extension_url != IsStandaloneExtensionProcess())
       return true;
   }
 #endif  // defined(ENABLE_EXTENSIONS)
@@ -1445,7 +1451,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
             opener_document.url()) != NULL;
     if (!is_extension_url &&
         !opener_is_extension_url &&
-        extension_dispatcher_->is_extension_process() &&
+        IsStandaloneExtensionProcess() &&
         opener.canRequest(WebURL(new_url)))
       return false;
 
