@@ -41,6 +41,18 @@
               ],
               'action': [ 'zip', '-j', '-0', '<@(_outputs)', '<@(_inputs)' ],
             },
+            {
+              # Copy the debian package file, which has version info in it,
+              # to a consistent filename for use on Chromoting swarming bots.
+              'action_name': 'Copy debian package.',
+              'inputs': [
+                '<@(deb_filename)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/remoting-me2me-host.deb',
+              ],
+              'action': [ 'cp', '<@(_inputs)', '<@(_outputs)'],
+            },
           ],
         }, {
           'target_name': 'remoting_me2me_host_deb_installer',

@@ -30,6 +30,7 @@
           '../../remoting/tools/internal/test-account-host-config.json',
           '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
           '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_assistance.json',
+          '<(PRODUCT_DIR)/remoting-me2me-host.deb',
         ],
       },
     }],
