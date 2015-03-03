@@ -35,11 +35,30 @@ def SetupPrerequisites():
   packages += ['python-sqlalchemy', 'python-mysqldb']
   # Required for payload generation outside of the chroot.
   packages += ['python-protobuf']
+  # Required to install python packages only available via pip.
+  packages += ['python-pip']
 
   # Packages to monitor system performance and usage.
   packages += ['sysstat']
 
   SudoRunCommand(['apt-get', '-y', 'install'] + packages)
+  SetupPipPrerequisites()
+
+
+def SetupPipPrerequisites():
+  """Installs python packages via pip.
+
+  This assumes that pip itself is installed already.
+  """
+  # dict of package to version. Provide version None if you don't care about the
+  # version installed.
+  packages = {'python-statsd': '1.7.0'}
+
+  for package, version in packages.iteritems():
+    install_atom = package
+    if version is not None:
+      install_atom += ('==' + version)
+    SudoRunCommand(['pip', 'install', install_atom])
 
 
 def InstallChromeDependencies():
