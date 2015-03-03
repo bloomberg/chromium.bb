@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 
@@ -90,11 +89,8 @@ class VolumeMountWatcherWin {
   virtual GetAttachedDevicesCallbackType GetAttachedDevicesCallback() const;
   virtual GetDeviceDetailsCallbackType GetDeviceDetailsCallback() const;
 
-  // Worker pool used to collect device information. Used because some
-  // devices freeze workers trying to get device info, resulting in
-  // shutdown hangs.
-  scoped_refptr<base::SequencedWorkerPool> device_info_worker_pool_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // Used for device info calls that may take a long time.
+  scoped_refptr<base::SequencedTaskRunner> device_info_task_runner_;
 
  private:
   friend class TestVolumeMountWatcherWin;

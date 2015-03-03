@@ -97,7 +97,6 @@ void StorageMonitorWinTest::SetUp() {
 void StorageMonitorWinTest::TearDown() {
   RunUntilIdle();
   monitor_->RemoveObserver(&observer_);
-  volume_mount_watcher_->ShutdownWorkerPool();
 
   // Windows storage monitor must be destroyed on the same thread
   // as construction.

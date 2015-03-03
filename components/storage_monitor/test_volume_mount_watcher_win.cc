@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/storage_info.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace storage_monitor {
 
@@ -108,7 +109,7 @@ void TestVolumeMountWatcherWin::SetAttachedDevicesFake() {
 }
 
 void TestVolumeMountWatcherWin::FlushWorkerPoolForTesting() {
-  device_info_worker_pool_->FlushForTesting();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 void TestVolumeMountWatcherWin::DeviceCheckComplete(
@@ -148,10 +149,6 @@ VolumeMountWatcherWin::GetAttachedDevicesCallbackType
   if (attached_devices_fake_)
     return base::Bind(&FakeGetAttachedDevices);
   return base::Bind(&FakeGetSingleAttachedDevice);
-}
-
-void TestVolumeMountWatcherWin::ShutdownWorkerPool() {
-  device_info_worker_pool_->Shutdown();
 }
 
 }  // namespace storage_monitor
