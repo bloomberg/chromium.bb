@@ -118,6 +118,7 @@ enum IPCMessageStart {
   // Note: CastCryptoMsgStart reserved for Chromecast internal code.
   // Contact gunsch@ before changing/removing.
   CastCryptoMsgStart,
+  DataReductionProxyStart,
   LastIPCMsgStart  // Must come last.
 };
 

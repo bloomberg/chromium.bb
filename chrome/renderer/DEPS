@@ -7,7 +7,7 @@ include_rules = [
   "+components/cdm/renderer",
   "+components/content_settings/core/common",
   "+components/crx_file",
-  "+components/data_reduction_proxy/core/common",
+  "+components/data_reduction_proxy/content/common",
   "+components/dom_distiller/core",
   "+components/nacl/common",
   "+components/nacl/renderer",

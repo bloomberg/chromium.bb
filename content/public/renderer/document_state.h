@@ -161,8 +161,8 @@ class CONTENT_EXPORT DocumentState
     was_fetched_via_proxy_ = value;
   }
 
-  net::HostPortPair proxy_server() const { return proxy_server_; }
-  void set_proxy_server(net::HostPortPair proxy_server) {
+  const net::HostPortPair& proxy_server() const { return proxy_server_; }
+  void set_proxy_server(const net::HostPortPair& proxy_server) {
     proxy_server_ = proxy_server;
   }
 

@@ -490,6 +490,7 @@
             ['OS != "ios"', {
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
+                'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
                 'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
                 'error_page/renderer/net_error_helper_core_unittest.cc',
@@ -505,6 +506,7 @@
                 'components.gyp:autofill_content_browser',
                 'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
+                'components.gyp:data_reduction_proxy_content_browser',
                 'components.gyp:dom_distiller_content',
                 'components.gyp:error_page_renderer',
                 'components.gyp:history_content_browser',

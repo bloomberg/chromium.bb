@@ -6,7 +6,6 @@
 #define CHROME_RENDERER_PAGE_LOAD_HISTOGRAMS_H_
 
 #include "base/basictypes.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace content {
@@ -45,8 +44,6 @@ class PageLoadHistograms : public content::RenderViewObserver {
 
   void LogPageLoadTime(const content::DocumentState* load_times,
                        const blink::WebDataSource* ds) const;
-
-  data_reduction_proxy::DataReductionProxyParams data_reduction_proxy_params_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadHistograms);
 };

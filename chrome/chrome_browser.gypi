@@ -3003,6 +3003,7 @@
             '../third_party/re2/re2.gyp:re2',
             '../cc/cc.gyp:cc',
             '../components/components.gyp:autofill_content_browser',
+            '../components/components.gyp:data_reduction_proxy_content_browser',
             '../components/components.gyp:dom_distiller_content',
             '../components/components.gyp:history_content_browser',
             '../components/components.gyp:keyed_service_content',

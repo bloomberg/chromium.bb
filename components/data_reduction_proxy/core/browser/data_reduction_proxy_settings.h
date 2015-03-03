@@ -169,6 +169,12 @@ class DataReductionProxySettings {
     return data_reduction_proxy_service_.get();
   }
 
+  // Returns the |DataReductionProxyConfig| being used. May be null if
+  // InitDataReductionProxySettings has not been called.
+  DataReductionProxyConfig* Config() const {
+    return config_;
+  }
+
   // Permits changing the underlying |DataReductionProxyConfig| without running
   // the initialization loop.
   void ResetConfigForTest(DataReductionProxyConfig* config) {
@@ -176,12 +182,6 @@ class DataReductionProxySettings {
   }
 
  protected:
-  // Returns the |DataReductionProxyConfig| being used. May be null if
-  // InitDataReductionProxySettings has not been called.
-  DataReductionProxyConfig* Config() const {
-    return config_;
-  }
-
   void InitPrefMembers();
 
   void UpdateConfigValues();

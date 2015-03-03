@@ -232,6 +232,7 @@ static_library("browser") {
       "//chrome/installer/util",
       "//components/app_modal",
       "//components/autofill/content/browser",
+      "//components/data_reduction_proxy/content/browser",
       "//components/dom_distiller/content",
       "//components/history/content/browser",
       "//components/keyed_service/content",
@@ -594,7 +595,6 @@ static_library("browser") {
     deps += [
       ":jni_headers",
       "//components/cdm/browser",
-      "//components/data_reduction_proxy/content/browser",
       "//components/enhanced_bookmarks",
       "//components/resources:components_resources",
       "//components/web_contents_delegate_android",

@@ -4,40 +4,64 @@
 
 static_library("browser") {
   sources = [
-    "content_data_reduction_proxy_debug_ui_service.cc",
-    "content_data_reduction_proxy_debug_ui_service.h",
-    "data_reduction_proxy_debug_blocking_page.cc",
-    "data_reduction_proxy_debug_blocking_page.h",
-    "data_reduction_proxy_debug_resource_throttle.cc",
-    "data_reduction_proxy_debug_resource_throttle.h",
-    "data_reduction_proxy_debug_ui_manager.cc",
-    "data_reduction_proxy_debug_ui_manager.h",
+    "data_reduction_proxy_message_filter.cc",
+    "data_reduction_proxy_message_filter.h",
   ]
 
   deps = [
     "//base",
-    "//components/resources",
-    "//components/strings",
+    "//components/data_reduction_proxy/content/common",
     "//content/public/browser",
-    "//skia",
-    "//ui/base",
+    "//ipc",
+    "//net",
   ]
+
+  if (is_android) {
+    sources += [
+      "content_data_reduction_proxy_debug_ui_service.cc",
+      "content_data_reduction_proxy_debug_ui_service.h",
+      "data_reduction_proxy_debug_blocking_page.cc",
+      "data_reduction_proxy_debug_blocking_page.h",
+      "data_reduction_proxy_debug_resource_throttle.cc",
+      "data_reduction_proxy_debug_resource_throttle.h",
+      "data_reduction_proxy_debug_ui_manager.cc",
+      "data_reduction_proxy_debug_ui_manager.h",
+    ]
+
+    deps += [
+      "//components/resources",
+      "//components/strings",
+      "//skia",
+      "//ui/base",
+    ]
+  }
 }
 
-if (is_android) {
-  source_set("unit_tests") {
-    testonly = true
-    sources = [
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "data_reduction_proxy_message_filter_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//components/data_reduction_proxy/core/browser:test_support",
+    "//components/data_reduction_proxy/core/common:test_support",
+    "//net",
+    "//testing/gtest",
+    "//testing/gmock",
+  ]
+
+  if (is_android) {
+    sources += [
       "data_reduction_proxy_debug_blocking_page_unittest.cc",
       "data_reduction_proxy_debug_resource_throttle_unittest.cc",
       "data_reduction_proxy_debug_ui_manager_unittest.cc",
     ]
 
-    deps = [
-      ":browser",
+    deps += [
       "//skia",
-      "//testing/gtest",
-      "//testing/gmock",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }

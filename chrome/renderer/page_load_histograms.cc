@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_thread.h"
@@ -724,11 +724,7 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
 }  // namespace
 
 PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view),
-      data_reduction_proxy_params_(
-          data_reduction_proxy::DataReductionProxyParams::kAllowed |
-          data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
-          data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed) {
+    : content::RenderViewObserver(render_view) {
 }
 
 void PageLoadHistograms::Dump(WebFrame* frame) {
@@ -750,9 +746,12 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
 
-  bool data_reduction_proxy_was_used =
-      data_reduction_proxy_params_.IsDataReductionProxy(
-          document_state->proxy_server(), NULL);
+  bool data_reduction_proxy_was_used = false;
+  if (!document_state->proxy_server().IsEmpty()) {
+    Send(new DataReductionProxyViewHostMsg_IsDataReductionProxy(
+        document_state->proxy_server(), &data_reduction_proxy_was_used));
+  }
+
   bool came_from_websearch =
       IsFromGoogleSearchResult(frame->document().url(),
                                GURL(frame->document().referrer()));

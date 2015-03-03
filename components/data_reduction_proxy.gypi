@@ -33,6 +33,39 @@
       ],
     },
     {
+      # GN version: //components/data_reduction_proxy/content/common
+      'target_name': 'data_reduction_proxy_content_common',
+      'type': 'static_library',
+      'dependencies': [
+        '../content/content.gyp:content_common',
+        '../ipc/ipc.gyp:ipc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'data_reduction_proxy/content/common/data_reduction_proxy_messages.cc',
+        'data_reduction_proxy/content/common/data_reduction_proxy_messages.h',
+      ],
+    },
+    {
+      # GN version: //components/data_reduction_proxy/content/browser
+      'target_name': 'data_reduction_proxy_content_browser',
+      'type': 'static_library',
+      'dependencies': [
+        '../content/content.gyp:content_common',
+        '../ipc/ipc.gyp:ipc',
+        'data_reduction_proxy_content_common',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.cc',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h',
+      ],
+    },
+    {
       # GN version: //components/data_reduction_proxy/core/browser
       'target_name': 'data_reduction_proxy_core_browser',
       'type': 'static_library',
@@ -181,6 +214,5 @@
         },
       ],
     },
-
   ],
 }
