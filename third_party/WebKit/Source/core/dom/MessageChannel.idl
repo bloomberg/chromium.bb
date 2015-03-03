@@ -24,6 +24,8 @@
  *
  */
 
+// https://html.spec.whatwg.org/#message-channels
+
 [
     CustomConstructor,
     Exposed=(Window,Worker),
@@ -32,4 +34,3 @@
     readonly attribute MessagePort port1;
     readonly attribute MessagePort port2;
 };
-

@@ -386,6 +386,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface MessageEvent
 [Worker]     method constructor
 [Worker]     method initMessageEvent
+[Worker] interface MessagePort
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method postMessage
+[Worker]     method start
 [Worker] interface Notification
 [Worker]     method close
 [Worker]     method constructor

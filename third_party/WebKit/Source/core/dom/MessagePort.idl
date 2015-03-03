@@ -25,14 +25,16 @@
  *
  */
 
+// https://html.spec.whatwg.org/#message-ports
+
 [
     ActiveDOMObject,
+    Exposed=(Window,Worker),
 ] interface MessagePort : EventTarget {
     [Custom, RaisesException] void postMessage(any message, optional sequence<Transferable> transfer);
-
     void start();
     void close();
 
-    // event handler attributes
+    // event handlers
     attribute EventHandler onmessage;
 };
