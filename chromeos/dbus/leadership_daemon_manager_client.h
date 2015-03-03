@@ -85,7 +85,7 @@ class CHROMEOS_EXPORT LeadershipDaemonManagerClient : public DBusClient {
   // |callback| is called with |call_status| set to DBUS_METHOD_CALL_FAILURE.
   virtual void JoinGroup(const std::string& group,
                          const base::DictionaryValue& options,
-                         const StringDBusMethodCallback& callback) = 0;
+                         const ObjectPathDBusMethodCallback& callback) = 0;
 
   // Calls LeaveGroup method.
   // |callback| is called with its |call_status| argument set to

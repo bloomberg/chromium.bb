@@ -28,7 +28,7 @@ class FakeLeadershipDaemonManagerClient : public LeadershipDaemonManagerClient {
   void RemoveObserver(Observer* observer) override;
   void JoinGroup(const std::string& group,
                  const base::DictionaryValue& options,
-                 const StringDBusMethodCallback& callback) override;
+                 const ObjectPathDBusMethodCallback& callback) override;
   void LeaveGroup(const std::string& object_path,
                   const VoidDBusMethodCallback& callback) override;
   void SetScore(const std::string& object_path,

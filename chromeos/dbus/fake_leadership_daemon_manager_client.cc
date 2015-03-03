@@ -13,10 +13,15 @@ void StringDBBusMethodCallbackThunk(const StringDBusMethodCallback& callback) {
   callback.Run(DBUS_METHOD_CALL_SUCCESS, std::string());
 }
 
+void ObjectPathDBBusMethodCallbackThunk(
+    const ObjectPathDBusMethodCallback& callback) {
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, dbus::ObjectPath());
+}
+
 void VoidDBBusMethodCallbackThunk(const VoidDBusMethodCallback& callback) {
   callback.Run(DBUS_METHOD_CALL_SUCCESS);
 }
-}
+}  // namespace
 
 FakeLeadershipDaemonManagerClient::FakeLeadershipDaemonManagerClient() {
 }
@@ -36,9 +41,9 @@ void FakeLeadershipDaemonManagerClient::RemoveObserver(Observer* observer) {
 void FakeLeadershipDaemonManagerClient::JoinGroup(
     const std::string& group,
     const base::DictionaryValue& options,
-    const StringDBusMethodCallback& callback) {
+    const ObjectPathDBusMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&StringDBBusMethodCallbackThunk, callback));
+      FROM_HERE, base::Bind(&ObjectPathDBBusMethodCallbackThunk, callback));
 }
 
 void FakeLeadershipDaemonManagerClient::LeaveGroup(

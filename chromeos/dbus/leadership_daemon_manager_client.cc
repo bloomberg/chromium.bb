@@ -53,7 +53,7 @@ class LeadershipDaemonManagerClientImpl
   void RemoveObserver(Observer* observer) override;
   void JoinGroup(const std::string& group,
                  const base::DictionaryValue& options,
-                 const StringDBusMethodCallback& callback) override;
+                 const ObjectPathDBusMethodCallback& callback) override;
   void LeaveGroup(const std::string& object_path,
                   const VoidDBusMethodCallback& callback) override;
   void SetScore(const std::string& object_path,
@@ -85,6 +85,8 @@ class LeadershipDaemonManagerClientImpl
   void OnGroupPropertyChanged(const dbus::ObjectPath& object_path,
                               const std::string& property_name);
 
+  void OnObjectPathDBusMethod(const ObjectPathDBusMethodCallback& callback,
+                              dbus::Response* response);
   void OnStringDBusMethod(const StringDBusMethodCallback& callback,
                           dbus::Response* response);
   void OnVoidDBusMethod(const VoidDBusMethodCallback& callback,
@@ -122,13 +124,13 @@ void LeadershipDaemonManagerClientImpl::RemoveObserver(Observer* observer) {
 void LeadershipDaemonManagerClientImpl::JoinGroup(
     const std::string& group,
     const base::DictionaryValue& options,
-    const StringDBusMethodCallback& callback) {
+    const ObjectPathDBusMethodCallback& callback) {
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(leaderd::kLeaderdManagerPath));
   if (!object_proxy) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&LeadershipDaemonManagerClientImpl::OnStringDBusMethod,
+        base::Bind(&LeadershipDaemonManagerClientImpl::OnObjectPathDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
     return;
   }
@@ -140,7 +142,7 @@ void LeadershipDaemonManagerClientImpl::JoinGroup(
   dbus::AppendValueData(&writer, options);
   object_proxy->CallMethod(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&LeadershipDaemonManagerClientImpl::OnStringDBusMethod,
+      base::Bind(&LeadershipDaemonManagerClientImpl::OnObjectPathDBusMethod,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
@@ -296,6 +298,24 @@ void LeadershipDaemonManagerClientImpl::OnGroupPropertyChanged(
     const std::string& property_name) {
   FOR_EACH_OBSERVER(Observer, observers_,
                     GroupPropertyChanged(object_path, property_name));
+}
+
+void LeadershipDaemonManagerClientImpl::OnObjectPathDBusMethod(
+    const ObjectPathDBusMethodCallback& callback,
+    dbus::Response* response) {
+  if (!response) {
+    callback.Run(DBUS_METHOD_CALL_FAILURE, dbus::ObjectPath());
+    return;
+  }
+
+  dbus::MessageReader reader(response);
+  dbus::ObjectPath result;
+  if (!reader.PopObjectPath(&result)) {
+    callback.Run(DBUS_METHOD_CALL_FAILURE, result);
+    return;
+  }
+
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
 }
 
 void LeadershipDaemonManagerClientImpl::OnStringDBusMethod(
