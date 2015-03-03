@@ -47,13 +47,10 @@ void TimeZoneProvider::OnTimezoneResponse(
     TimeZoneRequest::TimeZoneResponseCallback callback,
     scoped_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
-  ScopedVector<TimeZoneRequest>::iterator position =
-      std::find(requests_.begin(), requests_.end(), request);
-  DCHECK_NE(&(*position), &(*requests_.end()));
-  if (position != requests_.end()) {
-    std::swap(*position, *requests_.rbegin());
-    requests_.resize(requests_.size() - 1);
-  }
+  ScopedVector<TimeZoneRequest>::iterator new_end =
+      std::remove(requests_.begin(), requests_.end(), request);
+  DCHECK_EQ(std::distance(new_end, requests_.end()), 1);
+  requests_.erase(new_end, requests_.end());
 
   callback.Run(timezone.Pass(), server_error);
 }
