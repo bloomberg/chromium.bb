@@ -262,7 +262,13 @@ bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
+#if defined(OS_IOS)
+  // On mobile, the option to always translate is shown after the translation.
+  DCHECK_EQ(translate::TRANSLATE_STEP_AFTER_TRANSLATE, step_);
+#else
+  // On desktop, the option to always translate is shown before the translation.
   DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE, step_);
+#endif
   return !is_off_the_record_ &&
       (prefs_->GetTranslationAcceptedCount(original_language_code()) >=
           kAlwaysTranslateMinCount);
