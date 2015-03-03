@@ -6,6 +6,7 @@ include_rules = [
   "+components/network_hints/renderer",
   "+content/public/renderer",
   "+media/base",
+  "+media/renderers",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 ]

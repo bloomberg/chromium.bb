@@ -22,6 +22,8 @@
         'base/decrypt_context_clearkey.h',
         'base/key_systems_common.cc',
         'base/key_systems_common.h',
+        'base/switching_media_renderer.cc',
+        'base/switching_media_renderer.h',
       ],
       'conditions': [
         ['chromecast_branding=="Chrome"', {
