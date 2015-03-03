@@ -9474,6 +9474,31 @@ static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    unsigned index;
+    {
+        index = toUInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    v8SetReturnValue(info, impl->item(index).v8Value());
+}
+
+static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::itemMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedShortArg", "TestObject", info.Holder(), info.GetIsolate());
@@ -11679,6 +11704,91 @@ static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    ScriptValue result = impl->item(index);
+    if (result.isEmpty())
+        return;
+    v8SetReturnValue(info, result.v8Value());
+}
+
+static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
+    TestObjectV8Internal::indexedPropertyGetter(index, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    auto nameString = name.As<v8::String>();
+    if (info.Holder()->HasRealNamedProperty(nameString))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+        return;
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(nameString);
+    ScriptValue result = impl->anonymousNamedGetter(propertyName);
+    if (result.isEmpty())
+        return;
+    v8SetReturnValue(info, result.v8Value());
+}
+
+static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
+    TestObjectV8Internal::namedPropertyGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    if (!name->IsString())
+        return;
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestObject", info.Holder(), info.GetIsolate());
+    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
+}
+
+static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
+    TestObjectV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    Vector<String> names;
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestObject", info.Holder(), info.GetIsolate());
+    impl->namedPropertyEnumerator(names, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
+    v8SetReturnValue(info, v8names);
+}
+
+static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
+    TestObjectV8Internal::namedPropertyEnumerator(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 } // namespace TestObjectV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[] = {
@@ -12007,6 +12117,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethodL", TestObjectV8Internal::overloadedMethodLMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"promiseOverloadMethod", TestObjectV8Internal::promiseOverloadMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"item", TestObjectV8Internal::itemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDefaultUndefinedTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
@@ -12166,6 +12277,14 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     static_assert(1 == TestObject::MEASURED_CONSTANT, "the value of TestObject_MEASURED_CONSTANT does not match with implementation");
     static_assert(1 == TestObject::FEATURE_ENABLED_CONST, "the value of TestObject_FEATURE_ENABLED_CONST does not match with implementation");
     static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
+    {
+        v8::IndexedPropertyHandlerConfiguration config(TestObjectV8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<TestObject>);
+        functionTemplate->InstanceTemplate()->SetHandler(config);
+    }
+    {
+        v8::NamedPropertyHandlerConfiguration config(TestObjectV8Internal::namedPropertyGetterCallback, 0, TestObjectV8Internal::namedPropertyQueryCallback, 0, TestObjectV8Internal::namedPropertyEnumeratorCallback);
+        functionTemplate->InstanceTemplate()->SetHandler(config);
+    }
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestObjectV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     const V8DOMConfiguration::MethodConfiguration staticVoidMethodMethodConfiguration = {

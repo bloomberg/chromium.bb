@@ -475,6 +475,10 @@ interface TestObject {
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);
 
+    // Special operations
+    getter any item(unsigned long index);
+    getter object(DOMString name);
+
     // Extended attributes for arguments
     // [Clamp]
     void voidMethodClampUnsignedShortArg([Clamp] unsigned short clampUnsignedShortArg);

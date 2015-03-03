@@ -1229,6 +1229,8 @@ def property_getter(getter, cpp_arguments):
             return 'result.isNull()'
         if idl_type.is_interface_type:
             return '!result'
+        if idl_type.base_type in ('any', 'object'):
+            return 'result.isEmpty()'
         return ''
 
     idl_type = getter.idl_type
