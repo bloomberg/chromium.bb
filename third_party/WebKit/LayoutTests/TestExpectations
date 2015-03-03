@@ -45,7 +45,7 @@ crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-chang
 
 # Some slimming paint reftest fail when the reference is run with slimming paint disabled.
 crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
-crbug.com/454866 virtual/slimmingpaint/fast/block/float/float-mark-descendants-for-layout-crash.html [ ImageOnlyFailure ]
+crbug.com/454866 virtual/slimmingpaint/fast/block/float/float-mark-descendants-for-layout-crash.html [ ImageOnlyFailure Crash ]
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ ImageOnlyFailure ]
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ ImageOnlyFailure ]
 
