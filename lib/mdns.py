@@ -54,7 +54,7 @@ def _ParseResponse(data):
       hostname = rr.srvname
       port = rr.port
     elif rr.type == dpkt.dns.DNS_TXT:
-      text = rr.text
+      text = dict(entry.split('=', 1) for entry in rr.text)
   service = Service(hostname, ip, port, ptrname, text)
 
   # Ignore incomplete responses.
@@ -63,8 +63,8 @@ def _ParseResponse(data):
   return service
 
 
-def FindServices(service_name, should_add_func=None, should_continue_func=None,
-                 timeout_seconds=1):
+def FindServices(source_ip, service_name, should_add_func=None,
+                 should_continue_func=None, timeout_seconds=1):
   """Find all instances of |service_name| on the network.
 
   For each service found, |should_add_func| is called with the service
@@ -73,6 +73,7 @@ def FindServices(service_name, should_add_func=None, should_continue_func=None,
   the return value from |should_continue_func|.
 
   Args:
+    source_ip: IP address of the network interface to use for service discovery.
     service_name: Name of mDNS service to discover (eg. '_ssh._tcp.local').
     should_add_func: Function called for each service found to determine if the
       service should be added to the results list.  If None is specified, all
@@ -95,6 +96,7 @@ def FindServices(service_name, should_add_func=None, should_continue_func=None,
     should_continue_func = lambda service: True
 
   net_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  net_socket.bind((source_ip, 0))
   query = [dpkt.dns.DNS.Q(name=service_name, type=dpkt.dns.DNS_PTR)]
   dns_packet = dpkt.dns.DNS(op=dpkt.dns.DNS_QUERY, qd=query)
   net_socket.sendto(str(dns_packet),

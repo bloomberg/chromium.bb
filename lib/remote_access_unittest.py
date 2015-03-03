@@ -12,6 +12,8 @@ import re
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import debug_link
+from chromite.lib import mdns
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
@@ -227,3 +229,30 @@ class CheckIfRebootedTest(RemoteAccessTest):
     """Test case of bad error code returned."""
     self.MockCheckReboot(2)
     self.assertRaises(Exception, self.host._CheckIfRebooted)
+
+
+class TestGetUSBConnectedDevices(cros_test_lib.MockTestCase):
+  """Tests of the GetUSBConnectedDevices() function."""
+
+  def setUp(self):
+    self.StartPatcher(RemoteDeviceMock())
+    self.initializedebuglink_mock = self.PatchObject(debug_link,
+                                                     'InitializeDebugLink')
+    self.findservices_mock = self.PatchObject(mdns, 'FindServices')
+
+  def testDebugLinkInitialization(self):
+    """Test case to make sure the Debug Link is initialized."""
+    self.initializedebuglink_mock.assert_called_once()
+    remote_access.GetUSBConnectedDevices()
+
+  def testEnumeration(self):
+    """Test case to check correct enumeration results."""
+    services = [
+        mdns.Service('dut1.local', '1.1.1.1', 0, '', {'alias': 'dut1'}),
+        mdns.Service('dut2.local', '2.2.2.2', 0, '', {'alias': 'dut2'})]
+    self.findservices_mock.return_value = services
+    devices = remote_access.GetUSBConnectedDevices()
+    self.assertEqual(len(devices), len(services))
+    for index in range(len(devices)):
+      self.assertEqual(devices[index].hostname, services[index].ip)
+      self.assertEqual(devices[index].alias, services[index].text['alias'])

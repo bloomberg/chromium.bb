@@ -16,6 +16,7 @@ import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import debug_link
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -42,6 +43,10 @@ KNOWN_HOSTS_PATH = os.path.expanduser('~/.ssh/known_hosts')
 
 # Dev/test packages are installed in these paths.
 DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
+
+# Brillo device.
+BRILLO_DEBUG_LINK_SERVICE_NAME = '_brdebug._tcp.local'
+BRILLO_DEVICE_PROPERTY_ALIAS = 'alias'
 
 
 class SSHConnectionError(Exception):
@@ -780,8 +785,8 @@ class ChromiumOSDevice(RemoteDevice):
   LIST_MOUNTS_CMD = ['cat', '/proc/mounts']
 
   def __init__(self, *args, **kwargs):
+    self._alias = kwargs.pop('alias')
     super(ChromiumOSDevice, self).__init__(*args, **kwargs)
-    self._alias = None
     self._path = None
     self._lsb_release = {}
 
@@ -917,5 +922,12 @@ class ChromiumOSDevice(RemoteDevice):
 
 def GetUSBConnectedDevices():
   """Returns a list of all USB-connected devices."""
-  # TODO(thieule): Implement this function.
-  return [ChromiumOSDevice('127.0.0.1', connect=False, ping=False)]
+  # Lazy import mdns so that we don't break the chromite requirement that
+  # bootstrapping should not depend on third_party packages. mdns pulls in
+  # dpkt which is a third_party package.
+  from chromite.lib import mdns
+  source_ip = debug_link.InitializeDebugLink()
+  services = mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
+  return [ChromiumOSDevice(service.ip,
+                           alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
+                           connect=False) for service in services]

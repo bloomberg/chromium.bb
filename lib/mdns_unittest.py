@@ -34,8 +34,8 @@ class mDNSTest(cros_test_lib.TestCase):
           dpkt.dns.DNS.RR(type=dpkt.dns.DNS_SRV, srvname=service.hostname,
                           priority=1, weight=1, port=service.port))
     if service.text:
-      answers.append(
-          dpkt.dns.DNS.RR(type=dpkt.dns.DNS_TXT, text=service.text))
+      text = ['%s=%s' % (key, value) for key, value in service.text.iteritems()]
+      answers.append(dpkt.dns.DNS.RR(type=dpkt.dns.DNS_TXT, text=text))
     return dpkt.dns.DNS(op=dpkt.dns.DNS_QUERY,
                         rcode=dpkt.dns.DNS_RCODE_NOERR,
                         q=[], an=answers, ns=[])
@@ -71,7 +71,8 @@ class mDNSTest(cros_test_lib.TestCase):
       select.select.side_effect = select_side_effects
       mock_socket.recvfrom.side_effect = recvfrom_side_effects
 
-      results = mdns.FindServices('a.local',
+      results = mdns.FindServices('127.0.0.1',
+                                  'a.local',
                                   should_add_func=should_add_func,
                                   should_continue_func=should_continue_func)
       self.assertEqual(results, expected_results)
@@ -79,27 +80,27 @@ class mDNSTest(cros_test_lib.TestCase):
   def testFindServices(self):
     """Test finding all mDNS services."""
     services = [mdns.Service('test1.local', '10.0.0.1', 1234, 'test1.a.local',
-                             ['name=test']),
+                             {'name': 'test'}),
                 mdns.Service('test2.local', '10.0.0.2', 1234, 'test2.a.local',
-                             ['name=test2'])]
+                             {'name': 'test2'})]
     self._TestmDNSResults(services, services)
 
   def testFindServicesIncompleteResponse(self):
     """Test finding all mDNS services but ignoring incomplete services."""
     services = [mdns.Service('test1.local', '10.0.0.1', 1234, 'test1.a.local',
-                             ['name=test']),
+                             {'name': 'test'}),
                 mdns.Service('test2.local', '10.0.0.2', 1234, None, None),
                 mdns.Service('test3.local', '10.0.0.3', 1234, 'test3.a.local',
-                             ['name=test3'])]
+                             {'name': 'test3'})]
     expected_results = [services[0], services[2]]
     self._TestmDNSResults(services, expected_results)
 
   def testFindOneService(self):
     """Test finding a specific service."""
     services = [mdns.Service('test1.local', '10.0.0.1', 1234, 'test1.a.local',
-                             ['name=test']),
+                             {'name': 'test'}),
                 mdns.Service('test2.local', '10.0.0.2', 1234, 'test2.a.local',
-                             ['name=test2'])]
+                             {'name': 'test2'})]
     expected_results = [services[1]]
 
     should_add_func = lambda x: x.hostname == services[1].hostname
@@ -114,13 +115,13 @@ class mDNSTest(cros_test_lib.TestCase):
     Accept all entries and make sure nothing is returned after matched entry.
     """
     services = [mdns.Service('test1.local', '10.0.0.1', 1234, 'test1.a.local',
-                             ['name=test']),
+                             {'name': 'test'}),
                 mdns.Service('test2.local', '10.0.0.2', 1234, 'test2.a.local',
-                             ['name=test2']),
+                             {'name': 'test2'}),
                 mdns.Service('test3.local', '10.0.0.3', 1234, 'test3.a.local',
-                             ['name=test3']),
+                             {'name': 'test3'}),
                 mdns.Service('test4.local', '10.0.0.4', 1234, 'test4.a.local',
-                             ['name=test4'])]
+                             {'name': 'test4'})]
     expected_results = [services[0], services[1]]
 
     should_add_func = lambda x: True
@@ -132,9 +133,9 @@ class mDNSTest(cros_test_lib.TestCase):
   def testBadResponse(self):
     """Test bad mDNS response."""
     services = [mdns.Service('test1.local', '10.0.0.1', 1234, 'test1.a.local',
-                             ['name=test']),
+                             {'name': 'test'}),
                 BadService(),
                 mdns.Service('test3.local', '10.0.0.3', 1234, 'test3.a.local',
-                             ['name=test3'])]
+                             {'name': 'test3'})]
     expected_results = [services[0], services[2]]
     self._TestmDNSResults(services, expected_results)
