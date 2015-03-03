@@ -31,6 +31,13 @@ bool HasYuvAndY4mFile(const base::FilePath::CharType* reference_file);
 // Retrieves the reference files dir, to which file names can be appended.
 base::FilePath GetReferenceFilesDir();
 
+// Retrieves a tool binary path from chrome/test/data/webrtc/resources/tools,
+// according to platform. If we're running on Linux, requesting pesq will yield
+// chrome/test/data/webrtc/resources/tools/linux/pesq, whereas the same call on
+// Windows will yield chrome/test/data/webrtc/resources/tools/win/pesq.exe.
+// This function does not check the binary actually exists.
+base::FilePath GetToolForPlatform(const std::string& tool_name);
+
 extern const base::FilePath::CharType kReferenceFileName360p[];
 extern const base::FilePath::CharType kReferenceFileName720p[];
 extern const base::FilePath::CharType kYuvFileExtension[];

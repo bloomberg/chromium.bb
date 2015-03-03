@@ -77,6 +77,7 @@ static const char kWebRtcAudioTestHtmlPage[] =
 //       running this test on Linux.
 //
 // On Mac:
+// TODO(phoglund): download sox from gs instead.
 // 1. Get SoundFlower: http://rogueamoeba.com/freebies/soundflower/download.php
 // 2. Install it + reboot.
 // 3. Install MacPorts (http://www.macports.org/).
@@ -304,8 +305,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
 // silence trimming. See http://sox.sourceforge.net.
 base::CommandLine MakeSoxCommandLine() {
 #if defined(OS_WIN)
-  base::FilePath sox_path = test::GetReferenceFilesDir().Append(
-      FILE_PATH_LITERAL("tools/sox.exe"));
+  base::FilePath sox_path = test::GetToolForPlatform("sox");
   if (!base::PathExists(sox_path)) {
     LOG(ERROR) << "Missing sox.exe binary in " << sox_path.value()
                << "; you may have to provide this binary yourself.";
@@ -313,6 +313,8 @@ base::CommandLine MakeSoxCommandLine() {
   }
   base::CommandLine command_line(sox_path);
 #else
+  // TODO(phoglund): call checked-in sox rather than system sox on mac/linux.
+  // Same for rec invocations on Mac, above.
   base::CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
 #endif
   return command_line;
@@ -418,17 +420,7 @@ bool RunPesq(const base::FilePath& reference_file,
   EXPECT_LT(reference_file.value().length(), 128u);
   EXPECT_LT(actual_file.value().length(), 128u);
 
-#if defined(OS_WIN)
-  base::FilePath pesq_path =
-      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq.exe"));
-#elif defined(OS_MACOSX)
-  base::FilePath pesq_path =
-      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq_mac"));
-#else
-  base::FilePath pesq_path =
-      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq"));
-#endif
-
+  base::FilePath pesq_path = test::GetToolForPlatform("pesq");
   if (!base::PathExists(pesq_path)) {
     LOG(ERROR) << "Missing PESQ binary in " << pesq_path.value()
                << "; you may have to provide this binary yourself.";
