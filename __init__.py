@@ -24,6 +24,7 @@ if os.path.basename(_containing_dir) == 'third_party':
 
 # List of third_party packages that might need subpaths added to search.
 _paths = [
+    'dpkt',
     os.path.join('gdata', 'src'),
     'pyelftools',
     'swarming.client',
