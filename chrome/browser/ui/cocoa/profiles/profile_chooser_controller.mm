@@ -618,7 +618,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 @end
 
 // A custom text control that turns into a textfield for editing when clicked.
-@interface EditableProfileNameButton : HoverImageButton {
+@interface EditableProfileNameButton : HoverImageButton<NSTextFieldDelegate> {
  @private
   base::scoped_nsobject<NSTextField> profileNameTextField_;
   Profile* profile_;  // Weak.
@@ -635,7 +635,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)showEditableView:(id)sender;
 
 // Called when enter is pressed in the text field.
-- (void)saveProfileName:(id)sender;
+- (void)saveProfileName;
 
 @end
 
@@ -691,8 +691,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
           NSLineBreakByTruncatingTail];
       [[profileNameTextField_ cell] setUsesSingleLineMode:YES];
       [self addSubview:profileNameTextField_];
-      [profileNameTextField_ setTarget:self];
-      [profileNameTextField_ setAction:@selector(saveProfileName:)];
+      [profileNameTextField_ setDelegate:self];
 
       // Hide the textfield until the user clicks on the button.
       [profileNameTextField_ setHidden:YES];
@@ -726,21 +725,23 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return self;
 }
 
-- (void)saveProfileName:(id)sender {
+- (void)saveProfileName {
   base::string16 newProfileName =
       base::SysNSStringToUTF16([profileNameTextField_ stringValue]);
 
-  // Empty profile names are not allowed, and are treated as a cancel.
+  // Empty profile names are not allowed, and do nothing.
   base::TrimWhitespace(newProfileName, base::TRIM_ALL, &newProfileName);
   if (!newProfileName.empty()) {
     profiles::UpdateProfileName(profile_, newProfileName);
     [controller_
         postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME];
-  } else {
-    // Since the text is empty and not allowed, revert it from the textbox.
-    [profileNameTextField_ setStringValue:[self title]];
+    [profileNameTextField_ setHidden:YES];
+    // This needs to be called async as the firstResponder is reset
+    // at the same time that controlTextDidEndEditing happens.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [[self window] makeFirstResponder:nil];
+    });
   }
-  [profileNameTextField_ setHidden:YES];
 }
 
 - (void)showEditableView:(id)sender {
@@ -750,6 +751,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (BOOL)canBecomeKeyView {
   return false;
+}
+
+- (void)controlTextDidEndEditing:(NSNotification*)notification {
+  [self saveProfileName];
 }
 
 @end
