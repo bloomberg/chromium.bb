@@ -144,6 +144,9 @@ static std::string SetFragmentSamplerType(SamplerType requested_type,
 
 }  // namespace
 
+ShaderLocations::ShaderLocations() {
+}
+
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int* highp_threshold_cache,
                                             int highp_threshold_min,
@@ -345,6 +348,12 @@ std::string VertexShaderPosTexTransform::GetShaderBody() {
       v_alpha = opacity[int(a_index)];  // NOLINT
     }
   });
+}
+
+void VertexShaderPosTexTransform::FillLocations(
+    ShaderLocations* locations) const {
+  locations->matrix = matrix_location();
+  locations->tex_transform = tex_transform_location();
 }
 
 std::string VertexShaderPosTexIdentity::GetShaderString() const {
@@ -559,6 +568,16 @@ std::string VertexShaderQuadTexTransformAA::GetShaderBody() {
     }
   });
 }
+
+void VertexShaderQuadTexTransformAA::FillLocations(
+    ShaderLocations* locations) const {
+  locations->quad = quad_location();
+  locations->edge = edge_location();
+  locations->viewport = viewport_location();
+  locations->matrix = matrix_location();
+  locations->tex_transform = tex_transform_location();
+}
+
 
 VertexShaderTile::VertexShaderTile()
     : matrix_location_(-1),
@@ -1105,6 +1124,14 @@ std::string FragmentShaderRGBATexAlpha::GetShaderBody() {
   });
 }
 
+void FragmentShaderRGBATexAlpha::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->alpha = alpha_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
+}
+
 std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderString(
     TexCoordPrecision precision,
     SamplerType sampler) const {
@@ -1134,6 +1161,16 @@ std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderBody() {
       gl_FragColor = ApplyBlendMode(texColor * alpha);
     }
   });
+}
+
+void FragmentShaderRGBATexColorMatrixAlpha::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->alpha = alpha_location();
+  locations->color_matrix = color_matrix_location();
+  locations->color_offset = color_offset_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
 }
 
 std::string FragmentShaderRGBATexVaryingAlpha::GetShaderString(
@@ -1405,6 +1442,14 @@ std::string FragmentShaderRGBATexAlphaAA::GetShaderBody() {
   });
 }
 
+void FragmentShaderRGBATexAlphaAA::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->alpha = alpha_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
+}
+
 FragmentTexClampAlphaAABinding::FragmentTexClampAlphaAABinding()
     : sampler_location_(-1),
       alpha_location_(-1),
@@ -1560,6 +1605,17 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderBody() {
   });
 }
 
+void FragmentShaderRGBATexAlphaMask::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->mask_sampler = mask_sampler_location();
+  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
+  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
+  locations->alpha = alpha_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
+}
+
 FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
     : sampler_location_(-1),
       mask_sampler_location_(-1),
@@ -1628,6 +1684,17 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderBody() {
       gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w * aa);
     }
   });
+}
+
+void FragmentShaderRGBATexAlphaMaskAA::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->mask_sampler = mask_sampler_location();
+  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
+  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
+  locations->alpha = alpha_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
 }
 
 FragmentShaderRGBATexAlphaMaskColorMatrixAA::
@@ -1714,6 +1781,19 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderBody() {
   });
 }
 
+void FragmentShaderRGBATexAlphaMaskColorMatrixAA::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->alpha = alpha_location();
+  locations->mask_sampler = mask_sampler_location();
+  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
+  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
+  locations->color_matrix = color_matrix_location();
+  locations->color_offset = color_offset_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
+}
+
 FragmentShaderRGBATexAlphaColorMatrixAA::
     FragmentShaderRGBATexAlphaColorMatrixAA()
     : sampler_location_(-1),
@@ -1776,6 +1856,16 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderBody() {
       gl_FragColor = ApplyBlendMode(texColor * alpha * aa);
     }
   });
+}
+
+void FragmentShaderRGBATexAlphaColorMatrixAA::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->alpha = alpha_location();
+  locations->color_matrix = color_matrix_location();
+  locations->color_offset = color_offset_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
 }
 
 FragmentShaderRGBATexAlphaMaskColorMatrix::
@@ -1853,6 +1943,19 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderBody() {
       gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w);
     }
   });
+}
+
+void FragmentShaderRGBATexAlphaMaskColorMatrix::FillLocations(
+    ShaderLocations* locations) const {
+  locations->sampler = sampler_location();
+  locations->mask_sampler = mask_sampler_location();
+  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
+  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
+  locations->alpha = alpha_location();
+  locations->color_matrix = color_matrix_location();
+  locations->color_offset = color_offset_location();
+  locations->backdrop = backdrop_location();
+  locations->backdrop_rect = backdrop_rect_location();
 }
 
 FragmentShaderYUVVideo::FragmentShaderYUVVideo()
