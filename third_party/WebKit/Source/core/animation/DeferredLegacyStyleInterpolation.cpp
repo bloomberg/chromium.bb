@@ -22,22 +22,10 @@ namespace blink {
 void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
     if (m_outdated || !state.element()->activeAnimations() || !state.element()->activeAnimations()->isAnimationStyleChange()) {
-        RefPtrWillBeRawPtr<AnimatableValue> startAnimatableValue = nullptr;
-        RefPtrWillBeRawPtr<AnimatableValue> endAnimatableValue = nullptr;
-
-        // Call CSSAnimatableValueFactory::create before calling createAnimatableValueSnapshot because the latter modifies the
-        // style of the StyleResolverState.
-        if (!m_startCSSValue)
-            startAnimatableValue = CSSAnimatableValueFactory::create(m_id, state.styleRef());
-        if (!m_endCSSValue)
-            endAnimatableValue = CSSAnimatableValueFactory::create(m_id, state.styleRef());
-
-        if (m_startCSSValue)
-            startAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_startCSSValue);
-        if (m_endCSSValue)
-            endAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_endCSSValue);
-
-        m_innerInterpolation = LegacyStyleInterpolation::create(startAnimatableValue, endAnimatableValue, m_id);
+        m_innerInterpolation = LegacyStyleInterpolation::create(
+            StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get()),
+            StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get()),
+            m_id);
         m_outdated = false;
     }
 

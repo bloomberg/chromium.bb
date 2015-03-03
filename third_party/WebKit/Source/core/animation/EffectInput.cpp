@@ -116,7 +116,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
         return nullptr;
     }
-    keyframeEffectModel->forceConversionsToAnimatableValues(element);
+    keyframeEffectModel->forceConversionsToAnimatableValues(*element);
 
     return keyframeEffectModel;
 }

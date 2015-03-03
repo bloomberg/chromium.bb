@@ -102,11 +102,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
-    // This should be removed once StringKeyframes no longer uses InterpolableAnimatableValues.
-    void forceConversionsToAnimatableValues(Element*);
-
-    // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
-    void snapshotCompositableProperties(const Element*, const LayoutStyle&);
+    // This should be removed once AnimatableValues are obsolete.
+    void forceConversionsToAnimatableValues(Element&);
     void updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtrWillBeRawPtr<AnimatableValue>);
 
     template<typename T>
@@ -131,6 +128,7 @@ protected:
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
     void ensureInterpolationEffect(Element* = nullptr) const;
+    void snapshotCompositableProperties(Element&);
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time

@@ -687,7 +687,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const 
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue& value)
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue* value)
 {
     RefPtr<LayoutStyle> style;
     if (LayoutStyle* elementStyle = element.layoutStyle())
@@ -699,10 +699,12 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
     return createAnimatableValueSnapshot(state, property, value);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue& value)
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue* value)
 {
-    StyleBuilder::applyProperty(property, state, &value);
-    state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.mutableStyleRef());
+    if (value) {
+        StyleBuilder::applyProperty(property, state, value);
+        state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.mutableStyleRef());
+    }
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
 

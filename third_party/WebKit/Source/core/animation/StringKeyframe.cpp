@@ -84,9 +84,10 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     ASSERT(!isNull(m_offset));
 }
 
-void StringKeyframe::PropertySpecificKeyframe::setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)
+void StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValue(CSSPropertyID property, Element& element) const
 {
-    m_animatableValueCache = value;
+    if (!m_animatableValueCache)
+        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, property, m_value.get());
 }
 
 namespace {
@@ -225,11 +226,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyStopOpacity:
     case CSSPropertyStrokeOpacity:
     case CSSPropertyStrokeMiterlimit:
-        if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue)) {
-            if (property == CSSPropertyOpacity)
-                StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValueCaches(property, end, element, *fromCSSValue, *toCSSValue);
+        if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
             return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, toCSSPrimitiveValue(fromCSSValue)->primitiveType(), setRange(property));
-        }
         break;
 
     case CSSPropertyMotionRotation: {
@@ -371,34 +369,19 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
         }
 
-        // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
-        // FIXME: Remove this cache
+        // FIXME: Remove the use of AnimatableValues and Elements here.
         ASSERT(element);
-        if (!m_animatableValueCache)
-            m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, *fromCSSValue);
-
-        RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, *toCSSValue);
-        toStringPropertySpecificKeyframe(end).m_animatableValueCache = to;
-
-        return LegacyStyleInterpolation::create(m_animatableValueCache.get(), to.release(), property);
+        ensureAnimatableValue(property, *element);
+        end.ensureAnimatableValue(property, *element);
+        return LegacyStyleInterpolation::create(getAnimatableValue(), end.getAnimatableValue(), property);
     }
 
     ASSERT(AnimatableValue::usesDefaultInterpolation(
-        StyleResolver::createAnimatableValueSnapshot(*element, property, *fromCSSValue).get(),
-        StyleResolver::createAnimatableValueSnapshot(*element, property, *toCSSValue).get()));
+        StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue).get(),
+        StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue).get()));
 
     return nullptr;
 
-}
-// FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
-// FIXME: Remove this cache
-void StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValueCaches(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, CSSValue& fromCSSValue, CSSValue& toCSSValue) const
-{
-    ASSERT(element);
-    if (!m_animatableValueCache)
-        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
-    RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
-    toStringPropertySpecificKeyframe(end).m_animatableValueCache = to;
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const

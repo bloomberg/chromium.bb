@@ -65,31 +65,22 @@ void KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
 }
 
-void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element* element)
+void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element)
 {
-    ASSERT(element);
     ensureKeyframeGroups();
-    element->updateDistribution();
-    ensureInterpolationEffect(element);
+    element.updateDistribution();
+    snapshotCompositableProperties(element);
+    ensureInterpolationEffect(&element);
 }
 
-void KeyframeEffectModelBase::snapshotCompositableProperties(const Element* element, const LayoutStyle& style)
+void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element)
 {
-    ASSERT(isStringKeyframeEffectModel());
-
     ensureKeyframeGroups();
     for (CSSPropertyID property : CompositorAnimations::CompositableProperties) {
-        if (affects(property)) {
-            for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes) {
-                auto& stringKeyframe = toStringPropertySpecificKeyframe(*keyframe);
-                if (!stringKeyframe.value()) {
-                    stringKeyframe.setAnimatableValue(CSSAnimatableValueFactory::create(property, style));
-                } else {
-                    ASSERT(!stringKeyframe.getAnimatableValue());
-                    stringKeyframe.setAnimatableValue(StyleResolver::createAnimatableValueSnapshot(const_cast<Element&>(*element), property, *stringKeyframe.value()));
-                }
-            }
-        }
+        if (!affects(property))
+            continue;
+        for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes)
+            keyframe->ensureAnimatableValue(property, element);
     }
 }
 
