@@ -35,7 +35,7 @@ namespace XPath {
 
 class Function : public Expression {
 public:
-    void setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
+    void setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression>>&);
     void setName(const String& name) { m_name = name; }
 
 protected:
@@ -49,7 +49,7 @@ private:
 };
 
 Function* createFunction(const String& name);
-Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
+Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression>>&);
 
 } // namespace XPath
 

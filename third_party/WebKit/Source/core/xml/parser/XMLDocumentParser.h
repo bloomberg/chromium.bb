@@ -161,11 +161,11 @@ private:
 
     xmlParserCtxtPtr context() const { return m_context ? m_context->context() : 0; };
     RefPtr<XMLParserContext> m_context;
-    Deque<OwnPtr<PendingCallback> > m_pendingCallbacks;
+    Deque<OwnPtr<PendingCallback>> m_pendingCallbacks;
     Vector<xmlChar> m_bufferedText;
 
     RawPtrWillBeMember<ContainerNode> m_currentNode;
-    WillBeHeapVector<RawPtrWillBeMember<ContainerNode> > m_currentNodeStack;
+    WillBeHeapVector<RawPtrWillBeMember<ContainerNode>> m_currentNodeStack;
 
     RefPtrWillBeMember<Text> m_leafTextNode;
 

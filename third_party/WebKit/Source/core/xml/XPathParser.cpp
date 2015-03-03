@@ -542,7 +542,7 @@ void Parser::unregisterParseNode(ParseNode* node)
 #endif
 }
 
-void Parser::registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >* vector)
+void Parser::registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>* vector)
 {
 #if !ENABLE(OILPAN)
     if (vector == 0)
@@ -554,7 +554,7 @@ void Parser::registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predica
 #endif
 }
 
-void Parser::deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >* vector)
+void Parser::deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>* vector)
 {
 #if !ENABLE(OILPAN)
     if (vector == 0)
@@ -568,7 +568,7 @@ void Parser::deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate
 }
 
 
-void Parser::registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >* vector)
+void Parser::registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>* vector)
 {
 #if !ENABLE(OILPAN)
     if (vector == 0)
@@ -580,7 +580,7 @@ void Parser::registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expres
 #endif
 }
 
-void Parser::deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >* vector)
+void Parser::deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>* vector)
 {
 #if !ENABLE(OILPAN)
     if (vector == 0)

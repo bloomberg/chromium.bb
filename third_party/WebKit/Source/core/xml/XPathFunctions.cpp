@@ -291,7 +291,7 @@ inline bool Interval::contains(int value) const
     return value >= m_min && value <= m_max;
 }
 
-void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >& args)
+void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression>>& args)
 {
     ASSERT(!subExprCount());
 
@@ -299,8 +299,8 @@ void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >& a
     if (m_name != "lang" && !args.isEmpty())
         setIsContextNodeSensitive(false);
 
-    WillBeHeapVector<OwnPtrWillBeMember<Expression> >::iterator end = args.end();
-    for (WillBeHeapVector<OwnPtrWillBeMember<Expression> >::iterator it = args.begin(); it != end; ++it)
+    WillBeHeapVector<OwnPtrWillBeMember<Expression>>::iterator end = args.end();
+    for (WillBeHeapVector<OwnPtrWillBeMember<Expression>>::iterator it = args.begin(); it != end; ++it)
         addSubExpression(it->release());
 }
 
@@ -333,7 +333,7 @@ Value FunId::evaluate(EvaluationContext& context) const
 
     TreeScope& contextScope = context.node->treeScope();
     OwnPtrWillBeRawPtr<NodeSet> result(NodeSet::create());
-    WillBeHeapHashSet<RawPtrWillBeMember<Node> > resultSet;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> resultSet;
 
     unsigned startPos = 0;
     unsigned length = idList.length();
@@ -727,11 +727,11 @@ static void createFunctionMap()
 
 Function* createFunction(const String& name)
 {
-    WillBeHeapVector<OwnPtrWillBeMember<Expression> > args;
+    WillBeHeapVector<OwnPtrWillBeMember<Expression>> args;
     return createFunction(name, args);
 }
 
-Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression> >& args)
+Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression>>& args)
 {
     if (!functionMap)
         createFunctionMap();

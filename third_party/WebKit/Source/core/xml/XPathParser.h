@@ -79,11 +79,11 @@ public:
     void registerParseNode(ParseNode*);
     void unregisterParseNode(ParseNode*);
 
-    void registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >*);
-    void deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >*);
+    void registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>*);
+    void deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>*);
 
-    void registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >*);
-    void deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >*);
+    void registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>*);
+    void deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>*);
 
     void registerString(String*);
     void deleteString(String*);
@@ -120,11 +120,11 @@ private:
 
 #if !ENABLE(OILPAN)
     HashSet<ParseNode*> m_parseNodes;
-    HashSet<Vector<OwnPtr<Predicate> >*> m_predicateVectors;
-    HashSet<Vector<OwnPtr<Expression> >*> m_expressionVectors;
-    HashSet<OwnPtr<Step::NodeTest> > m_nodeTests;
+    HashSet<Vector<OwnPtr<Predicate>>*> m_predicateVectors;
+    HashSet<Vector<OwnPtr<Expression>>*> m_expressionVectors;
+    HashSet<OwnPtr<Step::NodeTest>> m_nodeTests;
 #endif
-    HashSet<OwnPtr<String> > m_strings;
+    HashSet<OwnPtr<String>> m_strings;
 };
 
 } // namespace XPath

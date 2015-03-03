@@ -811,7 +811,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
 #endif
 
     // Add namespaces based on the parent node
-    WillBeHeapVector<RawPtrWillBeMember<Element> > elemStack;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elemStack;
     while (parentElement) {
         elemStack.append(parentElement);
 

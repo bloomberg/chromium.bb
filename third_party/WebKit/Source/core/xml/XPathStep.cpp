@@ -45,7 +45,7 @@ Step::Step(Axis axis, const NodeTest& nodeTest)
 {
 }
 
-Step::Step(Axis axis, const NodeTest& nodeTest, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& predicates)
+Step::Step(Axis axis, const NodeTest& nodeTest, WillBeHeapVector<OwnPtrWillBeMember<Predicate>>& predicates)
     : m_axis(axis)
     , m_nodeTest(adoptPtrWillBeNoop(new NodeTest(nodeTest)))
 {
@@ -72,7 +72,7 @@ void Step::optimize()
     // This optimization can be applied to predicates that are not context node
     // list sensitive, or to first predicate that is only context position
     // sensitive, e.g. foo[position() mod 2 = 0].
-    WillBeHeapVector<OwnPtrWillBeMember<Predicate> > remainingPredicates;
+    WillBeHeapVector<OwnPtrWillBeMember<Predicate>> remainingPredicates;
     for (size_t i = 0; i < m_predicates.size(); ++i) {
         OwnPtrWillBeRawPtr<Predicate> predicate(m_predicates[i].release());
         if ((!predicate->isContextPositionSensitive() || nodeTest().mergedPredicates().isEmpty()) && !predicate->isContextSizeSensitive() && remainingPredicates.isEmpty()) {
@@ -239,7 +239,7 @@ static inline bool nodeMatches(EvaluationContext& evaluationContext, Node* node,
     // Only the first merged predicate may depend on position.
     ++evaluationContext.position;
 
-    const WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& mergedPredicates = nodeTest.mergedPredicates();
+    const WillBeHeapVector<OwnPtrWillBeMember<Predicate>>& mergedPredicates = nodeTest.mergedPredicates();
     for (unsigned i = 0; i < mergedPredicates.size(); i++) {
         Predicate* predicate = mergedPredicates[i].get();
 

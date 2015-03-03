@@ -37,7 +37,7 @@
 namespace blink {
 namespace XPath {
 
-Filter::Filter(PassOwnPtrWillBeRawPtr<Expression> expr, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& predicates)
+Filter::Filter(PassOwnPtrWillBeRawPtr<Expression> expr, WillBeHeapVector<OwnPtrWillBeMember<Predicate>>& predicates)
     : m_expr(expr)
 {
     m_predicates.swap(predicates);
@@ -138,7 +138,7 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
     for (unsigned i = 0; i < m_steps.size(); i++) {
         Step* step = m_steps[i];
         OwnPtrWillBeRawPtr<NodeSet> newNodes(NodeSet::create());
-        WillBeHeapHashSet<RawPtrWillBeMember<Node> > newNodesSet;
+        WillBeHeapHashSet<RawPtrWillBeMember<Node>> newNodesSet;
 
         bool needToCheckForDuplicateNodes = !nodes.subtreesAreDisjoint() || (step->axis() != Step::ChildAxis && step->axis() != Step::SelfAxis
             && step->axis() != Step::DescendantAxis && step->axis() != Step::DescendantOrSelfAxis && step->axis() != Step::AttributeAxis);

@@ -78,7 +78,7 @@ private:
 
     bool m_isSorted;
     bool m_subtreesAreDisjoint;
-    WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_nodes;
 };
 
 }

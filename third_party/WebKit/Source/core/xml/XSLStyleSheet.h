@@ -108,7 +108,7 @@ private:
     KURL m_finalURL;
     bool m_isDisabled;
 
-    WillBeHeapVector<OwnPtrWillBeMember<XSLImportRule> > m_children;
+    WillBeHeapVector<OwnPtrWillBeMember<XSLImportRule>> m_children;
 
     bool m_embedded;
     bool m_processed;

@@ -88,7 +88,7 @@ protected:
     const Expression* subExpr(unsigned i) const { return m_subExpressions[i].get(); }
 
 private:
-    WillBeHeapVector<OwnPtrWillBeMember<Expression> > m_subExpressions;
+    WillBeHeapVector<OwnPtrWillBeMember<Expression>> m_subExpressions;
 
     // Evaluation details that can be used for optimization.
     bool m_isContextNodeSensitive;

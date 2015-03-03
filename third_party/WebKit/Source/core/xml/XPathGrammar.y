@@ -62,8 +62,8 @@ using namespace XPath;
     blink::XPath::EqTestOp::Opcode eqop;
     String* str;
     blink::XPath::Expression* expr;
-    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Predicate> >* predList;
-    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Expression> >* argList;
+    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Predicate>>* predList;
+    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Expression>>* argList;
     blink::XPath::Step* step;
     blink::XPath::LocationPath* locationPath;
 }
@@ -291,7 +291,7 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Predicate> >;
+        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Predicate>>;
         $$->append(adoptPtrWillBeNoop(new Predicate(adoptPtrWillBeNoop($1))));
         parser->unregisterParseNode($1);
         parser->registerPredicateVector($$);
@@ -387,7 +387,7 @@ FunctionCall:
 ArgumentList:
     Argument
     {
-        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Expression> >;
+        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Expression>>;
         $$->append(adoptPtrWillBeNoop($1));
         parser->unregisterParseNode($1);
         parser->registerExpressionVector($$);

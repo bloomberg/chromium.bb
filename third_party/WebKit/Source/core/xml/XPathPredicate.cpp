@@ -257,7 +257,7 @@ Value Union::evaluate(EvaluationContext& context) const
     NodeSet& resultSet = lhsResult.modifiableNodeSet(context);
     const NodeSet& rhsNodes = rhs.toNodeSet(&context);
 
-    WillBeHeapHashSet<RawPtrWillBeMember<Node> > nodes;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> nodes;
     for (size_t i = 0; i < resultSet.size(); ++i)
         nodes.add(resultSet[i]);
 
