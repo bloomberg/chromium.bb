@@ -139,7 +139,7 @@ public:
             EXPECT_CALL(*channelClient(), didConnect(String("a"), String("b")));
         }
         EXPECT_TRUE(channel()->connect(KURL(KURL(), "ws://localhost/"), "x"));
-        handleClient()->didConnect(handle(), false, WebString("a"), WebString("b"));
+        handleClient()->didConnect(handle(), WebString("a"), WebString("b"));
         ::testing::Mock::VerifyAndClearExpectations(this);
     }
 
@@ -173,7 +173,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess)
 
     EXPECT_TRUE(channel()->connect(KURL(KURL(), "ws://localhost/"), "x"));
     checkpoint.Call(1);
-    handleClient()->didConnect(handle(), false, WebString("a"), WebString("b"));
+    handleClient()->didConnect(handle(), WebString("a"), WebString("b"));
 }
 
 TEST_F(DocumentWebSocketChannelTest, sendText)

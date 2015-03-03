@@ -130,7 +130,7 @@ private:
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
-    virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) override;
+    virtual void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) override;
     virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) override;
     virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) override;
     virtual void didFail(WebSocketHandle*, const WebString& message) override;

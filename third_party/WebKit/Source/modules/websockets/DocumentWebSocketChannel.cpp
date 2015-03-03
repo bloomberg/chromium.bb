@@ -406,19 +406,14 @@ Document* DocumentWebSocketChannel::document()
     return toDocument(context);
 }
 
-void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, bool fail, const WebString& selectedProtocol, const WebString& extensions)
+void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, const WebString& selectedProtocol, const WebString& extensions)
 {
-    WTF_LOG(Network, "DocumentWebSocketChannel %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didConnect(%p, %s, %s)", this, handle, selectedProtocol.utf8().c_str(), extensions.utf8().c_str());
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
     ASSERT(m_client);
 
-    if (fail) {
-        failAsError("Cannot connect to " + m_url.string() + ".");
-        // failAsError may delete this object.
-        return;
-    }
     m_client->didConnect(selectedProtocol, extensions);
 }
 
