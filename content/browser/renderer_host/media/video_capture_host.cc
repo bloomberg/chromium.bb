@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/video_capture_host.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -76,9 +77,10 @@ void VideoCaptureHost::OnBufferDestroyed(
 void VideoCaptureHost::OnBufferReady(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
-    const media::VideoCaptureFormat& frame_format,
+    const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
-    base::TimeTicks timestamp) {
+    base::TimeTicks timestamp,
+    scoped_ptr<base::DictionaryValue> metadata) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -86,17 +88,19 @@ void VideoCaptureHost::OnBufferReady(
                  this,
                  controller_id,
                  buffer_id,
-                 frame_format,
+                 coded_size,
                  visible_rect,
-                 timestamp));
+                 timestamp,
+                 base::Passed(&metadata)));
 }
 
 void VideoCaptureHost::OnMailboxBufferReady(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
     const gpu::MailboxHolder& mailbox_holder,
-    const media::VideoCaptureFormat& frame_format,
-    base::TimeTicks timestamp) {
+    const gfx::Size& packed_frame_size,
+    base::TimeTicks timestamp,
+    scoped_ptr<base::DictionaryValue> metadata) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -105,8 +109,9 @@ void VideoCaptureHost::OnMailboxBufferReady(
                  controller_id,
                  buffer_id,
                  mailbox_holder,
-                 frame_format,
-                 timestamp));
+                 packed_frame_size,
+                 timestamp,
+                 base::Passed(&metadata)));
 }
 
 void VideoCaptureHost::OnEnded(const VideoCaptureControllerID& controller_id) {
@@ -144,31 +149,47 @@ void VideoCaptureHost::DoSendFreeBufferOnIOThread(
 void VideoCaptureHost::DoSendFilledBufferOnIOThread(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
-    const media::VideoCaptureFormat& format,
+    const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
-    base::TimeTicks timestamp) {
+    base::TimeTicks timestamp,
+    scoped_ptr<base::DictionaryValue> metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (entries_.find(controller_id) == entries_.end())
     return;
 
-  Send(new VideoCaptureMsg_BufferReady(
-      controller_id.device_id, buffer_id, format, visible_rect, timestamp));
+  VideoCaptureMsg_BufferReady_Params params;
+  params.device_id = controller_id.device_id;
+  params.buffer_id = buffer_id;
+  params.coded_size = coded_size;
+  params.visible_rect = visible_rect;
+  params.timestamp = timestamp;
+  if (metadata)
+    params.metadata.Swap(metadata.get());
+  Send(new VideoCaptureMsg_BufferReady(params));
 }
 
 void VideoCaptureHost::DoSendFilledMailboxBufferOnIOThread(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
     const gpu::MailboxHolder& mailbox_holder,
-    const media::VideoCaptureFormat& format,
-    base::TimeTicks timestamp) {
+    const gfx::Size& packed_frame_size,
+    base::TimeTicks timestamp,
+    scoped_ptr<base::DictionaryValue> metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (entries_.find(controller_id) == entries_.end())
     return;
 
-  Send(new VideoCaptureMsg_MailboxBufferReady(
-      controller_id.device_id, buffer_id, mailbox_holder, format, timestamp));
+  VideoCaptureMsg_MailboxBufferReady_Params params;
+  params.device_id = controller_id.device_id;
+  params.buffer_id = buffer_id;
+  params.mailbox_holder = mailbox_holder;
+  params.packed_frame_size = packed_frame_size;
+  params.timestamp = timestamp;
+  if (metadata)
+    params.metadata.Swap(metadata.get());
+  Send(new VideoCaptureMsg_MailboxBufferReady(params));
 }
 
 void VideoCaptureHost::DoHandleErrorOnIOThread(

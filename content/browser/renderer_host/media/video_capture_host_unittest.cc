@@ -64,23 +64,27 @@ static const int kDeviceId = 555;
 // verifying the output.
 class DumpVideo {
  public:
-  DumpVideo() : expected_size_(0) {}
-  void StartDump(int width, int height) {
+  DumpVideo() {}
+  const gfx::Size& coded_size() const { return coded_size_; }
+  void StartDump(const gfx::Size& coded_size) {
     base::FilePath file_name = base::FilePath(base::StringPrintf(
-        FILE_PATH_LITERAL("dump_w%d_h%d.yuv"), width, height));
+        FILE_PATH_LITERAL("dump_w%d_h%d.yuv"),
+        coded_size.width(),
+        coded_size.height()));
     file_.reset(base::OpenFile(file_name, "wb"));
-    expected_size_ = media::VideoFrame::AllocationSize(
-        media::VideoFrame::I420, gfx::Size(width, height));
+    coded_size_ = coded_size;
   }
   void NewVideoFrame(const void* buffer) {
     if (file_.get() != NULL) {
-      ASSERT_EQ(1U, fwrite(buffer, expected_size_, 1, file_.get()));
+      const int size = media::VideoFrame::AllocationSize(
+          media::VideoFrame::I420, coded_size_);
+      ASSERT_EQ(1U, fwrite(buffer, size, 1, file_.get()));
     }
   }
 
  private:
   base::ScopedFILE file_;
-  int expected_size_;
+  gfx::Size coded_size_;
 };
 
 class MockMediaStreamRequester : public MediaStreamRequester {
@@ -130,18 +134,20 @@ class MockVideoCaptureHost : public VideoCaptureHost {
                     int buffer_id));
   MOCK_METHOD2(OnBufferFreed,
                void(int device_id, int buffer_id));
-  MOCK_METHOD5(OnBufferFilled,
+  MOCK_METHOD6(OnBufferFilled,
                void(int device_id,
                     int buffer_id,
-                    const media::VideoCaptureFormat& format,
+                    const gfx::Size& coded_size,
                     const gfx::Rect& visible_rect,
-                    base::TimeTicks timestamp));
-  MOCK_METHOD5(OnMailboxBufferFilled,
+                    base::TimeTicks timestamp,
+                    const base::DictionaryValue& metadata));
+  MOCK_METHOD6(OnMailboxBufferFilled,
                void(int device_id,
                     int buffer_id,
                     const gpu::MailboxHolder& mailbox_holder,
-                    const media::VideoCaptureFormat& format,
-                    base::TimeTicks timestamp));
+                    const gfx::Size& packed_frame_size,
+                    base::TimeTicks timestamp,
+                    const base::DictionaryValue& metadata));
   MOCK_METHOD2(OnStateChanged, void(int device_id, VideoCaptureState state));
 
   // Use class DumpVideo to write I420 video to file.
@@ -224,41 +230,34 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     filled_dib_.erase(it);
   }
 
-  void OnBufferFilledDispatch(int device_id,
-                              int buffer_id,
-                              const media::VideoCaptureFormat& frame_format,
-                              const gfx::Rect& visible_rect,
-                              base::TimeTicks timestamp) {
-    base::SharedMemory* dib = filled_dib_[buffer_id];
+  void OnBufferFilledDispatch(
+      const VideoCaptureMsg_BufferReady_Params& params) {
+    base::SharedMemory* dib = filled_dib_[params.buffer_id];
     ASSERT_TRUE(dib != NULL);
     if (dump_video_) {
-      if (!format_.IsValid()) {
-        dumper_.StartDump(frame_format.frame_size.width(),
-                          frame_format.frame_size.height());
-        format_ = frame_format;
-      }
-      ASSERT_EQ(format_.frame_size.width(), frame_format.frame_size.width())
-          << "Dump format does not handle variable resolution.";
-      ASSERT_EQ(format_.frame_size.height(), frame_format.frame_size.height())
+      if (dumper_.coded_size().IsEmpty())
+        dumper_.StartDump(params.coded_size);
+      ASSERT_TRUE(dumper_.coded_size() == params.coded_size)
           << "Dump format does not handle variable resolution.";
       dumper_.NewVideoFrame(dib->memory());
     }
 
-    OnBufferFilled(device_id, buffer_id, frame_format, visible_rect, timestamp);
+    OnBufferFilled(params.device_id, params.buffer_id, params.coded_size,
+                   params.visible_rect, params.timestamp, params.metadata);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id, 0);
+      VideoCaptureHost::OnReceiveEmptyBuffer(
+          params.device_id, params.buffer_id, 0);
     }
   }
 
-  void OnMailboxBufferFilledDispatch(int device_id,
-                                     int buffer_id,
-                                     const gpu::MailboxHolder& mailbox_holder,
-                                     const media::VideoCaptureFormat& format,
-                                     base::TimeTicks timestamp) {
-    OnMailboxBufferFilled(
-        device_id, buffer_id, mailbox_holder, format, timestamp);
+  void OnMailboxBufferFilledDispatch(
+      const VideoCaptureMsg_MailboxBufferReady_Params& params) {
+    OnMailboxBufferFilled(params.device_id, params.buffer_id,
+                          params.mailbox_holder, params.packed_frame_size,
+                          params.timestamp, params.metadata);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id, 0);
+      VideoCaptureHost::OnReceiveEmptyBuffer(
+          params.device_id, params.buffer_id, 0);
     }
   }
 
@@ -407,7 +406,7 @@ class VideoCaptureHostTest : public testing::Test {
         .WillRepeatedly(Return());
 
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()));
 
@@ -441,7 +440,7 @@ class VideoCaptureHostTest : public testing::Test {
         .Times(AnyNumber()).WillRepeatedly(Return());
 
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _, _, _))
+    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()));
 
@@ -473,7 +472,7 @@ class VideoCaptureHostTest : public testing::Test {
 
   void NotifyPacketReady() {
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()))
         .RetiresOnSaturation();

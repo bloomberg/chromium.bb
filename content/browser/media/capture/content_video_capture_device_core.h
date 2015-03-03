@@ -83,6 +83,7 @@ class ThreadSafeCaptureOracle
   void DidCaptureFrame(
       int frame_number,
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+      base::TimeTicks capture_begin_time,
       const scoped_refptr<media::VideoFrame>& frame,
       base::TimeTicks timestamp,
       bool success);

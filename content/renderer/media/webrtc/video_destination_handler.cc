@@ -32,14 +32,12 @@ class PpFrameWriter::FrameWriterDelegate
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
       const VideoCaptureDeliverFrameCB& new_frame_callback);
 
-  void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const media::VideoCaptureFormat& format);
+  void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame);
  private:
   friend class base::RefCountedThreadSafe<FrameWriterDelegate>;
   virtual ~FrameWriterDelegate();
 
-  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
-                        const media::VideoCaptureFormat& format);
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame);
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   VideoCaptureDeliverFrameCB new_frame_callback_;
@@ -56,21 +54,18 @@ PpFrameWriter::FrameWriterDelegate::~FrameWriterDelegate() {
 }
 
 void PpFrameWriter::FrameWriterDelegate::DeliverFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format) {
+    const scoped_refptr<media::VideoFrame>& frame) {
   io_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&FrameWriterDelegate::DeliverFrameOnIO,
-                 this, frame, format));
+      base::Bind(&FrameWriterDelegate::DeliverFrameOnIO, this, frame));
 }
 
 void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
-     const scoped_refptr<media::VideoFrame>& frame,
-     const media::VideoCaptureFormat& format) {
+     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   // The local time when this frame is generated is unknown so give a null
   // value to |estimated_capture_time|.
-  new_frame_callback_.Run(frame, format, base::TimeTicks());
+  new_frame_callback_.Run(frame, base::TimeTicks());
 }
 
 PpFrameWriter::PpFrameWriter() {
@@ -152,10 +147,6 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
   scoped_refptr<media::VideoFrame> new_frame =
       frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
                               gfx::Rect(frame_size), frame_size, timestamp);
-  media::VideoCaptureFormat format(
-      frame_size,
-      MediaStreamVideoSource::kUnknownFrameRate,
-      media::PIXEL_FORMAT_YV12);
 
   // TODO(magjed): Chrome OS is not ready for switching from BGRA to ARGB.
   // Remove this once http://crbug/434007 is fixed. We have a corresponding
@@ -176,7 +167,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                       width,
                       height);
 
-  delegate_->DeliverFrame(new_frame, format);
+  delegate_->DeliverFrame(new_frame);
 }
 
 // PpFrameWriterProxy is a helper class to make sure the user won't use

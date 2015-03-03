@@ -56,7 +56,6 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   int32_t SendFrameToTrack(int32_t index);
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const media::VideoCaptureFormat& format,
                     const base::TimeTicks& estimated_capture_time);
 
   // MediaStreamVideoSource overrides:

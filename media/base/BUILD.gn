@@ -172,6 +172,8 @@ source_set("base") {
     "video_decoder_config.h",
     "video_frame.cc",
     "video_frame.h",
+    "video_frame_metadata.cc",
+    "video_frame_metadata.h",
     "video_frame_pool.cc",
     "video_frame_pool.h",
     "video_renderer.cc",
@@ -272,6 +274,8 @@ source_set("base_for_cast_ios") {
   sources = [
     "video_frame.cc",
     "video_frame.h",
+    "video_frame_metadata.cc",
+    "video_frame_metadata.h",
   ]
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",

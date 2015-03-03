@@ -219,7 +219,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // additional copies in the browser process.
     virtual void OnIncomingCapturedVideoFrame(
         const scoped_refptr<Buffer>& buffer,
-        const VideoCaptureFormat& buffer_format,
         const scoped_refptr<media::VideoFrame>& frame,
         const base::TimeTicks& timestamp) = 0;
 

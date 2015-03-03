@@ -129,9 +129,8 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
  protected:
-  MOCK_METHOD3(OnFrameReady,
+  MOCK_METHOD2(OnFrameReady,
               void(const scoped_refptr<media::VideoFrame>&,
-                   const media::VideoCaptureFormat&,
                    const base::TimeTicks&));
   MOCK_METHOD1(OnStateUpdate, void(VideoCaptureState));
   MOCK_METHOD1(OnDeviceFormatsInUse,

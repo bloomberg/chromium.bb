@@ -63,11 +63,13 @@ class MockVideoCaptureControllerEventHandler
                                  int buffer_id) override {
     DoBufferDestroyed(id);
   }
-  virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             int buffer_id,
-                             const media::VideoCaptureFormat& format,
-                             const gfx::Rect& visible_rect,
-                             base::TimeTicks timestamp) override {
+  virtual void OnBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata) override {
     DoBufferReady(id);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -78,11 +80,13 @@ class MockVideoCaptureControllerEventHandler
                    buffer_id,
                    0));
   }
-  virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
-                                    int buffer_id,
-                                    const gpu::MailboxHolder& mailbox_holder,
-                                    const media::VideoCaptureFormat& format,
-                                    base::TimeTicks timestamp) override {
+  virtual void OnMailboxBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      const gpu::MailboxHolder& mailbox_holder,
+      const gfx::Size& packed_frame_size,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata) override {
     DoMailboxBufferReady(id);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -339,9 +343,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   device_->OnIncomingCapturedVideoFrame(
       buffer,
-      media::VideoCaptureFormat(capture_resolution,
-                                device_format.frame_rate,
-                                media::PIXEL_FORMAT_I420),
       WrapI420Buffer(buffer, capture_resolution),
       base::TimeTicks());
   buffer = NULL;
@@ -359,9 +360,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
       buffer,
-      media::VideoCaptureFormat(capture_resolution,
-                                device_format.frame_rate,
-                                media::PIXEL_FORMAT_I420),
       WrapI420Buffer(buffer, capture_resolution),
       base::TimeTicks());
   buffer = NULL;
@@ -390,9 +388,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     memset(buffer->data(), buffer_no++, buffer->size());
     device_->OnIncomingCapturedVideoFrame(
         buffer,
-        media::VideoCaptureFormat(capture_resolution,
-                                  device_format.frame_rate,
-                                  media::PIXEL_FORMAT_I420),
         WrapI420Buffer(buffer, capture_resolution),
         base::TimeTicks());
     buffer = NULL;
@@ -430,9 +425,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
       buffer,
-      media::VideoCaptureFormat(capture_resolution,
-                                device_format.frame_rate,
-                                media::PIXEL_FORMAT_I420),
       WrapI420Buffer(buffer, capture_resolution),
       base::TimeTicks());
   buffer = NULL;
@@ -448,9 +440,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
       buffer,
-      media::VideoCaptureFormat(capture_resolution,
-                                device_format.frame_rate,
-                                media::PIXEL_FORMAT_I420),
       WrapI420Buffer(buffer, capture_resolution),
       base::TimeTicks());
   buffer = NULL;
@@ -481,9 +470,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     ASSERT_TRUE(buffer.get());
     device_->OnIncomingCapturedVideoFrame(
         buffer,
-        media::VideoCaptureFormat(capture_resolution,
-                                  device_format.frame_rate,
-                                  media::PIXEL_FORMAT_I420),
         WrapI420Buffer(buffer, capture_resolution),
         base::TimeTicks());
     buffer = NULL;
@@ -499,9 +485,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 #endif
     device_->OnIncomingCapturedVideoFrame(
         buffer,
-        media::VideoCaptureFormat(capture_resolution,
-                                  device_format.frame_rate,
-                                  media::PIXEL_FORMAT_TEXTURE),
         WrapMailboxBuffer(make_scoped_ptr(new gpu::MailboxHolder(
                               gpu::Mailbox(), 0, mailbox_syncpoints[i])),
                           base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
@@ -568,8 +551,6 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 
   device_->OnIncomingCapturedVideoFrame(
       buffer,
-      media::VideoCaptureFormat(
-          capture_resolution, 30, media::PIXEL_FORMAT_I420),
       WrapI420Buffer(buffer, capture_resolution),
       base::TimeTicks());
   buffer = NULL;
@@ -608,8 +589,6 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   device_->OnError("Test error");
   device_->OnIncomingCapturedVideoFrame(
       buffer,
-      media::VideoCaptureFormat(
-          dims, device_format.frame_rate, media::PIXEL_FORMAT_I420),
       WrapI420Buffer(buffer, dims),
       base::TimeTicks());
   buffer = NULL;

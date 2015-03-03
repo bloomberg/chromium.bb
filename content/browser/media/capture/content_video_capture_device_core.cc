@@ -25,6 +25,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -71,6 +72,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     base::TimeTicks event_time,
     scoped_refptr<media::VideoFrame>* storage,
     CaptureFrameCallback* callback) {
+  // Grab the current time before waiting to acquire the |lock_|.
+  const base::TimeTicks capture_begin_time = base::TimeTicks::Now();
+
   base::AutoLock guard(lock_);
 
   if (!client_)
@@ -142,7 +146,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
                          this,
                          frame_number,
-                         output_buffer);
+                         output_buffer,
+                         capture_begin_time);
   return true;
 }
 
@@ -189,6 +194,7 @@ void ThreadSafeCaptureOracle::ReportError(const std::string& reason) {
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
     const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+    base::TimeTicks capture_begin_time,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks timestamp,
     bool success) {
@@ -202,13 +208,14 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   if (success) {
     if (oracle_.CompleteCapture(frame_number, &timestamp)) {
-      media::VideoCaptureFormat format = params_.requested_format;
-      // TODO(miu): Passing VideoCaptureFormat here introduces ambiguities.  The
-      // following is a hack where frame_size takes on a different meaning than
-      // everywhere else (i.e., coded size, not visible size).  Will fix in
-      // soon-upcoming code change.
-      format.frame_size = frame->coded_size();
-      client_->OnIncomingCapturedVideoFrame(buffer, format, frame, timestamp);
+      // TODO(miu): Use the locked-in frame rate from AnimatedContentSampler.
+      frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                   params_.requested_format.frame_rate);
+      frame->metadata()->SetTimeTicks(
+          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
+      frame->metadata()->SetTimeTicks(
+          media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
+      client_->OnIncomingCapturedVideoFrame(buffer, frame, timestamp);
     }
   }
 }

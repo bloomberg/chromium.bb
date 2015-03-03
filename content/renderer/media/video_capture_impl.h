@@ -113,13 +113,15 @@ class CONTENT_EXPORT VideoCaptureImpl
                        int buffer_id) override;
   void OnBufferDestroyed(int buffer_id) override;
   void OnBufferReceived(int buffer_id,
-                        const media::VideoCaptureFormat& format,
+                        const gfx::Size& coded_size,
                         const gfx::Rect& visible_rect,
-                        base::TimeTicks) override;
+                        base::TimeTicks timestamp,
+                        const base::DictionaryValue& metadata) override;
   void OnMailboxBufferReceived(int buffer_id,
                                const gpu::MailboxHolder& mailbox_holder,
-                               const media::VideoCaptureFormat& format,
-                               base::TimeTicks timestamp) override;
+                               const gfx::Size& packed_frame_size,
+                               base::TimeTicks timestamp,
+                               const base::DictionaryValue& metadata) override;
   void OnStateChanged(VideoCaptureState state) override;
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) override;
@@ -164,9 +166,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Member params_ represents the video format requested by the
   // client to this class via StartCapture().
   media::VideoCaptureParams params_;
-
-  // The device's video capture format sent from browser process side.
-  media::VideoCaptureFormat last_frame_format_;
 
   // The device's first captured frame timestamp sent from browser process side.
   base::TimeTicks first_frame_timestamp_;

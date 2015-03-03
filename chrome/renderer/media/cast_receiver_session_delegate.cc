@@ -96,6 +96,6 @@ void CastReceiverSessionDelegate::OnDecodedVideoFrame(
     bool is_continous) {
   if (frame_callback_.is_null())
     return;
-  frame_callback_.Run(video_frame, format_, playout_time);
+  frame_callback_.Run(video_frame, playout_time);
   cast_receiver_->RequestDecodedVideoFrame(on_video_decoded_cb_);
 }

@@ -328,4 +328,83 @@ TEST(VideoFrame, ZeroInitialized) {
     EXPECT_EQ(0, frame->data(i)[0]);
 }
 
+TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
+  VideoFrameMetadata metadata;
+
+  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
+    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
+
+    EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetBoolean(key, true);
+    EXPECT_TRUE(metadata.HasKey(key));
+    bool bool_value = false;
+    EXPECT_TRUE(metadata.GetBoolean(key, &bool_value));
+    EXPECT_EQ(true, bool_value);
+    metadata.Clear();
+
+    EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetInteger(key, i);
+    EXPECT_TRUE(metadata.HasKey(key));
+    int int_value = -999;
+    EXPECT_TRUE(metadata.GetInteger(key, &int_value));
+    EXPECT_EQ(i, int_value);
+    metadata.Clear();
+
+    EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetDouble(key, 3.14 * i);
+    EXPECT_TRUE(metadata.HasKey(key));
+    double double_value = -999.99;
+    EXPECT_TRUE(metadata.GetDouble(key, &double_value));
+    EXPECT_EQ(3.14 * i, double_value);
+    metadata.Clear();
+
+    EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetString(key, base::StringPrintf("\xfe%d\xff", i));
+    EXPECT_TRUE(metadata.HasKey(key));
+    std::string string_value;
+    EXPECT_TRUE(metadata.GetString(key, &string_value));
+    EXPECT_EQ(base::StringPrintf("\xfe%d\xff", i), string_value);
+    metadata.Clear();
+
+    EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetTimeTicks(key, base::TimeTicks::FromInternalValue(~(0LL) + i));
+    EXPECT_TRUE(metadata.HasKey(key));
+    base::TimeTicks ticks_value;
+    EXPECT_TRUE(metadata.GetTimeTicks(key, &ticks_value));
+    EXPECT_EQ(base::TimeTicks::FromInternalValue(~(0LL) + i), ticks_value);
+    metadata.Clear();
+
+    EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetValue(key,
+                      scoped_ptr<base::Value>(base::Value::CreateNullValue()));
+    EXPECT_TRUE(metadata.HasKey(key));
+    const base::Value* const null_value = metadata.GetValue(key);
+    EXPECT_TRUE(null_value);
+    EXPECT_EQ(base::Value::TYPE_NULL, null_value->GetType());
+    metadata.Clear();
+  }
+}
+
+TEST(VideoFrameMetadata, PassMetadataViaIntermediary) {
+  VideoFrameMetadata expected;
+  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
+    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
+    expected.SetInteger(key, i);
+  }
+
+  base::DictionaryValue tmp;
+  expected.MergeInternalValuesInto(&tmp);
+  EXPECT_EQ(static_cast<size_t>(VideoFrameMetadata::NUM_KEYS), tmp.size());
+
+  VideoFrameMetadata result;
+  result.MergeInternalValuesFrom(tmp);
+
+  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
+    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
+    int value = -1;
+    EXPECT_TRUE(result.GetInteger(key, &value));
+    EXPECT_EQ(i, value);
+  }
+}
+
 }  // namespace media

@@ -85,14 +85,17 @@ class CONTENT_EXPORT VideoCaptureHost
                          int buffer_id) override;
   void OnBufferReady(const VideoCaptureControllerID& id,
                      int buffer_id,
-                     const media::VideoCaptureFormat& format,
+                     const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
-                     base::TimeTicks timestamp) override;
-  void OnMailboxBufferReady(const VideoCaptureControllerID& id,
-                            int buffer_id,
-                            const gpu::MailboxHolder& mailbox_holder,
-                            const media::VideoCaptureFormat& format,
-                            base::TimeTicks timestamp) override;
+                     base::TimeTicks timestamp,
+                     scoped_ptr<base::DictionaryValue> metadata) override;
+  void OnMailboxBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      const gpu::MailboxHolder& mailbox_holder,
+      const gfx::Size& packed_frame_size,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata) override;
   void OnEnded(const VideoCaptureControllerID& id) override;
 
  private:
@@ -159,17 +162,19 @@ class CONTENT_EXPORT VideoCaptureHost
   void DoSendFilledBufferOnIOThread(
       const VideoCaptureControllerID& controller_id,
       int buffer_id,
-      const media::VideoCaptureFormat& format,
+      const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
-      base::TimeTicks timestamp);
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata);
 
   // Sends a filled texture mailbox buffer to the VideoCaptureMessageFilter.
   void DoSendFilledMailboxBufferOnIOThread(
       const VideoCaptureControllerID& controller_id,
       int buffer_id,
       const gpu::MailboxHolder& mailbox_holder,
-      const media::VideoCaptureFormat& format,
-      base::TimeTicks timestamp);
+      const gfx::Size& packed_frame_size,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata);
 
   // Handles error coming from VideoCaptureDevice.
   void DoHandleErrorOnIOThread(const VideoCaptureControllerID& controller_id);

@@ -12,6 +12,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
+#include "media/base/video_frame_metadata.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -288,6 +289,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the offset into the shared memory where the frame data begins.
   size_t shared_memory_offset() const;
 
+  // Returns a dictionary of optional metadata.  This contains information
+  // associated with the frame that downstream clients might use for frame-level
+  // logging, quality/performance optimizations, signaling, etc.
+  //
+  // TODO(miu): Move some of the "extra" members of VideoFrame (below) into
+  // here as a later clean-up step.
+  const VideoFrameMetadata* metadata() const { return &metadata_; }
+  VideoFrameMetadata* metadata() { return &metadata_; }
+
   bool allow_overlay() const { return allow_overlay_; }
 
 #if defined(OS_POSIX)
@@ -402,6 +412,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   uint32 release_sync_point_;
 
   const bool end_of_stream_;
+
+  VideoFrameMetadata metadata_;
 
   bool allow_overlay_;
 

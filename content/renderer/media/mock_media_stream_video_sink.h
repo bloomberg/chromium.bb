@@ -38,10 +38,8 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   blink::WebMediaStreamSource::ReadyState state() const { return state_; }
 
  private:
-  void DeliverVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format,
-      const base::TimeTicks& estimated_capture_time);
+  void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+                         const base::TimeTicks& estimated_capture_time);
 
   int number_of_frames_;
   bool enabled_;

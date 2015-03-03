@@ -133,7 +133,6 @@ class CONTENT_EXPORT VideoCaptureController {
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   void DoIncomingCapturedVideoFrameOnIOThread(
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
-      const media::VideoCaptureFormat& format,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp);
   void DoErrorOnIOThread();

@@ -122,32 +122,29 @@ void VideoCaptureMessageFilter::OnBufferCreated(
 }
 
 void VideoCaptureMessageFilter::OnBufferReceived(
-    int device_id,
-    int buffer_id,
-    const media::VideoCaptureFormat& format,
-    const gfx::Rect& visible_rect,
-    base::TimeTicks timestamp) {
-  Delegate* delegate = find_delegate(device_id);
+    const VideoCaptureMsg_BufferReady_Params& params) {
+  Delegate* delegate = find_delegate(params.device_id);
   if (!delegate) {
     DLOG(WARNING) << "OnBufferReceived: Got video SHM buffer for a "
                      "non-existent or removed video capture.";
 
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
-    Send(new VideoCaptureHostMsg_BufferReady(device_id, buffer_id, 0));
+    Send(new VideoCaptureHostMsg_BufferReady(
+        params.device_id, params.buffer_id, 0));
     return;
   }
 
-  delegate->OnBufferReceived(buffer_id, format, visible_rect, timestamp);
+  delegate->OnBufferReceived(params.buffer_id,
+                             params.coded_size,
+                             params.visible_rect,
+                             params.timestamp,
+                             params.metadata);
 }
 
 void VideoCaptureMessageFilter::OnMailboxBufferReceived(
-    int device_id,
-    int buffer_id,
-    const gpu::MailboxHolder& mailbox_holder,
-    const media::VideoCaptureFormat& format,
-    base::TimeTicks timestamp) {
-  Delegate* delegate = find_delegate(device_id);
+    const VideoCaptureMsg_MailboxBufferReady_Params& params) {
+  Delegate* delegate = find_delegate(params.device_id);
 
   if (!delegate) {
     DLOG(WARNING) << "OnMailboxBufferReceived: Got video mailbox buffer for a "
@@ -155,12 +152,17 @@ void VideoCaptureMessageFilter::OnMailboxBufferReceived(
 
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
-    Send(new VideoCaptureHostMsg_BufferReady(device_id, buffer_id, 0));
+    Send(new VideoCaptureHostMsg_BufferReady(
+        params.device_id, params.buffer_id, 0));
     return;
   }
 
   delegate->OnMailboxBufferReceived(
-      buffer_id, mailbox_holder, format, timestamp);
+      params.buffer_id,
+      params.mailbox_holder,
+      params.packed_frame_size,
+      params.timestamp,
+      params.metadata);
 }
 
 void VideoCaptureMessageFilter::OnBufferDestroyed(

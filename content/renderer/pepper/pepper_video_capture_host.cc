@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
+#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_platform_video_capture.h"
@@ -120,21 +121,26 @@ void PepperVideoCaptureHost::PostErrorReply() {
 }
 
 void PepperVideoCaptureHost::OnFrameReady(
-    const scoped_refptr<media::VideoFrame>& frame,
-    media::VideoCaptureFormat format) {
+    const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(frame.get());
 
-  if (alloc_size_ != frame->coded_size() || buffers_.empty()) {
-    AllocBuffers(frame->coded_size(), format.frame_rate);
-    alloc_size_ = frame->coded_size();
+  if (alloc_size_ != frame->visible_rect().size() || buffers_.empty()) {
+    alloc_size_ = frame->visible_rect().size();
+    double frame_rate;
+    int rounded_frame_rate;
+    if (frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                     &frame_rate))
+      rounded_frame_rate = static_cast<int>(frame_rate + 0.5 /* round */);
+    else
+      rounded_frame_rate = MediaStreamVideoSource::kUnknownFrameRate;
+    AllocBuffers(alloc_size_, rounded_frame_rate);
   }
 
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
       DCHECK_EQ(frame->format(), media::VideoFrame::I420);
       if (buffers_[i].buffer->size() <
-          media::VideoFrame::AllocationSize(frame->format(),
-                                            frame->coded_size())) {
+          media::VideoFrame::AllocationSize(frame->format(), alloc_size_)) {
         // TODO(ihf): handle size mismatches gracefully here.
         return;
       }
@@ -144,7 +150,7 @@ void PepperVideoCaptureHost::OnFrameReady(
       static_assert(media::VideoFrame::kVPlane == 2, "v plane should be 2");
       for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame->format());
            ++j) {
-        const uint8* src = frame->data(j);
+        const uint8* src = frame->visible_data(j);
         const size_t row_bytes = frame->row_bytes(j);
         const size_t src_stride = frame->stride(j);
         for (int k = 0; k < frame->rows(j); ++k) {

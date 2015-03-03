@@ -5,12 +5,15 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_EVENT_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_EVENT_HANDLER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 
 namespace gfx {
 class Rect;
+class Size;
 }  // namespace gfx
 
 namespace gpu {
@@ -54,16 +57,19 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   // A buffer has been filled with I420 video.
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
-                             const media::VideoCaptureFormat& format,
+                             const gfx::Size& coded_size,
                              const gfx::Rect& visible_rect,
-                             base::TimeTicks timestamp) = 0;
+                             base::TimeTicks timestamp,
+                             scoped_ptr<base::DictionaryValue> metadata) = 0;
 
   // A texture mailbox buffer has been filled with data.
-  virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
-                                    int buffer_id,
-                                    const gpu::MailboxHolder& mailbox_holder,
-                                    const media::VideoCaptureFormat& format,
-                                    base::TimeTicks timestamp) = 0;
+  virtual void OnMailboxBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      const gpu::MailboxHolder& mailbox_holder,
+      const gfx::Size& packed_frame_size,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata) = 0;
 
   // The capture session has ended and no more frames will be sent.
   virtual void OnEnded(const VideoCaptureControllerID& id) = 0;

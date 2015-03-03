@@ -51,16 +51,20 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
                                int length, int buffer_id) override {}
   virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
                                int buffer_id) override {}
-  virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             int buffer_id,
-                             const media::VideoCaptureFormat& format,
-                             const gfx::Rect& visible_rect,
-                             base::TimeTicks timestamp) override {}
-  virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
-                                    int buffer_id,
-                                    const gpu::MailboxHolder& mailbox_holder,
-                                    const media::VideoCaptureFormat& format,
-                                    base::TimeTicks timestamp) override {}
+  virtual void OnBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata) override {}
+  virtual void OnMailboxBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      const gpu::MailboxHolder& mailbox_holder,
+      const gfx::Size& packed_frame_size,
+      base::TimeTicks timestamp,
+      scoped_ptr<base::DictionaryValue> metadata) override {}
   virtual void OnEnded(const VideoCaptureControllerID& id) override {}
 
   void OnGotControllerCallback(VideoCaptureControllerID) {}

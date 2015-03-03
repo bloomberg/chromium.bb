@@ -42,7 +42,6 @@ class MEDIA_EXPORT VideoCapturerSource {
   // the first video frame delivered may not have timestamp equal to 0.
   typedef base::Callback<
    void(const scoped_refptr<media::VideoFrame>& video_frame,
-        const media::VideoCaptureFormat& format,
         const base::TimeTicks& estimated_capture_time)>
       VideoCaptureDeliverFrameCB;
 

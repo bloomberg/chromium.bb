@@ -83,7 +83,6 @@ void RTCVideoRenderer::OnReadyStateChanged(
 
 void RTCVideoRenderer::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ != STARTED) {
@@ -109,7 +108,7 @@ void RTCVideoRenderer::RenderSignalingFrame() {
   // originates from a video camera.
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateBlackFrame(frame_size_);
-  OnVideoFrame(video_frame, media::VideoCaptureFormat(), base::TimeTicks());
+  OnVideoFrame(video_frame, base::TimeTicks());
 }
 
 }  // namespace content

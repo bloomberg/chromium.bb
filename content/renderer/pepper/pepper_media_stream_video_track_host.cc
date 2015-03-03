@@ -97,24 +97,24 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
                                 uint8_t* dst) {
   CHECK(src->format() == VideoFrame::YV12 || src->format() == VideoFrame::I420);
   if (dst_format == PP_VIDEOFRAME_FORMAT_BGRA) {
-    if (src->coded_size() == dst_size) {
-      libyuv::I420ToARGB(src->data(VideoFrame::kYPlane),
+    if (src->visible_rect().size() == dst_size) {
+      libyuv::I420ToARGB(src->visible_data(VideoFrame::kYPlane),
                          src->stride(VideoFrame::kYPlane),
-                         src->data(VideoFrame::kUPlane),
+                         src->visible_data(VideoFrame::kUPlane),
                          src->stride(VideoFrame::kUPlane),
-                         src->data(VideoFrame::kVPlane),
+                         src->visible_data(VideoFrame::kVPlane),
                          src->stride(VideoFrame::kVPlane),
                          dst,
                          dst_size.width() * 4,
                          dst_size.width(),
                          dst_size.height());
     } else {
-      media::ScaleYUVToRGB32(src->data(VideoFrame::kYPlane),
-                             src->data(VideoFrame::kUPlane),
-                             src->data(VideoFrame::kVPlane),
+      media::ScaleYUVToRGB32(src->visible_data(VideoFrame::kYPlane),
+                             src->visible_data(VideoFrame::kUPlane),
+                             src->visible_data(VideoFrame::kVPlane),
                              dst,
-                             src->coded_size().width(),
-                             src->coded_size().height(),
+                             src->visible_rect().width(),
+                             src->visible_rect().height(),
                              dst_size.width(),
                              dst_size.height(),
                              src->stride(VideoFrame::kYPlane),
@@ -135,21 +135,21 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
     const int plane_order = (dst_format == PP_VIDEOFRAME_FORMAT_YV12) ? 0 : 1;
     int dst_width = dst_size.width();
     int dst_height = dst_size.height();
-    libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][0]),
+    libyuv::ScalePlane(src->visible_data(kPlanesOrder[plane_order][0]),
                        src->stride(kPlanesOrder[plane_order][0]),
-                       src->coded_size().width(),
-                       src->coded_size().height(),
+                       src->visible_rect().width(),
+                       src->visible_rect().height(),
                        dst,
                        dst_width,
                        dst_width,
                        dst_height,
                        kFilterMode);
     dst += dst_width * dst_height;
-    const int src_halfwidth = (src->coded_size().width() + 1) >> 1;
-    const int src_halfheight = (src->coded_size().height() + 1) >> 1;
+    const int src_halfwidth = (src->visible_rect().width() + 1) >> 1;
+    const int src_halfheight = (src->visible_rect().height() + 1) >> 1;
     const int dst_halfwidth = (dst_width + 1) >> 1;
     const int dst_halfheight = (dst_height + 1) >> 1;
-    libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][1]),
+    libyuv::ScalePlane(src->visible_data(kPlanesOrder[plane_order][1]),
                        src->stride(kPlanesOrder[plane_order][1]),
                        src_halfwidth,
                        src_halfheight,
@@ -159,7 +159,7 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
                        dst_halfheight,
                        kFilterMode);
     dst += dst_halfwidth * dst_halfheight;
-    libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][2]),
+    libyuv::ScalePlane(src->visible_data(kPlanesOrder[plane_order][2]),
                        src->stride(kPlanesOrder[plane_order][2]),
                        src_halfwidth,
                        src_halfheight,
@@ -186,15 +186,13 @@ class PepperMediaStreamVideoTrackHost::FrameDeliverer
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
       const VideoCaptureDeliverFrameCB& new_frame_callback);
 
-  void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                         const media::VideoCaptureFormat& format);
+  void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
 
  private:
   friend class base::RefCountedThreadSafe<FrameDeliverer>;
   virtual ~FrameDeliverer();
 
-  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
-                        const media::VideoCaptureFormat& format);
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame);
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   VideoCaptureDeliverFrameCB new_frame_callback_;
@@ -213,21 +211,18 @@ PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
 }
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverVideoFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format) {
+    const scoped_refptr<media::VideoFrame>& frame) {
   io_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&FrameDeliverer::DeliverFrameOnIO,
-                 this, frame, format));
+      base::Bind(&FrameDeliverer::DeliverFrameOnIO, this, frame));
 }
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverFrameOnIO(
-     const scoped_refptr<media::VideoFrame>& frame,
-     const media::VideoCaptureFormat& format) {
+     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   // The time when this frame is generated is unknown so give a null value to
   // |estimated_capture_time|.
-  new_frame_callback_.Run(frame, format, base::TimeTicks());
+  new_frame_callback_.Run(frame, base::TimeTicks());
 }
 
 PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
@@ -369,11 +364,7 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
         base::TimeDelta::FromMilliseconds(ts_ms),
         base::Closure());
 
-    frame_deliverer_->DeliverVideoFrame(
-        frame,
-        media::VideoCaptureFormat(plugin_frame_size_,
-                                  kDefaultOutputFrameRate,
-                                  ToPixelFormat(plugin_frame_format_)));
+    frame_deliverer_->DeliverVideoFrame(frame);
   }
 
   // Makes the frame available again for plugin.
@@ -383,7 +374,6 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
 
 void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     const scoped_refptr<VideoFrame>& frame,
-    const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(frame.get());
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
@@ -392,7 +382,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     return;
 
   if (source_frame_size_.IsEmpty()) {
-    source_frame_size_ = frame->coded_size();
+    source_frame_size_ = frame->visible_rect().size();
     source_frame_format_ = ppformat;
     InitBuffers();
   }

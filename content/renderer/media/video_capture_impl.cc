@@ -208,20 +208,17 @@ void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
 }
 
 void VideoCaptureImpl::OnBufferReceived(int buffer_id,
-                                        const media::VideoCaptureFormat& format,
+                                        const gfx::Size& coded_size,
                                         const gfx::Rect& visible_rect,
-                                        base::TimeTicks timestamp) {
+                                        base::TimeTicks timestamp,
+                                        const base::DictionaryValue& metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // The capture pipeline supports only I420 for now.
-  DCHECK_EQ(format.pixel_format, media::PIXEL_FORMAT_I420);
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
     Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
     return;
   }
 
-  last_frame_format_ = format;
   if (first_frame_timestamp_.is_null())
     first_frame_timestamp_ = timestamp;
 
@@ -238,7 +235,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
-          last_frame_format_.frame_size,
+          coded_size,
           visible_rect,
           gfx::Size(visible_rect.width(), visible_rect.height()),
           reinterpret_cast<uint8*>(buffer->buffer->memory()),
@@ -252,18 +249,18 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
                          buffer_id,
                          buffer,
                          0)));
+  frame->metadata()->MergeInternalValuesFrom(metadata);
 
-  for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
-       ++it) {
-    it->second.deliver_frame_cb.Run(frame, format, timestamp);
-  }
+  for (const auto& entry : clients_)
+    entry.second.deliver_frame_cb.Run(frame, timestamp);
 }
 
 void VideoCaptureImpl::OnMailboxBufferReceived(
     int buffer_id,
     const gpu::MailboxHolder& mailbox_holder,
-    const media::VideoCaptureFormat& format,
-    base::TimeTicks timestamp) {
+    const gfx::Size& packed_frame_size,
+    base::TimeTicks timestamp,
+    const base::DictionaryValue& metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
@@ -271,7 +268,6 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
     return;
   }
 
-  last_frame_format_ = format;
   if (first_frame_timestamp_.is_null())
     first_frame_timestamp_ = timestamp;
 
@@ -280,13 +276,12 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
       media::BindToCurrentLoop(base::Bind(
           &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
           buffer_id, scoped_refptr<ClientBuffer>())),
-      last_frame_format_.frame_size, gfx::Rect(last_frame_format_.frame_size),
-      last_frame_format_.frame_size, timestamp - first_frame_timestamp_, false);
+      packed_frame_size, gfx::Rect(packed_frame_size), packed_frame_size,
+      timestamp - first_frame_timestamp_, false);
+  frame->metadata()->MergeInternalValuesFrom(metadata);
 
-  for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
-       ++it) {
-    it->second.deliver_frame_cb.Run(frame, format, timestamp);
-  }
+  for (const auto& entry : clients_)
+    entry.second.deliver_frame_cb.Run(frame, timestamp);
 }
 
 void VideoCaptureImpl::OnClientBufferFinished(

@@ -343,15 +343,18 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   void OnIncomingCapturedVideoFrame(
       const scoped_refptr<Buffer>& buffer,
-      const media::VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override {
-    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), buffer_format.frame_size);
-    EXPECT_EQ(media::PIXEL_FORMAT_I420, buffer_format.pixel_format);
+    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->visible_rect().size());
     EXPECT_EQ(media::VideoFrame::I420, frame->format());
+    double frame_rate = 0;
+    EXPECT_TRUE(
+        frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                     &frame_rate));
+    EXPECT_EQ(kTestFramesPerSecond, frame_rate);
     uint8 yuv[3];
     for (int plane = 0; plane < 3; ++plane)
-      yuv[plane] = frame->data(plane)[0];
+      yuv[plane] = frame->visible_data(plane)[0];
     // TODO(nick): We just look at the first pixel presently, because if
     // the analysis is too slow, the backlog of frames will grow without bound
     // and trouble erupts. http://crbug.com/174519

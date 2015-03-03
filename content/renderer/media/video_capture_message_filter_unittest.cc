@@ -12,10 +12,13 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace content {
 namespace {
@@ -29,16 +32,18 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                                      int length,
                                      int buffer_id));
   MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
-  MOCK_METHOD4(OnBufferReceived,
+  MOCK_METHOD5(OnBufferReceived,
                void(int buffer_id,
-                    const media::VideoCaptureFormat& format,
+                    const gfx::Size& coded_size,
                     const gfx::Rect& visible_rect,
-                    base::TimeTicks timestamp));
-  MOCK_METHOD4(OnMailboxBufferReceived,
+                    base::TimeTicks timestamp,
+                    const base::DictionaryValue& metadata));
+  MOCK_METHOD5(OnMailboxBufferReceived,
                void(int buffer_id,
                     const gpu::MailboxHolder& mailbox_holder,
-                    const media::VideoCaptureFormat& format,
-                    base::TimeTicks timestamp));
+                    const gfx::Size& packed_frame_size,
+                    base::TimeTicks timestamp,
+                    const base::DictionaryValue& metadata));
   MOCK_METHOD1(OnStateChanged, void(VideoCaptureState state));
   MOCK_METHOD1(OnDeviceSupportedFormatsEnumerated,
                void(const media::VideoCaptureFormats& formats));
@@ -56,6 +61,16 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
  private:
   int device_id_;
 };
+
+void ExpectMetadataContainsFooBarBaz(const base::DictionaryValue& metadata) {
+  std::string value;
+  if (metadata.GetString("foo", &value))
+    EXPECT_EQ(std::string("bar"), value);
+  else if (metadata.GetString("bar", &value))
+    EXPECT_EQ(std::string("baz"), value);
+  else
+    FAIL() << "Missing key 'foo' or key 'bar'.";
+}
 
 }  // namespace
 
@@ -89,56 +104,55 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   Mock::VerifyAndClearExpectations(&delegate);
 
   // VideoCaptureMsg_BufferReady
-  int buffer_id = 22;
-  base::TimeTicks timestamp = base::TimeTicks::FromInternalValue(1);
+  VideoCaptureMsg_BufferReady_Params params;
+  params.device_id = delegate.device_id();
+  params.buffer_id = 22;
+  params.coded_size = gfx::Size(234, 512);
+  params.visible_rect = gfx::Rect(100, 200, 300, 400);
+  params.timestamp = base::TimeTicks::FromInternalValue(1);
+  params.metadata.SetString("foo", "bar");
 
-  const media::VideoCaptureFormat shm_format(
-      gfx::Size(234, 512), 30, media::PIXEL_FORMAT_I420);
-  media::VideoCaptureFormat saved_format;
-  EXPECT_CALL(delegate, OnBufferReceived(buffer_id, _, _, timestamp))
-      .WillRepeatedly(SaveArg<1>(&saved_format));
-  filter->OnMessageReceived(VideoCaptureMsg_BufferReady(
-      delegate.device_id(), buffer_id, shm_format, gfx::Rect(234, 512),
-      timestamp));
+  EXPECT_CALL(delegate, OnBufferReceived(params.buffer_id,
+                                         params.coded_size,
+                                         params.visible_rect,
+                                         params.timestamp,
+                                         _))
+      .WillRepeatedly(WithArg<4>(Invoke(&ExpectMetadataContainsFooBarBaz)));
+  filter->OnMessageReceived(VideoCaptureMsg_BufferReady(params));
   Mock::VerifyAndClearExpectations(&delegate);
-  EXPECT_EQ(shm_format.frame_size, saved_format.frame_size);
-  EXPECT_EQ(shm_format.frame_rate, saved_format.frame_rate);
-  EXPECT_EQ(shm_format.pixel_format, saved_format.pixel_format);
 
   // VideoCaptureMsg_MailboxBufferReady
-  buffer_id = 33;
-  timestamp = base::TimeTicks::FromInternalValue(2);
-
-  const media::VideoCaptureFormat mailbox_format(
-      gfx::Size(234, 512), 30, media::PIXEL_FORMAT_TEXTURE);
+  VideoCaptureMsg_MailboxBufferReady_Params params_m;
+  params_m.device_id = delegate.device_id();
+  params_m.buffer_id = 33;
   gpu::Mailbox mailbox;
   const int8 mailbox_name[arraysize(mailbox.name)] = "TEST MAILBOX";
   mailbox.SetName(mailbox_name);
-  unsigned int syncpoint = 44;
+  params_m.mailbox_holder = gpu::MailboxHolder(mailbox, 0, 44);
+  params_m.packed_frame_size = gfx::Size(345, 256);
+  params_m.timestamp = base::TimeTicks::FromInternalValue(2);
+  params_m.metadata.SetString("bar", "baz");
+
   gpu::MailboxHolder saved_mailbox_holder;
-  EXPECT_CALL(delegate, OnMailboxBufferReceived(buffer_id, _, _, timestamp))
-      .WillRepeatedly(
-           DoAll(SaveArg<1>(&saved_mailbox_holder), SaveArg<2>(&saved_format)));
-  gpu::MailboxHolder mailbox_holder(mailbox, 0, syncpoint);
-  filter->OnMessageReceived(
-      VideoCaptureMsg_MailboxBufferReady(delegate.device_id(),
-                                         buffer_id,
-                                         mailbox_holder,
-                                         mailbox_format,
-                                         timestamp));
+  EXPECT_CALL(delegate, OnMailboxBufferReceived(params_m.buffer_id,
+                                                _,
+                                                params_m.packed_frame_size,
+                                                params_m.timestamp,
+                                                _))
+      .WillRepeatedly(DoAll(
+          SaveArg<1>(&saved_mailbox_holder),
+          WithArg<4>(Invoke(&ExpectMetadataContainsFooBarBaz))));
+  filter->OnMessageReceived(VideoCaptureMsg_MailboxBufferReady(params_m));
   Mock::VerifyAndClearExpectations(&delegate);
-  EXPECT_EQ(mailbox_format.frame_size, saved_format.frame_size);
-  EXPECT_EQ(mailbox_format.frame_rate, saved_format.frame_rate);
-  EXPECT_EQ(mailbox_format.pixel_format, saved_format.pixel_format);
   EXPECT_EQ(memcmp(mailbox.name,
                    saved_mailbox_holder.mailbox.name,
                    sizeof(mailbox.name)),
             0);
 
   // VideoCaptureMsg_FreeBuffer
-  EXPECT_CALL(delegate, OnBufferDestroyed(buffer_id));
+  EXPECT_CALL(delegate, OnBufferDestroyed(params_m.buffer_id));
   filter->OnMessageReceived(VideoCaptureMsg_FreeBuffer(
-      delegate.device_id(), buffer_id));
+      delegate.device_id(), params_m.buffer_id));
   Mock::VerifyAndClearExpectations(&delegate);
 }
 

@@ -175,7 +175,6 @@ class VideoCaptureController::VideoCaptureDeviceClient
                                             const gfx::Size& size) override;
   void OnIncomingCapturedVideoFrame(
       const scoped_refptr<Buffer>& buffer,
-      const VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override;
   void OnError(const std::string& reason) override;
@@ -547,9 +546,9 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           base::TimeDelta(),
           base::Closure());
   DCHECK(frame.get());
+  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                               frame_format.frame_rate);
 
-  VideoCaptureFormat format(
-      dimensions, frame_format.frame_rate, media::PIXEL_FORMAT_I420);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -557,7 +556,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
           controller_,
           buffer,
-          format,
           frame,
           timestamp));
 }
@@ -565,7 +563,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
 void
 VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     const scoped_refptr<Buffer>& buffer,
-    const VideoCaptureFormat& buffer_format,
     const scoped_refptr<media::VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   BrowserThread::PostTask(
@@ -575,7 +572,6 @@ VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
           &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
           controller_,
           buffer,
-          buffer_format,
           frame,
           timestamp));
 }
@@ -606,7 +602,6 @@ VideoCaptureController::~VideoCaptureController() {
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
-    const media::VideoCaptureFormat& buffer_format,
     const scoped_refptr<media::VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -614,17 +609,33 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
 
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
+    if (!frame->metadata()->HasKey(media::VideoFrameMetadata::FRAME_RATE)) {
+      frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                   video_capture_format_.frame_rate);
+    }
+    scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue());
+    frame->metadata()->MergeInternalValuesInto(metadata.get());
+
     for (const auto& client : controller_clients_) {
       if (client->session_closed || client->paused)
         continue;
 
+      scoped_ptr<base::DictionaryValue> copy_of_metadata;
+      if (client == controller_clients_.back())
+        copy_of_metadata = metadata.Pass();
+      else
+        copy_of_metadata.reset(metadata->DeepCopy());
+
       if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
+        DCHECK(frame->coded_size() == frame->visible_rect().size())
+            << "Textures are always supposed to be tightly packed.";
         client->event_handler->OnMailboxBufferReady(client->controller_id,
                                                     buffer->id(),
                                                     *frame->mailbox_holder(),
-                                                    buffer_format,
-                                                    timestamp);
-      } else {
+                                                    frame->coded_size(),
+                                                    timestamp,
+                                                    copy_of_metadata.Pass());
+      } else if (frame->format() == media::VideoFrame::I420) {
         bool is_new_buffer = client->known_buffers.insert(buffer->id()).second;
         if (is_new_buffer) {
           // On the first use of a buffer on a client, share the memory handle.
@@ -636,8 +647,12 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
         }
 
         client->event_handler->OnBufferReady(
-            client->controller_id, buffer->id(), buffer_format,
-            frame->visible_rect(), timestamp);
+            client->controller_id, buffer->id(), frame->coded_size(),
+            frame->visible_rect(), timestamp, copy_of_metadata.Pass());
+      } else {
+        // VideoFrame format not supported.
+        NOTREACHED();
+        break;
       }
 
       bool inserted =
@@ -650,14 +665,17 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
 
   if (!has_received_frames_) {
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Width",
-                         buffer_format.frame_size.width());
+                         frame->visible_rect().width());
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
-                         buffer_format.frame_size.height());
+                         frame->visible_rect().height());
     UMA_HISTOGRAM_ASPECT_RATIO("Media.VideoCapture.AspectRatio",
-                               buffer_format.frame_size.width(),
-                               buffer_format.frame_size.height());
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate",
-                         buffer_format.frame_rate);
+                               frame->visible_rect().width(),
+                               frame->visible_rect().height());
+    double frame_rate;
+    if (!frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                      &frame_rate))
+      frame_rate = video_capture_format_.frame_rate;
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate", frame_rate);
     has_received_frames_ = true;
   }
 

@@ -40,8 +40,9 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   void SetSize(int width, int height) override;
   void RenderFrame(const cricket::VideoFrame* frame) override;
 
-  void DoRenderFrameOnIOThread(scoped_refptr<media::VideoFrame> video_frame,
-                               const media::VideoCaptureFormat& format);
+  void DoRenderFrameOnIOThread(
+      const scoped_refptr<media::VideoFrame>& video_frame);
+
  private:
   // Bound to the render thread.
   base::ThreadChecker thread_checker_;
@@ -103,30 +104,19 @@ RemoteVideoSourceDelegate::RenderFrame(
         frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame.get());
   }
 
-  media::VideoPixelFormat pixel_format =
-      (video_frame->format() == media::VideoFrame::YV12) ?
-          media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_TEXTURE;
-
-  media::VideoCaptureFormat format(
-      gfx::Size(video_frame->natural_size().width(),
-                video_frame->natural_size().height()),
-                MediaStreamVideoSource::kUnknownFrameRate,
-                pixel_format);
-
   io_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
-                 this, video_frame, format));
+                 this, video_frame));
 }
 
 void MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
-    scoped_refptr<media::VideoFrame> video_frame,
-    const media::VideoCaptureFormat& format) {
+    const scoped_refptr<media::VideoFrame>& video_frame) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::DoRenderFrameOnIOThread");
   // TODO(hclam): Give the estimated capture time.
-  frame_callback_.Run(video_frame, format, base::TimeTicks());
+  frame_callback_.Run(video_frame, base::TimeTicks());
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(

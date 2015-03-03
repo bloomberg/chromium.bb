@@ -50,11 +50,6 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   }
 
  protected:
-  void DeliverVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
-                             media::VideoCaptureFormat format,
-                             const base::TimeTicks& estimated_capture_time,
-                             const VideoCaptureDeliverFrameCB& frame_callback);
-
   // Implements MediaStreamVideoSource.
   virtual void GetCurrentSupportedFormats(
       int max_requested_height,

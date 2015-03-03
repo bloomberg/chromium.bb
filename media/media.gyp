@@ -388,6 +388,8 @@
         'base/video_decoder_config.h',
         'base/video_frame.cc',
         'base/video_frame.h',
+        'base/video_frame_metadata.cc',
+        'base/video_frame_metadata.h',
         'base/video_frame_pool.cc',
         'base/video_frame_pool.h',
         'base/video_renderer.cc',
@@ -1889,6 +1891,8 @@
             'base/mac/videotoolbox_glue.mm',
             'base/video_frame.cc',
             'base/video_frame.h',
+            'base/video_frame_metadata.cc',
+            'base/video_frame_metadata.h',
           ],
           'link_settings': {
             'libraries': [

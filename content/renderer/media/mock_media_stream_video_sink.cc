@@ -29,7 +29,6 @@ MockMediaStreamVideoSink::GetDeliverFrameCB() {
 
 void MockMediaStreamVideoSink::DeliverVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
   last_frame_ = frame;
   ++number_of_frames_;

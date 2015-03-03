@@ -172,24 +172,30 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
 class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
  public:
   FakeMediaStreamVideoSink(base::TimeTicks* capture_time,
+                           media::VideoFrameMetadata* metadata,
                            base::Closure got_frame_cb)
       : capture_time_(capture_time),
+        metadata_(metadata),
         got_frame_cb_(got_frame_cb) {
   }
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const media::VideoCaptureFormat& format,
                     const base::TimeTicks& capture_time) {
     *capture_time_ = capture_time;
+    metadata_->Clear();
+    base::DictionaryValue tmp;
+    frame->metadata()->MergeInternalValuesInto(&tmp);
+    metadata_->MergeInternalValuesFrom(tmp);
     base::ResetAndReturn(&got_frame_cb_).Run();
   }
 
  private:
-  base::TimeTicks* capture_time_;
+  base::TimeTicks* const capture_time_;
+  media::VideoFrameMetadata* const metadata_;
   base::Closure got_frame_cb_;
 };
 
-TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTime) {
+TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
@@ -213,23 +219,28 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTime) {
   base::TimeTicks reference_capture_time =
       base::TimeTicks::FromInternalValue(60013);
   base::TimeTicks capture_time;
+  media::VideoFrameMetadata metadata;
   FakeMediaStreamVideoSink fake_sink(
       &capture_time,
+      &metadata,
       media::BindToCurrentLoop(run_loop.QuitClosure()));
   FakeMediaStreamVideoSink::AddToVideoTrack(
       &fake_sink,
       base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
                  base::Unretained(&fake_sink)),
       track);
+  const scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
+  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
   child_process_->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(deliver_frame_cb,
-                 media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2)),
-                 media::VideoCaptureFormat(),
-                 reference_capture_time));
+      FROM_HERE, base::Bind(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
   FakeMediaStreamVideoSink::RemoveFromVideoTrack(&fake_sink, track);
   EXPECT_EQ(reference_capture_time, capture_time);
+  double metadata_value;
+  EXPECT_TRUE(metadata.GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                 &metadata_value));
+  EXPECT_EQ(30.0, metadata_value);
 }
 
 }  // namespace content

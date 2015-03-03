@@ -67,9 +67,8 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD2(ReserveOutputBuffer,
                scoped_refptr<Buffer>(VideoFrame::Format format,
                                      const gfx::Size& dimensions));
-  MOCK_METHOD4(OnIncomingCapturedVideoFrame,
+  MOCK_METHOD3(OnIncomingCapturedVideoFrame,
                void(const scoped_refptr<Buffer>& buffer,
-                    const VideoCaptureFormat& buffer_format,
                     const scoped_refptr<VideoFrame>& frame,
                     const base::TimeTicks& timestamp));
   MOCK_METHOD1(OnError, void(const std::string& reason));
@@ -129,7 +128,7 @@ class VideoCaptureDeviceTest : public testing::Test {
         base::android::AttachCurrentThread());
 #endif
     EXPECT_CALL(*client_, ReserveOutputBuffer(_,_)).Times(0);
-    EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_,_)).Times(0);
+    EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_)).Times(0);
   }
 
   void ResetWithNewClient() {

@@ -44,14 +44,11 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
   void ReleaseSourceOnMainThread();
 
   void OnVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
-                        const media::VideoCaptureFormat& format,
                         const base::TimeTicks& estimated_capture_time);
 
  private:
   void OnVideoFrameOnWorkerThread(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format,
-      const base::TimeTicks& estimated_capture_time);
+      const scoped_refptr<media::VideoFrame>& frame);
   friend class base::RefCountedThreadSafe<WebRtcVideoSourceAdapter>;
   virtual ~WebRtcVideoSourceAdapter();
 
@@ -113,20 +110,18 @@ ReleaseSourceOnMainThread() {
 
 void WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   libjingle_worker_thread_->PostTask(
       FROM_HERE,
       base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread,
-                 this, frame, format, estimated_capture_time));
+                 this,
+                 frame));
 }
 
 void
 WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread(
-    const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format,
-    const base::TimeTicks& estimated_capture_time) {
+    const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(libjingle_worker_thread_->BelongsToCurrentThread());
   base::AutoLock auto_lock(capture_adapter_stop_lock_);
   if (capture_adapter_)

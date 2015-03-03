@@ -30,6 +30,30 @@ const int kRoundTripsNeeded = 4;
 // time).
 const int kConstantTimeMs = 75;
 
+// Extract capture begin/end timestamps from |video_frame|'s metadata and log
+// it.
+void LogVideoCaptureTimestamps(const CastEnvironment& cast_environment,
+                               const media::VideoFrame& video_frame,
+                               RtpTimestamp rtp_timestamp) {
+  base::TimeTicks capture_begin_time;
+  base::TimeTicks capture_end_time;
+  if (!video_frame.metadata()->GetTimeTicks(
+          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_begin_time) ||
+      !video_frame.metadata()->GetTimeTicks(
+          media::VideoFrameMetadata::CAPTURE_END_TIME, &capture_end_time)) {
+    // The frame capture timestamps were not provided by the video capture
+    // source.  Simply log the events as happening right now.
+    capture_begin_time = capture_end_time =
+        cast_environment.Clock()->NowTicks();
+  }
+  cast_environment.Logging()->InsertFrameEvent(
+      capture_begin_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT, rtp_timestamp,
+      kFrameIdUnknown);
+  cast_environment.Logging()->InsertFrameEvent(
+      capture_end_time, FRAME_CAPTURE_END, VIDEO_EVENT, rtp_timestamp,
+      kFrameIdUnknown);
+}
+
 }  // namespace
 
 // Note, we use a fixed bitrate value when external video encoder is used.
@@ -108,15 +132,7 @@ void VideoSender::InsertRawVideoFrame(
 
   const RtpTimestamp rtp_timestamp =
       TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
-  const base::TimeTicks insertion_time = cast_environment_->Clock()->NowTicks();
-  // TODO(miu): Plumb in capture timestamps.  For now, make it look like capture
-  // took zero time by setting the BEGIN and END event to the same timestamp.
-  cast_environment_->Logging()->InsertFrameEvent(
-      insertion_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT, rtp_timestamp,
-      kFrameIdUnknown);
-  cast_environment_->Logging()->InsertFrameEvent(
-      insertion_time, FRAME_CAPTURE_END, VIDEO_EVENT, rtp_timestamp,
-      kFrameIdUnknown);
+  LogVideoCaptureTimestamps(*cast_environment_, *video_frame, rtp_timestamp);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT2(
