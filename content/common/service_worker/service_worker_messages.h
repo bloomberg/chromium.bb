@@ -75,7 +75,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerCacheQueryParams)
   IPC_STRUCT_TRAITS_MEMBER(ignore_search)
   IPC_STRUCT_TRAITS_MEMBER(ignore_method)
   IPC_STRUCT_TRAITS_MEMBER(ignore_vary)
-  IPC_STRUCT_TRAITS_MEMBER(prefix_match)
   IPC_STRUCT_TRAITS_MEMBER(cache_name)
 IPC_STRUCT_TRAITS_END()
 

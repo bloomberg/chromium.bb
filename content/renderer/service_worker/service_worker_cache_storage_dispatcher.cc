@@ -88,7 +88,6 @@ ServiceWorkerCacheQueryParams QueryParamsFromWebQueryParams(
   query_params.ignore_search = web_query_params.ignoreSearch;
   query_params.ignore_method = web_query_params.ignoreMethod;
   query_params.ignore_vary = web_query_params.ignoreVary;
-  query_params.prefix_match = web_query_params.prefixMatch;
   query_params.cache_name = web_query_params.cacheName;
   return query_params;
 }

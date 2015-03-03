@@ -74,8 +74,7 @@ ServiceWorkerResponse::~ServiceWorkerResponse() {}
 ServiceWorkerCacheQueryParams::ServiceWorkerCacheQueryParams()
     : ignore_search(false),
       ignore_method(false),
-      ignore_vary(false),
-      prefix_match(false) {}
+      ignore_vary(false) {}
 
 ServiceWorkerBatchOperation::ServiceWorkerBatchOperation() {}
 
