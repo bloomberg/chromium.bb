@@ -1891,6 +1891,8 @@
             'paint/SVGInlineFlowBoxPainter.h',
             'paint/SVGInlineTextBoxPainter.cpp',
             'paint/SVGInlineTextBoxPainter.h',
+            'paint/SVGMaskPainter.cpp',
+            'paint/SVGMaskPainter.h',
             'paint/SVGPaintContext.cpp',
             'paint/SVGPaintContext.h',
             'paint/SVGRootInlineBoxPainter.cpp',

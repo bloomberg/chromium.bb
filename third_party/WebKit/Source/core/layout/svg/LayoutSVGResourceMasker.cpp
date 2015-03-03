@@ -22,13 +22,9 @@
 
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/CompositingRecorder.h"
 #include "core/paint/SVGPaintContext.h"
-#include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGElement.h"
-#include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -54,81 +50,6 @@ void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool m
 {
     ASSERT(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
-}
-
-bool LayoutSVGResourceMasker::prepareEffect(LayoutObject* object, GraphicsContext* context)
-{
-    ASSERT(object);
-    ASSERT(context);
-    ASSERT(style());
-    ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
-
-    clearInvalidationMask();
-
-    FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
-    if (paintInvalidationRect.isEmpty() || !element()->hasChildren())
-        return false;
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context->displayItemList());
-        context->displayItemList()->add(BeginCompositingDisplayItem::create(object->displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect));
-    } else {
-        BeginCompositingDisplayItem beginCompositingContent(object->displayItemClient(), WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), WebBlendModeNormal), 1, &paintInvalidationRect);
-        beginCompositingContent.replay(context);
-    }
-
-    return true;
-}
-
-void LayoutSVGResourceMasker::finishEffect(LayoutObject* object, GraphicsContext* context)
-{
-    ASSERT(object);
-    ASSERT(context);
-    ASSERT(style());
-    ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
-
-    FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
-    {
-        ColorFilter maskLayerFilter = style()->svgStyle().maskType() == MT_LUMINANCE
-            ? ColorFilterLuminanceToAlpha : ColorFilterNone;
-        CompositingRecorder maskCompositing(context, object->displayItemClient(), SkXfermode::kDstIn_Mode, 1, &paintInvalidationRect, maskLayerFilter);
-        drawMaskForRenderer(context, object->displayItemClient(), object->objectBoundingBox());
-    }
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context->displayItemList());
-        context->displayItemList()->add(EndCompositingDisplayItem::create(object->displayItemClient()));
-    } else {
-        EndCompositingDisplayItem endCompositingContent(object->displayItemClient());
-        endCompositingContent.replay(context);
-    }
-}
-
-void LayoutSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, DisplayItemClient client, const FloatRect& targetBoundingBox)
-{
-    ASSERT(context);
-
-    AffineTransform contentTransformation;
-    SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();
-    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-        contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
-        contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
-    }
-
-    if (!m_maskContentPicture) {
-        SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        m_maskContentPicture = createContentPicture();
-    }
-
-    TransformRecorder recorder(*context, client, contentTransformation);
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context->displayItemList());
-        context->displayItemList()->add(DrawingDisplayItem::create(client, DisplayItem::SVGMask, m_maskContentPicture));
-    } else {
-        DrawingDisplayItem maskPicture(client, DisplayItem::SVGMask, m_maskContentPicture);
-        maskPicture.replay(context);
-    }
 }
 
 PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture()
@@ -162,6 +83,22 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture()
     if (displayItemList)
         displayItemList->replay(&context);
     return context.endRecording();
+}
+
+PassRefPtr<const SkPicture> LayoutSVGResourceMasker::getContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox)
+{
+    SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();
+    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+        contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
+        contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
+    }
+
+    if (!m_maskContentPicture) {
+        SubtreeContentTransformScope contentTransformScope(contentTransformation);
+        m_maskContentPicture = createContentPicture();
+    }
+
+    return m_maskContentPicture;
 }
 
 void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()

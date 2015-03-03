@@ -31,6 +31,7 @@
 #include "wtf/OwnPtr.h"
 
 class SkPicture;
+class AffineTransform;
 
 namespace blink {
 
@@ -46,9 +47,6 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
-    bool prepareEffect(LayoutObject*, GraphicsContext*);
-    void finishEffect(LayoutObject*, GraphicsContext*);
-
     FloatRect resourceBoundingBox(const LayoutObject*);
 
     SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(element())->maskUnits()->currentValue()->enumValue(); }
@@ -57,9 +55,10 @@ public:
     static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
     virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
+    PassRefPtr<const SkPicture> getContentPicture(AffineTransform&, const FloatRect&);
+
 private:
     void calculateMaskContentPaintInvalidationRect();
-    void drawMaskForRenderer(GraphicsContext*, DisplayItemClient, const FloatRect& targetBoundingBox);
     PassRefPtr<const SkPicture> createContentPicture();
 
     RefPtr<const SkPicture> m_maskContentPicture;

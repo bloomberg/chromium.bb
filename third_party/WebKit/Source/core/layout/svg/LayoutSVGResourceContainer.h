@@ -68,6 +68,8 @@ public:
 
     static void markForLayoutAndParentResourceInvalidation(LayoutObject*, bool needsLayout = true);
 
+    void clearInvalidationMask() { m_invalidationMask = 0; }
+
 protected:
     // When adding modes, make sure we don't overflow m_invalidationMask below.
     enum InvalidationMode {
@@ -81,8 +83,6 @@ protected:
     void markAllClientsForInvalidation(InvalidationMode);
     void markAllClientLayersForInvalidation();
     void markClientForInvalidation(LayoutObject*, InvalidationMode);
-
-    void clearInvalidationMask() { m_invalidationMask = 0; }
 
     bool m_isInLayout;
 

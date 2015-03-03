@@ -34,6 +34,7 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/SVGMaskPainter.h"
 #include "platform/FloatConversion.h"
 
 namespace blink {
@@ -58,7 +59,7 @@ SVGPaintContext::~SVGPaintContext()
     if (m_masker) {
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->masker() == m_masker);
-        m_masker->finishEffect(m_object, m_paintInfo.context);
+        SVGMaskPainter(*m_masker).finishEffect(m_object, m_paintInfo.context);
     }
 
     if (m_clipper) {
@@ -145,7 +146,7 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
 bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources)
 {
     if (LayoutSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
-        if (!masker->prepareEffect(m_object, m_paintInfo.context))
+        if (!SVGMaskPainter(*masker).prepareEffect(m_object, m_paintInfo.context))
             return false;
         m_masker = masker;
     }
