@@ -583,7 +583,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource);
-  void didClearWindowObject(blink::WebLocalFrame* frame);
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);

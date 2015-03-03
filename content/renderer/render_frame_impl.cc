@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/quota_dispatcher.h"
@@ -65,6 +66,7 @@
 #include "content/renderer/dom_utils.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
+#include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/image_loading_helper.h"
@@ -80,6 +82,7 @@
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
+#include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -95,6 +98,9 @@
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/shared_worker_repository.h"
+#include "content/renderer/skia_benchmarking_extension.h"
+#include "content/renderer/stats_collection_controller.h"
+#include "content/renderer/web_ui_extension.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -2557,16 +2563,32 @@ void RenderFrameImpl::didCreateNewDocument(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(nasko): Move implementation here. Needed state:
-  // * enabled_bindings_
-  // * dom_automation_controller_
-  // * stats_collection_controller_
 
-  render_view_->didClearWindowObject(frame);
+  int enabled_bindings = render_view_->GetEnabledBindings();
 
-  if (render_view_->GetEnabledBindings() & BINDINGS_POLICY_DOM_AUTOMATION)
+  if (enabled_bindings & BINDINGS_POLICY_WEB_UI)
+    WebUIExtension::Install(frame);
+
+  if (enabled_bindings & BINDINGS_POLICY_DOM_AUTOMATION)
     DomAutomationController::Install(this, frame);
 
+  if (enabled_bindings & BINDINGS_POLICY_STATS_COLLECTION)
+    StatsCollectionController::Install(frame);
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
+    GpuBenchmarking::Install(frame);
+
+  if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
+    MemoryBenchmarkingExtension::Install(frame);
+
+  if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
+    SkiaBenchmarking::Install(frame);
+
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidClearWindowObject(frame));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidClearWindowObject());
 }
 

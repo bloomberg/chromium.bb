@@ -31,7 +31,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/child_shared_bitmap_manager.h"
@@ -76,7 +75,6 @@
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
-#include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
@@ -86,7 +84,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_impl.h"
@@ -98,12 +95,8 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "content/renderer/savable_resources.h"
-#include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
-#include "content/renderer/stats_collection_controller.h"
-#include "content/renderer/stats_collection_observer.h"
 #include "content/renderer/text_input_client_observer.h"
-#include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/web_ui_mojo.h"
 #include "content/renderer/websharedworker_proxy.h"
@@ -2292,29 +2285,6 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
     navigation_state = NavigationState::CreateContentInitiated();
   }
   return navigation_state;
-}
-
-void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidClearWindowObject(frame));
-
-  if (enabled_bindings_& BINDINGS_POLICY_WEB_UI)
-    WebUIExtension::Install(frame);
-
-  if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
-    StatsCollectionController::Install(frame);
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
-    SkiaBenchmarking::Install(frame);
-
-  if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
-    GpuBenchmarking::Install(frame);
-
-  if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
-    MemoryBenchmarkingExtension::Install(frame);
 }
 
 void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
