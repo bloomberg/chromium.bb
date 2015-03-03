@@ -19,7 +19,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream_factory.h"
@@ -355,9 +354,6 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   InitializeSystemContextDependencies();
 
-  net::HttpCache::BackendFactory* main_backend =
-      net::HttpCache::DefaultBackend::InMemory(16 * 1024 * 1024);
-
   bool ignore_certificate_errors = false;
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors)) {
@@ -367,7 +363,8 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   PopulateNetworkSessionParams(ignore_certificate_errors,
                                &network_session_params);
   InitializeMainContextDependencies(
-      new net::HttpCache(network_session_params, main_backend),
+      new net::HttpNetworkLayer(
+          new net::HttpNetworkSession(network_session_params)),
       protocol_handlers,
       request_interceptors.Pass());
 
