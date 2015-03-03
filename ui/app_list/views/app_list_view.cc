@@ -83,6 +83,25 @@ bool SupportsShadow() {
   return true;
 }
 
+// This view forwards the focus to the search box widget by providing it as a
+// FocusTraversable when a focus search is provided.
+class SearchBoxFocusHost : public views::View {
+ public:
+  explicit SearchBoxFocusHost(views::Widget* search_box_widget)
+      : search_box_widget_(search_box_widget) {}
+
+  ~SearchBoxFocusHost() override {}
+
+  views::FocusTraversable* GetFocusTraversable() override {
+    return search_box_widget_;
+  }
+
+ private:
+  views::Widget* search_box_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxFocusHost);
+};
+
 // The view for the App List overlay, which appears as a white rounded
 // rectangle with the given radius.
 class AppListOverlayView : public views::View {
@@ -182,6 +201,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       app_list_main_view_(nullptr),
       speech_view_(nullptr),
+      search_box_focus_host_(nullptr),
       search_box_widget_(nullptr),
       search_box_view_(nullptr),
       overlay_view_(nullptr),
@@ -462,6 +482,15 @@ void AppListView::InitChildWidgets() {
   search_box_widget_ = new views::Widget;
   search_box_widget_->Init(search_box_widget_params);
   search_box_widget_->SetContentsView(search_box_view_);
+
+  // The search box will not naturally receive focus by itself (because it is in
+  // a separate widget). Create this SearchBoxFocusHost in the main widget to
+  // forward the focus search into to the search box.
+  search_box_focus_host_ = new SearchBoxFocusHost(search_box_widget_);
+  AddChildView(search_box_focus_host_);
+  search_box_widget_->SetFocusTraversableParentView(search_box_focus_host_);
+  search_box_widget_->SetFocusTraversableParent(
+      GetWidget()->GetFocusTraversable());
 
 #if defined(USE_AURA)
   // Mouse events on the search box shadow should not be captured.

@@ -173,6 +173,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   AppListMainView* app_list_main_view_;
   SpeechView* speech_view_;
 
+  views::View* search_box_focus_host_;  // Owned by the views hierarchy.
   views::Widget* search_box_widget_;  // Owned by the app list's widget.
   SearchBoxView* search_box_view_;    // Owned by |search_box_widget_|.
 

@@ -31,4 +31,15 @@ function enableCustomLauncherPage() {
   });
 }
 
-chrome.test.sendMessage('Launched');
+document.addEventListener('DOMContentLoaded', function() {
+  chrome.test.sendMessage('Launched');
+});
+
+var textfield = document.getElementById('textfield');
+textfield.onfocus = function() {
+  chrome.test.sendMessage('textfieldFocused');
+};
+
+textfield.onblur = function() {
+  chrome.test.sendMessage('textfieldBlurred');
+};
