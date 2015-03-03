@@ -57801,33 +57801,41 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SB2DatabaseFailure" type="int">
-  <int value="0" label="CORRUPT"/>
-  <int value="1" label="CORRUPT_HANDLER"/>
-  <int value="2" label="BROWSE_DB_UPDATE_BEGIN"/>
-  <int value="3" label="BROWSE_DB_UPDATE_FINISH"/>
-  <int value="4" label="FILTER_MISSING"/>
-  <int value="5" label="FILTER_READ"/>
-  <int value="6" label="FILTER_WRITE"/>
-  <int value="7" label="FILTER_DELETE"/>
-  <int value="8" label="STORE_MISSING"/>
-  <int value="9" label="STORE_DELETE"/>
-  <int value="10" label="DOWNLOAD_DB_UPDATE_BEGIN"/>
-  <int value="11" label="DOWNLOAD_DB_UPDATE_FINISH"/>
-  <int value="12" label="CSD_DB_UPDATE_BEGIN"/>
-  <int value="13" label="CSD_DB_UPDATE_FINISH"/>
-  <int value="14" label="BROWSE_PREFIX_SET_MISSING"/>
-  <int value="15" label="BROWSE_PREFIX_SET_READ"/>
-  <int value="16" label="BROWSE_PREFIX_SET_WRITE"/>
-  <int value="17" label="BROWSE_PREFIX_SET_DELETE"/>
-  <int value="18" label="EXTENSION_BLACKLIST_UPDATE_BEGIN"/>
-  <int value="19" label="EXTENSION_BLACKLIST_UPDATE_FINISH"/>
-  <int value="20" label="EXTENSION_BLACKLIST_UPDATE_DELETE"/>
-  <int value="21" label="SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN"/>
-  <int value="22" label="SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH"/>
-  <int value="23" label="SIDE_EFFECT_FREE_WHITELIST_DELETE"/>
-  <int value="24" label="SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ"/>
-  <int value="25" label="SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE"/>
-  <int value="26" label="SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE"/>
+  <int value="0" label="FAILURE_DATABASE_CORRUPT"/>
+  <int value="1" label="FAILURE_DATABASE_CORRUPT_HANDLER"/>
+  <int value="2" label="FAILURE_BROWSE_DATABASE_UPDATE_BEGIN"/>
+  <int value="3" label="FAILURE_BROWSE_DATABASE_UPDATE_FINISH"/>
+  <int value="4" label="FAILURE_DATABASE_FILTER_MISSING_OBSOLETE"/>
+  <int value="5" label="FAILURE_DATABASE_FILTER_READ_OBSOLETE"/>
+  <int value="6" label="FAILURE_DATABASE_FILTER_WRITE_OBSOLETE"/>
+  <int value="7" label="FAILURE_DATABASE_FILTER_DELETE"/>
+  <int value="8" label="FAILURE_DATABASE_STORE_MISSING"/>
+  <int value="9" label="FAILURE_DATABASE_STORE_DELETE"/>
+  <int value="10" label="FAILURE_DOWNLOAD_DATABASE_UPDATE_BEGIN"/>
+  <int value="11" label="FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH"/>
+  <int value="12" label="FAILURE_WHITELIST_DATABASE_UPDATE_BEGIN"/>
+  <int value="13" label="FAILURE_WHITELIST_DATABASE_UPDATE_FINISH"/>
+  <int value="14" label="FAILURE_BROWSE_PREFIX_SET_READ"/>
+  <int value="15" label="FAILURE_BROWSE_PREFIX_SET_WRITE"/>
+  <int value="16" label="FAILURE_BROWSE_PREFIX_SET_DELETE"/>
+  <int value="17" label="FAILURE_EXTENSION_BLACKLIST_UPDATE_BEGIN"/>
+  <int value="18" label="FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH"/>
+  <int value="19" label="FAILURE_EXTENSION_BLACKLIST_DELETE"/>
+  <int value="20" label="FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN"/>
+  <int value="21" label="FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH"/>
+  <int value="22" label="FAILURE_SIDE_EFFECT_FREE_WHITELIST_DELETE"/>
+  <int value="23" label="FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ"/>
+  <int value="24" label="FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE"/>
+  <int value="25" label="FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE"/>
+  <int value="26" label="FAILURE_IP_BLACKLIST_UPDATE_BEGIN"/>
+  <int value="27" label="FAILURE_IP_BLACKLIST_UPDATE_FINISH"/>
+  <int value="28" label="FAILURE_IP_BLACKLIST_UPDATE_INVALID"/>
+  <int value="29" label="FAILURE_IP_BLACKLIST_DELETE"/>
+  <int value="30" label="FAILURE_UNWANTED_SOFTWARE_DATABASE_UPDATE_BEGIN"/>
+  <int value="31" label="FAILURE_UNWANTED_SOFTWARE_DATABASE_UPDATE_FINISH"/>
+  <int value="32" label="FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ"/>
+  <int value="33" label="FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_WRITE"/>
+  <int value="34" label="FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE"/>
 </enum>
 
 <enum name="SB2DownloadChecks" type="int">
