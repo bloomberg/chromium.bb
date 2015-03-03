@@ -2162,9 +2162,8 @@
         'enable_service_discovery%': 1
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
-        'clang_chrome_plugins_flags': [
-          '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
-        ],
+        'clang_chrome_plugins_flags%':
+          '<!(python <(DEPTH)/tools/clang/scripts/plugin_flags.py)',
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,

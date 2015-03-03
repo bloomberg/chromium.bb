@@ -34,7 +34,7 @@
       "third_party/accessibility-audit/axs_testing.js",
       "third_party/hunspell_dictionaries/.*",
       "third_party/zlib/google/test/data/.*",
-      "tools/clang/scripts/plugin_flags.sh",
+      "tools/clang/scripts/plugin_flags.py",
       "tools/clang/scripts/update.py",
       "tools/clang/scripts/update.sh",
       "tools/metrics/histograms/histograms.xml",
