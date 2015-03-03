@@ -489,7 +489,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setStrokeDashArray(toAnimatableStrokeDasharrayList(value)->toSVGLengthList());
         return;
     case CSSPropertyStrokeDashoffset:
-        style->setStrokeDashOffset(toAnimatableSVGLength(value)->toSVGLength());
+        style->setStrokeDashOffset(animatableValueToLength(value, state));
         return;
     case CSSPropertyStrokeMiterlimit:
         style->setStrokeMiterLimit(clampTo<float>(toAnimatableDouble(value)->toDouble(), 1));

@@ -1369,8 +1369,8 @@ public:
     void setStrokeWidth(PassRefPtrWillBeRawPtr<SVGLength> w) { accessSVGStyle().setStrokeWidth(w); }
     SVGLengthList* strokeDashArray() const { return svgStyle().strokeDashArray(); }
     void setStrokeDashArray(PassRefPtrWillBeRawPtr<SVGLengthList> array) { accessSVGStyle().setStrokeDashArray(array); }
-    SVGLength* strokeDashOffset() const { return svgStyle().strokeDashOffset(); }
-    void setStrokeDashOffset(PassRefPtrWillBeRawPtr<SVGLength> d) { accessSVGStyle().setStrokeDashOffset(d); }
+    const Length& strokeDashOffset() const { return svgStyle().strokeDashOffset(); }
+    void setStrokeDashOffset(const Length& d) { accessSVGStyle().setStrokeDashOffset(d); }
     float strokeMiterLimit() const { return svgStyle().strokeMiterLimit(); }
     void setStrokeMiterLimit(float f) { accessSVGStyle().setStrokeMiterLimit(f); }
 

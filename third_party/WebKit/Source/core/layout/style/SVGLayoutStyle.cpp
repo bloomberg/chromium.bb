@@ -175,7 +175,7 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
             || stroke->paintUri != other->stroke->paintUri
             || stroke->miterLimit != other->stroke->miterLimit
             || *stroke->dashArray != *other->stroke->dashArray
-            || *stroke->dashOffset != *other->stroke->dashOffset
+            || stroke->dashOffset != other->stroke->dashOffset
             || stroke->visitedLinkPaintColor != other->stroke->visitedLinkPaintColor
             || stroke->visitedLinkPaintUri != other->stroke->visitedLinkPaintUri
             || stroke->visitedLinkPaintType != other->stroke->visitedLinkPaintType)

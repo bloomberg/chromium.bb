@@ -288,7 +288,7 @@ static void writeStyle(TextStream& ts, const LayoutObject& object)
             writeSVGPaintingResource(ts, strokePaintDescription);
 
             SVGLengthContext lengthContext(shape.element());
-            double dashOffset = svgStyle.strokeDashOffset()->value(lengthContext);
+            double dashOffset = lengthContext.valueForLength(svgStyle.strokeDashOffset(), style);
             double strokeWidth = svgStyle.strokeWidth()->value(lengthContext);
             RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
 

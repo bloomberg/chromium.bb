@@ -223,7 +223,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
     case CSSPropertyStrokeDasharray:
         return dataEquivalent(a.strokeDashArray(), b.strokeDashArray());
     case CSSPropertyStrokeDashoffset:
-        return dataEquivalent(a.strokeDashOffset(), b.strokeDashOffset());
+        return a.strokeDashOffset() == b.strokeDashOffset();
     case CSSPropertyStrokeMiterlimit:
         return a.strokeMiterLimit() == b.strokeMiterLimit();
     case CSSPropertyStrokeOpacity:

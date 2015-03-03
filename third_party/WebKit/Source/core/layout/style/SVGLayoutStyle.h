@@ -76,6 +76,7 @@ public:
     static Color initialStrokePaintColor() { return Color(); }
     static String initialStrokePaintUri() { return String(); }
     static PassRefPtrWillBeRawPtr<SVGLengthList> initialStrokeDashArray() { return SVGLengthList::create(); }
+    static Length initialStrokeDashOffset() { return Length(Fixed); }
     static float initialStrokeMiterLimit() { return 4; }
     static float initialStopOpacity() { return 1; }
     static Color initialStopColor() { return Color(0, 0, 0); }
@@ -94,13 +95,6 @@ public:
     static Length initialY() { return Length(Fixed); }
     static Length initialRx() { return Length(Fixed); }
     static Length initialRy() { return Length(Fixed); }
-
-    static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeDashOffset()
-    {
-        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
-        length->newValueSpecifiedUnits(LengthTypeNumber, 0);
-        return length.release();
-    }
 
     static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeWidth()
     {
@@ -219,10 +213,10 @@ public:
             stroke.access()->width = obj;
     }
 
-    void setStrokeDashOffset(PassRefPtrWillBeRawPtr<SVGLength> obj)
+    void setStrokeDashOffset(const Length& dashOffset)
     {
-        if (*stroke->dashOffset != *obj)
-            stroke.access()->dashOffset = obj;
+        if (!(stroke->dashOffset == dashOffset))
+            stroke.access()->dashOffset = dashOffset;
     }
 
     void setStopOpacity(float obj)
@@ -328,7 +322,7 @@ public:
     SVGLengthList* strokeDashArray() const { return stroke->dashArray.get(); }
     float strokeMiterLimit() const { return stroke->miterLimit; }
     SVGLength* strokeWidth() const { return stroke->width.get(); }
-    SVGLength* strokeDashOffset() const { return stroke->dashOffset.get(); }
+    const Length& strokeDashOffset() const { return stroke->dashOffset; }
     float stopOpacity() const { return stops->opacity; }
     const Color& stopColor() const { return stops->color; }
     float floodOpacity() const { return misc->floodOpacity; }

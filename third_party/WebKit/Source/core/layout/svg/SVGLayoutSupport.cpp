@@ -369,7 +369,7 @@ void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const
         for (; it != itEnd; ++it)
             dashArray.append(it->value(lengthContext));
     }
-    context.setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
+    context.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 
 void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const LayoutStyle& style, const LayoutObject& object)
@@ -393,7 +393,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
         for (; it != itEnd; ++it)
             dashArray.append(it->value(lengthContext));
     }
-    strokeData.setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
+    strokeData.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 
 bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& renderer, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)

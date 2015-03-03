@@ -219,7 +219,7 @@ marker-start: none;
 shape-rendering: auto;
 stroke: none;
 stroke-dasharray: none;
-stroke-dashoffset: 0;
+stroke-dashoffset: 0px;
 stroke-linecap: butt;
 stroke-linejoin: miter;
 stroke-miterlimit: 4;

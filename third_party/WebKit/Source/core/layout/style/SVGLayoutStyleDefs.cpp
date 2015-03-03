@@ -86,7 +86,7 @@ StyleStrokeData::StyleStrokeData(const StyleStrokeData& other)
     , opacity(other.opacity)
     , miterLimit(other.miterLimit)
     , width(other.width->clone())
-    , dashOffset(other.dashOffset->clone())
+    , dashOffset(other.dashOffset)
     , dashArray(other.dashArray->clone())
     , paintType(other.paintType)
     , paintColor(other.paintColor)
@@ -102,7 +102,7 @@ bool StyleStrokeData::operator==(const StyleStrokeData& other) const
     return *width == *other.width
         && opacity == other.opacity
         && miterLimit == other.miterLimit
-        && *dashOffset == *other.dashOffset
+        && dashOffset == other.dashOffset
         && *dashArray == *other.dashArray
         && paintType == other.paintType
         && paintColor == other.paintColor

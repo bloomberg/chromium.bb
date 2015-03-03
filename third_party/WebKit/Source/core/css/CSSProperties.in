@@ -253,7 +253,7 @@ stop-color animatable, svg, converter=convertSVGColor
 stop-opacity animatable, svg, converter=convertNumberOrPercentage
 stroke animatable, inherited, svg, setter=setStrokePaint, custom_all
 stroke-dasharray animatable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
-stroke-dashoffset animatable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertSVGLength
+stroke-dashoffset animatable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
 stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle
 stroke-miterlimit animatable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit

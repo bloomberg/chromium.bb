@@ -189,6 +189,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyMarginTop:
     case CSSPropertyOutlineOffset:
     case CSSPropertyRight:
+    case CSSPropertyStrokeDashoffset:
     case CSSPropertyTop:
     case CSSPropertyVerticalAlign:
     case CSSPropertyWordSpacing:
@@ -330,11 +331,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         break;
     }
 
-    case CSSPropertyStrokeWidth:
-        range = RangeNonNegative;
-        // Fall through
-    case CSSPropertyStrokeDashoffset: {
-        RefPtrWillBeRawPtr<Interpolation> interpolation = SVGLengthStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property, range);
+    case CSSPropertyStrokeWidth: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = SVGLengthStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
         if (interpolation)
             return interpolation.release();
 

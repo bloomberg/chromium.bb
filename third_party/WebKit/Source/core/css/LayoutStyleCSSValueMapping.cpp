@@ -2520,7 +2520,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
     case CSSPropertyStrokeDasharray:
         return strokeDashArrayToCSSValueList(svgStyle.strokeDashArray());
     case CSSPropertyStrokeDashoffset:
-        return SVGLength::toCSSPrimitiveValue(svgStyle.strokeDashOffset());
+        return zoomAdjustedPixelValueForLength(svgStyle.strokeDashOffset(), style);
     case CSSPropertyStrokeWidth:
         return SVGLength::toCSSPrimitiveValue(svgStyle.strokeWidth());
     case CSSPropertyBaselineShift: {

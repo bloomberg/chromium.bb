@@ -43,7 +43,7 @@ TEST(SVGLayoutStyleTest, StrokeStyleShouldCompareValue)
     TEST_STYLE_VALUE_NO_DIFF(float, StrokeOpacity);
     TEST_STYLE_VALUE_NO_DIFF(float, StrokeMiterLimit);
     TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGLength, StrokeWidth);
-    TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGLength, StrokeDashOffset);
+    TEST_STYLE_VALUE_NO_DIFF(Length, StrokeDashOffset);
     TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGLengthList, StrokeDashArray);
 
     {

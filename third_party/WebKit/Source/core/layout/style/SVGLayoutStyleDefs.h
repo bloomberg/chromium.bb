@@ -161,7 +161,7 @@ public:
     float miterLimit;
 
     RefPtrWillBePersistent<SVGLength> width;
-    RefPtrWillBePersistent<SVGLength> dashOffset;
+    Length dashOffset;
     RefPtrWillBePersistent<SVGLengthList> dashArray;
 
     SVGPaintType paintType;

@@ -217,7 +217,7 @@ rect: style.getPropertyValue(marker-start) : url(#pserver)
 rect: style.getPropertyValue(shape-rendering) : auto
 rect: style.getPropertyValue(stroke) : rgb(255, 165, 0)
 rect: style.getPropertyValue(stroke-dasharray) : none
-rect: style.getPropertyValue(stroke-dashoffset) : 0
+rect: style.getPropertyValue(stroke-dashoffset) : 0px
 rect: style.getPropertyValue(stroke-linecap) : butt
 rect: style.getPropertyValue(stroke-linejoin) : miter
 rect: style.getPropertyValue(stroke-miterlimit) : 4
@@ -450,7 +450,7 @@ g: style.getPropertyValue(marker-start) : url(#pserver)
 g: style.getPropertyValue(shape-rendering) : auto
 g: style.getPropertyValue(stroke) : rgb(255, 165, 0)
 g: style.getPropertyValue(stroke-dasharray) : none
-g: style.getPropertyValue(stroke-dashoffset) : 0
+g: style.getPropertyValue(stroke-dashoffset) : 0px
 g: style.getPropertyValue(stroke-linecap) : butt
 g: style.getPropertyValue(stroke-linejoin) : miter
 g: style.getPropertyValue(stroke-miterlimit) : 4

@@ -442,7 +442,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyStrokeDasharray:
         return AnimatableStrokeDasharrayList::create(style.strokeDashArray());
     case CSSPropertyStrokeDashoffset:
-        return AnimatableSVGLength::create(style.strokeDashOffset());
+        return createFromLength(style.strokeDashOffset(), style);
     case CSSPropertyStrokeMiterlimit:
         return createFromDouble(style.strokeMiterLimit());
     case CSSPropertyStrokeOpacity:
