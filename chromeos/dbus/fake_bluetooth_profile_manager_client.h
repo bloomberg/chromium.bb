@@ -51,6 +51,7 @@ class CHROMEOS_EXPORT FakeBluetoothProfileManagerClient
   // UUIDs recognised for testing.
   static const char kL2capUuid[];
   static const char kRfcommUuid[];
+  static const char kUnregisterableUuid[];
 
  private:
   // Map of a D-Bus object path to the FakeBluetoothProfileServiceProvider

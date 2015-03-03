@@ -110,6 +110,8 @@ void BluetoothSocketChromeOS::Connect(
   if (security_level == SECURITY_LEVEL_LOW)
     options_->require_authentication.reset(new bool(false));
 
+  adapter_ = device->adapter();
+
   RegisterProfile(device->adapter(), success_callback, error_callback);
 }
 
@@ -128,7 +130,8 @@ void BluetoothSocketChromeOS::Listen(
     return;
   }
 
-  adapter->AddObserver(this);
+  adapter_ = adapter;
+  adapter_->AddObserver(this);
 
   uuid_ = uuid;
   options_.reset(new BluetoothProfileManagerClient::Options());
@@ -221,12 +224,10 @@ void BluetoothSocketChromeOS::RegisterProfile(
   DCHECK(!profile_);
   DCHECK(adapter);
 
-  adapter_ = adapter;
-
   // If the adapter is not present, this is a listening socket and the
   // adapter isn't running yet.  Report success and carry on;
   // the profile will be registered when the daemon becomes available.
-  if (!adapter_->IsPresent()) {
+  if (!adapter->IsPresent()) {
     VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
             << ": Delaying profile registration.";
     base::MessageLoop::current()->PostTask(FROM_HERE, success_callback);
@@ -309,7 +310,7 @@ void BluetoothSocketChromeOS::AdapterPresentChanged(BluetoothAdapter* adapter,
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   if (!present) {
-    // Adapter removed, the profile is now invalid.
+    // Adapter removed, we can't use the profile anymore.
     UnregisterProfile();
     return;
   }
@@ -549,20 +550,9 @@ void BluetoothSocketChromeOS::UnregisterProfile() {
 
   VLOG(1) << profile_->object_path().value() << ": Release profile";
 
-  profile_->RemoveDelegate(
-      device_path_,
-      base::Bind(&BluetoothSocketChromeOS::ReleaseProfile, this, profile_));
-
+  static_cast<BluetoothAdapterChromeOS*>(adapter_.get())
+      ->ReleaseProfile(device_path_, profile_);
   profile_ = nullptr;
-}
-
-void BluetoothSocketChromeOS::ReleaseProfile(
-    BluetoothAdapterProfileChromeOS* profile) {
-  if (adapter_)
-    static_cast<BluetoothAdapterChromeOS*>(adapter_.get())
-        ->ReleaseProfile(uuid_);
-  else
-    delete profile;
 }
 
 }  // namespace chromeos
