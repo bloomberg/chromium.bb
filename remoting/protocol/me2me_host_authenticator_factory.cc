@@ -97,12 +97,6 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   return result.Pass();
 }
 
-// static
-scoped_ptr<AuthenticatorFactory>
-    Me2MeHostAuthenticatorFactory::CreateRejecting() {
-  return make_scoped_ptr(new Me2MeHostAuthenticatorFactory());
-}
-
 Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {
 }
 

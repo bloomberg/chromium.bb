@@ -43,10 +43,6 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       scoped_refptr<RsaKeyPair> key_pair,
       scoped_ptr<TokenValidatorFactory> token_validator_factory);
 
-  // Create a factory that dispenses rejecting authenticators (used when the
-  // host config/policy is inconsistent)
-  static scoped_ptr<AuthenticatorFactory> CreateRejecting();
-
   Me2MeHostAuthenticatorFactory();
   ~Me2MeHostAuthenticatorFactory() override;
 

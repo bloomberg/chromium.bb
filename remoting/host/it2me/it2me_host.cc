@@ -229,8 +229,10 @@ void It2MeHost::FinishConnect() {
      protocol::NetworkSettings::NAT_TRAVERSAL_FULL :
      protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED);
   if (!nat_traversal_enabled_) {
-    network_settings.min_port = protocol::NetworkSettings::kDefaultMinPort;
-    network_settings.max_port = protocol::NetworkSettings::kDefaultMaxPort;
+    network_settings.port_range.min_port =
+        protocol::NetworkSettings::kDefaultMinPort;
+    network_settings.port_range.max_port =
+        protocol::NetworkSettings::kDefaultMaxPort;
   }
 
   // Create the host.

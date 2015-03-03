@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "remoting/host/third_party_auth_config.h"
 #include "remoting/protocol/token_validator.h"
 #include "url/gurl.h"
 
@@ -18,20 +19,6 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace remoting {
-
-struct ThirdPartyAuthConfig {
-  inline bool is_empty() const {
-    return token_url.is_empty() && token_validation_url.is_empty();
-  }
-
-  inline bool is_valid() const {
-    return token_url.is_valid() && token_validation_url.is_valid();
-  }
-
-  GURL token_url;
-  GURL token_validation_url;
-  std::string token_validation_cert_issuer;
-};
 
 class TokenValidatorBase
     : public net::URLRequest::Delegate,

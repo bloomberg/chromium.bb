@@ -156,8 +156,8 @@ scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
     flags |= cricket::PORTALLOCATOR_DISABLE_RELAY;
 
   result->set_flags(flags);
-  result->SetPortRange(network_settings.min_port,
-                       network_settings.max_port);
+  result->SetPortRange(network_settings.port_range.min_port,
+                       network_settings.port_range.max_port);
 
   return result.Pass();
 }

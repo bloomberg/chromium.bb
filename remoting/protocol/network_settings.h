@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "remoting/protocol/port_range.h"
 
 namespace remoting {
 namespace protocol {
@@ -42,32 +43,17 @@ struct NetworkSettings {
         NAT_TRAVERSAL_OUTGOING
   };
 
-  NetworkSettings()
-      : flags(NAT_TRAVERSAL_DISABLED),
-        min_port(0),
-        max_port(0) {
+  NetworkSettings() : flags(NAT_TRAVERSAL_DISABLED) {
     DCHECK(!(flags & (NAT_TRAVERSAL_STUN | NAT_TRAVERSAL_RELAY)) ||
            (flags & NAT_TRAVERSAL_OUTGOING));
   }
 
-  explicit NetworkSettings(uint32 flags)
-      : flags(flags),
-        min_port(0),
-        max_port(0) {
-  }
-
-  // Parse string in the form "<min_port>-<max_port>". E.g. "12400-12409".
-  // Returns true if string was parsed successfuly.
-  static bool ParsePortRange(const std::string& port_range,
-                             uint16* out_min_port,
-                             uint16* out_max_port);
+  explicit NetworkSettings(uint32 flags) : flags(flags) {}
 
   uint32 flags;
 
-  // |min_port| and |max_port| specify range (inclusive) of ports used by
-  // P2P sessions. Any port can be used when both values are set to 0.
-  uint16 min_port;
-  uint16 max_port;
+  // Range of ports used by P2P sessions.
+  PortRange port_range;
 };
 
 }  // namespace protocol

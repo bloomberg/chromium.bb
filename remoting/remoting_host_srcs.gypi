@@ -218,6 +218,8 @@
       'host/single_window_input_injector_linux.cc',
       'host/single_window_input_injector_mac.cc',
       'host/single_window_input_injector_win.cc',
+      'host/third_party_auth_config.cc',
+      'host/third_party_auth_config.h',
       'host/token_validator_base.cc',
       'host/token_validator_base.h',
       'host/token_validator_factory_impl.cc',

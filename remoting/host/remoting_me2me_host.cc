@@ -64,6 +64,7 @@
 #include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/single_window_desktop_environment.h"
+#include "remoting/host/third_party_auth_config.h"
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
@@ -71,6 +72,7 @@
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/port_range.h"
 #include "remoting/protocol/token_validator.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
@@ -339,8 +341,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool host_username_match_required_;
   bool allow_nat_traversal_;
   bool allow_relay_;
-  uint16 min_udp_port_;
-  uint16 max_udp_port_;
+  PortRange udp_port_range_;
   std::string talkgadget_prefix_;
   bool allow_pairing_;
 
@@ -394,8 +395,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       host_username_match_required_(false),
       allow_nat_traversal_(true),
       allow_relay_(true),
-      min_udp_port_(0),
-      max_udp_port_(0),
       allow_pairing_(true),
       curtain_required_(false),
       enable_gnubby_auth_(false),
@@ -672,7 +671,7 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   scoped_ptr<protocol::AuthenticatorFactory> factory;
 
-  if (third_party_auth_config_.is_empty()) {
+  if (third_party_auth_config_.is_null()) {
     scoped_refptr<PairingRegistry> pairing_registry;
     if (allow_pairing_) {
       // On Windows |pairing_registry_| is initialized in
@@ -696,7 +695,10 @@ void HostProcess::CreateAuthenticatorFactory() {
         host_secret_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
-  } else if (third_party_auth_config_.is_valid()) {
+  } else {
+    DCHECK(third_party_auth_config_.token_url.is_valid());
+    DCHECK(third_party_auth_config_.token_validation_url.is_valid());
+
     scoped_ptr<protocol::TokenValidatorFactory> token_validator_factory(
         new TokenValidatorFactoryImpl(
             third_party_auth_config_,
@@ -704,17 +706,6 @@ void HostProcess::CreateAuthenticatorFactory() {
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         use_service_account_, host_owner_, local_certificate, key_pair_,
         token_validator_factory.Pass());
-
-  } else {
-    // TODO(rmsousa): If the policy is bad the host should not go online. It
-    // should keep running, but not connected, until the policies are fixed.
-    // Having it show up as online and then reject all clients is misleading.
-    LOG(ERROR) << "One of the third-party token URLs is empty or invalid. "
-               << "Host will reject all clients until policies are corrected. "
-               << "TokenUrl: " << third_party_auth_config_.token_url << ", "
-               << "TokenValidationUrl: "
-               << third_party_auth_config_.token_validation_url;
-    factory = protocol::Me2MeHostAuthenticatorFactory::CreateRejecting();
   }
 
 #if defined(OS_POSIX)
@@ -1189,34 +1180,15 @@ bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  std::string udp_port_range;
+  std::string string_value;
   if (!policies->GetString(policy::key::kRemoteAccessHostUdpPortRange,
-                           &udp_port_range)) {
+                           &string_value)) {
     return false;
   }
 
-  // Use default values if policy setting is empty or invalid.
-  uint16 min_udp_port = 0;
-  uint16 max_udp_port = 0;
-  if (!udp_port_range.empty() &&
-      !NetworkSettings::ParsePortRange(udp_port_range, &min_udp_port,
-                                       &max_udp_port)) {
-    LOG(WARNING) << "Invalid port range policy: \"" << udp_port_range
-                 << "\". Using default values.";
-  }
-
-  if (min_udp_port_ != min_udp_port || max_udp_port_ != max_udp_port) {
-    if (min_udp_port != 0 && max_udp_port != 0) {
-      HOST_LOG << "Policy restricts UDP port range to [" << min_udp_port
-               << ", " << max_udp_port << "]";
-    } else {
-      HOST_LOG << "Policy does not restrict UDP port range.";
-    }
-    min_udp_port_ = min_udp_port;
-    max_udp_port_ = max_udp_port;
-    return true;
-  }
-  return false;
+  DCHECK(PortRange::Parse(string_value, &udp_port_range_));
+  HOST_LOG << "Policy restricts UDP port range to: " << udp_port_range_;
+  return true;
 }
 
 bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
@@ -1274,39 +1246,18 @@ bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
 }
 
 bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
-  // Returns true if the host has to be restarted after this policy update.
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  bool token_policy_changed = false;
-  std::string token_url_string;
-  if (policies->GetString(policy::key::kRemoteAccessHostTokenUrl,
-                          &token_url_string)) {
-    token_policy_changed = true;
-    third_party_auth_config_.token_url = GURL(token_url_string);
+  switch (ThirdPartyAuthConfig::Parse(*policies, &third_party_auth_config_)) {
+    case ThirdPartyAuthConfig::NoPolicy:
+      return false;
+    case ThirdPartyAuthConfig::ParsingSuccess:
+      HOST_LOG << "Policy sets third-party token URLs: "
+               << third_party_auth_config_;
+      return true;
+    case ThirdPartyAuthConfig::InvalidPolicy:
+    default:
+      NOTREACHED();
+      return false;
   }
-  std::string token_validation_url_string;
-  if (policies->GetString(policy::key::kRemoteAccessHostTokenValidationUrl,
-                          &token_validation_url_string)) {
-    token_policy_changed = true;
-    third_party_auth_config_.token_validation_url =
-        GURL(token_validation_url_string);
-  }
-  if (policies->GetString(
-          policy::key::kRemoteAccessHostTokenValidationCertificateIssuer,
-          &third_party_auth_config_.token_validation_cert_issuer)) {
-    token_policy_changed = true;
-  }
-
-  if (token_policy_changed) {
-    HOST_LOG << "Policy sets third-party token URLs: "
-             << "TokenUrl: "
-             << third_party_auth_config_.token_url << ", "
-             << "TokenValidationUrl: "
-             << third_party_auth_config_.token_validation_url << ", "
-             << "TokenValidationCertificateIssuer: "
-             << third_party_auth_config_.token_validation_cert_issuer;
-  }
-  return token_policy_changed;
 }
 
 bool HostProcess::OnPairingPolicyUpdate(base::DictionaryValue* policies) {
@@ -1392,15 +1343,14 @@ void HostProcess::StartHost() {
 
   NetworkSettings network_settings(network_flags);
 
-  if (min_udp_port_ && max_udp_port_) {
-    network_settings.min_port = min_udp_port_;
-    network_settings.max_port = max_udp_port_;
+  if (!udp_port_range_.is_null()) {
+    network_settings.port_range = udp_port_range_;
   } else if (!allow_nat_traversal_) {
     // For legacy reasons we have to restrict the port range to a set of default
     // values when nat traversal is disabled, even if the port range was not
     // set in policy.
-    network_settings.min_port = NetworkSettings::kDefaultMinPort;
-    network_settings.max_port = NetworkSettings::kDefaultMaxPort;
+    network_settings.port_range.min_port = NetworkSettings::kDefaultMinPort;
+    network_settings.port_range.max_port = NetworkSettings::kDefaultMaxPort;
   }
 
   host_.reset(new ChromotingHost(
