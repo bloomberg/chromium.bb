@@ -81,6 +81,23 @@ private:
     WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
 };
 
+class ServiceWorkerContainer::GetRegistrationForReadyCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationForReadyCallbacks {
+public:
+    explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
+        : m_ready(ready) { }
+    ~GetRegistrationForReadyCallback() { }
+    void onSuccess(WebServiceWorkerRegistration* registration) override
+    {
+        ASSERT(registration);
+        ASSERT(m_ready->state() == ReadyProperty::Pending);
+        if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
+            m_ready->resolve(ServiceWorkerRegistration::from(m_ready->executionContext(), registration));
+    }
+private:
+    Persistent<ReadyProperty> m_ready;
+    WTF_MAKE_NONCOPYABLE(GetRegistrationForReadyCallback);
+};
+
 ServiceWorkerContainer* ServiceWorkerContainer::create(ExecutionContext* executionContext)
 {
     return new ServiceWorkerContainer(executionContext);
@@ -233,6 +250,12 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState)
         return ScriptPromise::rejectWithDOMException(callerState, DOMException::create(NotSupportedError, "'ready' is only supported in pages."));
     }
 
+    if (!m_ready) {
+        m_ready = createReadyProperty();
+        if (m_provider)
+            m_provider->getRegistrationForReady(new GetRegistrationForReadyCallback(m_ready.get()));
+    }
+
     return m_ready->promise(callerState->world());
 }
 
@@ -256,6 +279,7 @@ void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker, bool
         dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
 
+// FIXME: Remove this after Chrome side CL landed.
 void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* registration)
 {
     if (!executionContext()) {
@@ -318,6 +342,7 @@ ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContex
     if (!executionContext)
         return;
 
+    // FIXME: Remove this after Chrome side CL landed.
     m_ready = createReadyProperty();
 
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext)) {

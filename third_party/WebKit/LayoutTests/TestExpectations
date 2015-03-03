@@ -1357,6 +1357,9 @@ crbug.com/390358 http/tests/security/mixedContent/insecure-eventsource-in-main-f
 crbug.com/384950 fast/forms/submit-change-fragment.html [ Pass Timeout ]
 crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pass ]
 
+# Temporarily skipped until Chromium side change lands.
+crbug.com/454726 http/tests/serviceworker/ready.html [ Skip ]
+
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]

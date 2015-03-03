@@ -89,6 +89,7 @@ public:
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
+    class GetRegistrationForReadyCallback;
     typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, Member<ServiceWorkerRegistration>, Member<ServiceWorkerRegistration>> ReadyProperty;
     ReadyProperty* createReadyProperty();
 
