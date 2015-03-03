@@ -280,6 +280,7 @@ DEFINE_TRACE(MediaSource)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_asyncEventQueue);
+    visitor->trace(m_attachedElement);
 #endif
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
