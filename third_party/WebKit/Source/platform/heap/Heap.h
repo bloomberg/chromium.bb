@@ -1658,7 +1658,8 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    static bool weakTableRegistered(Visitor* visitor, const void* closure)
+    template<typename VisitorDispatcher>
+    static bool weakTableRegistered(VisitorDispatcher visitor, const void* closure)
     {
         return visitor->weakTableRegistered(closure);
     }
