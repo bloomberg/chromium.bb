@@ -48,9 +48,9 @@ class TestPermissionContext : public PermissionContextBase {
     return tab_context_updated_;
   }
 
-  void TrackPermissionDecision(bool granted) {
+  void TrackPermissionDecision(ContentSetting content_setting) {
     permission_set_ = true;
-    permission_granted_ = granted;
+    permission_granted_ = content_setting == CONTENT_SETTING_ALLOW;
   }
 
  protected:

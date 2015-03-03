@@ -63,7 +63,7 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
   void OnRequestPermissionResponse(
     const mojo::Callback<void(PermissionStatus)>& callback,
     int request_id,
-    bool allowed);
+    PermissionStatus status);
 
   PermissionStatus GetPermissionStatus(PermissionType type, GURL origin);
   void ResetPermissionStatus(PermissionType type, GURL origin);

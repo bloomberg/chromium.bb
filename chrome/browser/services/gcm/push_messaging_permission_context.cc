@@ -86,7 +86,7 @@ void PushMessagingPermissionContext::DecidePermission(
 #if defined(ENABLE_NOTIFICATIONS)
   if (requesting_origin != embedding_origin) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, false /* granted */);
+                        false /* persist */, CONTENT_SETTING_BLOCK);
     return;
   }
   DesktopNotificationService* notification_service =
@@ -100,7 +100,7 @@ void PushMessagingPermissionContext::DecidePermission(
                  embedding_origin, callback));
 #else
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                      false /* persist */, false /* granted */);
+                      false /* persist */, CONTENT_SETTING_BLOCK);
 #endif
 }
 
@@ -109,7 +109,7 @@ void PushMessagingPermissionContext::DecidePushPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const BrowserPermissionCallback& callback,
-    bool notifications_permission_granted) {
+    ContentSetting notification_content_setting) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ContentSetting push_content_setting =
       profile_->GetHostContentSettingsMap()
@@ -122,21 +122,21 @@ void PushMessagingPermissionContext::DecidePushPermission(
     PermissionContextUmaUtil::PermissionDenied(kPushSettingType,
                                                requesting_origin);
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        true /* persist */, false /* granted */);
+                        true /* persist */, CONTENT_SETTING_BLOCK);
     return;
   }
 
-  if (!notifications_permission_granted) {
+  if (notification_content_setting != CONTENT_SETTING_ALLOW) {
     DVLOG(1) << "Notification permission has not been granted.";
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, false /* granted */);
+                        false /* persist */, notification_content_setting);
     return;
   }
 
   PermissionContextUmaUtil::PermissionGranted(kPushSettingType,
                                               requesting_origin);
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                      true /* persist */, true /* granted */);
+                      true /* persist */, CONTENT_SETTING_ALLOW);
 }
 }  // namespace gcm
 

@@ -139,7 +139,14 @@ class AwAccessTokenStore : public content::AccessTokenStore {
   DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };
 
-}  // namespace
+void CallbackPermisisonStatusWrapper(
+    const base::Callback<void(content::PermissionStatus)>& callback,
+    bool allowed) {
+  callback.Run(allowed ? content::PERMISSION_STATUS_GRANTED
+                       : content::PERMISSION_STATUS_DENIED);
+}
+
+}  // anonymous namespace
 
 std::string AwContentBrowserClient::GetAcceptLangsImpl() {
   // Start with the currnet locale.
@@ -380,7 +387,7 @@ void AwContentBrowserClient::RequestPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    const base::Callback<void(bool)>& result_callback) {
+    const base::Callback<void(content::PermissionStatus)>& callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   GURL origin = requesting_frame.GetOrigin();
@@ -391,19 +398,20 @@ void AwContentBrowserClient::RequestPermission(
     case content::PERMISSION_GEOLOCATION:
       if (!delegate) {
         DVLOG(0) << "Dropping GeolocationPermission request";
-        result_callback.Run(false);
+        callback.Run(content::PERMISSION_STATUS_DENIED);
         return;
       }
-      delegate->RequestGeolocationPermission(origin, result_callback);
+      delegate->RequestGeolocationPermission(
+          origin, base::Bind(&CallbackPermisisonStatusWrapper, callback));
       break;
     case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
       if (!delegate) {
         DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
-        result_callback.Run(false);
+        callback.Run(content::PERMISSION_STATUS_DENIED);
         return;
       }
-      delegate->RequestProtectedMediaIdentifierPermission(origin,
-                                                          result_callback);
+      delegate->RequestProtectedMediaIdentifierPermission(
+          origin, base::Bind(&CallbackPermisisonStatusWrapper, callback));
       break;
     case content::PERMISSION_MIDI_SYSEX:
     case content::PERMISSION_NOTIFICATIONS:

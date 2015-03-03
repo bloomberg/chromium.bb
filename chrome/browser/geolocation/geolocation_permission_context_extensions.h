@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/content_settings/core/common/content_settings.h"
 
 namespace content {
 class WebContents;
@@ -30,7 +31,7 @@ class GeolocationPermissionContextExtensions {
                          int bridge_id,
                          const GURL& requesting_frame,
                          bool user_gesture,
-                         base::Callback<void(bool)> callback,
+                         const base::Callback<void(ContentSetting)>& callback,
                          bool* permission_set,
                          bool* new_permission);
 

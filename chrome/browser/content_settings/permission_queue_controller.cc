@@ -45,7 +45,7 @@ class PermissionQueueController::PendingInfobarRequest {
                         const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         const GURL& embedder,
-                        PermissionDecidedCallback callback);
+                        const PermissionDecidedCallback& callback);
   ~PendingInfobarRequest();
 
   bool IsForPair(const GURL& requesting_frame,
@@ -56,7 +56,7 @@ class PermissionQueueController::PendingInfobarRequest {
   bool has_infobar() const { return !!infobar_; }
   infobars::InfoBar* infobar() { return infobar_; }
 
-  void RunCallback(bool allowed);
+  void RunCallback(ContentSetting content_setting);
   void CreateInfoBar(PermissionQueueController* controller,
                      const std::string& display_languages);
 
@@ -76,7 +76,7 @@ PermissionQueueController::PendingInfobarRequest::PendingInfobarRequest(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
-    PermissionDecidedCallback callback)
+    const PermissionDecidedCallback& callback)
     : type_(type),
       id_(id),
       requesting_frame_(requesting_frame),
@@ -95,8 +95,8 @@ bool PermissionQueueController::PendingInfobarRequest::IsForPair(
 }
 
 void PermissionQueueController::PendingInfobarRequest::RunCallback(
-    bool allowed) {
-  callback_.Run(allowed);
+    ContentSetting content_setting) {
+  callback_.Run(content_setting);
 }
 
 void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
@@ -152,7 +152,7 @@ void PermissionQueueController::CreateInfoBarRequest(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
-    PermissionDecidedCallback callback) {
+    const PermissionDecidedCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (requesting_frame.SchemeIs(content::kChromeUIScheme) ||
@@ -235,10 +235,20 @@ void PermissionQueueController::OnPermissionSet(
        i != infobars_to_remove.end(); ++i)
     GetInfoBarService(i->id())->RemoveInfoBar(i->infobar());
 
+  // PermissionContextBase needs to know about the new ContentSetting value,
+  // CONTENT_SETTING_DEFAULT being the value for nothing happened. The callers
+  // of ::OnPermissionSet passes { true, true } for allow, { true, false } for
+  // block and { false, * } for dismissed. The tuple being
+  // { update_content_setting, allowed }.
+  ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
+  if (update_content_setting) {
+    content_setting = allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  }
+
   // Send out the permission notifications.
   for (PendingInfobarRequests::iterator i = requests_to_notify.begin();
        i != requests_to_notify.end(); ++i)
-    i->RunCallback(allowed);
+    i->RunCallback(content_setting);
 
   // Remove the pending requests in reverse order.
   for (int i = pending_requests_to_remove.size() - 1; i >= 0; --i)

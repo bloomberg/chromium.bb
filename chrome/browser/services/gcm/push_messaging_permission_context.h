@@ -47,7 +47,7 @@ class PushMessagingPermissionContext : public PermissionContextBase {
                             const GURL& requesting_origin,
                             const GURL& embedding_origin,
                             const BrowserPermissionCallback& callback,
-                            bool notifications_permission_granted);
+                            ContentSetting notifications_content_setting);
 
   Profile* profile_;
 

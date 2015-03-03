@@ -22,7 +22,7 @@ LayoutTestContentBrowserClient* g_layout_test_browser_client;
 
 void RequestDesktopNotificationPermissionOnIO(
     const GURL& source_origin,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(PermissionStatus)>& callback) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   bool allowed = manager ? manager->RequestPermission(source_origin)
@@ -32,7 +32,8 @@ void RequestDesktopNotificationPermissionOnIO(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(callback, allowed));
+      base::Bind(callback,
+                 allowed ? PERMISSION_STATUS_GRANTED : PERMISSION_STATUS_ASK));
 }
 
 }  // namespace
@@ -84,7 +85,7 @@ void LayoutTestContentBrowserClient::RequestPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    const base::Callback<void(bool)>& result_callback) {
+    const base::Callback<void(PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (permission == content::PERMISSION_NOTIFICATIONS) {
     BrowserThread::PostTask(
@@ -92,7 +93,7 @@ void LayoutTestContentBrowserClient::RequestPermission(
         FROM_HERE,
         base::Bind(&RequestDesktopNotificationPermissionOnIO,
                    requesting_frame,
-                   result_callback));
+                   callback));
     return;
   }
   ShellContentBrowserClient::RequestPermission(permission,
@@ -100,7 +101,7 @@ void LayoutTestContentBrowserClient::RequestPermission(
                                                bridge_id,
                                                requesting_frame,
                                                user_gesture,
-                                               result_callback);
+                                               callback);
 }
 
 PlatformNotificationService*

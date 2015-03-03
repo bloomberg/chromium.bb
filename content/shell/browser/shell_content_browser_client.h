@@ -54,6 +54,14 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
   QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  void RequestPermission(
+      PermissionType permission,
+      WebContents* web_contents,
+      int bridge_id,
+      const GURL& requesting_frame,
+      bool user_gesture,
+      const base::Callback<void(PermissionStatus)>& callback) override;
+
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
   net::NetLog* GetNetLog() override;

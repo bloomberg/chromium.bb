@@ -36,12 +36,14 @@ void GeolocationPermissionContext::RequestPermission(
       web_contents, id, id.bridge_id(), requesting_frame_origin, user_gesture,
       callback, &permission_set, &new_permission)) {
     if (permission_set) {
+      ContentSetting content_setting =
+          new_permission ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
       NotifyPermissionSet(id,
                           requesting_frame_origin,
                           web_contents->GetLastCommittedURL().GetOrigin(),
                           callback,
                           true,
-                          new_permission);
+                          content_setting);
     }
     return;
   }

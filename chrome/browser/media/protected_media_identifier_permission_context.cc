@@ -52,7 +52,7 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
   if (!requesting_origin.is_valid() || !embedding_origin.is_valid() ||
       !IsProtectedMediaIdentifierEnabled()) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, false /* granted */);
+                        false /* persist */, CONTENT_SETTING_BLOCK);
     return;
   }
 
@@ -65,24 +65,18 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
   ContentSetting content_setting =
       GetPermissionStatus(requesting_origin, embedding_origin);
 
-  switch (content_setting) {
-    case CONTENT_SETTING_BLOCK:
-      NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                          false /* persist */, false /* granted */);
-      return;
-    case CONTENT_SETTING_ALLOW:
-      NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                          false /* persist */, true /* granted */);
-      return;
-    default:
-      break;
+  if (content_setting == CONTENT_SETTING_ALLOW ||
+      content_setting == CONTENT_SETTING_BLOCK) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, content_setting);
+    return;
   }
 
   // Since the dialog is modal, we only support one prompt per |web_contents|.
   // Reject the new one if there is already one pending. See
   // http://crbug.com/447005
   if (pending_requests_.count(web_contents)) {
-    callback.Run(false);
+    callback.Run(CONTENT_SETTING_DEFAULT);
     return;
   }
 
@@ -189,17 +183,25 @@ void ProtectedMediaIdentifierPermissionContext::OnPlatformVerificationResult(
   DCHECK(request->second.second.Equals(id));
   pending_requests_.erase(request);
 
-  if (response == PlatformVerificationFlow::CONSENT_RESPONSE_NONE) {
-    // Deny request and do not save to content settings.
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false,   // Do not save to content settings.
-                        false);  // Do not allow the permission.
-    return;
+  ContentSetting content_setting;
+  bool persist; // Whether the ContentSetting should be saved.
+  switch (response) {
+    case PlatformVerificationFlow::CONSENT_RESPONSE_NONE:
+      content_setting = CONTENT_SETTING_DEFAULT;
+      persist = false;
+      break;
+    case PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW:
+      content_setting = CONTENT_SETTING_ALLOW;
+      persist = true;
+      break;
+    case PlatformVerificationFlow::CONSENT_RESPONSE_DENY:
+      content_setting = CONTENT_SETTING_BLOCK;
+      persist = true;
+      break;
   }
 
   NotifyPermissionSet(
       id, requesting_origin, embedding_origin, callback,
-      true,  // Save to content settings.
-      response == PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
+      persist, content_setting);
 }
 #endif

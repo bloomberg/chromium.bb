@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "ipc/ipc_message.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/eme_constants.h"
@@ -163,7 +164,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
       media::EmeInitDataType init_data_type,
       const std::vector<uint8>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise,
-      bool permitted);
+      PermissionStatus permission);
 
   const int render_process_id_;
 

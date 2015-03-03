@@ -85,12 +85,14 @@ void PermissionServiceImpl::RequestPermission(
 void PermissionServiceImpl::OnRequestPermissionResponse(
     const mojo::Callback<void(PermissionStatus)>& callback,
     int request_id,
-    bool allowed) {
+    PermissionStatus status) {
   pending_requests_.Remove(request_id);
 
-  // TODO(mlamouri): for now, we only get a boolean back, but we would ideally
-  // need a ContentSetting, see http://crbug.com/432978
-  callback.Run(allowed ? PERMISSION_STATUS_GRANTED : PERMISSION_STATUS_ASK);
+  // TODO(mlamouri): this is not yet returning a tri-state value because it will
+  // require some further changes that will be dealt with in
+  // https://crrev.com/794203004/
+  status = status == PERMISSION_STATUS_DENIED ? PERMISSION_STATUS_ASK : status;
+  callback.Run(status);
 }
 
 void PermissionServiceImpl::CancelPendingRequests() {

@@ -129,7 +129,7 @@ class GeolocationPermissionContextTests
                                     bool user_gesture);
 
   void PermissionResponse(const PermissionRequestID& id,
-                          bool allowed);
+                          ContentSetting content_setting);
   void CheckPermissionMessageSent(int bridge_id, bool allowed);
   void CheckPermissionMessageSentForTab(int tab, int bridge_id, bool allowed);
   void CheckPermissionMessageSentInternal(MockRenderProcessHost* process,
@@ -190,8 +190,9 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
 
 void GeolocationPermissionContextTests::PermissionResponse(
     const PermissionRequestID& id,
-    bool allowed) {
-  responses_[id.render_process_id()] = std::make_pair(id.bridge_id(), allowed);
+    ContentSetting content_setting) {
+  responses_[id.render_process_id()] =
+      std::make_pair(id.bridge_id(), content_setting == CONTENT_SETTING_ALLOW);
 }
 
 void GeolocationPermissionContextTests::CheckPermissionMessageSent(

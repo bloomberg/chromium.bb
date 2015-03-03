@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 
@@ -19,16 +20,14 @@ class PermissionContextBase;
 // is executed.
 class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
  public:
-
-  typedef base::Callback<void(bool persist_permission, bool grant_permission)>
-      PermissionDecidedCallback;
+  using PermissionDecidedCallback = base::Callback<void(bool, ContentSetting)>;
 
   PermissionBubbleRequestImpl(
       const GURL& request_origin,
       bool user_gesture,
       ContentSettingsType type,
       const std::string& display_languages,
-      const PermissionDecidedCallback permission_decided_callback,
+      const PermissionDecidedCallback& permission_decided_callback,
       const base::Closure delete_callback);
 
   ~PermissionBubbleRequestImpl() override;

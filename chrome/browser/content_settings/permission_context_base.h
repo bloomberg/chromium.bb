@@ -23,7 +23,7 @@ namespace content {
 class WebContents;
 }
 
-typedef base::Callback<void(bool)> BrowserPermissionCallback;
+using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 
 // This base class contains common operations for granting permissions.
 // It offers the following functionality:
@@ -95,14 +95,14 @@ class PermissionContextBase : public KeyedService {
                          const GURL& embedding_origin,
                          const BrowserPermissionCallback& callback,
                          bool persist,
-                         bool allowed);
+                         ContentSetting content_setting);
 
   virtual void NotifyPermissionSet(const PermissionRequestID& id,
                                    const GURL& requesting_origin,
                                    const GURL& embedding_origin,
                                    const BrowserPermissionCallback& callback,
                                    bool persist,
-                                   bool allowed);
+                                   ContentSetting content_setting);
 
   // Implementors can override this method to update the icons on the
   // url bar with the result of the new permission.
@@ -121,7 +121,7 @@ class PermissionContextBase : public KeyedService {
   // (for example for desktop notifications).
   virtual void UpdateContentSetting(const GURL& requesting_origin,
                                     const GURL& embedding_origin,
-                                    bool allowed);
+                                    ContentSetting content_setting);
 
  private:
   // Called when a bubble is no longer used so it can be cleaned up.

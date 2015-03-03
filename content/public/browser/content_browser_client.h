@@ -434,7 +434,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
-      const base::Callback<void(bool)>& result_callback);
+      const base::Callback<void(PermissionStatus)>& callback);
 
   virtual void CancelPermissionRequest(PermissionType permission,
                                        WebContents* web_contents,

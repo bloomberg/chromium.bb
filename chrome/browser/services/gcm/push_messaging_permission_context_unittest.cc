@@ -34,9 +34,9 @@ class TestPushMessagingPermissionContext
                            const GURL& embedder_origin,
                            const BrowserPermissionCallback& callback,
                            bool persist,
-                           bool allowed) override {
+                           ContentSetting content_setting) override {
     was_persisted_ = persist;
-    permission_granted_ = allowed;
+    permission_granted_ = content_setting == CONTENT_SETTING_ALLOW;
   }
 
   bool was_persisted_;
@@ -137,28 +137,28 @@ TEST_F(PushMessagingPermissionContextTest, DecidePushPermission) {
   BrowserPermissionCallback callback;
 
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, false);
+                               callback, CONTENT_SETTING_DEFAULT);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ALLOW);
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, true);
+                               callback, CONTENT_SETTING_ALLOW);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
 
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_BLOCK);
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, true);
+                               callback, CONTENT_SETTING_ALLOW);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ASK);
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, true);
+                               callback, CONTENT_SETTING_ALLOW);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
 }

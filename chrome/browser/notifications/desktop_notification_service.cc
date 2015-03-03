@@ -96,7 +96,7 @@ void DesktopNotificationService::RequestNotificationPermission(
     const PermissionRequestID& request_id,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(bool)>& result_callback) {
+    const BrowserPermissionCallback& result_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
 #if defined(ENABLE_EXTENSIONS)
@@ -123,7 +123,7 @@ void DesktopNotificationService::RequestNotificationPermission(
           extensions::APIPermission::kNotifications,
           extension,
           web_contents->GetRenderViewHost())) {
-    result_callback.Run(true);
+    result_callback.Run(CONTENT_SETTING_ALLOW);
     return;
   }
 #endif
@@ -245,8 +245,11 @@ void DesktopNotificationService::OnExtensionUninstalled(
 void DesktopNotificationService::UpdateContentSetting(
     const GURL& requesting_origin,
     const GURL& embedder_origin,
-    bool allowed) {
-  if (allowed) {
+    ContentSetting content_setting) {
+  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_BLOCK);
+
+  if (content_setting == CONTENT_SETTING_ALLOW) {
     DesktopNotificationProfileUtil::GrantPermission(
         profile_, requesting_origin);
   } else {

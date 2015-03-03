@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/push_messaging_service.h"
@@ -129,7 +130,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingApplicationId& application_id,
       const std::string& sender_id,
       const content::PushMessagingService::RegisterCallback& callback,
-      bool allow);
+      ContentSetting content_setting);
 
   // Unregister methods --------------------------------------------------------
 

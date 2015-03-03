@@ -16,7 +16,7 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     bool user_gesture,
     ContentSettingsType type,
     const std::string& display_languages,
-    const base::Callback<void(bool, bool)> permission_decided_callback,
+    const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
       user_gesture_(user_gesture),
@@ -136,17 +136,17 @@ GURL PermissionBubbleRequestImpl::GetRequestingHostname() const {
 
 void PermissionBubbleRequestImpl::PermissionGranted() {
   RegisterActionTaken();
-  permission_decided_callback_.Run(true, true);
+  permission_decided_callback_.Run(true, CONTENT_SETTING_ALLOW);
 }
 
 void PermissionBubbleRequestImpl::PermissionDenied() {
   RegisterActionTaken();
-  permission_decided_callback_.Run(true, false);
+  permission_decided_callback_.Run(true, CONTENT_SETTING_BLOCK);
 }
 
 void PermissionBubbleRequestImpl::Cancelled() {
   RegisterActionTaken();
-  permission_decided_callback_.Run(false, false);
+  permission_decided_callback_.Run(false, CONTENT_SETTING_DEFAULT);
 }
 
 void PermissionBubbleRequestImpl::RequestFinished() {

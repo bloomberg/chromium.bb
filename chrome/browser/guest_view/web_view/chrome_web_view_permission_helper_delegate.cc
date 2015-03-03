@@ -19,6 +19,15 @@
 
 namespace extensions {
 
+namespace {
+
+void CallbackContentSettingWrapper(const base::Callback<void(bool)>& callback,
+                                   ContentSetting content_setting) {
+  callback.Run(content_setting == CONTENT_SETTING_ALLOW);
+}
+
+}  // anonymous namespace
+
 ChromeWebViewPermissionHelperDelegate::ChromeWebViewPermissionHelperDelegate(
     WebViewPermissionHelper* web_view_permission_helper)
     : WebViewPermissionHelperDelegate(web_view_permission_helper),
@@ -192,12 +201,10 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
   // ChromeWebViewPermissionHelperDelegate::SetPermission.
   const WebViewPermissionHelper::PermissionResponseCallback
       permission_callback =
-      base::Bind(&ChromeWebViewPermissionHelperDelegate::
-                     OnGeolocationPermissionResponse,
-                 weak_factory_.GetWeakPtr(),
-                 bridge_id,
-                 user_gesture,
-                 callback);
+          base::Bind(&ChromeWebViewPermissionHelperDelegate::
+                         OnGeolocationPermissionResponse,
+                     weak_factory_.GetWeakPtr(), bridge_id, user_gesture,
+                     base::Bind(&CallbackContentSettingWrapper, callback));
   int request_id = web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
       request_info,
@@ -209,7 +216,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
 void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
     int bridge_id,
     bool user_gesture,
-    const base::Callback<void(bool)>& callback,
+    const base::Callback<void(ContentSetting)>& callback,
     bool allow,
     const std::string& user_input) {
   // The <webview> embedder has allowed the permission. We now need to make sure
@@ -217,7 +224,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   RemoveBridgeID(bridge_id);
 
   if (!allow || !web_view_guest()->attached()) {
-    callback.Run(false);
+    callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
 

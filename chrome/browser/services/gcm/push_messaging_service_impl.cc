@@ -606,8 +606,8 @@ void PushMessagingServiceImpl::DidRequestPermission(
     const PushMessagingApplicationId& application_id,
     const std::string& sender_id,
     const content::PushMessagingService::RegisterCallback& register_callback,
-    bool allow) {
-  if (!allow) {
+    ContentSetting content_setting) {
+  if (content_setting != CONTENT_SETTING_ALLOW) {
     RegisterEnd(register_callback,
                 std::string(),
                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);

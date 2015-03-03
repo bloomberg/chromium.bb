@@ -287,6 +287,25 @@ ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
 }
 
+void ShellContentBrowserClient::RequestPermission(
+    PermissionType permission,
+    WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    const base::Callback<void(PermissionStatus)>& callback) {
+  // Some Geolocation tests on Android are still expecting to have the
+  // permission granted. See https://crbug.com/463514.
+  if (permission == PERMISSION_GEOLOCATION) {
+    callback.Run(PERMISSION_STATUS_GRANTED);
+    return;
+  }
+
+  ContentBrowserClient::RequestPermission(
+      permission, web_contents, bridge_id,
+      requesting_frame, user_gesture, callback);
+}
+
 SpeechRecognitionManagerDelegate*
     ShellContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new ShellSpeechRecognitionManagerDelegate();

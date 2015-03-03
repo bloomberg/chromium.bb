@@ -365,8 +365,9 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
 #if defined(OS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    GenerateRequestIfPermitted(render_frame_id, cdm_id, eme_init_data_type,
-                               init_data, promise.Pass(), true);
+    GenerateRequestIfPermitted(
+        render_frame_id, cdm_id, eme_init_data_type,
+        init_data, promise.Pass(), PERMISSION_STATUS_GRANTED);
     return;
   }
 #endif
@@ -532,9 +533,9 @@ void BrowserCdmManager::GenerateRequestIfPermitted(
     media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise,
-    bool permitted) {
+    PermissionStatus permission) {
   cdm_cancel_permission_map_.erase(GetId(render_frame_id, cdm_id));
-  if (!permitted) {
+  if (permission != PERMISSION_STATUS_GRANTED) {
     promise->reject(MediaKeys::NOT_SUPPORTED_ERROR, 0, "Permission denied.");
     return;
   }

@@ -680,6 +680,12 @@ ContentSettingsType PermissionToContentSetting(
   }
 }
 
+void OnRequestPermission(
+    const base::Callback<void(content::PermissionStatus)>& callback,
+    ContentSetting content_setting) {
+  callback.Run(ContentSettingToPermissionStatus(content_setting));
+}
+
 }  // namespace
 
 namespace chrome {
@@ -1934,7 +1940,7 @@ void ChromeContentBrowserClient::RequestPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    const base::Callback<void(bool)>& result_callback) {
+    const base::Callback<void(content::PermissionStatus)>& result_callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   const PermissionRequestID request_id(render_process_id,
@@ -1949,7 +1955,8 @@ void ChromeContentBrowserClient::RequestPermission(
     return;
 
   context->RequestPermission(web_contents, request_id, requesting_frame,
-                             user_gesture, result_callback);
+                             user_gesture,
+                             base::Bind(&OnRequestPermission, result_callback));
 }
 
 content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(

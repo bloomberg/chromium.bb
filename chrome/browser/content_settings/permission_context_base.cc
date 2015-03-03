@@ -99,8 +99,8 @@ void PermissionContextBase::DecidePermission(
         << "," << embedding_origin
         << " (" << content_settings::GetTypeName(permission_type_)
         << " is not supported in popups)";
-    NotifyPermissionSet(id, requesting_origin, embedding_origin,
-                        callback, false /* persist */, false /* granted */);
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_BLOCK);
     return;
   }
 
@@ -110,17 +110,11 @@ void PermissionContextBase::DecidePermission(
               requesting_origin, embedding_origin, permission_type_,
               std::string());
 
-  switch (content_setting) {
-    case CONTENT_SETTING_BLOCK:
-      NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                          false /* persist */, false /* granted */);
-      return;
-    case CONTENT_SETTING_ALLOW:
-      NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                          false /* persist */, true /* granted */);
-      return;
-    default:
-      break;
+  if (content_setting == CONTENT_SETTING_ALLOW ||
+      content_setting == CONTENT_SETTING_BLOCK) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, content_setting);
+    return;
   }
 
   PermissionContextUmaUtil::PermissionRequested(
@@ -168,25 +162,28 @@ void PermissionContextBase::PermissionDecided(
     const GURL& embedding_origin,
     const BrowserPermissionCallback& callback,
     bool persist,
-    bool allowed) {
+    ContentSetting content_setting) {
   // Infobar persistance and its related UMA is tracked on the infobar
   // controller directly.
   if (PermissionBubbleManager::Enabled()) {
     if (persist) {
-      if (allowed)
+      DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+             content_setting == CONTENT_SETTING_BLOCK);
+      if (CONTENT_SETTING_ALLOW)
         PermissionContextUmaUtil::PermissionGranted(permission_type_,
                                                     requesting_origin);
       else
         PermissionContextUmaUtil::PermissionDenied(permission_type_,
                                                    requesting_origin);
     } else {
+      DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
       PermissionContextUmaUtil::PermissionDismissed(permission_type_,
                                                     requesting_origin);
     }
   }
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                      persist, allowed);
+                      persist, content_setting);
 }
 
 PermissionQueueController* PermissionContextBase::GetQueueController() {
@@ -203,13 +200,23 @@ void PermissionContextBase::NotifyPermissionSet(
     const GURL& embedding_origin,
     const BrowserPermissionCallback& callback,
     bool persist,
-    bool allowed) {
+    ContentSetting content_setting) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (persist)
-    UpdateContentSetting(requesting_origin, embedding_origin, allowed);
 
-  UpdateTabContext(id, requesting_origin, allowed);
-  callback.Run(allowed);
+  if (persist)
+    UpdateContentSetting(requesting_origin, embedding_origin, content_setting);
+
+  UpdateTabContext(id, requesting_origin,
+                   content_setting == CONTENT_SETTING_ALLOW);
+
+  if (content_setting == CONTENT_SETTING_DEFAULT) {
+    content_setting =
+        profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
+            permission_type_, nullptr);
+  }
+
+  DCHECK_NE(content_setting, CONTENT_SETTING_DEFAULT);
+  callback.Run(content_setting);
 }
 
 void PermissionContextBase::CleanUpBubble(const PermissionRequestID& id) {
@@ -217,13 +224,15 @@ void PermissionContextBase::CleanUpBubble(const PermissionRequestID& id) {
   DCHECK(success == 1) << "Missing request " << id.ToString();
 }
 
-void PermissionContextBase::UpdateContentSetting(const GURL& requesting_origin,
-                                                 const GURL& embedding_origin,
-                                                 bool allowed) {
+void PermissionContextBase::UpdateContentSetting(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    ContentSetting content_setting) {
   DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
   DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
-  ContentSetting content_setting =
-      allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_BLOCK);
+
   profile_->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
       ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
