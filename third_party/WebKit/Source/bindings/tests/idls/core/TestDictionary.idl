@@ -8,7 +8,7 @@ dictionary TestDictionary {
     DOMString stringMember;
     TestInterface testInterfaceMember;
     double? doubleOrNullMember = null;
-    [TypeChecking=Unrestricted] double restrictedDoubleMember = 3.14;
+    double restrictedDoubleMember = 3.14;
     unrestricted double unrestrictedDoubleMember = 3.14;
     DOMString? stringOrNullMember = "default string value";
     TestInterface? testInterfaceOrNullMember;

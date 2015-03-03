@@ -44,16 +44,12 @@ from utilities import idl_filename_to_component, is_valid_component_dependency
 # Note that this moves the extended attribute from the interface to the member,
 # which changes the semantics and yields different code than the same extended
 # attribute on the main interface.
-#
-# Paired with the extended attribute name is its value type; needed to be able
-# to correctly merge interface-level occurrences with ones that may
-# be present on the method/attribute/constant.
-DEPENDENCY_EXTENDED_ATTRIBUTES = {
-    'Conditional': 'string',
-    'PerContextEnabled': 'string',
-    'RuntimeEnabled': 'string',
-    'TypeChecking': 'list',
-}
+DEPENDENCY_EXTENDED_ATTRIBUTES = frozenset([
+    'Conditional',
+    'PerContextEnabled',
+    'RuntimeEnabled',
+    'TypeChecking',
+])
 
 
 class InterfaceDependencyResolver(object):
@@ -248,7 +244,7 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
     merged_extended_attributes = dict(
         (key, value)
         for key, value in dependency_interface.extended_attributes.iteritems()
-        if key in DEPENDENCY_EXTENDED_ATTRIBUTES.keys())
+        if key in DEPENDENCY_EXTENDED_ATTRIBUTES)
 
     # A partial interface's members are implemented as static member functions
     # in a separate C++ class. This class name is stored in
@@ -280,20 +276,8 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
                 'ImplementedAs', dependency_interface_basename))
 
     def update_attributes(attributes, extras):
-        def to_list(x):
-            if type(x) is list:
-                return x
-            else:
-                return [x]
-
         for key, value in extras.items():
-            if key in attributes:
-                # Interface-level extended attributes do not take precedence
-                # over same attribute at the method/attribute/const-level.
-                # If the attribute value is a list, the two are combined.
-                if DEPENDENCY_EXTENDED_ATTRIBUTES[key] == 'list':
-                    attributes[key] = to_list(attributes[key]) + to_list(value)
-            else:
+            if key not in attributes:
                 attributes[key] = value
 
     for attribute in dependency_interface.attributes:

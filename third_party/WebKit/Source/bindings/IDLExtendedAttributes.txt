@@ -97,7 +97,7 @@ SetterCallWith=ExecutionContext|ScriptArguments|ActiveWindow|FirstWindow
 TreatNullAs=NullString|EmptyString
 TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString
-TypeChecking=Interface|Unrestricted
+TypeChecking=Interface
 URL
 Unforgeable
 WillBeGarbageCollected

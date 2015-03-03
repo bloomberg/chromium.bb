@@ -2,7 +2,6 @@
 {{ license() }}
 
 [
-    TypeChecking=Unrestricted,
     WillBeGarbageCollected,
 ] interface InternalSettingsGenerated {
     {% for setting in settings if setting.type|to_idl_type %}

@@ -6,5 +6,5 @@
     Conditional=FOO,
     TypeChecking=Interface,
 ] partial interface TestInterface3 {
-    [Conditional=BAR, TypeChecking=Unrestricted] static void voidMethodDocument(Document document, double d);
+    [Conditional=BAR] static void voidMethodDocument(Document document, double d);
 };

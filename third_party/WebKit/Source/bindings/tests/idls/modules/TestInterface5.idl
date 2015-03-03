@@ -41,7 +41,7 @@ enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
     ImplementedAs=TestInterface5Implementation,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface5 referencedName),
-    TypeChecking=(Interface,Unrestricted),
+    TypeChecking=Interface,
     Exposed=(Worker,Window),
 ] interface TestInterface5 : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
