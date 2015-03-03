@@ -32,10 +32,10 @@
 #define ElementAnimation_h
 
 #include "bindings/core/v8/UnionTypesCore.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -76,7 +76,7 @@ public:
     {
         WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers;
 
-        if (!element.hasActiveAnimations())
+        if (!element.hasAnimations())
             return animationPlayers;
 
         for (const auto& player : element.document().timeline().getAnimationPlayers()) {

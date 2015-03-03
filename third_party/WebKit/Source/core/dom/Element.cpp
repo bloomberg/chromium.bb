@@ -342,28 +342,28 @@ NamedNodeMap* Element::attributesForBindings() const
     return rareData.attributeMap();
 }
 
-ActiveAnimations* Element::activeAnimations() const
+ElementAnimations* Element::elementAnimations() const
 {
     if (hasRareData())
-        return elementRareData()->activeAnimations();
+        return elementRareData()->elementAnimations();
     return nullptr;
 }
 
-ActiveAnimations& Element::ensureActiveAnimations()
+ElementAnimations& Element::ensureElementAnimations()
 {
     ElementRareData& rareData = ensureElementRareData();
-    if (!rareData.activeAnimations())
-        rareData.setActiveAnimations(adoptPtrWillBeNoop(new ActiveAnimations()));
-    return *rareData.activeAnimations();
+    if (!rareData.elementAnimations())
+        rareData.setElementAnimations(adoptPtrWillBeNoop(new ElementAnimations()));
+    return *rareData.elementAnimations();
 }
 
-bool Element::hasActiveAnimations() const
+bool Element::hasAnimations() const
 {
     if (!hasRareData())
         return false;
 
-    ActiveAnimations* activeAnimations = elementRareData()->activeAnimations();
-    return activeAnimations && !activeAnimations->isEmpty();
+    ElementAnimations* elementAnimations = elementRareData()->elementAnimations();
+    return elementAnimations && !elementAnimations->isEmpty();
 }
 
 Node::NodeType Element::nodeType() const
@@ -1448,9 +1448,9 @@ void Element::attach(const AttachContext& context)
     createPseudoElementIfNeeded(FIRST_LETTER);
 
     if (hasRareData() && !renderer()) {
-        if (ActiveAnimations* activeAnimations = elementRareData()->activeAnimations()) {
-            activeAnimations->cssAnimations().cancel();
-            activeAnimations->setAnimationStyleChange(false);
+        if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations()) {
+            elementAnimations->cssAnimations().cancel();
+            elementAnimations->setAnimationStyleChange(false);
         }
     }
 }
@@ -1468,19 +1468,19 @@ void Element::detach(const AttachContext& context)
         if (!document().inStyleRecalc())
             data->clearComputedStyle();
 
-        if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
+        if (ElementAnimations* elementAnimations = data->elementAnimations()) {
             if (context.performingReattach) {
                 // FIXME: We call detach from within style recalc, so compositingState is not up to date.
                 // https://code.google.com/p/chromium/issues/detail?id=339847
                 DisableCompositingQueryAsserts disabler;
 
                 // FIXME: restart compositor animations rather than pull back to the main thread
-                activeAnimations->restartAnimationOnCompositor();
+                elementAnimations->restartAnimationOnCompositor();
             } else {
-                activeAnimations->cssAnimations().cancel();
-                activeAnimations->setAnimationStyleChange(false);
+                elementAnimations->cssAnimations().cancel();
+                elementAnimations->setAnimationStyleChange(false);
             }
-            activeAnimations->clearBaseLayoutStyle();
+            elementAnimations->clearBaseLayoutStyle();
         }
 
         if (ElementShadow* shadow = data->shadow())
@@ -1540,8 +1540,8 @@ PassRefPtr<LayoutStyle> Element::styleForRenderer()
 
     // FIXME: Instead of clearing updates that may have been added from calls to styleForElement
     // outside recalcStyle, we should just never set them if we're not inside recalcStyle.
-    if (ActiveAnimations* activeAnimations = this->activeAnimations())
-        activeAnimations->cssAnimations().setPendingUpdate(nullptr);
+    if (ElementAnimations* elementAnimations = this->elementAnimations())
+        elementAnimations->cssAnimations().setPendingUpdate(nullptr);
 
     if (hasCustomStyleCallbacks())
         style = customStyleForRenderer();
@@ -1550,9 +1550,9 @@ PassRefPtr<LayoutStyle> Element::styleForRenderer()
     ASSERT(style);
 
     // styleForElement() might add active animations so we need to get it again.
-    if (ActiveAnimations* activeAnimations = this->activeAnimations()) {
-        activeAnimations->cssAnimations().maybeApplyPendingUpdate(this);
-        activeAnimations->updateAnimationFlags(*style);
+    if (ElementAnimations* elementAnimations = this->elementAnimations()) {
+        elementAnimations->cssAnimations().maybeApplyPendingUpdate(this);
+        elementAnimations->updateAnimationFlags(*style);
     }
 
     if (style->hasTransform()) {
@@ -1585,8 +1585,8 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
             data->clearComputedStyle();
 
             if (change >= Inherit) {
-                if (ActiveAnimations* activeAnimations = data->activeAnimations())
-                    activeAnimations->setAnimationStyleChange(false);
+                if (ElementAnimations* elementAnimations = data->elementAnimations())
+                    elementAnimations->setAnimationStyleChange(false);
             }
         }
         if (parentLayoutStyle())
@@ -1725,8 +1725,8 @@ void Element::setAnimationStyleChange(bool animationStyleChange)
 {
     if (animationStyleChange && document().inStyleRecalc())
         return;
-    if (ActiveAnimations* activeAnimations = elementRareData()->activeAnimations())
-        activeAnimations->setAnimationStyleChange(animationStyleChange);
+    if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations())
+        elementAnimations->setAnimationStyleChange(animationStyleChange);
 }
 
 void Element::setNeedsAnimationStyleRecalc()
@@ -3365,7 +3365,7 @@ bool Element::supportsStyleSharing() const
         return false;
     if (isHTMLElement() && toHTMLElement(this)->hasDirectionAuto())
         return false;
-    if (hasActiveAnimations())
+    if (hasAnimations())
         return false;
     // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
     // See comments in LayoutObject::setStyle().

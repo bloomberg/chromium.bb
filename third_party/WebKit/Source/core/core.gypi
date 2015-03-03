@@ -862,8 +862,6 @@
         'webcore_non_rendering_files': [
             'Init.cpp',
             'Init.h',
-            'animation/ActiveAnimations.cpp',
-            'animation/ActiveAnimations.h',
             'animation/Animation.cpp',
             'animation/Animation.h',
             'animation/AnimationClock.cpp',
@@ -901,6 +899,8 @@
             'animation/EffectInput.cpp',
             'animation/EffectInput.h',
             'animation/ElementAnimation.h',
+            'animation/ElementAnimations.cpp',
+            'animation/ElementAnimations.h',
             'animation/ImageStyleInterpolation.cpp',
             'animation/ImageStyleInterpolation.h',
             'animation/InertAnimation.cpp',

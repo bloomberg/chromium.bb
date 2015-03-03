@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 
-#include "core/animation/ActiveAnimations.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -21,7 +21,7 @@ namespace blink {
 
 void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
-    if (m_outdated || !state.element()->activeAnimations() || !state.element()->activeAnimations()->isAnimationStyleChange()) {
+    if (m_outdated || !state.element()->elementAnimations() || !state.element()->elementAnimations()->isAnimationStyleChange()) {
         m_innerInterpolation = LegacyStyleInterpolation::create(
             StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get()),
             StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get()),

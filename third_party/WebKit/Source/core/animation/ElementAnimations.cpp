@@ -29,18 +29,18 @@
  */
 
 #include "config.h"
-#include "core/animation/ActiveAnimations.h"
+#include "core/animation/ElementAnimations.h"
 
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
 
-ActiveAnimations::ActiveAnimations()
+ElementAnimations::ElementAnimations()
     : m_animationStyleChange(false)
 {
 }
 
-ActiveAnimations::~ActiveAnimations()
+ElementAnimations::~ElementAnimations()
 {
 #if !ENABLE(OILPAN)
     for (Animation* animation : m_animations)
@@ -49,7 +49,7 @@ ActiveAnimations::~ActiveAnimations()
 #endif
 }
 
-void ActiveAnimations::updateAnimationFlags(LayoutStyle& style)
+void ElementAnimations::updateAnimationFlags(LayoutStyle& style)
 {
     for (const auto& entry : m_players) {
         const AnimationPlayer& player = *entry.key;
@@ -75,13 +75,13 @@ void ActiveAnimations::updateAnimationFlags(LayoutStyle& style)
         style.setIsRunningFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
 }
 
-void ActiveAnimations::restartAnimationOnCompositor()
+void ElementAnimations::restartAnimationOnCompositor()
 {
     for (const auto& entry : m_players)
         entry.key->restartAnimationOnCompositor();
 }
 
-DEFINE_TRACE(ActiveAnimations)
+DEFINE_TRACE(ElementAnimations)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_cssAnimations);
@@ -90,7 +90,7 @@ DEFINE_TRACE(ActiveAnimations)
 #endif
 }
 
-const LayoutStyle* ActiveAnimations::baseLayoutStyle() const
+const LayoutStyle* ElementAnimations::baseLayoutStyle() const
 {
 #if !ENABLE(ASSERT)
     if (isAnimationStyleChange())
@@ -99,7 +99,7 @@ const LayoutStyle* ActiveAnimations::baseLayoutStyle() const
     return nullptr;
 }
 
-void ActiveAnimations::updateBaseLayoutStyle(const LayoutStyle* layoutStyle)
+void ElementAnimations::updateBaseLayoutStyle(const LayoutStyle* layoutStyle)
 {
     if (!isAnimationStyleChange()) {
         m_baseLayoutStyle = nullptr;
@@ -112,7 +112,7 @@ void ActiveAnimations::updateBaseLayoutStyle(const LayoutStyle* layoutStyle)
     m_baseLayoutStyle = LayoutStyle::clone(*layoutStyle);
 }
 
-void ActiveAnimations::clearBaseLayoutStyle()
+void ElementAnimations::clearBaseLayoutStyle()
 {
     m_baseLayoutStyle = nullptr;
 }

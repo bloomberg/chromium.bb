@@ -32,11 +32,11 @@
 #include "core/animation/css/CSSAnimations.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -239,9 +239,9 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const 
 
 void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, StyleResolver* resolver)
 {
-    const ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
+    const ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
 
-    bool isAnimationStyleChange = activeAnimations && activeAnimations->isAnimationStyleChange();
+    bool isAnimationStyleChange = elementAnimations && elementAnimations->isAnimationStyleChange();
 
 #if !ENABLE(ASSERT)
     // If we're in an animation style change, no animations can have started, been cancelled or changed play state.
@@ -251,7 +251,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
 #endif
 
     const CSSAnimationData* animationData = style.animations();
-    const CSSAnimations* cssAnimations = activeAnimations ? &activeAnimations->cssAnimations() : nullptr;
+    const CSSAnimations* cssAnimations = elementAnimations ? &elementAnimations->cssAnimations() : nullptr;
     const Element* elementForScoping = animatingElement ? animatingElement : &element;
 
     HashSet<AtomicString> inactive;
@@ -457,7 +457,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPr
             if (to->equals(activeTo))
                 return;
             update->cancelTransition(id);
-            ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
+            ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
         }
     }
 
@@ -503,7 +503,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPr
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(effect, timing, false, 0));
-    ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
+    ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
 }
 
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* animatingElement, const LayoutStyle& style)
@@ -511,8 +511,8 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     if (!animatingElement)
         return;
 
-    ActiveAnimations* activeAnimations = animatingElement->activeAnimations();
-    const TransitionMap* activeTransitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : nullptr;
+    ElementAnimations* elementAnimations = animatingElement->elementAnimations();
+    const TransitionMap* activeTransitions = elementAnimations ? &elementAnimations->cssAnimations().m_transitions : nullptr;
     const CSSTransitionData* transitionData = style.transitions();
 
 #if ENABLE(ASSERT)
@@ -520,7 +520,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     const bool animationStyleRecalc = false;
 #else
     // In release builds we avoid the cost of checking for new and interrupted transitions if the style recalc is due to animation.
-    const bool animationStyleRecalc = activeAnimations && activeAnimations->isAnimationStyleChange();
+    const bool animationStyleRecalc = elementAnimations && elementAnimations->isAnimationStyleChange();
 #endif
 
     BitArray<numCSSProperties> listedProperties;
@@ -557,7 +557,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
                 // FIXME: We should transition if an !important property changes even when an animation is running,
                 // but this is a bit hard to do with the current applyMatchedProperties system.
                 if (!update->activeInterpolationsForAnimations().contains(id)
-                    && (!activeAnimations || !activeAnimations->cssAnimations().m_previousActiveInterpolationsForAnimations.contains(id))) {
+                    && (!elementAnimations || !elementAnimations->cssAnimations().m_previousActiveInterpolationsForAnimations.contains(id))) {
                     calculateTransitionUpdateForProperty(id, eventId, *transitionData, i, oldStyle, style, activeTransitions, update, animatingElement);
                 }
             }
@@ -569,7 +569,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
             CSSPropertyID id = entry.key;
             if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.get(id)) {
                 // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
-                // ASSERT(player.playStateInternal() == AnimationPlayer::Finished || !(activeAnimations && activeAnimations->isAnimationStyleChange()));
+                // ASSERT(player.playStateInternal() == AnimationPlayer::Finished || !(elementAnimations && elementAnimations->isAnimationStyleChange()));
                 update->cancelTransition(id);
             } else if (entry.value.player->finishedInternal()) {
                 update->finishTransition(id);
@@ -597,8 +597,8 @@ void CSSAnimations::cancel()
 
 void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* update, const Element* animatingElement, double timelineCurrentTime)
 {
-    ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
-    AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : nullptr;
+    ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
+    AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
     if (update->newAnimations().isEmpty() && update->suppressedAnimationAnimationPlayers().isEmpty()) {
         WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority, timelineCurrentTime));
@@ -618,8 +618,8 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
 
 void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* update, const Element* animatingElement, double timelineCurrentTime)
 {
-    ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
-    AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : nullptr;
+    ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
+    AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForTransitions;
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
@@ -631,8 +631,8 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
 
         WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>> cancelledAnimationPlayers;
         if (!update->cancelledTransitions().isEmpty()) {
-            ASSERT(activeAnimations);
-            const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
+            ASSERT(elementAnimations);
+            const TransitionMap& transitionMap = elementAnimations->cssAnimations().m_transitions;
             for (CSSPropertyID id : update->cancelledTransitions()) {
                 ASSERT(transitionMap.contains(id));
                 cancelledAnimationPlayers.add(transitionMap.get(id).player.get());

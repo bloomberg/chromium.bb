@@ -32,10 +32,10 @@
 
 #include "core/animation/CompositorAnimations.h"
 
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/CompositorAnimationsTestHelper.h"
 #include "core/animation/animatable/AnimatableDouble.h"
@@ -1239,7 +1239,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     EXPECT_FALSE(player2->hasActiveAnimationsOnCompositor());
 
     simulateFrame(0);
-    EXPECT_EQ(2U, element->activeAnimations()->players().size());
+    EXPECT_EQ(2U, element->elementAnimations()->players().size());
     simulateFrame(1.);
 
     element->setRenderer(nullptr);
@@ -1248,7 +1248,7 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     player1.release();
     player2.release();
     Heap::collectAllGarbage();
-    EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
+    EXPECT_TRUE(element->elementAnimations()->players().isEmpty());
 }
 
 } // namespace blink

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ActiveAnimations_h
-#define ActiveAnimations_h
+#ifndef ElementAnimations_h
+#define ElementAnimations_h
 
 #include "core/animation/AnimationStack.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -44,11 +44,11 @@ class CSSAnimations;
 
 using AnimationPlayerCountedSet = WillBeHeapHashCountedSet<RawPtrWillBeWeakMember<AnimationPlayer>>;
 
-class ActiveAnimations : public NoBaseWillBeGarbageCollectedFinalized<ActiveAnimations> {
-    WTF_MAKE_NONCOPYABLE(ActiveAnimations);
+class ElementAnimations : public NoBaseWillBeGarbageCollectedFinalized<ElementAnimations> {
+    WTF_MAKE_NONCOPYABLE(ElementAnimations);
 public:
-    ActiveAnimations();
-    ~ActiveAnimations();
+    ElementAnimations();
+    ~ElementAnimations();
 
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
@@ -103,4 +103,4 @@ private:
 
 } // namespace blink
 
-#endif // ActiveAnimations_h
+#endif // ElementAnimations_h

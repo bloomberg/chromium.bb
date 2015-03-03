@@ -176,7 +176,7 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
     // Find type of animation
     const Element* element = toAnimation(player.source())->target();
     StyleResolver& styleResolver = element->ownerDocument()->ensureStyleResolver();
-    CSSAnimations& cssAnimations = element->activeAnimations()->cssAnimations();
+    CSSAnimations& cssAnimations = element->elementAnimations()->cssAnimations();
     const AtomicString animationName = cssAnimations.getAnimationNameForInspector(player);
     RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr;
     AnimationType animationType;

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/animation/CompositorAnimations.h"
 
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationNode.h"
 #include "core/animation/AnimationTranslationUtil.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
@@ -97,13 +97,13 @@ bool hasIncompatibleAnimations(const Element& targetElement, const AnimationPlay
     const bool affectsTransform = effectToAdd.affects(CSSPropertyTransform);
     const bool affectsFilter = effectToAdd.affects(CSSPropertyWebkitFilter);
 
-    if (!targetElement.hasActiveAnimations())
+    if (!targetElement.hasAnimations())
         return false;
 
-    ActiveAnimations* activeAnimations = targetElement.activeAnimations();
-    ASSERT(activeAnimations);
+    ElementAnimations* elementAnimations = targetElement.elementAnimations();
+    ASSERT(elementAnimations);
 
-    for (const auto& entry : activeAnimations->players()) {
+    for (const auto& entry : elementAnimations->players()) {
         const AnimationPlayer* attachedPlayer = entry.key;
         if (!considerPlayerAsIncompatible(*attachedPlayer, playerToAdd))
             continue;
@@ -237,13 +237,13 @@ void CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(const Elemen
     const bool affectsTransform = effectToAdd.affects(CSSPropertyTransform);
     const bool affectsFilter = effectToAdd.affects(CSSPropertyWebkitFilter);
 
-    if (!targetElement.hasActiveAnimations())
+    if (!targetElement.hasAnimations())
         return;
 
-    ActiveAnimations* activeAnimations = targetElement.activeAnimations();
-    ASSERT(activeAnimations);
+    ElementAnimations* elementAnimations = targetElement.elementAnimations();
+    ASSERT(elementAnimations);
 
-    for (const auto& entry : activeAnimations->players()) {
+    for (const auto& entry : elementAnimations->players()) {
         AnimationPlayer* attachedPlayer = entry.key;
         if (!considerPlayerAsIncompatible(*attachedPlayer, playerToAdd))
             continue;

@@ -22,7 +22,7 @@
 #ifndef ElementRareData_h
 #define ElementRareData_h
 
-#include "core/animation/ActiveAnimations.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/dom/Attr.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/NamedNodeMap.h"
@@ -109,10 +109,10 @@ public:
     IntSize savedLayerScrollOffset() const { return m_savedLayerScrollOffset; }
     void setSavedLayerScrollOffset(IntSize size) { m_savedLayerScrollOffset = size; }
 
-    ActiveAnimations* activeAnimations() { return m_activeAnimations.get(); }
-    void setActiveAnimations(PassOwnPtrWillBeRawPtr<ActiveAnimations> activeAnimations)
+    ElementAnimations* elementAnimations() { return m_elementAnimations.get(); }
+    void setElementAnimations(PassOwnPtrWillBeRawPtr<ElementAnimations> elementAnimations)
     {
-        m_activeAnimations = activeAnimations;
+        m_elementAnimations = elementAnimations;
     }
 
     bool hasInputMethodContext() const { return m_inputMethodContext; }
@@ -148,7 +148,7 @@ private:
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
     OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Attr> > > m_attrNodeList;
     OwnPtrWillBeMember<InputMethodContext> m_inputMethodContext;
-    OwnPtrWillBeMember<ActiveAnimations> m_activeAnimations;
+    OwnPtrWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<LayoutStyle> m_computedStyle;

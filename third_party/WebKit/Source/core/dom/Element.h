@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class ActiveAnimations;
+class ElementAnimations;
 class Attr;
 class Attribute;
 class CSSStyleDeclaration;
@@ -482,9 +482,9 @@ public:
     IntSize savedLayerScrollOffset() const;
     void setSavedLayerScrollOffset(const IntSize&);
 
-    ActiveAnimations* activeAnimations() const;
-    ActiveAnimations& ensureActiveAnimations();
-    bool hasActiveAnimations() const;
+    ElementAnimations* elementAnimations() const;
+    ElementAnimations& ensureElementAnimations();
+    bool hasAnimations() const;
 
     InputMethodContext& inputMethodContext();
     bool hasInputMethodContext() const;

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/animation/AnimationPlayer.h"
 
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
@@ -788,11 +788,11 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->play(animation.get());
     simulateFrame(0);
     timeline->serviceAnimations(TimingUpdateForAnimationFrame);
-    EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
+    EXPECT_EQ(1U, element->elementAnimations()->players().find(player.get())->value);
 
     player.release();
     Heap::collectAllGarbage();
-    EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
+    EXPECT_TRUE(element->elementAnimations()->players().isEmpty());
 }
 
 TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)

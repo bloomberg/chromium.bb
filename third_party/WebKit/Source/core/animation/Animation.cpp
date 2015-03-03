@@ -33,11 +33,11 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/AnimationTimingProperties.h"
 #include "core/animation/CompositorAnimations.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Element.h"
@@ -83,7 +83,7 @@ Animation::Animation(Element* target, PassRefPtrWillBeRawPtr<AnimationEffect> ef
 {
 #if !ENABLE(OILPAN)
     if (m_target)
-        m_target->ensureActiveAnimations().addAnimation(this);
+        m_target->ensureElementAnimations().addAnimation(this);
 #endif
 }
 
@@ -91,14 +91,14 @@ Animation::~Animation()
 {
 #if !ENABLE(OILPAN)
     if (m_target)
-        m_target->activeAnimations()->notifyAnimationDestroyed(this);
+        m_target->elementAnimations()->notifyAnimationDestroyed(this);
 #endif
 }
 
 void Animation::attach(AnimationPlayer* player)
 {
     if (m_target) {
-        m_target->ensureActiveAnimations().players().add(player);
+        m_target->ensureElementAnimations().players().add(player);
         m_target->setNeedsAnimationStyleRecalc();
     }
     AnimationNode::attach(player);
@@ -107,7 +107,7 @@ void Animation::attach(AnimationPlayer* player)
 void Animation::detach()
 {
     if (m_target)
-        m_target->activeAnimations()->players().remove(player());
+        m_target->elementAnimations()->players().remove(player());
     if (m_sampledEffect)
         clearEffects();
     AnimationNode::detach();
@@ -124,7 +124,7 @@ void Animation::specifiedTimingChanged()
 
 static AnimationStack& ensureAnimationStack(Element* element)
 {
-    return element->ensureActiveAnimations().defaultStack();
+    return element->ensureElementAnimations().defaultStack();
 }
 
 void Animation::applyEffects()

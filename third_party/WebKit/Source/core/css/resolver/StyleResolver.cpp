@@ -33,9 +33,9 @@
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
 #include "core/StylePropertyShorthand.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -95,7 +95,7 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
     // If any changes to CSS Animations were detected, stash the update away for application after the
     // render object is updated if we're in the appropriate scope.
     if (state.animationUpdate())
-        element.ensureActiveAnimations().cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
+        element.ensureElementAnimations().cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
 }
 
 } // namespace
@@ -562,8 +562,8 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
 
     StyleResolverState state(document(), elementContext, defaultParent);
 
-    ActiveAnimations* activeAnimations = element->activeAnimations();
-    const LayoutStyle* baseLayoutStyle = activeAnimations ? activeAnimations->baseLayoutStyle() : nullptr;
+    ElementAnimations* elementAnimations = element->elementAnimations();
+    const LayoutStyle* baseLayoutStyle = elementAnimations ? elementAnimations->baseLayoutStyle() : nullptr;
 
     if (baseLayoutStyle) {
         state.setStyle(LayoutStyle::clone(*baseLayoutStyle));
@@ -626,8 +626,8 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
 
         adjustLayoutStyle(state, element);
 
-        if (activeAnimations)
-            activeAnimations->updateBaseLayoutStyle(state.style());
+        if (elementAnimations)
+            elementAnimations->updateBaseLayoutStyle(state.style());
     }
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
@@ -755,8 +755,8 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     RefPtrWillBeRawPtr<PseudoElement> pseudo = createPseudoElement(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
-    if (ActiveAnimations* activeAnimations = pseudo->activeAnimations())
-        activeAnimations->cssAnimations().maybeApplyPendingUpdate(pseudo.get());
+    if (ElementAnimations* elementAnimations = pseudo->elementAnimations())
+        elementAnimations->cssAnimations().maybeApplyPendingUpdate(pseudo.get());
     return pseudo.release();
 }
 
@@ -771,8 +771,8 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 
     Element* pseudoElement = element.pseudoElement(pseudoStyleRequest.pseudoId);
 
-    ActiveAnimations* activeAnimations = pseudoElement ? pseudoElement->activeAnimations() : nullptr;
-    const LayoutStyle* baseLayoutStyle = activeAnimations ? activeAnimations->baseLayoutStyle() : nullptr;
+    ElementAnimations* elementAnimations = pseudoElement ? pseudoElement->elementAnimations() : nullptr;
+    const LayoutStyle* baseLayoutStyle = elementAnimations ? elementAnimations->baseLayoutStyle() : nullptr;
 
     if (baseLayoutStyle) {
         state.setStyle(LayoutStyle::clone(*baseLayoutStyle));
@@ -811,8 +811,8 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         // in the adjustLayoutStyle code.
         adjustLayoutStyle(state, 0);
 
-        if (activeAnimations)
-            activeAnimations->updateBaseLayoutStyle(state.style());
+        if (elementAnimations)
+            elementAnimations->updateBaseLayoutStyle(state.style());
     }
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
@@ -979,7 +979,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     // yet to be created.
     ASSERT(animatingElement == element || !animatingElement || animatingElement->parentOrShadowHostElement() == element);
 
-    if (!(animatingElement && animatingElement->hasActiveAnimations())
+    if (!(animatingElement && animatingElement->hasAnimations())
         && !state.style()->transitions() && !state.style()->animations())
         return false;
 

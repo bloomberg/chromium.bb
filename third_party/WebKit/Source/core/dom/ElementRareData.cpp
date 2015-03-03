@@ -66,7 +66,7 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData)
     visitor->trace(m_attrNodeList);
 #endif
     visitor->trace(m_inputMethodContext);
-    visitor->trace(m_activeAnimations);
+    visitor->trace(m_elementAnimations);
     visitor->trace(m_cssomWrapper);
     visitor->trace(m_customElementDefinition);
     visitor->trace(m_generatedBefore);
