@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This strings are used in WebUI views created by WUG framework. Resource id is
+  deduced from string id and view's type. For example, if view's type is
+  'foo_bar' and string id is 'some_string', resource id should be
+  'IDS_WUG_FOO_BAR_SOME_STRING'.
+-->
+<grit-part>
+</grit-part>

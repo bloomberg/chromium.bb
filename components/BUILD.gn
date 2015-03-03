@@ -110,8 +110,9 @@ group("all_components") {
     "//components/web_cache/common",
     "//components/web_cache/renderer",
     "//components/web_modal",
-    "//components/webdata/common",
     "//components/web_resource",
+    "//components/webdata/common",
+    "//components/webui_generator",
     "//components/wifi",
     "//components/wifi_sync",
   ]
@@ -133,6 +134,7 @@ group("all_components") {
     deps -= [
       "//components/history/content/browser",
       "//components/keyed_service/content",
+      "//components/webui_generator",
     ]
   }
 

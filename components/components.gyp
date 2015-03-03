@@ -65,8 +65,8 @@
     'user_prefs.gypi',
     'variations.gypi',
     'wallpaper.gypi',
-    'webdata.gypi',
     'web_resource.gypi',
+    'webdata.gypi',
   ],
   'conditions': [
     ['OS != "ios"', {
@@ -80,6 +80,7 @@
         'web_cache.gypi',
         'web_contents_delegate_android.gypi',
         'web_modal.gypi',
+        'webui_generator.gypi',
       ],
     }],
     ['OS == "ios"', {

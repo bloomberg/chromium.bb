@@ -1,0 +1,36 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/webui_generator.gypi:webui_generator
+component("webui_generator") {
+  sources = [
+    "data_source_util.cc",
+    "data_source_util.h",
+    "export.h",
+    "view.cc",
+    "view.h",
+    "view_model.cc",
+    "view_model.h",
+    "web_ui_view.cc",
+    "web_ui_view.h",
+  ]
+
+  defines = [ "WUG_IMPLEMENTATION" ]
+
+  deps = [
+    "//components/resources",
+    "//ui/base",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/login",
+    "//content/public/browser",
+  ]
+}
+
+# Config for users of generated files.
+config("wug_generated_config") {
+  include_dirs = [ "$root_gen_dir/wug" ]
+}

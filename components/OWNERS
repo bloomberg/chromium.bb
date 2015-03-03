@@ -280,6 +280,9 @@ per-file web_resource.gypi=dbeam@chromium.org
 per-file web_resource.gypi=rsesek@chromium.org
 per-file web_resource.gypi=stevet@chromium.org
 
+per-file webui_generator.gypi=dzhioev@chromium.org
+per-file webui_generator_strings.grdp=dzhioev@chromium.org
+
 per-file wifi.gypi=mef@chromium.org
 
 per-file *.isolate=csharp@chromium.org

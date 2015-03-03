@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_WUG_CONTEXT_HTML" file="../webui_generator/resources/context.html" type="chrome_html" />
+  <include name="IDR_WUG_CONTEXT_JS" file="../webui_generator/resources/context.js" type="chrome_html" flattenhtml="true" />
+  <include name="IDR_WUG_WEBUI_VIEW_HTML" file="../webui_generator/resources/webui-view.html" type="chrome_html" />
+  <include name="IDR_WUG_WEBUI_VIEW_JS" file="../webui_generator/resources/webui-view.js" type="chrome_html" />
+</grit-part>

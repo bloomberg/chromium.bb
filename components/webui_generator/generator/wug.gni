@@ -1,0 +1,112 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Generates native and HTML/JS supporting code for Web UI element from element's
+# declaration JSON file.
+#
+# Parameters:
+#
+#   source (required)
+#      declaration file.
+#
+# Example:
+# wug("some_type_wug_generated") {
+#   source = "some_type.json"
+# }
+#
+# Target's name should be deduced from declaration file name by removing
+# extension and adding '_wug_generated' prefix. This is needed to properly
+# handle dependencies between declaration files and their imports.
+#
+# For declaration file with a full path 'src/full/path/some_type.json' 5 files
+# will be generated and compiled:
+#   $root_gen_dir/wug/full/path/some_type_export.h
+#   $root_gen_dir/wug/full/path/some_type_view.h
+#   $root_gen_dir/wug/full/path/some_type_view_model.cc
+#   $root_gen_dir/wug/full/path/some_type_view_model.h
+#   $root_gen_dir/wug/full/path/some_type_webui_view.cc
+
+template("wug") {
+  declaration_path = invoker.source
+  generator_dir = "//components/webui_generator/generator"
+  generator_path = "$generator_dir/gen_sources.py"
+  src_root = rebase_path("//", root_build_dir)
+
+  helper_path = "$generator_dir/build_helper.py"
+  target_name = "${target_name}"
+  action_name = target_name + "_gen"
+  out_dir = "$root_gen_dir/wug"
+
+  helper_args = [
+    rebase_path(declaration_path, root_build_dir),
+    "--destination",
+    out_dir,
+    "--root",
+    src_root,
+    "--gn",
+    "--output",
+  ]
+
+  expected_target_name =
+      exec_script(helper_path, helper_args + [ "target_name" ], "trim string")
+  assert(target_name == expected_target_name,
+         "Wrong target name. " + "Expected '" + expected_target_name +
+             "', got '" + target_name + "'.")
+
+  action(action_name) {
+    script = generator_path
+    sources = [
+      "$generator_dir/declaration.py",
+      "$generator_dir/export_h.py",
+      "$generator_dir/html_view.py",
+      "$generator_dir/util.py",
+      "$generator_dir/view_model.py",
+      "$generator_dir/web_ui_view.py",
+    ]
+    inputs = [
+      declaration_path,
+    ]
+    inputs +=
+        exec_script(helper_path, helper_args + [ "imports" ], "list lines")
+    common_prefix = process_file_template(
+            [ declaration_path ],
+            "$out_dir/{{source_root_relative_dir}}/{{source_name_part}}_")
+    common_prefix = common_prefix[0]
+    outputs = [
+      common_prefix + "export.h",
+      common_prefix + "view_model.h",
+      common_prefix + "view_model.cc",
+      common_prefix + "web_ui_view.h",
+      common_prefix + "web_ui_view.cc",
+    ]
+    args = [
+      rebase_path(declaration_path, root_build_dir),
+      "--root",
+      src_root,
+      "--destination",
+      out_dir,
+    ]
+  }
+
+  component(target_name) {
+    sources = get_target_outputs(":$action_name")
+    defines = [ exec_script(helper_path,
+                            helper_args + [ "impl_macro" ],
+                            "trim string") ]
+    deps = [
+      "//base",
+      "//components/login",
+      "//components/strings",
+    ]
+    deps += exec_script(helper_path,
+                        helper_args + [ "import_dependencies" ],
+                        "list lines")
+    public_deps = [
+      "//components/webui_generator",
+    ]
+
+    all_dependent_configs =
+        [ "//components/webui_generator:wug_generated_config" ]
+  }
+}

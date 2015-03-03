@@ -10,6 +10,9 @@
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
     ],
+    'export_dependent_settings': [
+      '<(DEPTH)/base/base.gyp:base',
+    ],
     'defines': [
       'LOGIN_IMPLEMENTATION',
     ],

@@ -15,8 +15,11 @@ component("login") {
   defines = [ "LOGIN_IMPLEMENTATION" ]
 
   deps = [
-    "//base",
     "//ui/base",
+  ]
+
+  public_deps = [
+    "//base",
   ]
 }
 

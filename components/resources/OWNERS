@@ -1,4 +1,5 @@
-per-file dom_distiller*=cjhopman@chromium.org
-per-file dom_distiller*=nyquist@chromium.org
 per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=sclittle@chromium.org
+per-file dom_distiller*=cjhopman@chromium.org
+per-file dom_distiller*=nyquist@chromium.org
+per-file webui_generator_resources.grdp=dzhioev@chromium.org

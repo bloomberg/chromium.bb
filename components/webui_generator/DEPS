@@ -1,0 +1,6 @@
+include_rules = [
+  "+base",
+  "+content/public/browser",
+  "+grit/components_resources.h",
+  "+components/login",
+]
