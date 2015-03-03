@@ -387,8 +387,16 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
   EXPECT_TRUE(custom_page_view->visible());
 }
 
+// Currently this fails on ChromeOS
+// Disabled test http://crbug.com/463456
+#if defined(OS_CHROMEOS)
+#define MAYBE_LauncherPageFocusTraversal DISABLED_LauncherPageFocusTraversal
+#else
+#define MAYBE_LauncherPageFocusTraversal LauncherPageFocusTraversal
+#endif
+
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
-                       LauncherPageFocusTraversal) {
+                       MAYBE_LauncherPageFocusTraversal) {
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::ContentsView* contents_view =
