@@ -142,6 +142,32 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 @end
 
+// Mac implementation of the status bubble.
+//
+// Child windows interact with Spaces in interesting ways, so this code has to
+// follow these rules:
+//
+// 1) NSWindows cannot have zero size.  At times when the status bubble window
+//    has no specific size (for example, when hidden), its size is set to
+//    ui::kWindowSizeDeterminedLater.
+//
+// 2) Child window frames are in the coordinate space of the screen, not of the
+//    parent window.  If a child window has its origin at (0, 0), Spaces will
+//    position it in the corner of the screen but group it with the parent
+//    window in Spaces.  This causes Chrome windows to have a large (mostly
+//    blank) area in Spaces.  To avoid this, child windows always have their
+//    origin set to the lower-left corner of the window.
+//
+// 3) Detached child windows may show up as top-level windows in Spaces.  To
+//    avoid this, once the status bubble is Attach()ed to the parent, it is
+//    never detached (except in rare cases when reparenting to a fullscreen
+//    window).
+//
+// 4) To avoid unnecessary redraws, if a bubble is in the kBubbleHidden state,
+//    its size is always set to ui::kWindowSizeDeterminedLater.  The proper
+//    width for the current URL or status text is not calculated until the
+//    bubble leaves the kBubbleHidden state.
+
 StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
     : parent_(parent),
       delegate_(delegate),
@@ -178,13 +204,11 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   languages_ = languages;
 
   CGFloat bubble_width = NSWidth([window_ frame]);
-
-  // Reset frame size when bubble is hidden.
   if (state_ == kBubbleHidden) {
-    is_expanded_ = false;
-    NSRect frame = [window_ frame];
-    frame.size = ui::kWindowSizeDeterminedLater.size;
-    [window_ setFrame:frame display:NO];
+    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.width,
+              [window_ frame].size.width);
+    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.height,
+              [window_ frame].size.height);
     bubble_width = NSWidth(CalculateWindowFrame(/*expand=*/false));
   }
 
@@ -451,7 +475,14 @@ void StatusBubbleMac::Detach() {
   DCHECK(is_attached());
 
   // Magic setFrame: See http://crbug.com/58506 and http://crrev.com/3564021 .
-  [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
+  // TODO(rohitrao): Does the frame size actually matter here?  Can we always
+  // set it to kWindowSizeDeterminedLater?
+  NSRect frame = [window_ frame];
+  frame.size = ui::kWindowSizeDeterminedLater.size;
+  if (state_ != kBubbleHidden) {
+    frame = CalculateWindowFrame(/*expand=*/false);
+  }
+  [window_ setFrame:frame display:NO];
   [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
   [window_ orderOut:nil];               // ... and crbug.com/29054.
 
@@ -477,6 +508,8 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
     return;
 
   if (state == kBubbleHidden) {
+    is_expanded_ = false;
+
     // When hidden (with alpha of 0), make the window have the minimum size,
     // while still keeping the same origin. It's important to not set the
     // origin to 0,0 as that will cause the window to use more space in
@@ -722,11 +755,14 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
   if (!window_)
     return;
 
-  // Hidden bubbles always have size equal to ui::kWindowSizeDeterminedLater.
+  // There is no need to update the size if the bubble is hidden.
   if (state_ == kBubbleHidden) {
-    NSRect frame = [window_ frame];
-    frame.size = ui::kWindowSizeDeterminedLater.size;
-    [window_ setFrame:frame display:YES];
+    // Verify that hidden bubbles always have size equal to
+    // ui::kWindowSizeDeterminedLater.
+    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.width,
+              [window_ frame].size.width);
+    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.height,
+              [window_ frame].size.height);
     return;
   }
 
