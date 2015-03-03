@@ -66,6 +66,7 @@ readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 readonly PNACL_GIT_ROOT="${NACL_ROOT}/toolchain_build/src"
 readonly TC_SRC_BINUTILS="${PNACL_GIT_ROOT}/binutils"
 readonly TC_SRC_LLVM="${PNACL_GIT_ROOT}/llvm"
+readonly TC_SRC_SUBZERO="${PNACL_GIT_ROOT}/subzero"
 
 readonly TOOLCHAIN_BUILD_OUT="${NACL_ROOT}/toolchain_build/out"
 
@@ -351,7 +352,7 @@ llvm-sb-make() {
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
-  local tools_to_build="pnacl-llc"
+  local tools_to_build="pnacl-llc subzero"
   local export_dyn_env="llvm_cv_link_use_export_dynamic=no"
   local isjit=0
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
@@ -362,10 +363,11 @@ llvm-sb-make() {
       KEEP_SYMBOLS=1 \
       NO_DEAD_STRIP=1 \
       VERBOSE=1 \
-    BUILD_CC="${HOST_CLANG}" \
-    BUILD_CXX="${HOST_CLANG}++" \
-    BUILD_CXXFLAGS="-stdlib=libc++ -I${HOST_LIBCXX}/include/c++/v1" \
-    BUILD_LDFLAGS="-L${HOST_LIBCXX}/lib" \
+      SUBZERO_SRC_ROOT="${TC_SRC_SUBZERO}" \
+      BUILD_CC="${HOST_CLANG}" \
+      BUILD_CXX="${HOST_CLANG}++" \
+      BUILD_CXXFLAGS="-stdlib=libc++ -I${HOST_LIBCXX}/include/c++/v1" \
+      BUILD_LDFLAGS="-L${HOST_LIBCXX}/lib" \
       ${export_dyn_env} \
       make ${MAKE_OPTS} tools-only
 
@@ -379,24 +381,33 @@ llvm-sb-install() {
   local arch=$1
   StepBanner "LLVM-SB" "Install ${arch}"
 
-  local toolname="pnacl-llc"
   local installdir="$(GetTranslatorInstallDir ${arch})"/bin
   mkdir -p "${installdir}"
   spushd "${installdir}"
   local objdir="${LLVM_SB_OBJDIR}"
-  cp -f "${objdir}"/Release*/bin/${toolname} .
-  mv -f ${toolname} ${toolname}.pexe
-  local arches=${arch}
-  if [[ "${arch}" == "universal" ]]; then
-    arches="${SBTC_ARCHES_ALL}"
-  elif [[ "${arch}" == "i686" ]]; then
-    # LLVM does not separate the i686 and x86_64 backends.
-    # Translate twice to get both nexes.
-    arches="i686 x86_64"
+
+  local tools="pnacl-llc"
+  if [[ "${arch}" == "i686" ]]; then
+    tools+=" pnacl-sz"
   fi
-  local have_segment_gap="false"
-  translate-sb-tool ${toolname} "${arches}" "${have_segment_gap}"
-  install-sb-tool ${toolname} "${arches}"
+  for toolname in ${tools}; do
+    cp -f "${objdir}"/Release*/bin/${toolname} .
+    mv -f ${toolname} ${toolname}.pexe
+    local arches=${arch}
+    if [[ "${arch}" == "universal" ]]; then
+      arches="${SBTC_ARCHES_ALL}"
+    elif [[ "${arch}" == "i686" ]]; then
+      # LLVM does not separate the i686 and x86_64 backends.
+      # Translate twice to get both nexes.
+      arches="i686 x86_64"
+    fi
+    local have_segment_gap="false"
+    if [ "${toolname}" == "pnacl-sz" ]; then
+      have_segment_gap="true"
+    fi
+    translate-sb-tool ${toolname} "${arches}" "${have_segment_gap}"
+    install-sb-tool ${toolname} "${arches}"
+  done
   spopd
 }
 
