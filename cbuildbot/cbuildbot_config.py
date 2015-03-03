@@ -2225,6 +2225,10 @@ _paladin_hwtest_boards = frozenset([
   'x86-zgb',
 ])
 
+_paladin_moblab_hwtest_boards = frozenset([
+  'stumpy_moblab',
+])
+
 _paladin_chroot_replace_boards = frozenset([
   'butterfly',
   'daisy_spring',
@@ -2243,6 +2247,10 @@ def _CreatePaladinConfigs():
     base_config = _base_configs[board]
     if board in _paladin_hwtest_boards:
       customizations.update(hw_tests=HWTestConfig.DefaultListCQ())
+    if board in _paladin_moblab_hwtest_boards:
+      customizations.update(
+          hw_tests=[HWTestConfig(constants.HWTEST_MOBLAB_QUICK_SUITE,
+                                 blocking=True, num=1, timeout=30*60)])
     if board not in _paladin_important_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:

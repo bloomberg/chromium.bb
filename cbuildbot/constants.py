@@ -484,6 +484,7 @@ HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 HWTEST_MOBLAB_SUITE = 'moblab'
+HWTEST_MOBLAB_QUICK_SUITE = 'moblab_quick'
 HWTEST_SANITY_SUITE = 'sanity'
 HWTEST_PROVISION_SUITE = 'bvt-provision'
 
