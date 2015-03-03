@@ -183,6 +183,10 @@ class Project(object):
     """Returns the project's overlay directory."""
     return os.path.join(self.project_dir, 'packages')
 
+  def SourceDir(self):
+    """Returns the project's source directory."""
+    return os.path.join(self.project_dir, 'src')
+
 
 def _FindProjectInOverlays(name, base=None):
   """Returns the parent project of |base| that matches |name|.
