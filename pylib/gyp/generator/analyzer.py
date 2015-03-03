@@ -54,7 +54,7 @@ MATCH_STATUS_DOESNT_MATCH = 3
 # been visited to determine a more specific status yet.
 MATCH_STATUS_TBD = 4
 
-generator_supports_multiple_toolsets = True
+generator_supports_multiple_toolsets = gyp.common.CrossCompileRequested()
 
 generator_wants_static_library_dependencies_adjusted = False
 

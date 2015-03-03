@@ -62,17 +62,7 @@ generator_additional_path_sections = []
 generator_extra_sources_for_rules = []
 generator_filelist_paths = None
 
-# TODO: figure out how to not build extra host objects in the non-cross-compile
-# case when this is enabled, and enable unconditionally.
-generator_supports_multiple_toolsets = (
-  os.environ.get('GYP_CROSSCOMPILE') or
-  os.environ.get('AR_host') or
-  os.environ.get('CC_host') or
-  os.environ.get('CXX_host') or
-  os.environ.get('AR_target') or
-  os.environ.get('CC_target') or
-  os.environ.get('CXX_target'))
-
+generator_supports_multiple_toolsets = gyp.common.CrossCompileRequested()
 
 def StripPrefix(arg, prefix):
   if arg.startswith(prefix):
