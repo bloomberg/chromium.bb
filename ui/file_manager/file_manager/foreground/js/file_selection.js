@@ -104,6 +104,17 @@ function FileSelection(fileManager, indexes) {
 }
 
 /**
+ * Metadata property names used by FileSelection.
+ * These metadata is expected to be cached to accelerate completeInit() of
+ * FileSelection. crbug.com/458915.
+ * @const {!Array<string>}
+ */
+FileSelection.METADATA_PREFETCH_PROPERTY_NAMES = [
+  'availableOffline',
+  'contentMimeType',
+];
+
+/**
  * Computes data required to get file tasks and requests the tasks.
  * @return {!Promise}
  */

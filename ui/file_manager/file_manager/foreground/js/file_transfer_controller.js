@@ -1093,9 +1093,11 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
   // asynchronous operations.
   if (!containsDirectory) {
     for (var i = 0; i < fileEntries.length; i++) {
-      fileEntries[i].file(function(data, file) {
-        data.file = file;
-      }.bind(null, asyncData[fileEntries[i].toURL()]));
+      (function(fileEntry) {
+        fileEntry.file(function(file) {
+          asyncData[fileEntry.toURL()].file = file;
+        });
+      })(fileEntries[i]);
     }
   }
 
