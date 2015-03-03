@@ -488,6 +488,7 @@ const char kDBusServiceProperty[] = "DBus.Service";
 const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
 const char kWakeToScanPeriodSecondsProperty[] = "WakeToScanPeriodSeconds";
 const char kNetDetectScanPeriodSecondsProperty[] = "NetDetectScanPeriodSeconds";
+const char kForceWakeToScanTimerProperty[] = "ForceWakeToScanTimer";
 // The name of the network interface, ie. wlan0, eth0, etc.
 const char kInterfaceProperty[] = "Interface";
 const char kSelectedServiceProperty[] = "SelectedService";
