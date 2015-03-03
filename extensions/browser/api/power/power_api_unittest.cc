@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/power_save_blocker.h"
-#include "extensions/browser/api/power/power_api_manager.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
@@ -56,7 +55,7 @@ class PowerSaveBlockerStub : public content::PowerSaveBlocker {
 };
 
 // Manages PowerSaveBlockerStub objects.  Tests can instantiate this class
-// to make PowerApiManager's calls to create PowerSaveBlockers record the
+// to make PowerAPI's calls to create PowerSaveBlockers record the
 // actions that would've been performed instead of actually blocking and
 // unblocking power management.
 class PowerSaveBlockerStubManager {
@@ -66,14 +65,14 @@ class PowerSaveBlockerStubManager {
         weak_ptr_factory_(this) {
     // Use base::Unretained since callbacks with return values can't use
     // weak pointers.
-    PowerApiManager::Get(browser_context_)->SetCreateBlockerFunctionForTesting(
-        base::Bind(&PowerSaveBlockerStubManager::CreateStub,
-                   base::Unretained(this)));
+    PowerAPI::Get(browser_context_)
+        ->SetCreateBlockerFunctionForTesting(base::Bind(
+            &PowerSaveBlockerStubManager::CreateStub, base::Unretained(this)));
   }
 
   ~PowerSaveBlockerStubManager() {
-    PowerApiManager::Get(browser_context_)->SetCreateBlockerFunctionForTesting(
-        PowerApiManager::CreateBlockerFunction());
+    PowerAPI::Get(browser_context_)
+        ->SetCreateBlockerFunctionForTesting(PowerAPI::CreateBlockerFunction());
   }
 
   // Removes and returns the first item from |requests_|.  Returns NONE if
@@ -127,7 +126,7 @@ class PowerSaveBlockerStubManager {
 
 }  // namespace
 
-class PowerApiTest : public ApiUnitTest {
+class PowerAPITest : public ApiUnitTest {
  public:
   void SetUp() override {
     ApiUnitTest::SetUp();
@@ -162,17 +161,18 @@ class PowerApiTest : public ApiUnitTest {
     return api_test_utils::RunFunction(function.get(), args, browser_context());
   }
 
-  // Send a notification to PowerApiManager saying that |extension| has
+  // Send a notification to PowerAPI saying that |extension| has
   // been unloaded.
   void UnloadExtension(const extensions::Extension* extension) {
-    PowerApiManager::Get(browser_context())->OnExtensionUnloaded(
-        browser_context(), extension, UnloadedExtensionInfo::REASON_UNINSTALL);
+    PowerAPI::Get(browser_context())
+        ->OnExtensionUnloaded(browser_context(), extension,
+                              UnloadedExtensionInfo::REASON_UNINSTALL);
   }
 
   scoped_ptr<PowerSaveBlockerStubManager> manager_;
 };
 
-TEST_F(PowerApiTest, RequestAndRelease) {
+TEST_F(PowerAPITest, RequestAndRelease) {
   // Simulate an extension making and releasing a "display" request and a
   // "system" request.
   ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
@@ -190,7 +190,7 @@ TEST_F(PowerApiTest, RequestAndRelease) {
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
-TEST_F(PowerApiTest, RequestWithoutRelease) {
+TEST_F(PowerAPITest, RequestWithoutRelease) {
   // Simulate an extension calling requestKeepAwake() without calling
   // releaseKeepAwake().  The override should be automatically removed when
   // the extension is unloaded.
@@ -203,14 +203,14 @@ TEST_F(PowerApiTest, RequestWithoutRelease) {
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
-TEST_F(PowerApiTest, ReleaseWithoutRequest) {
+TEST_F(PowerAPITest, ReleaseWithoutRequest) {
   // Simulate an extension calling releaseKeepAwake() without having
   // calling requestKeepAwake() earlier.  The call should be ignored.
   ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension()));
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
-TEST_F(PowerApiTest, UpgradeRequest) {
+TEST_F(PowerAPITest, UpgradeRequest) {
   // Simulate an extension calling requestKeepAwake("system") and then
   // requestKeepAwake("display").  When the second call is made, a
   // display-sleep-blocking request should be made before the initial
@@ -229,7 +229,7 @@ TEST_F(PowerApiTest, UpgradeRequest) {
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
-TEST_F(PowerApiTest, DowngradeRequest) {
+TEST_F(PowerAPITest, DowngradeRequest) {
   // Simulate an extension calling requestKeepAwake("display") and then
   // requestKeepAwake("system").  When the second call is made, an
   // app-suspension-blocking request should be made before the initial
@@ -248,7 +248,7 @@ TEST_F(PowerApiTest, DowngradeRequest) {
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
-TEST_F(PowerApiTest, MultipleExtensions) {
+TEST_F(PowerAPITest, MultipleExtensions) {
   // Simulate an extension blocking the display from sleeping.
   ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());

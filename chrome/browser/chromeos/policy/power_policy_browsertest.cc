@@ -49,7 +49,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/api/power/power_api_manager.h"
+#include "extensions/browser/api/power/power_api.h"
 #include "extensions/common/api/power.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -482,8 +482,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
 
   // Pretend an extension grabs a screen wake lock.
   const char kExtensionId[] = "abcdefghijklmnopabcdefghijlkmnop";
-  extensions::PowerApiManager::Get(browser()->profile())->AddRequest(
-      kExtensionId, extensions::core_api::power::LEVEL_DISPLAY);
+  extensions::PowerAPI::Get(browser()->profile())
+      ->AddRequest(kExtensionId, extensions::core_api::power::LEVEL_DISPLAY);
   base::RunLoop().RunUntilIdle();
 
   // Check that the lock is in effect (ignoring ac_idle_action,

@@ -383,8 +383,6 @@
       'browser/api/networking_private/networking_private_event_router_factory.h',
       'browser/api/power/power_api.cc',
       'browser/api/power/power_api.h',
-      'browser/api/power/power_api_manager.cc',
-      'browser/api/power/power_api_manager.h',
       'browser/api/printer_provider/printer_provider_api.cc',
       'browser/api/printer_provider/printer_provider_api.h',
       'browser/api/printer_provider/printer_provider_api_factory.cc',

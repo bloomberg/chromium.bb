@@ -55,7 +55,7 @@
 #include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
-#include "extensions/browser/api/power/power_api_manager.h"
+#include "extensions/browser/api/power/power_api.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
@@ -121,7 +121,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();
 #endif  // defined(ENABLE_PLUGINS)
-  extensions::PowerApiManager::GetFactoryInstance();
+  extensions::PowerAPI::GetFactoryInstance();
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();

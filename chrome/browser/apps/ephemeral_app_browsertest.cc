@@ -23,7 +23,7 @@
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/api/power/power_api_manager.h"
+#include "extensions/browser/api/power/power_api.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
@@ -1028,9 +1028,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 // chrome.power.releaseKeepAwake() themselves.
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, ReleasePowerKeepAwake) {
   PowerSettingsMock power_settings;
-  extensions::PowerApiManager* power_manager =
-      extensions::PowerApiManager::Get(profile());
-  power_manager->SetCreateBlockerFunctionForTesting(
+  extensions::PowerAPI::Get(profile())->SetCreateBlockerFunctionForTesting(
       base::Bind(&PowerSaveBlockerStub::Create, &power_settings));
 
   const Extension* app = InstallAndLaunchEphemeralApp(kPowerTestApp);
