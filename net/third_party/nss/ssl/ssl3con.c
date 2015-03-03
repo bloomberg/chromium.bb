@@ -8,6 +8,7 @@
 
 /* TODO(ekr): Implement HelloVerifyRequest on server side. OK for now. */
 
+#define _GNU_SOURCE 1
 #include "cert.h"
 #include "ssl.h"
 #include "cryptohi.h"	/* for DSAU_ stuff */
@@ -1884,14 +1885,8 @@ ssl3_ResolvePK11CryptFunctions(void)
 #ifdef LINUX
     /* On Linux we use the system NSS libraries. Look up the PK11_Encrypt and
      * PK11_Decrypt functions at run time. */
-    void *handle = dlopen(NULL, RTLD_LAZY);
-    if (!handle) {
-	PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
-	return PR_FAILURE;
-    }
-    pk11_encrypt = (PK11CryptFcn)dlsym(handle, "PK11_Encrypt");
-    pk11_decrypt = (PK11CryptFcn)dlsym(handle, "PK11_Decrypt");
-    dlclose(handle);
+    pk11_encrypt = (PK11CryptFcn)dlsym(RTLD_DEFAULT, "PK11_Encrypt");
+    pk11_decrypt = (PK11CryptFcn)dlsym(RTLD_DEFAULT, "PK11_Decrypt");
     return PR_SUCCESS;
 #else
     /* On other platforms we use our own copy of NSS. PK11_Encrypt and
