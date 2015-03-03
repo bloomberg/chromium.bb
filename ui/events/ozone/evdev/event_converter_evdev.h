@@ -55,6 +55,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Returns true if the converter is used for a touchscreen device.
   virtual bool HasTouchscreen() const;
 
+  // Returns true if the converter is used for a device with a caps lock LED.
+  virtual bool HasCapsLockLed() const;
+
   // Returns the size of the touchscreen device if the converter is used for a
   // touchscreen device.
   virtual gfx::Size GetTouchscreenSize() const;
@@ -68,6 +71,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Allows all keys to be processed.
   virtual void AllowAllKeys();
+
+  // Update caps lock LED state.
+  virtual void SetCapsLockLed(bool enabled);
 
   // Helper to generate a base::TimeDelta from an input_event's time
   static base::TimeDelta TimeDeltaFromInputEvent(const input_event& event);

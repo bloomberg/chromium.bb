@@ -35,6 +35,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
       has_keyboard_(devinfo.HasKeyboard()),
       has_mouse_(devinfo.HasMouse()),
       has_touchpad_(devinfo.HasTouchpad()),
+      has_caps_lock_led_(devinfo.HasLedEvent(LED_CAPSL)),
       delegate_(delegate.Pass()) {
   memset(&evdev_, 0, sizeof(evdev_));
   evdev_.log = OnLogMessage;
@@ -80,6 +81,10 @@ bool EventReaderLibevdevCros::HasMouse() const {
 
 bool EventReaderLibevdevCros::HasTouchpad() const {
   return has_touchpad_;
+}
+
+bool EventReaderLibevdevCros::HasCapsLockLed() const {
+  return has_caps_lock_led_;
 }
 
 void EventReaderLibevdevCros::SetAllowedKeys(

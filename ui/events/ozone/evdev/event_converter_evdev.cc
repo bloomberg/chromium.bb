@@ -30,6 +30,8 @@ void EventConverterEvdev::Start() {
 }
 
 void EventConverterEvdev::Stop() {
+  // TODO(spang): If we reach here due to an error, we should treat it
+  // as if we have lost sync & release held keys, etc.
   controller_.StopWatchingFileDescriptor();
 }
 
@@ -53,6 +55,10 @@ bool EventConverterEvdev::HasTouchscreen() const {
   return false;
 }
 
+bool EventConverterEvdev::HasCapsLockLed() const {
+  return false;
+}
+
 gfx::Size EventConverterEvdev::GetTouchscreenSize() const {
   NOTREACHED();
   return gfx::Size();
@@ -70,6 +76,33 @@ void EventConverterEvdev::SetAllowedKeys(
 
 void EventConverterEvdev::AllowAllKeys() {
   NOTREACHED();
+}
+
+void EventConverterEvdev::SetCapsLockLed(bool enabled) {
+  if (!HasCapsLockLed())
+    return;
+
+  input_event events[2];
+  memset(&events, 0, sizeof(events));
+
+  events[0].type = EV_LED;
+  events[0].code = LED_CAPSL;
+  events[0].value = enabled;
+
+  events[1].type = EV_SYN;
+  events[1].code = SYN_REPORT;
+  events[1].value = 0;
+
+  ssize_t written = write(fd_, events, sizeof(events));
+
+  if (written < 0) {
+    if (errno != ENODEV)
+      PLOG(ERROR) << "cannot set leds for " << path_.value() << ":";
+    Stop();
+  } else if (written != sizeof(events)) {
+    LOG(ERROR) << "short write setting leds for " << path_.value();
+    Stop();
+  }
 }
 
 base::TimeDelta EventConverterEvdev::TimeDeltaFromInputEvent(

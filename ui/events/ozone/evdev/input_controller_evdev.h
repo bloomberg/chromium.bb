@@ -70,6 +70,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   // Send settings update to input_device_factory_.
   void UpdateDeviceSettings();
 
+  // Send caps lock update to input_device_factory_.
+  void UpdateCapsLockLed();
+
   // Configuration that needs to be passed on to InputDeviceFactory.
   InputDeviceSettingsEvdev input_device_settings_;
 
@@ -88,6 +91,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   // Device presence.
   bool has_mouse_;
   bool has_touchpad_;
+
+  // LED state.
+  bool caps_lock_led_state_;
 
   base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_;
 

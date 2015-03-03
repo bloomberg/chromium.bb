@@ -22,6 +22,7 @@ InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
       button_map_(button_map),
       has_mouse_(false),
       has_touchpad_(false),
+      caps_lock_led_state_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -33,6 +34,7 @@ void InputControllerEvdev::SetInputDeviceFactory(
   input_device_factory_ = input_device_factory;
 
   UpdateDeviceSettings();
+  UpdateCapsLockLed();
 }
 
 void InputControllerEvdev::set_has_mouse(bool has_mouse) {
@@ -57,6 +59,7 @@ bool InputControllerEvdev::IsCapsLockEnabled() {
 
 void InputControllerEvdev::SetCapsLockEnabled(bool enabled) {
   keyboard_->SetCapsLockEnabled(enabled);
+  UpdateCapsLockLed();
 }
 
 void InputControllerEvdev::SetNumLockEnabled(bool enabled) {
@@ -176,6 +179,15 @@ void InputControllerEvdev::ScheduleUpdateDeviceSettings() {
 void InputControllerEvdev::UpdateDeviceSettings() {
   input_device_factory_->UpdateInputDeviceSettings(input_device_settings_);
   settings_update_pending_ = false;
+}
+
+void InputControllerEvdev::UpdateCapsLockLed() {
+  if (!input_device_factory_)
+    return;
+  bool caps_lock_state = IsCapsLockEnabled();
+  if (caps_lock_state != caps_lock_led_state_)
+    input_device_factory_->SetCapsLockLed(caps_lock_state);
+  caps_lock_led_state_ = caps_lock_state;
 }
 
 }  // namespace ui

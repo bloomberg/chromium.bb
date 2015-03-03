@@ -80,6 +80,12 @@ void InputDeviceFactoryEvdevProxy::EnableInternalKeyboard() {
                             input_device_factory_));
 }
 
+void InputDeviceFactoryEvdevProxy::SetCapsLockLed(bool enabled) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&InputDeviceFactoryEvdev::SetCapsLockLed,
+                                    input_device_factory_, enabled));
+}
+
 void InputDeviceFactoryEvdevProxy::UpdateInputDeviceSettings(
     const InputDeviceSettingsEvdev& settings) {
   task_runner_->PostTask(

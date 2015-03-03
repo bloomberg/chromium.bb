@@ -52,6 +52,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
 
  private:
   void UpdateModifier(int modifier_flag, bool down);
+  void UpdateCapsLockLed();
   void UpdateKeyRepeat(unsigned int key, bool down);
   void StartKeyRepeat(unsigned int key);
   void StopKeyRepeat();

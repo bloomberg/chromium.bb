@@ -63,6 +63,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Enables all keys on the internal keyboard.
   void EnableInternalKeyboard();
 
+  // LED state.
+  void SetCapsLockLed(bool enabled);
+
   // Bits from InputController that have to be answered on IO.
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
@@ -80,6 +83,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // Sync input_device_settings_ to attached devices.
   void ApplyInputDeviceSettings();
+  void ApplyCapsLockLed();
 
   // Update observers on device changes.
   void UpdateDirtyFlags(const EventConverterEvdev* converter);
@@ -119,6 +123,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   bool keyboard_list_dirty_;
   bool mouse_list_dirty_;
   bool touchpad_list_dirty_;
+
+  // LEDs.
+  bool caps_lock_led_enabled_;
 
   // Device settings. These primarily affect libgestures behavior.
   InputDeviceSettingsEvdev input_device_settings_;

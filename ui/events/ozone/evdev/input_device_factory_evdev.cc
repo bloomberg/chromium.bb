@@ -142,7 +142,7 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
 
   TRACE_EVENT1("ozone", "OpenInputDevice", "path", path.value());
 
-  int fd = open(path.value().c_str(), O_RDONLY | O_NONBLOCK);
+  int fd = open(path.value().c_str(), O_RDWR | O_NONBLOCK);
   if (fd < 0) {
     PLOG(ERROR) << "Cannot open '" << path.value();
     reply_runner->PostTask(
@@ -200,6 +200,7 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
       keyboard_list_dirty_(false),
       mouse_list_dirty_(false),
       touchpad_list_dirty_(false),
+      caps_lock_led_enabled_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -256,6 +257,7 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
 
     // Sync settings to new device.
     ApplyInputDeviceSettings();
+    ApplyCapsLockLed();
   }
 
   if (--pending_device_changes_ == 0)
@@ -328,6 +330,11 @@ void InputDeviceFactoryEvdev::EnableInternalKeyboard() {
   }
 }
 
+void InputDeviceFactoryEvdev::SetCapsLockLed(bool enabled) {
+  caps_lock_led_enabled_ = enabled;
+  ApplyCapsLockLed();
+}
+
 void InputDeviceFactoryEvdev::UpdateInputDeviceSettings(
     const InputDeviceSettingsEvdev& settings) {
   input_device_settings_ = settings;
@@ -383,6 +390,13 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
                             input_device_settings_.tap_to_click_paused);
+}
+
+void InputDeviceFactoryEvdev::ApplyCapsLockLed() {
+  for (const auto& it : converters_) {
+    EventConverterEvdev* converter = it.second;
+    converter->SetCapsLockLed(caps_lock_led_enabled_);
+  }
 }
 
 void InputDeviceFactoryEvdev::UpdateDirtyFlags(

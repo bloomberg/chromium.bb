@@ -45,6 +45,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void DisableInternalKeyboardExceptKeys(
       scoped_ptr<std::set<DomCode>> excepted_keys);
   void EnableInternalKeyboard();
+  void SetCapsLockLed(bool enabled);
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
   void GetTouchEventLog(const base::FilePath& out_dir,

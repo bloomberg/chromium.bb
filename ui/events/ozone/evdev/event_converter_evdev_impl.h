@@ -41,6 +41,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   void OnFileCanReadWithoutBlocking(int fd) override;
   bool HasKeyboard() const override;
   bool HasTouchpad() const override;
+  bool HasCapsLockLed() const override;
   void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
   void AllowAllKeys() override;
 
@@ -60,6 +61,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // Input modalities for this device.
   bool has_keyboard_;
   bool has_touchpad_;
+
+  // LEDs for this device.
+  bool has_caps_lock_led_;
 
   // Save x-axis events of relative devices to be flushed at EV_SYN time.
   int x_offset_;

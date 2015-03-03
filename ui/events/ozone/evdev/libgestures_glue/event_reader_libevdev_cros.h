@@ -55,6 +55,7 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   bool HasKeyboard() const override;
   bool HasMouse() const override;
   bool HasTouchpad() const override;
+  bool HasCapsLockLed() const override;
   void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
   void AllowAllKeys() override;
 
@@ -68,6 +69,9 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   bool has_keyboard_;
   bool has_mouse_;
   bool has_touchpad_;
+
+  // LEDs for this device.
+  bool has_caps_lock_led_;
 
   // Libevdev state.
   Evdev evdev_;

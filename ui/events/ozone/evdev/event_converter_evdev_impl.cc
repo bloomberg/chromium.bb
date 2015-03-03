@@ -33,6 +33,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     : EventConverterEvdev(fd, path, id, type),
       has_keyboard_(devinfo.HasKeyboard()),
       has_touchpad_(devinfo.HasTouchpad()),
+      has_caps_lock_led_(devinfo.HasLedEvent(LED_CAPSL)),
       x_offset_(0),
       y_offset_(0),
       cursor_(cursor),
@@ -71,6 +72,10 @@ bool EventConverterEvdevImpl::HasKeyboard() const {
 
 bool EventConverterEvdevImpl::HasTouchpad() const {
   return has_touchpad_;
+}
+
+bool EventConverterEvdevImpl::HasCapsLockLed() const {
+  return has_caps_lock_led_;
 }
 
 void EventConverterEvdevImpl::SetAllowedKeys(
