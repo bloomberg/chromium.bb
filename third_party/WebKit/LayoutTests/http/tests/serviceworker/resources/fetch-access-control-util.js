@@ -158,10 +158,10 @@ var cookieCheckB = checkJsonpCookie.bind(this, 'cookieB');
 var cookieCheckC = checkJsonpCookie.bind(this, 'cookieC');
 var cookieCheckNone = checkJsonpCookie.bind(this, 'undefined');
 
-if (location.href.includes('base-https'))
+if (location.href.indexOf('base-https') >= 0)
   authCheck1 = checkJsonpAuth.bind(this, 'username1s', 'password1s', 'cookie1');
 
-if (location.href.includes('other-https'))
+if (location.href.indexOf('other-https') >= 0)
   authCheck2 = checkJsonpAuth.bind(this, 'username2s', 'password2s', 'cookie2');
 
 function executeServiceWorkerProxiedTests(test_targets) {

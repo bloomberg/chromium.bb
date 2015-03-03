@@ -35,7 +35,7 @@ if (location.protocol != 'https:') {
   init(t)
     .then(function() {
         // Initialization done. In fetch-access-control* tests, login done.
-        if (location.pathname.includes('base-https')) {
+        if (location.pathname.indexOf('base-https') >= 0) {
           // Step 3b. For base-https tests, redirect to HTTPS page here.
           location = 'https://127.0.0.1:8443' + location.pathname;
         } else {
