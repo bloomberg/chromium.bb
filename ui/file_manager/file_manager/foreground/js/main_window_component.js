@@ -282,7 +282,7 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
             selection.indexes[0]);
         // If the item is in renaming process, we don't allow to change
         // directory.
-        if (!item.hasAttribute('renaming')) {
+        if (item && !item.hasAttribute('renaming')) {
           event.preventDefault();
           this.directoryModel_.changeDirectoryEntry(selection.entries[0]);
         }

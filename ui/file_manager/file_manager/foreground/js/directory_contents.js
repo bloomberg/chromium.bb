@@ -789,6 +789,7 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
   }
 
   var updatedList = [];
+  var updatedIndexes = [];
   for (var i = 0; i < this.fileList_.length; i++) {
     var url = this.fileList_.item(i).toURL();
 
@@ -800,9 +801,13 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
 
     if (url in updatedMap) {
       updatedList.push(updatedMap[url]);
+      updatedIndexes.push(i);
       delete updatedMap[url];
     }
   }
+
+  if (updatedIndexes.length > 0)
+    this.fileList_.updateIndexes(updatedIndexes);
 
   var addedList = [];
   for (var url in updatedMap) {

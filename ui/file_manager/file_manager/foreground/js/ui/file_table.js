@@ -495,9 +495,12 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
     return true;
 
   // Check if the point is on the column contents or not.
-  var item = this.list.getListItemByIndex(itemIndex);
   switch (this.columnModel.columns_[hitColumn.index].id) {
     case 'name':
+      var item = this.list.getListItemByIndex(itemIndex);
+      if (!item)
+        return false;
+
       var spanElement = item.querySelector('.filename-label span');
       var spanRect = spanElement.getBoundingClientRect();
       // The this.list.cachedBounds_ object is set by
