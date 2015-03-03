@@ -29,7 +29,8 @@
 #include "config.h"
 #include "platform/TaskSynchronizer.h"
 
-#include "heap/ThreadState.h"
+#include "platform/heap/SafePoint.h"
+#include "platform/heap/ThreadState.h"
 
 namespace blink {
 
@@ -43,7 +44,7 @@ void TaskSynchronizer::waitForTaskCompletion()
     if (ThreadState::current()) {
         // Prevent the deadlock between park request by other threads and blocking
         // by m_synchronousCondition.
-        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+        SafePointScope scope(ThreadState::HeapPointersOnStack);
         waitForTaskCompletionInternal();
     } else {
         // If this thread is already detached, we no longer need to enter a safe point scope.

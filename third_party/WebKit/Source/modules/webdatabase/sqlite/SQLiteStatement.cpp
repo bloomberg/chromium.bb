@@ -26,11 +26,12 @@
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 
-#include <sqlite3.h>
-#include "platform/Logging.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
+#include "platform/Logging.h"
+#include "platform/heap/SafePoint.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
+#include <sqlite3.h>
 
 // SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the statement
 // once if the database scheme has changed. We rely on this behavior.
@@ -69,7 +70,7 @@ int SQLiteStatement::prepare()
     *statement = nullptr;
     int error;
     {
-        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+        SafePointScope scope(ThreadState::HeapPointersOnStack);
 
         WTF_LOG(SQLDatabase, "SQL - prepare - %s", query.data());
 
@@ -94,7 +95,7 @@ int SQLiteStatement::prepare()
 
 int SQLiteStatement::step()
 {
-    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+    SafePointScope scope(ThreadState::HeapPointersOnStack);
     //ASSERT(m_isPrepared);
 
     if (!m_statement)

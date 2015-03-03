@@ -16,6 +16,8 @@ source_set("heap") {
     "MarkingVisitorImpl.h",
     "StackFrameDepth.cpp",
     "StackFrameDepth.h",
+    "SafePoint.cpp",
+    "SafePoint.h",
     "ThreadState.cpp",
     "ThreadState.h",
     "Visitor.cpp",

@@ -35,6 +35,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapLinkedStack.h"
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
+#include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "public/platform/Platform.h"
@@ -221,7 +222,7 @@ public:
 
 private:
     ThreadState* m_state;
-    ThreadState::SafePointScope m_safePointScope;
+    SafePointScope m_safePointScope;
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
@@ -422,7 +423,7 @@ protected:
             m_threads.last()->postTask(FROM_HERE, new Task(WTF::bind(threadFunc, tester)));
         }
         while (tester->m_threadsToFinish) {
-            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
         delete tester;
@@ -481,7 +482,7 @@ protected:
                     if (!(i % 10)) {
                         globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
                     }
-                    ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+                    SafePointScope scope(ThreadState::NoHeapPointersOnStack);
                     Platform::current()->yieldCurrentThread();
                 }
 
@@ -495,7 +496,7 @@ protected:
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
-            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
         ThreadState::detach();
@@ -525,7 +526,7 @@ private:
                 for (int i = 0; i < numberOfAllocations; i++) {
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
                     weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
-                    ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+                    SafePointScope scope(ThreadState::NoHeapPointersOnStack);
                     Platform::current()->yieldCurrentThread();
                 }
 
@@ -539,7 +540,7 @@ private:
                 EXPECT_TRUE(weakMap->isEmpty());
                 EXPECT_TRUE(weakMap2.isEmpty());
             }
-            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
         ThreadState::detach();
@@ -4894,7 +4895,7 @@ private:
             // Wait for the main thread to do two GCs without sweeping this thread
             // heap. The worker waits within a safepoint, but there is no sweeping
             // until leaving the safepoint scope.
-            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             parkWorkerThread();
         }
 
@@ -4950,7 +4951,7 @@ public:
 
         // Wait for the worker thread to sweep its heaps before checking.
         {
-            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             parkMainThread();
         }
     }
@@ -4986,7 +4987,7 @@ private:
             // scope. If the weak collection backing is marked dead
             // because of this we will not get strongification in the
             // GC we force when we continue.
-            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             parkWorkerThread();
         }
 
