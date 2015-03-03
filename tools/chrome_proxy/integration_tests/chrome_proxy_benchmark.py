@@ -16,9 +16,6 @@ class ChromeProxyLatency(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.latency.top_20'
 
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
-
 
 class ChromeProxyLatencyDirect(benchmark.Benchmark):
   tag = 'latency_direct'
@@ -54,9 +51,6 @@ class ChromeProxyDataSaving(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.data_saving.top_20'
-
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
 
 class ChromeProxyDataSavingDirect(benchmark.Benchmark):
@@ -113,6 +107,16 @@ class ChromeProxyClientType(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.client_type.client_type'
+
+
+class ChromeProxyLoFi(benchmark.Benchmark):
+  tag = 'lo_fi'
+  test = measurements.ChromeProxyLoFi
+  page_set = pagesets.LoFiPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.lo_fi.lo_fi'
 
 
 class ChromeProxyBypass(benchmark.Benchmark):

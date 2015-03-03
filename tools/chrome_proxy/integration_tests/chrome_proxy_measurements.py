@@ -18,6 +18,9 @@ class ChromeProxyLatency(page_test.PageTest):
   def __init__(self, *args, **kwargs):
     super(ChromeProxyLatency, self).__init__(*args, **kwargs)
 
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+
   def WillNavigateToPage(self, page, tab):
     tab.ClearCache(force=True)
 
@@ -28,10 +31,13 @@ class ChromeProxyLatency(page_test.PageTest):
 
 
 class ChromeProxyDataSaving(page_test.PageTest):
-  """Chrome proxy data daving measurement."""
+  """Chrome proxy data saving measurement."""
   def __init__(self, *args, **kwargs):
     super(ChromeProxyDataSaving, self).__init__(*args, **kwargs)
     self._metrics = metrics.ChromeProxyMetric()
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
   def WillNavigateToPage(self, page, tab):
     tab.ClearCache(force=True)
@@ -285,6 +291,20 @@ class ChromeProxyClientType(ChromeProxyValidation):
                                           results,
                                           self._chrome_proxy_client_type,
                                           self._page.bypass_for_client_type)
+
+
+class ChromeProxyLoFi(ChromeProxyValidation):
+  """Correctness measurement for Lo-Fi in Chrome-Proxy header."""
+
+  def __init__(self):
+    super(ChromeProxyLoFi, self).__init__(restart_after_each_page=True)
+
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyLoFi, self).CustomizeBrowserOptions(options)
+    options.AppendExtraBrowserArgs('--enable-data-reduction-proxy-lo-fi')
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForLoFi(tab, results)
 
 
 class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):

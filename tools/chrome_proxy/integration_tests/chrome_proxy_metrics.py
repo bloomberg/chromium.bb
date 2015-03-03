@@ -71,6 +71,15 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
         return kvp[1].strip()
     return None
 
+  def HasChromeProxyLoFi(self):
+    if 'Chrome-Proxy' not in self.response.request_headers:
+      return False
+    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
+    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
+    for value in values:
+      if len(value) == 5 and value == 'q=low':
+        return True
+    return False
 
 class ChromeProxyMetric(network_metrics.NetworkMetric):
   """A Chrome proxy timeline metric."""
@@ -179,6 +188,39 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         results.current_page, 'via', 'count', via_count))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
+
+  def AddResultsForLoFi(self, tab, results):
+    lo_fi_count = 0
+
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        lo_fi_count += 1
+      else:
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            '%s: LoFi not in request header.' % (r.url))
+
+      cl = resp.content_length
+      resource = resp.response.url
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'lo_fi', 'count', lo_fi_count))
+
+    for resp in self.IterResponses(tab):
+      r = resp.response
+      cl = resp.content_length
+      ocl = resp.original_content_length
+      saving = resp.data_saving_rate * 100
+      if cl > 100:
+        raise ChromeProxyMetricException, (
+            'Image %s is %d bytes. Expecting less than 100 bytes.' %
+            (resource, cl))
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'content_length', 'bytes', cl))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'original_content_length', 'bytes', ocl))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'data_saving', 'percent', saving))
 
   def AddResultsForBypass(self, tab, results):
     bypass_count = 0

@@ -98,9 +98,10 @@ class HTTPResponse(object):
     try:
       cl = self.GetContentLengthFromBody()
     except Exception, e:
-      resp = self.response
       logging.warning('Fail to get content length for %s from body: %s',
-                      resp.url[:100], e)
+                      self.response.url[:100], e)
+    if cl == 0:
+      resp = self.response
       cl_header = resp.GetHeader('Content-Length')
       if cl_header:
         cl = int(cl_header)
@@ -170,7 +171,7 @@ class NetworkMetric(Metric):
         ocl = resp.original_content_length
         if ocl < cl:
           logging.warning('original content length (%d) is less than content '
-                        'lenght(%d) for resource %s', ocl, cl, resource)
+                          'length (%d) for resource %s', ocl, cl, resource)
         if self.add_result_for_resource:
           results.AddValue(scalar.ScalarValue(
               results.current_page,
