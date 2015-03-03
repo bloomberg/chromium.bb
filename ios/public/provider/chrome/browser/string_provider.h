@@ -12,8 +12,8 @@ namespace ios {
 // A class that provides access to localized strings.
 class StringProvider {
  public:
-  StringProvider() {};
-  virtual ~StringProvider() {};
+  StringProvider() {}
+  virtual ~StringProvider() {}
 
   // Strings used in //ios/chrome.
   // TODO(droger): Find a long term solution for strings used in //ios/chrome.
