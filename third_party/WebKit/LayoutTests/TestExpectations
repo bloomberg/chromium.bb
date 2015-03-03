@@ -1672,6 +1672,8 @@ crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/table-borders.html [ 
 # crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed-iframe.html [ ImageOnlyFailure ]
 # crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed.html [ ImageOnlyFailure ]
 
+crbug.com/463369 [ XP ] virtual/slimmingpaint/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
+
 crbug.com/435864 http/tests/security/shape-image-cors-port.html [ Pass Crash ]
 crbug.com/435864 http/tests/security/shape-image-cors-same-origin.html [ Pass Crash ]
 crbug.com/435864 http/tests/security/shape-image-cors-data-url.html [ Pass Crash ]
