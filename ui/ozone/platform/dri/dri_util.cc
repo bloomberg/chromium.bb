@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/stringprintf.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 
 #include <errno.h>
@@ -13,7 +12,8 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "base/strings/stringprintf.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 
 namespace ui {
@@ -142,7 +142,7 @@ bool MapDumbBuffer(int fd,
   return true;
 }
 
-void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
+void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
                                          ScreenManager* screen_manager) {
   LOG(WARNING) << "Forcing initialization of primary display.";
   ScopedVector<HardwareDisplayControllerInfo> displays =

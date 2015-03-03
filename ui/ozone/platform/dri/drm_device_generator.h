@@ -10,7 +10,7 @@
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 
 class DrmDeviceGenerator {
  public:
@@ -19,7 +19,7 @@ class DrmDeviceGenerator {
 
   // Creates a DRM device for |file|. |device_path| describes the location of
   // the DRM device.
-  virtual scoped_refptr<DriWrapper> CreateDevice(
+  virtual scoped_refptr<DrmDevice> CreateDevice(
       const base::FilePath& device_path,
       base::File file);
 

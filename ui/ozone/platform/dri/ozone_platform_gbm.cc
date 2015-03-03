@@ -26,9 +26,9 @@
 #include "ui/ozone/platform/dri/drm_device_generator.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
+#include "ui/ozone/platform/dri/gbm_device.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
-#include "ui/ozone/platform/dri/gbm_wrapper.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
@@ -76,9 +76,9 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
   ~GbmBufferGenerator() override {}
 
   // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DriWrapper>& drm,
+  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
                                       const gfx::Size& size) override {
-    scoped_refptr<GbmWrapper> gbm(static_cast<GbmWrapper*>(drm.get()));
+    scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     return GbmBuffer::CreateBuffer(gbm, SurfaceFactoryOzone::RGBA_8888, size,
                                    true);
   }
@@ -93,9 +93,9 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
   ~GbmDeviceGenerator() override {}
 
   // DrmDeviceGenerator:
-  scoped_refptr<DriWrapper> CreateDevice(const base::FilePath& path,
-                                         base::File file) override {
-    scoped_refptr<DriWrapper> drm = new GbmWrapper(path, file.Pass());
+  scoped_refptr<DrmDevice> CreateDevice(const base::FilePath& path,
+                                        base::File file) override {
+    scoped_refptr<DrmDevice> drm = new GbmDevice(path, file.Pass());
     if (drm->Initialize())
       return drm;
 
@@ -175,7 +175,7 @@ class OzonePlatformGbm : public OzonePlatform {
   void InitializeGPU() override {
     gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
-    gbm_ = new GbmWrapper(GetPrimaryDisplayCardPath());
+    gbm_ = new GbmDevice(GetPrimaryDisplayCardPath());
     if (!gbm_->Initialize())
       LOG(FATAL) << "Failed to initialize primary DRM device";
 
@@ -204,7 +204,7 @@ class OzonePlatformGbm : public OzonePlatform {
   bool use_surfaceless_;
   base::FilePath primary_graphics_card_path_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
-  scoped_refptr<GbmWrapper> gbm_;
+  scoped_refptr<GbmDevice> gbm_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;

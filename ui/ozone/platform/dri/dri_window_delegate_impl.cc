@@ -9,7 +9,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 
@@ -181,9 +181,9 @@ void DriWindowDelegateImpl::OnCursorAnimationTimeout() {
 }
 
 void DriWindowDelegateImpl::UpdateWidgetToDrmDeviceMapping() {
-  scoped_refptr<DriWrapper> drm = nullptr;
+  scoped_refptr<DrmDevice> drm = nullptr;
   if (controller_)
-    drm = controller_->GetAllocationDriWrapper();
+    drm = controller_->GetAllocationDrmDevice();
 
   device_manager_->UpdateDrmDevice(widget_, drm);
 }
@@ -194,7 +194,7 @@ void DriWindowDelegateImpl::UpdateCursorBuffers() {
       cursor_buffers_[i] = nullptr;
     }
   } else {
-    scoped_refptr<DriWrapper> drm = controller_->GetAllocationDriWrapper();
+    scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
 
     uint64_t cursor_width = 64;
     uint64_t cursor_height = 64;

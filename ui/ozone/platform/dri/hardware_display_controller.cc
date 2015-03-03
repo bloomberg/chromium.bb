@@ -17,7 +17,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
@@ -157,7 +157,7 @@ void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
 }
 
 scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
-    const scoped_refptr<DriWrapper>& drm,
+    const scoped_refptr<DrmDevice>& drm,
     uint32_t crtc) {
   for (ScopedVector<CrtcController>::iterator it = crtc_controllers_.begin();
        it != crtc_controllers_.end(); ++it) {
@@ -191,7 +191,7 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
   return nullptr;
 }
 
-bool HardwareDisplayController::HasCrtc(const scoped_refptr<DriWrapper>& drm,
+bool HardwareDisplayController::HasCrtc(const scoped_refptr<DrmDevice>& drm,
                                         uint32_t crtc) const {
   for (size_t i = 0; i < crtc_controllers_.size(); ++i)
     if (crtc_controllers_[i]->drm() == drm &&
@@ -260,7 +260,7 @@ void HardwareDisplayController::OnPageFlipEvent() {
   }
 }
 
-scoped_refptr<DriWrapper> HardwareDisplayController::GetAllocationDriWrapper()
+scoped_refptr<DrmDevice> HardwareDisplayController::GetAllocationDrmDevice()
     const {
   DCHECK(!crtc_controllers_.empty());
   // TODO(dnicoara) When we support mirroring across DRM devices, figure out

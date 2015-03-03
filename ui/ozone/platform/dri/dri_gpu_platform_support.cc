@@ -11,7 +11,7 @@
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 
 namespace ui {

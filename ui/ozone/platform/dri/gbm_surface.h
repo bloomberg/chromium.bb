@@ -18,7 +18,7 @@ namespace ui {
 
 class DriBuffer;
 class DriWindowDelegate;
-class GbmWrapper;
+class GbmDevice;
 
 // Extends the GBM surfaceless functionality and adds an implicit surface for
 // the primary plane. Arbitrary buffers can still be allocated and displayed as
@@ -27,7 +27,7 @@ class GbmWrapper;
 class GbmSurface : public GbmSurfaceless {
  public:
   GbmSurface(DriWindowDelegate* window_delegate,
-             const scoped_refptr<GbmWrapper>& gbm);
+             const scoped_refptr<GbmDevice>& gbm);
   ~GbmSurface() override;
 
   bool Initialize();
@@ -42,7 +42,7 @@ class GbmSurface : public GbmSurfaceless {
   void OnSwapBuffersCallback(const SwapCompletionCallback& callback,
                              gbm_bo* pending_buffer);
 
-  scoped_refptr<GbmWrapper> gbm_;
+  scoped_refptr<GbmDevice> gbm_;
 
   // The native GBM surface. In EGL this represents the EGLNativeWindowType.
   gbm_surface* native_surface_;

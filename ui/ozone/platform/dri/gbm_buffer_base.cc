@@ -7,7 +7,7 @@
 #include <gbm.h>
 
 #include "base/logging.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 namespace ui {
 
@@ -21,23 +21,20 @@ const uint8_t kPixelDepth = 32;
 
 }  // namespace
 
-GbmBufferBase::GbmBufferBase(const scoped_refptr<DriWrapper>& dri,
+GbmBufferBase::GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
                              gbm_bo* bo,
                              bool scanout)
-    : dri_(dri), bo_(bo), framebuffer_(0) {
-  if (scanout && !dri_->AddFramebuffer(gbm_bo_get_width(bo),
-                                       gbm_bo_get_height(bo),
-                                       kColorDepth,
-                                       kPixelDepth,
-                                       gbm_bo_get_stride(bo),
-                                       gbm_bo_get_handle(bo).u32,
-                                       &framebuffer_))
+    : drm_(drm), bo_(bo), framebuffer_(0) {
+  if (scanout &&
+      !drm_->AddFramebuffer(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
+                            kColorDepth, kPixelDepth, gbm_bo_get_stride(bo),
+                            gbm_bo_get_handle(bo).u32, &framebuffer_))
     LOG(ERROR) << "Failed to register buffer";
 }
 
 GbmBufferBase::~GbmBufferBase() {
   if (framebuffer_)
-    dri_->RemoveFramebuffer(framebuffer_);
+    drm_->RemoveFramebuffer(framebuffer_);
 }
 
 uint32_t GbmBufferBase::GetFramebufferId() const {

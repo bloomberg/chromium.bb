@@ -22,7 +22,7 @@
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/drm_device_generator.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
@@ -49,7 +49,7 @@ namespace {
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : dri_(new DriWrapper(GetPrimaryDisplayCardPath())),
+      : drm_(new DrmDevice(GetPrimaryDisplayCardPath())),
         buffer_generator_(new DriBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
         device_manager_(CreateDeviceManager()),
@@ -88,21 +88,21 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get(), dri_->device_path()));
+        display_manager_.get(), drm_->device_path()));
   }
   void InitializeUI() override {
-    if (!dri_->Initialize())
+    if (!drm_->Initialize())
       LOG(FATAL) << "Failed to initialize primary DRM device";
 
     // This makes sure that simple targets that do not handle display
     // configuration can still use the primary display.
-    ForceInitializationOfPrimaryDisplay(dri_, screen_manager_.get());
-    drm_device_manager_.reset(new DrmDeviceManager(dri_));
+    ForceInitializationOfPrimaryDisplay(drm_, screen_manager_.get());
+    drm_device_manager_.reset(new DrmDeviceManager(drm_));
     display_manager_.reset(new DisplayManager());
     surface_factory_ozone_.reset(
         new DriSurfaceFactory(&window_delegate_manager_));
     scoped_ptr<NativeDisplayDelegateDri> ndd(new NativeDisplayDelegateDri(
-        screen_manager_.get(), dri_,
+        screen_manager_.get(), drm_,
         scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
         drm_device_manager_.get(), &window_delegate_manager_,
@@ -132,7 +132,7 @@ class OzonePlatformDri : public OzonePlatform {
   void InitializeGPU() override {}
 
  private:
-  scoped_refptr<DriWrapper> dri_;
+  scoped_refptr<DrmDevice> drm_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<DriBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;

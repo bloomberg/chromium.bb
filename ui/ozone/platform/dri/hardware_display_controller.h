@@ -31,7 +31,7 @@ namespace ui {
 
 class CrtcController;
 class ScanoutBuffer;
-class DriWrapper;
+class DrmDevice;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -134,9 +134,9 @@ class OZONE_EXPORT HardwareDisplayController
   bool MoveCursor(const gfx::Point& location);
 
   void AddCrtc(scoped_ptr<CrtcController> controller);
-  scoped_ptr<CrtcController> RemoveCrtc(const scoped_refptr<DriWrapper>& drm,
+  scoped_ptr<CrtcController> RemoveCrtc(const scoped_refptr<DrmDevice>& drm,
                                         uint32_t crtc);
-  bool HasCrtc(const scoped_refptr<DriWrapper>& drm, uint32_t crtc) const;
+  bool HasCrtc(const scoped_refptr<DrmDevice>& drm, uint32_t crtc) const;
   bool IsMirrored() const;
   bool IsDisabled() const;
   gfx::Size GetModeSize() const;
@@ -152,7 +152,7 @@ class OZONE_EXPORT HardwareDisplayController
     return crtc_controllers_.get();
   }
 
-  scoped_refptr<DriWrapper> GetAllocationDriWrapper() const;
+  scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
 
  private:
   // Returns true if any of the CRTCs is waiting for a page flip.
@@ -185,7 +185,7 @@ class OZONE_EXPORT HardwareDisplayController
   std::deque<PageFlipRequest> requests_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
 
-  base::ScopedPtrHashMap<DriWrapper*, HardwareDisplayPlaneList>
+  base::ScopedPtrHashMap<DrmDevice*, HardwareDisplayPlaneList>
       owned_hardware_planes_;
 
   // Stores the CRTC configuration. This is used to identify monitors and

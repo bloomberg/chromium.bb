@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 namespace ui {
 
@@ -33,7 +33,7 @@ bool HardwareDisplayPlane::CanUseForCrtc(uint32_t crtc_index) {
   return possible_crtcs_ & (1 << crtc_index);
 }
 
-bool HardwareDisplayPlane::Initialize(DriWrapper* drm) {
+bool HardwareDisplayPlane::Initialize(DrmDevice* drm) {
   return true;
 }
 

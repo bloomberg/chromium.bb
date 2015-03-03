@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/ozone/platform/dri/gbm_wrapper.h"
+#include "ui/ozone/platform/dri/gbm_device.h"
 
 namespace ui {
 
@@ -31,7 +31,7 @@ int GetGbmFormatFromBufferFormat(SurfaceFactoryOzone::BufferFormat fmt) {
 
 }  // namespace
 
-GbmBuffer::GbmBuffer(const scoped_refptr<GbmWrapper>& gbm,
+GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
                      bool scanout)
     : GbmBufferBase(gbm, bo, scanout) {
@@ -44,7 +44,7 @@ GbmBuffer::~GbmBuffer() {
 
 // static
 scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
-    const scoped_refptr<GbmWrapper>& gbm,
+    const scoped_refptr<GbmDevice>& gbm,
     SurfaceFactoryOzone::BufferFormat format,
     const gfx::Size& size,
     bool scanout) {

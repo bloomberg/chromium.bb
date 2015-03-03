@@ -7,9 +7,9 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
-#include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
+#include "ui/ozone/platform/dri/test/mock_drm_device.h"
 #include "ui/ozone/public/native_pixmap.h"
 
 namespace {
@@ -58,7 +58,7 @@ class HardwareDisplayControllerTest : public testing::Test {
 
  protected:
   scoped_ptr<ui::HardwareDisplayController> controller_;
-  scoped_refptr<ui::MockDriWrapper> drm_;
+  scoped_refptr<ui::MockDrmDevice> drm_;
 
   int page_flips_;
 
@@ -70,7 +70,7 @@ void HardwareDisplayControllerTest::SetUp() {
   std::vector<uint32_t> crtcs;
   crtcs.push_back(kPrimaryCrtc);
   crtcs.push_back(kSecondaryCrtc);
-  drm_ = new ui::MockDriWrapper(false, crtcs, kPlanesPerCrtc);
+  drm_ = new ui::MockDrmDevice(false, crtcs, kPlanesPerCrtc);
   controller_.reset(new ui::HardwareDisplayController(
       scoped_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kPrimaryCrtc, kPrimaryConnector))));

@@ -13,7 +13,7 @@
 #include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
-#include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
+#include "ui/ozone/platform/dri/test/mock_drm_device.h"
 
 namespace {
 
@@ -232,8 +232,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, SharedPlanes) {
 TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   std::vector<uint32_t> crtcs;
   crtcs.push_back(100);
-  scoped_refptr<ui::MockDriWrapper> drm =
-      new ui::MockDriWrapper(false, crtcs, 2);
+  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice(false, crtcs, 2);
   ui::OverlayPlaneList assigns;
   scoped_refptr<FakeScanoutBuffer> fake_buffer = new FakeScanoutBuffer();
   assigns.push_back(ui::OverlayPlane(fake_buffer));

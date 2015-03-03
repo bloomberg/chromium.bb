@@ -22,14 +22,14 @@ class DeviceManager;
 class DisplaySnapshotDri;
 class DisplayMode;
 class DisplayModeDri;
-class DriWrapper;
+class DrmDevice;
 class DrmDeviceGenerator;
 class ScreenManager;
 
 class NativeDisplayDelegateDri {
  public:
   NativeDisplayDelegateDri(ScreenManager* screen_manager,
-                           const scoped_refptr<DriWrapper>& primary_device,
+                           const scoped_refptr<DrmDevice>& primary_device,
                            scoped_ptr<DrmDeviceGenerator> device_generator);
   ~NativeDisplayDelegateDri();
 
@@ -77,7 +77,7 @@ class NativeDisplayDelegateDri {
   ScreenManager* screen_manager_;  // Not owned.
   scoped_ptr<DrmDeviceGenerator> drm_device_generator_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  std::vector<scoped_refptr<DriWrapper>> devices_;
+  std::vector<scoped_refptr<DrmDevice>> devices_;
   // Modes can be shared between different displays, so we need to keep track
   // of them independently for cleanup.
   ScopedVector<const DisplayMode> cached_modes_;

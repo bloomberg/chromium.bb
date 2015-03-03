@@ -12,7 +12,7 @@
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
-#include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
+#include "ui/ozone/platform/dri/test/mock_drm_device.h"
 
 namespace {
 
@@ -26,7 +26,7 @@ const size_t kPlanesPerCrtc = 1;
 
 class MockDriWindowDelegate : public ui::DriWindowDelegate {
  public:
-  MockDriWindowDelegate(ui::DriWrapper* drm) {
+  MockDriWindowDelegate(ui::DrmDevice* drm) {
     controller_.reset(new ui::HardwareDisplayController(make_scoped_ptr(
         new ui::CrtcController(drm, kDefaultCrtc, kDefaultConnector))));
     scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm));
@@ -69,7 +69,7 @@ class DriSurfaceTest : public testing::Test {
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_refptr<ui::MockDriWrapper> drm_;
+  scoped_refptr<ui::MockDrmDevice> drm_;
   scoped_ptr<MockDriWindowDelegate> window_delegate_;
   scoped_ptr<ui::DriSurface> surface_;
 
@@ -81,7 +81,7 @@ void DriSurfaceTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   std::vector<uint32_t> crtcs;
   crtcs.push_back(kDefaultCrtc);
-  drm_ = new ui::MockDriWrapper(true, crtcs, kPlanesPerCrtc);
+  drm_ = new ui::MockDrmDevice(true, crtcs, kPlanesPerCrtc);
   window_delegate_.reset(new MockDriWindowDelegate(drm_.get()));
   surface_.reset(new ui::DriSurface(window_delegate_.get()));
   surface_->ResizeCanvas(gfx::Size(kDefaultMode.hdisplay,

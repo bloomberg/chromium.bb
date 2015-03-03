@@ -14,9 +14,9 @@
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
+#include "ui/ozone/platform/dri/gbm_device.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
-#include "ui/ozone/platform/dri/gbm_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
@@ -93,7 +93,7 @@ intptr_t GbmSurfaceFactory::GetNativeDisplay() {
 }
 
 int GbmSurfaceFactory::GetDrmFd() {
-  scoped_refptr<GbmWrapper> gbm = GetGbmDevice(gfx::kNullAcceleratedWidget);
+  scoped_refptr<GbmDevice> gbm = GetGbmDevice(gfx::kNullAcceleratedWidget);
   DCHECK(gbm);
   return gbm->get_fd();
 }
@@ -128,7 +128,7 @@ scoped_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  scoped_refptr<GbmWrapper> gbm = GetGbmDevice(widget);
+  scoped_refptr<GbmDevice> gbm = GetGbmDevice(widget);
   DCHECK(gbm);
 
   scoped_ptr<GbmSurface> surface(
@@ -157,7 +157,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   if (usage == MAP)
     return nullptr;
 
-  scoped_refptr<GbmWrapper> gbm = GetGbmDevice(widget);
+  scoped_refptr<GbmDevice> gbm = GetGbmDevice(widget);
   DCHECK(gbm);
 
   scoped_refptr<GbmBuffer> buffer =
@@ -220,9 +220,9 @@ bool GbmSurfaceFactory::CanCreateNativePixmap(BufferUsage usage) {
   return false;
 }
 
-scoped_refptr<GbmWrapper> GbmSurfaceFactory::GetGbmDevice(
+scoped_refptr<GbmDevice> GbmSurfaceFactory::GetGbmDevice(
     gfx::AcceleratedWidget widget) {
-  return static_cast<GbmWrapper*>(
+  return static_cast<GbmDevice*>(
       drm_device_manager_->GetDrmDevice(widget).get());
 }
 

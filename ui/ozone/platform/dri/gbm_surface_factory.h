@@ -12,7 +12,7 @@ namespace ui {
 class DriWindowDelegate;
 class DriWindowDelegateManager;
 class DrmDeviceManager;
-class GbmWrapper;
+class GbmDevice;
 
 class GbmSurfaceFactory : public DriSurfaceFactory {
  public:
@@ -52,7 +52,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   bool CanCreateNativePixmap(BufferUsage usage) override;
 
  private:
-  scoped_refptr<GbmWrapper> GetGbmDevice(gfx::AcceleratedWidget widget);
+  scoped_refptr<GbmDevice> GetGbmDevice(gfx::AcceleratedWidget widget);
 
   bool allow_surfaceless_;
 

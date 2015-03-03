@@ -11,7 +11,7 @@ struct gbm_bo;
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 
 // Wrapper for a GBM buffer. The base class provides common functionality
 // required to prepare the buffer for scanout. It does not provide any ownership
@@ -27,11 +27,11 @@ class GbmBufferBase : public ScanoutBuffer {
   gfx::Size GetSize() const override;
 
  protected:
-  GbmBufferBase(const scoped_refptr<DriWrapper>& dri, gbm_bo* bo, bool scanout);
+  GbmBufferBase(const scoped_refptr<DrmDevice>& drm, gbm_bo* bo, bool scanout);
   ~GbmBufferBase() override;
 
  private:
-  scoped_refptr<DriWrapper> dri_;
+  scoped_refptr<DrmDevice> drm_;
   gbm_bo* bo_;
   uint32_t framebuffer_;
 

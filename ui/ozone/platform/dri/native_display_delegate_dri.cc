@@ -15,7 +15,7 @@
 #include "ui/ozone/platform/dri/display_mode_dri.h"
 #include "ui/ozone/platform/dri/display_snapshot_dri.h"
 #include "ui/ozone/platform/dri/dri_util.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/drm_device_generator.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -61,7 +61,7 @@ class DisplaySnapshotComparator {
         crtc_(snapshot->crtc()),
         connector_(snapshot->connector()) {}
 
-  DisplaySnapshotComparator(const scoped_refptr<DriWrapper>& drm,
+  DisplaySnapshotComparator(const scoped_refptr<DrmDevice>& drm,
                             uint32_t crtc,
                             uint32_t connector)
       : drm_(drm), crtc_(crtc), connector_(connector) {}
@@ -72,7 +72,7 @@ class DisplaySnapshotComparator {
   }
 
  private:
-  scoped_refptr<DriWrapper> drm_;
+  scoped_refptr<DrmDevice> drm_;
   uint32_t crtc_;
   uint32_t connector_;
 };
@@ -81,7 +81,7 @@ class FindByDevicePath {
  public:
   explicit FindByDevicePath(const base::FilePath& path) : path_(path) {}
 
-  bool operator()(const scoped_refptr<DriWrapper>& device) {
+  bool operator()(const scoped_refptr<DrmDevice>& device) {
     return device->device_path() == path_;
   }
 
@@ -93,7 +93,7 @@ class FindByDevicePath {
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
     ScreenManager* screen_manager,
-    const scoped_refptr<DriWrapper>& primary_device,
+    const scoped_refptr<DrmDevice>& primary_device,
     scoped_ptr<DrmDeviceGenerator> drm_device_generator)
     : screen_manager_(screen_manager),
       drm_device_generator_(drm_device_generator.Pass()) {
@@ -213,7 +213,7 @@ void NativeDisplayDelegateDri::AddGraphicsDevice(
     return;
   }
 
-  scoped_refptr<DriWrapper> device =
+  scoped_refptr<DrmDevice> device =
       drm_device_generator_->CreateDevice(path, file.Pass());
   if (!device) {
     VLOG(2) << "Could not initialize DRM device for '" << path.value() << "'";

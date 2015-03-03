@@ -14,7 +14,7 @@
 #include "ui/display/util/edid_parser.h"
 #include "ui/ozone/platform/dri/display_mode_dri.h"
 #include "ui/ozone/platform/dri/dri_util.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 #if !defined(DRM_MODE_CONNECTOR_DSI)
 #define DRM_MODE_CONNECTOR_DSI 16
@@ -46,7 +46,7 @@ DisplayConnectionType GetDisplayType(drmModeConnector* connector) {
   }
 }
 
-bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {
+bool IsAspectPreserving(DrmDevice* drm, drmModeConnector* connector) {
   ScopedDrmPropertyPtr property(drm->GetProperty(connector, "scaling mode"));
   if (!property)
     return false;
@@ -67,7 +67,7 @@ bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {
 
 }  // namespace
 
-DisplaySnapshotDri::DisplaySnapshotDri(const scoped_refptr<DriWrapper>& drm,
+DisplaySnapshotDri::DisplaySnapshotDri(const scoped_refptr<DrmDevice>& drm,
                                        drmModeConnector* connector,
                                        drmModeCrtc* crtc,
                                        uint32_t index)

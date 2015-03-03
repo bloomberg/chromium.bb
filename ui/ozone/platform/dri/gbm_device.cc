@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/gbm_wrapper.h"
+#include "ui/ozone/platform/dri/gbm_device.h"
 
 #include <gbm.h>
 
 namespace ui {
 
-GbmWrapper::GbmWrapper(const base::FilePath& device_path)
-    : DriWrapper(device_path), device_(nullptr) {
+GbmDevice::GbmDevice(const base::FilePath& device_path)
+    : DrmDevice(device_path), device_(nullptr) {
 }
 
-GbmWrapper::GbmWrapper(const base::FilePath& device_path, base::File file)
-    : DriWrapper(device_path, file.Pass()), device_(nullptr) {
+GbmDevice::GbmDevice(const base::FilePath& device_path, base::File file)
+    : DrmDevice(device_path, file.Pass()), device_(nullptr) {
 }
 
-GbmWrapper::~GbmWrapper() {
+GbmDevice::~GbmDevice() {
   if (device_)
     gbm_device_destroy(device_);
 }
 
-bool GbmWrapper::Initialize() {
-  if (!DriWrapper::Initialize())
+bool GbmDevice::Initialize() {
+  if (!DrmDevice::Initialize())
     return false;
 
   device_ = gbm_create_device(get_fd());

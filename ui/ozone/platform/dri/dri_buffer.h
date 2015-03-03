@@ -13,14 +13,14 @@
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
 class OZONE_EXPORT DriBuffer : public ScanoutBuffer {
  public:
-  DriBuffer(const scoped_refptr<DriWrapper>& dri);
+  DriBuffer(const scoped_refptr<DrmDevice>& drm);
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
@@ -38,7 +38,7 @@ class OZONE_EXPORT DriBuffer : public ScanoutBuffer {
  protected:
   ~DriBuffer() override;
 
-  scoped_refptr<DriWrapper> dri_;
+  scoped_refptr<DrmDevice> drm_;
 
   // Wrapper around the native pixel memory.
   skia::RefPtr<SkSurface> surface_;
@@ -62,7 +62,7 @@ class OZONE_EXPORT DriBufferGenerator : public ScanoutBufferGenerator {
   ~DriBufferGenerator() override;
 
   // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DriWrapper>& drm,
+  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
                                       const gfx::Size& size) override;
 
  private:

@@ -18,7 +18,7 @@
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
-#include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
+#include "ui/ozone/platform/dri/test/mock_drm_device.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace {
@@ -33,7 +33,7 @@ const uint32_t kDefaultConnector = 2;
 const int kDefaultCursorSize = 64;
 
 std::vector<skia::RefPtr<SkSurface>> GetCursorBuffers(
-    const scoped_refptr<ui::MockDriWrapper> drm) {
+    const scoped_refptr<ui::MockDrmDevice> drm) {
   std::vector<skia::RefPtr<SkSurface>> cursor_buffers;
   for (const skia::RefPtr<SkSurface>& cursor_buffer : drm->buffers()) {
     if (cursor_buffer->width() == kDefaultCursorSize &&
@@ -56,7 +56,7 @@ class DriWindowDelegateImplTest : public testing::Test {
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_refptr<ui::MockDriWrapper> dri_;
+  scoped_refptr<ui::MockDrmDevice> drm_;
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
@@ -68,14 +68,14 @@ class DriWindowDelegateImplTest : public testing::Test {
 
 void DriWindowDelegateImplTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
-  dri_ = new ui::MockDriWrapper();
+  drm_ = new ui::MockDrmDevice();
   buffer_generator_.reset(new ui::DriBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
-  screen_manager_->AddDisplayController(dri_, kDefaultCrtc, kDefaultConnector);
+  screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(
-      dri_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
+      drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
 
-  drm_device_manager_.reset(new ui::DrmDeviceManager(dri_));
+  drm_device_manager_.reset(new ui::DrmDeviceManager(drm_));
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());
 
   scoped_ptr<ui::DriWindowDelegate> window_delegate(
@@ -109,7 +109,7 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
       ->SetCursor(cursor_bitmaps, gfx::Point(4, 2), 0);
 
   SkBitmap cursor;
-  std::vector<skia::RefPtr<SkSurface>> cursor_buffers = GetCursorBuffers(dri_);
+  std::vector<skia::RefPtr<SkSurface>> cursor_buffers = GetCursorBuffers(drm_);
   EXPECT_EQ(2u, cursor_buffers.size());
 
   // Buffers 1 is the cursor backbuffer we just drew in.
@@ -130,7 +130,7 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
 
 TEST_F(DriWindowDelegateImplTest, CheckCursorSurfaceAfterChangingDevice) {
   // Add another device.
-  scoped_refptr<ui::MockDriWrapper> drm = new ui::MockDriWrapper();
+  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice();
   screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(
       drm, kDefaultCrtc, kDefaultConnector,

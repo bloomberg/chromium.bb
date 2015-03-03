@@ -6,13 +6,13 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/page_flip_observer.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
 
-CrtcController::CrtcController(const scoped_refptr<DriWrapper>& drm,
+CrtcController::CrtcController(const scoped_refptr<DrmDevice>& drm,
                                uint32_t crtc,
                                uint32_t connector)
     : drm_(drm),

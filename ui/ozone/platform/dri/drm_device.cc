@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -27,13 +27,13 @@ namespace {
 
 struct PageFlipPayload {
   PageFlipPayload(const scoped_refptr<base::TaskRunner>& task_runner,
-                  const DriWrapper::PageFlipCallback& callback)
+                  const DrmDevice::PageFlipCallback& callback)
       : task_runner(task_runner), callback(callback) {}
 
   // Task runner for the thread scheduling the page flip event. This is used to
   // run the callback on the same thread the callback was created on.
   scoped_refptr<base::TaskRunner> task_runner;
-  DriWrapper::PageFlipCallback callback;
+  DrmDevice::PageFlipCallback callback;
 };
 
 bool DrmCreateDumbBuffer(int fd,
@@ -99,8 +99,8 @@ bool CanQueryForResources(int fd) {
 
 }  // namespace
 
-class DriWrapper::IOWatcher
-    : public base::RefCountedThreadSafe<DriWrapper::IOWatcher>,
+class DrmDevice::IOWatcher
+    : public base::RefCountedThreadSafe<DrmDevice::IOWatcher>,
       public base::MessagePumpLibevent::Watcher {
  public:
   IOWatcher(int fd,
@@ -173,7 +173,7 @@ class DriWrapper::IOWatcher
   DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
 
-DriWrapper::DriWrapper(const base::FilePath& device_path)
+DrmDevice::DrmDevice(const base::FilePath& device_path)
     : device_path_(device_path),
       file_(device_path,
             base::File::FLAG_OPEN | base::File::FLAG_READ |
@@ -183,16 +183,16 @@ DriWrapper::DriWrapper(const base::FilePath& device_path)
       << "': " << base::File::ErrorToString(file_.error_details());
 }
 
-DriWrapper::DriWrapper(const base::FilePath& device_path, base::File file)
+DrmDevice::DrmDevice(const base::FilePath& device_path, base::File file)
     : device_path_(device_path), file_(file.Pass()) {
 }
 
-DriWrapper::~DriWrapper() {
+DrmDevice::~DrmDevice() {
   if (watcher_)
     watcher_->Shutdown();
 }
 
-bool DriWrapper::Initialize() {
+bool DrmDevice::Initialize() {
   // Ignore devices that cannot perform modesetting.
   if (!CanQueryForResources(file_.GetPlatformFile())) {
     VLOG(2) << "Cannot query for resources for '" << device_path_.value()
@@ -211,33 +211,33 @@ bool DriWrapper::Initialize() {
   return true;
 }
 
-void DriWrapper::InitializeTaskRunner(
+void DrmDevice::InitializeTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK(!task_runner_);
   task_runner_ = task_runner;
   watcher_ = new IOWatcher(file_.GetPlatformFile(), task_runner_);
 }
 
-ScopedDrmCrtcPtr DriWrapper::GetCrtc(uint32_t crtc_id) {
+ScopedDrmCrtcPtr DrmDevice::GetCrtc(uint32_t crtc_id) {
   DCHECK(file_.IsValid());
   return ScopedDrmCrtcPtr(drmModeGetCrtc(file_.GetPlatformFile(), crtc_id));
 }
 
-bool DriWrapper::SetCrtc(uint32_t crtc_id,
-                         uint32_t framebuffer,
-                         std::vector<uint32_t> connectors,
-                         drmModeModeInfo* mode) {
+bool DrmDevice::SetCrtc(uint32_t crtc_id,
+                        uint32_t framebuffer,
+                        std::vector<uint32_t> connectors,
+                        drmModeModeInfo* mode) {
   DCHECK(file_.IsValid());
   DCHECK(!connectors.empty());
   DCHECK(mode);
 
-  TRACE_EVENT2("dri", "DriWrapper::SetCrtc", "crtc", crtc_id, "size",
+  TRACE_EVENT2("dri", "DrmDevice::SetCrtc", "crtc", crtc_id, "size",
                gfx::Size(mode->hdisplay, mode->vdisplay).ToString());
   return !drmModeSetCrtc(file_.GetPlatformFile(), crtc_id, framebuffer, 0, 0,
                          vector_as_array(&connectors), connectors.size(), mode);
 }
 
-bool DriWrapper::SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) {
+bool DrmDevice::SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) {
   DCHECK(file_.IsValid());
   // If there's no buffer then the CRTC was disabled.
   if (!crtc->buffer_id)
@@ -245,58 +245,54 @@ bool DriWrapper::SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) {
 
   DCHECK(!connectors.empty());
 
-  TRACE_EVENT1("dri", "DriWrapper::RestoreCrtc",
-               "crtc", crtc->crtc_id);
+  TRACE_EVENT1("dri", "DrmDevice::RestoreCrtc", "crtc", crtc->crtc_id);
   return !drmModeSetCrtc(file_.GetPlatformFile(), crtc->crtc_id,
                          crtc->buffer_id, crtc->x, crtc->y,
                          vector_as_array(&connectors), connectors.size(),
                          &crtc->mode);
 }
 
-bool DriWrapper::DisableCrtc(uint32_t crtc_id) {
+bool DrmDevice::DisableCrtc(uint32_t crtc_id) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::DisableCrtc",
-               "crtc", crtc_id);
+  TRACE_EVENT1("dri", "DrmDevice::DisableCrtc", "crtc", crtc_id);
   return !drmModeSetCrtc(file_.GetPlatformFile(), crtc_id, 0, 0, 0, NULL, 0,
                          NULL);
 }
 
-ScopedDrmConnectorPtr DriWrapper::GetConnector(uint32_t connector_id) {
+ScopedDrmConnectorPtr DrmDevice::GetConnector(uint32_t connector_id) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::GetConnector", "connector", connector_id);
+  TRACE_EVENT1("dri", "DrmDevice::GetConnector", "connector", connector_id);
   return ScopedDrmConnectorPtr(
       drmModeGetConnector(file_.GetPlatformFile(), connector_id));
 }
 
-bool DriWrapper::AddFramebuffer(uint32_t width,
-                                uint32_t height,
-                                uint8_t depth,
-                                uint8_t bpp,
-                                uint32_t stride,
-                                uint32_t handle,
-                                uint32_t* framebuffer) {
+bool DrmDevice::AddFramebuffer(uint32_t width,
+                               uint32_t height,
+                               uint8_t depth,
+                               uint8_t bpp,
+                               uint32_t stride,
+                               uint32_t handle,
+                               uint32_t* framebuffer) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::AddFramebuffer",
-               "handle", handle);
+  TRACE_EVENT1("dri", "DrmDevice::AddFramebuffer", "handle", handle);
   return !drmModeAddFB(file_.GetPlatformFile(), width, height, depth, bpp,
                        stride, handle, framebuffer);
 }
 
-bool DriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
+bool DrmDevice::RemoveFramebuffer(uint32_t framebuffer) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::RemoveFramebuffer",
-               "framebuffer", framebuffer);
+  TRACE_EVENT1("dri", "DrmDevice::RemoveFramebuffer", "framebuffer",
+               framebuffer);
   return !drmModeRmFB(file_.GetPlatformFile(), framebuffer);
 }
 
-bool DriWrapper::PageFlip(uint32_t crtc_id,
-                          uint32_t framebuffer,
-                          bool is_sync,
-                          const PageFlipCallback& callback) {
+bool DrmDevice::PageFlip(uint32_t crtc_id,
+                         uint32_t framebuffer,
+                         bool is_sync,
+                         const PageFlipCallback& callback) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT2("dri", "DriWrapper::PageFlip",
-               "crtc", crtc_id,
-               "framebuffer", framebuffer);
+  TRACE_EVENT2("dri", "DrmDevice::PageFlip", "crtc", crtc_id, "framebuffer",
+               framebuffer);
 
   if (watcher_)
     watcher_->SetPaused(is_sync);
@@ -329,14 +325,13 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
   return false;
 }
 
-bool DriWrapper::PageFlipOverlay(uint32_t crtc_id,
-                                 uint32_t framebuffer,
-                                 const gfx::Rect& location,
-                                 const gfx::Rect& source,
-                                 int overlay_plane) {
+bool DrmDevice::PageFlipOverlay(uint32_t crtc_id,
+                                uint32_t framebuffer,
+                                const gfx::Rect& location,
+                                const gfx::Rect& source,
+                                int overlay_plane) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT2("dri", "DriWrapper::PageFlipOverlay",
-               "crtc", crtc_id,
+  TRACE_EVENT2("dri", "DrmDevice::PageFlipOverlay", "crtc", crtc_id,
                "framebuffer", framebuffer);
   return !drmModeSetPlane(file_.GetPlatformFile(), overlay_plane, crtc_id,
                           framebuffer, 0, location.x(), location.y(),
@@ -344,19 +339,17 @@ bool DriWrapper::PageFlipOverlay(uint32_t crtc_id,
                           source.y(), source.width(), source.height());
 }
 
-ScopedDrmFramebufferPtr DriWrapper::GetFramebuffer(uint32_t framebuffer) {
+ScopedDrmFramebufferPtr DrmDevice::GetFramebuffer(uint32_t framebuffer) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::GetFramebuffer",
-               "framebuffer", framebuffer);
+  TRACE_EVENT1("dri", "DrmDevice::GetFramebuffer", "framebuffer", framebuffer);
   return ScopedDrmFramebufferPtr(
       drmModeGetFB(file_.GetPlatformFile(), framebuffer));
 }
 
-ScopedDrmPropertyPtr DriWrapper::GetProperty(drmModeConnector* connector,
-                                             const char* name) {
-  TRACE_EVENT2("dri", "DriWrapper::GetProperty",
-               "connector", connector->connector_id,
-               "name", name);
+ScopedDrmPropertyPtr DrmDevice::GetProperty(drmModeConnector* connector,
+                                            const char* name) {
+  TRACE_EVENT2("dri", "DrmDevice::GetProperty", "connector",
+               connector->connector_id, "name", name);
   for (int i = 0; i < connector->count_props; ++i) {
     ScopedDrmPropertyPtr property(
         drmModeGetProperty(file_.GetPlatformFile(), connector->props[i]));
@@ -370,25 +363,24 @@ ScopedDrmPropertyPtr DriWrapper::GetProperty(drmModeConnector* connector,
   return ScopedDrmPropertyPtr();
 }
 
-bool DriWrapper::SetProperty(uint32_t connector_id,
-                             uint32_t property_id,
-                             uint64_t value) {
+bool DrmDevice::SetProperty(uint32_t connector_id,
+                            uint32_t property_id,
+                            uint64_t value) {
   DCHECK(file_.IsValid());
   return !drmModeConnectorSetProperty(file_.GetPlatformFile(), connector_id,
                                       property_id, value);
 }
 
-bool DriWrapper::GetCapability(uint64_t capability, uint64_t* value) {
+bool DrmDevice::GetCapability(uint64_t capability, uint64_t* value) {
   DCHECK(file_.IsValid());
   return !drmGetCap(file_.GetPlatformFile(), capability, value);
 }
 
-ScopedDrmPropertyBlobPtr DriWrapper::GetPropertyBlob(
-    drmModeConnector* connector, const char* name) {
+ScopedDrmPropertyBlobPtr DrmDevice::GetPropertyBlob(drmModeConnector* connector,
+                                                    const char* name) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT2("dri", "DriWrapper::GetPropertyBlob",
-               "connector", connector->connector_id,
-               "name", name);
+  TRACE_EVENT2("dri", "DrmDevice::GetPropertyBlob", "connector",
+               connector->connector_id, "name", name);
   for (int i = 0; i < connector->count_props; ++i) {
     ScopedDrmPropertyPtr property(
         drmModeGetProperty(file_.GetPlatformFile(), connector->props[i]));
@@ -404,28 +396,28 @@ ScopedDrmPropertyBlobPtr DriWrapper::GetPropertyBlob(
   return ScopedDrmPropertyBlobPtr();
 }
 
-bool DriWrapper::SetCursor(uint32_t crtc_id,
-                           uint32_t handle,
-                           const gfx::Size& size) {
+bool DrmDevice::SetCursor(uint32_t crtc_id,
+                          uint32_t handle,
+                          const gfx::Size& size) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::SetCursor", "handle", handle);
+  TRACE_EVENT1("dri", "DrmDevice::SetCursor", "handle", handle);
   return !drmModeSetCursor(file_.GetPlatformFile(), crtc_id, handle,
                            size.width(), size.height());
 }
 
-bool DriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
+bool DrmDevice::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
   DCHECK(file_.IsValid());
   return !drmModeMoveCursor(file_.GetPlatformFile(), crtc_id, point.x(),
                             point.y());
 }
 
-bool DriWrapper::CreateDumbBuffer(const SkImageInfo& info,
-                                  uint32_t* handle,
-                                  uint32_t* stride,
-                                  void** pixels) {
+bool DrmDevice::CreateDumbBuffer(const SkImageInfo& info,
+                                 uint32_t* handle,
+                                 uint32_t* stride,
+                                 void** pixels) {
   DCHECK(file_.IsValid());
 
-  TRACE_EVENT0("dri", "DriWrapper::CreateDumbBuffer");
+  TRACE_EVENT0("dri", "DrmDevice::CreateDumbBuffer");
   if (!DrmCreateDumbBuffer(file_.GetPlatformFile(), info, handle, stride))
     return false;
 
@@ -438,22 +430,22 @@ bool DriWrapper::CreateDumbBuffer(const SkImageInfo& info,
   return true;
 }
 
-void DriWrapper::DestroyDumbBuffer(const SkImageInfo& info,
-                                   uint32_t handle,
-                                   uint32_t stride,
-                                   void* pixels) {
+void DrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
+                                  uint32_t handle,
+                                  uint32_t stride,
+                                  void* pixels) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("dri", "DriWrapper::DestroyDumbBuffer", "handle", handle);
+  TRACE_EVENT1("dri", "DrmDevice::DestroyDumbBuffer", "handle", handle);
   munmap(pixels, info.getSafeSize(stride));
   DrmDestroyDumbBuffer(file_.GetPlatformFile(), handle);
 }
 
-bool DriWrapper::SetMaster() {
+bool DrmDevice::SetMaster() {
   DCHECK(file_.IsValid());
   return (drmSetMaster(file_.GetPlatformFile()) == 0);
 }
 
-bool DriWrapper::DropMaster() {
+bool DrmDevice::DropMaster() {
   DCHECK(file_.IsValid());
   return (drmDropMaster(file_.GetPlatformFile()) == 0);
 }

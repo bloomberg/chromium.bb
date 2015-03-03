@@ -18,7 +18,7 @@
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 class PageFlipObserver;
 
 // Wrapper around a CRTC.
@@ -29,14 +29,14 @@ class PageFlipObserver;
 class OZONE_EXPORT CrtcController
     : public base::SupportsWeakPtr<CrtcController> {
  public:
-  CrtcController(const scoped_refptr<DriWrapper>& drm,
+  CrtcController(const scoped_refptr<DrmDevice>& drm,
                  uint32_t crtc,
                  uint32_t connector);
   ~CrtcController();
 
   uint32_t crtc() const { return crtc_; }
   uint32_t connector() const { return connector_; }
-  const scoped_refptr<DriWrapper>& drm() const { return drm_; }
+  const scoped_refptr<DrmDevice>& drm() const { return drm_; }
   bool is_disabled() const { return is_disabled_; }
   bool page_flip_pending() const { return page_flip_pending_; }
   uint64_t time_of_last_flip() const { return time_of_last_flip_; }
@@ -75,7 +75,7 @@ class OZONE_EXPORT CrtcController
   void RemoveObserver(PageFlipObserver* observer);
 
  private:
-  scoped_refptr<DriWrapper> drm_;
+  scoped_refptr<DrmDevice> drm_;
 
   HardwareDisplayPlaneManager* overlay_plane_manager_;  // Not owned.
 

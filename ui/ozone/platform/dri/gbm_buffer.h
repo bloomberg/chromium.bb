@@ -16,18 +16,18 @@ struct gbm_bo;
 
 namespace ui {
 
-class GbmWrapper;
+class GbmDevice;
 
 class GbmBuffer : public GbmBufferBase {
  public:
   static scoped_refptr<GbmBuffer> CreateBuffer(
-      const scoped_refptr<GbmWrapper>& gbm,
+      const scoped_refptr<GbmDevice>& gbm,
       SurfaceFactoryOzone::BufferFormat format,
       const gfx::Size& size,
       bool scanout);
 
  private:
-  GbmBuffer(const scoped_refptr<GbmWrapper>& gbm, gbm_bo* bo, bool scanout);
+  GbmBuffer(const scoped_refptr<GbmDevice>& gbm, gbm_bo* bo, bool scanout);
   ~GbmBuffer() override;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);

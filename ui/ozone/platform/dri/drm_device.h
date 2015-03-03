@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRI_DRI_WRAPPER_H_
-#define UI_OZONE_PLATFORM_DRI_DRI_WRAPPER_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DRM_DEVICE_H_
+#define UI_OZONE_PLATFORM_DRI_DRM_DEVICE_H_
 
 #include <stdint.h>
 
@@ -38,14 +38,14 @@ class HardwareDisplayPlaneManager;
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
+class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
  public:
   typedef base::Callback<void(unsigned int /* frame */,
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
-  DriWrapper(const base::FilePath& device_path);
-  DriWrapper(const base::FilePath& device_path, base::File file);
+  DrmDevice(const base::FilePath& device_path);
+  DrmDevice(const base::FilePath& device_path, base::File file);
 
   // Open device.
   virtual bool Initialize();
@@ -141,7 +141,6 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
                          uint32_t handle,
                          const gfx::Size& size);
 
-
   // Move the cursor on CRTC |crtc_id| to (x, y);
   virtual bool MoveCursor(uint32_t crtc_id, const gfx::Point& point);
 
@@ -166,9 +165,9 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
  protected:
-  friend class base::RefCountedThreadSafe<DriWrapper>;
+  friend class base::RefCountedThreadSafe<DrmDevice>;
 
-  virtual ~DriWrapper();
+  virtual ~DrmDevice();
 
   scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
@@ -187,9 +186,9 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
   // Watcher for |fd_| listening for page flip events.
   scoped_refptr<IOWatcher> watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriWrapper);
+  DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRI_DRI_WRAPPER_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DRM_DEVICE_H_

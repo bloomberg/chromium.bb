@@ -18,7 +18,7 @@ class Rect;
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 
 class OZONE_EXPORT HardwareDisplayPlane {
  public:
@@ -27,7 +27,7 @@ class OZONE_EXPORT HardwareDisplayPlane {
 
   virtual ~HardwareDisplayPlane();
 
-  bool Initialize(DriWrapper* drm);
+  bool Initialize(DrmDevice* drm);
 
   bool CanUseForCrtc(uint32_t crtc_index);
 

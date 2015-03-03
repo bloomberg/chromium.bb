@@ -15,7 +15,7 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 class ScreenManager;
 
 // Representation of the information required to initialize and configure a
@@ -49,7 +49,7 @@ bool MapDumbBuffer(int fd,
                    uint32_t size,
                    void** pixels);
 
-void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
+void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
                                          ScreenManager* screen_manager);
 
 base::FilePath GetPrimaryDisplayCardPath();

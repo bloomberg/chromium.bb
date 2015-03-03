@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/dri/drm_device_generator.h"
 
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 namespace ui {
 
@@ -14,10 +14,10 @@ DrmDeviceGenerator::DrmDeviceGenerator() {
 DrmDeviceGenerator::~DrmDeviceGenerator() {
 }
 
-scoped_refptr<DriWrapper> DrmDeviceGenerator::CreateDevice(
+scoped_refptr<DrmDevice> DrmDeviceGenerator::CreateDevice(
     const base::FilePath& device_path,
     base::File file) {
-  scoped_refptr<DriWrapper> drm = new DriWrapper(device_path, file.Pass());
+  scoped_refptr<DrmDevice> drm = new DrmDevice(device_path, file.Pass());
   if (drm->Initialize())
     return drm;
 

@@ -22,7 +22,7 @@ class Size;
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 class ScanoutBufferGenerator;
 
 // Responsible for keeping track of active displays and configuring them.
@@ -33,18 +33,18 @@ class OZONE_EXPORT ScreenManager {
 
   // Register a display controller. This must be called before trying to
   // configure it.
-  void AddDisplayController(const scoped_refptr<DriWrapper>& dri,
+  void AddDisplayController(const scoped_refptr<DrmDevice>& drm,
                             uint32_t crtc,
                             uint32_t connector);
 
   // Remove a display controller from the list of active controllers. The
   // controller is removed since it was disconnected.
-  void RemoveDisplayController(const scoped_refptr<DriWrapper>& dri,
+  void RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
                                uint32_t crtc);
 
   // Configure a display controller. The display controller is identified by
   // (|crtc|, |connector|) and the controller is modeset using |mode|.
-  bool ConfigureDisplayController(const scoped_refptr<DriWrapper>& dri,
+  bool ConfigureDisplayController(const scoped_refptr<DrmDevice>& drm,
                                   uint32_t crtc,
                                   uint32_t connector,
                                   const gfx::Point& origin,
@@ -52,7 +52,7 @@ class OZONE_EXPORT ScreenManager {
 
   // Disable the display controller identified by |crtc|. Note, the controller
   // may still be connected, so this does not remove the controller.
-  bool DisableDisplayController(const scoped_refptr<DriWrapper>& dri,
+  bool DisableDisplayController(const scoped_refptr<DrmDevice>& drm,
                                 uint32_t crtc);
 
   // Returns a reference to the display controller configured to display within
@@ -69,7 +69,7 @@ class OZONE_EXPORT ScreenManager {
   // Returns an iterator into |controllers_| for the controller identified by
   // (|crtc|, |connector|).
   HardwareDisplayControllers::iterator FindDisplayController(
-      const scoped_refptr<DriWrapper>& drm,
+      const scoped_refptr<DrmDevice>& drm,
       uint32_t crtc);
 
   // Returns an iterator into |controllers_| for the controller located at
@@ -87,7 +87,7 @@ class OZONE_EXPORT ScreenManager {
   // controller is currently present.
   bool HandleMirrorMode(HardwareDisplayControllers::iterator original,
                         HardwareDisplayControllers::iterator mirror,
-                        const scoped_refptr<DriWrapper>& drm,
+                        const scoped_refptr<DrmDevice>& drm,
                         uint32_t crtc,
                         uint32_t connector);
 

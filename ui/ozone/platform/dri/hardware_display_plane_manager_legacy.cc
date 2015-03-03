@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {

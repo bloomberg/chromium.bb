@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
+#include "ui/ozone/platform/dri/test/mock_drm_device.h"
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -15,14 +15,15 @@ namespace ui {
 
 namespace {
 
-template<class Object> Object* DrmAllocator() {
+template <class Object>
+Object* DrmAllocator() {
   return static_cast<Object*>(drmMalloc(sizeof(Object)));
 }
 
 class MockHardwareDisplayPlaneManager
     : public HardwareDisplayPlaneManagerLegacy {
  public:
-  MockHardwareDisplayPlaneManager(DriWrapper* drm,
+  MockHardwareDisplayPlaneManager(DrmDevice* drm,
                                   std::vector<uint32_t> crtcs,
                                   size_t planes_per_crtc) {
     const int kPlaneBaseId = 50;
@@ -39,8 +40,8 @@ class MockHardwareDisplayPlaneManager
 
 }  // namespace
 
-MockDriWrapper::MockDriWrapper()
-    : DriWrapper(base::FilePath(), base::File()),
+MockDrmDevice::MockDrmDevice()
+    : DrmDevice(base::FilePath(), base::File()),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -56,10 +57,10 @@ MockDriWrapper::MockDriWrapper()
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
 
-MockDriWrapper::MockDriWrapper(bool use_sync_flips,
-                               std::vector<uint32_t> crtcs,
-                               size_t planes_per_crtc)
-    : DriWrapper(base::FilePath(), base::File()),
+MockDrmDevice::MockDrmDevice(bool use_sync_flips,
+                             std::vector<uint32_t> crtcs,
+                             size_t planes_per_crtc)
+    : DrmDevice(base::FilePath(), base::File()),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -78,63 +79,63 @@ MockDriWrapper::MockDriWrapper(bool use_sync_flips,
       new MockHardwareDisplayPlaneManager(this, crtcs, planes_per_crtc));
 }
 
-MockDriWrapper::~MockDriWrapper() {
+MockDrmDevice::~MockDrmDevice() {
 }
 
-ScopedDrmCrtcPtr MockDriWrapper::GetCrtc(uint32_t crtc_id) {
+ScopedDrmCrtcPtr MockDrmDevice::GetCrtc(uint32_t crtc_id) {
   get_crtc_call_count_++;
   return ScopedDrmCrtcPtr(DrmAllocator<drmModeCrtc>());
 }
 
-bool MockDriWrapper::SetCrtc(uint32_t crtc_id,
-                             uint32_t framebuffer,
-                             std::vector<uint32_t> connectors,
-                             drmModeModeInfo* mode) {
+bool MockDrmDevice::SetCrtc(uint32_t crtc_id,
+                            uint32_t framebuffer,
+                            std::vector<uint32_t> connectors,
+                            drmModeModeInfo* mode) {
   current_framebuffer_ = framebuffer;
   set_crtc_call_count_++;
   return set_crtc_expectation_;
 }
 
-bool MockDriWrapper::SetCrtc(drmModeCrtc* crtc,
-                             std::vector<uint32_t> connectors) {
+bool MockDrmDevice::SetCrtc(drmModeCrtc* crtc,
+                            std::vector<uint32_t> connectors) {
   restore_crtc_call_count_++;
   return true;
 }
 
-bool MockDriWrapper::DisableCrtc(uint32_t crtc_id) {
+bool MockDrmDevice::DisableCrtc(uint32_t crtc_id) {
   current_framebuffer_ = 0;
   return true;
 }
 
-ScopedDrmConnectorPtr MockDriWrapper::GetConnector(uint32_t connector_id) {
+ScopedDrmConnectorPtr MockDrmDevice::GetConnector(uint32_t connector_id) {
   return ScopedDrmConnectorPtr(DrmAllocator<drmModeConnector>());
 }
 
-bool MockDriWrapper::AddFramebuffer(uint32_t width,
-                                    uint32_t height,
-                                    uint8_t depth,
-                                    uint8_t bpp,
-                                    uint32_t stride,
-                                    uint32_t handle,
-                                    uint32_t* framebuffer) {
+bool MockDrmDevice::AddFramebuffer(uint32_t width,
+                                   uint32_t height,
+                                   uint8_t depth,
+                                   uint8_t bpp,
+                                   uint32_t stride,
+                                   uint32_t handle,
+                                   uint32_t* framebuffer) {
   add_framebuffer_call_count_++;
   *framebuffer = add_framebuffer_call_count_;
   return add_framebuffer_expectation_;
 }
 
-bool MockDriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
+bool MockDrmDevice::RemoveFramebuffer(uint32_t framebuffer) {
   remove_framebuffer_call_count_++;
   return true;
 }
 
-ScopedDrmFramebufferPtr MockDriWrapper::GetFramebuffer(uint32_t framebuffer) {
+ScopedDrmFramebufferPtr MockDrmDevice::GetFramebuffer(uint32_t framebuffer) {
   return ScopedDrmFramebufferPtr();
 }
 
-bool MockDriWrapper::PageFlip(uint32_t crtc_id,
-                              uint32_t framebuffer,
-                              bool is_sync,
-                              const PageFlipCallback& callback) {
+bool MockDrmDevice::PageFlip(uint32_t crtc_id,
+                             uint32_t framebuffer,
+                             bool is_sync,
+                             const PageFlipCallback& callback) {
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;
   if (page_flip_expectation_) {
@@ -147,52 +148,52 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
   return page_flip_expectation_;
 }
 
-bool MockDriWrapper::PageFlipOverlay(uint32_t crtc_id,
-                                     uint32_t framebuffer,
-                                     const gfx::Rect& location,
-                                     const gfx::Rect& source,
-                                     int overlay_plane) {
+bool MockDrmDevice::PageFlipOverlay(uint32_t crtc_id,
+                                    uint32_t framebuffer,
+                                    const gfx::Rect& location,
+                                    const gfx::Rect& source,
+                                    int overlay_plane) {
   if (!framebuffer)
     overlay_clear_call_count_++;
   overlay_flip_call_count_++;
   return true;
 }
 
-ScopedDrmPropertyPtr MockDriWrapper::GetProperty(drmModeConnector* connector,
-                                                 const char* name) {
+ScopedDrmPropertyPtr MockDrmDevice::GetProperty(drmModeConnector* connector,
+                                                const char* name) {
   return ScopedDrmPropertyPtr(DrmAllocator<drmModePropertyRes>());
 }
 
-bool MockDriWrapper::SetProperty(uint32_t connector_id,
-                                 uint32_t property_id,
-                                 uint64_t value) {
+bool MockDrmDevice::SetProperty(uint32_t connector_id,
+                                uint32_t property_id,
+                                uint64_t value) {
   return true;
 }
 
-bool MockDriWrapper::GetCapability(uint64_t capability, uint64_t* value) {
+bool MockDrmDevice::GetCapability(uint64_t capability, uint64_t* value) {
   return true;
 }
 
-ScopedDrmPropertyBlobPtr MockDriWrapper::GetPropertyBlob(
+ScopedDrmPropertyBlobPtr MockDrmDevice::GetPropertyBlob(
     drmModeConnector* connector,
     const char* name) {
   return ScopedDrmPropertyBlobPtr(DrmAllocator<drmModePropertyBlobRes>());
 }
 
-bool MockDriWrapper::SetCursor(uint32_t crtc_id,
-                               uint32_t handle,
-                               const gfx::Size& size) {
+bool MockDrmDevice::SetCursor(uint32_t crtc_id,
+                              uint32_t handle,
+                              const gfx::Size& size) {
   return true;
 }
 
-bool MockDriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
+bool MockDrmDevice::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
   return true;
 }
 
-bool MockDriWrapper::CreateDumbBuffer(const SkImageInfo& info,
-                                      uint32_t* handle,
-                                      uint32_t* stride,
-                                      void** pixels) {
+bool MockDrmDevice::CreateDumbBuffer(const SkImageInfo& info,
+                                     uint32_t* handle,
+                                     uint32_t* stride,
+                                     void** pixels) {
   if (!create_dumb_buffer_expectation_)
     return false;
 
@@ -206,14 +207,14 @@ bool MockDriWrapper::CreateDumbBuffer(const SkImageInfo& info,
   return true;
 }
 
-void MockDriWrapper::DestroyDumbBuffer(const SkImageInfo& info,
-                                       uint32_t handle,
-                                       uint32_t stride,
-                                       void* pixels) {
+void MockDrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
+                                      uint32_t handle,
+                                      uint32_t stride,
+                                      void* pixels) {
   delete[] static_cast<char*>(pixels);
 }
 
-void MockDriWrapper::RunCallbacks() {
+void MockDrmDevice::RunCallbacks() {
   while (!callbacks_.empty()) {
     PageFlipCallback callback = callbacks_.front();
     callbacks_.pop();

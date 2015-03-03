@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -59,14 +59,14 @@ scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
 bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {
   if (!drm_device_manager_)
     return false;
-  scoped_refptr<DriWrapper> drm_primary =
+  scoped_refptr<DrmDevice> drm_primary =
       drm_device_manager_->GetDrmDevice(gfx::kNullAcceleratedWidget);
   DCHECK(drm_primary);
 
   HardwareDisplayController* controller = window_delegate_->GetController();
   if (!controller)
     return false;
-  scoped_refptr<DriWrapper> drm = controller->GetAllocationDriWrapper();
+  scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
   DCHECK(drm);
 
   return drm_primary != drm;

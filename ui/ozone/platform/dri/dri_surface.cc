@@ -14,16 +14,16 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace ui {
 
 namespace {
 
-scoped_refptr<DriBuffer> AllocateBuffer(const scoped_refptr<DriWrapper>& dri,
+scoped_refptr<DriBuffer> AllocateBuffer(const scoped_refptr<DrmDevice>& drm,
                                         const gfx::Size& size) {
-  scoped_refptr<DriBuffer> buffer(new DriBuffer(dri));
+  scoped_refptr<DriBuffer> buffer(new DriBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
 
   bool initialized =
@@ -58,7 +58,7 @@ void DriSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   // For the display buffers use the mode size since a |viewport_size| smaller
   // than the display size will not scanout.
   for (size_t i = 0; i < arraysize(buffers_); ++i)
-    buffers_[i] = AllocateBuffer(controller->GetAllocationDriWrapper(),
+    buffers_[i] = AllocateBuffer(controller->GetAllocationDrmDevice(),
                                  controller->GetModeSize());
 }
 

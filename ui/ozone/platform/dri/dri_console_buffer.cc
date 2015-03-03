@@ -9,14 +9,14 @@
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/dri/dri_util.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 namespace ui {
 
-DriConsoleBuffer::DriConsoleBuffer(const scoped_refptr<DriWrapper>& dri,
+DriConsoleBuffer::DriConsoleBuffer(const scoped_refptr<DrmDevice>& drm,
                                    uint32_t framebuffer)
-    : dri_(dri),
+    : drm_(drm),
       handle_(0),
       framebuffer_(framebuffer),
       mmap_base_(NULL),
@@ -30,7 +30,7 @@ DriConsoleBuffer::~DriConsoleBuffer() {
 }
 
 bool DriConsoleBuffer::Initialize() {
-  ScopedDrmFramebufferPtr fb(dri_->GetFramebuffer(framebuffer_));
+  ScopedDrmFramebufferPtr fb(drm_->GetFramebuffer(framebuffer_));
 
   if (!fb)
     return false;
@@ -41,7 +41,7 @@ bool DriConsoleBuffer::Initialize() {
 
   mmap_size_ = info.getSafeSize(stride_);
 
-  if (!MapDumbBuffer(dri_->get_fd(), fb->handle, mmap_size_, &mmap_base_)) {
+  if (!MapDumbBuffer(drm_->get_fd(), fb->handle, mmap_size_, &mmap_base_)) {
     mmap_base_ = NULL;
     return false;
   }

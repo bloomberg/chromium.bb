@@ -4,12 +4,12 @@
 
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 namespace ui {
 
 DrmDeviceManager::DrmDeviceManager(
-    const scoped_refptr<DriWrapper>& primary_device)
+    const scoped_refptr<DrmDevice>& primary_device)
     : primary_device_(primary_device) {
 }
 
@@ -17,9 +17,8 @@ DrmDeviceManager::~DrmDeviceManager() {
   DCHECK(drm_device_map_.empty());
 }
 
-void DrmDeviceManager::UpdateDrmDevice(
-    gfx::AcceleratedWidget widget,
-    const scoped_refptr<DriWrapper>& device) {
+void DrmDeviceManager::UpdateDrmDevice(gfx::AcceleratedWidget widget,
+                                       const scoped_refptr<DrmDevice>& device) {
   base::AutoLock lock(lock_);
   drm_device_map_[widget] = device;
 }
@@ -31,7 +30,7 @@ void DrmDeviceManager::RemoveDrmDevice(gfx::AcceleratedWidget widget) {
     drm_device_map_.erase(it);
 }
 
-scoped_refptr<DriWrapper> DrmDeviceManager::GetDrmDevice(
+scoped_refptr<DrmDevice> DrmDeviceManager::GetDrmDevice(
     gfx::AcceleratedWidget widget) {
   base::AutoLock lock(lock_);
   if (widget == gfx::kNullAcceleratedWidget)

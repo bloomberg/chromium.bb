@@ -14,7 +14,7 @@ class SkCanvas;
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 
 // Wrapper for the console buffer. This is the buffer that is allocated by
 // default by the system and is used when no application is controlling the
@@ -22,7 +22,7 @@ class DriWrapper;
 // memory into a SkSurface which can be used to draw into using Skia.
 class DriConsoleBuffer {
  public:
-  DriConsoleBuffer(const scoped_refptr<DriWrapper>& dri, uint32_t framebuffer);
+  DriConsoleBuffer(const scoped_refptr<DrmDevice>& drm, uint32_t framebuffer);
   ~DriConsoleBuffer();
 
   SkCanvas* canvas() { return surface_->getCanvas(); }
@@ -34,7 +34,7 @@ class DriConsoleBuffer {
   bool Initialize();
 
  protected:
-  scoped_refptr<DriWrapper> dri_;
+  scoped_refptr<DrmDevice> drm_;
 
   // Wrapper around the native pixel memory.
   skia::RefPtr<SkSurface> surface_;

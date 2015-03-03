@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 
 #include "base/logging.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 namespace ui {
 
@@ -34,8 +34,8 @@ uint8_t GetColorDepth(SkColorType type) {
 
 }  // namespace
 
-DriBuffer::DriBuffer(const scoped_refptr<DriWrapper>& dri)
-    : dri_(dri), handle_(0), framebuffer_(0) {
+DriBuffer::DriBuffer(const scoped_refptr<DrmDevice>& drm)
+    : drm_(drm), handle_(0), framebuffer_(0) {
 }
 
 DriBuffer::~DriBuffer() {
@@ -43,26 +43,26 @@ DriBuffer::~DriBuffer() {
     return;
 
   if (framebuffer_)
-    dri_->RemoveFramebuffer(framebuffer_);
+    drm_->RemoveFramebuffer(framebuffer_);
 
   SkImageInfo info;
   void* pixels = const_cast<void*>(surface_->peekPixels(&info, NULL));
   if (!pixels)
     return;
 
-  dri_->DestroyDumbBuffer(info, handle_, stride_, pixels);
+  drm_->DestroyDumbBuffer(info, handle_, stride_, pixels);
 }
 
 bool DriBuffer::Initialize(const SkImageInfo& info,
                            bool should_register_framebuffer) {
   void* pixels = NULL;
-  if (!dri_->CreateDumbBuffer(info, &handle_, &stride_, &pixels)) {
+  if (!drm_->CreateDumbBuffer(info, &handle_, &stride_, &pixels)) {
     VLOG(2) << "Cannot create drm dumb buffer";
     return false;
   }
 
   if (should_register_framebuffer &&
-      !dri_->AddFramebuffer(
+      !drm_->AddFramebuffer(
           info.width(), info.height(), GetColorDepth(info.colorType()),
           info.bytesPerPixel() << 3, stride_, handle_, &framebuffer_)) {
     VLOG(2) << "Failed to register framebuffer: " << strerror(errno);
@@ -100,7 +100,7 @@ DriBufferGenerator::DriBufferGenerator() {
 DriBufferGenerator::~DriBufferGenerator() {}
 
 scoped_refptr<ScanoutBuffer> DriBufferGenerator::Create(
-    const scoped_refptr<DriWrapper>& drm,
+    const scoped_refptr<DrmDevice>& drm,
     const gfx::Size& size) {
   scoped_refptr<DriBuffer> buffer(new DriBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());

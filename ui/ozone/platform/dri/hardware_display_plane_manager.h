@@ -23,7 +23,7 @@ class Rect;
 
 namespace ui {
 
-class DriWrapper;
+class DrmDevice;
 class CrtcController;
 
 // This contains the list of planes controlled by one HDC on a given DRM fd.
@@ -77,7 +77,7 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
 
   // This parses information from the drm driver, adding any new planes
   // or crtcs found.
-  bool Initialize(DriWrapper* drm);
+  bool Initialize(DrmDevice* drm);
 
   // Assign hardware planes from the |planes_| list to |overlay_list| entries,
   // recording the plane IDs in the |plane_list|. Only planes compatible with
@@ -112,7 +112,7 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.
-  DriWrapper* drm_;
+  DrmDevice* drm_;
 
   ScopedVector<HardwareDisplayPlane> planes_;
   std::vector<uint32_t> crtcs_;

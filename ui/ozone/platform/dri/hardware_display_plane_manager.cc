@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -65,7 +65,7 @@ HardwareDisplayPlaneManager::HardwareDisplayPlaneManager() : drm_(nullptr) {
 HardwareDisplayPlaneManager::~HardwareDisplayPlaneManager() {
 }
 
-bool HardwareDisplayPlaneManager::Initialize(DriWrapper* drm) {
+bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   drm_ = drm;
   ScopedDrmResourcesPtr resources(drmModeGetResources(drm->get_fd()));
   if (!resources) {

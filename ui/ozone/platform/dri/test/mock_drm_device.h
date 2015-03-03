@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
-#define UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
+#ifndef UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRM_DEVICE_H_
+#define UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRM_DEVICE_H_
 
 #include <queue>
 #include <vector>
 
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device.h"
 
 namespace ui {
 
 class CrtcController;
 
-// The real DriWrapper makes actual DRM calls which we can't use in unit tests.
-class MockDriWrapper : public ui::DriWrapper {
+// The real DrmDevice makes actual DRM calls which we can't use in unit tests.
+class MockDrmDevice : public ui::DrmDevice {
  public:
-  MockDriWrapper();
-  MockDriWrapper(bool use_sync_flips,
-                 std::vector<uint32_t> crtcs,
-                 size_t planes_per_crtc);
+  MockDrmDevice();
+  MockDrmDevice(bool use_sync_flips,
+                std::vector<uint32_t> crtcs,
+                size_t planes_per_crtc);
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
   int get_set_crtc_call_count() const { return set_crtc_call_count_; }
@@ -47,13 +47,13 @@ class MockDriWrapper : public ui::DriWrapper {
 
   uint32_t current_framebuffer() const { return current_framebuffer_; }
 
-  const std::vector<skia::RefPtr<SkSurface> > buffers() const {
+  const std::vector<skia::RefPtr<SkSurface>> buffers() const {
     return buffers_;
   }
 
   void RunCallbacks();
 
-  // DriWrapper:
+  // DrmDevice:
   ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) override;
   bool SetCrtc(uint32_t crtc_id,
                uint32_t framebuffer,
@@ -102,7 +102,7 @@ class MockDriWrapper : public ui::DriWrapper {
                          void* pixels) override;
 
  private:
-  ~MockDriWrapper() override;
+  ~MockDrmDevice() override;
 
   int get_crtc_call_count_;
   int set_crtc_call_count_;
@@ -122,13 +122,13 @@ class MockDriWrapper : public ui::DriWrapper {
 
   uint32_t current_framebuffer_;
 
-  std::vector<skia::RefPtr<SkSurface> > buffers_;
+  std::vector<skia::RefPtr<SkSurface>> buffers_;
 
   std::queue<PageFlipCallback> callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
+  DISALLOW_COPY_AND_ASSIGN(MockDrmDevice);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
+#endif  // UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRM_DEVICE_H_
