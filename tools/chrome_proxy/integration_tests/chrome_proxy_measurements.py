@@ -205,17 +205,17 @@ class ChromeProxyHTTPFallbackProbeURL(ChromeProxyValidation):
   """
 
   def __init__(self):
-    super(ChromeProxyHTTPFallbackProbeURL, self).__init__()
+    super(ChromeProxyHTTPFallbackProbeURL, self).__init__(
+        restart_after_each_page=True)
 
   def CustomizeBrowserOptions(self, options):
     super(ChromeProxyHTTPFallbackProbeURL,
           self).CustomizeBrowserOptions(options)
     # Use the test server probe URL which returns the response
     # body as specified by respBody.
-    probe_url = GetResponseOverrideURL(
-        respBody='not OK')
+    probe_url = GetResponseOverrideURL(respBody='not OK')
     options.AppendExtraBrowserArgs(
-        '--data-reduction-proxy-probe-url=%s' % probe_url)
+        '--data-reduction-proxy-secure-proxy-check-url=%s' % probe_url)
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHTTPFallback(tab, results)
