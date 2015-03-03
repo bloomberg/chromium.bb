@@ -34,13 +34,13 @@ static_library("host") {
     "//ui/events:dom4_keycode_converter",
   ]
 
-  if (is_linux) {
+  if (is_linux && !is_chromeos) {
     libs += [ "pam" ]
   }
 
   if (use_x11) {
     configs += [
-      #TODO : (kelvinp) Add GTK to the configs.
+      # TODO(kelvinp): Add GTK to the configs.
       "//build/config/linux:x11",
     ]
   } else {
@@ -83,7 +83,6 @@ static_library("host") {
       "continue_window_linux.cc",
       "disconnect_window_linux.cc",
       "local_input_monitor_x11.cc",
-      "remoting_me2me_host.cc",
     ]
   }
 

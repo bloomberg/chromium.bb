@@ -75,11 +75,6 @@
                   ],
                 }]
               ],
-              'link_settings': {
-                'libraries': [
-                  '-lpam',
-                ],
-              },
             }],
             ['chromeos==1', {
               'dependencies' : [
@@ -102,7 +97,6 @@
                 'host/linux/x_server_clipboard.cc',
                 'host/linux/x_server_clipboard.h',
                 'host/local_input_monitor_x11.cc',
-                'host/remoting_me2me_host.cc',
               ],
               'conditions': [
                 ['use_ash==1', {
@@ -144,7 +138,6 @@
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-                  'libpam.a',
                ],
               },
             }],
@@ -420,6 +413,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
+            '../components/components.gyp:policy',
+            '../components/components.gyp:policy_component_common',
             '../net/net.gyp:net',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
@@ -435,14 +430,26 @@
             'host/curtain_mode_linux.cc',
             'host/curtain_mode_mac.cc',
             'host/curtain_mode_win.cc',
+            'host/pam_authorization_factory_posix.cc',
+            'host/pam_authorization_factory_posix.h',
             'host/posix/signal_handler.cc',
             'host/posix/signal_handler.h',
+            'host/remoting_me2me_host.cc',
           ],
           'conditions': [
-            ['os_posix != 1', {
-              'sources/': [
-                ['exclude', '^host/posix/'],
-              ],
+            ['OS=="linux"', {
+              'link_settings': {
+                'libraries': [
+                  '-lpam',
+                ],
+              },
+            }],
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  'libpam.a',
+               ],
+              },
             }],
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host_static'
