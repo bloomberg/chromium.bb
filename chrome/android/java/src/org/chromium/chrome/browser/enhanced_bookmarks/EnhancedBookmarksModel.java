@@ -59,13 +59,8 @@ public class EnhancedBookmarksModel {
         mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(originalProfile);
     }
 
-    // TODO(ianwen): remove this constructor.
-    public EnhancedBookmarksModel(int cacheSize) {
-        this();
-    }
-
     @VisibleForTesting
-    EnhancedBookmarksModel(Profile profile) {
+    public EnhancedBookmarksModel(Profile profile) {
         mBookmarksBridge = new BookmarksBridge(profile);
         mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(profile);
     }
