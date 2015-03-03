@@ -722,11 +722,12 @@ void ExistingUserController::OnOnlineChecked(const std::string& username,
 // ExistingUserController, private:
 
 void ExistingUserController::DeviceSettingsChanged() {
-  if (host_ != NULL) {
+  // If login was already completed, we should avoid any signin screen
+  // transitions, see http://crbug.com/461604 for example.
+  if (host_ != NULL && !login_display_->is_signin_completed()) {
     // Signed settings or user list changed. Notify views and update them.
     UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
     ConfigurePublicSessionAutoLogin();
-    return;
   }
 }
 
