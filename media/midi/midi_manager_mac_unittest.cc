@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -23,12 +24,24 @@ class FakeMidiManagerClient : public MidiManagerClient {
   FakeMidiManagerClient()
       : result_(MIDI_NOT_SUPPORTED),
         wait_for_result_(true),
-        wait_for_port_(true) {}
+        wait_for_port_(true),
+        unexpected_callback_(false) {}
 
   // MidiManagerClient implementation.
   void AddInputPort(const MidiPortInfo& info) override {}
   void AddOutputPort(const MidiPortInfo& info) override {
-    CHECK(!wait_for_result_);
+    base::AutoLock lock(lock_);
+    // AddOutputPort may be called before CompleteStartSession() is invoked
+    // if one or more MIDI devices including virtual ports are connected.
+    // Just ignore in such cases.
+    if (wait_for_result_)
+      return;
+
+    // Check if this is the first call after CompleteStartSession(), and
+    // the case should not happen twice.
+    if (!wait_for_port_)
+      unexpected_callback_ = true;
+
     info_ = info;
     wait_for_port_ = false;
   }
@@ -36,7 +49,10 @@ class FakeMidiManagerClient : public MidiManagerClient {
   void SetOutputPortState(uint32 port_index, MidiPortState state) override {}
 
   void CompleteStartSession(MidiResult result) override {
-    EXPECT_TRUE(wait_for_result_);
+    base::AutoLock lock(lock_);
+    if (!wait_for_result_)
+      unexpected_callback_ = true;
+
     result_ = result;
     wait_for_result_ = false;
   }
@@ -45,26 +61,40 @@ class FakeMidiManagerClient : public MidiManagerClient {
                        double timestamp) override {}
   void AccumulateMidiBytesSent(size_t size) override {}
 
+  bool GetWaitForResult() {
+    base::AutoLock lock(lock_);
+    return wait_for_result_;
+  }
+
+  bool GetWaitForPort() {
+    base::AutoLock lock(lock_);
+    return wait_for_port_;
+  }
+
   MidiResult WaitForResult() {
-    while (wait_for_result_) {
+    while (GetWaitForResult()) {
       base::RunLoop run_loop;
       run_loop.RunUntilIdle();
     }
+    EXPECT_FALSE(unexpected_callback_);
     return result_;
   }
   MidiPortInfo WaitForPort() {
-    while (wait_for_port_) {
+    while (GetWaitForPort()) {
       base::RunLoop run_loop;
       run_loop.RunUntilIdle();
     }
+    EXPECT_FALSE(unexpected_callback_);
     return info_;
   }
 
  private:
+  base::Lock lock_;
   MidiResult result_;
   bool wait_for_result_;
   MidiPortInfo info_;
   bool wait_for_port_;
+  bool unexpected_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManagerClient);
 };

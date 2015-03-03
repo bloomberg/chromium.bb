@@ -7,6 +7,3 @@ VideoFrameSchedulerImplTest.EventualDisplay
 
 # Times out under Valgrind, http://crbug.com/444578
 PipelineIntegrationTest.*
-
-# Hangs the whole Mac Valgrind bot: http://crbug.com/462483
-MidiManagerMacTest.*
