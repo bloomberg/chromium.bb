@@ -61,6 +61,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       DevToolsContentsResizingStrategy* out_strategy);
 
   static bool IsDevToolsWindow(content::WebContents* web_contents);
+  static DevToolsWindow* AsDevToolsWindow(content::WebContents* web_contents);
 
   // Open or reveal DevTools window, and perform the specified action.
   static DevToolsWindow* OpenDevToolsWindow(
@@ -99,6 +100,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   // Forwards an unhandled keyboard event to the DevTools frontend.
   bool ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
+
+  // content::WebContentsDelegate overrides.
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override;
 
   // BeforeUnload interception ////////////////////////////////////////////////
 
@@ -218,7 +224,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                              bool can_dock,
                              const std::string& settings);
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
-  static DevToolsWindow* AsDevToolsWindow(content::WebContents*);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* ToggleDevToolsWindow(
       content::WebContents* web_contents,
@@ -227,9 +232,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const std::string& settings);
 
   // content::WebContentsDelegate:
-  content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) override;
   void ActivateContents(content::WebContents* contents) override;
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,

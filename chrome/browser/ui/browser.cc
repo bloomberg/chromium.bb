@@ -1347,6 +1347,12 @@ void Browser::ShowDownload(content::DownloadItem* download) {
 
 WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
+  if (is_devtools()) {
+    DevToolsWindow* window = DevToolsWindow::AsDevToolsWindow(source);
+    DCHECK(window);
+    return window->OpenURLFromTab(source, params);
+  }
+
   chrome::NavigateParams nav_params(this, params.url, params.transition);
   FillNavigateParamsFromOpenURLParams(&nav_params, params);
   nav_params.source_contents = source;
