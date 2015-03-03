@@ -150,11 +150,5 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     reset();
 }
 
-void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
-{
-    if (loader->frame() == m_pageAgent->inspectedFrame())
-        pageDidCommitLoad();
-}
-
 } // namespace blink
 

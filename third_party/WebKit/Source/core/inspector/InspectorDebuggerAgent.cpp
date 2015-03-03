@@ -87,7 +87,6 @@ static const char condition[] = "condition";
 static const char skipStackPattern[] = "skipStackPattern";
 static const char skipContentScripts[] = "skipContentScripts";
 static const char skipAllPauses[] = "skipAllPauses";
-static const char skipAllPausesExpiresOnReload[] = "skipAllPausesExpiresOnReload";
 
 };
 
@@ -282,10 +281,6 @@ void InspectorDebuggerAgent::restore()
         increaseCachedSkipStackGeneration();
         m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
         m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
-        if (m_skipAllPauses && m_state->getBoolean(DebuggerAgentState::skipAllPausesExpiresOnReload)) {
-            m_skipAllPauses = false;
-            m_state->setBoolean(DebuggerAgentState::skipAllPauses, false);
-        }
         internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
         promiseTracker().setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
     }
@@ -316,19 +311,10 @@ void InspectorDebuggerAgent::setBreakpointsActive(ErrorString*, bool active)
     scriptDebugServer().setBreakpointsActivated(active);
 }
 
-void InspectorDebuggerAgent::setSkipAllPauses(ErrorString*, bool skipped, const bool* untilReload)
+void InspectorDebuggerAgent::setSkipAllPauses(ErrorString*, bool skipped)
 {
     m_skipAllPauses = skipped;
     m_state->setBoolean(DebuggerAgentState::skipAllPauses, m_skipAllPauses);
-    m_state->setBoolean(DebuggerAgentState::skipAllPausesExpiresOnReload, asBool(untilReload));
-}
-
-void InspectorDebuggerAgent::pageDidCommitLoad()
-{
-    if (m_state->getBoolean(DebuggerAgentState::skipAllPausesExpiresOnReload)) {
-        m_skipAllPauses = false;
-        m_state->setBoolean(DebuggerAgentState::skipAllPauses, m_skipAllPauses);
-    }
 }
 
 void InspectorDebuggerAgent::didCommitLoadForMainFrame()

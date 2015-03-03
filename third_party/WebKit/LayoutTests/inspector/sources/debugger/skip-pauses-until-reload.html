@@ -94,7 +94,7 @@ function test()
     function didPause(callFrames)
     {
         InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.DebuggerAgent.setSkipAllPauses(true, true, didSetSkipAllPauses);
+        InspectorTest.DebuggerAgent.setSkipAllPauses(true, didSetSkipAllPauses);
     }
 
     function didSetSkipAllPauses()

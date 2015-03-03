@@ -442,6 +442,7 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
     , m_embedderPreferCompositingToLCDTextEnabled(m_page->settings().preferCompositingToLCDTextEnabled())
+    , m_reloading(false)
 {
 }
 
@@ -552,6 +553,8 @@ void InspectorPageAgent::disable(ErrorString*)
         m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, false);
     }
 
+    finishReload();
+
     if (!deviceMetricsChanged(false, 0, 0, 0, false, false, 1, 0, 0))
         return;
 
@@ -598,6 +601,9 @@ void InspectorPageAgent::removeScriptToEvaluateOnLoad(ErrorString* error, const 
 void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad)
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad ? *optionalScriptToEvaluateOnLoad : "";
+    ErrorString unused;
+    m_debuggerAgent->setSkipAllPauses(&unused, true);
+    m_reloading = true;
     inspectedFrame()->reload(asBool(optionalIgnoreCache) ? EndToEndReload : NormalReload, NotClientRedirect);
 }
 
@@ -740,6 +746,15 @@ void InspectorPageAgent::deleteCookie(ErrorString*, const String& cookieName, co
 void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>& object)
 {
     object = buildObjectForFrameTree(inspectedFrame());
+}
+
+void InspectorPageAgent::finishReload()
+{
+    if (!m_reloading)
+        return;
+    m_reloading = false;
+    ErrorString unused;
+    m_debuggerAgent->setSkipAllPauses(&unused, false);
 }
 
 void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
@@ -1023,6 +1038,7 @@ void InspectorPageAgent::loadEventFired(LocalFrame* frame)
 void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 {
     if (loader->frame() == inspectedFrame()) {
+        finishReload();
         m_scriptToEvaluateOnLoadOnce = m_pendingScriptToEvaluateOnLoadOnce;
         m_pendingScriptToEvaluateOnLoadOnce = String();
         if (m_inspectorResourceContentLoader)

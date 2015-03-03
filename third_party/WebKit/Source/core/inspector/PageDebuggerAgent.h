@@ -55,7 +55,6 @@ public:
 
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void didCommitLoad(LocalFrame*, DocumentLoader*);
 
 protected:
     void enable() override;

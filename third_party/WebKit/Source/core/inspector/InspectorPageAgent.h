@@ -187,6 +187,7 @@ private:
     void updateTouchEventEmulationInPage(bool);
     bool compositingEnabled(ErrorString*);
 
+    void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
@@ -222,6 +223,7 @@ private:
     bool m_embedderTextAutosizingEnabled;
     double m_embedderFontScaleFactor;
     bool m_embedderPreferCompositingToLCDTextEnabled;
+    bool m_reloading;
 
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
 };

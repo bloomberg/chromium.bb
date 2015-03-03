@@ -98,7 +98,7 @@ public:
     void enable(ErrorString*) final;
     void disable(ErrorString*) final;
     void setBreakpointsActive(ErrorString*, bool active) final;
-    void setSkipAllPauses(ErrorString*, bool skipped, const bool* untilReload) final;
+    void setSkipAllPauses(ErrorString*, bool skipped) final;
 
     void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& locations) final;
     void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Debugger::Location>& actualLocation) final;
@@ -213,7 +213,6 @@ protected:
     void didContinue() final;
     void reset();
     // FIXME: remove methods related to page load events.
-    void pageDidCommitLoad();
     void didCommitLoadForMainFrame() final;
 
 private:

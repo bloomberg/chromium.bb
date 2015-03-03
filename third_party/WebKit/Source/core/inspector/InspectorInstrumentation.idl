@@ -311,7 +311,7 @@ interface InspectorInstrumentation {
     [Canvas, Page]
     void frameDetachedFromParent([Keep] LocalFrame*);
 
-    [Resource, DOM, Canvas, Page, PageDebugger]
+    [Resource, DOM, Canvas, Page]
     void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]
