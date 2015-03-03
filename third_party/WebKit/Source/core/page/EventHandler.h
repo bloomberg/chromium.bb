@@ -187,7 +187,6 @@ public:
     bool useHandCursor(Node*, bool isOverLink);
 
     void notifyElementActivated();
-    void notifySelectionChanged();
 
     PassRefPtr<UserGestureToken> takeLastMouseDownGestureToken() { return m_lastMouseDownUserGestureToken.release(); }
 
