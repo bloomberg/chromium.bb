@@ -1,0 +1,14 @@
+<html>
+    <body>
+        <p>Move your mouse wheel. You should get one output for every mouse wheel mark</p>
+        <hr/>
+        <div id="output" />
+    </body>
+    <script>
+        var output = document.getElementById('output');
+        document.onwheel = function() {
+            output.innerText += "wheel event\n";
+        };
+    </script>
+</html>
+
