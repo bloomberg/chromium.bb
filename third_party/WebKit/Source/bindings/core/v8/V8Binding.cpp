@@ -505,11 +505,6 @@ uint64_t toUInt64(v8::Handle<v8::Value> value)
     return toUInt64(value, NormalConversion, exceptionState);
 }
 
-float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
-{
-    return static_cast<float>(toDouble(value, exceptionState));
-}
-
 float toRestrictedFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     float numberValue = toFloat(value, exceptionState);
