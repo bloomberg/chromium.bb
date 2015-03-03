@@ -175,26 +175,6 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   }
 }
 
-bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
-  // TODO(rvargas) crbug.com/417532: Remove this function.
-  Process process(handle);
-  return process.WaitForExit(exit_code);
-}
-
-bool WaitForExitCodeWithTimeout(ProcessHandle handle,
-                                int* exit_code,
-                                TimeDelta timeout) {
-  if (::WaitForSingleObject(
-      handle, static_cast<DWORD>(timeout.InMilliseconds())) != WAIT_OBJECT_0)
-    return false;
-  DWORD temp_code;  // Don't clobber out-parameters in case of failure.
-  if (!::GetExitCodeProcess(handle, &temp_code))
-    return false;
-
-  *exit_code = temp_code;
-  return true;
-}
-
 bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
                             TimeDelta wait,
                             const ProcessFilter* filter) {

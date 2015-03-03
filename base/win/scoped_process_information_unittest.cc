@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/win/scoped_process_information.h"
 #include "testing/multiprocess_func_list.h"
@@ -135,13 +136,13 @@ TEST_F(ScopedProcessInformationTest, Duplicate) {
 
   // Validate that we have separate handles that are good.
   int exit_code = 0;
-  ASSERT_TRUE(base::WaitForExitCode(process_info.TakeProcessHandle(),
-                                    &exit_code));
+  base::Process process(process_info.TakeProcessHandle());
+  ASSERT_TRUE(process.WaitForExit(&exit_code));
   ASSERT_EQ(7, exit_code);
 
   exit_code = 0;
-  ASSERT_TRUE(base::WaitForExitCode(duplicate.TakeProcessHandle(),
-                                    &exit_code));
+  base::Process dup_process(duplicate.TakeProcessHandle());
+  ASSERT_TRUE(dup_process.WaitForExit(&exit_code));
   ASSERT_EQ(7, exit_code);
 
   ASSERT_TRUE(::CloseHandle(process_info.TakeThreadHandle()));

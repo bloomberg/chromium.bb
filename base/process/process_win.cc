@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/win/windows_version.h"
 
@@ -141,10 +142,17 @@ bool Process::WaitForExit(int* exit_code) {
 }
 
 bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) {
-  // TODO(rvargas) crbug.com/417532: Move the implementation here.
-  if (timeout > TimeDelta::FromMilliseconds(INFINITE))
-    timeout = TimeDelta::FromMilliseconds(INFINITE);
-  return base::WaitForExitCodeWithTimeout(Handle(), exit_code, timeout);
+  // Limit timeout to INFINITE.
+  DWORD timeout_ms = saturated_cast<DWORD>(timeout.InMilliseconds());
+  if (::WaitForSingleObject(Handle(), timeout_ms) != WAIT_OBJECT_0)
+    return false;
+
+  DWORD temp_code;  // Don't clobber out-parameters in case of failure.
+  if (!::GetExitCodeProcess(Handle(), &temp_code))
+    return false;
+
+  *exit_code = temp_code;
+  return true;
 }
 
 bool Process::IsProcessBackgrounded() const {

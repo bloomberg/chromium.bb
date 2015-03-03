@@ -33,7 +33,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -684,7 +684,8 @@ static GetAppOutputInternalResult GetAppOutputInternal(
 
         // Always wait for exit code (even if we know we'll declare
         // GOT_MAX_OUTPUT).
-        bool success = WaitForExitCode(pid, exit_code);
+        Process process(pid);
+        bool success = process.WaitForExit(exit_code);
 
         // If we stopped because we read as much as we wanted, we return
         // GOT_MAX_OUTPUT (because the child may exit due to |SIGPIPE|).
