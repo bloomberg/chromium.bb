@@ -212,7 +212,7 @@ class PageCyclerTypical25(_PageCycler):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 # crbug.com/273986: This test is flakey on Windows.
-@benchmark.Disabled('win')
+@benchmark.Disabled  # crbug.com/463346: Test is crashing Chrome.
 class PageCyclerOopifTypical25(_PageCycler):
   """ A varation of the benchmark above, but running in --site-per-process
   to allow measuring performance of out-of-process iframes.
