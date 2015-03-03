@@ -45,7 +45,8 @@ class CmaRenderer : public ::media::Renderer {
       const ::media::BufferingStateCB& buffering_state_cb,
       const PaintCB& paint_cb,
       const base::Closure& ended_cb,
-      const ::media::PipelineStatusCB& error_cb) override;
+      const ::media::PipelineStatusCB& error_cb,
+      const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(float playback_rate) override;
@@ -108,6 +109,7 @@ class CmaRenderer : public ::media::Renderer {
   ::media::PipelineStatusCB error_cb_;
   ::media::BufferingStateCB buffering_state_cb_;
   base::Closure flush_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
 
   // Renderer state.
   // Used mostly for checking that transitions are correct.
