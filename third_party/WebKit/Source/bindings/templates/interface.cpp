@@ -890,9 +890,13 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
     {% for attribute in attributes if attribute.per_context_enabled_function or attribute.exposed_test %}
     {% filter per_context_enabled(attribute.per_context_enabled_function) %}
     {% filter exposed(attribute.exposed_test) %}
-    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-    {{attribute_configuration(attribute)}};
+    {% if attribute.is_expose_js_accessors %}
+    static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
+    V8DOMConfiguration::installAccessor(isolate, prototypeObject, accessorConfiguration);
+    {% else %}
+    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {{attribute_configuration(attribute)}};
     V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
+    {% endif %}
     {% endfilter %}
     {% endfilter %}
     {% endfor %}
