@@ -13,6 +13,7 @@
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/webdatabase/DatabaseManager.h"
 
 namespace blink {
@@ -28,6 +29,7 @@ void ModulesInitializer::init()
     ModuleBindingsInitializer::init();
     IndexedDBNames::init();
     AXObjectCache::init(AXObjectCacheImpl::create);
+    DraggedIsolatedFileSystem::init(DraggedIsolatedFileSystemImpl::prepareForDataObject);
 
     CoreInitializer::init();
 

@@ -92,7 +92,7 @@ void Pasteboard::writeImage(Image* image, const KURL& url, const String& title)
 
 void Pasteboard::writeDataObject(PassRefPtrWillBeRawPtr<DataObject> dataObject)
 {
-    blink::Platform::current()->clipboard()->writeDataObject(blink::WebDragData(dataObject));
+    blink::Platform::current()->clipboard()->writeDataObject(dataObject->toWebDragData());
 }
 
 bool Pasteboard::canSmartReplace()

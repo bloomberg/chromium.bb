@@ -1008,6 +1008,8 @@
             'clipboard/DataTransferItem.h',
             'clipboard/DataTransferItemList.cpp',
             'clipboard/DataTransferItemList.h',
+            'clipboard/DraggedIsolatedFileSystem.cpp',
+            'clipboard/DraggedIsolatedFileSystem.h',
             'clipboard/Pasteboard.cpp',
             'clipboard/Pasteboard.h',
             'css/BasicShapeFunctions.cpp',

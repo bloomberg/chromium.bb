@@ -31,11 +31,13 @@
 #include "config.h"
 #include "core/clipboard/DataObject.h"
 
+#include "core/clipboard/DraggedIsolatedFileSystem.h"
 #include "core/clipboard/Pasteboard.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebDragData.h"
 
 namespace blink {
 
@@ -252,6 +254,97 @@ DEFINE_TRACE(DataObject)
     visitor->trace(m_itemList);
     HeapSupplementable<DataObject>::trace(visitor);
 #endif
+}
+
+PassRefPtrWillBeRawPtr<DataObject> DataObject::create(WebDragData data)
+{
+    RefPtrWillBeRawPtr<DataObject> dataObject = create();
+
+    WebVector<WebDragData::Item> items = data.items();
+    for (unsigned i = 0; i < items.size(); ++i) {
+        WebDragData::Item item = items[i];
+
+        switch (item.storageType) {
+        case WebDragData::Item::StorageTypeString:
+            if (String(item.stringType) == mimeTypeTextURIList)
+                dataObject->setURLAndTitle(item.stringData, item.title);
+            else if (String(item.stringType) == mimeTypeTextHTML)
+                dataObject->setHTMLAndBaseURL(item.stringData, item.baseURL);
+            else
+                dataObject->setData(item.stringType, item.stringData);
+            break;
+        case WebDragData::Item::StorageTypeFilename:
+            dataObject->addFilename(item.filenameData, item.displayNameData);
+            break;
+        case WebDragData::Item::StorageTypeBinaryData:
+            // This should never happen when dragging in.
+            break;
+        case WebDragData::Item::StorageTypeFileSystemFile:
+            {
+                // FIXME: The file system URL may refer a user visible file, see http://crbug.com/429077
+                FileMetadata fileMetadata;
+                fileMetadata.length = item.fileSystemFileSize;
+                dataObject->add(File::createForFileSystemFile(item.fileSystemURL, fileMetadata, File::IsNotUserVisible));
+            }
+            break;
+        }
+    }
+
+    if (!data.filesystemId().isNull())
+        DraggedIsolatedFileSystem::prepareForDataObject(dataObject.get(), data.filesystemId());
+    return dataObject.release();
+}
+
+WebDragData DataObject::toWebDragData()
+{
+    WebDragData data;
+    data.initialize();
+    WebVector<WebDragData::Item> itemList(length());
+
+    for (size_t i = 0; i < length(); ++i) {
+        DataObjectItem* originalItem = item(i).get();
+        WebDragData::Item item;
+        if (originalItem->kind() == DataObjectItem::StringKind) {
+            item.storageType = WebDragData::Item::StorageTypeString;
+            item.stringType = originalItem->type();
+            item.stringData = originalItem->getAsString();
+        } else if (originalItem->kind() == DataObjectItem::FileKind) {
+            if (originalItem->sharedBuffer()) {
+                item.storageType = WebDragData::Item::StorageTypeBinaryData;
+                item.binaryData = originalItem->sharedBuffer();
+            } else if (originalItem->isFilename()) {
+                Blob* blob = originalItem->getAsFile();
+                if (blob->isFile()) {
+                    File* file = toFile(blob);
+                    if (file->hasBackingFile()) {
+                        item.storageType = WebDragData::Item::StorageTypeFilename;
+                        item.filenameData = file->path();
+                        item.displayNameData = file->name();
+                    } else if (!file->fileSystemURL().isEmpty()) {
+                        item.storageType = WebDragData::Item::StorageTypeFileSystemFile;
+                        item.fileSystemURL = file->fileSystemURL();
+                        item.fileSystemFileSize = file->size();
+                    } else {
+                        // FIXME: support dragging constructed Files across renderers, see http://crbug.com/394955
+                        item.storageType = WebDragData::Item::StorageTypeString;
+                        item.stringType = "text/plain";
+                        item.stringData = file->name();
+                    }
+                } else {
+                    ASSERT_NOT_REACHED();
+                }
+            } else {
+                ASSERT_NOT_REACHED();
+            }
+        } else {
+            ASSERT_NOT_REACHED();
+        }
+        item.title = originalItem->title();
+        item.baseURL = originalItem->baseURL();
+        itemList[i] = item;
+    }
+    data.swapItems(itemList);
+    return data;
 }
 
 } // namespace blink

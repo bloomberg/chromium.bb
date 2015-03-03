@@ -39,7 +39,7 @@
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/DraggedIsolatedFileSystem.h"
+#include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "platform/AsyncFileSystemCallbacks.h"
@@ -60,7 +60,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionC
         return 0;
     ASSERT(file->isFile());
 
-    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystem::getDOMFileSystem(item.dataTransfer()->dataObject().get(), executionContext);
+    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystemImpl::getDOMFileSystem(item.dataTransfer()->dataObject().get(), executionContext);
     if (!domFileSystem) {
         // IsolatedFileSystem may not be enabled.
         return 0;

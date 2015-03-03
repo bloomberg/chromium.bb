@@ -280,6 +280,7 @@
       'exported/WebData.cpp',
       'exported/WebDeviceMotionData.cpp',
       'exported/WebDeviceOrientationData.cpp',
+      'exported/WebDragData.cpp',
       'exported/WebEncryptedMediaClient.cpp',
       'exported/WebEncryptedMediaKeyInformation.cpp',
       'exported/WebFederatedCredential.cpp',

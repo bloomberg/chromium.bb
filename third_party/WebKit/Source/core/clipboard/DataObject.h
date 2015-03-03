@@ -46,6 +46,7 @@ namespace blink {
 
 class KURL;
 class SharedBuffer;
+class WebDragData;
 
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware
@@ -55,6 +56,7 @@ class DataObject : public RefCountedWillBeGarbageCollectedFinalized<DataObject>,
 public:
     static PassRefPtrWillBeRawPtr<DataObject> createFromPasteboard(PasteMode);
     static PassRefPtrWillBeRawPtr<DataObject> create();
+    static PassRefPtrWillBeRawPtr<DataObject> create(WebDragData);
 
     virtual ~DataObject();
 
@@ -96,6 +98,8 @@ public:
     void setModifierKeyState(int modifierKeyState) { m_modifierKeyState = modifierKeyState; }
 
     DECLARE_TRACE();
+
+    WebDragData toWebDragData();
 
 private:
     DataObject();

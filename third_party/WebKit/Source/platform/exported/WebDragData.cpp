@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,40 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DraggedIsolatedFileSystem_h
-#define DraggedIsolatedFileSystem_h
-
-#include "core/clipboard/DataObject.h"
-#include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "config.h"
+#include "public/platform/WebDragData.h"
 
 namespace blink {
 
-class DOMFileSystem;
+void WebDragData::setItems(WebVector<Item> itemList)
+{
+    ASSERT(!isNull());
+    m_itemList.swap(itemList);
+}
 
-class DraggedIsolatedFileSystem final : public NoBaseWillBeGarbageCollectedFinalized<DraggedIsolatedFileSystem>, public WillBeHeapSupplement<DataObject> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystem);
-public:
-    virtual ~DraggedIsolatedFileSystem();
+void WebDragData::addItem(const Item& item)
+{
+    ASSERT(!isNull());
+    WebVector<Item> itemList(m_itemList.size() + 1);
 
-    static PassOwnPtrWillBeRawPtr<DraggedIsolatedFileSystem> create(DataObject& host, const String& filesystemId)
-    {
-        return adoptPtrWillBeNoop(new DraggedIsolatedFileSystem(host, filesystemId));
-    }
-
-    static DOMFileSystem* getDOMFileSystem(DataObject* host, ExecutionContext*);
-
-    static const char* supplementName();
-    static DraggedIsolatedFileSystem* from(DataObject*);
-
-    DECLARE_TRACE();
-
-private:
-    DraggedIsolatedFileSystem(DataObject& host, const String& filesystemId);
-    PersistentWillBeMember<DOMFileSystem> m_filesystem;
-};
+    for (unsigned i = 0; i < m_itemList.size(); ++i)
+        itemList[i] = m_itemList[i];
+    itemList[m_itemList.size()] = item;
+    m_itemList.swap(itemList);
+}
 
 } // namespace blink
-
-#endif // DraggedIsolatedFileSystem_h

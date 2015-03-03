@@ -35,10 +35,10 @@
 #include "WebData.h"
 #include "WebString.h"
 #include "WebURL.h"
+#include "WebVector.h"
 
 namespace blink {
 
-class DataObject;
 template <typename T> class WebVector;
 
 // Holds data that may be exchanged through a drag-n-drop operation. It is
@@ -84,37 +84,64 @@ public:
         WebURL baseURL;
     };
 
-    WebDragData() { }
-    WebDragData(const WebDragData& object) { assign(object); }
+    WebDragData()
+        : m_valid(false)
+        , m_modifierKeyState(0)
+    { }
+
+    WebDragData(const WebDragData& object)
+        : m_valid(object.m_valid)
+        , m_itemList(object.m_itemList)
+        , m_modifierKeyState(object.m_modifierKeyState)
+        , m_filesystemId(object.m_filesystemId)
+    { }
+
     WebDragData& operator=(const WebDragData& object)
     {
-        assign(object);
+        m_valid = object.m_valid;
+        m_itemList = object.m_itemList;
+        m_modifierKeyState = object.m_modifierKeyState;
+        m_filesystemId = object.m_filesystemId;
         return *this;
     }
-    ~WebDragData() { reset(); }
 
-    bool isNull() const { return m_private.isNull(); }
+    ~WebDragData() { }
 
-    BLINK_EXPORT void initialize();
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebDragData&);
+    WebVector<Item> items() const
+    {
+        return m_itemList;
+    }
 
-    BLINK_EXPORT WebVector<Item> items() const;
-    BLINK_EXPORT void setItems(const WebVector<Item>&);
-    BLINK_EXPORT void addItem(const Item&);
+    BLINK_PLATFORM_EXPORT void setItems(WebVector<Item> itemList);
+    // FIXME: setItems is slow because setItems copies WebVector.
+    // Instead, use swapItems.
+    void swapItems(WebVector<Item>& itemList)
+    {
+        m_itemList.swap(itemList);
+    }
 
-    BLINK_EXPORT WebString filesystemId() const;
-    BLINK_EXPORT void setFilesystemId(const WebString&);
+    void initialize() { m_valid = true; }
+    bool isNull() const { return !m_valid; }
+    void reset() { m_itemList = WebVector<Item>(); m_valid = false; }
 
-#if BLINK_IMPLEMENTATION
-    explicit WebDragData(const PassRefPtrWillBeRawPtr<DataObject>&);
-    WebDragData& operator=(const PassRefPtrWillBeRawPtr<DataObject>&);
-    DataObject* getValue() const;
-#endif
+    BLINK_PLATFORM_EXPORT void addItem(const Item&);
+
+    WebString filesystemId() const
+    {
+        return m_filesystemId;
+    }
+
+    void setFilesystemId(const WebString& filesystemId)
+    {
+        // The ID is an opaque string, given by and validated by chromium port.
+        m_filesystemId = filesystemId;
+    }
 
 private:
-    void ensureMutable();
-    WebPrivatePtr<DataObject> m_private;
+    bool m_valid;
+    WebVector<Item> m_itemList;
+    int m_modifierKeyState; // State of Shift/Ctrl/Alt/Meta keys.
+    WebString m_filesystemId;
 };
 
 } // namespace blink

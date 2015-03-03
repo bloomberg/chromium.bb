@@ -140,7 +140,6 @@
       'WebDevToolsFrontendImpl.h',
       'WebDocument.cpp',
       'WebDocumentType.cpp',
-      'WebDragData.cpp',
       'WebElement.cpp',
       'WebElementCollection.cpp',
       'WebEmbeddedWorkerImpl.cpp',

@@ -13,27 +13,27 @@ namespace blink {
 
 TEST(WebDragDataTest, items)
 {
-    WebDragData data(DataObject::create());
+    RefPtrWillBeRawPtr<DataObject> dataObject = DataObject::create();
 
     // Native file.
-    data.getValue()->add(File::create("/native/path"));
+    dataObject->add(File::create("/native/path"));
 
     // Blob file.
     const RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
-    data.getValue()->add(File::create("name", 0.0, blobDataHandle));
+    dataObject->add(File::create("name", 0.0, blobDataHandle));
 
     // User visible snapshot file.
     {
         FileMetadata metadata;
         metadata.platformPath = "/native/visible/snapshot";
-        data.getValue()->add(File::createForFileSystemFile("name", metadata, File::IsUserVisible));
+        dataObject->add(File::createForFileSystemFile("name", metadata, File::IsUserVisible));
     }
 
     // Not user visible snapshot file.
     {
         FileMetadata metadata;
         metadata.platformPath = "/native/not-visible/snapshot";
-        data.getValue()->add(File::createForFileSystemFile("name", metadata, File::IsNotUserVisible));
+        dataObject->add(File::createForFileSystemFile("name", metadata, File::IsNotUserVisible));
     }
 
     // User visible file system URL file.
@@ -41,7 +41,7 @@ TEST(WebDragDataTest, items)
         FileMetadata metadata;
         metadata.length = 1234;
         KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/visible-non-native-file");
-        data.getValue()->add(File::createForFileSystemFile(url, metadata, File::IsUserVisible));
+        dataObject->add(File::createForFileSystemFile(url, metadata, File::IsUserVisible));
     }
 
     // Not user visible file system URL file.
@@ -49,9 +49,10 @@ TEST(WebDragDataTest, items)
         FileMetadata metadata;
         metadata.length = 1234;
         KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/not-visible-non-native-file");
-        data.getValue()->add(File::createForFileSystemFile(url, metadata, File::IsNotUserVisible));
+        dataObject->add(File::createForFileSystemFile(url, metadata, File::IsNotUserVisible));
     }
 
+    WebDragData data = dataObject->toWebDragData();
     WebVector<WebDragData::Item> items = data.items();
     ASSERT_EQ(6u, items.size());
 

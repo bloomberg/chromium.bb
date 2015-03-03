@@ -63,7 +63,7 @@ void DragClientImpl::startDrag(DragImage* dragImage, const IntPoint& dragImageOr
     // Add a ref to the frame just in case a load occurs mid-drag.
     RefPtrWillBeRawPtr<LocalFrame> frameProtector(frame);
 
-    WebDragData dragData(dataTransfer->dataObject());
+    WebDragData dragData = dataTransfer->dataObject()->toWebDragData();
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(dataTransfer->sourceOperation());
     WebImage image;
     IntSize offsetSize(eventPos - dragImageOrigin);

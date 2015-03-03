@@ -821,7 +821,7 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
         return;
 
     DataTransfer* dataTransfer = event->dataTransfer();
-    WebDragData dragData(dataTransfer->dataObject());
+    WebDragData dragData = dataTransfer->dataObject()->toWebDragData();
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(dataTransfer->sourceOperation());
     WebPoint dragScreenLocation(event->screenX(), event->screenY());
     WebPoint dragLocation(event->absoluteLocation().x() - location().x(), event->absoluteLocation().y() - location().y());
