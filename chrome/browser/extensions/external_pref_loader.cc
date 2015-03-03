@@ -15,7 +15,9 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -113,12 +115,23 @@ const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
 
 void ExternalPrefLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) {
+  if ((options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) &&
+      (profile_ && profile_->IsSyncAccessible())) {
     if (!PostLoadIfPrioritySyncReady()) {
       DCHECK(profile_);
       PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
       DCHECK(prefs);
       syncable_pref_observer_.Add(prefs);
+      ProfileSyncService* service =
+          ProfileSyncServiceFactory::GetForProfile(profile_);
+      DCHECK(service);
+      if (service->IsSyncEnabledAndLoggedIn() &&
+          (service->HasSyncSetupCompleted() ||
+           browser_defaults::kSyncAutoStarts)) {
+        service->AddObserver(this);
+      } else {
+        PostLoadAndRemoveObservers();
+      }
     }
   } else {
     BrowserThread::PostTask(
@@ -131,6 +144,15 @@ void ExternalPrefLoader::OnIsSyncingChanged() {
   PostLoadIfPrioritySyncReady();
 }
 
+void ExternalPrefLoader::OnStateChanged() {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  DCHECK(service);
+  if (!service->IsSyncEnabledAndLoggedIn()) {
+    PostLoadAndRemoveObservers();
+  }
+}
+
 bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
   DCHECK(options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC);
   DCHECK(profile_);
@@ -138,14 +160,26 @@ bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
   PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
   DCHECK(prefs);
   if (prefs->IsPrioritySyncing()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
-    syncable_pref_observer_.Remove(prefs);
+    PostLoadAndRemoveObservers();
     return true;
   }
 
   return false;
+}
+
+void ExternalPrefLoader::PostLoadAndRemoveObservers() {
+  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  DCHECK(prefs);
+  syncable_pref_observer_.Remove(prefs);
+
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  DCHECK(service);
+  service->RemoveObserver(this);
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
 void ExternalPrefLoader::LoadOnFileThread() {

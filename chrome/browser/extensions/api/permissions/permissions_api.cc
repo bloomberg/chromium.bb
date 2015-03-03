@@ -208,6 +208,11 @@ bool PermissionsRequestFunction::RunAsync() {
   requested_permissions_ = PermissionSet::CreateDifference(
       requested_permissions_.get(), granted.get());
 
+  // Filter out the active permissions.
+  requested_permissions_ = PermissionSet::CreateDifference(
+      requested_permissions_.get(),
+      extension()->permissions_data()->active_permissions().get());
+
   AddRef();  // Balanced in InstallUIProceed() / InstallUIAbort().
 
   // We don't need to show the prompt if there are no new warnings, or if
