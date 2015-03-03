@@ -218,7 +218,7 @@ def RunTelemetryTests(options, step_name, run_tests_path):
   args = ['--browser', 'android-chrome-shell']
   devices = android_commands.GetAttachedDevices()
   if devices:
-    args = args + ['--device', devices[0]]
+    args = args + ['--device', 'android']
   bb_annotations.PrintNamedStep(step_name)
   RunCmd([run_tests_path] + args)
 
