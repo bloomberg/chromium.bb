@@ -1477,17 +1477,38 @@ def CMDissue(parser, args):
 
   Pass issue number 0 to clear the current issue.
   """
-  _, args = parser.parse_args(args)
+  parser.add_option('-r', '--reverse', action='store_true',
+                    help='Lookup the branch(es) for the specified issues. If '
+                         'no issues are specified, all branches with mapped '
+                         'issues will be listed.')
+  options, args = parser.parse_args(args)
 
-  cl = Changelist()
-  if len(args) > 0:
-    try:
-      issue = int(args[0])
-    except ValueError:
-      DieWithError('Pass a number to set the issue or none to list it.\n'
-          'Maybe you want to run git cl status?')
-    cl.SetIssue(issue)
-  print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
+  if options.reverse:
+    branches = RunGit(['for-each-ref', 'refs/heads',
+                       '--format=%(refname:short)']).splitlines()
+
+    # Reverse issue lookup.
+    issue_branch_map = {}
+    for branch in branches:
+      cl = Changelist(branchref=branch)
+      issue_branch_map.setdefault(cl.GetIssue(), []).append(branch)
+    if not args:
+      args = sorted(issue_branch_map.iterkeys())
+    for issue in args:
+      if not issue:
+        continue
+      print 'Branch for issue number %s: %s' % (
+          issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',)))
+  else:
+    cl = Changelist()
+    if len(args) > 0:
+      try:
+        issue = int(args[0])
+      except ValueError:
+        DieWithError('Pass a number to set the issue or none to list it.\n'
+            'Maybe you want to run git cl status?')
+      cl.SetIssue(issue)
+    print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
   return 0
 
 
