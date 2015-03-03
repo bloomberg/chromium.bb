@@ -219,7 +219,7 @@ FcScandir (const char		*dirp,
 	    dentlen = ((dentlen + ALIGNOF_VOID_P - 1) & ~(ALIGNOF_VOID_P - 1));
 	    p = (struct dirent *) malloc (dentlen);
 	    memcpy (p, dent, dentlen);
-	    if (n >= lsize)
+	    if ((n + 1) >= lsize)
 	    {
 		lsize += 128;
 		dlp = (struct dirent **) realloc (dlist, sizeof (struct dirent *) * lsize);
