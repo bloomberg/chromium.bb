@@ -1194,9 +1194,11 @@ protected:
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
-    // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, scrollbars, etc.,
-    // not including children which will be invalidated normally during invalidateTreeIfNeeded().
+    // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
+    // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
+    // parts which are invalidated separately (e.g. scrollbars).
     virtual void invalidateDisplayItemClients(DisplayItemList*) const;
+    void invalidateDisplayItemClientsUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
     void setLayoutDidGetCalledSinceLastFrame()
