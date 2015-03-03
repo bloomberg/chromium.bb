@@ -1120,6 +1120,7 @@
           'sources!': [
             'browser/geolocation/network_location_provider_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
+            'browser/media/audio_stream_monitor_unittest.cc',
             'browser/webui/url_data_manager_backend_unittest.cc',
           ],
           'dependencies': [

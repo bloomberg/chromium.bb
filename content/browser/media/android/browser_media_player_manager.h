@@ -30,6 +30,7 @@ namespace content {
 class BrowserDemuxerAndroid;
 class ContentViewCoreImpl;
 class ExternalVideoSurfaceContainer;
+class MediaPlayersObserver;
 class RenderFrameHost;
 class WebContents;
 
@@ -42,7 +43,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
     : public media::MediaPlayerManager {
  public:
   // Permits embedders to provide an extended version of the class.
-  typedef BrowserMediaPlayerManager* (*Factory)(RenderFrameHost*);
+  typedef BrowserMediaPlayerManager* (*Factory)(RenderFrameHost*,
+                                                MediaPlayersObserver*);
   static void RegisterFactory(Factory factory);
 
   // Permits embedders to handle custom urls.
@@ -50,7 +52,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       media::MediaUrlInterceptor* media_url_interceptor);
 
   // Returns a new instance using the registered factory if available.
-  static BrowserMediaPlayerManager* Create(RenderFrameHost* rfh);
+  static BrowserMediaPlayerManager* Create(
+      RenderFrameHost* rfh,
+      MediaPlayersObserver* audio_monitor);
 
   ContentViewCoreImpl* GetContentViewCore() const;
 
@@ -83,6 +87,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                       const base::TimeDelta& current_time) override;
   void OnError(int player_id, int error) override;
   void OnVideoSizeChanged(int player_id, int width, int height) override;
+  void OnAudibleStateChanged(
+      int player_id, bool is_audible_now) override;
+
   media::MediaResourceGetter* GetMediaResourceGetter() override;
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
   media::MediaPlayerAndroid* GetFullscreenPlayer() override;
@@ -118,7 +125,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
  protected:
   // Clients must use Create() or subclass constructor.
-  explicit BrowserMediaPlayerManager(RenderFrameHost* render_frame_host);
+  BrowserMediaPlayerManager(RenderFrameHost* render_frame_host,
+                            MediaPlayersObserver* audio_monitor);
 
   WebContents* web_contents() const { return web_contents_; }
 
@@ -167,6 +175,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 #endif  // defined(VIDEO_HOLE)
 
   RenderFrameHost* const render_frame_host_;
+
+  MediaPlayersObserver* audio_monitor_;
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
