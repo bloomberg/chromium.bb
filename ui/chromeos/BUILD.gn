@@ -46,6 +46,7 @@ component("ui_chromeos") {
     "//base/third_party/dynamic_annotations",
     "//chromeos:chromeos",
     "//chromeos:power_manager_proto",
+    "//components/device_event_log",
     "//skia",
     "//ui/aura",
     "//ui/base",
