@@ -710,8 +710,8 @@ HistoryModel.prototype.removeVisitsFromHistory = function(visits, callback) {
     });
   }
 
-  chrome.send('removeVisits', toBeRemoved);
   this.deleteCompleteCallback_ = callback;
+  chrome.send('removeVisits', toBeRemoved);
 };
 
 /** @return {boolean} Whether the model is currently deleting a visit. */
