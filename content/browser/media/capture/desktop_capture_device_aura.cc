@@ -145,7 +145,8 @@ class DesktopVideoCaptureMachine
       scoped_ptr<cc::CopyOutputResult> result);
 
   // Helper function to update cursor state.
-  // |region_in_frame| defines the desktop bound in the captured frame.
+  // |region_in_frame| defines where the desktop is rendered in the captured
+  // frame.
   // Returns the current cursor position in captured frame.
   gfx::Point UpdateCursorState(const gfx::Rect& region_in_frame);
 
@@ -172,6 +173,7 @@ class DesktopVideoCaptureMachine
 
   // Cursor state.
   ui::Cursor last_cursor_;
+  gfx::Size desktop_size_when_cursor_last_updated_;
   gfx::Point cursor_hot_point_;
   SkBitmap scaled_cursor_bitmap_;
 
@@ -347,6 +349,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
     return false;
 
@@ -368,6 +371,8 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
         base::TimeDelta(), false);
     capture_frame_cb.Run(video_frame, start_time, true);
     return true;
+  } else {
+    DCHECK(video_frame.get());
   }
 
   // Compute the dest size we want after the letterboxing resize. Make the
@@ -430,19 +435,33 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
 gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
     const gfx::Rect& region_in_frame) {
   const gfx::Rect desktop_bounds = desktop_window_->layer()->bounds();
+  if (desktop_bounds.IsEmpty()) {
+    // Return early to prevent divide-by-zero in calculations below.
+    ClearCursorState();
+    return gfx::Point();
+  }
+
   gfx::NativeCursor cursor =
       desktop_window_->GetHost()->last_cursor();
-  if (last_cursor_ != cursor) {
+  if (last_cursor_ != cursor ||
+      desktop_size_when_cursor_last_updated_ != desktop_bounds.size()) {
     SkBitmap cursor_bitmap;
     if (ui::GetCursorBitmap(cursor, &cursor_bitmap, &cursor_hot_point_)) {
+      const int scaled_width = cursor_bitmap.width() *
+          region_in_frame.width() / desktop_bounds.width();
+      const int scaled_height = cursor_bitmap.height() *
+          region_in_frame.height() / desktop_bounds.height();
+      if (scaled_width <= 0 || scaled_height <= 0) {
+        ClearCursorState();
+        return gfx::Point();
+      }
       scaled_cursor_bitmap_ = skia::ImageOperations::Resize(
           cursor_bitmap,
           skia::ImageOperations::RESIZE_BEST,
-          cursor_bitmap.width() * region_in_frame.width() /
-              desktop_bounds.width(),
-          cursor_bitmap.height() * region_in_frame.height() /
-              desktop_bounds.height());
+          scaled_width,
+          scaled_height);
       last_cursor_ = cursor;
+      desktop_size_when_cursor_last_updated_ = desktop_bounds.size();
     } else {
       // Clear cursor state if ui::GetCursorBitmap failed so that we do not
       // render cursor on the captured frame.
@@ -466,6 +485,7 @@ gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
 
 void DesktopVideoCaptureMachine::ClearCursorState() {
   last_cursor_ = ui::Cursor();
+  desktop_size_when_cursor_last_updated_ = gfx::Size();
   cursor_hot_point_ = gfx::Point();
   scaled_cursor_bitmap_.reset();
 }

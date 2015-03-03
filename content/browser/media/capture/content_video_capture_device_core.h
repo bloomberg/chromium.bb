@@ -62,6 +62,10 @@ class ThreadSafeCaptureOracle
     return oracle_.min_capture_period();
   }
 
+  gfx::Size max_frame_size() const {
+    return params_.requested_format.frame_size;
+  }
+
   // Returns the current capture resolution.
   gfx::Size GetCaptureSize() const;
 
@@ -98,13 +102,10 @@ class ThreadSafeCaptureOracle
   VideoCaptureOracle oracle_;
 
   // The video capture parameters used to construct the oracle proxy.
-  media::VideoCaptureParams params_;
+  const media::VideoCaptureParams params_;
 
-  // Indicates if capture size has been updated after construction.
-  bool capture_size_updated_;
-
-  // The current capturing format, as a media::VideoFrame::Format.
-  media::VideoFrame::Format video_frame_format_;
+  // The current video capture size.
+  gfx::Size capture_size_;
 };
 
 // Keeps track of the video capture source frames and executes copying on the

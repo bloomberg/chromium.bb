@@ -49,20 +49,7 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
       oracle_(base::TimeDelta::FromMicroseconds(
           static_cast<int64>(1000000.0 / params.requested_format.frame_rate +
                              0.5 /* to round to nearest int */))),
-      params_(params),
-      capture_size_updated_(false) {
-  switch (params_.requested_format.pixel_format) {
-    case media::PIXEL_FORMAT_I420:
-      video_frame_format_ = media::VideoFrame::I420;
-      break;
-    case media::PIXEL_FORMAT_TEXTURE:
-      video_frame_format_ = media::VideoFrame::NATIVE_TEXTURE;
-      break;
-    default:
-      LOG(FATAL) << "Unexpected pixel_format "
-                 << params_.requested_format.pixel_format;
-  }
-}
+      params_(params) {}
 
 ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {}
 
@@ -80,14 +67,20 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (!client_)
     return false;  // Capture is stopped.
 
+  const media::VideoFrame::Format video_frame_format =
+      params_.requested_format.pixel_format == media::PIXEL_FORMAT_TEXTURE ?
+          media::VideoFrame::NATIVE_TEXTURE : media::VideoFrame::I420;
+
+  if (capture_size_.IsEmpty())
+    capture_size_ = max_frame_size();
+  const gfx::Size visible_size = capture_size_;
   // Always round up the coded size to multiple of 16 pixels.
   // See http://crbug.com/402151.
-  const gfx::Size visible_size = params_.requested_format.frame_size;
   const gfx::Size coded_size((visible_size.width() + 15) & ~15,
                              (visible_size.height() + 15) & ~15);
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
-      client_->ReserveOutputBuffer(video_frame_format_, coded_size);
+      client_->ReserveOutputBuffer(video_frame_format, coded_size);
   const bool should_capture =
       oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
   const bool content_is_dirty =
@@ -130,9 +123,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                            "trigger", event_name);
   // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
   // moment.  We do not construct those frames.
-  if (video_frame_format_ != media::VideoFrame::NATIVE_TEXTURE) {
+  if (video_frame_format != media::VideoFrame::NATIVE_TEXTURE) {
     *storage = media::VideoFrame::WrapExternalPackedMemory(
-        video_frame_format_,
+        video_frame_format,
         coded_size,
         gfx::Rect(visible_size),
         visible_size,
@@ -142,6 +135,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
         0,
         base::TimeDelta(),
         base::Closure());
+    DCHECK(*storage);
   }
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
                          this,
@@ -153,30 +147,29 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
 gfx::Size ThreadSafeCaptureOracle::GetCaptureSize() const {
   base::AutoLock guard(lock_);
-  return params_.requested_format.frame_size;
+  return capture_size_.IsEmpty() ? max_frame_size() : capture_size_;
 }
 
 void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   base::AutoLock guard(lock_);
 
-  // If this is the first call to UpdateCaptureSize(), or the receiver supports
-  // variable resolution, then determine the capture size by treating the
-  // requested width and height as maxima.
-  if (!capture_size_updated_ || params_.resolution_change_policy ==
+  // Update |capture_size_| based on |source_size| if either: 1) The resolution
+  // change policy specifies fixed frame sizes and |capture_size_| has not yet
+  // been set; or 2) The resolution change policy specifies dynamic frame
+  // sizes.
+  if (capture_size_.IsEmpty() || params_.resolution_change_policy ==
       media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT) {
-    // The capture resolution should not exceed the source frame size.
-    // In other words it should downscale the image but not upscale it.
-    if (source_size.width() > params_.requested_format.frame_size.width() ||
-        source_size.height() > params_.requested_format.frame_size.height()) {
-      gfx::Rect capture_rect = media::ComputeLetterboxRegion(
-          gfx::Rect(params_.requested_format.frame_size), source_size);
-      params_.requested_format.frame_size.SetSize(
-          MakeEven(capture_rect.width()), MakeEven(capture_rect.height()));
-    } else {
-      params_.requested_format.frame_size.SetSize(
-          MakeEven(source_size.width()), MakeEven(source_size.height()));
+    capture_size_ = source_size;
+    // The capture size should not exceed the maximum frame size.
+    if (capture_size_.width() > max_frame_size().width() ||
+        capture_size_.height() > max_frame_size().height()) {
+      capture_size_ = media::ComputeLetterboxRegion(
+          gfx::Rect(max_frame_size()), capture_size_).size();
     }
-    capture_size_updated_ = true;
+    // The capture size must be even and not less than the minimum frame size.
+    capture_size_ = gfx::Size(
+        std::max(kMinFrameWidth, MakeEven(capture_size_.width())),
+        std::max(kMinFrameHeight, MakeEven(capture_size_.height())));
   }
 }
 
