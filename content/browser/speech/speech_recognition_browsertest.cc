@@ -94,7 +94,7 @@ class SpeechRecognitionBrowserTest :
   }
 
   std::string GetPageFragment() {
-    return shell()->web_contents()->GetURL().ref();
+    return shell()->web_contents()->GetLastCommittedURL().ref();
   }
 
   const StreamingServerState &streaming_server_state() {
