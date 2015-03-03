@@ -4,6 +4,7 @@
 
 #include "ui/aura/window_tree_host_ozone.h"
 
+#include "base/trace_event/trace_event.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
@@ -81,6 +82,7 @@ void WindowTreeHostOzone::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void WindowTreeHostOzone::DispatchEvent(ui::Event* event) {
+  TRACE_EVENT0("input", "WindowTreeHostOzone::DispatchEvent");
   SendEventToProcessor(event);
 }
 
