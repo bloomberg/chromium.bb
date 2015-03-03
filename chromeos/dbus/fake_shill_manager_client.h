@@ -142,6 +142,9 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   // Initial state for fake services.
   std::map<std::string, std::string> shill_initial_state_map_;
 
+  // Technology type for fake cellular service.
+  std::string cellular_technology_;
+
   // Roaming state for fake cellular service.
   std::string roaming_state_;
 

@@ -261,6 +261,7 @@ const char kPowerStub[] = "power-stub";
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.
+// Values are case sensitive and based on Shill names in service_constants.h.
 // See FakeShillManagerClient::SetInitialNetworkState for implementation.
 // Examples:
 //  'clear=1' - Clears all default configurations
@@ -270,6 +271,7 @@ const char kPowerStub[] = "power-stub";
 //  'wifi=none' - Wifi is unavailable
 //  'wifi=portal' - Wifi connection will be in Portal state
 //  'cellular=1' - Cellular is initially connected
+//  'cellular=LTE' - Cellular is initially connected, technology is LTE
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
 

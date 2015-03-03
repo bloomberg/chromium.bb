@@ -50,6 +50,11 @@ paper-button[raised].colored {
   font-weight: bold;
 }
 
+.state-table-icon-cell {
+  display: flex;
+  justify-content: center;
+}
+
 .state-table-expand-button-cell {
   text-align: center;
 }

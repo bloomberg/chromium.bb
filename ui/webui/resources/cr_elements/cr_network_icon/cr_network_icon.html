@@ -3,9 +3,15 @@
 <polymer-element name="cr-network-icon">
   <template>
     <link rel="stylesheet" href="cr_network_icon.css">
-    <img id="icon">
+    <img id="icon" src="{{iconType | toImageSrc}}">
+    <img id="technology" src="{{technology | toBadgeImageSrc}}"
+        hidden?="{{!technology}}">
+    <img id="roaming"
+        src="chrome://resources/cr_elements/cr_network_icon/badge_roaming.png"
+        hidden?="{{!roaming}}">
     <img id="secure"
-        src="chrome://resources/cr_elements/cr_network_icon/secure.png">
+        src="chrome://resources/cr_elements/cr_network_icon/badge_secure.png"
+        hidden?="{{!secure}}">
   </template>
   <script src="cr_network_icon.js"></script>
 </polymer-element>

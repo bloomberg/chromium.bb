@@ -4,8 +4,10 @@
 
 :host {
   display: inline-block;
+  height: 50px;
   overflow: hidden;
   position: relative;
+  width: 50px;
 }
 
 #icon {
@@ -38,10 +40,39 @@
   top: -400%;
 }
 
+/* Connecting animation */
+
+#icon.connecting {
+  -webkit-animation: levels 1s infinite;
+  -webkit-animation-timing-function: steps(4, start);
+}
+
+@-webkit-keyframes levels {
+  from {
+    top: 0%;
+  }
+  to {
+    top: -400%;
+  }
+}
+
+/* Badges. */
+/* Note: These use left/right because we do not reverse the badges for RTL. */
+
+/* Upper-left corner */
+#technology {
+  height: 40%;
+  left: 0px;
+  position: absolute;
+  top: 0px;
+}
+
+/* Lower-right corner */
+#roaming,
 #secure {
   height: 40%;
-  margin-left: 60%;
-  margin-top: 60%;
+  left: 60%;
   position: absolute;
+  top: 60%;
   width: 40%;
 }

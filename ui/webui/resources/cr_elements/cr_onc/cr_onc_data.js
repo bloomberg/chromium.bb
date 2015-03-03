@@ -22,13 +22,22 @@ Polymer('cr-onc-data', {
     data: null,
   },
 
+  /** @override */
   created: function() {
     this.data = /** @type {CrOnc.NetworkConfigType} */({});
   },
 
-  /**
-   * @return {number} The signal strength of the network.
-   */
+  /** @return {boolean} True if the network is connected. */
+  connected: function() {
+    return this.data.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+  },
+
+  /** @return {boolean} True if the network is connecting. */
+  connecting: function() {
+    return this.data.ConnectionState == CrOnc.ConnectionState.CONNECTING;
+  },
+
+  /** @return {number} The signal strength of the network. */
   getStrength: function() {
     var type = this.data.Type;
     var strength = 0;
@@ -41,12 +50,21 @@ Polymer('cr-onc-data', {
     return strength;
   },
 
-  /**
-   * Returns the WiFi security type. Undefined or empty defaults to 'None'.
-   * @return {string} The WiFi security type.
-   */
+  /** @return {CrOnc.Security} The ONC security type. */
   getWiFiSecurity: function() {
     return (this.data.WiFi && this.data.WiFi.Security) ?
-        this.data.WiFi.Security : 'None';
+        this.data.WiFi.Security : CrOnc.Security.NONE;
+  },
+
+  /** @return {CrOnc.RoamingState} The ONC roaming state. */
+  getCellularRoamingState: function() {
+    return (this.data.Cellular && this.data.Cellular.RoamingState) ?
+        this.data.Cellular.RoamingState : CrOnc.RoamingState.UNKNOWN;
+  },
+
+  /** @return {CrOnc.NetworkTechnology} The ONC network technology. */
+  getCellularTechnology: function() {
+    return (this.data.Cellular && this.data.Cellular.NetworkTechnology) ?
+        this.data.Cellular.NetworkTechnology : CrOnc.NetworkTechnology.UNKNOWN;
   }
 });
