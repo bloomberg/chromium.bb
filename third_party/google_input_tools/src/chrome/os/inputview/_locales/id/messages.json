@@ -2616,7 +2616,7 @@
     "message": "Maaf, Anda tidak dapat menggunakan tulisan tangan, karena jaringan tidak tersedia."
   },
   "handwriting_privacy_info": {
-    "message": "Masukan Anda akan dikirim ke server Google untuk mengenali teks"
+    "message": "Masukan Anda akan dikirim ke server Google untuk mengenali teks."
   },
   "hide_keyboard": {
     "message": "sembunyikan keyboard"
@@ -2634,7 +2634,7 @@
     "message": "Abaikan koreksi untuk"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Abaikan koreksi"
   },
   "il_heb_settings_page": {
     "message": "Laman Setelan Keyboard Ibrani"
@@ -3300,7 +3300,7 @@
     "message": "Suara"
   },
   "voice_privacy_info": {
-    "message": "Suara Anda akan dikirim ke server Google untuk mengenali teks"
+    "message": "Masukan suara Anda akan dikirim ke server Google untuk mengenali teks."
   },
   "voice_turn_off": {
     "message": "nonaktifkan alat masukan suara"

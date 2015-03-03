@@ -2616,7 +2616,7 @@
     "message": "Eftersom n\u00e4tverket inte \u00e4r tillg\u00e4ngligt kan du tyv\u00e4rr inte skriva f\u00f6r hand."
   },
   "handwriting_privacy_info": {
-    "message": "Inmatningen skickas till en av Googles servrar f\u00f6r textigenk\u00e4nning"
+    "message": "Inmatningen skickas till Googles servrar f\u00f6r textigenk\u00e4nning."
   },
   "hide_keyboard": {
     "message": "d\u00f6lj tangentbord"
@@ -2634,7 +2634,7 @@
     "message": "Ignorera korrigeringen av"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorera korrigeringen"
   },
   "il_heb_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r hebreiskt tangentbord"
@@ -3300,7 +3300,7 @@
     "message": "R\u00f6st"
   },
   "voice_privacy_info": {
-    "message": "R\u00f6stinmatningen skickas till en av Googles servrar f\u00f6r att identifiera text"
+    "message": "R\u00f6stinmatningen skickas till Googles servrar f\u00f6r textigenk\u00e4nning."
   },
   "voice_turn_off": {
     "message": "inaktivera verktyg f\u00f6r r\u00f6stinmatning"

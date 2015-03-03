@@ -2616,7 +2616,7 @@
     "message": "R\u1ea5t ti\u1ebfc, b\u1ea1n kh\u00f4ng th\u1ec3 s\u1eed d\u1ee5ng ch\u1eef vi\u1ebft tay v\u00ec kh\u00f4ng c\u00f3 m\u1ea1ng."
   },
   "handwriting_privacy_info": {
-    "message": "D\u1eef li\u1ec7u b\u1ea1n nh\u1eadp s\u1ebd \u0111\u01b0\u1ee3c g\u1eedi t\u1edbi m\u00e1y ch\u1ee7 c\u1ee7a Google \u0111\u1ec3 nh\u1eadn d\u1ea1ng v\u0103n b\u1ea3n"
+    "message": "D\u1eef li\u1ec7u b\u1ea1n nh\u1eadp s\u1ebd \u0111\u01b0\u1ee3c g\u1eedi t\u1edbi m\u00e1y ch\u1ee7 c\u1ee7a Google \u0111\u1ec3 nh\u1eadn d\u1ea1ng v\u0103n b\u1ea3n."
   },
   "hide_keyboard": {
     "message": "\u1ea9n b\u00e0n ph\u00edm"
@@ -2634,7 +2634,7 @@
     "message": "B\u1ecf qua t\u00ednh n\u0103ng s\u1eeda cho"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "B\u1ecf qua t\u00ednh n\u0103ng s\u1eeda"
   },
   "il_heb_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Do Th\u00e1i"
@@ -3300,7 +3300,7 @@
     "message": "Gi\u1ecdng n\u00f3i"
   },
   "voice_privacy_info": {
-    "message": "Gi\u1ecdng n\u00f3i c\u1ee7a b\u1ea1n s\u1ebd \u0111\u01b0\u1ee3c g\u1eedi t\u1edbi m\u00e1y ch\u1ee7 Google \u0111\u1ec3 nh\u1eadn d\u1ea1ng v\u0103n b\u1ea3n"
+    "message": "Nh\u1eadp b\u1eb1ng gi\u1ecdng n\u00f3i s\u1ebd \u0111\u01b0\u1ee3c g\u1eedi t\u1edbi m\u00e1y ch\u1ee7 c\u1ee7a Google \u0111\u1ec3 nh\u1eadn d\u1ea1ng v\u0103n b\u1ea3n."
   },
   "voice_turn_off": {
     "message": "t\u1eaft c\u00f4ng c\u1ee5 nh\u1eadp b\u1eb1ng gi\u1ecdng n\u00f3i"

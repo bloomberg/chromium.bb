@@ -117,10 +117,6 @@ Adapter.prototype.isA11yMode = false;
 
 
 /** @type {boolean} */
-Adapter.prototype.isExperimental = false;
-
-
-/** @type {boolean} */
 Adapter.prototype.isVoiceInputEnabled = true;
 
 
@@ -386,6 +382,7 @@ Adapter.prototype.isGestureTypingEnabled = function() {
   return this.features.isEnabled(FeatureName.GESTURE_TYPING);
 };
 
+
 /**
  * Callback when blurs in the context.
  *
@@ -495,7 +492,6 @@ Adapter.prototype.initialize = function(languageCode) {
   if (window.inputview) {
     inputview.getKeyboardConfig((function(config) {
       this.isA11yMode = !!config['a11ymode'];
-      this.isExperimental = !!config['experimental'];
       this.features.initialize(config);
       this.readyState_.markStateReady(StateType.KEYBOARD_CONFIG_READY);
       this.maybeDispatchSettingsReadyEvent_();
@@ -606,7 +602,6 @@ Adapter.prototype.onVisibilityChange_ = function() {
   chrome.runtime.sendMessage(goog.object.create(
       Name.TYPE, Type.VISIBILITY_CHANGE,
       Name.VISIBILITY, !document.webkitHidden,
-      Name.IS_EXPERIMENTAL, this.isExperimental,
       Name.WORKSPACE_HEIGHT, screen.height - window.innerHeight));
 };
 

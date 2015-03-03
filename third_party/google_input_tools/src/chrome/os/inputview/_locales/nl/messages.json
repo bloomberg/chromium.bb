@@ -2616,7 +2616,7 @@
     "message": "Je kunt geen handschrift gebruiken omdat het netwerk niet beschikbaar is."
   },
   "handwriting_privacy_info": {
-    "message": "Uw invoer wordt verzonden naar een Google-server om de tekst te herkennen"
+    "message": "Je invoer wordt naar servers van Google verzonden om de tekst te herkennen."
   },
   "hide_keyboard": {
     "message": "toetsenbord verbergen"
@@ -2634,7 +2634,7 @@
     "message": "Correctie negeren voor"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Correctie negeren"
   },
   "il_heb_settings_page": {
     "message": "Pagina met instellingen voor Hebreeuws toetsenbord"
@@ -3300,7 +3300,7 @@
     "message": "Spraak"
   },
   "voice_privacy_info": {
-    "message": "Je stem wordt naar een Google-server verzonden om de tekst te herkennen"
+    "message": "Je gesproken invoer wordt naar servers van Google verzonden om de tekst te herkennen."
   },
   "voice_turn_off": {
     "message": "tool voor spraakinvoer uitschakelen"

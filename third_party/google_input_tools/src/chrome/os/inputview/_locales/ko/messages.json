@@ -2634,7 +2634,7 @@
     "message": "\uc790\ub3d9 \uc218\uc815 \uae30\ub2a5 \ubb34\uc2dc"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "\uc790\ub3d9 \uc218\uc815 \uae30\ub2a5 \ubb34\uc2dc"
   },
   "il_heb_settings_page": {
     "message": "\ud788\ube0c\ub9ac\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -3300,7 +3300,7 @@
     "message": "\uc74c\uc131"
   },
   "voice_privacy_info": {
-    "message": "\uc74c\uc131\uc740 \ud14d\uc2a4\ud2b8 \uc778\uc2dd\uc744 \uc704\ud574 Google \uc11c\ubc84\ub85c \uc804\uc1a1\ub429\ub2c8\ub2e4."
+    "message": "\uc74c\uc131 \uc785\ub825\uc740 \ud14d\uc2a4\ud2b8 \uc778\uc2dd\uc744 \uc704\ud574 Google \uc11c\ubc84\ub85c \uc804\uc1a1\ub429\ub2c8\ub2e4."
   },
   "voice_turn_off": {
     "message": "\uc74c\uc131 \uc785\ub825 \ub3c4\uad6c \uc0ac\uc6a9 \uc548\ud568"

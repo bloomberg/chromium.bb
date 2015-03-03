@@ -2616,7 +2616,7 @@
     "message": "No se puede utilizar la escritura t\u00e1ctil porque la red no est\u00e1 disponible."
   },
   "handwriting_privacy_info": {
-    "message": "Tu entrada se enviar\u00e1 a un servidor de Google para reconocer el texto"
+    "message": "Tu entrada se enviar\u00e1 a los servidores de Google para reconocer el texto."
   },
   "hide_keyboard": {
     "message": "ocultar teclado"
@@ -2634,7 +2634,7 @@
     "message": "Ignorar correcci\u00f3n de"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorar correcci\u00f3n"
   },
   "il_heb_settings_page": {
     "message": "P\u00e1gina de configuraci\u00f3n del teclado hebreo"
@@ -3300,7 +3300,7 @@
     "message": "Voz"
   },
   "voice_privacy_info": {
-    "message": "Tu voz se enviar\u00e1 a un servidor de Google para reconocer el texto"
+    "message": "Tu entrada de voz se enviar\u00e1 a los servidores de Google para reconocer el texto."
   },
   "voice_turn_off": {
     "message": "desactivar herramienta de entrada de voz"

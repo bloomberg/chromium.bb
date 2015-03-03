@@ -12,6 +12,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.GestureCanvasView');
+goog.provide('i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point');
 
 goog.require('goog.async.Delay');
 goog.require('goog.dom.TagName');
@@ -57,11 +58,11 @@ i18n.input.chrome.inputview.elements.content.GestureCanvasView =
   this.drawingContext_;
 
   /**
-   * Drag events whose points should be drawn on the canvas.
+   * A list of list of gesture points to be rendered on the canvas as strokes.
    *
-   * @private {!Array}
+   * @private {!Array.<Array>}
    */
-  this.dragEventList_ = [];
+  this.strokeList_ = [];
 
   /** @private {!goog.async.Delay} */
   this.animator_ = new goog.async.Delay(this.animateGestureTrail_, 0, this);
@@ -69,6 +70,14 @@ i18n.input.chrome.inputview.elements.content.GestureCanvasView =
 var GestureCanvasView =
     i18n.input.chrome.inputview.elements.content.GestureCanvasView;
 goog.inherits(GestureCanvasView, i18n.input.chrome.inputview.elements.Element);
+
+
+/**
+ * Rate at which the ttl should degrade for the fading stroke effect.
+ *
+ * @const {number}
+ */
+GestureCanvasView.DEGRADATION_RATE = 5;
 
 
 /**
@@ -81,27 +90,30 @@ GestureCanvasView.prototype.draw_ = function() {
   this.drawingContext_.clearRect(
       0, 0, this.drawingCanvas_.width, this.drawingCanvas_.height);
 
-  // Event positions come in relative to the top of the entire content area, so
-  // grab the canvas offset in order to calculate the correct position to draw
-  // the strokes.
-  var offset = goog.style.getPageOffset(this.drawingCanvas_);
+  for (var i = 0; i < this.strokeList_.length; i++) {
+    var pointList = this.strokeList_[i];
 
-  // Iterate through all the points and draw them.
-  for (var i = 1; i < this.dragEventList_.length; i++) {
-    // TODO(stevet): The following is a basic implementation of the trail
-    // rendering. This should be later be updated to be more efficient and
-    // support effects like fading.
-    var first = this.dragEventList_[i - 1];
-    var second = this.dragEventList_[i];
-    this.drawingContext_.beginPath();
-    this.drawingContext_.strokeStyle = '#00B4CC';
-    this.drawingContext_.fillStyle = 'none';
-    this.drawingContext_.lineWidth = 8;
-    this.drawingContext_.lineCap = 'round';
-    this.drawingContext_.lineJoin = 'round';
-    this.drawingContext_.moveTo(first.x - offset.x, first.y - offset.y);
-    this.drawingContext_.lineTo(second.x - offset.x, second.y - offset.y);
-    this.drawingContext_.stroke();
+    for (var j = 1; j < pointList.length; j++) {
+      var first = pointList[j - 1];
+      var second = pointList[j];
+      // All rendering calculations are based on the second point in the segment
+      // because there must be at least two points for something to be rendered.
+      var ttl = second.ttl;
+      if (ttl <= 0) {
+        continue;
+      }
+
+      this.drawingContext_.beginPath();
+      this.drawingContext_.moveTo(first.x, first.y);
+      this.drawingContext_.lineTo(second.x, second.y);
+      // TODO(stevet): Use alpha and #00B4CC.
+      this.drawingContext_.strokeStyle = this.calculateColor_(ttl);
+      this.drawingContext_.fillStyle = 'none';
+      this.drawingContext_.lineWidth = this.calculateLineWidth_(ttl);
+      this.drawingContext_.lineCap = 'round';
+      this.drawingContext_.lineJoin = 'round';
+      this.drawingContext_.stroke();
+    }
   }
 };
 
@@ -117,6 +129,8 @@ GestureCanvasView.prototype.createDom = function() {
   this.drawingCanvas_ = dom.createDom(TagName.CANVAS, Css.DRAWING_CANVAS);
   this.drawingContext_ = this.drawingCanvas_.getContext('2d');
   dom.appendChild(elem, this.drawingCanvas_);
+
+  this.animator_.start();
 };
 
 
@@ -132,16 +146,18 @@ GestureCanvasView.prototype.resize = function(width, height) {
 
 
 /**
- * Add a new point to the collection of points, and refresh the view.
+ * Converts a drag event to a gesture Point and adds it to the collection of
+ * points.
  *
  * @param {!i18n.input.chrome.inputview.events.DragEvent} e Drag event to draw.
  */
-GestureCanvasView.prototype.addPointAndDraw = function(e) {
-  // Add to the collection.
-  this.dragEventList_.push(e);
+GestureCanvasView.prototype.addPoint = function(e) {
+  if (this.strokeList_.length == 0) {
+    this.strokeList_.push([]);
+  }
 
-  // Refresh the view.
-  this.draw_();
+  this.strokeList_[this.strokeList_.length - 1].push(
+      this.createGesturePoint_(e));
 };
 
 
@@ -149,8 +165,23 @@ GestureCanvasView.prototype.addPointAndDraw = function(e) {
  * Clear the view.
  */
 GestureCanvasView.prototype.clear = function() {
-  this.dragEventList_ = [];
+  this.strokeList_ = [];
   this.draw_();
+};
+
+
+/**
+ * Begins a new gesture.
+ *
+ * @param {!i18n.input.chrome.inputview.events.PointerEvent} e Drag event to
+ *        draw.
+ */
+GestureCanvasView.prototype.startStroke = function(e) {
+  // Always start a new array to separate previous strokes from this new one.
+  this.strokeList_.push([]);
+
+  this.strokeList_[this.strokeList_.length - 1].push(
+      this.createGesturePoint_(e));
 };
 
 
@@ -160,6 +191,125 @@ GestureCanvasView.prototype.clear = function() {
  * @private
  */
 GestureCanvasView.prototype.animateGestureTrail_ = function() {
-  // TODO(stevet): Implement the gesture trail animation here.
+  // TODO(stevet): This approximates drawing at 60fps. Refactor this and the
+  // voice input code to use a common call to requestRenderFrame.
+  var timeStep = 16;
+
+  this.draw_();
+  this.degradeStrokes_();
+  this.animator_.start(timeStep);
 };
+
+
+/**
+ * Calculates the line width of the point based on the ttl.
+ *
+ * @param {number} ttl The time to live of the point.
+ * @return {number} The line width to use for the point.
+ * @private
+ */
+GestureCanvasView.prototype.calculateLineWidth_ = function(ttl) {
+  var ratio = ttl / 255.0;
+  if (ratio < 0) {
+    ratio = 0;
+  }
+  return 9 * ratio;
+};
+
+
+/**
+ * Calculates the color of the point based on the ttl.
+ *
+ * @param {number} ttl The time to live of the point.
+ * @return {string} The color to use for the point.
+ * @private
+ */
+GestureCanvasView.prototype.calculateColor_ = function(ttl) {
+  var shade = 225 - ttl;
+  if (shade < 0) {
+    shade = 0;
+  }
+  return 'rgb(' + shade + ', ' + shade + ', ' + shade + ')';
+};
+
+
+/**
+ * Returns a gesture point for a given event, with the correct coordinates.
+ *
+ * @param {!i18n.input.chrome.inputview.events.DragEvent|
+ *        i18n.input.chrome.inputview.events.PointerEvent} e The event to
+ *        convert.
+ * @return {i18n.input.chrome.inputview.elements.content.
+ *          GestureCanvasView.Point} The converted gesture point.
+ * @private
+ */
+GestureCanvasView.prototype.createGesturePoint_ = function(e) {
+  var offset = goog.style.getPageOffset(this.drawingCanvas_);
+  return new
+      i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point(
+          e.x - offset.x, e.y - offset.y);
+};
+
+
+/**
+ * Degrades the ttl of the points in all gesture strokes.
+ *
+ * @private
+ */
+GestureCanvasView.prototype.degradeStrokes_ = function() {
+  for (var i = 0; i < this.strokeList_.length; i++) {
+    var all_empty = true;
+    var pointList = this.strokeList_[i];
+    for (var j = 0; j < pointList.length; j++) {
+      if (pointList[j].ttl > 0) {
+        pointList[j].ttl -= GestureCanvasView.DEGRADATION_RATE;
+        all_empty = false;
+      }
+    }
+
+    // In the case where all points in the list are empty, dispose of the first.
+    if (all_empty) {
+      this.strokeList_.splice(i, 1);
+      i--;
+    }
+  }
+};
+
+
+/**
+ * One point in the gesture stroke.
+ *
+ * This class is used for both rendering the gesture stroke, and also for
+ * transmitting the stroke coordinates to the recognizer for decoding.
+ *
+ * @param {number} x The x coordinate.
+ * @param {number} y The y coordinate.
+ * @constructor
+ */
+i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point =
+    function(x, y) {
+  /**
+   * The left offset relative to the canvas.
+   *
+   * @type {number}
+   */
+  this.x = x;
+
+  /**
+   * The top offset relative to the canvas.
+   *
+   * @type {number}
+   */
+  this.y = y;
+
+  /**
+   * The time-to-live value of the point, used to render the trail fading
+   * effect.
+   *
+   * @type {number}
+   */
+  this.ttl = 225;
+};
+
+
 });  // goog.scope

@@ -2616,7 +2616,7 @@
     "message": "No podeu fer servir l'escriptura a m\u00e0 perqu\u00e8 la xarxa no est\u00e0 disponible."
   },
   "handwriting_privacy_info": {
-    "message": "El text que introdu\u00efu s'enviar\u00e0 a un servidor de Google per recon\u00e8ixer el text."
+    "message": "El text que escriviu s'enviar\u00e0 als servidors de Google per poder recon\u00e8ixer-lo."
   },
   "hide_keyboard": {
     "message": "amaga el teclat"
@@ -2634,7 +2634,7 @@
     "message": "Ignora la correcci\u00f3 de"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignora la correcci\u00f3"
   },
   "il_heb_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat hebreu"
@@ -3300,7 +3300,7 @@
     "message": "Veu"
   },
   "voice_privacy_info": {
-    "message": "La vostra veu s'enviar\u00e0 a un servidor de Google perqu\u00e8 en reconegui el text."
+    "message": "El text que digueu s'enviar\u00e0 als servidors de Google per poder recon\u00e8ixer-lo."
   },
   "voice_turn_off": {
     "message": "desactiva l'eina d'entrada de veu"

@@ -37,7 +37,6 @@ i18n.input.chrome.message.Name = {
   ID: 'id',
   IS_AUTOCORRECT: 'isAutoCorrect',
   IS_EMOJI: 'isEmoji',
-  IS_EXPERIMENTAL: 'IS_EXPERIMENTAL',
   KEY: 'key',
   KEYCODE: 'keyCode',
   KEYSET: 'keyset',

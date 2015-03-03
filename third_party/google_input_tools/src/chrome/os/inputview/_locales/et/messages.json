@@ -2616,7 +2616,7 @@
     "message": "Kahjuks ei saa te k\u00e4sitsi kirjutamist kasutada, kuna v\u00f5rk pole saadaval."
   },
   "handwriting_privacy_info": {
-    "message": "Teie sisend saadetakse Google'i serveritesse teksti tuvastamiseks"
+    "message": "Teie sisestus saadetakse teksti tuvastamiseks Google'i serveritesse."
   },
   "hide_keyboard": {
     "message": "klaviatuuri peitmine"
@@ -2634,7 +2634,7 @@
     "message": "Ignoreeri parandust:"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignoreeri parandust"
   },
   "il_heb_settings_page": {
     "message": "Heebrea klaviatuuri seadete leht"
@@ -3300,7 +3300,7 @@
     "message": "H\u00e4\u00e4l"
   },
   "voice_privacy_info": {
-    "message": "Teie h\u00e4\u00e4landmed saadetakse teksti tuvastamiseks Google'i serverisse."
+    "message": "Teie h\u00e4\u00e4lsisend saadetakse teksti tuvastamiseks Google'i serveritesse."
   },
   "voice_turn_off": {
     "message": "h\u00e4\u00e4lsisendi t\u00f6\u00f6riista v\u00e4ljal\u00fclitamine"

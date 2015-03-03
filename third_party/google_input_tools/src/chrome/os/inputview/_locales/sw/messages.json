@@ -2616,7 +2616,7 @@
     "message": "Samahani, huwezi kutumia mwandiko, kwa sababu mtandao haupatikani."
   },
   "handwriting_privacy_info": {
-    "message": "Uingizaji wako utatumwa kwenye seva ya Google ili kuyatambua maandishi"
+    "message": "Uingizaji wako utatumwa kwenye seva za Google ili kuyatambua maandishi."
   },
   "hide_keyboard": {
     "message": "ficha kibodi"
@@ -2634,7 +2634,7 @@
     "message": "Puuza usahihishaji wa neno"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Puuza usahihishaji wa neno"
   },
   "il_heb_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kiyahudi"
@@ -3300,7 +3300,7 @@
     "message": "Sauti"
   },
   "voice_privacy_info": {
-    "message": "Sauti yako itatumwa kwenye seva ya Google ili kutambua maandishi"
+    "message": "Kuweka kwako data kwa kutamka kutatumwa kwenye seva za Google ili kutambua maandishi."
   },
   "voice_turn_off": {
     "message": "zima zana ya kuweka data kwa kutamka"

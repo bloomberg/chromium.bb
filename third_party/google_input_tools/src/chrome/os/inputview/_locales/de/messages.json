@@ -2616,7 +2616,7 @@
     "message": "Sie k\u00f6nnen Handschrift nicht verwenden, da kein Netzwerk verf\u00fcgbar ist."
   },
   "handwriting_privacy_info": {
-    "message": "Ihre Eingabe wird zwecks Texterkennung an einen Google-Server gesendet."
+    "message": "Ihre Eingabe wird zwecks Texterkennung an die Google-Server gesendet."
   },
   "hide_keyboard": {
     "message": "Tastatur ausblenden"
@@ -2634,7 +2634,7 @@
     "message": "Korrektur ignorieren f\u00fcr"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Korrektur ignorieren"
   },
   "il_heb_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr hebr\u00e4ische Tastatur"
@@ -3300,7 +3300,7 @@
     "message": "Spracheingabe"
   },
   "voice_privacy_info": {
-    "message": "Ihre Spracheingabe wird zur Spracherkennung an einen Google-Server gesendet."
+    "message": "Ihre Spracheingabe wird zwecks Texterkennung an die Google-Server gesendet."
   },
   "voice_turn_off": {
     "message": "Spracheingabetool deaktivieren"

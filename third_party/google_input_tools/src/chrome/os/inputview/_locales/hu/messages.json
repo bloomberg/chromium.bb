@@ -2616,7 +2616,7 @@
     "message": "Sajnos nem lehet haszn\u00e1lni a k\u00e9z\u00edr\u00e1sos bevitelt, mert nincs h\u00e1l\u00f3zati kapcsolat."
   },
   "handwriting_privacy_info": {
-    "message": "A be\u00edrt sz\u00f6veget a Google megkapja, hogy megvizsg\u00e1lhassa"
+    "message": "A be\u00edrt sz\u00f6veget a Google megkapja a felismer\u00e9s \u00e9rdek\u00e9ben"
   },
   "hide_keyboard": {
     "message": "Billenty\u0171zet elrejt\u00e9se"
@@ -2634,7 +2634,7 @@
     "message": "Jav\u00edt\u00e1s mell\u0151z\u00e9se enn\u00e9l a sz\u00f3n\u00e1l:"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Jav\u00edt\u00e1s mell\u0151z\u00e9se"
   },
   "il_heb_settings_page": {
     "message": "H\u00e9ber billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -3300,7 +3300,7 @@
     "message": "Hang"
   },
   "voice_privacy_info": {
-    "message": "Hangj\u00e1t tov\u00e1bb\u00edtani fogjuk egy Google-szerverre sz\u00f6vegfelismer\u00e9sre"
+    "message": "A hangfelv\u00e9telt a Google megkapja a felismer\u00e9s \u00e9rdek\u00e9ben"
   },
   "voice_turn_off": {
     "message": "hangbeviteli eszk\u00f6z kikapcsol\u00e1sa"

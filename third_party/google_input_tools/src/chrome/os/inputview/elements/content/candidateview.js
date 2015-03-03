@@ -232,6 +232,7 @@ CandidateView.prototype.createDom = function() {
 
   var dom = this.getDomHelper();
   var elem = this.getElement();
+  goog.dom.classlist.add(elem, Css.CANDIDATE_VIEW);
 
   for (var i = 0; i < this.toolbarButtons_.length; i++) {
     var button = this.toolbarButtons_[i];
@@ -450,7 +451,6 @@ CandidateView.prototype.resize = function(width, height) {
  */
 CandidateView.prototype.switchToIcon = function(type, visible) {
   for (var i = 0; i < this.iconButtons_.length; i++) {
-    // Don't enable voice when focus in password box.
     this.iconButtons_[i].setVisible(false);
   }
 
@@ -459,6 +459,7 @@ CandidateView.prototype.switchToIcon = function(type, visible) {
       this.iconButtons_[type].setVisible(true);
     } else if (this.adapter_.isVoiceInputEnabled &&
         this.adapter_.contextType != 'password') {
+      // Don't enable voice when focus in password box.
       this.iconButtons_[type].setVisible(true);
     }
   } else if (this.adapter_.isVoiceInputEnabled &&

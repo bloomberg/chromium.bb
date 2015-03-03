@@ -2616,7 +2616,7 @@
     "message": "Je n\u00e1m to \u013e\u00fato, ale p\u00edsanie rukou nie je mo\u017en\u00e9 pou\u017ei\u0165, preto\u017ee sie\u0165 nie je k dispoz\u00edcii."
   },
   "handwriting_privacy_info": {
-    "message": "V\u00e1\u0161 vstup sa odo\u0161le na server Google, kde sa zadan\u00fd text rozpozn\u00e1"
+    "message": "V\u00e1\u0161 vstup sa odo\u0161le na servery Google, kde sa zadan\u00fd text rozpozn\u00e1"
   },
   "hide_keyboard": {
     "message": "skry\u0165 kl\u00e1vesnicu"
@@ -2634,7 +2634,7 @@
     "message": "Ignorova\u0165 opravu pre"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorova\u0165 opravu"
   },
   "il_heb_settings_page": {
     "message": "Str\u00e1nka s nastaveniami hebrejskej kl\u00e1vesnice"
@@ -3300,7 +3300,7 @@
     "message": "Hlas"
   },
   "voice_privacy_info": {
-    "message": "V\u00e1\u0161 hlas bude odoslan\u00fd na server Google, aby sme rozpoznali text."
+    "message": "V\u00e1\u0161 hlasov\u00fd vstup sa odo\u0161le na servery Google, kde sa zadan\u00fd text rozpozn\u00e1"
   },
   "voice_turn_off": {
     "message": "vypn\u00fa\u0165 n\u00e1stroj na zad\u00e1vanie hlasov\u00fdch vstupov"

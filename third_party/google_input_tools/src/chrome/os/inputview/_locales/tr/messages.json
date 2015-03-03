@@ -2616,7 +2616,7 @@
     "message": "A\u011f ba\u011flant\u0131s\u0131 olmad\u0131\u011f\u0131ndan maalesef el yaz\u0131s\u0131n\u0131 kullanamazs\u0131n\u0131z."
   },
   "handwriting_privacy_info": {
-    "message": "Giri\u015finiz, metnin tan\u0131nmas\u0131 i\u00e7in bir Google sunucusuna g\u00f6nderilecek"
+    "message": "Giri\u015finiz, metnin tan\u0131nmas\u0131 i\u00e7in Google sunucular\u0131na g\u00f6nderilecektir."
   },
   "hide_keyboard": {
     "message": "klavyeyi gizle"
@@ -2634,7 +2634,7 @@
     "message": "\u015eu kelime i\u00e7in d\u00fczeltmeyi yoksay"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "D\u00fczeltmeyi yoksay"
   },
   "il_heb_settings_page": {
     "message": "\u0130branice Klavye Ayarlar\u0131 Sayfas\u0131"
@@ -3300,7 +3300,7 @@
     "message": "Ses"
   },
   "voice_privacy_info": {
-    "message": "Metni tan\u0131mak i\u00e7in sesiniz bir Google sunucusuna g\u00f6nderilecektir"
+    "message": "Ses giri\u015finiz, metnin tan\u0131nmas\u0131 i\u00e7in Google sunucular\u0131na g\u00f6nderilecektir."
   },
   "voice_turn_off": {
     "message": "ses giri\u015fi arac\u0131n\u0131 kapat"

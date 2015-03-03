@@ -2616,7 +2616,7 @@
     "message": "Uporaba rokopisa ni mogo\u010da, ker omre\u017eje ni na voljo."
   },
   "handwriting_privacy_info": {
-    "message": "Va\u0161 vnos bo poslan v Googlov stre\u017enik zaradi prepoznave besedila"
+    "message": "Va\u0161 vnos bo poslan v Googlove stre\u017enike zaradi prepoznave besedila."
   },
   "hide_keyboard": {
     "message": "skrij tipkovnico"
@@ -2634,7 +2634,7 @@
     "message": "Prezri popravek za"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Prezri popravek"
   },
   "il_heb_settings_page": {
     "message": "Stran z nastavitvami hebrejske tipkovnice"
@@ -3300,7 +3300,7 @@
     "message": "Glasovne nastavitve"
   },
   "voice_privacy_info": {
-    "message": "Va\u0161 glas bo poslan v Googlov stre\u017enik zaradi prepoznave besedila"
+    "message": "Va\u0161 glasovni vnos bo poslan v Googlove stre\u017enike zaradi prepoznave besedila."
   },
   "voice_turn_off": {
     "message": "izklop orodja za glasovni vnos"

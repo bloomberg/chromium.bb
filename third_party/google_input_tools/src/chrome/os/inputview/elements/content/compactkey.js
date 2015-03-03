@@ -191,6 +191,8 @@ CompactKey.prototype.getContextOptimizedText_ = function() {
  * Get the active character. It may be upper case |text| when shift is pressed
  * or flickerred character when swipe. Note this should replace Compactkey.text
  * for compact keys.
+ *
+ * @return {string}
  */
 CompactKey.prototype.getActiveCharacter = function() {
   if (this.flickerredCharacter) {
@@ -233,30 +235,39 @@ CompactKey.prototype.update = function() {
  * @return {!Array.<string>} The characters.
  */
 CompactKey.prototype.getMoreCharacters = function() {
-  var moreCharacters = goog.array.clone(this.compactKeyModel_.moreKeys);
-  switch (this.compactKeyModel_.moreKeysShiftOperation) {
-    case MoreKeysShiftOperation.TO_UPPER_CASE:
-      if (this.getActiveCharacter().toLowerCase() !=
-          this.getActiveCharacter()) {
-        for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
-          moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toUpperCase();
+  var context = this.stateManager_.contextType;
+  var contextMap = context && this.compactKeyModel_.textOnContext[context];
+  if (contextMap &&
+      contextMap[SpecNodeName.MORE_KEYS] &&
+      contextMap[SpecNodeName.MORE_KEYS][SpecNodeName.CHARACTERS]) {
+    return goog.array.clone(
+        contextMap[SpecNodeName.MORE_KEYS][SpecNodeName.CHARACTERS]);
+  } else {
+    var moreCharacters = goog.array.clone(this.compactKeyModel_.moreKeys);
+    switch (this.compactKeyModel_.moreKeysShiftOperation) {
+      case MoreKeysShiftOperation.TO_UPPER_CASE:
+        if (this.getActiveCharacter().toLowerCase() !=
+            this.getActiveCharacter()) {
+          for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
+            moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toUpperCase();
+          }
+          goog.array.removeDuplicates(moreCharacters);
         }
-        goog.array.removeDuplicates(moreCharacters);
-      }
-      return moreCharacters;
-    case MoreKeysShiftOperation.TO_LOWER_CASE:
-      if (this.hasShift_ && this.stateManager_.hasState(
-          i18n.input.chrome.inputview.StateType.SHIFT)) {
-        for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
-          moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toLowerCase();
+        return moreCharacters;
+      case MoreKeysShiftOperation.TO_LOWER_CASE:
+        if (this.hasShift_ && this.stateManager_.hasState(
+            i18n.input.chrome.inputview.StateType.SHIFT)) {
+          for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
+            moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toLowerCase();
+          }
+          goog.array.removeDuplicates(moreCharacters);
         }
-        goog.array.removeDuplicates(moreCharacters);
-      }
-      return moreCharacters;
-    case MoreKeysShiftOperation.STABLE:
-      break;
+        return moreCharacters;
+      case MoreKeysShiftOperation.STABLE:
+        break;
+    }
+    return moreCharacters;
   }
-  return moreCharacters;
 };
 
 

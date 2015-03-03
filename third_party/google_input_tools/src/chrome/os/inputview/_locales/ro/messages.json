@@ -2616,7 +2616,7 @@
     "message": "Nu po\u021bi s\u0103 folose\u0219ti scrierea de m\u00e2n\u0103, deoarece re\u021beaua nu este disponibil\u0103."
   },
   "handwriting_privacy_info": {
-    "message": "Datele introduse vor fi trimise la un server Google pentru recunoa\u0219terea textului"
+    "message": "Scrisul va fi trimis c\u0103tre serverele Google pentru recunoa\u0219terea textului."
   },
   "hide_keyboard": {
     "message": "ascunde tastatura"
@@ -2634,7 +2634,7 @@
     "message": "Ignor\u0103 corectura pentru"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignor\u0103 corectura"
   },
   "il_heb_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura ebraic\u0103"
@@ -3300,7 +3300,7 @@
     "message": "Intrare vocal\u0103"
   },
   "voice_privacy_info": {
-    "message": "Pentru recunoa\u0219terea textului, \u00eenregistrarea vocii va fi trimis\u0103 la un server Google"
+    "message": "\u00cenregistrarea vocii va fi trimis\u0103 c\u0103tre serverele Google pentru recunoa\u0219terea textului."
   },
   "voice_turn_off": {
     "message": "dezactiveaz\u0103 instrumentul de intrare vocal\u0103"

@@ -2616,7 +2616,7 @@
     "message": "Maaf, anda tidak boleh menggunakan tulisan tangan kerana rangkaian tidak tersedia."
   },
   "handwriting_privacy_info": {
-    "message": "Input anda akan dihantar ke pelayan Google untuk mengenal pasti teks"
+    "message": "Input anda akan dihantar ke pelayan Google untuk mengecam teks."
   },
   "hide_keyboard": {
     "message": "sembunyikan papan kekunci"
@@ -2634,7 +2634,7 @@
     "message": "Abaikan pembetulan untuk"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Abaikan pembetulan"
   },
   "il_heb_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Ibrani"
@@ -3300,7 +3300,7 @@
     "message": "Suara"
   },
   "voice_privacy_info": {
-    "message": "Suara anda akan dihantar ke pelayan Google untuk mengecam teks"
+    "message": "Input suara anda akan dihantar ke pelayan Google untuk mengecam teks."
   },
   "voice_turn_off": {
     "message": "matikan alat input suara"

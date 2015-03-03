@@ -2616,7 +2616,7 @@
     "message": "Je n\u00e1m l\u00edto, psan\u00ed rukou nelze pou\u017e\u00edt, proto\u017ee s\u00ed\u0165 nen\u00ed k dispozici."
   },
   "handwriting_privacy_info": {
-    "message": "Zad\u00e1n\u00ed bude za \u00fa\u010delem rozpozn\u00e1n\u00ed textu odesl\u00e1no na server Google"
+    "message": "Zad\u00e1n\u00ed bude za \u00fa\u010delem rozpozn\u00e1n\u00ed textu odesl\u00e1no na servery Google."
   },
   "hide_keyboard": {
     "message": "skr\u00fdt kl\u00e1vesnici"
@@ -2634,7 +2634,7 @@
     "message": "Ignorovat opravu pro"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorovat opravu"
   },
   "il_heb_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed hebrejsk\u00e9 kl\u00e1vesnice"
@@ -3300,7 +3300,7 @@
     "message": "Hlas"
   },
   "voice_privacy_info": {
-    "message": "V\u00e1\u0161 hlas bude za \u00fa\u010delem rozpozn\u00e1n\u00ed textu odesl\u00e1n na server Google."
+    "message": "Hlasov\u00e9 zad\u00e1n\u00ed bude za \u00fa\u010delem rozpozn\u00e1n\u00ed textu odesl\u00e1no na servery Google."
   },
   "voice_turn_off": {
     "message": "vypnout n\u00e1stroj pro hlasov\u00fd vstup"

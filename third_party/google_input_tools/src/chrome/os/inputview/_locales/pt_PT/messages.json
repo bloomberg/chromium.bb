@@ -2616,7 +2616,7 @@
     "message": "Lamentamos, mas n\u00e3o \u00e9 poss\u00edvel utilizar a escrita manual porque a rede est\u00e1 indispon\u00edvel."
   },
   "handwriting_privacy_info": {
-    "message": "Os dados introduzidos s\u00e3o enviados para um servidor da Google para fazer o reconhecimento do texto"
+    "message": "Os dados introduzidos s\u00e3o enviados para os servidores da Google para fazer o reconhecimento do texto."
   },
   "hide_keyboard": {
     "message": "ocultar teclado"
@@ -2634,7 +2634,7 @@
     "message": "Ignorar corre\u00e7\u00e3o para"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorar corre\u00e7\u00e3o"
   },
   "il_heb_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado hebraico"
@@ -3300,7 +3300,7 @@
     "message": "Voz"
   },
   "voice_privacy_info": {
-    "message": "A sua voz ser\u00e1 enviada para um servidor da Google para reconhecimento de texto"
+    "message": "As entradas de texto por voz s\u00e3o enviadas para os servidores da Google para fazer o reconhecimento do texto."
   },
   "voice_turn_off": {
     "message": "desativar a ferramenta de entrada de texto por voz"

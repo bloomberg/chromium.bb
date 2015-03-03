@@ -2616,7 +2616,7 @@
     "message": "Beklager, du kan ikke bruke h\u00e5ndskrift, fordi nettverket ikke er tilgjengelig."
   },
   "handwriting_privacy_info": {
-    "message": "Inndataene dine blir sendt til en Google-tjener for tekstgjenkjenning"
+    "message": "Det du skriver, sendes til Google-tjenerne for gjenkjenning av tekst."
   },
   "hide_keyboard": {
     "message": "skjul tastatur"
@@ -2634,7 +2634,7 @@
     "message": "Ignorer korrigering av"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorer korrigering"
   },
   "il_heb_settings_page": {
     "message": "Innstillinger-side for hebraisk tastatur"
@@ -3300,7 +3300,7 @@
     "message": "Tale"
   },
   "voice_privacy_info": {
-    "message": "Stemmeopptaket ditt blir sendt til en Google-tjener for \u00e5 gjenkjenne tekst"
+    "message": "Det du sier, sendes til Google-tjenerne for gjenkjenning av tekst."
   },
   "voice_turn_off": {
     "message": "sl\u00e5 av verkt\u00f8yet for taleinndata"

@@ -2616,7 +2616,7 @@
     "message": "Nie mo\u017cesz pisa\u0107 odr\u0119cznie, poniewa\u017c sie\u0107 jest niedost\u0119pna."
   },
   "handwriting_privacy_info": {
-    "message": "To, co napiszesz, zostanie wys\u0142ane na serwer Google w celu rozpoznania tekstu"
+    "message": "To, co napiszesz, zostanie wys\u0142ane na serwery Google w celu rozpoznania tekstu."
   },
   "hide_keyboard": {
     "message": "ukryj klawiatur\u0119"
@@ -2634,7 +2634,7 @@
     "message": "Ignoruj korekt\u0119"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignoruj korekt\u0119"
   },
   "il_heb_settings_page": {
     "message": "Strona ustawie\u0144 klawiatury hebrajskiej"
@@ -3300,7 +3300,7 @@
     "message": "G\u0142os"
   },
   "voice_privacy_info": {
-    "message": "Tw\u00f3j g\u0142os zostanie wys\u0142any do serwera Google do rozpoznania tekstu"
+    "message": "To, co powiesz, zostanie wys\u0142ane na serwery Google w celu rozpoznania tekstu."
   },
   "voice_turn_off": {
     "message": "wy\u0142\u0105cz narz\u0119dzie rozpoznawania mowy"

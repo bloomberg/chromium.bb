@@ -286,13 +286,17 @@
   color: #111111;
 }
 .inputview-candidate-view {
-  overflow: hidden;
   display: table-cell;
-  height: 32px;
+  overflow: hidden;
+  position: relative;
 }
-.inputview-toolbar-button,
-.inputview-candidate-button {
+.inputview-toolbar-button {
   float: right;
+}
+.inputview-candidate-button {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 .inputview-toolbar-button.float-left {
   float: left;

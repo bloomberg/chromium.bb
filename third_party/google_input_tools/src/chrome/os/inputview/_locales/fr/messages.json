@@ -2616,7 +2616,7 @@
     "message": "Impossible d'utiliser l'\u00e9criture manuscrite, car le r\u00e9seau est indisponible."
   },
   "handwriting_privacy_info": {
-    "message": "Votre saisie sera envoy\u00e9e \u00e0 un serveur de Google dans le cadre de la reconnaissance textuelle."
+    "message": "Votre saisie sera envoy\u00e9e aux serveurs de Google dans le cadre de la reconnaissance textuelle."
   },
   "hide_keyboard": {
     "message": "masquer le clavier"
@@ -2634,7 +2634,7 @@
     "message": "Ignorer la correction pour"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorer la correction"
   },
   "il_heb_settings_page": {
     "message": "Page des param\u00e8tres du clavier h\u00e9breu"
@@ -3300,7 +3300,7 @@
     "message": "Voix"
   },
   "voice_privacy_info": {
-    "message": "Votre voix sera envoy\u00e9e \u00e0 un serveur de Google dans le cadre de la reconnaissance textuelle."
+    "message": "Votre saisie vocale sera envoy\u00e9e aux serveurs de Google dans le cadre de la reconnaissance textuelle."
   },
   "voice_turn_off": {
     "message": "d\u00e9sactiver l'outil de saisie vocale"

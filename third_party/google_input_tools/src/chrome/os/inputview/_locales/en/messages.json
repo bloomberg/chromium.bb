@@ -2616,7 +2616,7 @@
     "message": "Sorry, you can not use handwriting, because network is unavailable."
   },
   "handwriting_privacy_info": {
-    "message": "Your input will be sent to a Google server to recognize text"
+    "message": "Your input will be sent to Google servers to recognize text."
   },
   "hide_keyboard": {
     "message": "hide keyboard"
@@ -3300,7 +3300,7 @@
     "message": "Voice"
   },
   "voice_privacy_info": {
-    "message": "Your voice will be sent to a Google server to recognize text"
+    "message": "Your voice input will be sent to Google servers to recognize text."
   },
   "voice_turn_off": {
     "message": "turn off voice input tool"

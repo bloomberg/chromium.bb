@@ -2616,7 +2616,7 @@
     "message": "Paumanhin, hindi mo magagamit ang sulatkamay, dahil hindi available ang network."
   },
   "handwriting_privacy_info": {
-    "message": "Ipapadala ang iyong input sa isang Google server upang makilala ang text"
+    "message": "Ipapadala sa mga server ng Google ang input mo upang matukoy ang text."
   },
   "hide_keyboard": {
     "message": "itago ang keyboard"
@@ -2634,7 +2634,7 @@
     "message": "Huwag pansinin ang pagwawasto para sa"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Balewalain ang pagwawasto"
   },
   "il_heb_settings_page": {
     "message": "Page ng Mga Setting ng Hebrew na Keyboard"
@@ -3300,7 +3300,7 @@
     "message": "Boses"
   },
   "voice_privacy_info": {
-    "message": "Ipapadala sa Google ang iyong boses upang makakilala ng text"
+    "message": "Ipapadala sa mga server ng Google ang voice input mo upang matukoy ang text."
   },
   "voice_turn_off": {
     "message": "i-off ang voice input tool"

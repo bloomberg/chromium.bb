@@ -21,6 +21,10 @@ goog.provide('i18n.input.chrome.inputview.Css');
  */
 i18n.input.chrome.inputview.Css = {
   A11Y: goog.getCssName('inputview-a11y'),
+  ACCENT_CONTAINER: goog.getCssName('inputview-accent-container'),
+  ACCENT_ROW: goog.getCssName('inputview-accent-row'),
+  ACCENT_EMPTY_KEY: goog.getCssName('inputview-accent-empty-key'),
+  ACCENT_KEY: goog.getCssName('inputview-accent-key'),
   ALTDATA_COVER: goog.getCssName('inputview-altdata-cover'),
   ALTDATA_KEY: goog.getCssName('inputview-altdata-key'),
   ALTDATA_SEPARATOR: goog.getCssName('inputview-altdata-separator'),

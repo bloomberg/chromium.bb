@@ -95,6 +95,22 @@ Statistics.prototype.isPhysicalKeyboard_ = false;
 
 
 /**
+ * The length of the last text commit.
+ *
+ * @private {number}
+ */
+Statistics.prototype.lastCommitLength_ = 0;
+
+
+/**
+ * The number of characters typed in this session.
+ *
+ * @private {number}
+ */
+Statistics.prototype.charactersCommitted_ = 0;
+
+
+/**
  * Sets whether recording for physical keyboard.
  *
  * @param {boolean} isPhysicalKeyboard .
@@ -152,6 +168,22 @@ Statistics.prototype.getTargetType_ = function(
 
 
 /**
+ * Records that the controller session ended.
+ */
+Statistics.prototype.recordSessionEnd = function() {
+  // Do not record cases where we gain and immediately lose focus. This also
+  // excudes the focus loss-gain on the new tab page from being counted.
+  if (this.charactersCommitted_ > 0) {
+    this.recordValue('InputMethod.VirtualKeyboard.CharactersCommitted',
+          this.charactersCommitted_, 16384, 50);
+    // TODO: Add WPM metrics.
+  }
+  this.charactersCommitted_ = 0;
+  this.lastCommitLength_ = 0;
+};
+
+
+/**
  * Records the metrics for each commit.
  *
  * @param {string} source .
@@ -166,6 +198,16 @@ Statistics.prototype.recordCommit = function(
   if (!this.inputMethodId_) {
     return;
   }
+  var length = target.length;
+  // Increment to include space.
+  if (triggerType == 0) {
+    length++;
+  } else if (triggerType == 5) {
+    length -= this.lastCommitLength_;
+  }
+  this.lastCommitLength_ = length;
+  this.charactersCommitted_ += length;
+
   var CommitTypes = Statistics.CommitTypes;
   var commitType = -1;
   if (targetIndex == 0 && source == target) {

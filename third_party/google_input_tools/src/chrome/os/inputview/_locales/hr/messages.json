@@ -2616,7 +2616,7 @@
     "message": "\u017dao nam je, ali ne mo\u017eete upotrebljavati rukopis jer mre\u017ea nije dostupna."
   },
   "handwriting_privacy_info": {
-    "message": "Va\u0161 \u0107e se unos poslati Googleovom poslu\u017eitelju radi prepoznavanja teksta"
+    "message": "Va\u0161 \u0107e se unos poslati Googleovim poslu\u017eiteljima radi prepoznavanja teksta"
   },
   "hide_keyboard": {
     "message": "sakrij tipkovnicu"
@@ -2634,7 +2634,7 @@
     "message": "Zanemari ispravak za"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Zanemari ispravak"
   },
   "il_heb_settings_page": {
     "message": "Stranica postavki hebrejske tipkovnice"
@@ -3300,7 +3300,7 @@
     "message": "Glasovno"
   },
   "voice_privacy_info": {
-    "message": "Snimka va\u0161eg glasa poslat \u0107e se Googleovu poslu\u017eitelju radi prepoznavanja teksta"
+    "message": "Va\u0161 \u0107e se glasovni unos poslati Googleovim poslu\u017eiteljima radi prepoznavanja teksta"
   },
   "voice_turn_off": {
     "message": "isklju\u010di alat za glasovni unos"

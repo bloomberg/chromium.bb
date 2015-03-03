@@ -89,8 +89,10 @@ i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters =
         { 'email' : { 'text' : '@' }}},
     /* 36 */ NonLetterKeys.SPACE,
     /* 37 */ { 'text': ',', 'isGrey': true, 'onContext':
-        { 'email' : {'text' : '.com', 'textCssClass' : Css.FONT_SMALL },
-          'url' : {'text' : '.com', 'textCssClass' : Css.FONT_SMALL }}},
+        { 'email' : {'text' : '.com', 'textCssClass' : Css.FONT_SMALL,
+              'moreKeys': {'characters': ['.net', '.org']}},
+          'url' : {'text' : '.com', 'textCssClass' : Css.FONT_SMALL,
+              'moreKeys': {'characters': ['.net', '.org']}}}},
     /* 38 */ { 'text': '.', 'isGrey': true,
       'moreKeys': {
         'characters': [',', '\'', '#', ')', '(', '/', ';', '@', ':',

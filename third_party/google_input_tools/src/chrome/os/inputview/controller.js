@@ -601,7 +601,8 @@ Controller.prototype.onSettingsReady_ = function() {
     newKeyset = /** @type {string} */ (this.model_.settings.
         getPreference(util.getConfigName(keysetMap[ContextType.DEFAULT])));
   }
-  if (!this.adapter_.isExperimental && keysetMap[ContextType.DEFAULT] ==
+  if (!this.adapter_.features.isEnabled(FeatureName.EXPERIMENTAL) &&
+      keysetMap[ContextType.DEFAULT] ==
       'zhuyin.compact.qwerty') {
     newKeyset = 'zhuyin';
   }
@@ -739,7 +740,7 @@ Controller.prototype.onPointerEvent_ = function(e) {
  */
 Controller.prototype.onDragEvent_ = function(e) {
   if (this.adapter_.isGestureTypingEnabled() && e.type == EventType.DRAG) {
-    this.container_.gestureCanvasView.addPointAndDraw(e);
+    this.container_.gestureCanvasView.addPoint(e);
     return;
   }
 };
@@ -846,8 +847,8 @@ Controller.prototype.executeCommand_ = function(command, opt_arg) {
  */
 Controller.prototype.handlePointerAction_ = function(view, e) {
   if (this.adapter_.isGestureTypingEnabled() &&
-      e.type == EventType.POINTER_UP) {
-    this.container_.gestureCanvasView.clear();
+      e.type == EventType.POINTER_DOWN) {
+    this.container_.gestureCanvasView.startStroke(e);
   }
 
   // Listen for DOUBLE_CLICK as well to capture secondary taps on the spacebar.
@@ -1257,7 +1258,8 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         var defaultFullKeyset = this.initialKeyset_.split(/\./)[0];
         var enableCompact = !this.adapter_.isA11yMode && goog.array.contains(
             util.KEYSETS_HAVE_COMPACT, defaultFullKeyset);
-        if (defaultFullKeyset == 'zhuyin' && !this.adapter_.isExperimental ||
+        if (defaultFullKeyset == 'zhuyin' &&
+            !this.adapter_.features.isEnabled(FeatureName.EXPERIMENTAL) ||
             this.languageCode_ == 'ko') {
           // Hides 'switch to compact' for zhuyin when not in experimental env.
           enableCompact = false;

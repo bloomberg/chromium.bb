@@ -2616,7 +2616,7 @@
     "message": "Spiacenti, non puoi utilizzare la scrittura a mano libera perch\u00e9 la rete non \u00e8 disponibile."
   },
   "handwriting_privacy_info": {
-    "message": "Il testo inserito verr\u00e0 inviato a un server di Google per poterlo riconoscere"
+    "message": "Il tuo input verr\u00e0 inviato ai server di Google per il riconoscimento del testo."
   },
   "hide_keyboard": {
     "message": "nascondi tastiera"
@@ -2634,7 +2634,7 @@
     "message": "Ignora correzione di:"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignora correzione"
   },
   "il_heb_settings_page": {
     "message": "Pagina Impostazioni tastiera Ebraico"
@@ -3300,7 +3300,7 @@
     "message": "Voce"
   },
   "voice_privacy_info": {
-    "message": "Il tuo input vocale verr\u00e0 inviato a un server di Google per il riconoscimento del testo"
+    "message": "Il tuo input vocale verr\u00e0 inviato ai server di Google per il riconoscimento del testo."
   },
   "voice_turn_off": {
     "message": "disattiva strumento di input vocale"

@@ -2634,7 +2634,7 @@
     "message": "Ignor\u0113t labojumu v\u0101rdam"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignor\u0113t labojumu"
   },
   "il_heb_settings_page": {
     "message": "Ebreju valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -3300,7 +3300,7 @@
     "message": "Balss"
   },
   "voice_privacy_info": {
-    "message": "J\u016bsu balss ieraksts tiks nos\u016bt\u012bts Google serverim, lai atpaz\u012btu tekstu."
+    "message": "J\u016bsu balss ievade tiks nos\u016bt\u012bta Google serveriem teksta atpaz\u012b\u0161anai."
   },
   "voice_turn_off": {
     "message": "izsl\u0113gt balss ievades r\u012bku"

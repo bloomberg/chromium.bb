@@ -2616,7 +2616,7 @@
     "message": "Du kan desv\u00e6rre ikke bruge h\u00e5ndskrift, da netv\u00e6rket ikke er tilg\u00e6ngeligt."
   },
   "handwriting_privacy_info": {
-    "message": "Din indtastning bliver sendt til en Google-server, som sikrer tekstgenkendelse"
+    "message": "Dit input bliver sendt til Google-servere, som udf\u00f8rer tekstgenkendelse."
   },
   "hide_keyboard": {
     "message": "skjul tastaturet"
@@ -2634,7 +2634,7 @@
     "message": "Ignorer rettelsen af"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignorer rettelsen"
   },
   "il_heb_settings_page": {
     "message": "Side med indstillinger for hebraisk tastatur"
@@ -3300,7 +3300,7 @@
     "message": "Tale"
   },
   "voice_privacy_info": {
-    "message": "Din stemme bliver sendt til en Google-server, som sikrer tekstgenkendelse"
+    "message": "Dit taleinput bliver sendt til Google-servere, som udf\u00f8rer tekstgenkendelse."
   },
   "voice_turn_off": {
     "message": "deaktiver v\u00e6rkt\u00f8j til taleinput"

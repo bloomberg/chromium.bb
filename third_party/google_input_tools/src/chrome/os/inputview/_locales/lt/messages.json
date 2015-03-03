@@ -2616,7 +2616,7 @@
     "message": "Apgailestaujame, negalite naudoti ra\u0161ymo ranka funkcijos, nes tinklas yra nepasiekiamas."
   },
   "handwriting_privacy_info": {
-    "message": "J\u016bs\u0173 \u012fvestis bus i\u0161si\u0173sta \u012f \u201eGoogle\u201c server\u012f, kad b\u016bt\u0173 atpa\u017eintas tekstas"
+    "message": "J\u016bs\u0173 \u012fvestis bus i\u0161si\u0173sta \u012f \u201eGoogle\u201c serverius, kad b\u016bt\u0173 atpa\u017eintas tekstas."
   },
   "hide_keyboard": {
     "message": "sl\u0117pti klaviat\u016br\u0105"
@@ -2634,7 +2634,7 @@
     "message": "Ignoruoti pataisym\u0105"
   },
   "ignore_correction_short": {
-    "message": "Ignore correction"
+    "message": "Ignoruoti pataisym\u0105"
   },
   "il_heb_settings_page": {
     "message": "Hebraji\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
@@ -3300,7 +3300,7 @@
     "message": "Voice"
   },
   "voice_privacy_info": {
-    "message": "J\u016bs\u0173 balso \u012fra\u0161as bus nusi\u0173stas \u012f \u201eGoogle\u201c server\u012f, kad b\u016bt\u0173 galima atpa\u017einti tekst\u0105"
+    "message": "J\u016bs\u0173 \u012fvestis balsu bus i\u0161si\u0173sta \u012f \u201eGoogle\u201c serverius, kad b\u016bt\u0173 atpa\u017eintas tekstas."
   },
   "voice_turn_off": {
     "message": "I\u0161jungti \u012fvesties balsu \u012frank\u012f"
