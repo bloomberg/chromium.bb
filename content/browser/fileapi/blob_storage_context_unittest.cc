@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "storage/browser/blob/blob_storage_context.h"
+
+#include <limits>
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,24 +16,19 @@
 #include "content/browser/fileapi/blob_storage_host.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::BlobDataBuilder;
 using storage::BlobDataHandle;
+using storage::BlobDataItem;
 using storage::BlobDataSnapshot;
 using storage::BlobStorageContext;
 using storage::DataElement;
 
 namespace content {
-
 namespace {
-// This is necessary to clean up the blobs after the handles are released.
-void RunEventLoopTillIdle() {
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-}
 
 void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {
   EXPECT_TRUE(host->StartBuildingBlob(id));
@@ -38,6 +38,7 @@ void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {
   EXPECT_TRUE(host->FinishBuildingBlob(id, "text/plain"));
   EXPECT_FALSE(host->StartBuildingBlob(id));
 }
+
 }  // namespace
 
 TEST(BlobStorageContextTest, IncrementDecrementRef) {
@@ -54,7 +55,7 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Make sure its still there after inc/dec.
   EXPECT_TRUE(host.IncrementBlobRefCount(kId));
@@ -62,7 +63,7 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Make sure it goes away in the end.
   EXPECT_TRUE(host.DecrementBlobRefCount(kId));
@@ -113,7 +114,7 @@ TEST(BlobStorageContextTest, BlobDataHandle) {
   // Should disappear after dropping both handles.
   blob_data_handle.reset();
   another_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_FALSE(blob_data_handle);
@@ -147,11 +148,11 @@ TEST(BlobStorageContextTest, MemoryUsage) {
   EXPECT_EQ(10lu, context.memory_usage());
 
   blob_data_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(10lu, context.memory_usage());
   blob_data_handle2.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0lu, context.memory_usage());
 }
@@ -190,7 +191,7 @@ TEST(BlobStorageContextTest, AddFinishedBlob) {
   blob_data_handle.reset();
   data2.reset();
 
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   blob_data_handle = context.GetBlobDataFromUUID(kId1);
   EXPECT_FALSE(blob_data_handle);
@@ -205,7 +206,7 @@ TEST(BlobStorageContextTest, AddFinishedBlob) {
   scoped_ptr<BlobDataHandle> blob_data_handle3 =
       context.AddFinishedBlob(&builder3);
   blob_data_handle2.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   blob_data_handle2 = context.GetBlobDataFromUUID(kId2);
   EXPECT_FALSE(blob_data_handle2);
@@ -222,7 +223,43 @@ TEST(BlobStorageContextTest, AddFinishedBlob) {
   blob_data_handle.reset();
   blob_data_handle2.reset();
   blob_data_handle3.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
+  // A value which does not fit in a 4-byte data type. Used to confirm that
+  // large values are supported on 32-bit Chromium builds. Regression test for:
+  // crbug.com/458122.
+  const uint64_t kLargeSize = std::numeric_limits<uint64_t>::max();
+
+  const uint64_t kBlobLength = 5;
+  const std::string kId1("id1");
+  const std::string kId2("id2");
+  base::MessageLoop fake_io_message_loop;
+
+  BlobDataBuilder builder1(kId1);
+  builder1.AppendFileSystemFile(GURL(), 0, kLargeSize, base::Time::Now());
+
+  BlobDataBuilder builder2(kId2);
+  builder2.AppendBlob(kId1, kLargeSize - kBlobLength, kBlobLength);
+
+  BlobStorageContext context;
+  scoped_ptr<BlobDataHandle> blob_data_handle1 =
+      context.AddFinishedBlob(&builder1);
+  scoped_ptr<BlobDataHandle> blob_data_handle2 =
+      context.AddFinishedBlob(&builder2);
+
+  ASSERT_TRUE(blob_data_handle1);
+  ASSERT_TRUE(blob_data_handle2);
+  scoped_ptr<BlobDataSnapshot> data = blob_data_handle2->CreateSnapshot();
+  ASSERT_EQ(1u, data->items().size());
+  const scoped_refptr<BlobDataItem> item = data->items()[0];
+  EXPECT_EQ(kLargeSize - kBlobLength, item->offset());
+  EXPECT_EQ(kBlobLength, item->length());
+
+  blob_data_handle1.reset();
+  blob_data_handle2.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST(BlobStorageContextTest, CompoundBlobs) {
@@ -276,7 +313,7 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   EXPECT_EQ(*data, canonicalized_blob_data2);
 
   blob_data_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST(BlobStorageContextTest, PublicBlobUrls) {
@@ -297,7 +334,7 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   EXPECT_EQ(kId, blob_data_handle->uuid());
   scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   blob_data_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The url registration should keep the blob alive even after
   // explicit references are dropped.
@@ -305,7 +342,7 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   blob_data_handle = context.GetBlobDataFromPublicURL(kUrl);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  RunEventLoopTillIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Finally get rid of the url registration and the blob.
   EXPECT_TRUE(host.RevokePublicBlobURL(kUrl));

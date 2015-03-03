@@ -375,8 +375,8 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
 bool BlobStorageContext::AppendBlob(
     const std::string& target_blob_uuid,
     const InternalBlobData& blob,
-    size_t offset,
-    size_t length,
+    uint64_t offset,
+    uint64_t length,
     InternalBlobData::Builder* target_blob_builder) {
   DCHECK(length > 0);
 
@@ -395,10 +395,10 @@ bool BlobStorageContext::AppendBlob(
   for (; iter != items.end() && length > 0; ++iter) {
     scoped_refptr<ShareableBlobDataItem> shareable_item = iter->get();
     const BlobDataItem& item = *(shareable_item->item());
-    size_t item_length = item.length();
+    uint64_t item_length = item.length();
     DCHECK_GT(item_length, offset);
-    size_t current_length = item_length - offset;
-    size_t new_length = current_length > length ? length : current_length;
+    uint64_t current_length = item_length - offset;
+    uint64_t new_length = current_length > length ? length : current_length;
 
     bool reusing_blob_item = offset == 0 && new_length == item.length();
     UMA_HISTOGRAM_BOOLEAN("Storage.Blob.ReusedItem", reusing_blob_item);

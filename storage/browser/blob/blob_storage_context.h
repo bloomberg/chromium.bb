@@ -122,8 +122,8 @@ class STORAGE_EXPORT BlobStorageContext
   // have to split an item.
   bool AppendBlob(const std::string& target_blob_uuid,
                   const InternalBlobData& blob,
-                  size_t offset,
-                  size_t length,
+                  uint64_t offset,
+                  uint64_t length,
                   InternalBlobData::Builder* target_blob_data);
 
   bool IsInUse(const std::string& uuid);
