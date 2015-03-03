@@ -31,36 +31,11 @@
 #ifndef WebWorkerPermissionClientProxy_h
 #define WebWorkerPermissionClientProxy_h
 
-#include "public/platform/WebPermissionCallbacks.h"
+#include "public/web/WebWorkerContentSettingsClientProxy.h"
 
 namespace blink {
 
-class WebPermissionCallbacks;
-class WebString;
-
-// Proxy interface to talk to the document's PermissionClient implementation.
-// This proxy is created by the embedder and is passed to the worker's
-// WorkerGlobalScope in blink. Each allow method is called on the worker thread
-// and may destructed on the worker thread.
-class WebWorkerPermissionClientProxy {
-public:
-    virtual ~WebWorkerPermissionClientProxy() { }
-
-    // Deprecated: This function should be removed.
-    virtual bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize)
-    {
-        return true;
-    }
-
-    virtual bool requestFileSystemAccessSync()
-    {
-        return true;
-    }
-
-    virtual bool allowIndexedDB(const WebString& name)
-    {
-        return true;
-    }
+class WebWorkerPermissionClientProxy : public WebWorkerContentSettingsClientProxy {
 };
 
 } // namespace blink

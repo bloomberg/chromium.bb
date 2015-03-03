@@ -29,60 +29,60 @@
  */
 
 #include "config.h"
-#include "web/WorkerPermissionClient.h"
+#include "web/WorkerContentSettingsClient.h"
 
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebPermissionCallbacks.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebWorkerPermissionClientProxy.h"
+#include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WorkerPermissionClient> WorkerPermissionClient::create(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
+PassOwnPtrWillBeRawPtr<WorkerContentSettingsClient> WorkerContentSettingsClient::create(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
 {
-    return adoptPtrWillBeNoop(new WorkerPermissionClient(proxy));
+    return adoptPtrWillBeNoop(new WorkerContentSettingsClient(proxy));
 }
 
-WorkerPermissionClient::~WorkerPermissionClient()
+WorkerContentSettingsClient::~WorkerContentSettingsClient()
 {
 }
 
-bool WorkerPermissionClient::requestFileSystemAccessSync()
+bool WorkerContentSettingsClient::requestFileSystemAccessSync()
 {
     if (!m_proxy)
         return true;
     return m_proxy->requestFileSystemAccessSync();
 }
 
-bool WorkerPermissionClient::allowIndexedDB(const WebString& name)
+bool WorkerContentSettingsClient::allowIndexedDB(const WebString& name)
 {
     if (!m_proxy)
         return true;
     return m_proxy->allowIndexedDB(name);
 }
 
-const char* WorkerPermissionClient::supplementName()
+const char* WorkerContentSettingsClient::supplementName()
 {
-    return "WorkerPermissionClient";
+    return "WorkerContentSettingsClient";
 }
 
-WorkerPermissionClient* WorkerPermissionClient::from(ExecutionContext& context)
+WorkerContentSettingsClient* WorkerContentSettingsClient::from(ExecutionContext& context)
 {
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
     ASSERT(clients);
-    return static_cast<WorkerPermissionClient*>(WillBeHeapSupplement<WorkerClients>::from(*clients, supplementName()));
+    return static_cast<WorkerContentSettingsClient*>(WillBeHeapSupplement<WorkerClients>::from(*clients, supplementName()));
 }
 
-WorkerPermissionClient::WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
+WorkerContentSettingsClient::WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
     : m_proxy(proxy)
 {
 }
 
-void providePermissionClientToWorker(WorkerClients* clients, PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
+void provideContentSettingsClientToWorker(WorkerClients* clients, PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
 {
     ASSERT(clients);
-    WorkerPermissionClient::provideTo(*clients, WorkerPermissionClient::supplementName(), WorkerPermissionClient::create(proxy));
+    WorkerContentSettingsClient::provideTo(*clients, WorkerContentSettingsClient::supplementName(), WorkerContentSettingsClient::create(proxy));
 }
 
 } // namespace blink
