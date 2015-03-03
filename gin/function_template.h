@@ -220,6 +220,11 @@ struct Dispatcher<ReturnType(ArgTypes...)> {
 // JavaScript functions that execute a provided C++ function or base::Callback.
 // JavaScript arguments are automatically converted via gin::Converter, as is
 // the return value of the C++ function, if any.
+//
+// NOTE: V8 caches FunctionTemplates for a lifetime of a web page for its own
+// internal reasons, thus it is generally a good idea to cache the template
+// returned by this function.  Otherwise, repeated method invocations from JS
+// will create substantial memory leaks. See http://crbug.com/463487.
 template<typename Sig>
 v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate, const base::Callback<Sig> callback,
