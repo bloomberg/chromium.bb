@@ -6,6 +6,7 @@
   'variables': {
     'ar_shared_resource_files': [
       'webapp/app_remoting/html/ar_dialog.css',
+      'webapp/app_remoting/html/ar_main.css',
       'webapp/app_remoting/html/feedback_consent.css',
       'webapp/app_remoting/html/context_menu.css',
       'resources/drag.webp',
