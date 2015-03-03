@@ -43828,10 +43828,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="WrenchMenu.OpeningAnimationFrameTimes" units="milliseconds">
   <owner>kkimlabs@chromium.org</owner>
   <summary>
-    Frame times of Android wrench menu opening animation. For example, if the
-    menu opening animation ran exactly at 60fps for a second, then each frame
-    time is 16ms. Therefore total ~60 number of 16ms value will be recorded. If
-    the anmation was janky, we will see >16ms data points in the histogram.
+    Frame times of the Android wrench menu opening animation. For example, if
+    the menu opening animation runs exactly at 60fps for a second, then each
+    frame time is 16ms, and a total of 60 values of 16ms are recorded. If the
+    animation is janky, we will see values greater than 16ms in the histogram.
   </summary>
 </histogram>
 
@@ -55765,6 +55765,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="706893509" label="PPB_ContentDecryptor_Private;0.11"/>
   <int value="714324031" label="PPB_Graphics3D;1.0"/>
   <int value="724664149" label="PPB_Flash_Menu;0.2"/>
+  <int value="732838108" label="PPB_IsolatedFileSystem_Private;0.2"/>
   <int value="760024173" label="PPB_FileIO;1.0"/>
   <int value="760246876" label="PPB_OpenGLES2VertexArrayObject;1.0"/>
   <int value="763746388" label="PPB_NaCl_Private;1.0"/>
