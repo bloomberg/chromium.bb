@@ -32,15 +32,11 @@
                     frame:(CGRect)frame {
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
-  infobars::InfoBarDelegate* infoBarDelegate =
-      static_cast<infobars::InfoBarDelegate*>(translateInfoBarDelegate);
   DCHECK(!infoBarView_);
   ios::ChromeBrowserProvider* provider = ios::GetChromeBrowserProvider();
   infoBarView_.reset([provider->CreateInfoBarView()
       initWithFrame:frame
-           delegate:delegate_
-          isWarning:infoBarDelegate->GetInfoBarType() ==
-                    infobars::InfoBarDelegate::WARNING_TYPE]);
+           delegate:delegate_]);
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())

@@ -127,14 +127,10 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 - (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
                     frame:(CGRect)frame {
   _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
-  infobars::InfoBarDelegate* infoBarDelegate =
-      static_cast<infobars::InfoBarDelegate*>(_translateInfoBarDelegate);
   DCHECK(!infoBarView_);
   infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
       initWithFrame:frame
-           delegate:delegate_
-          isWarning:infoBarDelegate->GetInfoBarType() ==
-                    infobars::InfoBarDelegate::WARNING_TYPE]);
+           delegate:delegate_]);
   // Icon
   gfx::Image icon = _translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())

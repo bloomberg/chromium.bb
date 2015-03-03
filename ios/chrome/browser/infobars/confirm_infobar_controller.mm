@@ -54,9 +54,7 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   DCHECK(!infoBarView_);
   infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
       initWithFrame:frame
-           delegate:delegate_
-          isWarning:infoBarModel->GetInfoBarType() ==
-                    infobars::InfoBarDelegate::WARNING_TYPE]);
+           delegate:delegate_]);
 
   // Model data.
   NSString* modelMsg = nil;

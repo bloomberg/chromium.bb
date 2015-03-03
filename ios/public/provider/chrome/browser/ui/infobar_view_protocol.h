@@ -17,11 +17,9 @@ class InfoBarViewDelegate;
 // showing/hiding animation.
 @property(nonatomic, assign) CGFloat visibleHeight;
 
-// The designated initializer. Set |isWarning| to YES to have a warning infobar,
-// and to NO to have an informational infobar.
+// The designated initializer.
 - (instancetype)initWithFrame:(CGRect)frame
-                     delegate:(InfoBarViewDelegate*)delegate
-                    isWarning:(BOOL)isWarning;
+                     delegate:(InfoBarViewDelegate*)delegate;
 
 // Stops propagating events to delegate.
 - (void)resetDelegate;
