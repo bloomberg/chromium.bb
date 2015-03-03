@@ -40,9 +40,5 @@ void QuicPacketWriterWrapper::set_writer(QuicPacketWriter* writer) {
   writer_.reset(writer);
 }
 
-QuicPacketWriter* QuicPacketWriterWrapper::release_writer() {
-  return writer_.release();
-}
-
 }  // namespace tools
 }  // namespace net

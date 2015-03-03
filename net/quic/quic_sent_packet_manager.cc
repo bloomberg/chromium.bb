@@ -435,16 +435,14 @@ QuicSentPacketManager::PendingRetransmission
   TransmissionType transmission_type = pending_retransmissions_.begin()->second;
   if (unacked_packets_.HasPendingCryptoPackets()) {
     // Ensure crypto packets are retransmitted before other packets.
-    PendingRetransmissionMap::const_iterator it =
-        pending_retransmissions_.begin();
-    do {
-      if (HasCryptoHandshake(unacked_packets_.GetTransmissionInfo(it->first))) {
-        sequence_number = it->first;
-        transmission_type = it->second;
+    for (const auto& pair : pending_retransmissions_) {
+      if (HasCryptoHandshake(
+              unacked_packets_.GetTransmissionInfo(pair.first))) {
+        sequence_number = pair.first;
+        transmission_type = pair.second;
         break;
       }
-      ++it;
-    } while (it != pending_retransmissions_.end());
+    }
   }
   DCHECK(unacked_packets_.IsUnacked(sequence_number)) << sequence_number;
   const TransmissionInfo& transmission_info =

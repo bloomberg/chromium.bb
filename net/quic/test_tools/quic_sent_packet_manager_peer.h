@@ -44,13 +44,6 @@ class QuicSentPacketManagerPeer {
 
   static RttStats* GetRttStats(QuicSentPacketManager* sent_packet_manager);
 
-  static QuicPacketCount GetNackCount(
-      const QuicSentPacketManager* sent_packet_manager,
-      QuicPacketSequenceNumber sequence_number);
-
-  static size_t GetPendingRetransmissionCount(
-      const QuicSentPacketManager* sent_packet_manager);
-
   static bool HasPendingPackets(
       const QuicSentPacketManager* sent_packet_manager);
 

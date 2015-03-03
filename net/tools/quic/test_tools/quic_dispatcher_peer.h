@@ -34,12 +34,6 @@ class QuicDispatcherPeer {
 
   static QuicEpollConnectionHelper* GetHelper(QuicDispatcher* dispatcher);
 
-  static QuicConnection* CreateQuicConnection(
-      QuicDispatcher* dispatcher,
-      QuicConnectionId connection_id,
-      const IPEndPoint& server,
-      const IPEndPoint& client);
-
   static QuicDispatcher::WriteBlockedList* GetWriteBlockedList(
       QuicDispatcher* dispatcher);
 

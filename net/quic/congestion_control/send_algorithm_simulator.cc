@@ -387,9 +387,4 @@ void SendAlgorithmSimulator::SendDataNow(Transfer* transfer) {
   transfer->bytes_in_flight += kPacketSize;
 }
 
-// Advance the time by |delta| without sending anything.
-void SendAlgorithmSimulator::AdvanceTime(QuicTime::Delta delta) {
-  clock_->AdvanceTime(delta);
-}
-
 }  // namespace net

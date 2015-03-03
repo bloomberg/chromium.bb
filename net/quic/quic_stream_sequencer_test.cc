@@ -69,13 +69,6 @@ class QuicStreamSequencerTest : public ::testing::Test {
             QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get())) {
   }
 
-  bool VerifyReadableRegions(const char** expected, size_t num_expected) {
-    iovec iovecs[5];
-    size_t num_iovecs = sequencer_->GetReadableRegions(iovecs,
-                                                       arraysize(iovecs));
-    return VerifyIovecs(iovecs, num_iovecs, expected, num_expected);
-  }
-
   bool VerifyIovecs(iovec* iovecs,
                     size_t num_iovecs,
                     const char** expected,

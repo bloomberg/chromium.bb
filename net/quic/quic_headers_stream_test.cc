@@ -457,7 +457,6 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
-  EXPECT_TRUE(headers_stream_->flow_controller()->IsEnabled());
   EXPECT_FALSE(ReliableQuicStreamPeer::StreamContributesToConnectionFlowControl(
       headers_stream_));
 }

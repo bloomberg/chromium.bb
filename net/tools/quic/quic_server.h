@@ -133,10 +133,6 @@ class QuicServer : public EpollCallbackInterface {
   // skipped as necessary).
   QuicVersionVector supported_versions_;
 
-  // Size of flow control receive window to advertise to clients on new
-  // connections.
-  uint32 server_initial_flow_control_receive_window_;
-
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };
 

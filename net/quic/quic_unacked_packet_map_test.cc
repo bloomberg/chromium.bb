@@ -126,9 +126,9 @@ TEST_F(QuicUnackedPacketMapTest, RttOnly) {
 
 TEST_F(QuicUnackedPacketMapTest, DiscardOldRttOnly) {
   // Acks are only tracked for RTT measurement purposes, and are discarded
-  // when more than 200 accumulate.
-  const size_t kNumUnackedPackets = 200;
-  for (size_t i = 1; i < 400; ++i) {
+  // when more than 2500 accumulate.
+  const size_t kNumUnackedPackets = 2500;
+  for (size_t i = 1; i < 3000; ++i) {
     unacked_packets_.AddSentPacket(CreateNonRetransmittablePacket(i), 0,
                                    NOT_RETRANSMISSION, now_, kDefaultAckLength,
                                    false);

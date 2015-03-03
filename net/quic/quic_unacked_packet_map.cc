@@ -273,7 +273,7 @@ bool QuicUnackedPacketMap::IsPacketRemovable(
     QuicPacketSequenceNumber sequence_number,
     const TransmissionInfo& info) const {
   return (!IsPacketUsefulForMeasuringRtt(sequence_number, info) ||
-          unacked_packets_.size() > kMaxTcpCongestionWindow) &&
+          unacked_packets_.size() > kMaxTrackedPackets / 2) &&
          !IsPacketUsefulForCongestionControl(info) &&
          !IsPacketUsefulForRetransmittableData(info);
 }

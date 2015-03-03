@@ -122,6 +122,7 @@ class SendAlgorithmSimulator {
                          QuicTime::Delta rtt);
   ~SendAlgorithmSimulator();
 
+  // For local ad-hoc testing.
   void set_bandwidth(QuicBandwidth bandwidth) {
     bandwidth_ = bandwidth;
   }
@@ -131,11 +132,13 @@ class SendAlgorithmSimulator {
     forward_loss_rate_ = loss_rate;
   }
 
+  // For local ad-hoc testing.
   void set_reverse_loss_rate(float loss_rate) {
     DCHECK_LT(loss_rate, 1.0f);
     reverse_loss_rate_ = loss_rate;
   }
 
+  // For local ad-hoc testing.
   void set_loss_correlation(float loss_correlation) {
     DCHECK_LT(loss_correlation, 1.0f);
     loss_correlation_ = loss_correlation;
@@ -150,6 +153,7 @@ class SendAlgorithmSimulator {
   }
 
   // Advance the time by |delta| without sending anything.
+  // For local ad-hoc testing.
   void AdvanceTime(QuicTime::Delta delta);
 
   // Adds a pending sender.  The send will run when TransferBytes is called.

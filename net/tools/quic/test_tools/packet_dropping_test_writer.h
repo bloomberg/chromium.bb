@@ -104,6 +104,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
     buffer_size_ = buffer_size;
   }
 
+  // Useful for reproducing very flaky issues.
   void set_seed(uint64 seed) {
     simple_random_.set_seed(seed);
   }

@@ -67,32 +67,9 @@ QuicSentPacketManager* QuicConnectionPeer::GetSentPacketManager(
 }
 
 // static
-QuicReceivedPacketManager* QuicConnectionPeer::GetReceivedPacketManager(
-    QuicConnection* connection) {
-  return &connection->received_packet_manager_;
-}
-
-// static
 QuicTime::Delta QuicConnectionPeer::GetNetworkTimeout(
     QuicConnection* connection) {
   return connection->idle_network_timeout_;
-}
-
-// static
-bool QuicConnectionPeer::IsSavedForRetransmission(
-    QuicConnection* connection,
-    QuicPacketSequenceNumber sequence_number) {
-  return connection->sent_packet_manager_.IsUnacked(sequence_number) &&
-      connection->sent_packet_manager_.HasRetransmittableFrames(
-          sequence_number);
-}
-
-// static
-bool QuicConnectionPeer::IsRetransmission(
-    QuicConnection* connection,
-    QuicPacketSequenceNumber sequence_number) {
-  return QuicSentPacketManagerPeer::IsRetransmission(
-      &connection->sent_packet_manager_, sequence_number);
 }
 
 // static
@@ -237,12 +214,6 @@ void QuicConnectionPeer::CloseConnection(QuicConnection* connection) {
 QuicEncryptedPacket* QuicConnectionPeer::GetConnectionClosePacket(
     QuicConnection* connection) {
   return connection->connection_close_packet_.get();
-}
-
-// static
-void QuicConnectionPeer::SetSupportedVersions(QuicConnection* connection,
-                                              QuicVersionVector versions) {
-  connection->framer_.SetSupportedVersions(versions);
 }
 
 // static

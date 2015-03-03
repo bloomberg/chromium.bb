@@ -488,7 +488,6 @@ TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
 }
 
 TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_limit_time_wait_list_size, true);
   // Basically, shut off time-based eviction.
   FLAGS_quic_time_wait_list_seconds = 10000000000;
   FLAGS_quic_time_wait_list_max_connections = 5;

@@ -372,26 +372,15 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
-  QuicServerSession* session = new QuicServerSession(
-      config_,
-      CreateQuicConnection(connection_id, server_address, client_address),
-      this);
+  // The QuicSession takes ownership of |connection| below.
+  QuicConnection* connection = new QuicConnection(
+      connection_id, client_address, helper_.get(), connection_writer_factory_,
+      /* owns_writer= */ true, /* is_server= */ true,
+      crypto_config_.HasProofSource(), supported_versions_);
+
+  QuicServerSession* session = new QuicServerSession(config_, connection, this);
   session->InitializeSession(crypto_config_);
   return session;
-}
-
-QuicConnection* QuicDispatcher::CreateQuicConnection(
-    QuicConnectionId connection_id,
-    const IPEndPoint& server_address,
-    const IPEndPoint& client_address) {
-  return new QuicConnection(connection_id,
-                            client_address,
-                            helper_.get(),
-                            connection_writer_factory_,
-                            /* owns_writer= */ true,
-                            /* is_server= */ true,
-                            crypto_config_.HasProofSource(),
-                            supported_versions_);
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {

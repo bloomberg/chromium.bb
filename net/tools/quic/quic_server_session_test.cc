@@ -36,7 +36,6 @@ using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
 using net::test::kClientDataStreamId2;
 using net::test::kClientDataStreamId3;
-using net::test::kClientDataStreamId4;
 using std::string;
 using testing::StrictMock;
 using testing::_;
@@ -50,9 +49,6 @@ class QuicServerSessionPeer {
   static QuicDataStream* GetIncomingDataStream(
       QuicServerSession* s, QuicStreamId id) {
     return s->GetIncomingDataStream(id);
-  }
-  static QuicDataStream* GetDataStream(QuicServerSession* s, QuicStreamId id) {
-    return s->GetDataStream(id);
   }
   static void SetCryptoStream(QuicServerSession* s,
                               QuicCryptoServerStream* crypto_stream) {
@@ -86,8 +82,6 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     session_->InitializeSession(crypto_config_);
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }
-
-  QuicVersion version() const { return connection_->version(); }
 
   StrictMock<MockQuicServerSessionVisitor> owner_;
   StrictMock<MockConnection>* connection_;

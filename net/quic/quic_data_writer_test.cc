@@ -13,30 +13,6 @@ namespace net {
 namespace test {
 namespace {
 
-TEST(QuicDataWriterTest, WriteUInt8ToOffset) {
-  char buffer[4];
-  QuicDataWriter writer(4, buffer);
-
-  writer.WriteUInt32(0xfefdfcfb);
-  EXPECT_TRUE(writer.WriteUInt8ToOffset(1, 0));
-  EXPECT_TRUE(writer.WriteUInt8ToOffset(2, 1));
-  EXPECT_TRUE(writer.WriteUInt8ToOffset(3, 2));
-  EXPECT_TRUE(writer.WriteUInt8ToOffset(4, 3));
-
-  EXPECT_EQ(1, writer.data()[0]);
-  EXPECT_EQ(2, writer.data()[1]);
-  EXPECT_EQ(3, writer.data()[2]);
-  EXPECT_EQ(4, writer.data()[3]);
-}
-
-TEST(QuicDataWriterDeathTest, WriteUInt8ToOffset) {
-  char buffer[4];
-  QuicDataWriter writer(4, buffer);
-
-  EXPECT_DFATAL(EXPECT_FALSE(writer.WriteUInt8ToOffset(5, 4)),
-                "offset: 4 >= capacity: 4");
-}
-
 TEST(QuicDataWriterTest, SanityCheckUFloat16Consts) {
   // Check the arithmetic on the constants - otherwise the values below make
   // no sense.

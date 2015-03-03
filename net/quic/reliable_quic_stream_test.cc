@@ -105,10 +105,6 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
         "JBCScs_ejbKaqBDoB7ZGxTvqlrB__2ZmnHHjCr8RgMRtKNtIeuZAo ";
   }
 
-  void set_supported_versions(const QuicVersionVector& versions) {
-    supported_versions_ = versions;
-  }
-
   void Initialize(bool stream_should_process_data) {
     connection_ =
         new StrictMock<MockConnection>(kIsServer, supported_versions_);

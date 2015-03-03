@@ -280,74 +280,6 @@ QuicErrorCode QuicFixedUint32::ProcessPeerHello(
   return error;
 }
 
-QuicFixedTag::QuicFixedTag(QuicTag name,
-                           QuicConfigPresence presence)
-    : QuicConfigValue(name, presence),
-      has_send_value_(false),
-      has_receive_value_(false) {
-}
-
-QuicFixedTag::~QuicFixedTag() {}
-
-bool QuicFixedTag::HasSendValue() const {
-  return has_send_value_;
-}
-
-uint32 QuicFixedTag::GetSendValue() const {
-  LOG_IF(DFATAL, !has_send_value_)
-      << "No send value to get for tag:" << QuicUtils::TagToString(tag_);
-  return send_value_;
-}
-
-void QuicFixedTag::SetSendValue(uint32 value) {
-  has_send_value_ = true;
-  send_value_ = value;
-}
-
-bool QuicFixedTag::HasReceivedValue() const {
-  return has_receive_value_;
-}
-
-uint32 QuicFixedTag::GetReceivedValue() const {
-  LOG_IF(DFATAL, !has_receive_value_)
-      << "No receive value to get for tag:" << QuicUtils::TagToString(tag_);
-  return receive_value_;
-}
-
-void QuicFixedTag::SetReceivedValue(uint32 value) {
-  has_receive_value_ = true;
-  receive_value_ = value;
-}
-
-void QuicFixedTag::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
-  if (has_send_value_) {
-    out->SetValue(tag_, send_value_);
-  }
-}
-
-QuicErrorCode QuicFixedTag::ProcessPeerHello(
-    const CryptoHandshakeMessage& peer_hello,
-    HelloType hello_type,
-    string* error_details) {
-  DCHECK(error_details != nullptr);
-  QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value_);
-  switch (error) {
-    case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
-      if (presence_ == PRESENCE_OPTIONAL) {
-        return QUIC_NO_ERROR;
-      }
-      *error_details = "Missing " + QuicUtils::TagToString(tag_);
-      break;
-    case QUIC_NO_ERROR:
-      has_receive_value_ = true;
-      break;
-    default:
-      *error_details = "Bad " + QuicUtils::TagToString(tag_);
-      break;
-  }
-  return error;
-}
-
 QuicFixedTagVector::QuicFixedTagVector(QuicTag name,
                                        QuicConfigPresence presence)
     : QuicConfigValue(name, presence),
@@ -476,6 +408,7 @@ QuicTime::Delta QuicConfig::IdleConnectionStateLifetime() const {
       idle_connection_state_lifetime_seconds_.GetUint32());
 }
 
+// TODO(ianswett) Use this for silent close on mobile, or delete.
 void QuicConfig::SetSilentClose(bool silent_close) {
   silent_close_.set(silent_close ? 1 : 0, silent_close ? 1 : 0);
 }
@@ -575,10 +508,6 @@ uint32 QuicConfig::ReceivedInitialSessionFlowControlWindowBytes() const {
 
 void QuicConfig::SetSocketReceiveBufferToSend(uint32 tcp_receive_window) {
   socket_receive_buffer_.SetSendValue(tcp_receive_window);
-}
-
-uint32 QuicConfig::GetSocketReceiveBufferToSend() const {
-  return socket_receive_buffer_.GetSendValue();
 }
 
 bool QuicConfig::HasReceivedSocketReceiveBuffer() const {

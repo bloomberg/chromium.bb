@@ -348,27 +348,25 @@ QuicConsumedData ReliableQuicStream::WritevData(
   // A FIN with zero data payload should not be flow control blocked.
   bool fin_with_zero_data = (fin && write_length == 0);
 
-  if (flow_controller_.IsEnabled()) {
-    // How much data we are allowed to write from flow control.
-    QuicByteCount send_window = flow_controller_.SendWindowSize();
-    if (stream_contributes_to_connection_flow_control_) {
-      send_window =
-          min(send_window, connection_flow_controller_->SendWindowSize());
-    }
+  // How much data we are allowed to write from flow control.
+  QuicByteCount send_window = flow_controller_.SendWindowSize();
+  if (stream_contributes_to_connection_flow_control_) {
+    send_window =
+        min(send_window, connection_flow_controller_->SendWindowSize());
+  }
 
-    if (send_window == 0 && !fin_with_zero_data) {
-      // Quick return if we can't send anything.
-      MaybeSendBlocked();
-      return QuicConsumedData(0, false);
-    }
+  if (send_window == 0 && !fin_with_zero_data) {
+    // Quick return if we can't send anything.
+    MaybeSendBlocked();
+    return QuicConsumedData(0, false);
+  }
 
-    if (write_length > send_window) {
-      // Don't send the FIN if we aren't going to send all the data.
-      fin = false;
+  if (write_length > send_window) {
+    // Don't send the FIN if we aren't going to send all the data.
+    fin = false;
 
-      // Writing more data would be a violation of flow control.
-      write_length = static_cast<size_t>(send_window);
-    }
+    // Writing more data would be a violation of flow control.
+    write_length = static_cast<size_t>(send_window);
   }
 
   // Fill an IOVector with bytes from the iovec.
@@ -458,10 +456,6 @@ void ReliableQuicStream::OnClose() {
 
 void ReliableQuicStream::OnWindowUpdateFrame(
     const QuicWindowUpdateFrame& frame) {
-  if (!flow_controller_.IsEnabled()) {
-    DLOG(DFATAL) << "Flow control not enabled! " << version();
-    return;
-  }
   if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
     // We can write again!
     // TODO(rjshade): This does not respect priorities (e.g. multiple
@@ -474,9 +468,6 @@ void ReliableQuicStream::OnWindowUpdateFrame(
 
 bool ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(
     QuicStreamOffset new_offset) {
-  if (!flow_controller_.IsEnabled()) {
-    return false;
-  }
   uint64 increment =
       new_offset - flow_controller_.highest_received_byte_offset();
   if (!flow_controller_.UpdateHighestReceivedOffset(new_offset)) {
@@ -495,24 +486,20 @@ bool ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(
 }
 
 void ReliableQuicStream::AddBytesSent(QuicByteCount bytes) {
-  if (flow_controller_.IsEnabled()) {
-    flow_controller_.AddBytesSent(bytes);
-    if (stream_contributes_to_connection_flow_control_) {
-      connection_flow_controller_->AddBytesSent(bytes);
-    }
+  flow_controller_.AddBytesSent(bytes);
+  if (stream_contributes_to_connection_flow_control_) {
+    connection_flow_controller_->AddBytesSent(bytes);
   }
 }
 
 void ReliableQuicStream::AddBytesConsumed(QuicByteCount bytes) {
-  if (flow_controller_.IsEnabled()) {
-    // Only adjust stream level flow controller if we are still reading.
-    if (!read_side_closed_) {
-      flow_controller_.AddBytesConsumed(bytes);
-    }
+  // Only adjust stream level flow controller if we are still reading.
+  if (!read_side_closed_) {
+    flow_controller_.AddBytesConsumed(bytes);
+  }
 
-    if (stream_contributes_to_connection_flow_control_) {
-      connection_flow_controller_->AddBytesConsumed(bytes);
-    }
+  if (stream_contributes_to_connection_flow_control_) {
+    connection_flow_controller_->AddBytesConsumed(bytes);
   }
 }
 

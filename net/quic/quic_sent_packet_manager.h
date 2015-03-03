@@ -238,10 +238,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     network_change_visitor_ = visitor;
   }
 
+  // Used in Chromium, but not in the server.
   size_t consecutive_rto_count() const {
     return consecutive_rto_count_;
   }
 
+  // Used in Chromium, but not in the server.
   size_t consecutive_tlp_count() const {
     return consecutive_tlp_count_;
   }

@@ -35,13 +35,13 @@ TEST_F(PrrSenderTest, SingleLossResultsInSendOnEveryOtherAck) {
   bytes_in_flight -= kMaxSegmentSize;
   EXPECT_EQ(QuicTime::Delta::Zero(),
             prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                              ssthresh_after_loss));
+                              ssthresh_after_loss * kMaxSegmentSize));
   // Send retransmission.
   prr.OnPacketSent(kMaxSegmentSize);
   // PRR shouldn't allow sending any more packets.
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                              ssthresh_after_loss));
+                              ssthresh_after_loss * kMaxSegmentSize));
 
   // One packet is lost, and one ack was consumed above. PRR now paces
   // transmissions through the remaining 48 acks. PRR will alternatively
@@ -52,13 +52,13 @@ TEST_F(PrrSenderTest, SingleLossResultsInSendOnEveryOtherAck) {
     bytes_in_flight -= kMaxSegmentSize;
     EXPECT_EQ(QuicTime::Delta::Infinite(),
               prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                ssthresh_after_loss));
+                                ssthresh_after_loss * kMaxSegmentSize));
     // Ack another packet. PRR should now allow sending a packet in response.
     prr.OnPacketAcked(kMaxSegmentSize);
     bytes_in_flight -= kMaxSegmentSize;
     EXPECT_EQ(QuicTime::Delta::Zero(),
               prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                ssthresh_after_loss));
+                                ssthresh_after_loss * kMaxSegmentSize));
     // Send a packet in response.
     prr.OnPacketSent(kMaxSegmentSize);
     bytes_in_flight += kMaxSegmentSize;
@@ -73,7 +73,7 @@ TEST_F(PrrSenderTest, SingleLossResultsInSendOnEveryOtherAck) {
     bytes_in_flight -= kMaxSegmentSize;
     EXPECT_EQ(QuicTime::Delta::Zero(),
               prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                ssthresh_after_loss));
+                                ssthresh_after_loss * kMaxSegmentSize));
     // Send a packet in response, since PRR allows it.
     prr.OnPacketSent(kMaxSegmentSize);
     bytes_in_flight += kMaxSegmentSize;
@@ -83,7 +83,7 @@ TEST_F(PrrSenderTest, SingleLossResultsInSendOnEveryOtherAck) {
     EXPECT_EQ(congestion_window, bytes_in_flight);
     EXPECT_EQ(QuicTime::Delta::Infinite(),
               prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                ssthresh_after_loss));
+                                ssthresh_after_loss * kMaxSegmentSize));
   }
 }
 
@@ -106,7 +106,7 @@ TEST_F(PrrSenderTest, BurstLossResultsInSlowStart) {
     for (int j = 0; j < 2; ++j) {
       EXPECT_EQ(QuicTime::Delta::Zero(),
                 prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                  ssthresh_after_loss));
+                                  ssthresh_after_loss * kMaxSegmentSize));
       // Send a packet in response.
       prr.OnPacketSent(kMaxSegmentSize);
       bytes_in_flight += kMaxSegmentSize;
@@ -114,7 +114,7 @@ TEST_F(PrrSenderTest, BurstLossResultsInSlowStart) {
     // PRR should allow no more than 2 packets in response to an ack.
     EXPECT_EQ(QuicTime::Delta::Infinite(),
               prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                ssthresh_after_loss));
+                                ssthresh_after_loss * kMaxSegmentSize));
   }
 
   // Out of SSRB mode, PRR allows one send in response to each ack.
@@ -123,7 +123,7 @@ TEST_F(PrrSenderTest, BurstLossResultsInSlowStart) {
     bytes_in_flight -= kMaxSegmentSize;
     EXPECT_EQ(QuicTime::Delta::Zero(),
               prr.TimeUntilSend(congestion_window, bytes_in_flight,
-                                ssthresh_after_loss));
+                                ssthresh_after_loss * kMaxSegmentSize));
     // Send a packet in response.
     prr.OnPacketSent(kMaxSegmentSize);
     bytes_in_flight += kMaxSegmentSize;

@@ -711,13 +711,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     return encrypted->length();
   }
 
-  void ProcessPingPacket(QuicPacketSequenceNumber number) {
-    scoped_ptr<QuicPacket> packet(ConstructPingPacket(number));
-    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
-        ENCRYPTION_NONE, number, *packet));
-    connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
-  }
-
   void ProcessClosePacket(QuicPacketSequenceNumber number,
                           QuicFecGroupNumber fec_group) {
     scoped_ptr<QuicPacket> packet(ConstructClosePacket(number, fec_group));
@@ -1359,8 +1352,8 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 
 TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  for (int i = 0; i < 1100; ++i) {
+  const QuicPacketCount num_sent_packets = kMaxTrackedPackets + 100;
+  for (QuicPacketCount i = 0; i < num_sent_packets; ++i) {
     SendStreamDataToPeer(1, "foo", 3 * i, !kFin, nullptr);
   }
 
@@ -1372,8 +1365,8 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
 
   // Nack every packet except the last one, leaving a huge gap.
-  QuicAckFrame frame1 = InitAckFrame(1100);
-  for (QuicPacketSequenceNumber i = 1; i < 1100; ++i) {
+  QuicAckFrame frame1 = InitAckFrame(num_sent_packets);
+  for (QuicPacketSequenceNumber i = 1; i < num_sent_packets; ++i) {
     NackPacket(i, &frame1);
   }
   ProcessAckPacket(&frame1);
@@ -1384,8 +1377,8 @@ TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnConnectionClosed(
                             QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, false));
 
-  // Miss every other packet for 1000 packets.
-  for (QuicPacketSequenceNumber i = 1; i < 1000; ++i) {
+  // Miss every other packet for 5000 packets.
+  for (QuicPacketSequenceNumber i = 1; i < kMaxTrackedPackets; ++i) {
     ProcessPacket(i * 2);
     if (!connection_.connected()) {
       break;

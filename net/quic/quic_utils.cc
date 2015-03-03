@@ -123,15 +123,6 @@ bool QuicUtils::FindMutualTag(const QuicTagVector& our_tags_vector,
 }
 
 // static
-void QuicUtils::SerializeUint128(uint128 v, uint8* out) {
-  const uint64 lo = Uint128Low64(v);
-  const uint64 hi = Uint128High64(v);
-  // This assumes that the system is little-endian.
-  memcpy(out, &lo, sizeof(lo));
-  memcpy(out + sizeof(lo), &hi, sizeof(hi));
-}
-
-// static
 void QuicUtils::SerializeUint128Short(uint128 v, uint8* out) {
   const uint64 lo = Uint128Low64(v);
   const uint64 hi = Uint128High64(v);
@@ -344,11 +335,6 @@ string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
     s += '\n';
   }
   return s;
-}
-
-// static
-QuicPriority QuicUtils::LowestPriority() {
-  return QuicWriteBlockedList::kLowestPriority;
 }
 
 // static

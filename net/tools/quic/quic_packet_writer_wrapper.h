@@ -34,9 +34,6 @@ class QuicPacketWriterWrapper : public net::QuicPacketWriter {
   // Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);
 
-  // Releases ownership of |writer_|.
-  QuicPacketWriter* release_writer();
-
  private:
   scoped_ptr<QuicPacketWriter> writer_;
 

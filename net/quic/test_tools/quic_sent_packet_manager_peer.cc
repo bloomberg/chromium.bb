@@ -78,20 +78,6 @@ RttStats* QuicSentPacketManagerPeer::GetRttStats(
 }
 
 // static
-QuicPacketCount QuicSentPacketManagerPeer::GetNackCount(
-    const QuicSentPacketManager* sent_packet_manager,
-    QuicPacketSequenceNumber sequence_number) {
-  return sent_packet_manager->unacked_packets_.
-      GetTransmissionInfo(sequence_number).nack_count;
-}
-
-// static
-size_t QuicSentPacketManagerPeer::GetPendingRetransmissionCount(
-    const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->pending_retransmissions_.size();
-}
-
-// static
 bool QuicSentPacketManagerPeer::HasPendingPackets(
     const QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->unacked_packets_.HasInFlightPackets();

@@ -56,9 +56,6 @@ class NET_EXPORT_PRIVATE QuicUtils {
                             QuicTag* out_result,
                             size_t* out_index);
 
-  // SerializeUint128 writes |v| in little-endian form to |out|.
-  static void SerializeUint128(uint128 v, uint8* out);
-
   // SerializeUint128 writes the first 96 bits of |v| in little-endian form
   // to |out|.
   static void SerializeUint128Short(uint128 v, uint8* out);
@@ -96,8 +93,6 @@ class NET_EXPORT_PRIVATE QuicUtils {
   static char* AsChars(unsigned char* data) {
     return reinterpret_cast<char*>(data);
   }
-
-  static QuicPriority LowestPriority();
 
   static QuicPriority HighestPriority();
 

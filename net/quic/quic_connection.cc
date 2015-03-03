@@ -61,9 +61,6 @@ const size_t kMaxFecGroups = 2;
 // Maximum number of acks received before sending an ack in response.
 const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
 
-// Maximum number of tracked packets.
-const QuicPacketCount kMaxTrackedPackets = 5 * kMaxTcpCongestionWindow;
-
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;

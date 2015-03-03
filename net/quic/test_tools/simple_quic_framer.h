@@ -48,7 +48,6 @@ class SimpleQuicFramer {
   const std::vector<QuicStreamFrame>& stream_frames() const;
   const QuicFecData& fec_data() const;
   const QuicVersionNegotiationPacket* version_negotiation_packet() const;
-  const QuicPublicResetPacket* public_reset_packet() const;
 
   QuicFramer* framer();
 

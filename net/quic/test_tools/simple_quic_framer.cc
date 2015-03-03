@@ -208,10 +208,6 @@ SimpleQuicFramer::version_negotiation_packet() const {
   return visitor_->version_negotiation_packet();
 }
 
-const QuicPublicResetPacket* SimpleQuicFramer::public_reset_packet() const {
-  return visitor_->public_reset_packet();
-}
-
 QuicFramer* SimpleQuicFramer::framer() {
   return &framer_;
 }

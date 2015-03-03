@@ -42,7 +42,6 @@ static const uint32 kInitialSessionFlowControlWindowForTest =
 static const QuicStreamId kClientDataStreamId1 = 5;
 static const QuicStreamId kClientDataStreamId2 = 7;
 static const QuicStreamId kClientDataStreamId3 = 9;
-static const QuicStreamId kClientDataStreamId4 = 11;
 
 // Returns the test peer IP address.
 IPAddressNumber TestPeerIPAddress();

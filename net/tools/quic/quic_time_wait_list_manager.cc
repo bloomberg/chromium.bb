@@ -118,10 +118,8 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     connection_id_map_.erase(it);
   }
   TrimTimeWaitListIfNeeded();
-  if (FLAGS_quic_limit_time_wait_list_size) {
-    DCHECK_LT(num_connections(),
-              static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
-  }
+  DCHECK_LT(num_connections(),
+            static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
   ConnectionIdData data(num_packets,
                         version,
                         clock_.ApproximateNow(),
@@ -300,36 +298,20 @@ bool QuicTimeWaitListManager::MaybeExpireOldestConnection(
 void QuicTimeWaitListManager::CleanUpOldConnectionIds() {
   QuicTime now = clock_.ApproximateNow();
   QuicTime expiration = now.Subtract(kTimeWaitPeriod_);
-  if (FLAGS_quic_limit_time_wait_list_size) {
-    while (MaybeExpireOldestConnection(expiration)) {
-    }
-  } else {
-    while (!connection_id_map_.empty()) {
-      ConnectionIdMap::iterator it = connection_id_map_.begin();
-      QuicTime oldest_connection_id = it->second.time_added;
-      if (now.Subtract(oldest_connection_id) < kTimeWaitPeriod_) {
-        break;
-      }
-      const QuicConnectionId connection_id = it->first;
-      // This connection_id has lived its age, retire it now.
-      delete it->second.close_packet;
-      connection_id_map_.erase(it);
-      visitor_->OnConnectionRemovedFromTimeWaitList(connection_id);
-    }
+
+  while (MaybeExpireOldestConnection(expiration)) {
   }
 
   SetConnectionIdCleanUpAlarm();
 }
 
 void QuicTimeWaitListManager::TrimTimeWaitListIfNeeded() {
-  if (FLAGS_quic_limit_time_wait_list_size) {
-    if (FLAGS_quic_time_wait_list_max_connections < 0) {
-      return;
-    }
-    while (num_connections() >=
-           static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections)) {
-      MaybeExpireOldestConnection(QuicTime::Infinite());
-    }
+  if (FLAGS_quic_time_wait_list_max_connections < 0) {
+    return;
+  }
+  while (num_connections() >=
+         static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections)) {
+    MaybeExpireOldestConnection(QuicTime::Infinite());
   }
 }
 

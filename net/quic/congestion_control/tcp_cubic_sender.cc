@@ -31,7 +31,6 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock,
                                const RttStats* rtt_stats,
                                bool reno,
                                QuicPacketCount initial_tcp_congestion_window,
-                               QuicPacketCount max_tcp_congestion_window,
                                QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
       cubic_(clock),
@@ -39,14 +38,13 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock,
       stats_(stats),
       reno_(reno),
       num_connections_(kDefaultNumConnections),
-      congestion_window_count_(0),
+      num_acked_packets_(0),
       largest_sent_sequence_number_(0),
       largest_acked_sequence_number_(0),
       largest_sent_at_last_cutback_(0),
       congestion_window_(initial_tcp_congestion_window),
-      slowstart_threshold_(max_tcp_congestion_window),
+      slowstart_threshold_(std::numeric_limits<uint64>::max()),
       last_cutback_exited_slowstart_(false),
-      max_tcp_congestion_window_(max_tcp_congestion_window),
       clock_(clock) {
 }
 
@@ -89,8 +87,9 @@ bool TcpCubicSender::ResumeConnectionState(
   // Make sure CWND is in appropriate range (in case of bad data).
   QuicPacketCount new_congestion_window =
       bandwidth.ToBytesPerPeriod(rtt_ms) / kMaxPacketSize;
-  congestion_window_ = max(min(new_congestion_window, kMaxTcpCongestionWindow),
-                           kMinCongestionWindowForBandwidthResumption);
+  congestion_window_ = max(
+      min(new_congestion_window, kMaxCongestionWindowForBandwidthResumption),
+      kMinCongestionWindowForBandwidthResumption);
 
   // TODO(rjshade): Set appropriate CWND when previous connection was in slow
   // start at time of estimate.
@@ -181,7 +180,7 @@ void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
   largest_sent_at_last_cutback_ = largest_sent_sequence_number_;
   // reset packet count from congestion avoidance mode. We start
   // counting again when we're out of recovery.
-  congestion_window_count_ = 0;
+  num_acked_packets_ = 0;
   DVLOG(1) << "Incoming loss; congestion window: " << congestion_window_
            << " slowstart threshold: " << slowstart_threshold_;
 }
@@ -216,7 +215,7 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
   if (InRecovery()) {
     // PRR is used when in recovery.
     return prr_.TimeUntilSend(GetCongestionWindow(), bytes_in_flight,
-                              slowstart_threshold_);
+                              slowstart_threshold_ * kMaxSegmentSize);
   }
   if (GetCongestionWindow() > bytes_in_flight) {
     return QuicTime::Delta::Zero();
@@ -302,36 +301,29 @@ void TcpCubicSender::MaybeIncreaseCwnd(
     return;
   }
   if (InSlowStart()) {
-    // congestion_window_cnt is the number of acks since last change of snd_cwnd
-    if (congestion_window_ < max_tcp_congestion_window_) {
-      // TCP slow start, exponential growth, increase by one for each ACK.
-      ++congestion_window_;
-    }
+    // TCP slow start, exponential growth, increase by one for each ACK.
+    ++congestion_window_;
     DVLOG(1) << "Slow start; congestion window: " << congestion_window_
              << " slowstart threshold: " << slowstart_threshold_;
-    return;
-  }
-  if (congestion_window_ >= max_tcp_congestion_window_) {
     return;
   }
   // Congestion avoidance
   if (reno_) {
     // Classic Reno congestion avoidance.
-    ++congestion_window_count_;
+    ++num_acked_packets_;
     // Divide by num_connections to smoothly increase the CWND at a faster
     // rate than conventional Reno.
-    if (congestion_window_count_ * num_connections_ >= congestion_window_) {
+    if (num_acked_packets_ * num_connections_ >= congestion_window_) {
       ++congestion_window_;
-      congestion_window_count_ = 0;
+      num_acked_packets_ = 0;
     }
 
     DVLOG(1) << "Reno; congestion window: " << congestion_window_
              << " slowstart threshold: " << slowstart_threshold_
-             << " congestion window count: " << congestion_window_count_;
+             << " congestion window count: " << num_acked_packets_;
   } else {
-    congestion_window_ = min(max_tcp_congestion_window_,
-                             cubic_.CongestionWindowAfterAck(
-                                 congestion_window_, rtt_stats_->min_rtt()));
+    congestion_window_ = cubic_.CongestionWindowAfterAck(congestion_window_,
+                                                         rtt_stats_->min_rtt());
     DVLOG(1) << "Cubic; congestion window: " << congestion_window_
              << " slowstart threshold: " << slowstart_threshold_;
   }

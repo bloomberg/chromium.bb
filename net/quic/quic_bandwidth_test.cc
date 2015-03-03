@@ -84,5 +84,18 @@ TEST_F(QuicBandwidthTest, TransferTime) {
   EXPECT_EQ(QuicTime::Delta::Zero(), QuicBandwidth::Zero().TransferTime(1000));
 }
 
+TEST_F(QuicBandwidthTest, RelOps) {
+  const QuicBandwidth b1 = QuicBandwidth::FromKBitsPerSecond(1);
+  const QuicBandwidth b2 = QuicBandwidth::FromKBytesPerSecond(2);
+  EXPECT_EQ(b1, b1);
+  EXPECT_NE(b1, b2);
+  EXPECT_LT(b1, b2);
+  EXPECT_GT(b2, b1);
+  EXPECT_LE(b1, b1);
+  EXPECT_LE(b1, b2);
+  EXPECT_GE(b1, b1);
+  EXPECT_GE(b2, b1);
+}
+
 }  // namespace test
 }  // namespace net

@@ -134,6 +134,7 @@ int QuicCryptoClientStream::num_sent_client_hellos() const {
   return num_client_hellos_;
 }
 
+// Used in Chromium, but not in the server.
 bool QuicCryptoClientStream::WasChannelIDSent() const {
   return channel_id_sent_;
 }

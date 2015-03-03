@@ -215,10 +215,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   static bool ShouldRetransmit(const QuicFrame& frame);
 
-  // Updates sequence number and max packet lengths on a packet or FEC group
-  // boundary.
-  void MaybeUpdateLengths();
-
   // Updates lengths and also starts an FEC group if FEC protection is on and
   // there is not already an FEC group open.
   InFecGroup MaybeUpdateLengthsAndStartFec();

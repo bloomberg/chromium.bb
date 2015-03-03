@@ -182,39 +182,6 @@ class NET_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
 };
 
 // Stores tag from CHLO or SHLO messages that are not negotiated.
-class NET_EXPORT_PRIVATE QuicFixedTag : public QuicConfigValue {
- public:
-  QuicFixedTag(QuicTag name, QuicConfigPresence presence);
-  ~QuicFixedTag() override;
-
-  bool HasSendValue() const;
-
-  QuicTag GetSendValue() const;
-
-  void SetSendValue(QuicTag value);
-
-  bool HasReceivedValue() const;
-
-  QuicTag GetReceivedValue() const;
-
-  void SetReceivedValue(QuicTag value);
-
-  // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
-  void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
-
-  // Sets |value_| to the corresponding value from |client_hello_| if it exists.
-  QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
-                                 HelloType hello_type,
-                                 std::string* error_details) override;
-
- private:
-  QuicTag send_value_;
-  bool has_send_value_;
-  QuicTag receive_value_;
-  bool has_receive_value_;
-};
-
-// Stores tag from CHLO or SHLO messages that are not negotiated.
 class NET_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
  public:
   QuicFixedTagVector(QuicTag name, QuicConfigPresence presence);
@@ -347,8 +314,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   // Sets socket receive buffer to transmit to the peer.
   void SetSocketReceiveBufferToSend(uint32 window_bytes);
-
-  uint32 GetSocketReceiveBufferToSend() const;
 
   bool HasReceivedSocketReceiveBuffer() const;
 

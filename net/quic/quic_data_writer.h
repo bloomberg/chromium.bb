@@ -54,13 +54,6 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   // Fills the remaining buffer with null characters.
   void WritePadding();
 
-  // Methods for editing the payload at a specific offset, where the
-  // offset must be within the writer's capacity.
-  // Return true if there is enough space at that offset, false otherwise.
-  bool WriteUInt8ToOffset(uint8 value, size_t offset);
-  bool WriteUInt32ToOffset(uint32 value, size_t offset);
-  bool WriteUInt48ToOffset(uint64 value, size_t offset);
-
   size_t capacity() const {
     return capacity_;
   }

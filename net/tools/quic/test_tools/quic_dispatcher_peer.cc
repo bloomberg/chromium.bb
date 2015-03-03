@@ -44,17 +44,6 @@ QuicEpollConnectionHelper* QuicDispatcherPeer::GetHelper(
 }
 
 // static
-QuicConnection* QuicDispatcherPeer::CreateQuicConnection(
-    QuicDispatcher* dispatcher,
-    QuicConnectionId connection_id,
-    const IPEndPoint& server,
-    const IPEndPoint& client) {
-  return dispatcher->CreateQuicConnection(connection_id,
-                                          server,
-                                          client);
-}
-
-// static
 QuicDispatcher::WriteBlockedList* QuicDispatcherPeer::GetWriteBlockedList(
     QuicDispatcher* dispatcher) {
   return &dispatcher->write_blocked_list_;

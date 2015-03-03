@@ -52,9 +52,5 @@ int64 FLAGS_quic_time_wait_list_seconds = 5;
 // no configured limit.
 int64 FLAGS_quic_time_wait_list_max_connections = 50000;
 
-// If true, limit the number of connections on the quic time-wait list using a
-// flag.
-bool FLAGS_quic_limit_time_wait_list_size = true;
-
 // Use small QUIC packet sizes by default.
 bool FLAGS_quic_small_default_packet_size = true;

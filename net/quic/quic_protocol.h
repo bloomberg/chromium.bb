@@ -68,11 +68,14 @@ const QuicPacketCount kInitialCongestionWindowInsecure = 20;
 // Minimum size of initial flow control window, for both stream and session.
 const uint32 kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
 
-// Minimum size of the CWND, in packets, when doing bandwidth resumption.
+// Minimum and maximum size of the CWND, in packets,
+// when doing bandwidth resumption.
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
+const QuicPacketCount kMaxCongestionWindowForBandwidthResumption = 200;
 
-// Maximum size of the CWND, in packets, for TCP congestion control algorithms.
-const QuicPacketCount kMaxTcpCongestionWindow = 200;
+// Maximum number of tracked packets before the connection will be closed.
+// This effectively limits the max CWND to a smaller value than this.
+const QuicPacketCount kMaxTrackedPackets = 5000;
 
 // Default size of the socket receive buffer in bytes.
 const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
@@ -106,8 +109,6 @@ const size_t kStartOfHashData = 0;
 
 // Limit on the delta between stream IDs.
 const QuicStreamId kMaxStreamIdDelta = 200;
-// Limit on the delta between header IDs.
-const QuicHeaderId kMaxHeaderIdDelta = 200;
 
 // Reserved ID for the crypto stream.
 const QuicStreamId kCryptoStreamId = 1;
