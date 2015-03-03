@@ -133,4 +133,8 @@ void SurfacelessGlRenderer::OnSwapBuffersAck() {
   back_buffer_ ^= 1;
 }
 
+scoped_refptr<gfx::GLSurface> SurfacelessGlRenderer::CreateSurface() {
+  return gfx::GLSurface::CreateSurfacelessViewGLSurface(widget_);
+}
+
 }  // namespace ui

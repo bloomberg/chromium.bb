@@ -18,7 +18,7 @@ GlRenderer::~GlRenderer() {
 }
 
 bool GlRenderer::Initialize() {
-  surface_ = gfx::GLSurface::CreateViewGLSurface(widget_);
+  surface_ = CreateSurface();
   if (!surface_.get()) {
     LOG(ERROR) << "Failed to create GL surface";
     return false;
@@ -52,6 +52,10 @@ void GlRenderer::RenderFrame() {
 
   if (!surface_->SwapBuffers())
     LOG(FATAL) << "Failed to swap buffers";
+}
+
+scoped_refptr<gfx::GLSurface> GlRenderer::CreateSurface() {
+  return gfx::GLSurface::CreateViewGLSurface(widget_);
 }
 
 }  // namespace ui

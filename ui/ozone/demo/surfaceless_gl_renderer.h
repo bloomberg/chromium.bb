@@ -32,6 +32,9 @@ class SurfacelessGlRenderer : public GlRenderer {
   // Called by swap buffers when the actual swap finished.
   void OnSwapBuffersAck();
 
+  // GlRenderer:
+  scoped_refptr<gfx::GLSurface> CreateSurface() override;
+
   class BufferWrapper {
    public:
     BufferWrapper();
