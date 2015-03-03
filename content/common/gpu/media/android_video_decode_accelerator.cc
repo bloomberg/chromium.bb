@@ -364,7 +364,6 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
                                       GL_TEXTURE_EXTERNAL_OES,
                                       surface_texture_id_,
                                       picture_buffer_texture_id,
-                                      0,
                                       size_.width(),
                                       size_.height(),
                                       false,

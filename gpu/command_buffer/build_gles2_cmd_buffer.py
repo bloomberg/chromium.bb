@@ -3008,6 +3008,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'CopySubTextureCHROMIUM': {
+    'decoder_func': 'DoCopySubTextureCHROMIUM',
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+  },
   'TexStorage2DEXT': {
     'unit_test': False,
     'extension': True,

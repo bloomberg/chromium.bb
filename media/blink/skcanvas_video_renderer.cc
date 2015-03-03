@@ -144,8 +144,8 @@ bool CopyVideoFrameTextureToSkBitmapTexture(VideoFrame* video_frame,
   // |texture_id|, it's needed to invalidate the state cached in skia,
   // but currently the state isn't changed.
   SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
-      context_3d.gl, video_frame, texture_id, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-      true, false);
+      context_3d.gl, video_frame, texture_id, GL_RGBA, GL_UNSIGNED_BYTE, true,
+      false);
   bitmap->notifyPixelsChanged();
   return true;
 }
@@ -602,7 +602,6 @@ void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
     gpu::gles2::GLES2Interface* gl,
     VideoFrame* video_frame,
     unsigned int texture,
-    unsigned int level,
     unsigned int internal_format,
     unsigned int type,
     bool premultiply_alpha,
@@ -625,7 +624,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
   // "flip_y == true" means to reverse the video orientation while
   // "flip_y == false" means to keep the intrinsic orientation.
   gl->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-  gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture, level,
+  gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture,
                           internal_format, type);
   gl->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   gl->PixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, false);
