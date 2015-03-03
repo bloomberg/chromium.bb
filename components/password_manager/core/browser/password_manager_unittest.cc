@@ -937,4 +937,104 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
   manager()->OnInPageNavigation(&driver_, form);
 }
 
+TEST_F(PasswordManagerTest, SavingSignupForms_NoHTMLMatch) {
+  // Signup forms don't require HTML attributes match in order to save.
+  // Verify that we prefer a better match (action + origin vs. origin).
+  std::vector<PasswordForm> observed;
+  PasswordForm expected_form;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  form.action = GURL("http://www.google.com/other/action");
+  observed.push_back(form);
+  expected_form = form;
+
+  // The initial load.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // The initial layout.
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Simulate either form changing or heuristics choosing other fields
+  // after the user has entered their information.
+  form.new_password_element = ASCIIToUTF16("new_password");
+  form.new_password_value = form.password_value;
+  form.password_element.clear();
+  form.password_value.clear();
+
+  // Saved signup forms don't have password set.
+  expected_form.password_element.clear();
+
+  manager()->ProvisionallySavePassword(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSavePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_,
+                                   observed);  // The post-navigation load.
+  manager()->OnPasswordFormsRendered(&driver_, observed,
+                                     true);  // The post-navigation layout.
+
+  ASSERT_TRUE(form_to_save);
+  EXPECT_CALL(*store_, AddLogin(FormMatches(expected_form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
+}
+
+TEST_F(PasswordManagerTest, SavingSignupForms_NoActionMatch) {
+  // Signup forms don't require HTML attributes match in order to save.
+  // Verify that we prefer a better match (HTML attributes + origin vs. origin).
+  std::vector<PasswordForm> observed;
+  PasswordForm expected_form;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  // Change the submit element so we can track which of the two forms is
+  // chosen as a better match.
+  form.submit_element = ASCIIToUTF16("different_signin");
+  expected_form = form;
+  form.new_password_element = ASCIIToUTF16("new_password");
+  form.new_password_value = form.password_value;
+  form.password_element.clear();
+  form.password_value.clear();
+  observed.push_back(form);
+
+  // The initial load.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // The initial layout.
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Simulate form changing it's action. Update expectation as well since
+  // the action is copied during saving.
+  form.action = GURL("http://www.google.com/other/action");
+  expected_form.action = form.action;
+
+  // Signup forms clear password element when saving.
+  expected_form.password_element.clear();
+
+  manager()->ProvisionallySavePassword(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSavePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_,
+                                   observed);  // The post-navigation load.
+  manager()->OnPasswordFormsRendered(&driver_, observed,
+                                     true);  // The post-navigation layout.
+
+  ASSERT_TRUE(form_to_save);
+  EXPECT_CALL(*store_, AddLogin(FormMatches(expected_form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
+}
+
 }  // namespace password_manager

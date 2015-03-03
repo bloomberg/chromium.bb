@@ -397,7 +397,6 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   submitted_form.preferred = true;
   submitted_form.username_value = saved_match()->username_value;
   submitted_form.password_value = saved_match()->password_value;
-  submitted_form.origin = saved_match()->origin;
   form_manager.ProvisionallySave(
       submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
@@ -405,6 +404,7 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   expected_saved_form.times_used = 1;
   expected_saved_form.other_possible_usernames.clear();
   expected_saved_form.form_data = saved_match()->form_data;
+  expected_saved_form.origin = saved_match()->origin;
   PasswordForm actual_saved_form;
 
   EXPECT_CALL(*(client_with_store.mock_driver()->mock_autofill_manager()),
@@ -1061,17 +1061,15 @@ TEST_F(PasswordFormManagerTest, NonHTMLFormsDoNotMatchHTMLForms) {
   ASSERT_EQ(PasswordForm::SCHEME_HTML, observed_form()->scheme);
   PasswordForm non_html_form(*observed_form());
   non_html_form.scheme = PasswordForm::SCHEME_DIGEST;
-  EXPECT_EQ(0,
-            manager.DoesManage(non_html_form) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_EQ(0, manager.DoesManage(non_html_form) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
 
   // The other way round: observing a non-HTML form, don't match a HTML form.
   PasswordForm html_form(*observed_form());
   PasswordFormManager non_html_manager(nullptr, client(), kNoDriver,
                                        non_html_form, false);
-  EXPECT_EQ(0,
-            non_html_manager.DoesManage(html_form) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_EQ(0, non_html_manager.DoesManage(html_form) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
 }
 
 TEST_F(PasswordFormManagerTest, OriginCheck_HostsMatchExactly) {
@@ -1082,9 +1080,8 @@ TEST_F(PasswordFormManagerTest, OriginCheck_HostsMatchExactly) {
   PasswordForm form_longer_host(*observed_form());
   form_longer_host.origin = GURL("http://accounts.google.com.au/a/LoginAuth");
   // Check that accounts.google.com does not match accounts.google.com.au.
-  EXPECT_EQ(0,
-            manager.DoesManage(form_longer_host) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_EQ(0, manager.DoesManage(form_longer_host) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
 }
 
 TEST_F(PasswordFormManagerTest, OriginCheck_MoreSecureSchemePathsMatchPrefix) {
@@ -1095,9 +1092,8 @@ TEST_F(PasswordFormManagerTest, OriginCheck_MoreSecureSchemePathsMatchPrefix) {
 
   PasswordForm form_longer_path(*observed_form());
   form_longer_path.origin = GURL("https://accounts.google.com/a/LoginAuth/sec");
-  EXPECT_NE(0,
-            manager.DoesManage(form_longer_path) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_NE(0, manager.DoesManage(form_longer_path) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
 }
 
 TEST_F(PasswordFormManagerTest,
@@ -1110,9 +1106,8 @@ TEST_F(PasswordFormManagerTest,
   PasswordForm form_longer_path(*observed_form());
   form_longer_path.origin = GURL("http://accounts.google.com/a/LoginAuth/sec");
   // Check that /a/LoginAuth does not match /a/LoginAuth/more.
-  EXPECT_EQ(0,
-            manager.DoesManage(form_longer_path) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_EQ(0, manager.DoesManage(form_longer_path) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
 
   PasswordForm secure_observed_form(*observed_form());
   secure_observed_form.origin = GURL("https://accounts.google.com/a/LoginAuth");
@@ -1120,14 +1115,28 @@ TEST_F(PasswordFormManagerTest,
                                      secure_observed_form, true);
   // Also for HTTPS in the observed form, and HTTP in the compared form, an
   // exact path match is expected.
-  EXPECT_EQ(0,
-            secure_manager.DoesManage(form_longer_path) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_EQ(0, secure_manager.DoesManage(form_longer_path) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
   // Not even upgrade to HTTPS in the compared form should help.
   form_longer_path.origin = GURL("https://accounts.google.com/a/LoginAuth/sec");
-  EXPECT_EQ(0,
-            secure_manager.DoesManage(form_longer_path) &
-                PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
+  EXPECT_EQ(0, secure_manager.DoesManage(form_longer_path) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, OriginCheck_OnlyOriginsMatch) {
+  // Make sure DoesManage() can distinguish when only origins match.
+  PasswordFormManager manager(NULL, client(), kNoDriver, *observed_form(),
+                              false);
+  PasswordForm different_html_attributes(*observed_form());
+  different_html_attributes.password_element = ASCIIToUTF16("random_pass");
+  different_html_attributes.username_element = ASCIIToUTF16("random_user");
+
+  EXPECT_EQ(0, manager.DoesManage(different_html_attributes) &
+                   PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
+
+  EXPECT_EQ(PasswordFormManager::RESULT_ORIGINS_MATCH,
+            manager.DoesManage(different_html_attributes) &
+                PasswordFormManager::RESULT_ORIGINS_MATCH);
 }
 
 TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
@@ -1397,15 +1406,11 @@ TEST_F(PasswordFormManagerTest,
   credentials.password_value = saved_match()->password_value;
   credentials.new_password_value = ASCIIToUTF16("NewPassword");
 
-  EXPECT_FALSE(manager.IsIgnorableChangePasswordForm(
-      credentials.username_value, credentials.password_value));
+  EXPECT_FALSE(manager.IsIgnorableChangePasswordForm(credentials));
 }
 
 TEST_F(PasswordFormManagerTest,
        IsIngnorableChangePasswordForm_NotMatchingPassword) {
-  observed_form()->new_password_element =
-      base::ASCIIToUTF16("new_password_field");
-
   TestPasswordManagerClient client_with_store(mock_store());
   PasswordFormManager manager(nullptr, &client_with_store,
                               client_with_store.driver(), *observed_form(),
@@ -1417,15 +1422,14 @@ TEST_F(PasswordFormManagerTest,
   // the username), and the user-typed password do not match anything already
   // stored. There is not much confidence in the guess being right, so the
   // password should not be stored.
-  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(
-      saved_match()->username_value, ASCIIToUTF16("DifferentPassword")));
+  saved_match()->password_value = ASCIIToUTF16("DifferentPassword");
+  saved_match()->new_password_element =
+      base::ASCIIToUTF16("new_password_field");
+  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(*saved_match()));
 }
 
 TEST_F(PasswordFormManagerTest,
        IsIngnorableChangePasswordForm_NotMatchingUsername) {
-  observed_form()->new_password_element =
-      base::ASCIIToUTF16("new_password_field");
-
   TestPasswordManagerClient client_with_store(mock_store());
   PasswordFormManager manager(nullptr, &client_with_store,
                               client_with_store.driver(), *observed_form(),
@@ -1437,8 +1441,10 @@ TEST_F(PasswordFormManagerTest,
   // the username), and the user-typed username does not match anything already
   // stored. There is not much confidence in the guess being right, so the
   // password should not be stored.
-  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(
-      ASCIIToUTF16("DifferentUsername"), saved_match()->password_value));
+  saved_match()->username_value = ASCIIToUTF16("DifferentUsername");
+  saved_match()->new_password_element =
+      base::ASCIIToUTF16("new_password_field");
+  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(*saved_match()));
 }
 
 }  // namespace password_manager

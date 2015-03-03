@@ -42,12 +42,17 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // DoesMatch. Individual flags are only relevant for HTML forms, but
   // RESULT_COMPLETE_MATCH will also be returned to indicate non-HTML forms
   // completely matching.
+  // The ordering of these flags is important. Larger matches are more
+  // preferred than lower matches. That is, since RESULT_HTML_ATTRIBUTES_MATCH
+  // is greater than RESULT_ACTION_MATCH, a match of only attributes and not
+  // actions will be preferred to one of actions and not attributes.
   enum MatchResultFlags {
     RESULT_NO_MATCH = 0,
-    RESULT_MANDATORY_ATTRIBUTES_MATCH = 1 << 0,  // Bare minimum to be a match.
-    RESULT_ACTION_MATCH = 1 << 1,                // Action URLs match too.
-    RESULT_COMPLETE_MATCH =
-        RESULT_MANDATORY_ATTRIBUTES_MATCH | RESULT_ACTION_MATCH
+    RESULT_ACTION_MATCH = 1 << 0,
+    RESULT_HTML_ATTRIBUTES_MATCH = 1 << 1,
+    RESULT_ORIGINS_MATCH = 1 << 2,
+    RESULT_COMPLETE_MATCH = RESULT_ACTION_MATCH | RESULT_HTML_ATTRIBUTES_MATCH |
+                            RESULT_ORIGINS_MATCH
   };
   // Use MatchResultMask to contain combinations of MatchResultFlags values.
   // It's a signed int rather than unsigned to avoid signed/unsigned mismatch
@@ -84,18 +89,15 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the same thread!
   bool HasCompletedMatching() const;
 
-  // Returns true if the observed form has both the current and new password
-  // fields, and the username field was not explicitly marked with
-  // "autocomplete=username" and the user-typed username and current password
-  // field values do not match the credentials already stored. In these cases it
-  // is not clear whether the username field is the right guess (often such
-  // change password forms do not contain the username at all), and the user
-  // should not be bothered with saving a potentially malformed credential. Once
-  // we handle change password forms correctly, this method should be replaced
-  // accordingly.
-  bool IsIgnorableChangePasswordForm(
-      const base::string16& typed_username,
-      const base::string16& typed_password) const;
+  // Returns true if |form| has both the current and new password fields, and
+  // the username field was not explicitly marked with "autocomplete=username"
+  // and |form.username_value| and |form.password_value| fields do not match
+  // the credentials already stored. In these cases it is not clear whether
+  // the username field is the right guess (often such change password forms do
+  // not contain the username at all), and the user should not be bothered with
+  // saving a potentially malformed credential. Once we handle change password
+  // forms correctly, this method should be replaced accordingly.
+  bool IsIgnorableChangePasswordForm(const autofill::PasswordForm& form) const;
 
   // Determines if the user opted to 'never remember' passwords for this form.
   bool IsBlacklisted() const;

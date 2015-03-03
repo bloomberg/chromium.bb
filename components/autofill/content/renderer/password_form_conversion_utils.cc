@@ -60,6 +60,9 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   if (!current_password->isNull() || !new_password->isNull())
     return true;
 
+  if (passwords.empty())
+    return false;
+
   switch (passwords.size()) {
     case 1:
       // Single password, easy.
@@ -77,7 +80,7 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
         *new_password = passwords[1];
       }
       break;
-    case 3:
+    default:
       if (!passwords[0].value().isEmpty() &&
           passwords[0].value() == passwords[1].value() &&
           passwords[0].value() == passwords[2].value()) {
@@ -91,17 +94,15 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
         *new_password = passwords[1];
       } else if (passwords[0].value() == passwords[1].value()) {
         // It is strange that the new password comes first, but trust more which
-        // fields are duplicated than the ordering of fields.
-        *current_password = passwords[2];
+        // fields are duplicated than the ordering of fields. Assume that
+        // any password fields after the new password contain sensitive
+        // information that isn't actually a password (security hint, SSN, etc.)
         *new_password = passwords[0];
       } else {
         // Three different passwords, or first and last match with middle
         // different. No idea which is which, so no luck.
         return false;
       }
-      break;
-    default:
-      return false;
   }
   return true;
 }

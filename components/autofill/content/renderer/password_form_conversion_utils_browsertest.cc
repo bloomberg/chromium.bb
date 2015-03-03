@@ -342,7 +342,10 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
       {{"alpha", "", ""}, "password1", "alpha", "password2", ""},
       {{"", "beta", "beta"}, "password1", "", "password2", "beta"},
       {{"alpha", "beta", "beta"}, "password1", "alpha", "password2", "beta"},
-      {{"beta", "beta", "alpha"}, "password3", "alpha", "password1", "beta"},
+      // If confirmed password comes first, assume that the third password
+      // field is related to security question, SSN, or credit card and ignore
+      // it.
+      {{"beta", "beta", "alpha"}, "", "", "password1", "beta"},
       // If the fields are yet empty, we speculate that we will identify them as
       // (current + new + new) once they are filled out, so we should classify
       // them the same for now to keep our abstract interpretation less flaky.

@@ -107,6 +107,10 @@ void RecordWhetherTargetDomainDiffers(const GURL& src, const GURL& target) {
                         target_domain_differs);
 }
 
+bool IsSignupForm(const PasswordForm& form) {
+  return !form.new_password_element.empty() && form.password_element.empty();
+}
+
 }  // namespace
 
 const char PasswordManager::kOtherPossibleUsernamesExperiment[] =
@@ -224,6 +228,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   scoped_ptr<PasswordFormManager> manager;
   ScopedVector<PasswordFormManager>::iterator matched_manager_it =
       pending_login_managers_.end();
+  PasswordFormManager::MatchResultMask current_match_result =
+      PasswordFormManager::RESULT_NO_MATCH;
   // Below, "matching" is in DoesManage-sense and "not ready" in
   // !HasCompletedMatching sense. We keep track of such PasswordFormManager
   // instances for UMA.
@@ -236,8 +242,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     if (result == PasswordFormManager::RESULT_NO_MATCH)
       continue;
 
-    if ((*iter)->IsIgnorableChangePasswordForm(form.username_value,
-                                               form.password_value)) {
+    if ((*iter)->IsIgnorableChangePasswordForm(form)) {
       if (logger)
         logger->LogMessage(Logger::STRING_CHANGE_PASSWORD_FORM);
       continue;
@@ -256,7 +261,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
       matched_manager_it = iter;
       break;
     } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
-                          ~PasswordFormManager::RESULT_ACTION_MATCH)) {
+                          ~PasswordFormManager::RESULT_ACTION_MATCH) &&
+               result > current_match_result) {
       // If the current manager matches the submitted form excluding the action
       // URL, remember it as a candidate and continue searching for an exact
       // match. See http://crbug.com/27246 for an example where actions can
@@ -264,6 +270,20 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
       if (logger)
         logger->LogMessage(Logger::STRING_MATCH_WITHOUT_ACTION);
       matched_manager_it = iter;
+      current_match_result = result;
+    } else if (IsSignupForm(form) && result > current_match_result) {
+      // Signup forms don't require HTML attributes to match because we don't
+      // need to fill these saved passwords on the same form in the future.
+      // Prefer the best possible match (e.g. action and origins match instead
+      // or just origin matching). Don't break in case there exists a better
+      // match.
+      // TODO(gcasto): Matching in this way is very imprecise. Having some
+      // better way to match the same form when the HTML elements change (e.g.
+      // text element changed to password element) would be useful.
+      if (logger)
+        logger->LogMessage(Logger::STRING_ORIGINS_MATCH);
+      matched_manager_it = iter;
+      current_match_result = result;
     }
   }
   // If we didn't find a manager, this means a form was submitted without
