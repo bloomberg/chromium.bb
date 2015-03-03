@@ -47,10 +47,10 @@ public:
     // Unlike scrollRectToVisible this will not scroll parent boxes.
     void scrollToRect(const LayoutRect&);
 
+    virtual const char* name() const override { return "LayoutListBox"; }
+
 private:
     HTMLSelectElement* selectElement() const;
-
-    virtual const char* renderName() const override { return "LayoutListBox"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListBox || LayoutBlockFlow::isOfType(type); }
 

@@ -39,9 +39,9 @@ public:
 
     virtual ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : RectGeometryFastPath; }
 
-private:
-    virtual const char* renderName() const override { return "LayoutSVGRect"; }
+    virtual const char* name() const override { return "LayoutSVGRect"; }
 
+private:
     virtual void updateShapeFromElement() override;
     virtual bool isShapeEmpty() const override { return m_usePathFallback ? LayoutSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;

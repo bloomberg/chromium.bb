@@ -60,9 +60,9 @@ public:
 
     bool isEmpty() const;
 
-private:
-    virtual const char* renderName() const override { return "LayoutListItem"; }
+    virtual const char* name() const override { return "LayoutListItem"; }
 
+private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListItem || LayoutBlockFlow::isOfType(type); }
 
     virtual void willBeDestroyed() override;

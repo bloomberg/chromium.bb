@@ -382,11 +382,6 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
     return false;
 }
 
-const char* LayoutMultiColumnFlowThread::renderName() const
-{
-    return "LayoutMultiColumnFlowThread";
-}
-
 void LayoutMultiColumnFlowThread::addRegionToThread(LayoutMultiColumnSet* columnSet)
 {
     if (LayoutMultiColumnSet* nextSet = columnSet->nextSiblingMultiColumnSet()) {

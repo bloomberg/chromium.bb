@@ -39,7 +39,7 @@ public:
 
     virtual ~LayoutReplica();
 
-    virtual const char* renderName() const override { return "LayoutReplica"; }
+    virtual const char* name() const override { return "LayoutReplica"; }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 

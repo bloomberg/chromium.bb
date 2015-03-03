@@ -95,13 +95,14 @@ public:
     const GridAxis& rows() { return m_rows; }
     const GridAxis& columns() { return m_cols; }
 
+    virtual const char* name() const override { return "LayoutFrameSet"; }
+
 private:
     static const int noSplit = -1;
 
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return "LayoutFrameSet"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrameSet || LayoutBox::isOfType(type); }
 
     virtual void layout() override;

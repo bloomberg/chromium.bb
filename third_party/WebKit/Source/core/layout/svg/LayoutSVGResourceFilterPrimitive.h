@@ -42,7 +42,7 @@ public:
 
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceFilterPrimitive"; }
+    virtual const char* name() const override { return "LayoutSVGResourceFilterPrimitive"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || LayoutSVGHiddenContainer::isOfType(type); }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)

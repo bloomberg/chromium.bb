@@ -230,6 +230,8 @@ public:
     HashSet<LayoutTableCell*>& overflowingCells() { return m_overflowingCells; }
     bool hasMultipleCellLevels() { return m_hasMultipleCellLevels; }
 
+    virtual const char* name() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableSection (anonymous)" : "LayoutTableSection"; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
@@ -237,8 +239,6 @@ protected:
 private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
-
-    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableSection (anonymous)" : "LayoutTableSection"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableSection || LayoutBox::isOfType(type); }
 

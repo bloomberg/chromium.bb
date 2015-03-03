@@ -1019,7 +1019,7 @@ LayoutUnit LayoutDeprecatedFlexibleBox::allowedChildFlex(LayoutBox* child, bool 
     return 0;
 }
 
-const char* LayoutDeprecatedFlexibleBox::renderName() const
+const char* LayoutDeprecatedFlexibleBox::name() const
 {
     if (isFloating())
         return "LayoutDeprecatedFlexibleBox (floating)";

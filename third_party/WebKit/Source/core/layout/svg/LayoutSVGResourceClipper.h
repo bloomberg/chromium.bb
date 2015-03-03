@@ -38,7 +38,7 @@ public:
     explicit LayoutSVGResourceClipper(SVGClipPathElement*);
     virtual ~LayoutSVGResourceClipper();
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceClipper"; }
+    virtual const char* name() const override { return "LayoutSVGResourceClipper"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;

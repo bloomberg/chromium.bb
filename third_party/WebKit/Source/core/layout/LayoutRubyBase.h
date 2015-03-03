@@ -43,7 +43,7 @@ public:
 
     static LayoutRubyBase* createAnonymous(Document*);
 
-    virtual const char* renderName() const override { return "LayoutRubyBase (anonymous)"; }
+    virtual const char* name() const override { return "LayoutRubyBase (anonymous)"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || LayoutBlockFlow::isOfType(type); }
 

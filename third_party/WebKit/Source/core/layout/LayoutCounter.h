@@ -43,11 +43,12 @@ public:
 
     void updateCounter();
 
+    virtual const char* name() const override { return "LayoutCounter"; }
+
 protected:
     virtual void willBeDestroyed() override;
 
 private:
-    virtual const char* renderName() const override;
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCounter || LayoutText::isOfType(type); }
     virtual PassRefPtr<StringImpl> originalText() const override;
 

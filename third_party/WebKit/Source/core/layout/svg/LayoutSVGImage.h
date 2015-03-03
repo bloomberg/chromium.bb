@@ -51,9 +51,9 @@ public:
     virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type); }
 
-private:
-    virtual const char* renderName() const override { return "LayoutSVGImage"; }
+    virtual const char* name() const override { return "LayoutSVGImage"; }
 
+private:
     virtual FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;

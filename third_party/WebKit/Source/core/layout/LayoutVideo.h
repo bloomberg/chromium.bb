@@ -47,6 +47,8 @@ public:
     HTMLVideoElement* videoElement() const;
     bool acceleratedRenderingInUse();
 
+    virtual const char* name() const override { return "LayoutVideo"; }
+
 private:
     virtual void updateFromElement() override;
 
@@ -55,8 +57,6 @@ private:
     void updateIntrinsicSize();
 
     virtual void imageChanged(WrappedImagePtr, const IntRect*) override;
-
-    virtual const char* renderName() const override { return "LayoutVideo"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || LayoutMedia::isOfType(type); }
 

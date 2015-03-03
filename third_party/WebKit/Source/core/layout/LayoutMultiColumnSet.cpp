@@ -224,11 +224,6 @@ void LayoutMultiColumnSet::addOverflowFromChildren()
         addVisualOverflow(overflowRect);
 }
 
-const char* LayoutMultiColumnSet::renderName() const
-{
-    return "LayoutMultiColumnSet";
-}
-
 void LayoutMultiColumnSet::insertedIntoTree()
 {
     LayoutRegion::insertedIntoTree();

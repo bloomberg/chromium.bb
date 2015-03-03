@@ -3140,7 +3140,7 @@ void LayoutBlockFlow::positionDialog()
     dialog->setCentered(top);
 }
 
-const char* LayoutBlockFlow::renderName() const
+const char* LayoutBlockFlow::name() const
 {
     if (isFloating())
         return "LayoutBlockFlow (floating)";

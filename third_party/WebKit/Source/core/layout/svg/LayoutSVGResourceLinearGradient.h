@@ -33,7 +33,7 @@ public:
     explicit LayoutSVGResourceLinearGradient(SVGLinearGradientElement*);
     virtual ~LayoutSVGResourceLinearGradient();
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceLinearGradient"; }
+    virtual const char* name() const override { return "LayoutSVGResourceLinearGradient"; }
 
     static const LayoutSVGResourceType s_resourceType = LinearGradientResourceType;
     virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }

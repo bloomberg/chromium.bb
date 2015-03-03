@@ -46,9 +46,9 @@ public:
 
     static const int afterButtonSpacing = 4;
 
-private:
-    virtual const char* renderName() const override { return "LayoutFileUploadControl"; }
+    virtual const char* name() const override { return "LayoutFileUploadControl"; }
 
+private:
     virtual void updateFromElement() override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;

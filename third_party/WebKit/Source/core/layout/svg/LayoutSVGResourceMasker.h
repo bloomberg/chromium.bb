@@ -42,7 +42,7 @@ public:
     explicit LayoutSVGResourceMasker(SVGMaskElement*);
     virtual ~LayoutSVGResourceMasker();
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceMasker"; }
+    virtual const char* name() const override { return "LayoutSVGResourceMasker"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;

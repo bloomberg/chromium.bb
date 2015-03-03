@@ -35,7 +35,7 @@ public:
     explicit LayoutSVGResourceMarker(SVGMarkerElement*);
     virtual ~LayoutSVGResourceMarker();
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceMarker"; }
+    virtual const char* name() const override { return "LayoutSVGResourceMarker"; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;

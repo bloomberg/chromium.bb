@@ -49,6 +49,8 @@ public:
 
     HTMLMediaElement* mediaElement() const;
 
+    virtual const char* name() const override { return "LayoutMedia"; }
+
 protected:
     virtual void layout() override;
 
@@ -66,7 +68,6 @@ private:
     virtual bool canHaveChildren() const override final { return true; }
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override final;
 
-    virtual const char* renderName() const override { return "LayoutMedia"; }
     virtual bool isImage() const override final { return false; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 

@@ -3735,7 +3735,7 @@ bool LayoutBlock::hasMarginAfterQuirk(const LayoutBox* child) const
     return false;
 }
 
-const char* LayoutBlock::renderName() const
+const char* LayoutBlock::name() const
 {
     ASSERT_NOT_REACHED();
     return "LayoutBlock";

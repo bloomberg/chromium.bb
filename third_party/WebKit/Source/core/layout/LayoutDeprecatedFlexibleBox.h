@@ -34,7 +34,7 @@ public:
     LayoutDeprecatedFlexibleBox(Element&);
     virtual ~LayoutDeprecatedFlexibleBox();
 
-    virtual const char* renderName() const override;
+    virtual const char* name() const override;
 
     virtual void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
 

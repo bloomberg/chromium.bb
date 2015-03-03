@@ -50,13 +50,14 @@ public:
     bool selfWillPaint();
 
     virtual bool hasNonIsolatedBlendingDescendants() const override final;
+
+    virtual const char* name() const override { return "LayoutSVGContainer"; }
+
 protected:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || LayoutSVGModelObject::isOfType(type); }
-    virtual const char* renderName() const override { return "LayoutSVGContainer"; }
-
     virtual void layout() override;
 
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override final;

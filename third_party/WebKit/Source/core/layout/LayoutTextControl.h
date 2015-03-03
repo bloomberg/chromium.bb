@@ -36,6 +36,8 @@ public:
     HTMLTextFormControlElement* textFormControlElement() const;
     virtual PassRefPtr<LayoutStyle> createInnerEditorStyle(const LayoutStyle& startStyle) const = 0;
 
+    virtual const char* name() const override { return "LayoutTextControl"; }
+
 protected:
     LayoutTextControl(HTMLTextFormControlElement*);
 
@@ -72,7 +74,6 @@ protected:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextControl || LayoutBlockFlow::isOfType(type); }
 
 private:
-    virtual const char* renderName() const override { return "LayoutTextControl"; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
     virtual void computePreferredLogicalWidths() override final;
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override final { }

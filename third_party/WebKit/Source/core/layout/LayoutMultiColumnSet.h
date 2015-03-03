@@ -146,6 +146,8 @@ public:
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.
     unsigned actualColumnCount() const;
 
+    virtual const char* name() const override { return "LayoutMultiColumnSet"; }
+
 protected:
     LayoutMultiColumnSet(LayoutFlowThread*);
 
@@ -160,8 +162,6 @@ private:
     virtual void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;
 
     virtual void addOverflowFromChildren() override;
-
-    virtual const char* renderName() const override;
 
     virtual LayoutRect flowThreadPortionRect() const override;
 

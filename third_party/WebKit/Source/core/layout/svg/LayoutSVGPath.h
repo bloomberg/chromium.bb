@@ -40,9 +40,9 @@ public:
     virtual const Vector<FloatPoint>* zeroLengthLineCaps() const override { return &m_zeroLengthLinecapLocations; }
     static FloatRect zeroLengthSubpathRect(const FloatPoint&, float);
 
-private:
-    virtual const char* renderName() const override { return "LayoutSVGPath"; }
+    virtual const char* name() const override { return "LayoutSVGPath"; }
 
+private:
     virtual void updateShapeFromElement() override;
     FloatRect calculateUpdatedStrokeBoundingBox() const;
 

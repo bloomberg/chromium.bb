@@ -469,7 +469,7 @@ static inline void writeSVGInlineTextBoxes(TextStream& ts, const LayoutText& tex
 static void writeStandardPrefix(TextStream& ts, const LayoutObject& object, int indent)
 {
     writeIndent(ts, indent);
-    ts << object.renderName();
+    ts << object.name();
 
     if (object.node())
         ts << " {" << object.node()->nodeName() << "}";

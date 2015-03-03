@@ -97,6 +97,8 @@ public:
 
     bool hitTestCulledInline(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset);
 
+    virtual const char* name() const override;
+
 protected:
     virtual void willBeDestroyed() override;
 
@@ -111,8 +113,6 @@ private:
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
     const LayoutObjectChildList* children() const { return &m_children; }
     LayoutObjectChildList* children() { return &m_children; }
-
-    virtual const char* renderName() const override;
 
     virtual bool isLayoutInline() const override final { return true; }
 

@@ -39,7 +39,7 @@ public:
 
     virtual ~LayoutScrollbarPart();
 
-    virtual const char* renderName() const override { return "LayoutScrollbarPart"; }
+    virtual const char* name() const override { return "LayoutScrollbarPart"; }
 
     virtual LayerType layerTypeRequired() const override { return NoLayer; }
 

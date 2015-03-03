@@ -36,11 +36,6 @@ LayoutWordBreak::LayoutWordBreak(HTMLElement* element)
 {
 }
 
-const char* LayoutWordBreak::renderName() const
-{
-    return "LayoutWordBreak";
-}
-
 bool LayoutWordBreak::isWordBreak() const
 {
     return true;

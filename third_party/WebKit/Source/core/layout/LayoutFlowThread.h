@@ -122,9 +122,9 @@ public:
 
     virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
 
-protected:
-    virtual const char* renderName() const = 0;
+    virtual const char* name() const = 0;
 
+protected:
     void generateColumnSetIntervalTree();
 
     LayoutMultiColumnSetList m_multiColumnSetList;

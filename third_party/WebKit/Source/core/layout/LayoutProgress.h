@@ -41,8 +41,9 @@ public:
 
     HTMLProgressElement* progressElement() const;
 
+    virtual const char* name() const override { return "LayoutProgress"; }
+
 private:
-    virtual const char* renderName() const override { return "LayoutProgress"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type); }
 
     void animationTimerFired(Timer<LayoutProgress>*);

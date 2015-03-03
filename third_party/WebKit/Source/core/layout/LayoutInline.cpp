@@ -777,7 +777,7 @@ LayoutUnit LayoutInline::marginAfter(const LayoutStyle* otherStyle) const
     return computeMargin(this, style()->marginAfterUsing(otherStyle ? otherStyle : style()));
 }
 
-const char* LayoutInline::renderName() const
+const char* LayoutInline::name() const
 {
     if (isRelPositioned())
         return "LayoutInline (relative positioned)";

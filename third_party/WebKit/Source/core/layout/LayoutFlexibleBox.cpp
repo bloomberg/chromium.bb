@@ -89,11 +89,6 @@ LayoutFlexibleBox* LayoutFlexibleBox::createAnonymous(Document* document)
     return renderer;
 }
 
-const char* LayoutFlexibleBox::renderName() const
-{
-    return "LayoutFlexibleBox";
-}
-
 void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     // FIXME: We're ignoring flex-basis here and we shouldn't. We can't start honoring it though until

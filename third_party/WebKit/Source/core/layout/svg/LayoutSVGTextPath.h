@@ -36,9 +36,9 @@ public:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTextPath || LayoutSVGInline::isOfType(type); }
 
-private:
-    virtual const char* renderName() const override { return "LayoutSVGTextPath"; }
+    virtual const char* name() const override { return "LayoutSVGTextPath"; }
 
+private:
     Path m_layoutPath;
 };
 

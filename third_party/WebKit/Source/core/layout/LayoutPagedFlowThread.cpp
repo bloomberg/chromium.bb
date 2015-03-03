@@ -15,11 +15,6 @@ LayoutPagedFlowThread* LayoutPagedFlowThread::createAnonymous(Document& document
     return renderer;
 }
 
-const char* LayoutPagedFlowThread::renderName() const
-{
-    return "LayoutPagedFlowThread";
-}
-
 bool LayoutPagedFlowThread::needsNewWidth() const
 {
     return progressionIsInline() != pagedBlockFlow()->style()->hasInlinePaginationAxis();

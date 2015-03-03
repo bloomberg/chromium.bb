@@ -33,8 +33,9 @@ public:
 
     Orientation orientation() const;
 
+    virtual const char* name() const override { return "LayoutDetailsMarker"; }
+
 private:
-    virtual const char* renderName() const override { return "LayoutDetailsMarker"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type); }
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 

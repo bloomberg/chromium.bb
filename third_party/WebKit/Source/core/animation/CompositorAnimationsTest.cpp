@@ -266,7 +266,7 @@ public:
         proxy->destroy();
     }
 
-    const char* renderName() const override { return nullptr; }
+    const char* name() const override { return nullptr; }
     void layout() override { }
 
 private:

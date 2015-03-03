@@ -56,10 +56,11 @@ public:
 
     void listItemStyleDidChange();
 
+    virtual const char* name() const override { return "LayoutListMarker"; }
+
 private:
     LayoutListMarker(LayoutListItem*);
 
-    virtual const char* renderName() const override { return "LayoutListMarker"; }
     virtual void computePreferredLogicalWidths() override;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || LayoutBox::isOfType(type); }

@@ -58,8 +58,9 @@ public:
 
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
 
+    virtual const char* name() const override { return "LayoutSVGText"; }
+
 private:
-    virtual const char* renderName() const override { return "LayoutSVGText"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGText || LayoutSVGBlock::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;

@@ -43,7 +43,7 @@ public:
 
     static LayoutFlexibleBox* createAnonymous(Document*);
 
-    virtual const char* renderName() const override;
+    virtual const char* name() const override { return "LayoutFlexibleBox"; }
 
     virtual bool isFlexibleBox() const override final { return true; }
     virtual bool canCollapseAnonymousBlockChild() const override { return false; }

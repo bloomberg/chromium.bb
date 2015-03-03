@@ -1753,7 +1753,7 @@ void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& pa
     GridPainter(*this).paintChildren(paintInfo, paintOffset);
 }
 
-const char* LayoutGrid::renderName() const
+const char* LayoutGrid::name() const
 {
     if (isFloating())
         return "LayoutGrid (floating)";

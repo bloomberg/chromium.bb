@@ -24,6 +24,8 @@ public:
     LayoutBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
     void updateMarginProperties();
 
+    virtual const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
+
 protected:
     virtual void willBeRemovedFromTree() override;
     virtual bool needsPreferredWidthsRecalculation() const override;
@@ -34,7 +36,6 @@ protected:
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
     virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset) override;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
-    virtual const char* renderName() const override;
 
 private:
     LayoutMultiColumnSpannerPlaceholder(LayoutBox*);

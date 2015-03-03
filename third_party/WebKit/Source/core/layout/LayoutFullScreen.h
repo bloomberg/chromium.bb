@@ -35,7 +35,7 @@ public:
     static LayoutFullScreen* createAnonymous(Document*);
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreen || LayoutFlexibleBox::isOfType(type); }
-    virtual const char* renderName() const override { return "LayoutFullScreen"; }
+    virtual const char* name() const override { return "LayoutFullScreen"; }
 
     void setPlaceholder(LayoutBlock*);
     LayoutBlock* placeholder() { return m_placeholder; }

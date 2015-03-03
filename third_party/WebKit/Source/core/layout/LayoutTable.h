@@ -278,13 +278,13 @@ public:
     void subtractCaptionRect(LayoutRect&) const;
     void recalcCollapsedBorders();
 
+    virtual const char* name() const override { return "LayoutTable"; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
     virtual void simplifiedNormalFlowLayout() override;
 
 private:
-    virtual const char* renderName() const override { return "LayoutTable"; }
-
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }
 
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;

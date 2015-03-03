@@ -373,11 +373,6 @@ void LayoutCounter::willBeDestroyed()
     LayoutText::willBeDestroyed();
 }
 
-const char* LayoutCounter::renderName() const
-{
-    return "LayoutCounter";
-}
-
 PassRefPtr<StringImpl> LayoutCounter::originalText() const
 {
     if (!m_counterNode) {

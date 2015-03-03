@@ -138,7 +138,9 @@ public:
     explicit LayoutObject(Node*);
     virtual ~LayoutObject();
 
-    virtual const char* renderName() const = 0;
+    // Returns the decorated name used by run-layout-tests. The name contains the name of the object
+    // along with extra information about the positioning.
+    virtual const char* name() const = 0;
 
     String debugName() const;
 

@@ -34,7 +34,7 @@ public:
     explicit LayoutSVGGradientStop(SVGStopElement*);
     virtual ~LayoutSVGGradientStop();
 
-    virtual const char* renderName() const override { return "LayoutSVGGradientStop"; }
+    virtual const char* name() const override { return "LayoutSVGGradientStop"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGGradientStop || LayoutObject::isOfType(type); }
 
     virtual void layout() override;

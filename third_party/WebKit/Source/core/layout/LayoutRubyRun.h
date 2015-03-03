@@ -62,6 +62,8 @@ public:
 
     static LayoutRubyRun* staticCreateRubyRun(const LayoutObject* parentRuby);
 
+    virtual const char* name() const override { return "LayoutRubyRun (anonymous)"; }
+
 protected:
     LayoutRubyBase* createRubyBase() const;
 
@@ -69,7 +71,6 @@ private:
     LayoutRubyRun();
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyRun || LayoutBlockFlow::isOfType(type); }
-    virtual const char* renderName() const override { return "LayoutRubyRun (anonymous)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { }
 };

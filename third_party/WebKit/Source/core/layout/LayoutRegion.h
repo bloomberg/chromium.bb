@@ -64,7 +64,7 @@ public:
     virtual bool canHaveChildren() const override final { return false; }
     virtual bool canHaveGeneratedChildren() const override final { return true; }
 
-    virtual const char* renderName() const override { return "LayoutRegion"; }
+    virtual const char* name() const override { return "LayoutRegion"; }
 
 protected:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;

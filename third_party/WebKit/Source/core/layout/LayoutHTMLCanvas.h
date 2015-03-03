@@ -42,8 +42,9 @@ public:
 
     void canvasSizeChanged();
 
+    virtual const char* name() const override { return "LayoutHTMLCanvas"; }
+
 private:
-    virtual const char* renderName() const override { return "LayoutHTMLCanvas"; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
     virtual void intrinsicSizeChanged() override { canvasSizeChanged(); }
 

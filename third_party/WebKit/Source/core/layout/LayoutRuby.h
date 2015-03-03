@@ -59,12 +59,13 @@ public:
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject* child) override;
 
+    virtual const char* name() const override { return "LayoutRuby (inline)"; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || LayoutInline::isOfType(type); }
-    virtual const char* renderName() const override { return "LayoutRuby (inline)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
 };
 
@@ -77,12 +78,13 @@ public:
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject* child) override;
 
+    virtual const char* name() const override { return "LayoutRuby (block)"; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRuby || LayoutBlockFlow::isOfType(type); }
-    virtual const char* renderName() const override { return "LayoutRuby (block)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { ASSERT_NOT_REACHED(); }
 };

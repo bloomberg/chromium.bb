@@ -34,7 +34,7 @@ public:
     explicit LayoutButton(Element*);
     virtual ~LayoutButton();
 
-    virtual const char* renderName() const override { return "LayoutButton"; }
+    virtual const char* name() const override { return "LayoutButton"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutButton || LayoutFlexibleBox::isOfType(type); }
 
     virtual bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }

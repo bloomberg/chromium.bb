@@ -45,9 +45,9 @@ public:
 
     virtual PassRefPtr<StringImpl> originalText() const override;
 
-private:
-    virtual const char* renderName() const override { return "LayoutSVGInlineText"; }
+    virtual const char* name() const override { return "LayoutSVGInlineText"; }
 
+private:
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
 

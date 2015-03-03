@@ -174,11 +174,6 @@ LayoutText::~LayoutText()
 
 #endif
 
-const char* LayoutText::renderName() const
-{
-    return "LayoutText";
-}
-
 bool LayoutText::isTextFragment() const
 {
     return false;

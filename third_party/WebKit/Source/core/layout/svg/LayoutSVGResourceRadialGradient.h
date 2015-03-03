@@ -33,7 +33,7 @@ public:
     explicit LayoutSVGResourceRadialGradient(SVGRadialGradientElement*);
     virtual ~LayoutSVGResourceRadialGradient();
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceRadialGradient"; }
+    virtual const char* name() const override { return "LayoutSVGResourceRadialGradient"; }
 
     static const LayoutSVGResourceType s_resourceType = RadialGradientResourceType;
     virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }

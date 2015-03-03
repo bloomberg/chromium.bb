@@ -43,6 +43,8 @@ public:
     void setPluginUnavailabilityReason(PluginUnavailabilityReason);
     bool showsUnavailablePluginIndicator() const;
 
+    virtual const char* name() const override { return "LayoutEmbeddedObject"; }
+
 private:
     virtual void paintContents(const PaintInfo&, const LayoutPoint&) override final;
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override final;
@@ -50,7 +52,6 @@ private:
 
     virtual void layout() override final;
 
-    virtual const char* renderName() const override { return "LayoutEmbeddedObject"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
     virtual LayoutBox* embeddedContentBox() const override final;
 

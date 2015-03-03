@@ -94,11 +94,11 @@ public:
 
     void addOverflowFromCell(const LayoutTableCell*);
 
+    virtual const char* name() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableRow (anonymous)" : "LayoutTableRow"; }
+
 private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
-
-    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableRow (anonymous)" : "LayoutTableRow"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutBox::isOfType(type); }
 

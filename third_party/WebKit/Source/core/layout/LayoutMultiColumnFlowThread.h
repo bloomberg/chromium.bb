@@ -175,6 +175,8 @@ public:
 
     void columnRuleStyleDidChange();
 
+    virtual const char* name() const override { return "LayoutMultiColumnFlowThread"; }
+
 protected:
     LayoutMultiColumnFlowThread();
     void setProgressionIsInline(bool isInline) { m_progressionIsInline = isInline; }
@@ -187,7 +189,6 @@ private:
     void createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore = 0);
     virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
-    virtual const char* renderName() const override;
     virtual void addRegionToThread(LayoutMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
     virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;

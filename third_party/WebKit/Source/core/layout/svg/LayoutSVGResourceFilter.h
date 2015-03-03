@@ -78,7 +78,7 @@ public:
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
-    virtual const char* renderName() const override { return "LayoutSVGResourceFilter"; }
+    virtual const char* name() const override { return "LayoutSVGResourceFilter"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilter || LayoutSVGResourceContainer::isOfType(type); }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;

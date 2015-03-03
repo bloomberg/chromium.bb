@@ -54,7 +54,7 @@ public:
     // Returns the total count of calls to HitTest, for testing.
     unsigned hitTestCount() const { return m_hitTestCount; }
 
-    virtual const char* renderName() const override { return "LayoutView"; }
+    virtual const char* name() const override { return "LayoutView"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type); }
 

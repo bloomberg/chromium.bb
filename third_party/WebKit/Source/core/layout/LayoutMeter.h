@@ -35,11 +35,12 @@ public:
     HTMLMeterElement* meterElement() const;
     virtual void updateFromElement() override;
 
+    virtual const char* name() const override { return "LayoutMeter"; }
+
 private:
     virtual void updateLogicalWidth() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual const char* renderName() const override { return "LayoutMeter"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMeter || LayoutBlockFlow::isOfType(type); }
 };
 

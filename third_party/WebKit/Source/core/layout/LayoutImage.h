@@ -67,6 +67,8 @@ public:
             imageChanged(m_imageResource->imagePtr());
     }
 
+    virtual const char* name() const override { return "LayoutImage"; }
+
 protected:
     virtual bool needsPreferredWidthsRecalculation() const override final;
     virtual LayoutBox* embeddedContentBox() const override final;
@@ -82,8 +84,6 @@ protected:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type); }
 
 private:
-    virtual const char* renderName() const override { return "LayoutImage"; }
-
     virtual bool isImage() const override { return true; }
 
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;

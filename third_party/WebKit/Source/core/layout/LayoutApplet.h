@@ -33,8 +33,7 @@ public:
     explicit LayoutApplet(HTMLAppletElement*);
     virtual ~LayoutApplet();
 
-private:
-    virtual const char* renderName() const override { return "LayoutApplet"; }
+    virtual const char* name() const override { return "LayoutApplet"; }
 };
 
 } // namespace blink

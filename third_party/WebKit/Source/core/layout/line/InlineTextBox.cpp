@@ -540,7 +540,7 @@ void InlineTextBox::showBox(int printedCharacters) const
     printedCharacters += fprintf(stderr, "%s %p", boxName(), this);
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
-    printedCharacters = fprintf(stderr, "\t%s %p", obj.renderName(), &obj);
+    printedCharacters = fprintf(stderr, "\t%s %p", obj.name(), &obj);
     const int rendererCharacterOffset = 75;
     for (; printedCharacters < rendererCharacterOffset; printedCharacters++)
         fputc(' ', stderr);

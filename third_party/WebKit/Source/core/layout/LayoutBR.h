@@ -34,7 +34,7 @@ public:
     explicit LayoutBR(Node*);
     virtual ~LayoutBR();
 
-    virtual const char* renderName() const override { return "LayoutBR"; }
+    virtual const char* name() const override { return "LayoutBR"; }
 
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /*paintInvalidationContainer*/) const override { return LayoutRect(); }
 

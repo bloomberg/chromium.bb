@@ -54,6 +54,8 @@ public:
 
     virtual PopupMenuStyle itemStyle(unsigned listIndex) const override;
 
+    virtual const char* name() const override { return "LayoutMenuList"; }
+
 private:
     HTMLSelectElement* selectElement() const;
 
@@ -69,8 +71,6 @@ private:
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override;
     virtual bool hasControlClip() const override { return true; }
     virtual bool canHaveGeneratedChildren() const override { return false; }
-
-    virtual const char* renderName() const override { return "LayoutMenuList"; }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 

@@ -46,7 +46,7 @@ public:
     virtual ~LayoutText();
 #endif
 
-    virtual const char* renderName() const override;
+    virtual const char* name() const override { return "LayoutText"; }
 
     virtual bool isTextFragment() const;
     virtual bool isWordBreak() const;

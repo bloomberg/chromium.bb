@@ -32,7 +32,7 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
 public:
     explicit LayoutSVGHiddenContainer(SVGElement*);
 
-    virtual const char* renderName() const override { return "LayoutSVGHiddenContainer"; }
+    virtual const char* name() const override { return "LayoutSVGHiddenContainer"; }
 
 protected:
     virtual void layout() override;

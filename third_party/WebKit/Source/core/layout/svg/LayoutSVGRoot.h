@@ -68,6 +68,8 @@ public:
 
     virtual bool hasNonIsolatedBlendingDescendants() const override final;
 
+    virtual const char* name() const override { return "LayoutSVGRoot"; }
+
 private:
     const LayoutObjectChildList* children() const { return &m_children; }
     LayoutObjectChildList* children() { return &m_children; }
@@ -75,7 +77,6 @@ private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return "LayoutSVGRoot"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || LayoutReplaced::isOfType(type); }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;

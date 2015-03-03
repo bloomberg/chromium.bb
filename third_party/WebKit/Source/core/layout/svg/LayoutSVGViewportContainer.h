@@ -42,9 +42,10 @@ public:
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
+    virtual const char* name() const override { return "LayoutSVGViewportContainer"; }
+
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
-    virtual const char* renderName() const override { return "LayoutSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;
     virtual const AffineTransform& localToParentTransform() const override { return m_localToParentTransform; }

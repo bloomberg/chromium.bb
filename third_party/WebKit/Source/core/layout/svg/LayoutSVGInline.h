@@ -29,7 +29,7 @@ class LayoutSVGInline : public LayoutInline {
 public:
     explicit LayoutSVGInline(Element*);
 
-    virtual const char* renderName() const override { return "LayoutSVGInline"; }
+    virtual const char* name() const override { return "LayoutSVGInline"; }
     virtual LayerType layerTypeRequired() const override final { return NoLayer; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInline || LayoutInline::isOfType(type); }
 

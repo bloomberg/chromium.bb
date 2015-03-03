@@ -40,7 +40,7 @@ public:
     LayoutRubyText(Element*);
     virtual ~LayoutRubyText();
 
-    virtual const char* renderName() const override { return "LayoutRubyText"; }
+    virtual const char* name() const override { return "LayoutRubyText"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyText || LayoutBlockFlow::isOfType(type); }
 

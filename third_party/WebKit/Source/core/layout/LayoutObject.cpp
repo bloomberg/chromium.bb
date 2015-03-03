@@ -250,7 +250,7 @@ LayoutObject::~LayoutObject()
 String LayoutObject::debugName() const
 {
     StringBuilder name;
-    name.append(renderName());
+    name.append(this->name());
 
     if (Node* node = this->node()) {
         name.append(' ');
@@ -1442,7 +1442,7 @@ void LayoutObject::showLayoutObject() const
 
 void LayoutObject::showLayoutObject(int printedCharacters) const
 {
-    printedCharacters += fprintf(stderr, "%s %p", renderName(), this);
+    printedCharacters += fprintf(stderr, "%s %p", name(), this);
 
     if (isText() && toLayoutText(this)->isTextFragment())
         printedCharacters += fprintf(stderr, " \"%s\" ", toLayoutText(this)->text().ascii().data());

@@ -38,11 +38,12 @@ public:
     virtual ~LayoutQuote();
     void attachQuote();
 
+    virtual const char* name() const override { return "LayoutQuote"; };
+
 private:
     void detachQuote();
 
     virtual void willBeDestroyed() override;
-    virtual const char* renderName() const override { return "LayoutQuote"; };
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || LayoutInline::isOfType(type); }
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
     virtual void willBeRemovedFromTree() override;

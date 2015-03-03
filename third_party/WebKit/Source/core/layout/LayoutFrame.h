@@ -36,8 +36,9 @@ public:
 
     FrameEdgeInfo edgeInfo() const;
 
+    virtual const char* name() const override { return "LayoutFrame"; }
+
 private:
-    virtual const char* renderName() const override { return "LayoutFrame"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || LayoutPart::isOfType(type); }
 
     virtual void updateFromElement() override;

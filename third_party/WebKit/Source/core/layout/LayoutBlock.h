@@ -82,6 +82,8 @@ public:
 
     LineBoxList* lineBoxes() { return &m_lineBoxes; }
 
+    virtual const char* name() const override;
+
 protected:
     InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
     InlineFlowBox* lastLineBox() const { return m_lineBoxes.lastLineBox(); }
@@ -326,8 +328,6 @@ protected:
 private:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
-
-    virtual const char* renderName() const override;
 
     virtual bool isLayoutBlock() const override final { return true; }
 

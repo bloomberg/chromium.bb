@@ -31,7 +31,7 @@ public:
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
-    virtual const char* renderName() const override { return "LayoutSVGTSpan"; }
+    virtual const char* name() const override { return "LayoutSVGTSpan"; }
 };
 }
 

@@ -78,11 +78,12 @@ public:
     const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell*) const;
     const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell*) const;
 
+    virtual const char* name() const override { return "LayoutTableCol"; }
+
 private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return "LayoutTableCol"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutTableCol || LayoutBox::isOfType(type); }
     virtual void updateFromElement() override;
     virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }

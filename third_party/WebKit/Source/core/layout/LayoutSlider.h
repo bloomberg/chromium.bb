@@ -37,8 +37,9 @@ public:
 
     bool inDragMode() const;
 
+    virtual const char* name() const override { return "LayoutSlider"; }
+
 private:
-    virtual const char* renderName() const override { return "LayoutSlider"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSlider || LayoutFlexibleBox::isOfType(type); }
 
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;

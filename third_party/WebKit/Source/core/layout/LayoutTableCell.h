@@ -214,6 +214,9 @@ public:
         return !table()->cellAfter(this) || !table()->cellBefore(this);
     }
 #endif
+
+    virtual const char* name() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
     virtual void computePreferredLogicalWidths() override;
@@ -221,7 +224,6 @@ protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
 
 private:
-    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || LayoutBlockFlow::isOfType(type); }
 

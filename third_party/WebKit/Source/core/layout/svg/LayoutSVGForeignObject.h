@@ -32,7 +32,7 @@ public:
     explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
     virtual ~LayoutSVGForeignObject();
 
-    virtual const char* renderName() const override { return "LayoutSVGForeignObject"; }
+    virtual const char* name() const override { return "LayoutSVGForeignObject"; }
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
