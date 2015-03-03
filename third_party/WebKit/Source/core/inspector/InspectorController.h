@@ -87,7 +87,6 @@ public:
 
     void connectFrontend(const String& hostId, InspectorFrontendChannel*);
     void disconnectFrontend();
-    void reconnectFrontend();
     void reuseFrontend(const String& hostId, InspectorFrontendChannel*, const String& inspectorStateCookie);
     void setProcessId(long);
     void setLayerTreeId(int);

@@ -58,7 +58,6 @@ public:
     // Inspector front-end API.
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;
-    virtual void reset(ErrorString*) override;
 
     virtual void init() override;
     virtual void setFrontend(InspectorFrontend*) override;

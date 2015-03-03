@@ -275,16 +275,6 @@ void InspectorController::disconnectFrontend()
     m_hostId = "";
 }
 
-void InspectorController::reconnectFrontend()
-{
-    if (!m_inspectorFrontend)
-        return;
-    InspectorFrontendChannel* frontendChannel = m_inspectorFrontend->channel();
-    String hostId = m_hostId;
-    disconnectFrontend();
-    connectFrontend(hostId, frontendChannel);
-}
-
 void InspectorController::reuseFrontend(const String& hostId, InspectorFrontendChannel* frontendChannel, const String& inspectorStateCookie)
 {
     ASSERT(!m_inspectorFrontend);

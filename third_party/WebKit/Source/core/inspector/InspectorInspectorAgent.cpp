@@ -108,11 +108,6 @@ void InspectorInspectorAgent::disable(ErrorString*)
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, false);
 }
 
-void InspectorInspectorAgent::reset(ErrorString*)
-{
-    m_inspectorController->reconnectFrontend();
-}
-
 void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
     if (frame != frame->localFrameRoot())
