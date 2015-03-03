@@ -57,7 +57,7 @@ const wchar_t kWindows8OSKRegPath[] =
 
 // Returns true if a physical keyboard is detected on Windows 8 and up.
 // Uses the Setup APIs to enumerate the attached keyboards and returns true
-// if the keyboard count is more than 1. While this will work in most cases
+// if the keyboard count is 1 or more.. While this will work in most cases
 // it won't work if there are devices which expose keyboard interfaces which
 // are attached to the machine.
 bool IsKeyboardPresentOnSlate() {
@@ -89,6 +89,7 @@ bool IsKeyboardPresentOnSlate() {
     device_info_data.cbSize = sizeof(device_info_data);
     if (!SetupDiEnumDeviceInfo(device_info, i, &device_info_data))
       break;
+
     // Get the device ID.
     wchar_t device_id[MAX_DEVICE_ID_LEN];
     CONFIGRET status = CM_Get_Device_ID(device_info_data.DevInst,
@@ -96,20 +97,19 @@ bool IsKeyboardPresentOnSlate() {
                                         MAX_DEVICE_ID_LEN,
                                         0);
     if (status == CR_SUCCESS) {
-      // To reduce the scope of the hack we only look for PNP and HID
+      // To reduce the scope of the hack we only look for PNP, MSF and HID
       // keyboards.
-      if (StartsWith(L"ACPI\\PNP", device_id, false) ||
-          StartsWith(L"HID\\VID", device_id, false)) {
+      if (StartsWith(device_id, L"ACPI\\PNP", false) ||
+          StartsWith(device_id, L"ACPI\\MSF", false) ||
+          StartsWith(device_id, L"HID\\VID", false)) {
         keyboard_count++;
       }
     }
   }
-  // On a Windows machine, the API's always report 1 keyboard at least
-  // regardless of whether the machine has a keyboard attached or not.
-  // The heuristic we are using is to check the count and return true
-  // if the API's report more than one keyboard. Please note that this
+  // The heuristic we are using is to check the count of keyboards and return
+  // true if the API's report one or more keyboards. Please note that this
   // will break for non keyboard devices which expose a keyboard PDO.
-  return keyboard_count > 1;
+  return keyboard_count >= 1;
 }
 
 }  // namespace
