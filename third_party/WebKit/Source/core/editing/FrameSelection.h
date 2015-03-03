@@ -124,6 +124,7 @@ public:
     bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
     // Currently we support only CharaterGranularity and WordGranurarity.
     void moveRangeSelectionExtent(const VisiblePosition&, TextGranularity);
+    void moveRangeSelection(const VisiblePosition& base, const VisiblePosition& extent, TextGranularity);
 
     TextGranularity granularity() const { return m_granularity; }
 

@@ -507,7 +507,7 @@ void WebRemoteFrameImpl::selectRange(const WebRange&)
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
+void WebRemoteFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent, WebFrame::TextGranularity granularity)
 {
     ASSERT_NOT_REACHED();
 }

@@ -181,4 +181,27 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionExtent)
     EXPECT_EQ_SELECTED_TEXT("Foo B");
 }
 
+TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
+{
+    // "Foo Bar Baz,"
+    RefPtrWillBeRawPtr<Text> text = document().createTextNode("Foo Bar Baz,");
+    document().body()->appendChild(text);
+    // Itinitializes with "Foo B|a>r Baz," (| means start and > means end).
+    selection().setSelection(VisibleSelection(Position(text, 5), Position(text, 6)));
+    EXPECT_EQ_SELECTED_TEXT("a");
+
+    // "Foo B|ar B>az," with the Character granularity.
+    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 9)), CharacterGranularity);
+    EXPECT_EQ_SELECTED_TEXT("ar B");
+    // "Foo B|ar B>az," with the Word granularity.
+    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 9)), WordGranularity);
+    EXPECT_EQ_SELECTED_TEXT("Bar Baz");
+    // "Fo<o B|ar Baz," with the Character granularity.
+    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 2)), CharacterGranularity);
+    EXPECT_EQ_SELECTED_TEXT("o B");
+    // "Fo<o B|ar Baz," with the Word granularity.
+    selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 2)), WordGranularity);
+    EXPECT_EQ_SELECTED_TEXT("Foo Bar");
+}
+
 }

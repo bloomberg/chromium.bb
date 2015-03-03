@@ -476,7 +476,9 @@ public:
     // Move the current selection to the provided window point/points. If the
     // current selection is editable, the new selection will be restricted to
     // the root editable element.
-    virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent) = 0;
+    // |TextGranularity| represents character wrapping granularity. If
+    // WordGranularity is set, WebFrame extends selection to wrap word.
+    virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent, WebFrame::TextGranularity = CharacterGranularity) = 0;
     virtual void moveCaretSelection(const WebPoint&) = 0;
 
     virtual bool setEditableSelectionOffsets(int start, int end) = 0;

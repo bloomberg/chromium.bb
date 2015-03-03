@@ -1935,6 +1935,17 @@ void FrameSelection::moveRangeSelectionExtent(const VisiblePosition& extentPosit
     setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | UserTriggered, FrameSelection::AlignCursorOnScrollIfNeeded, granularity);
 }
 
+void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition, const VisiblePosition& extentPosition, TextGranularity granularity)
+{
+    VisibleSelection newSelection(basePosition, extentPosition);
+    newSelection.expandUsingGranularity(granularity);
+
+    if (newSelection.isNone())
+        return;
+
+    setSelection(newSelection, granularity);
+}
+
 }
 
 #ifndef NDEBUG

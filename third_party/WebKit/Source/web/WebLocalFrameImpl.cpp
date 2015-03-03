@@ -1206,12 +1206,12 @@ void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point, WebFrame
     frame()->selection().moveRangeSelectionExtent(visiblePositionForWindowPoint(point), blinkGranularity);
 }
 
-void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
+void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent, WebFrame::TextGranularity granularity)
 {
-    VisiblePosition basePosition = visiblePositionForWindowPoint(base);
-    VisiblePosition extentPosition = visiblePositionForWindowPoint(extent);
-    VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
-    frame()->selection().setSelection(newSelection, CharacterGranularity);
+    blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
+    if (granularity == WebFrame::WordGranularity)
+        blinkGranularity = blink::WordGranularity;
+    frame()->selection().moveRangeSelection(visiblePositionForWindowPoint(base), visiblePositionForWindowPoint(extent), blinkGranularity);
 }
 
 void WebLocalFrameImpl::moveCaretSelection(const WebPoint& point)
