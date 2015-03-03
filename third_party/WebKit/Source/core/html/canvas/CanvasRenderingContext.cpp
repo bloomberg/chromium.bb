@@ -61,7 +61,7 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
     return taintOrigin;
 }
 
-void CanvasRenderingContext::trace(Visitor* visitor)
+DEFINE_TRACE(CanvasRenderingContext)
 {
     visitor->trace(m_canvas);
     ActiveDOMObject::trace(visitor);
