@@ -92,10 +92,10 @@ class CrosCommand(object):
     if cros_build_lib.IsInsideChroot():
       return
 
+    target_arg = next((getattr(self.options, arg, None)
+                       for arg in ('board', 'project', 'host')), None)
     extra_args = None
-    if (auto_detect_project and not self.options.board and
-        not ('host' in self.options and self.options.host) and
-        self.curr_project_name):
+    if auto_detect_project and not target_arg and self.curr_project_name:
       extra_args = ['--project', self.curr_project_name]
 
     raise commandline.ChrootRequiredError(extra_args=extra_args)
