@@ -15,7 +15,6 @@ class GbmDevice : public DrmDevice {
  public:
   GbmDevice(const base::FilePath& device_path);
   GbmDevice(const base::FilePath& device_path, base::File file);
-  ~GbmDevice() override;
 
   gbm_device* device() const { return device_; }
 
@@ -23,6 +22,8 @@ class GbmDevice : public DrmDevice {
   bool Initialize() override;
 
  private:
+  ~GbmDevice() override;
+
   gbm_device* device_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmDevice);
