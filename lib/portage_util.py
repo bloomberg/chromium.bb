@@ -103,7 +103,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
         masters = []
       overlays[name] = {
           'masters': masters,
-          'path': overlay,
+          'path': GetOverlayRoot(overlay),
       }
 
   # Easy enough -- dump them all.
